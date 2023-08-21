@@ -10,7 +10,7 @@ Current mobile native nostr clients suffer from one of the following:
 
 ## Multi-platform
 
-I've decided to use flutter to develop the app, so that with one code base it will generate native clients for a lot of platforms.
+I've decided to use flutter to develop the app, so that with one code base it will generate native clients for a lot of platforms.\
 A big danger with this approach is if somehow the generated code is not as high performance and free of lagging UI as manual native written code for each platform.
 
 ## Join
