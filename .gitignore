@@ -40,3 +40,7 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+/Yana.AppDir/data/
+/Yana.AppDir/lib/
+/Yana.AppDir/yana
+/Yana-x86_64.AppImage

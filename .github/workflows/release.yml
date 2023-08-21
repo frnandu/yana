@@ -25,28 +25,59 @@ jobs:
           cache: true
       - run: flutter pub get
 #      - run: flutter test
-      - run: flutter build apk
+#      - run: flutter build apk
 #      - run: flutter build appbundle
+      - run: flutter build linux
+      - run: wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
+      - run: chmod +x  appimagetool-x86_64.AppImage
+      - run: cp -r build/linux/x64/release/bundle/* Yana.AppDir/
+      - run: cp -r assets/imgs/logo/logo.png Yana.AppDir/
+      - run: /appimagetool-x86_64.AppImage Yana.AppDir/
 
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
-          draft: false
-          prerelease: true
+      # Create Release
+#      - name: Create Release
+#        id: create_release
+#        uses: actions/create-release@v1
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#        with:
+#          tag_name: ${{ github.ref }}
+#          release_name: Release ${{ github.ref }}
+#          draft: false
+#          prerelease: true
 
       # APK
-      - name: Upload APK to release
-        id: upload-release-asset-play-universal-apk
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: build/app/outputs/flutter-apk/app-release.apk
-          asset_name: nostro-${{ github.ref_name }}.apk
-          asset_content_type: application/zip
+#      - name: Upload APK to release
+#        id: upload-release-asset-play-universal-apk
+#        uses: actions/upload-release-asset@v1
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#        with:
+#          upload_url: ${{ steps.create_release.outputs.upload_url }}
+#          asset_path: build/app/outputs/flutter-apk/app-release.apk
+#          asset_name: yana-${{ github.ref_name }}.apk
+#          asset_content_type: application/zip
+#
+#      # APP BUNDLE
+#      - name: Upload APP BUNDLE to release
+#        id: upload-release-asset-play-universal-appbundle
+#        uses: actions/upload-release-asset@v1
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#        with:
+#          upload_url: ${{ steps.create_release.outputs.upload_url }}
+#          asset_path: build/app/outputs/bundle/release/app-release.aab
+#          asset_name: yana-${{ github.ref_name }}.aab
+#          asset_content_type: application/zip
+
+      # LINUX APPIMAGE
+#      - name: Upload APP BUNDLE to release
+#        id: upload-release-asset-play-universal-appbundle
+#        uses: actions/upload-release-asset@v1
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#        with:
+#          upload_url: ${{ steps.create_release.outputs.upload_url }}
+#          asset_path: Yana-x86_64.AppImage
+#          asset_name: Yana-x86_64-${{ github.ref_name }}.AppImage
+#          asset_content_type: application/zip

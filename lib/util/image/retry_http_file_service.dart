@@ -1,19 +1,15 @@
-import 'dart:convert';
-import 'dart:developer';
 import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter_cache_manager/src/web/file_service.dart';
 import 'package:http/http.dart' as http;
-import 'package:yana/consts/base.dart';
-import 'package:yana/util/hash_util.dart';
 
 import '../../consts/base64.dart';
 
-class RetryHttpFileServcie extends FileService {
+class RetryHttpFileService extends FileService {
   final http.Client _httpClient;
 
-  RetryHttpFileServcie({http.Client? httpClient})
+  RetryHttpFileService({http.Client? httpClient})
       : _httpClient = httpClient ?? http.Client();
 
   @override

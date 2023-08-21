@@ -16,6 +16,7 @@
 - only use tablet second view if horizontal tablet
 
 - NWC
+- linux AppImage build
 - NIP-7 window.nostr for web version
 - make it work on iOS/MacOS
 - 

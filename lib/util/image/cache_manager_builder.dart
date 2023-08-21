@@ -12,6 +12,6 @@ class CacheManagerBuilder {
     var store = CacheStore(config);
 
     return CacheManager.custom(config,
-        cacheStore: store, webHelper: WebHelper(store, RetryHttpFileServcie()));
+        cacheStore: store, webHelper: WebHelper(store, RetryHttpFileService()));
   }
 }
