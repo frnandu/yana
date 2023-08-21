@@ -59,6 +59,11 @@ jobs:
       - run: cp -r build/linux/x64/release/bundle/* Yana.AppDir/
       - run: cp -r assets/imgs/logo/logo.png Yana.AppDir/
       - run: ./appimagetool-x86_64.AppImage Yana.AppDir/
+      - name: 'Artifact'
+        uses: actions/upload-artifact@v2
+        with:
+          name: Yana-x86_64.AppImage
+          path: Yana-x86_64.AppImage
 
   release:
     needs: build_linux

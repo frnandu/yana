@@ -13,6 +13,12 @@ Current mobile native nostr clients suffer from one of the following:
 I've decided to use flutter to develop the app, so that with one code base it will generate native clients for a lot of platforms.\
 A big danger with this approach is if somehow the generated code is not as high performance and free of lagging UI as manual native written code for each platform.
 
+## Freedom
+
+It will not be subjective to imperialist rulers, such as Apple Store or Google Store. 
+The released app will be distributed as standalone packages for each OS and can be included in free Stores (F-Droid, others?)
+User can also just download them from release page and install it directly without a third-party distributor.  
+
 ## Join
 
 I welcome contributors to the project, specially Designers UI/UX, coders, testers.\
