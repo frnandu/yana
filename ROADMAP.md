@@ -14,7 +14,8 @@
 - mention livesearch editor without popup
 - in thread view decrease the tree branches padding to allow more space for content
 - only use tablet second view if horizontal tablet
-
+- reorganize navigation: notifications/search/communities/DM
+- 
 - NWC
 - linux AppImage build
 - NIP-7 window.nostr for web version
