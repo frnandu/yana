@@ -1,0 +1,22 @@
+import 'package:flutter/material.dart';
+import 'package:yana/consts/router_path.dart';
+import 'package:yana/util/router_util.dart';
+
+import 'content_str_link_component.dart';
+
+class ContentTagComponent extends StatelessWidget {
+  String tag;
+
+  ContentTagComponent({required this.tag});
+
+  @override
+  Widget build(BuildContext context) {
+    return ContentStrLinkComponent(
+      str: tag,
+      onTap: () {
+        var plainTag = tag.replaceFirst("#", "");
+        RouterUtil.router(context, RouterPath.TAG_DETAIL, plainTag);
+      },
+    );
+  }
+}

@@ -1,0 +1,21 @@
+# Roadmap
+
+- ~~auto hide bars when scrolling~~
+- ~~click on home icon scroll to top~~
+- ~~fix nip05 _@<domain>~~
+- fix zaps amounts in notes
+- on new notes, show icons (like twitter/primal)
+- close images clicking anywhere
+- followers/following list more condensated
+- change gray color to something else
+- ask for icon/UI to ZITRON
+- Database offline check
+- exchange generate/accept terms positions on login screen
+- mention livesearch editor without popup
+- in thread view decrease the tree branches padding to allow more space for content
+- only use tablet second view if horizontal tablet
+
+- NWC
+- NIP-7 window.nostr for web version
+- make it work on iOS/MacOS
+- 
