@@ -15,5 +15,5 @@ A big danger with this approach is if somehow the generated code is not as high 
 
 ## Join
 
-I welcome contributors to the project, specially Designers UI/UX, coders, testers.
+I welcome contributors to the project, specially Designers UI/UX, coders, testers.\
 If you're not a coder but would like to see something added/implemented, or you have a great idea for a new feature, just don't hesitate to fill up a issue.
