@@ -103,7 +103,7 @@ class _MentionMeRouter extends KeepAliveCustState<MentionMeRouter>
           return NewNotesUpdatedComponent(
             newEvents: eventMemBox.all(),
             onTap: () {
-              followEventProvider.mergeNewEvent();
+              mentionMeProvider.mergeNewEvent();
               _controller.animateTo(0,curve: Curves.ease, duration: const Duration(seconds: 1));
             },
           );
