@@ -5,6 +5,7 @@ import 'package:flutter/rendering.dart';
 import 'package:yana/component/cust_state.dart';
 import 'package:yana/component/pc_router_fake.dart';
 import 'package:yana/consts/base_consts.dart';
+import 'package:yana/consts/index_taps.dart';
 import 'package:yana/provider/pc_router_fake_provider.dart';
 import 'package:yana/router/follow/mention_me_router.dart';
 import 'package:yana/util/platform_util.dart';
@@ -123,7 +124,7 @@ class _IndexRouter extends CustState<IndexRouter>
     }
 
     Widget? appBarCenter;
-    if (_indexProvider.currentTap == 0) {
+    if (_indexProvider.currentTap == IndexTaps.FOLLOW) {
       appBarCenter = TabBar(
         indicatorColor: indicatorColor,
         indicatorWeight: 3,
@@ -156,21 +157,21 @@ class _IndexRouter extends CustState<IndexRouter>
         ],
         controller: followTabController,
       );
-    } else if (_indexProvider.currentTap == 1) {
+    } else if (_indexProvider.currentTap == IndexTaps.NOTIFICATIONS) {
       appBarCenter = Center(
         child: Text(
           s.Notifications,
           style: titleTextStyle,
         ),
       );
-    } else if (_indexProvider.currentTap == 2) {
+    } else if (_indexProvider.currentTap == IndexTaps.SEARCH) {
       appBarCenter = Center(
         child: Text(
           s.Search,
           style: titleTextStyle,
         ),
       );
-    } else if (_indexProvider.currentTap == 3) {
+    } else if (_indexProvider.currentTap == IndexTaps.DM) {
       appBarCenter = TabBar(
         indicatorColor: indicatorColor,
         indicatorWeight: 3,
@@ -214,11 +215,11 @@ class _IndexRouter extends CustState<IndexRouter>
           FollowIndexRouter(
             tabController: followTabController,
           ),
-          MentionMeRouter(),
           SearchRouter(),
           DMRouter(
             tabController: dmTabController,
           ),
+          MentionMeRouter(),
           // NoticeRouter(),
         ],
       )),

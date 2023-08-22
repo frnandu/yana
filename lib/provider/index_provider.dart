@@ -88,7 +88,6 @@ class IndexProvider extends ChangeNotifier {
 
   }
 
-  ScrollController? get mentionedScrollController => _mentionedScrollController;
   ScrollController? get eventScrollController => _eventScrollController;
   ScrollController? get followScrollController => _followScrollController;
 

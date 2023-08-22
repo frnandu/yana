@@ -8,6 +8,7 @@ import 'package:yana/util/platform_util.dart';
 import 'package:yana/util/router_util.dart';
 import 'package:provider/provider.dart';
 
+import '../../consts/index_taps.dart';
 import '../../data/metadata.dart';
 import '../../generated/l10n.dart';
 import '../../main.dart';
@@ -93,7 +94,7 @@ class _IndexDrawerContnetComponnent
       list.add(IndexDrawerItem(
         iconData: Icons.home,
         name: s.Home,
-        color: _indexProvider.currentTap == 0 ? mainColor : null,
+        color: _indexProvider.currentTap == IndexTaps.FOLLOW ? mainColor : null,
         onTap: () {
           indexProvider.setCurrentTap(0);
         },
@@ -102,9 +103,9 @@ class _IndexDrawerContnetComponnent
         },
       ));
       list.add(IndexDrawerItem(
-        iconData: Icons.public,
+        iconData: Icons.notifications,
         name: s.Globals,
-        color: _indexProvider.currentTap == 1 ? mainColor : null,
+        color: _indexProvider.currentTap == IndexTaps.NOTIFICATIONS ? mainColor : null,
         onTap: () {
           indexProvider.setCurrentTap(1);
         },
@@ -116,7 +117,7 @@ class _IndexDrawerContnetComponnent
       list.add(IndexDrawerItem(
         iconData: Icons.search,
         name: s.Search,
-        color: _indexProvider.currentTap == 2 ? mainColor : null,
+        color: _indexProvider.currentTap == IndexTaps.SEARCH ? mainColor : null,
         onTap: () {
           indexProvider.setCurrentTap(2);
         },
@@ -124,7 +125,7 @@ class _IndexDrawerContnetComponnent
       list.add(IndexDrawerItem(
         iconData: Icons.mail,
         name: "DMs",
-        color: _indexProvider.currentTap == 3 ? mainColor : null,
+        color: _indexProvider.currentTap == IndexTaps.DM ? mainColor : null,
         onTap: () {
           indexProvider.setCurrentTap(3);
         },
