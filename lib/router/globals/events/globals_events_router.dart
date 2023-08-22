@@ -10,11 +10,13 @@ import '../../../client/event.dart';
 import '../../../client/event_kind.dart' as kind;
 import '../../../client/filter.dart';
 import '../../../component/event/event_list_component.dart';
+import '../../../component/new_notes_updated_component.dart';
 import '../../../component/placeholder/event_list_placeholder.dart';
 import '../../../consts/base.dart';
 import '../../../consts/base_consts.dart';
 import '../../../data/event_mem_box.dart';
 import '../../../main.dart';
+import '../../../provider/follow_new_event_provider.dart';
 import '../../../provider/setting_provider.dart';
 import '../../../util/dio_util.dart';
 import '../../../util/peddingevents_later_function.dart';
@@ -71,7 +73,39 @@ class _GlobalsEventsRouter extends KeepAliveCustState<GlobalsEventsRouter>
       );
     }
 
-    return main;
+    Widget ri = RefreshIndicator(
+      onRefresh: () async {
+        followEventProvider.refresh();
+      },
+      child: main,
+    );
+
+    List<Widget> stackList = [ri];
+    stackList.add(Positioned(
+      top: Base.BASE_PADDING,
+      child: Selector<FollowNewEventProvider, EventMemBox>(
+        builder: (context, eventMemBox, child) {
+          if (eventMemBox.length() <= 0) {
+            return Container();
+          }
+
+          return NewNotesUpdatedComponent(
+            newEvents: eventMemBox.all(),
+            onTap: () {
+              followEventProvider.mergeNewEvent();
+              scrollController.animateTo(0,curve: Curves.ease, duration: const Duration(seconds: 1));
+            },
+          );
+        },
+        selector: (context, _provider) {
+          return eventBox;
+        },
+      ),
+    ));
+    return Stack(
+      alignment: Alignment.center,
+      children: stackList,
+    );
   }
 
   var subscribeId = StringUtil.rndNameStr(16);

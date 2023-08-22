@@ -100,6 +100,7 @@ dependencies:
   intl: ^0.18.0
   device_info_plus: ^9.0.2
   package_info_plus: ^4.1.0
+  assorted_layout_widgets: ^8.0.4
 
 dev_dependencies:
   flutter_launcher_icons: ^0.13.1

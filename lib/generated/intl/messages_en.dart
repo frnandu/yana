@@ -317,7 +317,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "network_take_effect_tip": MessageLookupByLibrary.simpleMessage(
             "The network will take effect the next time the app is launched"),
         "not_found": MessageLookupByLibrary.simpleMessage("not found"),
-        "notes_updated": MessageLookupByLibrary.simpleMessage("notes updated"),
+        "notes_updated": MessageLookupByLibrary.simpleMessage("posted"),
         "open": MessageLookupByLibrary.simpleMessage("Open"),
         "or": MessageLookupByLibrary.simpleMessage("or"),
         "poll_option_info":

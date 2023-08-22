@@ -3,12 +3,11 @@
 - ~~auto hide bars when scrolling~~
 - ~~click on home icon scroll to top~~
 - ~~fix nip05 _@<domain>~~
+- ~~on new notes, show icons (like twitter/primal)~~
 
 - reorganize navigation: notifications/search/communities/DM
-- 
 - fix zaps amounts in notes
 - get relays list immediately after login
-- on new notes, show icons (like twitter/primal)
 - try to load images using Isolate and compute, so that feed scrolling does not freeze while loading images
 - close images clicking anywhere
 - followers/following list more condensed

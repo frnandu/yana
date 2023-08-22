@@ -1573,7 +1573,7 @@ class S {
   /// `notes updated`
   String get notes_updated {
     return Intl.message(
-      'notes updated',
+      'posted',
       name: 'notes_updated',
       desc: '',
       args: [],

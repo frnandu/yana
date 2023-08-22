@@ -84,22 +84,22 @@ class _FollowPostsRouter extends KeepAliveCustState<FollowPostsRouter>
     List<Widget> stackList = [ri];
     stackList.add(Positioned(
       top: Base.BASE_PADDING,
-      child: Selector<FollowNewEventProvider, int>(
-        builder: (context, newEventNum, child) {
-          if (newEventNum <= 0) {
+      child: Selector<FollowNewEventProvider, EventMemBox>(
+        builder: (context, eventMemBox, child) {
+          if (eventMemBox.length() <= 0) {
             return Container();
           }
 
           return NewNotesUpdatedComponent(
-            num: newEventNum,
+            newEvents: eventMemBox.all(),
             onTap: () {
               followEventProvider.mergeNewEvent();
-              _controller.jumpTo(0);
+              _controller.animateTo(0,curve: Curves.ease, duration: const Duration(seconds: 1));
             },
           );
         },
         selector: (context, _provider) {
-          return _provider.eventPostMemBox.length();
+          return _provider.eventMemBox;
         },
       ),
     ));
