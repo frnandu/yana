@@ -12,8 +12,7 @@ class NewNotesUpdatedComponent extends StatelessWidget {
 
   List<Event> newEvents;
 
-  NewNotesUpdatedComponent(
-      {required this.newEvents, this.onTap});
+  NewNotesUpdatedComponent({required this.newEvents, this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -31,35 +30,46 @@ class NewNotesUpdatedComponent extends StatelessWidget {
       distance = 3;
     }
 
-    List<String> pubKeys = newEvents.map((e) => e.pubKey).toSet().take(maxAvatars).toList();
-    return Container(
-        padding: const EdgeInsets.only(
-          top: 4,
-          bottom: 4,
-          left: Base.BASE_PADDING,
-          right: Base.BASE_PADDING,
-        ),
-        decoration: BoxDecoration(
-          color: mainColor,
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Row(children: [
-          Text(
-            "↑",
-            style: TextStyle(
-                color: textColor, fontSize: settingProvider.fontSize + 4),
-          ),
-          RowSuper(
-            innerDistance: distance, //,
-            outerDistance: 5.0,
-            children: pubKeys.map((pubKey) {
-              return UserPicComponent(pubkey: pubKey, width: width+10);
-            }).toList(), //
-          ),
-          Text(
-            S.of(context).notes_updated,
-            style: TextStyle(color: textColor),
-          )
-        ]));
+    List<String> pubKeys = newEvents.map((e) => e.pubKey).toSet().take(
+        maxAvatars).toList();
+    return GestureDetector(
+        onTap: () {
+          if (onTap != null) {
+            onTap!();
+          }
+        },
+        child:
+        Container(
+            padding: const EdgeInsets.only(
+              top: 4,
+              bottom: 4,
+              left: Base.BASE_PADDING,
+              right: Base.BASE_PADDING,
+            ),
+            decoration: BoxDecoration(
+              color: mainColor,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Row(children: [
+              Text(
+                "↑",
+                style: TextStyle(
+                    color: textColor, fontSize: settingProvider.fontSize + 4),
+              ),
+              RowSuper(
+                innerDistance: distance, //,
+                outerDistance: 5.0,
+                children: pubKeys.map((pubKey) {
+                  return UserPicComponent(pubkey: pubKey, width: width + 10);
+                }).toList(), //
+              ),
+              Text(
+                S
+                    .of(context)
+                    .notes_updated,
+                style: TextStyle(color: textColor),
+              )
+            ]))
+    );
   }
 }
