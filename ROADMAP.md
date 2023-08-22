@@ -19,7 +19,7 @@
 - in thread view decrease the tree branches padding to allow more space for content
 - only use tablet second view if horizontal tablet
 - 
-- NWC
+- Nostr Wallet Connect with balance
 - linux AppImage build
 - NIP-7 window.nostr for web version
 - make it work on iOS/MacOS
