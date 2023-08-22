@@ -1,6 +1,6 @@
-# yana - yeat another nostr application
-
 <img align="right" src="./assets/imgs/logo/logo.png" width="100px" />
+
+# yana - yeat another nostr application
 
 # Motivation
 Why yet another client/app when there are so many already being developed?
