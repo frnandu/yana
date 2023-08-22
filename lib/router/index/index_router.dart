@@ -266,6 +266,7 @@ class _IndexRouter extends CustState<IndexRouter>
       }
 
       return Scaffold(
+        extendBody: true,
         // floatingActionButton: addBtn,
         // floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
         body: Row(children: [
@@ -334,6 +335,7 @@ class _IndexRouter extends CustState<IndexRouter>
     } else {
       return Scaffold(
           body: mainIndex,
+          extendBody: true,
           floatingActionButton:
           AnimatedContainer(
               curve: Curves.ease,

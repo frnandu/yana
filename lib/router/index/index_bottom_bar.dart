@@ -86,6 +86,7 @@ class _IndexBottomBar extends State<IndexBottomBar> {
     // );
     return BottomAppBar(
       shape: const CircularNotchedRectangle(),
+      notchMargin: 5,
       child: Container(
         color: Colors.transparent,
         width: double.infinity,
