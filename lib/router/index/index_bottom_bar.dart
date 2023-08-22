@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:yana/provider/index_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:yana/provider/index_provider.dart';
 
 import '../../main.dart';
-import '../../provider/setting_provider.dart';
 
 class IndexBottomBar extends StatefulWidget {
   static const double HEIGHT = 50;
@@ -86,7 +85,7 @@ class _IndexBottomBar extends State<IndexBottomBar> {
     //   ),
     // );
     return BottomAppBar(
-      shape: CircularNotchedRectangle(),
+      shape: const CircularNotchedRectangle(),
       child: Container(
         color: Colors.transparent,
         width: double.infinity,

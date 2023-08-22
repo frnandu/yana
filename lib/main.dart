@@ -380,7 +380,7 @@ class _MyApp extends State<MyApp> {
   }
 
   ThemeData getLightTheme() {
-    Color background = const Color(0xff1e022c);
+    Color background = const Color(0xFFF3E5F5);
 
     MaterialColor themeColor = const MaterialColor(
       0xffb583ce,
@@ -421,6 +421,7 @@ class _MyApp extends State<MyApp> {
     }
 
     return ThemeData(
+      useMaterial3: true,
       brightness: Brightness.light,
       platform: TargetPlatform.iOS,
       primarySwatch: themeColor,
