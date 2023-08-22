@@ -1,5 +1,7 @@
 # yana - yeat another nostr application
 
+<img align="right" src="./assets/imgs/logo/logo.png" width="100px" />
+
 # Motivation
 Why yet another client/app when there are so many already being developed?
 
@@ -16,7 +18,7 @@ A big danger with this approach is if somehow the generated code is not as high 
 ## Freedom
 
 It will not be subjective to imperialist rulers, such as Apple Store or Google Store. 
-The released app will be distributed as standalone packages for each OS and can be included in free Stores (F-Droid, others?)
+The released app will be distributed as standalone packages for each OS and can be included in free Stores (F-Droid, Obtainium and others?)
 User can also just download them from release page and install it directly without a third-party distributor.  
 
 ## Join
