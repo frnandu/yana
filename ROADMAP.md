@@ -23,4 +23,4 @@
 - linux AppImage build
 - NIP-7 window.nostr for web version
 - make it work on iOS/MacOS
-- 
+- Push Notifications 
