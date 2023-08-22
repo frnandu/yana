@@ -29,17 +29,7 @@ jobs:
 #      - run: flutter test
       - run: flutter build apk
       - run: flutter build appbundle
-      - name: Cache android
-        uses: actions/cache@v2
-        env:
-          cache-name: cache-android
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/*.apk') }}
-          restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}-
-            ${{ runner.os }}-build-
-            ${{ runner.os }}-  
+
 
   #  build_linux:
 #    runs-on: ubuntu-latest
@@ -75,12 +65,12 @@ jobs:
 #        with:
 #          name: Yana-x86_64.AppImage
 #          path: Yana-x86_64.AppImage
-
-  release:
-    needs: build_android
-    runs-on: ubuntu-latest
-
-    steps:
+#
+#  release:
+#    needs: build_android
+#    runs-on: ubuntu-latest
+#
+#    steps:
       # Create Release
       - name: Create Release
         id: create_release
@@ -92,18 +82,6 @@ jobs:
           release_name: Release ${{ github.ref }}
           draft: false
           prerelease: true
-
-      - name: Cache android
-        uses: actions/cache@v2
-        env:
-          cache-name: cache-android
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/*.apk') }}
-          restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}-
-            ${{ runner.os }}-build-
-            ${{ runner.os }}-  
 
       # APK
       - name: Upload APK to release
