@@ -15,7 +15,7 @@ My main motivator to spend time on this is to have a nostr client which I find t
 And also learn more deeply about nostr and FOSS project development.\
 Having said that, I will apply for https://opensats.org/ initiative and consider other similar donations initiatives.\
 Each amount of funding will be distributed among the contributors according to the amount of contribution.\
-This will eventually allow each contributor to spend more time on the project.\
+This will eventually allow each contributor to spend more time on the project.
 
 ## Multi-platform
 
