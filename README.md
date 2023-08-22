@@ -2,7 +2,7 @@
 
 # yana - yeat another nostr application
 
-# Motivation
+## Motivation
 Why yet another client/app when there are so many already being developed?
 
 Current mobile native nostr clients suffer from one of the following:
@@ -21,7 +21,7 @@ It will not be subjective to imperialist rulers, such as Apple Store or Google S
 The released app will be distributed as standalone packages for each OS and can be included in free Stores (F-Droid, Obtainium and others?)
 User can also just download them from release page and install it directly without a third-party distributor.  
 
-# Current Features
+## Current Features
 
 - [x] Event Builders / WebSocket Subscriptions ([NIP-01](https://github.com/nostr-protocol/nips/blob/master/01.md))
 - [x] Home Feed
