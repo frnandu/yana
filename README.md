@@ -11,7 +11,7 @@ Current mobile native nostr clients suffer from one of the following:
 - not multi-platform (Damus, Nozzle, Amethyst)
 
 The objective of this project is not fame, glory or financial rewards.\
-My main motivator to spend time on this is to have a nostr client which I find the most pleasant to use on a everyday case.
+My main motivator to spend time on this is to have a nostr client which I find the most pleasant to use on a everyday case.\
 And also learn more deeply about nostr and FOSS project development.  
 
 ## Multi-platform
