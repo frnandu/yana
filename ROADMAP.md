@@ -6,10 +6,10 @@
 
 - reorganize navigation: notifications/search/communities/DM
 - 
-- fix floatingButton transparency background
 - fix zaps amounts in notes
 - get relays list immediately after login
 - on new notes, show icons (like twitter/primal)
+- try to load images using Isolate and compute, so that feed scrolling does not freeze while loading images
 - close images clicking anywhere
 - followers/following list more condensed
 - Database offline check
