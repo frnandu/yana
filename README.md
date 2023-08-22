@@ -10,6 +10,10 @@ Current mobile native nostr clients suffer from one of the following:
 - lack of a true FOSS community with lots of contributors being welcomed and encouraged to participate (Primal)
 - not multi-platform (Damus, Nozzle, Amethyst)
 
+The objective of this project is not fame, glory or financial rewards.\
+My main motivator to spend time on this is to have a nostr client which I find the most pleasant to use on a everyday case.
+And also learn more deeply about nostr and FOSS project development.  
+
 ## Multi-platform
 
 I've decided to use flutter to develop the app, so that with one code base it will generate native clients for a lot of platforms.\
@@ -29,11 +33,11 @@ Or you can just download them from the release's page and install it directly wi
 - [x] Global Feed
 - [x] Replies and mentions ([NIP-10](https://github.com/nostr-protocol/nips/blob/master/10.md))
 - [x] Reactions ([NIP-25](https://github.com/nostr-protocol/nips/blob/master/25.md))
-- [x] Reposts ([NIP-18]((https://github.com/nostr-protocol/nips/blob/master/18.md))
+- [x] Reposts ([NIP-18](https://github.com/nostr-protocol/nips/blob/master/18.md))
 - [x] Image/Url Previews
 - [x] View Threads
 - [x] Private Messages ([NIP-04](https://github.com/nostr-protocol/nips/blob/master/04.md))
-- [x] User Profiles (edit/follow/unfollow - [NIP-02]((https://github.com/nostr-protocol/nips/blob/master/02.md))
+- [x] User Profiles (edit/follow/unfollow - [NIP-02](https://github.com/nostr-protocol/nips/blob/master/02.md))
 - [x] Bech Encoding support ([NIP-19](https://github.com/nostr-protocol/nips/blob/master/19.md))
 - [x] Reporting ([NIP-56](https://github.com/nostr-protocol/nips/blob/master/56.md))
 - [x] Block/Hide User
@@ -95,5 +99,5 @@ Or you can just download them from the release's page and install it directly wi
 
 ## Join
 
-I welcome contributors to the project, specially Designers UI/UX, coders, testers.\
+I welcome contributors to join the project, specially Designers UI/UX, coders, testers.\
 If you're not a coder but would like to see something added/implemented, or you have a great idea for a new feature, just don't hesitate to fill up a issue.
