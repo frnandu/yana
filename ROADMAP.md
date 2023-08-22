@@ -4,12 +4,11 @@
 - ~~click on home icon scroll to top~~
 - ~~fix nip05 _@<domain>~~
 - ~~on new notes, show icons (like twitter/primal)~~
-
 - ~~add robohash placeholders~~
 - ~~reorganize navigation: notifications/search/communities/DM~~
 
 - store privKey in securedStorage
-- 
+- allow to login with npub 
 - replace relays numbers with search, move numbers to drawer
 - fix zaps amounts in notes
 - get relays list immediately after login
