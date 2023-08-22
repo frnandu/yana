@@ -29,8 +29,19 @@ jobs:
 #      - run: flutter test
       - run: flutter build apk
       - run: flutter build appbundle
+      - name: Cache android
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-android
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/*.apk') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-  
 
-#  build_linux:
+  #  build_linux:
 #    runs-on: ubuntu-latest
 #    steps:
 #      - uses: actions/checkout@v3
@@ -81,6 +92,18 @@ jobs:
           release_name: Release ${{ github.ref }}
           draft: false
           prerelease: true
+
+      - name: Cache android
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-android
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/*.apk') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-  
 
       # APK
       - name: Upload APK to release
