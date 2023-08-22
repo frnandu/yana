@@ -109,7 +109,8 @@ class _IndexDrawerContnetComponnent
           indexProvider.setCurrentTap(1);
         },
         onDoubleTap: () {
-          indexProvider.globalScrollToTop();
+          // TODO
+          // indexProvider.globalScrollToTop();
         },
       ));
       list.add(IndexDrawerItem(

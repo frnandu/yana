@@ -5,6 +5,7 @@ import 'package:yana/util/platform_util.dart';
 import '../../client/client_utils/keys.dart';
 import '../../client/nip19/nip19.dart';
 import '../../consts/base.dart';
+import '../../consts/index_taps.dart';
 import '../../generated/l10n.dart';
 import '../../main.dart';
 import '../../util/string_util.dart';
@@ -161,6 +162,6 @@ class _LoginRouter extends State<LoginRouter>
     settingProvider.notifyListeners();
 
     firstLogin = true;
-    indexProvider.setCurrentTap(1);
+    indexProvider.setCurrentTap(IndexTaps.FOLLOW);
   }
 }

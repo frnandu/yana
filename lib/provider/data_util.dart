@@ -14,11 +14,7 @@ class DataUtil {
 class DataKey {
   static final String SETTING = "setting";
 
-  // static final String RELAYS = "relays";
-
   static final String CONTACT_LISTS = "contactLists";
-
-  // static final String CONTACT_LIST = "contactList";
 
   static final String RELAY_LIST = "relayList";
 

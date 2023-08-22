@@ -69,12 +69,6 @@ class IndexProvider extends ChangeNotifier {
     }
   }
 
-  TabController? _globalTabController;
-
-  void setGlobalTabController(TabController? globalTabController) {
-    _globalTabController = globalTabController;
-  }
-
   ScrollController? _eventScrollController;
 
   void setEventScrollController(ScrollController? eventScrollController) {
@@ -93,18 +87,6 @@ class IndexProvider extends ChangeNotifier {
     });
 
   }
-
-  void globalScrollToTop() {
-    if (_globalTabController != null) {
-      if (_globalTabController!.index == 0 && _eventScrollController != null) {
-        _eventScrollController!.animateTo(0, curve: Curves.ease, duration: const Duration(seconds: 1));
-      } else if (_globalTabController!.index == 1 &&
-          _userScrollController != null) {
-        _userScrollController!.animateTo(0, curve: Curves.ease, duration: const Duration(seconds: 1));
-      }
-    }
-  }
-
 
   ScrollController? get mentionedScrollController => _mentionedScrollController;
   ScrollController? get eventScrollController => _eventScrollController;

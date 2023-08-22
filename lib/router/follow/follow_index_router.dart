@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:yana/router/follow/mention_me_router.dart';
 
+import '../globals/events/globals_events_router.dart';
+import 'follow_posts_and_replies_router.dart';
 import 'follow_posts_router.dart';
-import 'follow_router.dart';
 
 class FollowIndexRouter extends StatefulWidget {
   TabController tabController;
@@ -23,8 +23,8 @@ class _FollowIndexRouter extends State<FollowIndexRouter> {
       child: TabBarView(
         children: [
           FollowPostsRouter(),
-          FollowRouter(),
-          MentionMeRouter(),
+          FollowPostsAndRepliesRouter(),
+          GlobalsEventsRouter(),
         ],
         controller: widget.tabController,
       ),

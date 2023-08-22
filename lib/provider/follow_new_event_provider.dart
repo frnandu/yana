@@ -11,8 +11,8 @@ import 'follow_event_provider.dart';
 
 class FollowNewEventProvider extends ChangeNotifier
     with PenddingEventsLaterFunction {
-  EventMemBox eventPostMemBox = EventMemBox(sortAfterAdd: false);
-  EventMemBox eventMemBox = EventMemBox();
+  EventMemBox eventPostsMemBox = EventMemBox(sortAfterAdd: false);
+  EventMemBox eventPostsAndRepliesMemBox = EventMemBox();
 
   int? _localSince;
 
@@ -73,20 +73,20 @@ class FollowNewEventProvider extends ChangeNotifier
   }
 
   void clear() {
-    eventPostMemBox.clear();
-    eventMemBox.clear();
+    eventPostsMemBox.clear();
+    eventPostsAndRepliesMemBox.clear();
 
     notifyListeners();
   }
 
   handleEvents(List<Event> events) {
-    eventMemBox.addList(events);
-    _localSince = eventMemBox.newestEvent!.createdAt;
+    eventPostsAndRepliesMemBox.addList(events);
+    _localSince = eventPostsAndRepliesMemBox.newestEvent!.createdAt;
 
     for (var event in events) {
       bool isPosts = FollowEventProvider.eventIsPost(event);
       if (isPosts) {
-        eventPostMemBox.add(event);
+        eventPostsMemBox.add(event);
       }
     }
 

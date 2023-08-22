@@ -29,10 +29,11 @@ class _UserPicComponent extends State<UserPicComponent> {
     return Selector<MetadataProvider, Metadata?>(
       builder: (context, metadata, child) {
         Widget? imageWidget;
-        if (metadata != null) {
-          if (StringUtil.isNotBlank(metadata.picture)) {
+        String? url = metadata != null && StringUtil.isNotBlank(metadata.picture) ? metadata.picture : 'https://robohash.org/'+widget.pubkey;
+
+        if (url != null) {
             imageWidget = CachedNetworkImage(
-              imageUrl: metadata.picture!,
+              imageUrl: url,
               width: widget.width,
               height: widget.width,
               fit: BoxFit.cover,
@@ -40,9 +41,7 @@ class _UserPicComponent extends State<UserPicComponent> {
               errorWidget: (context, url, error) => Icon(Icons.error),
               cacheManager: localCacheManager,
             );
-          }
         }
-
         return Container(
           width: widget.width,
           height: widget.width,

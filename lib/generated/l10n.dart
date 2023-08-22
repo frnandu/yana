@@ -370,26 +370,6 @@ class S {
     );
   }
 
-  /// `Default index`
-  String get Default_index {
-    return Intl.message(
-      'Default index',
-      name: 'Default_index',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Timeline`
-  String get Timeline {
-    return Intl.message(
-      'Timeline',
-      name: 'Timeline',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `Global`
   String get Global {
     return Intl.message(
@@ -410,31 +390,21 @@ class S {
     );
   }
 
-  /// `Posts`
-  String get Posts {
+  /// `Following Replies`
+  String get Following_replies {
     return Intl.message(
-      'Posts',
-      name: 'Posts',
+      'Following Replies',
+      name: 'Following_replies',
       desc: '',
       args: [],
     );
   }
 
-  /// `Posts & Replies`
-  String get Posts_and_replies {
+  /// `Notifications`
+  String get Notifications {
     return Intl.message(
-      'Posts & Replies',
-      name: 'Posts_and_replies',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Mentions`
-  String get Mentions {
-    return Intl.message(
-      'Mentions',
-      name: 'Mentions',
+      'Notifications',
+      name: 'Notifications',
       desc: '',
       args: [],
     );

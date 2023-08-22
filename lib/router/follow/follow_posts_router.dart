@@ -99,7 +99,7 @@ class _FollowPostsRouter extends KeepAliveCustState<FollowPostsRouter>
           );
         },
         selector: (context, _provider) {
-          return _provider.eventMemBox;
+          return _provider.eventPostsMemBox;
         },
       ),
     ));

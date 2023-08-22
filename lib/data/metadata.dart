@@ -1,3 +1,5 @@
+import '../util/string_util.dart';
+
 class Metadata {
   String? pubKey;
   String? name;
@@ -62,5 +64,9 @@ class Metadata {
     data['updated_at'] = this.updated_at;
     data['valid'] = this.valid;
     return data;
+  }
+
+  String? getPictureOrRobohash() {
+    return StringUtil.isNotBlank(picture) ? picture : 'https://robohash.org/'+pubKey!;
   }
 }

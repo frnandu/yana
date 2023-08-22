@@ -85,7 +85,6 @@ class MessageLookup extends MessageLookupByLibrary {
         "Default_Color": MessageLookupByLibrary.simpleMessage("Default Color"),
         "Default_Font_Family":
             MessageLookupByLibrary.simpleMessage("Default Font Family"),
-        "Default_index": MessageLookupByLibrary.simpleMessage("Default index"),
         "Default_tab": MessageLookupByLibrary.simpleMessage("Default tab"),
         "Delete": MessageLookupByLibrary.simpleMessage("Delete"),
         "Delete_Account":
@@ -266,7 +265,6 @@ class MessageLookup extends MessageLookupByLibrary {
         "This_note_contains_sensitive_content":
             MessageLookupByLibrary.simpleMessage(
                 "This note contains sensitive content"),
-        "Timeline": MessageLookupByLibrary.simpleMessage("Timeline"),
         "Topic": MessageLookupByLibrary.simpleMessage("Topic"),
         "Topics": MessageLookupByLibrary.simpleMessage("Topics"),
         "Translate": MessageLookupByLibrary.simpleMessage("Translate"),

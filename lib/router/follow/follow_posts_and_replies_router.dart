@@ -1,14 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:keframe/keframe.dart';
+import 'package:provider/provider.dart';
 import 'package:yana/component/keep_alive_cust_state.dart';
-import 'package:yana/component/placeholder/event_placeholder.dart';
-import 'package:yana/consts/router_path.dart';
 import 'package:yana/data/event_mem_box.dart';
 import 'package:yana/main.dart';
 import 'package:yana/provider/follow_event_provider.dart';
 import 'package:yana/util/platform_util.dart';
-import 'package:yana/util/router_util.dart';
-import 'package:provider/provider.dart';
 
 import '../../component/event/event_list_component.dart';
 import '../../component/new_notes_updated_component.dart';
@@ -19,14 +15,14 @@ import '../../provider/follow_new_event_provider.dart';
 import '../../provider/setting_provider.dart';
 import '../../util/load_more_event.dart';
 
-class FollowRouter extends StatefulWidget {
+class FollowPostsAndRepliesRouter extends StatefulWidget {
   @override
   State<StatefulWidget> createState() {
-    return _FollowRouter();
+    return _FollowPostsAndRepliesRouter();
   }
 }
 
-class _FollowRouter extends KeepAliveCustState<FollowRouter>
+class _FollowPostsAndRepliesRouter extends KeepAliveCustState<FollowPostsAndRepliesRouter>
     with LoadMoreEvent {
   ScrollController _controller = ScrollController();
 
@@ -41,7 +37,7 @@ class _FollowRouter extends KeepAliveCustState<FollowRouter>
     var _settingProvider = Provider.of<SettingProvider>(context);
     var _followEventProvider = Provider.of<FollowEventProvider>(context);
 
-    var eventBox = _followEventProvider.eventBox;
+    var eventBox = _followEventProvider.postsAndRepliesBox;
     var events = eventBox.all();
     if (events.isEmpty) {
       return EventListPlaceholder(
@@ -107,7 +103,7 @@ class _FollowRouter extends KeepAliveCustState<FollowRouter>
           );
         },
         selector: (context, _provider) {
-          return _provider.eventMemBox;
+          return _provider.eventPostsAndRepliesMemBox;
         },
       ),
     ));
@@ -125,7 +121,7 @@ class _FollowRouter extends KeepAliveCustState<FollowRouter>
 
   @override
   EventMemBox getEventBox() {
-    return followEventProvider.eventBox;
+    return followEventProvider.postsAndRepliesBox;
   }
 
   @override

@@ -278,10 +278,12 @@ class _AccountManagerItemComponent extends State<AccountManagerItemComponent> {
       var nip19PubKey = Nip19.encodePubKey(pubkey);
 
       Widget? imageWidget;
-      if (metadata != null) {
-        if (StringUtil.isNotBlank(metadata.picture)) {
+
+      String? url = metadata != null && StringUtil.isNotBlank(metadata?.picture) ? metadata?.picture : 'https://robohash.org/'+pubkey;
+
+      if (url != null) {
           imageWidget = CachedNetworkImage(
-            imageUrl: metadata.picture!,
+            imageUrl: url,
             width: IMAGE_WIDTH,
             height: IMAGE_WIDTH,
             fit: BoxFit.cover,
@@ -289,7 +291,6 @@ class _AccountManagerItemComponent extends State<AccountManagerItemComponent> {
             errorWidget: (context, url, error) => const Icon(Icons.error),
             cacheManager: localCacheManager,
           );
-        }
       }
 
       list.add(Container(

@@ -72,40 +72,7 @@ class _GlobalsEventsRouter extends KeepAliveCustState<GlobalsEventsRouter>
         child: main,
       );
     }
-
-    Widget ri = RefreshIndicator(
-      onRefresh: () async {
-        followEventProvider.refresh();
-      },
-      child: main,
-    );
-
-    List<Widget> stackList = [ri];
-    stackList.add(Positioned(
-      top: Base.BASE_PADDING,
-      child: Selector<FollowNewEventProvider, EventMemBox>(
-        builder: (context, eventMemBox, child) {
-          if (eventMemBox.length() <= 0) {
-            return Container();
-          }
-
-          return NewNotesUpdatedComponent(
-            newEvents: eventMemBox.all(),
-            onTap: () {
-              followEventProvider.mergeNewEvent();
-              scrollController.animateTo(0,curve: Curves.ease, duration: const Duration(seconds: 1));
-            },
-          );
-        },
-        selector: (context, _provider) {
-          return eventBox;
-        },
-      ),
-    ));
-    return Stack(
-      alignment: Alignment.center,
-      children: stackList,
-    );
+    return main;
   }
 
   var subscribeId = StringUtil.rndNameStr(16);
@@ -155,7 +122,8 @@ class _GlobalsEventsRouter extends KeepAliveCustState<GlobalsEventsRouter>
 
       later(event, (list) {
         eventBox.addList(list);
-        setState(() {});
+        setState(() {
+        });
       }, null);
     }, id: subscribeId);
   }

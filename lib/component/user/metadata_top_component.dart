@@ -106,10 +106,11 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
     }
 
     Widget? imageWidget;
-    if (widget.metadata != null &&
-        StringUtil.isNotBlank(widget.metadata!.picture)) {
+    String? url = widget.metadata != null && StringUtil.isNotBlank(widget.metadata?.picture) ? widget.metadata?.picture : 'https://robohash.org/'+widget.pubkey;
+
+    if (url != null){
       imageWidget = CachedNetworkImage(
-        imageUrl: widget.metadata!.picture!,
+        imageUrl: url,
         width: IMAGE_WIDTH,
         height: IMAGE_WIDTH,
         fit: BoxFit.cover,
@@ -468,10 +469,11 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
   }
 
   void userPicturePreview() {
-    if (widget.metadata != null &&
-        StringUtil.isNotBlank(widget.metadata!.picture)) {
+    String? url = widget.metadata != null && StringUtil.isNotBlank(widget.metadata?.picture) ? widget.metadata?.picture : 'https://robohash.org/'+widget.pubkey;
+
+    if (url != null ) {
       List<ImageProvider> imageProviders = [];
-      imageProviders.add(CachedNetworkImageProvider(widget.metadata!.picture!));
+      imageProviders.add(CachedNetworkImageProvider(url));
 
       MultiImageProvider multiImageProvider =
           MultiImageProvider(imageProviders, initialIndex: 0);

@@ -1,13 +1,10 @@
-import 'dart:convert';
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 
 import '../../client/event_kind.dart' as kind;
 import '../client/event.dart';
+import '../client/filter.dart';
 import '../client/nip02/contact.dart';
 import '../client/nip02/cust_contact_list.dart';
-import '../client/filter.dart';
 import '../client/nostr.dart';
 import '../data/event_mem_box.dart';
 import '../main.dart';
@@ -21,28 +18,27 @@ class FollowEventProvider extends ChangeNotifier
     implements FindEventInterface {
   late int _initTime;
 
-  late EventMemBox eventBox;
-
+  late EventMemBox postsAndRepliesBox; // posts and replies
   late EventMemBox postsBox;
 
   FollowEventProvider() {
     _initTime = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-    eventBox = EventMemBox(sortAfterAdd: false); // sortAfterAdd by call
+    postsAndRepliesBox = EventMemBox(sortAfterAdd: false); // sortAfterAdd by call
     postsBox = EventMemBox(sortAfterAdd: false);
   }
 
   @override
   List<Event> findEvent(String str, {int? limit = 5}) {
-    return eventBox.findEvent(str, limit: limit);
+    return postsAndRepliesBox.findEvent(str, limit: limit);
   }
 
   List<Event> eventsByPubkey(String pubkey) {
-    return eventBox.listByPubkey(pubkey);
+    return postsAndRepliesBox.listByPubkey(pubkey);
   }
 
   void refresh() {
     _initTime = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-    eventBox.clear();
+    postsAndRepliesBox.clear();
     postsBox.clear();
     doQuery();
 
@@ -57,7 +53,7 @@ class FollowEventProvider extends ChangeNotifier
 
   void deleteEvent(String id) {
     postsBox.delete(id);
-    var result = eventBox.delete(id);
+    var result = postsAndRepliesBox.delete(id);
     if (result) {
       notifyListeners();
     }
@@ -151,10 +147,10 @@ class FollowEventProvider extends ChangeNotifier
       //     id: subscribeId);
       targetNostr.addInitQuery([filter.toJson()], onEvent, id: subscribeId);
     } else {
-      if (!eventBox.isEmpty()) {
+      if (!postsAndRepliesBox.isEmpty()) {
         var activeRelays = targetNostr.activeRelays();
         var oldestCreatedAts =
-            eventBox.oldestCreatedAtByRelay(activeRelays, _initTime);
+            postsAndRepliesBox.oldestCreatedAtByRelay(activeRelays, _initTime);
         Map<String, List<Map<String, dynamic>>> filtersMap = {};
         for (var relay in activeRelays) {
           var oldestCreatedAt = oldestCreatedAts.createdAtMap[relay.url];
@@ -241,14 +237,14 @@ class FollowEventProvider extends ChangeNotifier
   }
 
   void mergeNewEvent() {
-    var allEvents = followNewEventProvider.eventMemBox.all();
-    var postEvnets = followNewEventProvider.eventPostMemBox.all();
+    var postAndRepliesEvents = followNewEventProvider.eventPostsAndRepliesMemBox.all();
+    var postEvents = followNewEventProvider.eventPostsMemBox.all();
 
-    eventBox.addList(allEvents);
-    postsBox.addList(postEvnets);
+    postsAndRepliesBox.addList(postAndRepliesEvents);
+    postsBox.addList(postEvents);
 
     // sort
-    eventBox.sort();
+    postsAndRepliesBox.sort();
     postsBox.sort();
 
     followNewEventProvider.clear();
@@ -258,7 +254,7 @@ class FollowEventProvider extends ChangeNotifier
   }
 
   void onEvent(Event event) {
-    if (eventBox.isEmpty()) {
+    if (postsAndRepliesBox.isEmpty()) {
       laterTimeMS = 200;
     } else {
       laterTimeMS = 500;
@@ -266,7 +262,7 @@ class FollowEventProvider extends ChangeNotifier
     later(event, (list) {
       bool added = false;
       for (var e in list) {
-        var result = eventBox.add(e);
+        var result = postsAndRepliesBox.add(e);
         if (result) {
           // add success
           added = true;
@@ -281,7 +277,7 @@ class FollowEventProvider extends ChangeNotifier
 
       if (added) {
         // sort
-        eventBox.sort();
+        postsAndRepliesBox.sort();
         postsBox.sort();
 
         // update ui
@@ -291,7 +287,7 @@ class FollowEventProvider extends ChangeNotifier
   }
 
   void clear() {
-    eventBox.clear();
+    postsAndRepliesBox.clear();
     postsBox.clear();
 
     doUnscribe(nostr!);
@@ -301,7 +297,7 @@ class FollowEventProvider extends ChangeNotifier
 
   void metadataUpdatedCallback(CustContactList? _contactList) {
     if (firstLogin ||
-        (eventBox.isEmpty() &&
+        (postsAndRepliesBox.isEmpty() &&
             _contactList != null &&
             !_contactList.isEmpty())) {
       doQuery();

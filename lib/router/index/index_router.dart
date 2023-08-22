@@ -6,6 +6,7 @@ import 'package:yana/component/cust_state.dart';
 import 'package:yana/component/pc_router_fake.dart';
 import 'package:yana/consts/base_consts.dart';
 import 'package:yana/provider/pc_router_fake_provider.dart';
+import 'package:yana/router/follow/mention_me_router.dart';
 import 'package:yana/util/platform_util.dart';
 import 'package:yana/util/string_util.dart';
 import 'package:provider/provider.dart';
@@ -44,8 +45,6 @@ class _IndexRouter extends CustState<IndexRouter>
 
   late TabController followTabController;
 
-  late TabController globalsTabController;
-
   late TabController dmTabController;
 
   bool _scrollingDown = false;
@@ -66,8 +65,6 @@ class _IndexRouter extends CustState<IndexRouter>
 
     followTabController =
         TabController(initialIndex: followInitTab, length: 3, vsync: this);
-    globalsTabController =
-        TabController(initialIndex: globalsInitTab, length: 1, vsync: this);
     dmTabController = TabController(length: 2, vsync: this);
   }
 
@@ -100,7 +97,6 @@ class _IndexRouter extends CustState<IndexRouter>
 
     var _indexProvider = Provider.of<IndexProvider>(context);
     _indexProvider.setFollowTabController(followTabController);
-    _indexProvider.setGlobalTabController(globalsTabController);
 
     _indexProvider.addScrollListener((direction) {
       if (direction == ScrollDirection.reverse && !_scrollingDown) {
@@ -136,7 +132,7 @@ class _IndexRouter extends CustState<IndexRouter>
             height: IndexAppBar.height,
             alignment: Alignment.center,
             child: Text(
-              s.Posts,
+              s.Following,
               style: titleTextStyle,
             ),
           ),
@@ -144,27 +140,11 @@ class _IndexRouter extends CustState<IndexRouter>
             height: IndexAppBar.height,
             alignment: Alignment.center,
             child: Text(
-              s.Posts_and_replies,
+              s.Following_replies,
               textAlign: TextAlign.center,
               style: titleTextStyle,
             ),
           ),
-          Container(
-            height: IndexAppBar.height,
-            alignment: Alignment.center,
-            child: Text(
-              s.Mentions,
-              style: titleTextStyle,
-            ),
-          ),
-        ],
-        controller: followTabController,
-      );
-    } else if (_indexProvider.currentTap == 1) {
-      appBarCenter = TabBar(
-        indicatorColor: indicatorColor,
-        indicatorWeight: 3,
-        tabs: [
           Container(
             height: IndexAppBar.height,
             alignment: Alignment.center,
@@ -174,7 +154,14 @@ class _IndexRouter extends CustState<IndexRouter>
             ),
           ),
         ],
-        controller: globalsTabController,
+        controller: followTabController,
+      );
+    } else if (_indexProvider.currentTap == 1) {
+      appBarCenter = Center(
+        child: Text(
+          s.Notifications,
+          style: titleTextStyle,
+        ),
       );
     } else if (_indexProvider.currentTap == 2) {
       appBarCenter = Center(
@@ -227,9 +214,7 @@ class _IndexRouter extends CustState<IndexRouter>
           FollowIndexRouter(
             tabController: followTabController,
           ),
-          GlobalsIndexRouter(
-            tabController: globalsTabController,
-          ),
+          MentionMeRouter(),
           SearchRouter(),
           DMRouter(
             tabController: dmTabController,
@@ -246,9 +231,9 @@ class _IndexRouter extends CustState<IndexRouter>
         //     curve: Curves.ease,
         //     height: _scrollingDown ? 0.0 : 80,
         //     child:
-            IndexAppBar(
-              center: appBarCenter,
-            // )
+        IndexAppBar(
+          center: appBarCenter,
+          // )
         ),
         mainCenterWidget,
       ],
@@ -336,29 +321,21 @@ class _IndexRouter extends CustState<IndexRouter>
       return Scaffold(
           body: mainIndex,
           extendBody: true,
-          floatingActionButton:
-          AnimatedContainer(
+          floatingActionButton: AnimatedContainer(
               curve: Curves.ease,
               duration: const Duration(milliseconds: 200),
               height: _scrollingDown ? 0.0 : 50,
-              child:
-              addBtn
-          )
-          ,
+              child: addBtn),
           floatingActionButtonLocation:
               FloatingActionButtonLocation.centerDocked,
           drawer: Drawer(
             child: IndexDrawerContnetComponnent(),
           ),
-          bottomNavigationBar:
-          AnimatedContainer(
+          bottomNavigationBar: AnimatedContainer(
               duration: const Duration(milliseconds: 200),
               curve: Curves.ease,
               height: _scrollingDown ? 0.0 : 50,
-              child:
-              IndexBottomBar()
-          )
-      );
+              child: IndexBottomBar()));
     }
   }
 

@@ -59,9 +59,10 @@ class _QrcodeDialog extends State<QrcodeDialog> {
     Widget topWidget = Selector<MetadataProvider, Metadata?>(
       builder: (context, metadata, child) {
         Widget? imageWidget;
-        if (metadata != null && StringUtil.isNotBlank(metadata.picture)) {
+        String? url = metadata != null && StringUtil.isNotBlank(metadata.picture) ? metadata.picture : 'https://robohash.org/'+widget.pubkey;
+        if (url != null) {
           imageWidget = CachedNetworkImage(
-            imageUrl: metadata.picture!,
+            imageUrl: url,
             width: IMAGE_WIDTH,
             height: IMAGE_WIDTH,
             fit: BoxFit.cover,

@@ -43,19 +43,9 @@ class _IndexBottomBar extends State<IndexBottomBar> {
     current++;
 
     list.add(IndexBottomBarButton(
-      iconData: Icons.public, // notifications_active
+      iconData: Icons.search,
       index: current,
       selected: current == currentTap,
-      onTap: (i) {
-        if (i == currentTap) {
-          indexProvider.globalScrollToTop();
-        } else {
-          indexProvider.setCurrentTap(i);
-        }
-      },
-      onDoubleTap: () {
-        indexProvider.globalScrollToTop();
-      },
     ));
     current++;
 
@@ -64,17 +54,30 @@ class _IndexBottomBar extends State<IndexBottomBar> {
       height: IndexBottomBar.HEIGHT,
     )));
 
+
     list.add(IndexBottomBarButton(
-      iconData: Icons.search,
+      iconData: Icons.mail,
       index: current,
       selected: current == currentTap,
     ));
     current++;
 
     list.add(IndexBottomBarButton(
-      iconData: Icons.mail,
+      iconData: Icons.notifications,
       index: current,
       selected: current == currentTap,
+      onTap: (i) {
+        if (i == currentTap) {
+          // TODO
+          //indexProvider.globalScrollToTop();
+        } else {
+          indexProvider.setCurrentTap(i);
+        }
+      },
+      onDoubleTap: () {
+        // TODO
+        // indexProvider.globalScrollToTop();
+      },
     ));
     current++;
 
