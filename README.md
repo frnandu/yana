@@ -17,9 +17,9 @@ A big danger with this approach is if somehow the generated code is not as high 
 
 ## Freedom
 
-It will not be subjective to imperialist rulers, such as Apple Store or Google Store. 
+It will not be constrained to imperialist distributors, such as Apple Store or Google Store. 
 The released app will be distributed as standalone packages for each OS and can be included in free Stores (F-Droid, Obtainium and others?)
-User can also just download them from release page and install it directly without a third-party distributor.  
+Or you can just download them from the release's page and install it directly without a third-party distributor.  
 
 ## Current Features
 
