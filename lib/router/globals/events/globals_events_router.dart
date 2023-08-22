@@ -33,8 +33,6 @@ class _GlobalsEventsRouter extends KeepAliveCustState<GlobalsEventsRouter>
   ScrollController scrollController = ScrollController();
 
 
-  List<String> ids = [];
-
   EventMemBox eventBox = EventMemBox(sortAfterAdd: false);
 
   @override
@@ -113,19 +111,19 @@ class _GlobalsEventsRouter extends KeepAliveCustState<GlobalsEventsRouter>
     //   }
     // }
     //
-    // var filter = Filter(ids: ids, kinds: [kind.EventKind.TEXT_NOTE]);
-    // nostr!.subscribe([filter.toJson()], (event) {
-    //   if (eventBox.isEmpty()) {
-    //     laterTimeMS = 200;
-    //   } else {
-    //     laterTimeMS = 1000;
-    //   }
-    //
-    //   later(event, (list) {
-    //     eventBox.addList(list);
-    //     setState(() {});
-    //   }, null);
-    // }, id: subscribeId);
+    var filter = Filter(kinds: [kind.EventKind.TEXT_NOTE]);
+    nostr!.subscribe([filter.toJson()], (event) {
+      if (eventBox.isEmpty()) {
+        laterTimeMS = 200;
+      } else {
+        laterTimeMS = 1000;
+      }
+
+      later(event, (list) {
+        eventBox.addList(list);
+        setState(() {});
+      }, null);
+    }, id: subscribeId);
   }
 
   void unsubscribe() {

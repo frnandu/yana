@@ -158,7 +158,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
     }
 
     list.add(
-        SettingGroupTitleComponent(iconData: Icons.article, title: s.Notes));
+        SettingGroupTitleComponent(iconData: Icons.article, title: s.Global));
     list.add(SettingGroupItemComponent(
       name: s.Link_preview,
       value: getOpenList(settingProvider.linkPreview).name,
@@ -475,9 +475,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
   void initDefaultTabListGlobal(S s) {
     if (defaultTabListGlobal == null) {
       defaultTabListGlobal = [];
-      defaultTabListGlobal!.add(EnumObj(0, s.Notes));
-      defaultTabListGlobal!.add(EnumObj(1, s.Users));
-      defaultTabListGlobal!.add(EnumObj(2, s.Topics));
+      defaultTabListGlobal!.add(EnumObj(0, s.Global));
     }
   }
 

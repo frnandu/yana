@@ -440,36 +440,6 @@ class S {
     );
   }
 
-  /// `Notes`
-  String get Notes {
-    return Intl.message(
-      'Notes',
-      name: 'Notes',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Users`
-  String get Users {
-    return Intl.message(
-      'Users',
-      name: 'Users',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Topics`
-  String get Topics {
-    return Intl.message(
-      'Topics',
-      name: 'Topics',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `Search`
   String get Search {
     return Intl.message(

@@ -67,7 +67,7 @@ class _IndexRouter extends CustState<IndexRouter>
     followTabController =
         TabController(initialIndex: followInitTab, length: 3, vsync: this);
     globalsTabController =
-        TabController(initialIndex: globalsInitTab, length: 3, vsync: this);
+        TabController(initialIndex: globalsInitTab, length: 1, vsync: this);
     dmTabController = TabController(length: 2, vsync: this);
   }
 
@@ -169,23 +169,7 @@ class _IndexRouter extends CustState<IndexRouter>
             height: IndexAppBar.height,
             alignment: Alignment.center,
             child: Text(
-              s.Notes,
-              style: titleTextStyle,
-            ),
-          ),
-          Container(
-            height: IndexAppBar.height,
-            alignment: Alignment.center,
-            child: Text(
-              s.Users,
-              style: titleTextStyle,
-            ),
-          ),
-          Container(
-            height: IndexAppBar.height,
-            alignment: Alignment.center,
-            child: Text(
-              s.Topics,
+              s.Global,
               style: titleTextStyle,
             ),
           ),

@@ -19,12 +19,10 @@ class _GlobalsIndexRouter extends State<GlobalsIndexRouter> {
   @override
   Widget build(BuildContext context) {
     return TabBarView(
+      controller: widget.tabController,
       children: [
         GlobalsEventsRouter(),
-        GlobalsUsersRouter(),
-        GlobalsTagsRouter(),
       ],
-      controller: widget.tabController,
     );
   }
 }
