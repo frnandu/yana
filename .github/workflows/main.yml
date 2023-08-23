@@ -25,11 +25,14 @@ jobs:
           channel: 'stable'
           cache: true
 
+      - name: echo the Keystore
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+        run: echo $KEYSTORE_BASE64
       - name: Create the Keystore
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
-      - run: echo $KEYSTORE_BASE64
-      - run: echo $KEYSTORE_BASE64 | base64 -d > $RUNNER_TEMP/upload-keystore.jks
+        run: echo $KEYSTORE_BASE64 | base64 -d > $RUNNER_TEMP/upload-keystore.jks
       - name: Create key properties
         env:
           KEYSTORE_BASE64: ${{ secrets.KEY_PROPERTIES }}
