@@ -28,10 +28,9 @@ jobs:
       - name: Create the Keystore
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
-        run: |
-          # import keystore from secrets
-          echo $KEYSTORE_BASE64 | base64 -d > $RUNNER_TEMP/upload-keystore.jks
-      - name: Create the key_properites
+      - run: echo $KEYSTORE_BASE64
+      - run: echo $KEYSTORE_BASE64 | base64 -d > $RUNNER_TEMP/upload-keystore.jks
+      - name: Create key properties
         env:
           KEYSTORE_BASE64: ${{ secrets.KEY_PROPERTIES }}
         run: |
