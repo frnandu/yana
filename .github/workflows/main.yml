@@ -24,10 +24,26 @@ jobs:
           flutter-version: '3.13.0'
           channel: 'stable'
           cache: true
-      - run: flutter pub get
-#      - run: flutter test
-      - run: flutter build apk
-#      - run: flutter build appbundle
+
+      - name: Create the Keystore
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+        run: |
+          # import keystore from secrets
+          echo $KEYSTORE_BASE64 | base64 -d > $RUNNER_TEMP/upload-keystore.jks
+      - name: Create the key_properites
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEY_PROPERTIES }}
+        run: |
+          # import keystore from secrets
+          echo $KEY_PROPERTIES | base64 -d > $RUNNER_TEMP/key.properties
+
+      - name: flutter pub get
+        run: flutter pub get
+      - name: flutter build apk
+        run: flutter build apk
+      - name: flutter build appbundle
+        run: flutter build appbundle
       - name: 'Upload apk'
         uses: actions/upload-artifact@v2
         with:
