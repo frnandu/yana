@@ -36,7 +36,7 @@ jobs:
           KEYSTORE_BASE64: ${{ secrets.KEY_PROPERTIES }}
         run: |
           # import keystore from secrets
-          echo $KEY_PROPERTIES | base64 -d > $HOME/key.properties
+          echo $KEY_PROPERTIES | base64 -d > /home/runner/work/yana/yana/android/key.properties
 
       - name: flutter pub get
         run: flutter pub get
