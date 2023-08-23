@@ -29,6 +29,8 @@
 - mention livesearch editor without popup
 - in thread view decrease the tree branches padding to allow more space for content
 - only use tablet second view if horizontal tablet
+- fix zooming of pictures and X position
+- download followed & zaps in the background, not on demand
 - when new user with no following, suggest jack, fiatjaf and others
 - Nostr Wallet Connect with balance
 - linux AppImage build
