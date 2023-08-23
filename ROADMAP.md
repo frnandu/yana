@@ -20,6 +20,7 @@
 - get relays list immediately after login
 - try to load images using Isolate and compute, so that feed scrolling does not freeze while loading images
 - close images clicking anywhere
+- long posts should be cut and have "show more"
 - try to reduce as much as possible apk size
 - followers/following list more condensed
 - Database offline check
