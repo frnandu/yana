@@ -35,10 +35,13 @@ jobs:
 
       - name: flutter pub get
         run: flutter pub get
+
       - name: flutter build apk
         run: flutter build apk
+
       - name: flutter build appbundle
         run: flutter build appbundle
+
       - name: 'Upload apk'
         uses: actions/upload-artifact@v2
         with:
