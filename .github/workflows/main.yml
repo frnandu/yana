@@ -25,15 +25,13 @@ jobs:
           channel: 'stable'
           cache: true
 
-      - name: echo the Keystore
-        run: echo $DUPA
       - name: Create the Keystore
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
         run: echo $DUPA | base64 -d > $HOME/upload-keystore.jks
       - name: Create key properties
         env:
-          KEYSTORE_BASE64: ${{ secrets.KEY_PROPERTIES }}
+          KEY_PROPERTIES: ${{ secrets.KEY_PROPERTIES }}
         run: |
           # import keystore from secrets
           echo $KEY_PROPERTIES | base64 -d > /home/runner/work/yana/yana/android/key.properties
