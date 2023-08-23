@@ -26,29 +26,29 @@ jobs:
           cache-path: '${{ runner.tool_cache }}/flutter/:channel:-:version:-:arch:' # optional, change this to specify the cache path
           architecture: x64 # optional, x64 or arm64
 
-      - name: Create the Keystore
+      - name: 🔐 Retrieve base64 keystore and decode it to a file
+        run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > "${{ github.workspace }}/android-keystore.jks"
+
+      - name: 📝🔐 Create key.properties file
         env:
-          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PROPERTIES_PATH: ${{ github.workspace }}/android/key.properties
         run: |
-          # import keystore from secrets
-          echo $KEYSTORE_BASE64 | base64 -d > $RUNNER_TEMP/upload-keystore.jks
-      - name: Create the key_properites
-        env:
-          KEYSTORE_BASE64: ${{ secrets.KEY_PROPERTIES }}
-        run: |
-          # import keystore from secrets
-          echo $KEY_PROPERTIES | base64 -d > $RUNNER_TEMP/key.properties
+          echo 'storeFile=${{ github.workspace }}/android-keystore.jks' > $KEYSTORE_PROPERTIES_PATH
+          echo 'keyAlias=${{ secrets.KEYSTORE_KEY_ALIAS }}' >> $KEYSTORE_PROPERTIES_PATH
+          echo 'storePassword=${{ secrets.KEYSTORE_PASSWORD }}' >> $KEYSTORE_PROPERTIES_PATH
+          echo 'keyPassword=${{ secrets.KEYSTORE_KEY_PASSWORD }}' >> $KEYSTORE_PROPERTIES_PATH
 
       - name: flutter pub get
         run: flutter pub get
-  #      - run: flutter test
+
       - name: flutter build apk
         run: flutter build apk
+
       - name: flutter build appbundle
         run: flutter build appbundle
 
 
-  #  build_linux:
+          #  build_linux:
 #    runs-on: ubuntu-latest
 #    steps:
 #      - uses: actions/checkout@v3
