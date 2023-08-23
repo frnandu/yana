@@ -33,6 +33,11 @@ jobs:
           KEY_PROPERTIES: ${{ secrets.KEY_PROPERTIES }}
         run: echo $KEY_PROPERTIES > /home/runner/work/yana/yana/android/key.properties
 
+      - name: cat
+        run: cat $HOME/upload-keystore.jks
+      - name: cat2
+        run: cat /home/runner/work/yana/yana/android/key.properties
+
       - name: flutter pub get
         run: flutter pub get
 
