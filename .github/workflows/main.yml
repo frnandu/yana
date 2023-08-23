@@ -28,13 +28,13 @@ jobs:
       - name: 🔐 Retrieve base64 keystore and decode it to a file
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
-        #run: echo $KEYSTORE_BASE64 | base64 --decode > "${{ github.workspace }}/android-keystore.jks"
-        run: echo $KEYSTORE_BASE64 > "${{ github.workspace }}/android-keystore.jks"
-      - name: 🔐 Retrieve base64 keystore and decode it to a file2
-        run: cat "${{ github.workspace }}/android-keystore.jks"
+        run: echo $KEYSTORE_BASE64 | base64 --decode > "${{ github.workspace }}/android-keystore.jks"
+#        run: echo $KEYSTORE_BASE64 > "${{ github.workspace }}/android-keystore.jks"
+#      - name: 🔐 Retrieve base64 keystore and decode it to a file2
+#        run: cat "${{ github.workspace }}/android-keystore.jks"
       - name: 📝🔐 Create key.properties file
         env:
-          KEYSTORE_PROPERTIES_PATH: ${{ github.workspace }}/app/android/key.properties
+          KEYSTORE_PROPERTIES_PATH: ${{ github.workspace }}/android/key.properties
         run: |
           echo 'storeFile=${{ github.workspace }}/android-keystore.jks' > $KEYSTORE_PROPERTIES_PATH
           echo 'keyAlias=${{ secrets.KEYSTORE_KEY_ALIAS }}' >> $KEYSTORE_PROPERTIES_PATH
