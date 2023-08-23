@@ -7,6 +7,7 @@
 - ~~add robohash placeholders~~
 - ~~reorganize navigation: notifications/search/communities/DM~~
 - ~~Dockerfile with web server ready to launch~~
+- ~~run web version on https://yana.fmar.link~~
 
 - store privKey in securedStorage
 - allow to login with npub 
@@ -15,7 +16,6 @@
 - filter out new posts from replies
 - include reposts in following
 - integration with https://github.com/greenart7c3/Amber
-- run web version on yana.???
 - umbrel store package with web client
 - get relays list immediately after login
 - try to load images using Isolate and compute, so that feed scrolling does not freeze while loading images
