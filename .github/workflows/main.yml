@@ -25,18 +25,18 @@ jobs:
           channel: 'stable'
           cache: true
 
-      - name: Create the Keystore
-        run: echo $KEYSTORE_BASE64 | base64 -d > $HOME/upload-keystore.jks
-
-      - name: Create key properties
+      - name: 🔐 Retrieve base64 keystore and decode it to a file
         env:
-          KEY_PROPERTIES: ${{ secrets.KEY_PROPERTIES }}
-        run: echo $KEY_PROPERTIES > /home/runner/work/yana/yana/android/key.properties
-
-      - name: cat
-        run: cat $HOME/upload-keystore.jks
-      - name: cat2
-        run: cat /home/runner/work/yana/yana/android/key.properties
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+        run: echo $KEYSTORE_BASE64 | base64 --decode > "${{ github.workspace }}/android-keystore.jks"
+      - name: 📝🔐 Create keystore.properties file
+        env:
+          KEYSTORE_PROPERTIES_PATH: ${{ github.workspace }}/app/android/key.properties
+        run: |
+          echo 'storeFile=${{ github.workspace }}/android-keystore.jks' > $KEYSTORE_PROPERTIES_PATH
+          echo 'keyAlias=${{ secrets.KEYSTORE_KEY_ALIAS }}' >> $KEYSTORE_PROPERTIES_PATH
+          echo 'storePassword=${{ secrets.KEYSTORE_PASSWORD }}' >> $KEYSTORE_PROPERTIES_PATH
+          echo 'keyPassword=${{ secrets.KEYSTORE_KEY_PASSWORD }}' >> $KEYSTORE_PROPERTIES_PATH
 
       - name: flutter pub get
         run: flutter pub get
