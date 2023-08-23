@@ -8,8 +8,8 @@
 - ~~reorganize navigation: notifications/search/communities/DM~~
 - ~~Dockerfile with web server ready to launch~~
 - ~~run web version on https://yana.fmar.link~~
+- ~~store private Key in securedStorage~~
 
-- store privKey in securedStorage
 - allow to login with npub 
 - replace relays numbers with search, move numbers to drawer
 - fix zaps amounts in notes
@@ -20,6 +20,7 @@
 - get relays list immediately after login
 - try to load images using Isolate and compute, so that feed scrolling does not freeze while loading images
 - close images clicking anywhere
+- try to reduce as much as possible apk size
 - followers/following list more condensed
 - Database offline check
 - sort following/followers list by most recent

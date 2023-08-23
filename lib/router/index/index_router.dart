@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:provider/provider.dart';
 import 'package:yana/component/cust_state.dart';
 import 'package:yana/component/pc_router_fake.dart';
 import 'package:yana/consts/base_consts.dart';
@@ -10,7 +11,6 @@ import 'package:yana/provider/pc_router_fake_provider.dart';
 import 'package:yana/router/follow/mention_me_router.dart';
 import 'package:yana/util/platform_util.dart';
 import 'package:yana/util/string_util.dart';
-import 'package:provider/provider.dart';
 
 import '../../generated/l10n.dart';
 import '../../main.dart';
@@ -20,7 +20,6 @@ import '../../util/auth_util.dart';
 import '../dm/dm_router.dart';
 import '../edit/editor_router.dart';
 import '../follow/follow_index_router.dart';
-import '../globals/globals_index_router.dart';
 import '../login/login_router.dart';
 import '../search/search_router.dart';
 import 'index_app_bar.dart';

@@ -7,6 +7,12 @@ import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:get_time_ago/get_time_ago.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:package_info_plus/package_info_plus.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
+import 'package:window_manager/window_manager.dart';
 import 'package:yana/client/nostr.dart';
 import 'package:yana/provider/badge_definition_provider.dart';
 import 'package:yana/provider/community_info_provider.dart';
@@ -19,14 +25,7 @@ import 'package:yana/router/user/followed_tags_list_router.dart';
 import 'package:yana/router/user/user_history_contact_list_router.dart';
 import 'package:yana/router/user/user_zap_list_router.dart';
 import 'package:yana/util/platform_util.dart';
-import 'package:package_info_plus/package_info_plus.dart';
-import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
-import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
-import 'package:window_manager/window_manager.dart';
 
-import 'consts/colors.dart';
 import 'consts/router_path.dart';
 import 'consts/theme_style.dart';
 import 'data/db.dart';
@@ -67,7 +66,6 @@ import 'router/user/user_contact_list_router.dart';
 import 'router/user/user_relays_router.dart';
 import 'router/user/user_router.dart';
 import 'system_timer.dart';
-import 'util/colors_util.dart';
 import 'util/image/cache_manager_builder.dart';
 import 'util/locale_util.dart';
 import 'util/media_data_cache.dart';
@@ -405,9 +403,9 @@ class _MyApp extends State<MyApp> {
     double baseFontSize = settingProvider.fontSize;
 
     var textTheme = TextTheme(
-      bodyLarge: TextStyle(fontSize: baseFontSize + 2, height: 1.4 ),
-      bodyMedium: TextStyle(fontSize: baseFontSize, height: 1.4 ),
-      bodySmall: TextStyle(fontSize: baseFontSize - 2, height: 1.4 ),
+      bodyLarge: TextStyle(fontSize: baseFontSize + 2, height: 1.4),
+      bodyMedium: TextStyle(fontSize: baseFontSize, height: 1.4),
+      bodySmall: TextStyle(fontSize: baseFontSize - 2, height: 1.4),
     );
     var titleTextStyle = TextStyle(
       color: PlatformUtil.isPC() ? Colors.black : Colors.white,
@@ -472,7 +470,7 @@ class _MyApp extends State<MyApp> {
     double baseFontSize = settingProvider.fontSize;
 
     var textTheme = TextTheme(
-      bodyLarge: TextStyle(fontSize: baseFontSize + 2, height: 1.4 ),
+      bodyLarge: TextStyle(fontSize: baseFontSize + 2, height: 1.4),
       bodyMedium: TextStyle(fontSize: baseFontSize, height: 1.4),
       bodySmall: TextStyle(fontSize: baseFontSize - 2, height: 1.4),
     );

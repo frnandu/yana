@@ -2,9 +2,9 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
-import 'package:yana/util/encrypt_util.dart';
-import 'package:yana/util/platform_util.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:yana/util/platform_util.dart';
 
 import '../consts/base.dart';
 import '../consts/base_consts.dart';
@@ -12,14 +12,27 @@ import '../consts/theme_style.dart';
 import '../util/string_util.dart';
 import 'data_util.dart';
 
+IOSOptions _getIOSOptions() => const IOSOptions(
+  accountName: "yana_flutter",
+  accessibility: KeychainAccessibility.first_unlock
+);
+
+AndroidOptions _getAndroidOptions() => const AndroidOptions(
+  encryptedSharedPreferences: true,
+);
+
 class SettingProvider extends ChangeNotifier {
   static SettingProvider? _settingProvider;
 
   SharedPreferences? _sharedPreferences;
 
+  final secureStorage = FlutterSecureStorage(aOptions: _getAndroidOptions(), iOptions: _getIOSOptions());
+
   SettingData? _settingData;
 
   Map<String, String> _privateKeyMap = {};
+
+  final String PRIVATE_KEYS_MAP = "private_keys_map";
 
   static Future<SettingProvider> getInstance() async {
     if (_settingProvider == null) {
@@ -41,15 +54,17 @@ class SettingProvider extends ChangeNotifier {
         _privateKeyMap.clear();
 
         // move privateKeyMap to encryptPrivateKeyMap since 1.2.0
-        String? privateKeyMapText = _settingData!.encryptPrivateKeyMap;
+        // String? privateKeyMapText = _settingData!.encryptPrivateKeyMap;
+        String? privateKeyMapText = await secureStorage.read(key: PRIVATE_KEYS_MAP);
+
         try {
           if (StringUtil.isNotBlank(privateKeyMapText)) {
             privateKeyMapText = privateKeyMapText!;
-          } else if (StringUtil.isNotBlank(_settingData!.privateKeyMap) &&
-              StringUtil.isBlank(_settingData!.encryptPrivateKeyMap)) {
-            privateKeyMapText = _settingData!.privateKeyMap;
-            _settingData!.encryptPrivateKeyMap = _settingData!.privateKeyMap!;
-            _settingData!.privateKeyMap = null;
+          // } else if (StringUtil.isNotBlank(_settingData!.privateKeyMap) &&
+          //     StringUtil.isBlank(_settingData!.encryptPrivateKeyMap)) {
+          //   privateKeyMapText = _settingData!.privateKeyMap;
+          //   _settingData!.encryptPrivateKeyMap = _settingData!.privateKeyMap!;
+          //   _settingData!.privateKeyMap = null;
           }
         } catch (e) {
           log("settingProvider handle privateKey error");
@@ -86,7 +101,6 @@ class SettingProvider extends ChangeNotifier {
 
   String? get privateKey {
     if (_settingData!.privateKeyIndex != null &&
-        _settingData!.encryptPrivateKeyMap != null &&
         _privateKeyMap.isNotEmpty) {
       return _privateKeyMap[_settingData!.privateKeyIndex.toString()];
     }
@@ -115,7 +129,7 @@ class SettingProvider extends ChangeNotifier {
 
         _settingData!.privateKeyIndex = i;
 
-        _settingData!.privateKeyMap = json.encode(_privateKeyMap);
+        secureStorage.write(key: PRIVATE_KEYS_MAP,value: json.encode(_privateKeyMap));
         saveAndNotifyListeners(updateUI: updateUI);
 
         return i;
@@ -128,7 +142,7 @@ class SettingProvider extends ChangeNotifier {
   void removeKey(int index) {
     var indexStr = index.toString();
     _privateKeyMap.remove(indexStr);
-    _settingData!.privateKeyMap = json.encode(_privateKeyMap);
+    secureStorage.write(key: PRIVATE_KEYS_MAP,value: json.encode(_privateKeyMap));
     if (_settingData!.privateKeyIndex == index) {
       if (_privateKeyMap.isEmpty) {
         _settingData!.privateKeyIndex = null;
@@ -389,10 +403,10 @@ class SettingProvider extends ChangeNotifier {
 class SettingData {
   int? privateKeyIndex;
 
-  String? privateKeyMap;
-
-  String? encryptPrivateKeyMap;
-
+  // String? privateKeyMap;
+  //
+  // String? encryptPrivateKeyMap;
+  //
   /// open lock
   late int lockOpen;
 
@@ -450,7 +464,7 @@ class SettingData {
 
   SettingData({
     this.privateKeyIndex,
-    this.privateKeyMap,
+    // this.privateKeyMap,
     this.lockOpen = OpenStatus.CLOSE,
     this.defaultIndex,
     this.defaultTab,
@@ -479,8 +493,8 @@ class SettingData {
 
   SettingData.fromJson(Map<String, dynamic> json) {
     privateKeyIndex = json['privateKeyIndex'];
-    privateKeyMap = json['privateKeyMap'];
-    encryptPrivateKeyMap = json['encryptPrivateKeyMap'];
+    // privateKeyMap = json['privateKeyMap'];
+    // encryptPrivateKeyMap = json['encryptPrivateKeyMap'];
     if (json['lockOpen'] != null) {
       lockOpen = json['lockOpen'];
     } else {
@@ -527,8 +541,8 @@ class SettingData {
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
     data['privateKeyIndex'] = this.privateKeyIndex;
-    data['privateKeyMap'] = this.privateKeyMap;
-    data['encryptPrivateKeyMap'] = this.encryptPrivateKeyMap;
+    // data['privateKeyMap'] = this.privateKeyMap;
+    // data['encryptPrivateKeyMap'] = this.encryptPrivateKeyMap;
     data['lockOpen'] = this.lockOpen;
     data['defaultIndex'] = this.defaultIndex;
     data['defaultTab'] = this.defaultTab;

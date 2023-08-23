@@ -4,6 +4,7 @@ import 'package:cookie_jar/cookie_jar.dart';
 import 'package:dio/dio.dart';
 import 'package:dio/io.dart';
 import 'package:dio_cookie_manager/dio_cookie_manager.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 Dio? _dio;
 var cookieJar = CookieJar();
@@ -24,7 +25,7 @@ class DioUtil {
       // _dio!.options.connectTimeout = Duration(minutes: 1);
       // _dio!.options.receiveTimeout = Duration(minutes: 1);
       _dio!.options.headers["user-agent"] =
-          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.88 Safari/537.36";
+          "Yana";
       _dio!.options.headers["accept-encoding"] = "gzip";
       CookieManager cookieManager = CookieManager(cookieJar);
       _dio!.interceptors.add(cookieManager);

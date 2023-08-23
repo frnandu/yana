@@ -1,9 +1,11 @@
 import 'dart:convert';
-import 'dart:developer';
 
 import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 import 'package:yana/component/cust_state.dart';
 import 'package:yana/component/nip07_dialog.dart';
 import 'package:yana/consts/base.dart';
@@ -11,11 +13,7 @@ import 'package:yana/consts/base_consts.dart';
 import 'package:yana/provider/setting_provider.dart';
 import 'package:yana/provider/webview_provider.dart';
 import 'package:yana/util/platform_util.dart';
-import 'package:yana/util/router_util.dart';
 import 'package:yana/util/string_util.dart';
-import 'package:provider/provider.dart';
-import 'package:url_launcher/url_launcher.dart';
-import 'package:webview_flutter/webview_flutter.dart';
 
 import '../client/event.dart';
 import '../client/nip04/nip04.dart';
