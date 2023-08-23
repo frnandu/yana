@@ -29,12 +29,11 @@ jobs:
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
         run: echo $DUPA | base64 -d > $HOME/upload-keystore.jks
+
       - name: Create key properties
         env:
           KEY_PROPERTIES: ${{ secrets.KEY_PROPERTIES }}
-        run: |
-          # import keystore from secrets
-          echo $KEY_PROPERTIES | base64 -d > /home/runner/work/yana/yana/android/key.properties
+        run: echo $KEY_PROPERTIES | base64 -d > /home/runner/work/yana/yana/android/key.properties
 
       - name: flutter pub get
         run: flutter pub get
