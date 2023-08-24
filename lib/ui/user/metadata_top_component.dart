@@ -145,20 +145,22 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
       )
     ];
 
-    topBtnList.add(wrapBtn(
-      MetadataIconBtn(
-        iconData: Icons.edit_square,
-        onTap: jumpToProfileEdit,
-      ),
-    )
-        // if (!PlatformUtil.isTableMode() && widget.pubkey == nostr!.publicKey) {
-        //   // is phont and local
-        //   topBtnList.add(wrapBtn(MetadataIconBtn(
-        //     iconData: Icons.qr_code_scanner,
-        //     onTap: handleScanner,
-        //   )));
-        // }
-        );
+    if (widget.isLocal) {
+      topBtnList.add(wrapBtn(
+        MetadataIconBtn(
+          iconData: Icons.edit_square,
+          onTap: jumpToProfileEdit,
+        ),
+      )
+          // if (!PlatformUtil.isTableMode() && widget.pubkey == nostr!.publicKey) {
+          //   // is phont and local
+          //   topBtnList.add(wrapBtn(MetadataIconBtn(
+          //     iconData: Icons.qr_code_scanner,
+          //     onTap: handleScanner,
+          //   )));
+          // }
+          );
+    }
 
     topBtnList.add(wrapBtn(MetadataIconBtn(
       iconData: Icons.qr_code,
@@ -340,7 +342,7 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
     topList.add(userNameComponent);
     if (widget.metadata != null) {
       topList.add(MetadataIconDataComp(
-        leftWidget: Container() ,
+        leftWidget: Container(),
         text: nip19PubKey,
         textBG: true,
         onTap: copyPubKey,
@@ -520,7 +522,8 @@ class MetadataIconBtn extends StatelessWidget {
   IconData iconData;
   Color? iconColor;
 
-  MetadataIconBtn({required this.iconData, this.iconColor, this.onTap, this.onLongPress});
+  MetadataIconBtn(
+      {required this.iconData, this.iconColor, this.onTap, this.onLongPress});
 
   @override
   Widget build(BuildContext context) {
@@ -531,13 +534,9 @@ class MetadataIconBtn extends StatelessWidget {
       border: Border.all(width: 1),
     );
     var main = Container(
-      height: 34,
-      width: 34,
-      child: Icon(
-        iconData,
-        size: 22,
-        color: iconColor?? iconTheme.color
-      ),
+      // height: 34,
+      // width: 34,
+      child: Icon(iconData, size: 22, color: iconColor ?? iconTheme.color),
     );
 
     if (onTap != null || onLongPress != null) {
@@ -593,12 +592,12 @@ class MetadataTextBtn extends StatelessWidget {
         onTap: onTap,
         child: Container(
           height: 28,
-          padding: EdgeInsets.only(left: 8, right: 8),
+          padding: EdgeInsets.only(left: 4, right: 4),
           alignment: Alignment.center,
           child: Text(
             text,
             style: TextStyle(
-              fontSize: Base.BASE_FONT_SIZE+6,
+              fontSize: Base.BASE_FONT_SIZE + 6,
               // fontWeight: FontWeight.bold,
               color: borderColor,
             ),
@@ -685,10 +684,9 @@ class MetadataIconDataComp extends StatelessWidget {
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Text(
-                  style: TextStyle(color: textColor?? themeData.hintColor),
+                  style: TextStyle(color: textColor ?? themeData.hintColor),
                   text,
                   overflow: TextOverflow.ellipsis,
-
                 ),
               ),
             ),
