@@ -249,8 +249,8 @@ class _IndexRouter extends CustState<IndexRouter>
 
       return Scaffold(
         extendBody: true,
-        // floatingActionButton: addBtn,
-        // floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+        floatingActionButton: addBtn,
+        floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
         body: Row(children: [
           Container(
             width: column0Width,

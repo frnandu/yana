@@ -13,7 +13,6 @@ import '../../models/metadata.dart';
 import '../../provider/metadata_provider.dart';
 import '../../provider/relay_provider.dart';
 import '../../utils/index_taps.dart';
-import '../edit/editor_router.dart';
 import 'account_manager_component.dart';
 
 class IndexDrawerContnetComponnent extends StatefulWidget {
@@ -181,16 +180,6 @@ class _IndexDrawerContnetComponnent
     ));
 
     list.add(Expanded(child: Container()));
-
-    if (PlatformUtil.isTableMode()) {
-      list.add(IndexDrawerItem(
-        iconData: Icons.add,
-        name: s.Add_a_Note,
-        onTap: () {
-          EditorRouter.open(context);
-        },
-      ));
-    }
 
     list.add(IndexDrawerItem(
       iconData: Icons.supervisor_account,

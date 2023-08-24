@@ -28,7 +28,6 @@ class MessageLookup extends MessageLookupByLibrary {
         "Add_Account": MessageLookupByLibrary.simpleMessage("Add Account"),
         "Add_Custom_Emoji":
             MessageLookupByLibrary.simpleMessage("Add Custom Emoji"),
-        "Add_a_Note": MessageLookupByLibrary.simpleMessage("Add a Note"),
         "Add_account_and_login":
             MessageLookupByLibrary.simpleMessage("Add account and login?"),
         "Add_now": MessageLookupByLibrary.simpleMessage("Add now"),

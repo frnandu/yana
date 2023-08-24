@@ -134,7 +134,7 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
       );
     } else {
       bannerImage = Image.asset(
-        fit: BoxFit.fitWidth,
+        fit: BoxFit.cover,
         "assets/imgs/banner.jpeg",
       );
     }

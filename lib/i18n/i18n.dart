@@ -1779,16 +1779,6 @@ class I18n {
     );
   }
 
-  /// `Add a Note`
-  String get Add_a_Note {
-    return Intl.message(
-      'Add a Note',
-      name: 'Add_a_Note',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `Home`
   String get Home {
     return Intl.message(

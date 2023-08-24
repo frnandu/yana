@@ -60,7 +60,6 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
 
   String? pubkey;
 
-
   @override
   void initState() {
     onFollowedTap();
