@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:yana/models/relay_status.dart';
-import 'package:yana/main.dart';
-import 'package:yana/provider/relay_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:yana/main.dart';
+import 'package:yana/models/relay_status.dart';
+import 'package:yana/provider/relay_provider.dart';
 
-import '../../utils/base.dart';
 import '../../i18n/i18n.dart';
+import '../../utils/base.dart';
 import '../comfirm_dialog.dart';
-import 'content_str_link_component.dart';
 
 class ContentRelayComponent extends StatelessWidget {
   String addr;
@@ -27,7 +26,7 @@ class ContentRelayComponent extends StatelessWidget {
         builder: (context, relayStatus, client) {
       List<Widget> list = [
         Icon(
-          Icons.cloud,
+          Icons.lan,
           size: fontSize,
         ),
         Container(

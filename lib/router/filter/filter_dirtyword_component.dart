@@ -8,14 +8,14 @@ import '../../utils/base.dart';
 import '../../i18n/i18n.dart';
 import '../../utils/string_util.dart';
 
-class FilterDirtywordComponent extends StatefulWidget {
+class BlockedWordsComponent extends StatefulWidget {
   @override
   State<StatefulWidget> createState() {
     return _FilterDirtywordComponent();
   }
 }
 
-class _FilterDirtywordComponent extends State<FilterDirtywordComponent> {
+class _FilterDirtywordComponent extends State<BlockedWordsComponent> {
   TextEditingController controller = TextEditingController();
 
   @override
@@ -48,7 +48,7 @@ class _FilterDirtywordComponent extends State<FilterDirtywordComponent> {
               controller: controller,
               decoration: InputDecoration(
                 prefixIcon: Icon(Icons.abc),
-                hintText: s.Input_dirtyword,
+                hintText: s.Input_word,
                 suffixIcon: IconButton(
                   icon: Icon(Icons.add),
                   onPressed: addDirtyWord,

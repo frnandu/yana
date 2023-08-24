@@ -24,14 +24,14 @@ import '../../provider/setting_provider.dart';
 import '../../utils/platform_util.dart';
 import '../../utils/router_util.dart';
 
-class MentionMeRouter extends StatefulWidget {
+class NotificationsRouter extends StatefulWidget {
   @override
   State<StatefulWidget> createState() {
-    return _MentionMeRouter();
+    return _NotificationsRouter();
   }
 }
 
-class _MentionMeRouter extends KeepAliveCustState<MentionMeRouter>
+class _NotificationsRouter extends KeepAliveCustState<NotificationsRouter>
     with LoadMoreEvent {
   ScrollController _controller = ScrollController();
 

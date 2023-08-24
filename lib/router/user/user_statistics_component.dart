@@ -60,6 +60,13 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
 
   String? pubkey;
 
+
+  @override
+  void initState() {
+    onFollowedTap();
+    onZapTap();
+  }
+
   @override
   Widget doBuild(BuildContext context) {
     var s = I18n.of(context);
@@ -181,7 +188,6 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
 
     return Container(
       // color: Colors.red,
-      height: 18,
       margin: EdgeInsets.only(bottom: Base.BASE_PADDING),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -433,7 +439,7 @@ class UserStatisticsItemComponent extends StatelessWidget {
   Widget build(BuildContext context) {
     var themeData = Theme.of(context);
     var hintColor = themeData.hintColor;
-    var fontSize = themeData.textTheme.bodySmall!.fontSize;
+    var fontSize = themeData.textTheme.bodyLarge!.fontSize;
 
     List<Widget> list = [];
     if (num != null) {
@@ -449,9 +455,9 @@ class UserStatisticsItemComponent extends StatelessWidget {
         ),
       ));
     } else {
-      list.add(Icon(
+      list.add(const Icon(
         Icons.download,
-        size: 14,
+        size: 18,
       ));
     }
     list.add(Container(

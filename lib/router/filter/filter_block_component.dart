@@ -9,14 +9,14 @@ import 'package:provider/provider.dart';
 import '../../utils/base.dart';
 import '../../i18n/i18n.dart';
 
-class FilterBlockComponent extends StatefulWidget {
+class BlockedProfilesComponent extends StatefulWidget {
   @override
   State<StatefulWidget> createState() {
     return _FilterBlockComponent();
   }
 }
 
-class _FilterBlockComponent extends State<FilterBlockComponent> {
+class _FilterBlockComponent extends State<BlockedProfilesComponent> {
   @override
   Widget build(BuildContext context) {
     var _filterProvider = Provider.of<FilterProvider>(context);

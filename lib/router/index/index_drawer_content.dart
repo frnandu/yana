@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:yana/provider/index_provider.dart';
 import 'package:yana/ui/user/metadata_top_component.dart';
 import 'package:yana/utils/base.dart';
-import 'package:yana/utils/router_path.dart';
-import 'package:yana/provider/index_provider.dart';
-import 'package:yana/router/user/user_statistics_component.dart';
 import 'package:yana/utils/platform_util.dart';
+import 'package:yana/utils/router_path.dart';
 import 'package:yana/utils/router_util.dart';
-import 'package:provider/provider.dart';
 
-import '../../utils/index_taps.dart';
-import '../../models/metadata.dart';
 import '../../i18n/i18n.dart';
 import '../../main.dart';
+import '../../models/metadata.dart';
 import '../../provider/metadata_provider.dart';
+import '../../provider/relay_provider.dart';
+import '../../utils/index_taps.dart';
 import '../edit/editor_router.dart';
 import 'account_manager_component.dart';
 
@@ -25,7 +25,7 @@ class IndexDrawerContnetComponnent extends StatefulWidget {
 
 class _IndexDrawerContnetComponnent
     extends State<IndexDrawerContnetComponnent> {
-  ScrollController userStatisticscontroller = ScrollController();
+  // ScrollController userStatisticscontroller = ScrollController();
 
   double profileEditBtnWidth = 40;
 
@@ -35,7 +35,6 @@ class _IndexDrawerContnetComponnent
 
     var s = I18n.of(context);
     var pubkey = nostr!.publicKey;
-    var paddingTop = mediaDataCache.padding.top;
     var themeData = Theme.of(context);
     var mainColor = themeData.primaryColor;
     var hintColor = themeData.hintColor;
@@ -64,16 +63,15 @@ class _IndexDrawerContnetComponnent
         margin: const EdgeInsets.only(top: Base.BASE_PADDING_HALF),
         padding: const EdgeInsets.only(
           left: Base.BASE_PADDING * 2,
-          bottom: Base.BASE_PADDING/2,
-          top: Base.BASE_PADDING/2,
+          bottom: Base.BASE_PADDING / 2,
+          top: Base.BASE_PADDING / 2,
         ),
-
         decoration: BoxDecoration(
-        border: Border(
-            top: BorderSide(
-              width: 1,
-              color: hintColor,
-            )))));
+            border: Border(
+                top: BorderSide(
+          width: 1,
+          color: hintColor,
+        )))));
     // list.add(GestureDetector(
     //   behavior: HitTestBehavior.translucent,
     //   onHorizontalDragUpdate: (detail) {
@@ -102,7 +100,9 @@ class _IndexDrawerContnetComponnent
       list.add(IndexDrawerItem(
         iconData: Icons.notifications,
         name: s.Globals,
-        color: _indexProvider.currentTap == IndexTaps.NOTIFICATIONS ? mainColor : null,
+        color: _indexProvider.currentTap == IndexTaps.NOTIFICATIONS
+            ? mainColor
+            : null,
         onTap: () {
           indexProvider.setCurrentTap(1);
         },
@@ -133,7 +133,7 @@ class _IndexDrawerContnetComponnent
       iconData: Icons.person,
       name: s.Profile,
       onTap: () {
-        RouterUtil.router(context, RouterPath.KEY_BACKUP);
+        RouterUtil.router(context, RouterPath.USER, pubkey);
       },
     ));
 
@@ -145,22 +145,32 @@ class _IndexDrawerContnetComponnent
       },
     ));
 
-    list.add(IndexDrawerItem(
-      iconData: Icons.cloud,
-      name: s.Relays,
-      onTap: () {
-        RouterUtil.router(context, RouterPath.RELAYS);
-      },
-    ));
+    list.add(
+      IndexDrawerItem(
+        iconData: Icons.lan_outlined,
+        name: s.Relays,
+        onTap: () {
+          RouterUtil.router(context, RouterPath.RELAYS);
+        },
+        rightWidget: Selector<RelayProvider, String>(
+            builder: (context, relayNum, child) {
+              return Text(
+                relayNum,
+                style: TextStyle(color: themeData.disabledColor),
+              );
+            }, selector: (context, _provider) {
+          return _provider.relayNumStr();
+        })
+      ),
+    );
 
     list.add(IndexDrawerItem(
-      iconData: Icons.filter_alt,
-      name: s.Filter,
+      iconData: Icons.security,
+      name: s.Filters,
       onTap: () {
         RouterUtil.router(context, RouterPath.FILTER);
       },
     ));
-
 
     list.add(IndexDrawerItem(
       iconData: Icons.settings,
@@ -194,8 +204,8 @@ class _IndexDrawerContnetComponnent
       margin: const EdgeInsets.only(top: Base.BASE_PADDING_HALF),
       padding: const EdgeInsets.only(
         left: Base.BASE_PADDING * 2,
-        bottom: Base.BASE_PADDING/2,
-        top: Base.BASE_PADDING/2,
+        bottom: Base.BASE_PADDING / 2,
+        top: Base.BASE_PADDING / 2,
       ),
       decoration: BoxDecoration(
           border: Border(
@@ -236,6 +246,8 @@ class IndexDrawerItem extends StatelessWidget {
 
   Color? color;
 
+  Widget? rightWidget;
+
   // bool borderTop;
 
   // bool borderBottom;
@@ -246,6 +258,7 @@ class IndexDrawerItem extends StatelessWidget {
     required this.onTap,
     this.color,
     this.onDoubleTap,
+    this.rightWidget
     // this.borderTop = true,
     // this.borderBottom = false,
   });
@@ -267,9 +280,19 @@ class IndexDrawerItem extends StatelessWidget {
       ),
     ));
 
-    list.add(Text(name, style: TextStyle(color: color)));
+    list.add(Text(name,
+        style: TextStyle(color: color, fontSize: Base.BASE_FONT_SIZE + 4)));
 
     var borderSide = BorderSide(width: 1, color: hintColor);
+
+    if (rightWidget!=null) {
+      list.add(Container(
+          margin: EdgeInsets.only(
+            left: Base.BASE_PADDING,
+          ),
+          child: rightWidget!)
+      );
+    }
 
     return GestureDetector(
       onTap: () {
@@ -282,13 +305,7 @@ class IndexDrawerItem extends StatelessWidget {
       },
       behavior: HitTestBehavior.translucent,
       child: Container(
-        height: 34,
-        // decoration: BoxDecoration(
-        //   border: Border(
-        //     top: borderTop ? borderSide : BorderSide.none,
-        //     bottom: borderBottom ? borderSide : BorderSide.none,
-        //   ),
-        // ),
+        height: 50,
         child: Row(
           children: list,
         ),

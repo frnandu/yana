@@ -144,73 +144,73 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
                   itemBuilder: (context) {
                     return [
                       PopupMenuItem(
-                        value: 10,
+                        value: 21,
                         child: Row(
-                          children: [
-                            Icon(Icons.bolt, color: Colors.orange),
-                            Text(" Zap 10", style: popFontStyle)
-                          ],
                           mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.bolt, color: Colors.orange),
+                            Text(" Zap 21", style: popFontStyle)
+                          ],
                         ),
                       ),
                       PopupMenuItem(
-                        value: 50,
+                        value: 69,
                         child: Row(
+                          mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.bolt, color: Colors.orange),
+                            const Icon(Icons.bolt, color: Colors.orange),
                             Text(" Zap 50", style: popFontStyle)
                           ],
-                          mainAxisSize: MainAxisSize.min,
                         ),
                       ),
                       PopupMenuItem(
-                        value: 100,
+                        value: 210,
                         child: Row(
-                          children: [
-                            Icon(Icons.bolt, color: Colors.orange),
-                            Text(" Zap 100", style: popFontStyle)
-                          ],
                           mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.bolt, color: Colors.orange),
+                            Text(" Zap 210", style: popFontStyle)
+                          ],
                         ),
                       ),
                       PopupMenuItem(
-                        value: 500,
+                        value: 420,
                         child: Row(
-                          children: [
-                            Icon(Icons.bolt, color: Colors.orange),
-                            Text(" Zap 500", style: popFontStyle)
-                          ],
                           mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.bolt, color: Colors.orange),
+                            Text(" Zap 420", style: popFontStyle)
+                          ],
                         ),
                       ),
                       PopupMenuItem(
-                        value: 1000,
+                        value: 2100,
                         child: Row(
-                          children: [
-                            Icon(Icons.bolt, color: Colors.orange),
-                            Text(" Zap 1000", style: popFontStyle)
-                          ],
                           mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.bolt, color: Colors.orange),
+                            Text(" Zap 2100", style: popFontStyle)
+                          ],
                         ),
                       ),
                       PopupMenuItem(
-                        value: 5000,
+                        value: 4200,
                         child: Row(
-                          children: [
-                            Icon(Icons.bolt, color: Colors.orange),
-                            Text(" Zap 5000", style: popFontStyle)
-                          ],
                           mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.bolt, color: Colors.orange),
+                            Text(" Zap 4200", style: popFontStyle)
+                          ],
                         ),
                       ),
                       PopupMenuItem(
                         value: -1,
                         child: Row(
+                          mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.bolt, color: Colors.orange),
+                            const Icon(Icons.bolt, color: Colors.orange),
                             Text(" ${s.Custom}", style: popFontStyle)
                           ],
-                          mainAxisSize: MainAxisSize.min,
                         ),
                       ),
                     ];

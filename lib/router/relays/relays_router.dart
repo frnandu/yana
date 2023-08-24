@@ -80,7 +80,7 @@ class _RelaysRouter extends CustState<RelaysRouter> with WhenStopFunction {
           child: TextField(
             controller: controller,
             decoration: InputDecoration(
-              prefixIcon: Icon(Icons.cloud),
+              prefixIcon: Icon(Icons.lan),
               hintText: s.Input_relay_address,
               suffixIcon: IconButton(
                 icon: Icon(Icons.add),

@@ -100,7 +100,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "Empty_text_may_be_ban_by_relays": MessageLookupByLibrary.simpleMessage(
             "Empty text may be ban by relays."),
         "Face": MessageLookupByLibrary.simpleMessage("Face"),
-        "Filter": MessageLookupByLibrary.simpleMessage("Filters"),
+        "Filters": MessageLookupByLibrary.simpleMessage("Security Filters"),
         "Find_clouded_relay_list_do_you_want_to_download":
             MessageLookupByLibrary.simpleMessage(
                 "Find clouded relay list, do you want to download it?"),

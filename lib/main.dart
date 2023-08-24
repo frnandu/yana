@@ -20,6 +20,7 @@ import 'package:yana/provider/custom_emoji_provider.dart';
 import 'package:yana/provider/follow_new_event_provider.dart';
 import 'package:yana/provider/mention_me_new_provider.dart';
 import 'package:yana/router/relays/relay_info_router.dart';
+import 'package:yana/router/search/search_router.dart';
 import 'package:yana/router/user/followed_router.dart';
 import 'package:yana/router/user/followed_tags_list_router.dart';
 import 'package:yana/router/user/user_history_contact_list_router.dart';
@@ -259,6 +260,7 @@ class _MyApp extends State<MyApp> {
       RouterPath.EVENT_DETAIL: (context) => EventDetailRouter(),
       RouterPath.TAG_DETAIL: (context) => TagDetailRouter(),
       RouterPath.NOTICES: (context) => NoticeRouter(),
+      RouterPath.SEARCH: (context) => SearchRouter(),
       RouterPath.KEY_BACKUP: (context) => KeyBackupRouter(),
       RouterPath.RELAYS: (context) => RelaysRouter(),
       RouterPath.FILTER: (context) => FilterRouter(),

@@ -679,11 +679,11 @@ class I18n {
     );
   }
 
-  /// `Input dirtyword.`
-  String get Input_dirtyword {
+  /// `Input word.`
+  String get Input_word {
     return Intl.message(
-      'Input dirtyword.',
-      name: 'Input_dirtyword',
+      'Input word.',
+      name: 'Input_word',
       desc: '',
       args: [],
     );
@@ -779,11 +779,11 @@ class I18n {
     );
   }
 
-  /// `Filter`
-  String get Filter {
+  /// `Filters`
+  String get Filters {
     return Intl.message(
-      'Filter',
-      name: 'Filter',
+      'Security Filters',
+      name: 'Filters',
       desc: '',
       args: [],
     );

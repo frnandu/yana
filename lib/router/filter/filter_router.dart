@@ -83,8 +83,8 @@ class _FilterRouter extends State<FilterRouter>
       body: TabBarView(
         controller: tabController,
         children: [
-          FilterBlockComponent(),
-          FilterDirtywordComponent(),
+          BlockedWordsComponent(),
+          BlockedProfilesComponent(),
         ],
       ),
     );

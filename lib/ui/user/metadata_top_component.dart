@@ -132,6 +132,11 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
         fit: BoxFit.cover,
         cacheManager: localCacheManager,
       );
+    } else {
+      bannerImage = Image.asset(
+        fit: BoxFit.fitWidth,
+        "assets/imgs/banner.jpeg",
+      );
     }
 
     List<Widget> topBtnList = [
@@ -169,64 +174,64 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
         topBtnList.add(wrapBtn(PopupMenuButton<int>(
           itemBuilder: (context) {
             return [
-              PopupMenuItem(
-                value: 10,
+              const PopupMenuItem(
+                value: 21,
                 child: Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(Icons.bolt, color: Colors.orange),
-                    Text(" Zap 10")
+                    Text(" Zap 21")
                   ],
-                  mainAxisSize: MainAxisSize.min,
                 ),
               ),
-              PopupMenuItem(
-                value: 50,
+              const PopupMenuItem(
+                value: 69,
                 child: Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(Icons.bolt, color: Colors.orange),
-                    Text(" Zap 50")
+                    Text(" Zap 69")
                   ],
-                  mainAxisSize: MainAxisSize.min,
                 ),
               ),
-              PopupMenuItem(
-                value: 100,
+              const PopupMenuItem(
+                value: 210,
                 child: Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(Icons.bolt, color: Colors.orange),
-                    Text(" Zap 100")
+                    Text(" Zap 210")
                   ],
-                  mainAxisSize: MainAxisSize.min,
                 ),
               ),
-              PopupMenuItem(
-                value: 500,
+              const PopupMenuItem(
+                value: 420,
                 child: Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(Icons.bolt, color: Colors.orange),
-                    Text(" Zap 500")
+                    Text(" Zap 420")
                   ],
-                  mainAxisSize: MainAxisSize.min,
                 ),
               ),
-              PopupMenuItem(
-                value: 1000,
+              const PopupMenuItem(
+                value: 2100,
                 child: Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(Icons.bolt, color: Colors.orange),
-                    Text(" Zap 1000")
+                    Text(" Zap 2100")
                   ],
-                  mainAxisSize: MainAxisSize.min,
                 ),
               ),
-              PopupMenuItem(
-                value: 5000,
+              const PopupMenuItem(
+                value: 4200,
                 child: Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(Icons.bolt, color: Colors.orange),
-                    Text(" Zap 5000")
+                    Text(" Zap 4200")
                   ],
-                  mainAxisSize: MainAxisSize.min,
                 ),
               ),
             ];
@@ -236,7 +241,8 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
             onLongPress: () {
               ZapGenDialog.show(context, widget.pubkey);
             },
-            iconData: Icons.currency_bitcoin,
+            iconData: Icons.bolt,
+            iconColor: Colors.orange,
           ),
         )));
       }
@@ -259,6 +265,7 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
           } else {
             return wrapBtn(MetadataTextBtn(
               text: "Unfollow",
+              borderColor: mainColor,
               onTap: () {
                 contactListProvider.removeContact(widget.pubkey);
               },
@@ -296,7 +303,7 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
     }
 
     Widget userNameComponent = Container(
-      // height: 40,
+      height: 40,
       width: double.maxFinite,
       margin: const EdgeInsets.only(
         left: Base.BASE_PADDING,
@@ -333,7 +340,7 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
     topList.add(userNameComponent);
     if (widget.metadata != null) {
       topList.add(MetadataIconDataComp(
-        iconData: Icons.key,
+        leftWidget: Container() ,
         text: nip19PubKey,
         textBG: true,
         onTap: copyPubKey,
@@ -350,6 +357,7 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
         if (StringUtil.isNotBlank(widget.metadata!.website)) {
           topList.add(MetadataIconDataComp(
             iconData: Icons.link,
+            textColor: themeData.primaryColor,
             text: widget.metadata!.website!,
             onTap: () {
               WebViewRouter.open(context, widget.metadata!.website!);
@@ -510,11 +518,14 @@ class MetadataIconBtn extends StatelessWidget {
   void Function()? onLongPress;
 
   IconData iconData;
+  Color? iconColor;
 
-  MetadataIconBtn({required this.iconData, this.onTap, this.onLongPress});
+  MetadataIconBtn({required this.iconData, this.iconColor, this.onTap, this.onLongPress});
 
   @override
   Widget build(BuildContext context) {
+    final IconThemeData iconTheme = IconTheme.of(context);
+
     var decoration = BoxDecoration(
       borderRadius: BorderRadius.circular(20),
       border: Border.all(width: 1),
@@ -525,6 +536,7 @@ class MetadataIconBtn extends StatelessWidget {
       child: Icon(
         iconData,
         size: 22,
+        color: iconColor?? iconTheme.color
       ),
     );
 
@@ -586,7 +598,8 @@ class MetadataTextBtn extends StatelessWidget {
           child: Text(
             text,
             style: TextStyle(
-              fontWeight: FontWeight.bold,
+              fontSize: Base.BASE_FONT_SIZE+6,
+              // fontWeight: FontWeight.bold,
               color: borderColor,
             ),
           ),
@@ -603,6 +616,8 @@ class MetadataIconDataComp extends StatelessWidget {
 
   Color? iconColor;
 
+  Color? textColor;
+
   bool textBG;
 
   Function? onTap;
@@ -614,6 +629,7 @@ class MetadataIconDataComp extends StatelessWidget {
     this.iconData,
     this.leftWidget,
     this.iconColor,
+    this.textColor,
     this.textBG = false,
     this.onTap,
   });
@@ -669,8 +685,10 @@ class MetadataIconDataComp extends StatelessWidget {
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Text(
+                  style: TextStyle(color: textColor?? themeData.hintColor),
                   text,
                   overflow: TextOverflow.ellipsis,
+
                 ),
               ),
             ),

@@ -8,7 +8,7 @@ import 'package:yana/ui/pc_router_fake.dart';
 import 'package:yana/utils/base_consts.dart';
 import 'package:yana/utils/index_taps.dart';
 import 'package:yana/provider/pc_router_fake_provider.dart';
-import 'package:yana/router/follow/mention_me_router.dart';
+import 'package:yana/router/follow/notifications_router.dart';
 import 'package:yana/utils/platform_util.dart';
 import 'package:yana/utils/string_util.dart';
 
@@ -215,7 +215,7 @@ class _IndexRouter extends CustState<IndexRouter>
           DMRouter(
             tabController: dmTabController,
           ),
-          MentionMeRouter(),
+          NotificationsRouter(),
           // NoticeRouter(),
         ],
       )),

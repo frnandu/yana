@@ -52,16 +52,6 @@ class _IndexAppBar extends State<IndexAppBar> {
     var center = widget.center;
     center ??= Container();
 
-    var rightWidget =
-        Selector<RelayProvider, String>(builder: (context, relayNum, child) {
-      return Text(
-        relayNum,
-        style: TextStyle(color: textColor),
-      );
-    }, selector: (context, _provider) {
-      return _provider.relayNumStr();
-    });
-
     return Container(
       padding: EdgeInsets.only(
         top: paddingTop,
@@ -83,12 +73,12 @@ class _IndexAppBar extends State<IndexAppBar> {
             child: center,
           ),
         ),
-        GestureDetector(
-          onTap: () {
-            RouterUtil.router(context, RouterPath.RELAYS);
-          },
-          child: rightWidget,
-        ),
+        // GestureDetector(
+        //   onTap: () {
+        //     RouterUtil.router(context, RouterPath.SEARCH);
+        //   },
+        //   child: Icon(Icons.search),
+        // ),
       ]),
     );
   }
