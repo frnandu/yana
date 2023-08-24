@@ -1,27 +1,21 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:provider/provider.dart';
-import 'package:yana/component/event_delete_callback.dart';
-import 'package:yana/component/keep_alive_cust_state.dart';
+import 'package:yana/ui/event_delete_callback.dart';
+import 'package:yana/ui/keep_alive_cust_state.dart';
 
-import '../../../client/event.dart';
-import '../../../client/event_kind.dart' as kind;
-import '../../../client/filter.dart';
-import '../../../component/event/event_list_component.dart';
-import '../../../component/new_notes_updated_component.dart';
-import '../../../component/placeholder/event_list_placeholder.dart';
-import '../../../consts/base.dart';
-import '../../../consts/base_consts.dart';
-import '../../../data/event_mem_box.dart';
 import '../../../main.dart';
-import '../../../provider/follow_new_event_provider.dart';
+import '../../../models/event_mem_box.dart';
+import '../../../nostr/event.dart';
+import '../../../nostr/event_kind.dart' as kind;
+import '../../../nostr/filter.dart';
 import '../../../provider/setting_provider.dart';
-import '../../../util/dio_util.dart';
-import '../../../util/peddingevents_later_function.dart';
-import '../../../util/platform_util.dart';
-import '../../../util/string_util.dart';
+import '../../../ui/event/event_list_component.dart';
+import '../../../ui/placeholder/event_list_placeholder.dart';
+import '../../../utils/base_consts.dart';
+import '../../../utils/peddingevents_later_function.dart';
+import '../../../utils/platform_util.dart';
+import '../../../utils/string_util.dart';
 
 class GlobalsEventsRouter extends StatefulWidget {
   @override

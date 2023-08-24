@@ -1,40 +1,39 @@
 import 'dart:convert';
 import 'dart:developer';
-import 'dart:io';
 
 import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_font_picker/flutter_font_picker.dart';
 import 'package:google_mlkit_translation/google_mlkit_translation.dart';
 import 'package:local_auth/local_auth.dart';
-import 'package:yana/client/nip02/cust_contact_list.dart';
-import 'package:yana/client/filter.dart';
-import 'package:yana/data/event_mem_box.dart';
-import 'package:yana/router/index/account_manager_component.dart';
-import 'package:yana/util/platform_util.dart';
-import 'package:yana/util/router_util.dart';
-import 'package:yana/util/when_stop_function.dart';
 import 'package:provider/provider.dart';
+import 'package:yana/models/event_mem_box.dart';
+import 'package:yana/nostr/filter.dart';
+import 'package:yana/nostr/nip02/cust_contact_list.dart';
+import 'package:yana/router/index/account_manager_component.dart';
+import 'package:yana/utils/platform_util.dart';
+import 'package:yana/utils/router_util.dart';
+import 'package:yana/utils/when_stop_function.dart';
 
-import '../../client/event.dart';
-import '../../client/event_kind.dart' as kind;
-import '../../component/colors_selector_component.dart';
-import '../../component/comfirm_dialog.dart';
-import '../../component/editor/text_input_dialog.dart';
-import '../../component/enum_multi_selector_component.dart';
-import '../../component/enum_selector_component.dart';
-import '../../component/translate/translate_model_manager.dart';
-import '../../consts/base.dart';
-import '../../consts/base_consts.dart';
-import '../../consts/image_services.dart';
-import '../../consts/theme_style.dart';
-import '../../data/metadata.dart';
+import '../../utils/base.dart';
+import '../../utils/base_consts.dart';
+import '../../utils/image_services.dart';
+import '../../utils/theme_style.dart';
 import '../../generated/l10n.dart';
 import '../../main.dart';
+import '../../models/metadata.dart';
+import '../../nostr/event.dart';
+import '../../nostr/event_kind.dart' as kind;
 import '../../provider/setting_provider.dart';
-import '../../util/auth_util.dart';
-import '../../util/locale_util.dart';
-import '../../util/string_util.dart';
+import '../../ui/colors_selector_component.dart';
+import '../../ui/comfirm_dialog.dart';
+import '../../ui/editor/text_input_dialog.dart';
+import '../../ui/enum_multi_selector_component.dart';
+import '../../ui/enum_selector_component.dart';
+import '../../ui/translate/translate_model_manager.dart';
+import '../../utils/auth_util.dart';
+import '../../utils/locale_util.dart';
+import '../../utils/string_util.dart';
 import 'setting_group_item_component.dart';
 import 'setting_group_title_component.dart';
 
@@ -592,14 +591,8 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
       imageServcieList = [];
       imageServcieList!
           .add(EnumObj(ImageServices.NOSTRIMG_COM, ImageServices.NOSTRIMG_COM));
-      imageServcieList!.add(
-          EnumObj(ImageServices.NOSTRFILES_DEV, ImageServices.NOSTRFILES_DEV));
       imageServcieList!
           .add(EnumObj(ImageServices.NOSTR_BUILD, ImageServices.NOSTR_BUILD));
-      imageServcieList!.add(
-          EnumObj(ImageServices.POMF2_LAIN_LA, ImageServices.POMF2_LAIN_LA));
-      // imageServcieList!
-      //     .add(EnumObj(ImageServices.VOID_CAT, ImageServices.VOID_CAT));
     }
   }
 

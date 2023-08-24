@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:yana/client/event.dart';
-import 'package:yana/client/nip172/community_id.dart';
+import 'package:yana/nostr/event.dart';
+import 'package:yana/nostr/nip172/community_id.dart';
 import 'package:yana/main.dart';
-import 'package:yana/util/later_function.dart';
-import '../client/event_kind.dart' as kind;
+import 'package:yana/utils/later_function.dart';
+import '../nostr/event_kind.dart' as kind;
 
 class CommunityApprovedProvider extends ChangeNotifier with LaterFunction {
   Map<String, int> _approvedMap = {};

@@ -1,12 +1,12 @@
 import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:yana/client/nip19/nip19.dart';
+import 'package:yana/nostr/nip19/nip19.dart';
 import 'package:yana/main.dart';
 import 'package:yana/provider/filter_provider.dart';
 import 'package:provider/provider.dart';
 
-import '../../consts/base.dart';
+import '../../utils/base.dart';
 import '../../generated/l10n.dart';
 
 class FilterBlockComponent extends StatefulWidget {

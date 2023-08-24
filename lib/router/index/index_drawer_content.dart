@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:yana/component/user/metadata_top_component.dart';
-import 'package:yana/consts/base.dart';
-import 'package:yana/consts/router_path.dart';
+import 'package:yana/ui/user/metadata_top_component.dart';
+import 'package:yana/utils/base.dart';
+import 'package:yana/utils/router_path.dart';
 import 'package:yana/provider/index_provider.dart';
 import 'package:yana/router/user/user_statistics_component.dart';
-import 'package:yana/util/platform_util.dart';
-import 'package:yana/util/router_util.dart';
+import 'package:yana/utils/platform_util.dart';
+import 'package:yana/utils/router_util.dart';
 import 'package:provider/provider.dart';
 
-import '../../consts/index_taps.dart';
-import '../../data/metadata.dart';
+import '../../utils/index_taps.dart';
+import '../../models/metadata.dart';
 import '../../generated/l10n.dart';
 import '../../main.dart';
 import '../../provider/metadata_provider.dart';

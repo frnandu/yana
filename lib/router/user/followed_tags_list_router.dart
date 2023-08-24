@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:yana/component/tag_info_component.dart';
-import 'package:yana/consts/base.dart';
+import 'package:yana/ui/tag_info_component.dart';
+import 'package:yana/utils/base.dart';
 
-import '../../client/nip02/cust_contact_list.dart';
+import '../../nostr/nip02/cust_contact_list.dart';
 import '../../generated/l10n.dart';
-import '../../util/router_util.dart';
+import '../../utils/router_util.dart';
 
 class FollowedTagsListRouter extends StatefulWidget {
   @override

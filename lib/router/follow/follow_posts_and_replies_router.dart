@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:yana/component/keep_alive_cust_state.dart';
-import 'package:yana/data/event_mem_box.dart';
+import 'package:yana/ui/keep_alive_cust_state.dart';
+import 'package:yana/models/event_mem_box.dart';
 import 'package:yana/main.dart';
 import 'package:yana/provider/follow_event_provider.dart';
-import 'package:yana/util/platform_util.dart';
+import 'package:yana/utils/platform_util.dart';
 
-import '../../component/event/event_list_component.dart';
-import '../../component/new_notes_updated_component.dart';
-import '../../component/placeholder/event_list_placeholder.dart';
-import '../../consts/base.dart';
-import '../../consts/base_consts.dart';
+import '../../ui/event/event_list_component.dart';
+import '../../ui/new_notes_updated_component.dart';
+import '../../ui/placeholder/event_list_placeholder.dart';
+import '../../utils/base.dart';
+import '../../utils/base_consts.dart';
 import '../../provider/follow_new_event_provider.dart';
 import '../../provider/setting_provider.dart';
-import '../../util/load_more_event.dart';
+import '../../utils/load_more_event.dart';
 
 class FollowPostsAndRepliesRouter extends StatefulWidget {
   @override

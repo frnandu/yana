@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../consts/base.dart';
+import '../../utils/base.dart';
 
 class SettingGroupTitleComponent extends StatelessWidget {
   IconData iconData;

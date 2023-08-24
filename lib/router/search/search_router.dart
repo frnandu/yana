@@ -3,33 +3,33 @@ import 'dart:developer';
 
 import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
-import 'package:yana/component/user/metadata_top_component.dart';
-import 'package:yana/data/event_find_util.dart';
-import 'package:yana/data/metadata.dart';
+import 'package:yana/ui/user/metadata_top_component.dart';
+import 'package:yana/models/event_find_util.dart';
+import 'package:yana/models/metadata.dart';
 import 'package:yana/router/search/search_action_item_component.dart';
 import 'package:yana/router/search/search_actions.dart';
-import 'package:yana/util/when_stop_function.dart';
+import 'package:yana/utils/when_stop_function.dart';
 import 'package:provider/provider.dart';
 
-import '../../client/client_utils/keys.dart';
-import '../../client/event.dart';
-import '../../client/nip19/nip19.dart';
-import '../../component/cust_state.dart';
-import '../../client/event_kind.dart' as kind;
-import '../../client/filter.dart';
-import '../../component/event/event_list_component.dart';
-import '../../component/event_delete_callback.dart';
-import '../../consts/base_consts.dart';
-import '../../consts/router_path.dart';
-import '../../data/event_mem_box.dart';
+import '../../nostr/client_utils/keys.dart';
+import '../../nostr/event.dart';
+import '../../nostr/nip19/nip19.dart';
+import '../../ui/cust_state.dart';
+import '../../nostr/event_kind.dart' as kind;
+import '../../nostr/filter.dart';
+import '../../ui/event/event_list_component.dart';
+import '../../ui/event_delete_callback.dart';
+import '../../utils/base_consts.dart';
+import '../../utils/router_path.dart';
+import '../../models/event_mem_box.dart';
 import '../../generated/l10n.dart';
 import '../../main.dart';
 import '../../provider/setting_provider.dart';
-import '../../util/load_more_event.dart';
-import '../../util/peddingevents_later_function.dart';
-import '../../util/platform_util.dart';
-import '../../util/router_util.dart';
-import '../../util/string_util.dart';
+import '../../utils/load_more_event.dart';
+import '../../utils/peddingevents_later_function.dart';
+import '../../utils/platform_util.dart';
+import '../../utils/router_util.dart';
+import '../../utils/string_util.dart';
 
 class SearchRouter extends StatefulWidget {
   @override

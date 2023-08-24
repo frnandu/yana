@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:yana/client/nip172/community_id.dart';
-import '../client/event.dart';
-import '../client/event_kind.dart' as kind;
-import 'package:yana/client/nip172/community_info.dart';
+import 'package:yana/nostr/nip172/community_id.dart';
+import '../nostr/event.dart';
+import '../nostr/event_kind.dart' as kind;
+import 'package:yana/nostr/nip172/community_info.dart';
 
-import '../client/filter.dart';
+import '../nostr/filter.dart';
 import '../main.dart';
-import '../util/later_function.dart';
-import '../util/string_util.dart';
+import '../utils/later_function.dart';
+import '../utils/string_util.dart';
 
 class CommunityInfoProvider extends ChangeNotifier with LaterFunction {
   Map<String, CommunityInfo> _cache = {};

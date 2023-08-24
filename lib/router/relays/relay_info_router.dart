@@ -1,21 +1,21 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:yana/client/relay.dart';
-import 'package:yana/client/relay_info.dart';
-import 'package:yana/component/name_component.dart';
-import 'package:yana/component/user_pic_component.dart';
-import 'package:yana/consts/base.dart';
-import 'package:yana/consts/router_path.dart';
-import 'package:yana/data/metadata.dart';
+import 'package:yana/nostr/relay.dart';
+import 'package:yana/nostr/relay_info.dart';
+import 'package:yana/ui/name_component.dart';
+import 'package:yana/ui/user_pic_component.dart';
+import 'package:yana/utils/base.dart';
+import 'package:yana/utils/router_path.dart';
+import 'package:yana/models/metadata.dart';
 import 'package:yana/main.dart';
 import 'package:yana/provider/metadata_provider.dart';
 import 'package:provider/provider.dart';
 
-import '../../client/nip19/nip19.dart';
-import '../../component/webview_router.dart';
+import '../../nostr/nip19/nip19.dart';
+import '../../ui/webview_router.dart';
 import '../../generated/l10n.dart';
-import '../../util/router_util.dart';
-import '../../util/string_util.dart';
+import '../../utils/router_util.dart';
+import '../../utils/string_util.dart';
 
 class RelayInfoRouter extends StatefulWidget {
   @override

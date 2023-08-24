@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get_time_ago/get_time_ago.dart';
 import 'package:yana/provider/notice_provider.dart';
 
-import '../../consts/base.dart';
-import '../../util/string_util.dart';
+import '../../utils/base.dart';
+import '../../utils/string_util.dart';
 
 class NoticeListItemComponent extends StatelessWidget {
   NoticeData notice;

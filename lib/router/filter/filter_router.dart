@@ -3,8 +3,8 @@ import 'package:yana/router/filter/filter_block_component.dart';
 import 'package:yana/router/filter/filter_dirtyword_component.dart';
 
 import '../../generated/l10n.dart';
-import '../../util/platform_util.dart';
-import '../../util/router_util.dart';
+import '../../utils/platform_util.dart';
+import '../../utils/router_util.dart';
 import '../index/index_app_bar.dart';
 
 class FilterRouter extends StatefulWidget {

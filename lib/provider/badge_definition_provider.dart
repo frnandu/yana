@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 
-import '../client/event.dart';
-import '../client/event_kind.dart' as kind;
-import '../client/filter.dart';
-import '../client/nip58/badge_definition.dart';
+import '../nostr/event.dart';
+import '../nostr/event_kind.dart' as kind;
+import '../nostr/filter.dart';
+import '../nostr/nip58/badge_definition.dart';
 import '../main.dart';
-import '../util/later_function.dart';
-import '../util/string_util.dart';
+import '../utils/later_function.dart';
+import '../utils/string_util.dart';
 
 class BadgeDefinitionProvider extends ChangeNotifier with LaterFunction {
   Map<String, BadgeDefinition> map = {};

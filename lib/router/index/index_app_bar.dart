@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:yana/util/platform_util.dart';
+import 'package:yana/utils/platform_util.dart';
 
-import '../../component/user_pic_component.dart';
-import '../../consts/base.dart';
-import '../../consts/router_path.dart';
+import '../../ui/user_pic_component.dart';
+import '../../utils/base.dart';
+import '../../utils/router_path.dart';
 import '../../main.dart';
 import '../../provider/relay_provider.dart';
-import '../../util/router_util.dart';
+import '../../utils/router_util.dart';
 
 class IndexAppBar extends StatefulWidget {
   static const double height = 56;

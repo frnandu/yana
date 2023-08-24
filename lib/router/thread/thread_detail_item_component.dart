@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../../client/event_kind.dart' as kind;
-import '../../component/event/event_bitcion_icon_component.dart';
-import '../../consts/base.dart';
+import '../../nostr/event_kind.dart' as kind;
+import '../../ui/event/event_bitcion_icon_component.dart';
+import '../../utils/base.dart';
 import 'thread_detail_event.dart';
 import 'thread_detail_event_main_component.dart';
 

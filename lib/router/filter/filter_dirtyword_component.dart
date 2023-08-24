@@ -4,9 +4,9 @@ import 'package:yana/main.dart';
 import 'package:yana/provider/filter_provider.dart';
 import 'package:provider/provider.dart';
 
-import '../../consts/base.dart';
+import '../../utils/base.dart';
 import '../../generated/l10n.dart';
-import '../../util/string_util.dart';
+import '../../utils/string_util.dart';
 
 class FilterDirtywordComponent extends StatefulWidget {
   @override

@@ -1,25 +1,25 @@
 import 'package:flutter/material.dart';
-import 'package:yana/component/community_info_component.dart';
-import 'package:yana/consts/base.dart';
+import 'package:yana/ui/community_info_component.dart';
+import 'package:yana/utils/base.dart';
 import 'package:yana/provider/community_info_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:widget_size/widget_size.dart';
 
-import '../../client/event.dart';
-import '../../client/filter.dart';
-import '../../client/nip172/community_id.dart';
-import '../../client/nip172/community_info.dart';
-import '../../component/cust_state.dart';
-import '../../component/event/event_list_component.dart';
-import '../../component/event_delete_callback.dart';
-import '../../consts/base_consts.dart';
-import '../../data/event_mem_box.dart';
+import '../../nostr/event.dart';
+import '../../nostr/filter.dart';
+import '../../nostr/nip172/community_id.dart';
+import '../../nostr/nip172/community_info.dart';
+import '../../ui/cust_state.dart';
+import '../../ui/event/event_list_component.dart';
+import '../../ui/event_delete_callback.dart';
+import '../../utils/base_consts.dart';
+import '../../models/event_mem_box.dart';
 import '../../main.dart';
 import '../../provider/setting_provider.dart';
-import '../../util/peddingevents_later_function.dart';
-import '../../util/router_util.dart';
-import '../../client/event_kind.dart' as kind;
-import '../../util/string_util.dart';
+import '../../utils/peddingevents_later_function.dart';
+import '../../utils/router_util.dart';
+import '../../nostr/event_kind.dart' as kind;
+import '../../utils/string_util.dart';
 import '../edit/editor_router.dart';
 
 class CommunityDetailRouter extends StatefulWidget {

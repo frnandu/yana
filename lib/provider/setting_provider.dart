@@ -4,12 +4,12 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:yana/util/platform_util.dart';
+import 'package:yana/utils/platform_util.dart';
 
-import '../consts/base.dart';
-import '../consts/base_consts.dart';
-import '../consts/theme_style.dart';
-import '../util/string_util.dart';
+import '../utils/base.dart';
+import '../utils/base_consts.dart';
+import '../utils/theme_style.dart';
+import '../utils/string_util.dart';
 import 'data_util.dart';
 
 IOSOptions _getIOSOptions() => const IOSOptions(

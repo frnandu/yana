@@ -3,24 +3,24 @@ import 'dart:developer';
 import 'package:bot_toast/bot_toast.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:yana/component/editor/text_input_dialog.dart';
-import 'package:yana/component/name_component.dart';
-import 'package:yana/component/point_component.dart';
-import 'package:yana/data/metadata.dart';
+import 'package:yana/ui/editor/text_input_dialog.dart';
+import 'package:yana/ui/name_component.dart';
+import 'package:yana/ui/point_component.dart';
+import 'package:yana/models/metadata.dart';
 import 'package:yana/provider/metadata_provider.dart';
 import 'package:yana/provider/setting_provider.dart';
-import 'package:yana/util/router_util.dart';
+import 'package:yana/utils/router_util.dart';
 import 'package:provider/provider.dart';
 
-import '../../client/client_utils/keys.dart';
-import '../../client/nip19/nip19.dart';
-import '../../component/comfirm_dialog.dart';
-import '../../consts/base.dart';
-import '../../data/dm_session_info_db.dart';
-import '../../data/event_db.dart';
+import '../../nostr/client_utils/keys.dart';
+import '../../nostr/nip19/nip19.dart';
+import '../../ui/comfirm_dialog.dart';
+import '../../utils/base.dart';
+import '../../models/dm_session_info_db.dart';
+import '../../models/event_db.dart';
 import '../../generated/l10n.dart';
 import '../../main.dart';
-import '../../util/string_util.dart';
+import '../../utils/string_util.dart';
 import 'index_drawer_content.dart';
 
 class AccountManagerComponent extends StatefulWidget {

@@ -1,4 +1,4 @@
-import '../../client/event.dart';
+import '../../nostr/event.dart';
 
 class ThreadDetailEvent {
   Event event;

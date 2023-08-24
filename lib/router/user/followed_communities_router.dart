@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:yana/client/nip172/community_id.dart';
-import 'package:yana/consts/router_path.dart';
+import 'package:yana/nostr/nip172/community_id.dart';
+import 'package:yana/utils/router_path.dart';
 import 'package:yana/provider/contact_list_provider.dart';
 import 'package:provider/provider.dart';
 
-import '../../client/nip02/cust_contact_list.dart';
-import '../../consts/base.dart';
+import '../../nostr/nip02/cust_contact_list.dart';
+import '../../utils/base.dart';
 import '../../generated/l10n.dart';
 import '../../main.dart';
-import '../../util/router_util.dart';
+import '../../utils/router_util.dart';
 
 class FollowedCommunitiesRouter extends StatefulWidget {
   @override

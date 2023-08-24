@@ -1,8 +1,8 @@
 import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
-import 'package:yana/util/string_util.dart';
+import 'package:yana/utils/string_util.dart';
 
-import '../../consts/base.dart';
+import '../../utils/base.dart';
 import '../../generated/l10n.dart';
 
 class PollInputController {

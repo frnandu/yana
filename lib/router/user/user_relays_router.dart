@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:yana/data/relay_status.dart';
+import 'package:yana/models/relay_status.dart';
 import 'package:yana/main.dart';
 import 'package:yana/provider/relay_provider.dart';
 import 'package:provider/provider.dart';
 
-import '../../client/relay_metadata.dart';
-import '../../consts/base.dart';
+import '../../nostr/relay_metadata.dart';
+import '../../utils/base.dart';
 import '../../generated/l10n.dart';
-import '../../util/router_util.dart';
+import '../../utils/router_util.dart';
 
 class UserRelayRouter extends StatefulWidget {
   @override

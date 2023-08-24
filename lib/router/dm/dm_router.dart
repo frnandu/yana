@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../client/nip04/nip04.dart';
+import '../../nostr/nip04/nip04.dart';
 import '../../main.dart';
 import 'dm_known_list_router.dart';
 import 'dm_unknown_list_router.dart';

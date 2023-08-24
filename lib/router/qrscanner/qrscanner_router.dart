@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 
-import '../../util/router_util.dart';
+import '../../utils/router_util.dart';
 
 class QRScannerRouter extends StatefulWidget {
   @override

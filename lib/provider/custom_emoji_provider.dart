@@ -3,9 +3,9 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:yana/provider/data_util.dart';
-import 'package:yana/util/string_util.dart';
+import 'package:yana/utils/string_util.dart';
 
-import '../data/custom_emoji.dart';
+import '../models/custom_emoji.dart';
 import '../main.dart';
 
 class CustomEmojiProvider extends ChangeNotifier {

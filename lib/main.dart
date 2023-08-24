@@ -13,7 +13,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
 import 'package:window_manager/window_manager.dart';
-import 'package:yana/client/nostr.dart';
+import 'package:yana/nostr/nostr.dart';
 import 'package:yana/provider/badge_definition_provider.dart';
 import 'package:yana/provider/community_info_provider.dart';
 import 'package:yana/provider/custom_emoji_provider.dart';
@@ -24,13 +24,13 @@ import 'package:yana/router/user/followed_router.dart';
 import 'package:yana/router/user/followed_tags_list_router.dart';
 import 'package:yana/router/user/user_history_contact_list_router.dart';
 import 'package:yana/router/user/user_zap_list_router.dart';
-import 'package:yana/util/platform_util.dart';
+import 'package:yana/utils/platform_util.dart';
 
-import 'consts/router_path.dart';
-import 'consts/theme_style.dart';
-import 'data/db.dart';
+import 'utils/router_path.dart';
+import 'utils/theme_style.dart';
+import 'models/db.dart';
 import 'generated/l10n.dart';
-import 'home_component.dart';
+import 'ui/home_component.dart';
 import 'provider/community_approved_provider.dart';
 import 'provider/contact_list_provider.dart';
 import 'provider/data_util.dart';
@@ -65,11 +65,11 @@ import 'router/user/followed_communities_router.dart';
 import 'router/user/user_contact_list_router.dart';
 import 'router/user/user_relays_router.dart';
 import 'router/user/user_router.dart';
-import 'system_timer.dart';
-import 'util/image/cache_manager_builder.dart';
-import 'util/locale_util.dart';
-import 'util/media_data_cache.dart';
-import 'util/string_util.dart';
+import 'utils/system_timer.dart';
+import 'utils/image/cache_manager_builder.dart';
+import 'utils/locale_util.dart';
+import 'utils/media_data_cache.dart';
+import 'utils/string_util.dart';
 
 late SharedPreferences sharedPreferences;
 
@@ -344,9 +344,6 @@ class _MyApp extends State<MyApp> {
         child: MaterialApp(
           builder: BotToastInit(),
           navigatorObservers: [BotToastNavigatorObserver()],
-          // debugShowMaterialGrid: true,
-          // showPerformanceOverlay: true,
-          // debugShowCheckedModeBanner: false
           locale: _locale,
           title: packageInfo.appName,
           localizationsDelegates: const [

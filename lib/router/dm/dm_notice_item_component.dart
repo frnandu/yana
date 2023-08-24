@@ -3,11 +3,11 @@ import 'package:get_time_ago/get_time_ago.dart';
 import 'package:yana/main.dart';
 import 'package:yana/provider/notice_provider.dart';
 
-import '../../component/point_component.dart';
-import '../../consts/base.dart';
-import '../../consts/router_path.dart';
-import '../../util/router_util.dart';
-import '../../util/string_util.dart';
+import '../../ui/point_component.dart';
+import '../../utils/base.dart';
+import '../../utils/router_path.dart';
+import '../../utils/router_util.dart';
+import '../../utils/string_util.dart';
 
 class DMNoticeItemComponent extends StatelessWidget {
   static const double IMAGE_WIDTH = 34;

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:yana/component/event/event_main_component.dart';
+import 'package:yana/ui/event/event_main_component.dart';
 import 'package:yana/main.dart';
 import 'package:yana/router/thread/thread_detail_event.dart';
 import 'package:screenshot/screenshot.dart';
 
-import '../../consts/base.dart';
+import '../../utils/base.dart';
 
 class ThreadDetailItemMainComponent extends StatefulWidget {
   static double BORDER_LEFT_WIDTH = 2;

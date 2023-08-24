@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 
-import '../consts/index_taps.dart';
+import '../utils/index_taps.dart';
 
 class IndexProvider extends ChangeNotifier {
   int _currentTap = IndexTaps.FOLLOW;

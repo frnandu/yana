@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:yana/main.dart';
 
-import '../../client/nip02/cust_contact_list.dart';
+import '../../nostr/nip02/cust_contact_list.dart';
 import '../../generated/l10n.dart';
-import '../../util/router_util.dart';
+import '../../utils/router_util.dart';
 import 'user_contact_list_component.dart';
 
 class UserHistoryContactListRouter extends StatefulWidget {

@@ -2,17 +2,17 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
-import 'package:yana/client/nip05/nip05_validor.dart';
-import 'package:yana/consts/nip05status.dart';
+import 'package:yana/nostr/nip05/nip05_validor.dart';
+import 'package:yana/utils/nip05status.dart';
 
-import '../client/event.dart';
-import '../client/event_kind.dart' as kind;
-import '../client/filter.dart';
-import '../data/metadata.dart';
-import '../data/metadata_db.dart';
+import '../nostr/event.dart';
+import '../nostr/event_kind.dart' as kind;
+import '../nostr/filter.dart';
+import '../models/metadata.dart';
+import '../models/metadata_db.dart';
 import '../main.dart';
-import '../util/later_function.dart';
-import '../util/string_util.dart';
+import '../utils/later_function.dart';
+import '../utils/string_util.dart';
 
 class MetadataProvider extends ChangeNotifier with LaterFunction {
   Map<String, Metadata> _metadataCache = {};

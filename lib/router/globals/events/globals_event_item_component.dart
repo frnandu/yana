@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:yana/component/event/event_main_component.dart';
-import 'package:yana/consts/router_path.dart';
+import 'package:yana/ui/event/event_main_component.dart';
+import 'package:yana/utils/router_path.dart';
 import 'package:yana/provider/single_event_provider.dart';
-import 'package:yana/util/router_util.dart';
+import 'package:yana/utils/router_util.dart';
 import 'package:provider/provider.dart';
 import 'package:screenshot/screenshot.dart';
 
-import '../../../client/event.dart';
-import '../../../consts/base.dart';
+import '../../../nostr/event.dart';
+import '../../../utils/base.dart';
 import '../../../generated/l10n.dart';
 
 @deprecated

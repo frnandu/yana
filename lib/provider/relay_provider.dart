@@ -2,12 +2,12 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 
-import '../client/event.dart';
-import '../client/event_kind.dart' as kind;
-import '../client/nostr.dart';
-import '../client/relay.dart';
-import '../consts/client_connected.dart';
-import '../data/relay_status.dart';
+import '../nostr/event.dart';
+import '../nostr/event_kind.dart' as kind;
+import '../nostr/nostr.dart';
+import '../nostr/relay.dart';
+import '../utils/client_connected.dart';
+import '../models/relay_status.dart';
 import '../main.dart';
 import 'data_util.dart';
 

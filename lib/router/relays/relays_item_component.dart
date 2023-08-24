@@ -3,14 +3,14 @@ import 'dart:developer';
 import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:yana/client/nip19/nip19_tlv.dart';
-import 'package:yana/consts/router_path.dart';
+import 'package:yana/nostr/nip19/nip19_tlv.dart';
+import 'package:yana/utils/router_path.dart';
 import 'package:yana/main.dart';
-import 'package:yana/util/router_util.dart';
+import 'package:yana/utils/router_util.dart';
 
-import '../../consts/base.dart';
-import '../../consts/client_connected.dart';
-import '../../data/relay_status.dart';
+import '../../utils/base.dart';
+import '../../utils/client_connected.dart';
+import '../../models/relay_status.dart';
 import '../../generated/l10n.dart';
 
 class RelaysItemComponent extends StatelessWidget {

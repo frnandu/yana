@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../component/user/metadata_component.dart';
-import '../../consts/base.dart';
-import '../../consts/router_path.dart';
-import '../../data/metadata.dart';
+import '../../ui/user/metadata_component.dart';
+import '../../utils/base.dart';
+import '../../utils/router_path.dart';
+import '../../models/metadata.dart';
 import '../../generated/l10n.dart';
 import '../../provider/metadata_provider.dart';
-import '../../util/platform_util.dart';
-import '../../util/router_util.dart';
-import '../../util/string_util.dart';
+import '../../utils/platform_util.dart';
+import '../../utils/router_util.dart';
+import '../../utils/string_util.dart';
 
 class FollowedRouter extends StatefulWidget {
   @override

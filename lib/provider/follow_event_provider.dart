@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 
-import '../../client/event_kind.dart' as kind;
-import '../client/event.dart';
-import '../client/filter.dart';
-import '../client/nip02/contact.dart';
-import '../client/nip02/cust_contact_list.dart';
-import '../client/nostr.dart';
-import '../data/event_mem_box.dart';
+import '../nostr/event_kind.dart' as kind;
+import '../nostr/event.dart';
+import '../nostr/filter.dart';
+import '../nostr/nip02/contact.dart';
+import '../nostr/nip02/cust_contact_list.dart';
+import '../nostr/nostr.dart';
+import '../models/event_mem_box.dart';
 import '../main.dart';
 import '../router/tag/topic_map.dart';
-import '../util/find_event_interface.dart';
-import '../util/peddingevents_later_function.dart';
-import '../util/string_util.dart';
+import '../utils/find_event_interface.dart';
+import '../utils/peddingevents_later_function.dart';
+import '../utils/string_util.dart';
 
 class FollowEventProvider extends ChangeNotifier
     with PenddingEventsLaterFunction

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:yana/data/metadata.dart';
+import 'package:yana/models/metadata.dart';
 import 'package:yana/provider/metadata_provider.dart';
 import 'package:provider/provider.dart';
 
-import '../../component/simple_name_component.dart';
-import '../../consts/base.dart';
+import '../../ui/simple_name_component.dart';
+import '../../utils/base.dart';
 
 class EditorNotifyItem {
   String pubkey;

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:yana/provider/data_util.dart';
 
 import '../main.dart';
-import '../util/dirtywords_util.dart';
+import '../utils/dirtywords_util.dart';
 
 class FilterProvider extends ChangeNotifier {
   static FilterProvider? _instance;

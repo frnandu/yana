@@ -2,18 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:widget_size/widget_size.dart';
 
-import '../../client/event.dart';
-import '../../client/event_kind.dart' as kind;
-import '../../component/event/event_list_component.dart';
-import '../../component/event/event_load_list_component.dart';
-import '../../component/event/reaction_event_list_component.dart';
-import '../../component/event/zap_event_list_component.dart';
-import '../../data/event_reactions.dart';
+import '../../nostr/event.dart';
+import '../../nostr/event_kind.dart' as kind;
+import '../../ui/event/event_list_component.dart';
+import '../../ui/event/event_load_list_component.dart';
+import '../../ui/event/reaction_event_list_component.dart';
+import '../../ui/event/zap_event_list_component.dart';
+import '../../models/event_reactions.dart';
 import '../../generated/l10n.dart';
 import '../../provider/event_reactions_provider.dart';
 import '../../provider/single_event_provider.dart';
-import '../../util/platform_util.dart';
-import '../../util/router_util.dart';
+import '../../utils/platform_util.dart';
+import '../../utils/router_util.dart';
 import '../thread/thread_detail_router.dart';
 
 class EventDetailRouter extends StatefulWidget {

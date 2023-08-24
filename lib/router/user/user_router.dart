@@ -1,25 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../client/event_kind.dart' as kind;
-import '../../client/filter.dart';
-import '../../client/nip19/nip19.dart';
-import '../../component/appbar4stack.dart';
-import '../../component/cust_state.dart';
-import '../../component/event/event_list_component.dart';
-import '../../component/user/metadata_component.dart';
-import '../../consts/base_consts.dart';
-import '../../consts/router_path.dart';
-import '../../data/event_mem_box.dart';
-import '../../data/metadata.dart';
+import '../../nostr/event_kind.dart' as kind;
+import '../../nostr/filter.dart';
+import '../../nostr/nip19/nip19.dart';
+import '../../ui/appbar4stack.dart';
+import '../../ui/cust_state.dart';
+import '../../ui/event/event_list_component.dart';
+import '../../ui/user/metadata_component.dart';
+import '../../utils/base_consts.dart';
+import '../../utils/router_path.dart';
+import '../../models/event_mem_box.dart';
+import '../../models/metadata.dart';
 import '../../main.dart';
 import '../../provider/metadata_provider.dart';
 import '../../provider/setting_provider.dart';
-import '../../util/load_more_event.dart';
-import '../../util/peddingevents_later_function.dart';
-import '../../util/platform_util.dart';
-import '../../util/router_util.dart';
-import '../../util/string_util.dart';
+import '../../utils/load_more_event.dart';
+import '../../utils/peddingevents_later_function.dart';
+import '../../utils/platform_util.dart';
+import '../../utils/router_util.dart';
+import '../../utils/string_util.dart';
 import 'user_statistics_component.dart';
 
 class UserRouter extends StatefulWidget {

@@ -1,14 +1,14 @@
 import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
-import 'package:yana/util/platform_util.dart';
+import 'package:yana/utils/platform_util.dart';
 
-import '../../client/client_utils/keys.dart';
-import '../../client/nip19/nip19.dart';
-import '../../consts/base.dart';
-import '../../consts/index_taps.dart';
+import '../../nostr/client_utils/keys.dart';
+import '../../nostr/nip19/nip19.dart';
+import '../../utils/base.dart';
+import '../../utils/index_taps.dart';
 import '../../generated/l10n.dart';
 import '../../main.dart';
-import '../../util/string_util.dart';
+import '../../utils/string_util.dart';
 
 class LoginRouter extends StatefulWidget {
   @override

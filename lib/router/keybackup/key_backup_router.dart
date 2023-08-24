@@ -1,11 +1,11 @@
 import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:yana/client/nip19/nip19.dart';
-import 'package:yana/consts/base.dart';
+import 'package:yana/nostr/nip19/nip19.dart';
+import 'package:yana/utils/base.dart';
 import 'package:yana/main.dart';
 
-import '../../component/appbar4stack.dart';
+import '../../ui/appbar4stack.dart';
 import '../../generated/l10n.dart';
 
 class KeyBackupRouter extends StatefulWidget {

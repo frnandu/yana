@@ -1,20 +1,20 @@
 import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
-import 'package:yana/component/comfirm_dialog.dart';
-import 'package:yana/util/when_stop_function.dart';
+import 'package:yana/ui/comfirm_dialog.dart';
+import 'package:yana/utils/when_stop_function.dart';
 import 'package:provider/provider.dart';
 
-import '../../client/event.dart';
-import '../../client/event_kind.dart' as kind;
-import '../../client/filter.dart';
-import '../../component/cust_state.dart';
-import '../../consts/base.dart';
-import '../../data/relay_status.dart';
+import '../../nostr/event.dart';
+import '../../nostr/event_kind.dart' as kind;
+import '../../nostr/filter.dart';
+import '../../ui/cust_state.dart';
+import '../../utils/base.dart';
+import '../../models/relay_status.dart';
 import '../../generated/l10n.dart';
 import '../../main.dart';
 import '../../provider/relay_provider.dart';
-import '../../util/router_util.dart';
-import '../../util/string_util.dart';
+import '../../utils/router_util.dart';
+import '../../utils/string_util.dart';
 import 'relays_item_component.dart';
 
 class RelaysRouter extends StatefulWidget {
