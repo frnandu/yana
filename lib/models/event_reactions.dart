@@ -23,6 +23,10 @@ class EventReactions implements FindEventInterface {
 
   List<Event>? myLikeEvents;
 
+  bool hasMyReply = false;
+  bool hasMyRepost = false;
+  bool hasMyZap = false;
+
   int zapNum = 0;
 
   List<Event> zaps = [];
@@ -43,7 +47,10 @@ class EventReactions implements FindEventInterface {
       ..reposts = reposts
       ..likeNum = likeNum
       ..likes = likes
+      ..hasMyReply = hasMyReply
+      ..hasMyRepost = hasMyRepost
       ..myLikeEvents = myLikeEvents
+      ..hasMyZap = hasMyZap
       ..zaps = zaps
       ..zapNum = zapNum
       ..eventIdMap = eventIdMap
@@ -78,10 +85,16 @@ class EventReactions implements FindEventInterface {
       eventIdMap[id] = 1;
 
       if (event.kind == kind.EventKind.TEXT_NOTE) {
+        if (event.pubKey == nostr!.publicKey) {
+          hasMyReply = true;
+        }
         replyNum++;
         replies.add(event);
       } else if (event.kind == kind.EventKind.REPOST ||
           event.kind == kind.EventKind.GENERIC_REPOST) {
+        if (event.pubKey == nostr!.publicKey) {
+          hasMyRepost = true;
+        }
         repostNum++;
         reposts.add(event);
       } else if (event.kind == kind.EventKind.REACTION) {
@@ -99,10 +112,13 @@ class EventReactions implements FindEventInterface {
         zapNum += ZapNumUtil.getNumFromZapEvent(event);
         zaps.add(event);
 
-        if (StringUtil.isNotBlank(event.content)) {
+        // if (StringUtil.isNotBlank(event.content)) {
+          if (event.pubKey == nostr!.publicKey) {
+            hasMyZap = true;
+          }
           replyNum++;
           replies.add(event);
-        }
+        // }
       }
 
       return true;

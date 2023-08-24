@@ -2029,11 +2029,11 @@ class I18n {
     );
   }
 
-  /// `Followed`
-  String get Followed {
+  /// `Followers`
+  String get Followers {
     return Intl.message(
-      'Followed',
-      name: 'Followed',
+      'Followers',
+      name: 'Followers',
       desc: '',
       args: [],
     );

@@ -530,13 +530,13 @@ class MetadataIconBtn extends StatelessWidget {
     final IconThemeData iconTheme = IconTheme.of(context);
 
     var decoration = BoxDecoration(
-      borderRadius: BorderRadius.circular(20),
-      border: Border.all(width: 1),
+      // borderRadius: BorderRadius.circular(20),
+      // border: Border.all(width: 1),
     );
     var main = Container(
       // height: 34,
       // width: 34,
-      child: Icon(iconData, size: 22, color: iconColor ?? iconTheme.color),
+      child: Icon(iconData, size: 30, color: iconColor ?? iconTheme.color),
     );
 
     if (onTap != null || onLongPress != null) {

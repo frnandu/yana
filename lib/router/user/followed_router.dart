@@ -85,7 +85,7 @@ class _FollowedRouter extends State<FollowedRouter> {
           ),
         ),
         title: Text(
-          s.Followed,
+          s.Followers,
           style: TextStyle(
             fontSize: titleFontSize,
             fontWeight: FontWeight.bold,

@@ -53,14 +53,13 @@ class EventReactionsComponent extends StatefulWidget {
 }
 
 class _EventReactionsComponent extends State<EventReactionsComponent> {
-  List<Event>? myLikeEvents;
+  EventReactions? eventReactions;
 
   @override
   Widget build(BuildContext context) {
     var s = I18n.of(context);
     var themeData = Theme.of(context);
-    var hintColor = themeData.hintColor;
-    var fontSize = themeData.textTheme.bodySmall!.fontSize!;
+    var fontSize = themeData.textTheme.bodyMedium!.fontSize!;
     var mediumFontSize = themeData.textTheme.bodyMedium!.fontSize;
     var popFontStyle = TextStyle(
       fontSize: mediumFontSize,
@@ -72,30 +71,42 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
         int repostNum = 0;
         int likeNum = 0;
         int zapNum = 0;
-        Color likeColor = hintColor;
+        Color likeColor = themeData.hintColor;
+        Color repostColor = themeData.hintColor;
+        Color replyColor = themeData.hintColor;
+        Color zapColor = themeData.hintColor;
+        // && widget.event.pubKey == nostr!.publicKey
 
         if (eventReactions != null) {
           replyNum = eventReactions.replies.length;
           repostNum = eventReactions.repostNum;
           likeNum = eventReactions.likeNum;
           zapNum = eventReactions.zapNum;
-
-          myLikeEvents = eventReactions.myLikeEvents;
-        }
-        if (myLikeEvents != null && myLikeEvents!.isNotEmpty) {
-          likeColor = Colors.red;
+          this.eventReactions = eventReactions;
+          if (eventReactions.hasMyReply) {
+            replyColor = themeData.primaryColor;
+          }
+          if (eventReactions.hasMyRepost) {
+            repostColor = themeData.primaryColor;
+          }
+          if (eventReactions.myLikeEvents != null && eventReactions.myLikeEvents!.isNotEmpty) {
+            likeColor = Colors.red;
+          }
+          if (eventReactions.hasMyZap) {
+            zapColor = Colors.orange;
+          }
         }
 
         return Container(
-          height: 34,
+          height: 40,
           child: Row(
             children: [
               Expanded(
                   child: EventReactionNumComponent(
                 num: replyNum,
-                iconData: Icons.comment,
+                iconData: Icons.mode_comment_outlined,
                 onTap: onCommmentTap,
-                color: hintColor,
+                color: replyNum>0 ? replyColor : themeData.disabledColor,
                 fontSize: fontSize,
               )),
               // Expanded(
@@ -125,7 +136,7 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
                   child: EventReactionNumComponent(
                     num: repostNum,
                     iconData: Icons.repeat,
-                    color: hintColor,
+                    color: repostNum>0 ? repostColor : themeData.disabledColor,
                     fontSize: fontSize,
                   ),
                 ),
@@ -133,9 +144,9 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
               Expanded(
                   child: EventReactionNumComponent(
                 num: likeNum,
-                iconData: Icons.favorite,
+                iconData: Icons.favorite_border,
                 onTap: onLikeTap,
-                color: likeColor,
+                color: likeNum>0 ? likeColor : themeData.disabledColor,
                 fontSize: fontSize,
               )),
               Expanded(
@@ -221,7 +232,7 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
                     iconData: Icons.bolt,
                     onTap: null,
                     onLongPress: genZap,
-                    color: hintColor,
+                    color: zapNum>0 ? zapColor : themeData.disabledColor,
                     fontSize: fontSize,
                   ),
                 ),
@@ -291,7 +302,7 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
                   child: Icon(
                     Icons.more_vert,
                     size: 16,
-                    color: hintColor,
+                    color: themeData.disabledColor,
                   ),
                 ),
               ),
@@ -432,7 +443,7 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
   }
 
   void onLikeTap() {
-    if (myLikeEvents == null || myLikeEvents!.isEmpty) {
+    if (eventReactions?.myLikeEvents == null || eventReactions!.myLikeEvents!.isEmpty) {
       // like
       var likeEvent = nostr!.sendLike(widget.event.id);
       if (likeEvent != null) {
@@ -440,7 +451,7 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
       }
     } else {
       // delete like
-      for (var event in myLikeEvents!) {
+      for (var event in eventReactions!.myLikeEvents!) {
         nostr!.deleteEvent(event.id);
       }
       eventReactionsProvider.deleteLike(widget.event.id);
@@ -504,7 +515,7 @@ class EventReactionNumComponent extends StatelessWidget {
     Widget? main;
     var iconWidget = Icon(
       iconData,
-      size: 14,
+      size: 20,
       color: color,
     );
     if (num != 0) {

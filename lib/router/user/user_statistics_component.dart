@@ -113,6 +113,21 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
           num: length, name: s.Following, onTap: onFollowingTap));
     }
 
+    list.add(UserStatisticsItemComponent(
+      num: followedNum,
+      name: s.Followers,
+      onTap: onFollowedTap,
+      formatNum: true,
+    ));
+
+    list.add(UserStatisticsItemComponent(
+      num: zapNum,
+      name: "Zap",
+      onTap: onZapTap,
+      formatNum: true,
+    ));
+
+
     if (isLocal) {
       list.add(Selector<RelayProvider, int>(builder: (context, num, child) {
         return UserStatisticsItemComponent(
@@ -127,20 +142,6 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
       list.add(UserStatisticsItemComponent(
           num: relaysNum, name: s.Relays, onTap: onRelaysTap));
     }
-
-    list.add(UserStatisticsItemComponent(
-      num: followedNum,
-      name: s.Followed,
-      onTap: onFollowedTap,
-      formatNum: true,
-    ));
-
-    list.add(UserStatisticsItemComponent(
-      num: zapNum,
-      name: "Zap",
-      onTap: onZapTap,
-      formatNum: true,
-    ));
 
     if (isLocal) {
       list.add(
