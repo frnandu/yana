@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:yana/router/filter/filter_block_component.dart';
 import 'package:yana/router/filter/filter_dirtyword_component.dart';
 
-import '../../generated/l10n.dart';
+import '../../i18n/i18n.dart';
 import '../../utils/platform_util.dart';
 import '../../utils/router_util.dart';
 import '../index/index_app_bar.dart';
@@ -26,7 +26,7 @@ class _FilterRouter extends State<FilterRouter>
 
   @override
   Widget build(BuildContext context) {
-    var s = S.of(context);
+    var s = I18n.of(context);
     var themeData = Theme.of(context);
     var titleTextColor = themeData.appBarTheme.titleTextStyle!.color;
     var titleTextStyle = TextStyle(

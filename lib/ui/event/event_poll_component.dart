@@ -6,15 +6,15 @@ import 'package:convert/convert.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../i18n/i18n.dart';
+import '../../main.dart';
+import '../../models/event_reactions.dart';
 import '../../nostr/event.dart';
 import '../../nostr/nip69/poll_info.dart';
-import '../../nostr/zap/zap_action.dart';
-import '../../nostr/zap/zap_num_util.dart';
-import '../../utils/base.dart';
-import '../../models/event_reactions.dart';
-import '../../generated/l10n.dart';
-import '../../main.dart';
+import '../../nostr/nip57/zap_action.dart';
+import '../../nostr/nip57/zap_num_util.dart';
 import '../../provider/event_reactions_provider.dart';
+import '../../utils/base.dart';
 import '../../utils/number_format_util.dart';
 import '../../utils/spider_util.dart';
 import '../../utils/string_util.dart';
@@ -37,7 +37,7 @@ class _EventPollComponent extends State<EventPollComponent> {
 
   @override
   Widget build(BuildContext context) {
-    var s = S.of(context);
+    var s = I18n.of(context);
     var themeData = Theme.of(context);
     var hintColor = themeData.hintColor;
     var pollBackgroundColor = hintColor.withOpacity(0.3);
@@ -227,7 +227,7 @@ class _EventPollComponent extends State<EventPollComponent> {
 
   Future<void> tapZap(String selectKey) async {
     var numStr = await TextInputDialog.show(
-        context, S.of(context).Input_Sats_num,
+        context, I18n.of(context).Input_Sats_num,
         valueCheck: inputCheck);
     if (numStr != null) {
       var num = int.tryParse(numStr);
@@ -245,13 +245,13 @@ class _EventPollComponent extends State<EventPollComponent> {
 
   bool inputCheck(BuildContext context, String value) {
     if (StringUtil.isBlank(value)) {
-      BotToast.showText(text: S.of(context).Input_can_not_be_null);
+      BotToast.showText(text: I18n.of(context).Input_can_not_be_null);
       return false;
     }
 
     var num = int.tryParse(value);
     if (num == null) {
-      BotToast.showText(text: S.of(context).Input_parse_error);
+      BotToast.showText(text: I18n.of(context).Input_parse_error);
       return false;
     } else {
       if (pollInfo != null &&
@@ -259,7 +259,7 @@ class _EventPollComponent extends State<EventPollComponent> {
           pollInfo!.valueMinimum! > num) {
         BotToast.showText(
             text:
-                "${S.of(context).Zap_num_can_not_smaller_then} ${pollInfo!.valueMinimum!}");
+                "${I18n.of(context).Zap_num_can_not_smaller_then} ${pollInfo!.valueMinimum!}");
         return false;
       }
       if (pollInfo != null &&
@@ -267,7 +267,7 @@ class _EventPollComponent extends State<EventPollComponent> {
           pollInfo!.valueMaximum! < num) {
         BotToast.showText(
             text:
-                "${S.of(context).Zap_num_can_not_bigger_then} ${pollInfo!.valueMaximum!}");
+                "${I18n.of(context).Zap_num_can_not_bigger_then} ${pollInfo!.valueMaximum!}");
         return false;
       }
     }

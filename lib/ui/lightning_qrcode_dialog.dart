@@ -4,7 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:pretty_qr_code/pretty_qr_code.dart';
 
 import '../utils/base.dart';
-import '../generated/l10n.dart';
+import '../i18n/i18n.dart';
 import '../utils/router_util.dart';
 
 class LightningQrcodeDialog extends StatefulWidget {
@@ -36,7 +36,7 @@ class _LightningQrcodeDialog extends State<LightningQrcodeDialog> {
 
   @override
   Widget build(BuildContext context) {
-    var s = S.of(context);
+    var s = I18n.of(context);
     var themeData = Theme.of(context);
     Color cardColor = themeData.cardColor;
     var hintColor = themeData.hintColor;
@@ -126,7 +126,7 @@ class _LightningQrcodeDialog extends State<LightningQrcodeDialog> {
 
   void _doCopy(String text) {
     Clipboard.setData(ClipboardData(text: text)).then((_) {
-      BotToast.showText(text: S.of(context).Copy_success);
+      BotToast.showText(text: I18n.of(context).Copy_success);
     });
   }
 }

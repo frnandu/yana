@@ -6,7 +6,7 @@ import '../../nostr/client_utils/keys.dart';
 import '../../nostr/nip19/nip19.dart';
 import '../../utils/base.dart';
 import '../../utils/index_taps.dart';
-import '../../generated/l10n.dart';
+import '../../i18n/i18n.dart';
 import '../../main.dart';
 import '../../utils/string_util.dart';
 
@@ -35,7 +35,7 @@ class _LoginRouter extends State<LoginRouter>
 
   @override
   Widget build(BuildContext context) {
-    var s = S.of(context);
+    var s = I18n.of(context);
     var themeData = Theme.of(context);
     var mainColor = themeData.primaryColor;
     var maxWidth = mediaDataCache.size.width;
@@ -150,7 +150,7 @@ class _LoginRouter extends State<LoginRouter>
 
     var pk = controller.text;
     if (StringUtil.isBlank(pk)) {
-      BotToast.showText(text: S.of(context).Private_key_is_null);
+      BotToast.showText(text: I18n.of(context).Private_key_is_null);
       return;
     }
 

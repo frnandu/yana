@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:yana/utils/string_util.dart';
 
 import '../../utils/base.dart';
-import '../../generated/l10n.dart';
+import '../../i18n/i18n.dart';
 
 class PollInputController {
   TextEditingController minValueController = TextEditingController();
@@ -34,7 +34,7 @@ class PollInputController {
   }
 
   bool checkInput(BuildContext context) {
-    var s = S.of(context);
+    var s = I18n.of(context);
     if (StringUtil.isNotBlank(maxValueController.text)) {
       var num = int.tryParse(maxValueController.text);
       if (num == null) {
@@ -85,7 +85,7 @@ class _PollInputComponent extends State<PollInputComponent> {
 
   @override
   Widget build(BuildContext context) {
-    var s = S.of(context);
+    var s = I18n.of(context);
     var themeData = Theme.of(context);
     var mainColor = themeData.primaryColor;
     List<Widget> list = [];

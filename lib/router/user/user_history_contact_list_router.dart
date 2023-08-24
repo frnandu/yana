@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:yana/main.dart';
 
 import '../../nostr/nip02/cust_contact_list.dart';
-import '../../generated/l10n.dart';
+import '../../i18n/i18n.dart';
 import '../../utils/router_util.dart';
 import 'user_contact_list_component.dart';
 
@@ -19,7 +19,7 @@ class _UserHistoryContactListRouter
 
   @override
   Widget build(BuildContext context) {
-    var s = S.of(context);
+    var s = I18n.of(context);
 
     if (contactList == null) {
       var arg = RouterUtil.routerArgs(context);

@@ -10,7 +10,7 @@ import 'package:yana/ui/qrcode_dialog.dart';
 import 'package:yana/ui/webview_router.dart';
 import 'package:yana/ui/zap_gen_dialog.dart';
 import 'package:yana/utils/router_path.dart';
-import 'package:yana/generated/l10n.dart';
+import 'package:yana/i18n/i18n.dart';
 import 'package:yana/main.dart';
 import 'package:yana/provider/contact_list_provider.dart';
 import 'package:yana/utils/platform_util.dart';
@@ -18,7 +18,7 @@ import 'package:yana/utils/router_util.dart';
 
 import '../../nostr/nip02/contact.dart';
 import '../../nostr/nip19/nip19.dart';
-import '../../nostr/zap/zap_action.dart';
+import '../../nostr/nip57/zap_action.dart';
 import '../../utils/base.dart';
 import '../../models/metadata.dart';
 import '../../utils/string_util.dart';
@@ -425,7 +425,7 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
 
   copyPubKey() {
     Clipboard.setData(ClipboardData(text: nip19PubKey)).then((_) {
-      BotToast.showText(text: S.of(context).key_has_been_copy);
+      BotToast.showText(text: I18n.of(context).key_has_been_copy);
     });
   }
 
@@ -470,7 +470,7 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
         var nrelay = NIP19Tlv.decodeNrelay(result);
         if (nrelay != null) {
           var result = await ComfirmDialog.show(
-              context, S.of(context).Add_this_relay_to_local);
+              context, I18n.of(context).Add_this_relay_to_local);
           if (result == true) {
             relayProvider.addRelay(nrelay.addr);
           }
@@ -479,7 +479,7 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
         WebViewRouter.open(context, result);
       } else {
         Clipboard.setData(ClipboardData(text: result)).then((_) {
-          BotToast.showText(text: S.of(context).Copy_success);
+          BotToast.showText(text: I18n.of(context).Copy_success);
         });
       }
     }

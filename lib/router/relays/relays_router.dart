@@ -10,7 +10,7 @@ import '../../nostr/filter.dart';
 import '../../ui/cust_state.dart';
 import '../../utils/base.dart';
 import '../../models/relay_status.dart';
-import '../../generated/l10n.dart';
+import '../../i18n/i18n.dart';
 import '../../main.dart';
 import '../../provider/relay_provider.dart';
 import '../../utils/router_util.dart';
@@ -28,7 +28,7 @@ class _RelaysRouter extends CustState<RelaysRouter> with WhenStopFunction {
   TextEditingController controller = TextEditingController();
   @override
   Widget doBuild(BuildContext context) {
-    var s = S.of(context);
+    var s = I18n.of(context);
     var _relayProvider = Provider.of<RelayProvider>(context);
     var relayAddrs = _relayProvider.relayAddrs;
     var relayStatusMap = relayProvider.relayStatusMap;
@@ -97,7 +97,7 @@ class _RelaysRouter extends CustState<RelaysRouter> with WhenStopFunction {
     var addr = controller.text;
     addr = addr.trim();
     if (StringUtil.isBlank(addr)) {
-      BotToast.showText(text: S.of(context).Address_can_t_be_null);
+      BotToast.showText(text: I18n.of(context).Address_can_t_be_null);
       return;
     }
 
@@ -132,7 +132,7 @@ class _RelaysRouter extends CustState<RelaysRouter> with WhenStopFunction {
         (relaysUpdatedTime == null ||
             remoteRelayEvent!.createdAt - relaysUpdatedTime > 60 * 5)) {
       var result = await ComfirmDialog.show(context,
-          S.of(context).Find_clouded_relay_list_do_you_want_to_download);
+          I18n.of(context).Find_clouded_relay_list_do_you_want_to_download);
       if (result == true) {
         List<String> list = [];
         for (var tag in remoteRelayEvent!.tags) {

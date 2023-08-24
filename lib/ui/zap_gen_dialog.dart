@@ -1,12 +1,10 @@
 import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
-import 'package:yana/nostr/event.dart';
 
-import '../nostr/zap/zap_action.dart';
+import '../i18n/i18n.dart';
+import '../nostr/nip57/zap_action.dart';
 import '../utils/base.dart';
-import '../generated/l10n.dart';
 import '../utils/router_util.dart';
-import '../utils/string_util.dart';
 
 class ZapGenDialog extends StatefulWidget {
   String pubkey;
@@ -51,7 +49,7 @@ class _ZapGenDialog extends State<ZapGenDialog> {
 
   @override
   Widget build(BuildContext context) {
-    var s = S.of(context);
+    var s = I18n.of(context);
     var themeData = Theme.of(context);
     Color cardColor = themeData.cardColor;
     var mainColor = themeData.primaryColor;
@@ -116,7 +114,7 @@ class _ZapGenDialog extends State<ZapGenDialog> {
             height: 40,
             alignment: Alignment.center,
             child: Text(
-              S.of(context).Comfirm,
+              I18n.of(context).Comfirm,
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
@@ -170,7 +168,7 @@ class _ZapGenDialog extends State<ZapGenDialog> {
     var text = controller.text;
     var num = int.tryParse(text);
     if (num == null) {
-      BotToast.showText(text: S.of(context).Number_parse_error);
+      BotToast.showText(text: I18n.of(context).Number_parse_error);
       return;
     }
 

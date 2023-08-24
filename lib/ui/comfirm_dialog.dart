@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:yana/utils/router_util.dart';
 
-import '../generated/l10n.dart';
+import '../i18n/i18n.dart';
 
 class ComfirmDialog {
   static Future<bool?> show(BuildContext context, String content) async {
-    var s = S.of(context);
+    var s = I18n.of(context);
     return await showDialog<bool>(
         context: context,
         builder: (context) {

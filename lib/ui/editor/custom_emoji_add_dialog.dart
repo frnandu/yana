@@ -6,7 +6,7 @@ import 'package:yana/models/custom_emoji.dart';
 
 import '../../nostr/upload/uploader.dart';
 import '../../utils/base.dart';
-import '../../generated/l10n.dart';
+import '../../i18n/i18n.dart';
 import '../../main.dart';
 import '../../utils/router_util.dart';
 import '../../utils/string_util.dart';
@@ -39,7 +39,7 @@ class _CustomEmojiAddDialog extends State<CustomEmojiAddDialog> {
 
   @override
   Widget build(BuildContext context) {
-    var s = S.of(context);
+    var s = I18n.of(context);
     var themeData = Theme.of(context);
     Color cardColor = themeData.cardColor;
     var mainColor = themeData.primaryColor;
@@ -104,7 +104,7 @@ class _CustomEmojiAddDialog extends State<CustomEmojiAddDialog> {
             height: 40,
             alignment: Alignment.center,
             child: Text(
-              S.of(context).Comfirm,
+              I18n.of(context).Comfirm,
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
@@ -164,7 +164,7 @@ class _CustomEmojiAddDialog extends State<CustomEmojiAddDialog> {
   String? filepath;
 
   Future<void> _onComfirm() async {
-    var s = S.of(context);
+    var s = I18n.of(context);
     var text = controller.text;
     if (StringUtil.isBlank(text)) {
       BotToast.showText(text: s.Input_can_not_be_null);

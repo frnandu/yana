@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../nostr/event.dart';
-import '../../nostr/zap/zap_num_util.dart';
+import '../../nostr/nip57/zap_num_util.dart';
 import '../../utils/base.dart';
 import '../../models/metadata.dart';
 import '../../provider/metadata_provider.dart';

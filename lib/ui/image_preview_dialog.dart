@@ -13,7 +13,7 @@ import 'package:yana/utils/store_util.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:share_plus/share_plus.dart';
 
-import '../generated/l10n.dart';
+import '../i18n/i18n.dart';
 
 const _defaultBackgroundColor = Colors.black;
 const _defaultCloseButtonColor = Colors.white;
@@ -224,7 +224,7 @@ class _ImagePreviewDialog extends State<ImagePreviewDialog> {
         var result =
             await ImageGallerySaver.saveImage(imageAsBytes, quality: 100);
         if (result != null && result is Map && result["isSuccess"]) {
-          BotToast.showText(text: S.of(context).Image_save_success);
+          BotToast.showText(text: I18n.of(context).Image_save_success);
         }
       } else {
         var result = await FileSaver.instance.saveFile(
@@ -232,7 +232,7 @@ class _ImagePreviewDialog extends State<ImagePreviewDialog> {
           bytes: imageAsBytes,
           ext: ".png",
         );
-        BotToast.showText(text: "${S.of(context).Image_save_success} $result");
+        BotToast.showText(text: "${I18n.of(context).Image_save_success} $result");
       }
     }
   }

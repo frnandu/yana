@@ -4,7 +4,7 @@ import 'package:numberpicker/numberpicker.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 import '../utils/base.dart';
-import '../generated/l10n.dart';
+import '../i18n/i18n.dart';
 import '../utils/router_util.dart';
 
 class DatetimePickerComponent extends StatefulWidget {
@@ -72,7 +72,7 @@ class _DatetimePickerComponent extends State<DatetimePickerComponent> {
     var scaffoldBackgroundColor = themeData.scaffoldBackgroundColor;
     var mainColor = themeData.appBarTheme.backgroundColor;
     var bigTextSize = themeData.textTheme.bodyLarge!.fontSize;
-    var s = S.of(context);
+    var s = I18n.of(context);
 
     var now = DateTime.now();
     var calendarFirstDay = now.add(Duration(days: -3650));

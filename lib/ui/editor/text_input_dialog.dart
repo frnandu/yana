@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../utils/base.dart';
-import '../../generated/l10n.dart';
+import '../../i18n/i18n.dart';
 import '../../utils/router_util.dart';
 import '../../utils/string_util.dart';
 import 'text_input_dialog_inner_component.dart';

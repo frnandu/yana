@@ -8,7 +8,7 @@ import 'package:yana/nostr/nip19/nip19.dart';
 import 'package:yana/models/metadata.dart';
 
 import '../utils/base.dart';
-import '../generated/l10n.dart';
+import '../i18n/i18n.dart';
 import '../provider/metadata_provider.dart';
 import '../utils/router_util.dart';
 
@@ -154,7 +154,7 @@ class _QrcodeDialog extends State<QrcodeDialog> {
 
   void _doCopy(String text) {
     Clipboard.setData(ClipboardData(text: text)).then((_) {
-      BotToast.showText(text: S.of(context).key_has_been_copy);
+      BotToast.showText(text: I18n.of(context).key_has_been_copy);
     });
   }
 }

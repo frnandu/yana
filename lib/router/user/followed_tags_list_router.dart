@@ -3,7 +3,7 @@ import 'package:yana/ui/tag_info_component.dart';
 import 'package:yana/utils/base.dart';
 
 import '../../nostr/nip02/cust_contact_list.dart';
-import '../../generated/l10n.dart';
+import '../../i18n/i18n.dart';
 import '../../utils/router_util.dart';
 
 class FollowedTagsListRouter extends StatefulWidget {
@@ -29,7 +29,7 @@ class _FollowedTagsListRouter extends State<FollowedTagsListRouter> {
       return Container();
     }
 
-    var s = S.of(context);
+    var s = I18n.of(context);
     var themeData = Theme.of(context);
     var titleFontSize = themeData.textTheme.bodyLarge!.fontSize;
 

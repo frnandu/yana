@@ -4,11 +4,11 @@ import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../nostr/zap/zap_action.dart';
+import '../../nostr/nip57/zap_action.dart';
 import '../../utils/base.dart';
 import '../../utils/router_path.dart';
 import '../../models/metadata.dart';
-import '../../generated/l10n.dart';
+import '../../i18n/i18n.dart';
 import '../../main.dart';
 import '../../provider/metadata_provider.dart';
 import '../../utils/router_util.dart';
@@ -35,14 +35,14 @@ class _GenLnbcComponent extends State<GenLnbcComponent> {
 
   @override
   Widget build(BuildContext context) {
-    var s = S.of(context);
+    var s = I18n.of(context);
     return Selector<MetadataProvider, Metadata?>(
       builder: (context, metadata, child) {
         var themeData = Theme.of(context);
         Color cardColor = themeData.cardColor;
         var mainColor = themeData.primaryColor;
         var titleFontSize = themeData.textTheme.bodyLarge!.fontSize;
-        var s = S.of(context);
+        var s = I18n.of(context);
         if (metadata == null ||
             (StringUtil.isBlank(metadata.lud06) &&
                 StringUtil.isBlank(metadata.lud16))) {
@@ -133,7 +133,7 @@ class _GenLnbcComponent extends State<GenLnbcComponent> {
                 height: 40,
                 alignment: Alignment.center,
                 child: Text(
-                  S.of(context).Comfirm,
+                  I18n.of(context).Comfirm,
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
@@ -168,7 +168,7 @@ class _GenLnbcComponent extends State<GenLnbcComponent> {
     var text = controller.text;
     var num = int.tryParse(text);
     if (num == null) {
-      BotToast.showText(text: S.of(context).Number_parse_error);
+      BotToast.showText(text: I18n.of(context).Number_parse_error);
       return;
     }
 

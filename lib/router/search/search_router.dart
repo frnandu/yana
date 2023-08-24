@@ -22,7 +22,7 @@ import '../../ui/event_delete_callback.dart';
 import '../../utils/base_consts.dart';
 import '../../utils/router_path.dart';
 import '../../models/event_mem_box.dart';
-import '../../generated/l10n.dart';
+import '../../i18n/i18n.dart';
 import '../../main.dart';
 import '../../provider/setting_provider.dart';
 import '../../utils/load_more_event.dart';
@@ -71,7 +71,7 @@ class _SearchRouter extends CustState<SearchRouter>
 
   @override
   Widget doBuild(BuildContext context) {
-    var s = S.of(context);
+    var s = I18n.of(context);
     var _settingProvider = Provider.of<SettingProvider>(context);
     preBuild();
 

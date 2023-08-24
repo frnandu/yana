@@ -29,7 +29,7 @@ import 'package:yana/utils/platform_util.dart';
 import 'utils/router_path.dart';
 import 'utils/theme_style.dart';
 import 'models/db.dart';
-import 'generated/l10n.dart';
+import 'i18n/i18n.dart';
 import 'ui/home_component.dart';
 import 'provider/community_approved_provider.dart';
 import 'provider/contact_list_provider.dart';
@@ -223,7 +223,7 @@ class _MyApp extends State<MyApp> {
   Widget build(BuildContext context) {
     Locale? _locale;
     if (StringUtil.isNotBlank(settingProvider.i18n)) {
-      for (var item in S.delegate.supportedLocales) {
+      for (var item in I18n.delegate.supportedLocales) {
         if (item.languageCode == settingProvider.i18n &&
             item.countryCode == settingProvider.i18nCC) {
           _locale = Locale(settingProvider.i18n!, settingProvider.i18nCC);
@@ -347,12 +347,12 @@ class _MyApp extends State<MyApp> {
           locale: _locale,
           title: packageInfo.appName,
           localizationsDelegates: const [
-            S.delegate,
+            I18n.delegate,
             GlobalMaterialLocalizations.delegate,
             GlobalWidgetsLocalizations.delegate,
             GlobalCupertinoLocalizations.delegate,
           ],
-          supportedLocales: S.delegate.supportedLocales,
+          supportedLocales: I18n.delegate.supportedLocales,
           theme: defaultTheme,
           darkTheme: defaultDarkTheme,
           initialRoute: RouterPath.INDEX,

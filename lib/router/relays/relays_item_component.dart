@@ -11,7 +11,7 @@ import 'package:yana/utils/router_util.dart';
 import '../../utils/base.dart';
 import '../../utils/client_connected.dart';
 import '../../models/relay_status.dart';
-import '../../generated/l10n.dart';
+import '../../i18n/i18n.dart';
 
 class RelaysItemComponent extends StatelessWidget {
   String addr;
@@ -99,7 +99,7 @@ class RelaysItemComponent extends StatelessWidget {
                 onTap: () {
                   var text = NIP19Tlv.encodeNrelay(Nrelay(addr));
                   Clipboard.setData(ClipboardData(text: text)).then((_) {
-                    BotToast.showText(text: S.of(context).Copy_success);
+                    BotToast.showText(text: I18n.of(context).Copy_success);
                   });
                 },
                 child: Container(

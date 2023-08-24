@@ -9,7 +9,7 @@ import '../../ui/event/event_load_list_component.dart';
 import '../../ui/event/reaction_event_list_component.dart';
 import '../../ui/event/zap_event_list_component.dart';
 import '../../models/event_reactions.dart';
-import '../../generated/l10n.dart';
+import '../../i18n/i18n.dart';
 import '../../provider/event_reactions_provider.dart';
 import '../../provider/single_event_provider.dart';
 import '../../utils/platform_util.dart';
@@ -52,7 +52,7 @@ class _EventDetailRouter extends State<EventDetailRouter> {
 
   @override
   Widget build(BuildContext context) {
-    var s = S.of(context);
+    var i18n = I18n.of(context);
 
     var arg = RouterUtil.routerArgs(context);
     if (arg != null) {
@@ -133,12 +133,12 @@ class _EventDetailRouter extends State<EventDetailRouter> {
             if (event.kind == kind.EventKind.ZAP) {
               return ZapEventListComponent(event: event);
             } else if (event.kind == kind.EventKind.TEXT_NOTE) {
-              return ReactionEventListComponent(event: event, text: s.replied);
+              return ReactionEventListComponent(event: event, text: i18n.replied);
             } else if (event.kind == kind.EventKind.REPOST ||
                 event.kind == kind.EventKind.GENERIC_REPOST) {
-              return ReactionEventListComponent(event: event, text: s.boosted);
+              return ReactionEventListComponent(event: event, text: i18n.boosted);
             } else if (event.kind == kind.EventKind.REACTION) {
-              return ReactionEventListComponent(event: event, text: s.liked);
+              return ReactionEventListComponent(event: event, text: i18n.liked);
             }
 
             return Container();

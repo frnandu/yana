@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import '../../nostr/nip19/nip19.dart';
 import '../../utils/base.dart';
 import '../../models/metadata.dart';
-import '../../generated/l10n.dart';
+import '../../i18n/i18n.dart';
 import '../../main.dart';
 import '../../utils/router_util.dart';
 import '../../utils/string_util.dart';

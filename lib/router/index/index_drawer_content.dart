@@ -10,7 +10,7 @@ import 'package:provider/provider.dart';
 
 import '../../utils/index_taps.dart';
 import '../../models/metadata.dart';
-import '../../generated/l10n.dart';
+import '../../i18n/i18n.dart';
 import '../../main.dart';
 import '../../provider/metadata_provider.dart';
 import '../edit/editor_router.dart';
@@ -33,7 +33,7 @@ class _IndexDrawerContnetComponnent
   Widget build(BuildContext context) {
     var _indexProvider = Provider.of<IndexProvider>(context);
 
-    var s = S.of(context);
+    var s = I18n.of(context);
     var pubkey = nostr!.publicKey;
     var paddingTop = mediaDataCache.padding.top;
     var themeData = Theme.of(context);
@@ -60,6 +60,20 @@ class _IndexDrawerContnetComponnent
       ]),
     ));
 
+    list.add(Container(
+        margin: const EdgeInsets.only(top: Base.BASE_PADDING_HALF),
+        padding: const EdgeInsets.only(
+          left: Base.BASE_PADDING * 2,
+          bottom: Base.BASE_PADDING/2,
+          top: Base.BASE_PADDING/2,
+        ),
+
+        decoration: BoxDecoration(
+        border: Border(
+            top: BorderSide(
+              width: 1,
+              color: hintColor,
+            )))));
     // list.add(GestureDetector(
     //   behavior: HitTestBehavior.translucent,
     //   onHorizontalDragUpdate: (detail) {
@@ -116,6 +130,14 @@ class _IndexDrawerContnetComponnent
     }
 
     list.add(IndexDrawerItem(
+      iconData: Icons.person,
+      name: s.Profile,
+      onTap: () {
+        RouterUtil.router(context, RouterPath.KEY_BACKUP);
+      },
+    ));
+
+    list.add(IndexDrawerItem(
       iconData: Icons.key,
       name: s.Key_Backup,
       onTap: () {
@@ -148,7 +170,6 @@ class _IndexDrawerContnetComponnent
       },
     ));
 
-
     list.add(Expanded(child: Container()));
 
     if (PlatformUtil.isTableMode()) {
@@ -162,7 +183,7 @@ class _IndexDrawerContnetComponnent
     }
 
     list.add(IndexDrawerItem(
-      iconData: Icons.account_box,
+      iconData: Icons.supervisor_account,
       name: s.Accounts,
       onTap: () {
         _showBasicModalBottomSheet(context);
@@ -173,8 +194,8 @@ class _IndexDrawerContnetComponnent
       margin: const EdgeInsets.only(top: Base.BASE_PADDING_HALF),
       padding: const EdgeInsets.only(
         left: Base.BASE_PADDING * 2,
-        bottom: Base.BASE_PADDING,
-        top: Base.BASE_PADDING,
+        bottom: Base.BASE_PADDING/2,
+        top: Base.BASE_PADDING/2,
       ),
       decoration: BoxDecoration(
           border: Border(
@@ -183,7 +204,7 @@ class _IndexDrawerContnetComponnent
         color: hintColor,
       ))),
       alignment: Alignment.centerLeft,
-      child: Text("V " + packageInfo.version),
+      child: Text("v" + packageInfo.version),
     ));
 
     return Container(
@@ -198,7 +219,7 @@ class _IndexDrawerContnetComponnent
       isScrollControlled: false, // true 为 全屏
       context: context,
       builder: (BuildContext context) {
-        return AccountManagerComponent();
+        return AccountsComponent();
       },
     );
   }

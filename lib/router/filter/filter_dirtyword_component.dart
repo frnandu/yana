@@ -5,7 +5,7 @@ import 'package:yana/provider/filter_provider.dart';
 import 'package:provider/provider.dart';
 
 import '../../utils/base.dart';
-import '../../generated/l10n.dart';
+import '../../i18n/i18n.dart';
 import '../../utils/string_util.dart';
 
 class FilterDirtywordComponent extends StatefulWidget {
@@ -20,7 +20,7 @@ class _FilterDirtywordComponent extends State<FilterDirtywordComponent> {
 
   @override
   Widget build(BuildContext context) {
-    var s = S.of(context);
+    var s = I18n.of(context);
     var _filterProvider = Provider.of<FilterProvider>(context);
     var dirtywordList = _filterProvider.dirtywordList;
 
@@ -65,7 +65,7 @@ class _FilterDirtywordComponent extends State<FilterDirtywordComponent> {
     var word = controller.text;
     word = word.trim();
     if (StringUtil.isBlank(word)) {
-      BotToast.showText(text: S.of(context).Word_can_t_be_null);
+      BotToast.showText(text: I18n.of(context).Word_can_t_be_null);
       return;
     }
 

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../utils/base.dart';
-import '../../generated/l10n.dart';
+import '../../i18n/i18n.dart';
 
 class EventLoadListComponent extends StatelessWidget {
   @override
@@ -9,7 +9,7 @@ class EventLoadListComponent extends StatelessWidget {
     var themeData = Theme.of(context);
     var cardColor = themeData.cardColor;
 
-    var s = S.of(context);
+    var s = I18n.of(context);
 
     return Container(
       margin: const EdgeInsets.only(bottom: Base.BASE_PADDING_HALF),

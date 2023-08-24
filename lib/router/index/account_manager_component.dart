@@ -18,22 +18,22 @@ import '../../ui/comfirm_dialog.dart';
 import '../../utils/base.dart';
 import '../../models/dm_session_info_db.dart';
 import '../../models/event_db.dart';
-import '../../generated/l10n.dart';
+import '../../i18n/i18n.dart';
 import '../../main.dart';
 import '../../utils/string_util.dart';
 import 'index_drawer_content.dart';
 
-class AccountManagerComponent extends StatefulWidget {
+class AccountsComponent extends StatefulWidget {
   @override
   State<StatefulWidget> createState() {
-    return AccountManagerComponentState();
+    return AccountsState();
   }
 }
 
-class AccountManagerComponentState extends State<AccountManagerComponent> {
+class AccountsState extends State<AccountsComponent> {
   @override
   Widget build(BuildContext context) {
-    var s = S.of(context);
+    var s = I18n.of(context);
     var _settingProvider = Provider.of<SettingProvider>(context);
     var privateKeyMap = _settingProvider.privateKeyMap;
 
@@ -56,7 +56,7 @@ class AccountManagerComponentState extends State<AccountManagerComponent> {
         ),
       ),
       child: IndexDrawerItem(
-        iconData: Icons.account_box,
+        iconData: Icons.supervisor_account,
         name: s.Accounts,
         onTap: () {},
       ),
@@ -116,11 +116,11 @@ class AccountManagerComponentState extends State<AccountManagerComponent> {
 
   Future<void> addAccount() async {
     var privateKey = await TextInputDialog.show(
-        context, S.of(context).Input_account_private_key,
+        context, I18n.of(context).Input_account_private_key,
         valueCheck: addAccountCheck);
     if (StringUtil.isNotBlank(privateKey)) {
       var result = await ComfirmDialog.show(
-          context, S.of(context).Add_account_and_login);
+          context, I18n.of(context).Add_account_and_login);
       if (result == true) {
         if (Nip19.isPrivateKey(privateKey!)) {
           privateKey = Nip19.decode(privateKey);
@@ -148,7 +148,7 @@ class AccountManagerComponentState extends State<AccountManagerComponent> {
       try {
         getPublicKey(privateKey);
       } catch (e) {
-        BotToast.showText(text: S.of(context).Wrong_Private_Key_format);
+        BotToast.showText(text: I18n.of(context).Wrong_Private_Key_format);
         return false;
       }
     }

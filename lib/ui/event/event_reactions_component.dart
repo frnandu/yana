@@ -14,11 +14,11 @@ import 'package:share_plus/share_plus.dart';
 import '../../nostr/event.dart';
 import '../../nostr/event_relation.dart';
 import '../../nostr/nip19/nip19.dart';
-import '../../nostr/zap/zap_action.dart';
+import '../../nostr/nip57/zap_action.dart';
 import '../../utils/base_consts.dart';
 import '../../utils/router_path.dart';
 import '../../models/event_reactions.dart';
-import '../../generated/l10n.dart';
+import '../../i18n/i18n.dart';
 import '../../main.dart';
 import '../../provider/event_reactions_provider.dart';
 import '../../router/edit/editor_router.dart';
@@ -57,7 +57,7 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
 
   @override
   Widget build(BuildContext context) {
-    var s = S.of(context);
+    var s = I18n.of(context);
     var themeData = Theme.of(context);
     var hintColor = themeData.hintColor;
     var fontSize = themeData.textTheme.bodySmall!.fontSize!;
@@ -358,7 +358,7 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
 
   void _doCopy(String text) {
     Clipboard.setData(ClipboardData(text: text)).then((_) {
-      BotToast.showText(text: S.of(context).Copy_success);
+      BotToast.showText(text: I18n.of(context).Copy_success);
     });
   }
 

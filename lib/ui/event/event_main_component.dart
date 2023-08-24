@@ -19,7 +19,7 @@ import '../../utils/base.dart';
 import '../../utils/base_consts.dart';
 import '../../utils/router_path.dart';
 import '../../models/metadata.dart';
-import '../../generated/l10n.dart';
+import '../../i18n/i18n.dart';
 import '../../main.dart';
 import '../../provider/metadata_provider.dart';
 import '../../provider/setting_provider.dart';
@@ -107,7 +107,7 @@ class _EventMainComponent extends State<EventMainComponent> {
 
   @override
   Widget build(BuildContext context) {
-    var s = S.of(context);
+    var s = I18n.of(context);
     var _settingProvider = Provider.of<SettingProvider>(context);
     if (eventRelation.id != widget.event.id) {
       // change when thead root load lazy
@@ -582,7 +582,7 @@ class _EventMainComponent extends State<EventMainComponent> {
               var nrelay = NIP19Tlv.decodeNrelay(link);
               if (nrelay != null) {
                 var result = await ComfirmDialog.show(
-                    context, S.of(context).Add_this_relay_to_local);
+                    context, I18n.of(context).Add_this_relay_to_local);
                 if (result == true) {
                   relayProvider.addRelay(nrelay.addr);
                 }
@@ -595,7 +595,7 @@ class _EventMainComponent extends State<EventMainComponent> {
   }
 
   Widget buildWarningWidget(double largeTextSize, Color mainColor) {
-    var s = S.of(context);
+    var s = I18n.of(context);
 
     return Container(
       margin:

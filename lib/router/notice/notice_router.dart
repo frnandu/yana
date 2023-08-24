@@ -4,7 +4,7 @@ import 'package:yana/main.dart';
 import 'package:provider/provider.dart';
 
 import '../../utils/router_path.dart';
-import '../../generated/l10n.dart';
+import '../../i18n/i18n.dart';
 import '../../provider/notice_provider.dart';
 import '../../utils/router_util.dart';
 import '../edit/editor_router.dart';
@@ -20,7 +20,7 @@ class NoticeRouter extends StatefulWidget {
 class _NoticeRouter extends State<NoticeRouter> {
   @override
   Widget build(BuildContext context) {
-    var s = S.of(context);
+    var s = I18n.of(context);
 
     var _noticeProvider = Provider.of<NoticeProvider>(context);
     var notices = _noticeProvider.notices;

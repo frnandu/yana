@@ -5,7 +5,7 @@ import 'package:screenshot/screenshot.dart';
 import '../../nostr/event.dart';
 import '../../utils/base.dart';
 import '../../utils/router_path.dart';
-import '../../generated/l10n.dart';
+import '../../i18n/i18n.dart';
 import '../../provider/single_event_provider.dart';
 import '../../utils/router_util.dart';
 import '../cust_state.dart';
@@ -100,7 +100,7 @@ class _EventQuoteComponent extends CustState<EventQuoteComponent> {
       margin: const EdgeInsets.all(Base.BASE_PADDING),
       height: 60,
       decoration: boxDecoration,
-      child: Center(child: Text(S.of(context).Note_loading)),
+      child: Center(child: Text(I18n.of(context).Note_loading)),
     );
   }
 

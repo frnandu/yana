@@ -18,7 +18,7 @@ import 'package:yana/utils/string_util.dart';
 import '../nostr/event.dart';
 import '../nostr/nip04/nip04.dart';
 import '../nostr/nip07/nip07_methods.dart';
-import '../generated/l10n.dart';
+import '../i18n/i18n.dart';
 import '../main.dart';
 
 class WebViewRouter extends StatefulWidget {
@@ -71,7 +71,7 @@ class _WebViewRouter extends CustState<WebViewRouter> {
           var script = "window.nostr.callback(\"$resultId\", \"$pubkey\");";
           _controller.runJavaScript(script);
         } else {
-          nip07Reject(resultId, S.of(context).Forbid);
+          nip07Reject(resultId, I18n.of(context).Forbid);
         }
       },
     );
@@ -101,10 +101,10 @@ class _WebViewRouter extends CustState<WebViewRouter> {
                 "window.nostr.callback(\"$resultId\", JSON.parse(\"$eventResultStr\"));";
             _controller.runJavaScript(script);
           } catch (e) {
-            nip07Reject(resultId, S.of(context).Sign_fail);
+            nip07Reject(resultId, I18n.of(context).Sign_fail);
           }
         } else {
-          nip07Reject(resultId, S.of(context).Forbid);
+          nip07Reject(resultId, I18n.of(context).Forbid);
         }
       },
     );
@@ -128,7 +128,7 @@ class _WebViewRouter extends CustState<WebViewRouter> {
               "window.nostr.callback(\"$resultId\", JSON.parse(\"$resultStr\"));";
           _controller.runJavaScript(script);
         } else {
-          nip07Reject(resultId, S.of(context).Forbid);
+          nip07Reject(resultId, I18n.of(context).Forbid);
         }
       },
     );
@@ -152,7 +152,7 @@ class _WebViewRouter extends CustState<WebViewRouter> {
                 "window.nostr.callback(\"$resultId\", \"$resultStr\");";
             _controller.runJavaScript(script);
           } else {
-            nip07Reject(resultId, S.of(context).Forbid);
+            nip07Reject(resultId, I18n.of(context).Forbid);
           }
         }
       },
@@ -177,7 +177,7 @@ class _WebViewRouter extends CustState<WebViewRouter> {
                 "window.nostr.callback(\"$resultId\", \"$resultStr\");";
             _controller.runJavaScript(script);
           } else {
-            nip07Reject(resultId, S.of(context).Forbid);
+            nip07Reject(resultId, I18n.of(context).Forbid);
           }
         }
       },
@@ -233,7 +233,7 @@ nip04: {
 
   @override
   Widget doBuild(BuildContext context) {
-    var s = S.of(context);
+    var s = I18n.of(context);
     var themeData = Theme.of(context);
     var paddingTop = mediaDataCache.padding.top;
     var mainColor = themeData.primaryColor;
@@ -333,7 +333,7 @@ nip04: {
   }
 
   Widget getMoreWidget(Widget icon) {
-    var s = S.of(context);
+    var s = I18n.of(context);
     var themeData = Theme.of(context);
     var scaffoldBackgroundColor = themeData.scaffoldBackgroundColor;
 
@@ -394,7 +394,7 @@ nip04: {
 
   void _doCopy(String text) {
     Clipboard.setData(ClipboardData(text: text)).then((_) {
-      BotToast.showText(text: S.of(context).Copy_success);
+      BotToast.showText(text: I18n.of(context).Copy_success);
     });
   }
 

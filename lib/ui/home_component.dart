@@ -6,7 +6,7 @@ import 'package:yana/provider/webview_provider.dart';
 import 'package:yana/utils/platform_util.dart';
 import 'package:provider/provider.dart';
 
-import '../generated/l10n.dart';
+import '../i18n/i18n.dart';
 
 class HomeComponent extends StatefulWidget {
   Widget child;
@@ -37,12 +37,12 @@ class _HomeComponent extends State<HomeComponent> {
       locale: widget.locale,
       debugShowCheckedModeBanner: false,
       localizationsDelegates: const [
-        S.delegate,
+        I18n.delegate,
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      supportedLocales: S.delegate.supportedLocales,
+      supportedLocales: I18n.delegate.supportedLocales,
       theme: widget.theme,
       home: Stack(
         children: [

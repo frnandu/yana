@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../utils/base.dart';
-import '../../generated/l10n.dart';
+import '../../i18n/i18n.dart';
 import '../../utils/router_util.dart';
 
 class TextInputDialogInnerComponent extends StatefulWidget {
@@ -81,7 +81,7 @@ class _TextInputDialogInnerComponent
             height: 40,
             alignment: Alignment.center,
             child: Text(
-              S.of(context).Comfirm,
+              I18n.of(context).Comfirm,
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 color: Colors.white,

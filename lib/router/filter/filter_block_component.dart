@@ -7,7 +7,7 @@ import 'package:yana/provider/filter_provider.dart';
 import 'package:provider/provider.dart';
 
 import '../../utils/base.dart';
-import '../../generated/l10n.dart';
+import '../../i18n/i18n.dart';
 
 class FilterBlockComponent extends StatefulWidget {
   @override
@@ -42,7 +42,7 @@ class FilterBlockItemComponent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var s = S.of(context);
+    var s = I18n.of(context);
     var themeData = Theme.of(context);
     var cardColor = themeData.cardColor;
 

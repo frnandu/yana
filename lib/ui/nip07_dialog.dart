@@ -3,7 +3,7 @@ import 'package:yana/main.dart';
 import 'package:yana/utils/string_util.dart';
 
 import '../utils/base.dart';
-import '../generated/l10n.dart';
+import '../i18n/i18n.dart';
 import '../utils/router_util.dart';
 
 class NIP07Dialog extends StatefulWidget {
@@ -44,7 +44,7 @@ class _NIP07Dialog extends State<NIP07Dialog> {
     Color cardColor = themeData.cardColor;
     var hintColor = themeData.hintColor;
 
-    var s = S.of(context);
+    var s = I18n.of(context);
 
     List<Widget> list = [];
     list.add(Container(

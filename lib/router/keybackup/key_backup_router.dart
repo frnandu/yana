@@ -6,7 +6,7 @@ import 'package:yana/utils/base.dart';
 import 'package:yana/main.dart';
 
 import '../../ui/appbar4stack.dart';
-import '../../generated/l10n.dart';
+import '../../i18n/i18n.dart';
 
 class KeyBackupRouter extends StatefulWidget {
   @override
@@ -24,7 +24,7 @@ class _KeyBackupRouter extends State<KeyBackupRouter> {
 
   void initCheckBoxItems(BuildContext context) {
     if (checkboxItems == null) {
-      var s = S.of(context);
+      var s = I18n.of(context);
       checkboxItems = [];
       checkboxItems!.add(CheckboxItem(
           s.Please_do_not_disclose_or_share_the_key_to_anyone, false));
@@ -37,7 +37,7 @@ class _KeyBackupRouter extends State<KeyBackupRouter> {
 
   @override
   Widget build(BuildContext context) {
-    var s = S.of(context);
+    var s = I18n.of(context);
     var themeData = Theme.of(context);
     var cardColor = themeData.cardColor;
     var mainColor = themeData.primaryColor;
@@ -173,7 +173,7 @@ class _KeyBackupRouter extends State<KeyBackupRouter> {
   bool checkTips() {
     for (var item in checkboxItems!) {
       if (!item.value) {
-        BotToast.showText(text: S.of(context).Please_check_the_tips);
+        BotToast.showText(text: I18n.of(context).Please_check_the_tips);
         return false;
       }
     }
@@ -201,7 +201,7 @@ class _KeyBackupRouter extends State<KeyBackupRouter> {
 
   void doCopy(String key) {
     Clipboard.setData(ClipboardData(text: key)).then((_) {
-      BotToast.showText(text: S.of(context).key_has_been_copy);
+      BotToast.showText(text: I18n.of(context).key_has_been_copy);
     });
   }
 }

@@ -4,7 +4,7 @@ import 'package:yana/ui/user_pic_component.dart';
 import 'package:yana/utils/base.dart';
 
 import '../nostr/event.dart';
-import '../generated/l10n.dart';
+import '../i18n/i18n.dart';
 import '../main.dart';
 
 class NewNotesUpdatedComponent extends StatelessWidget {
@@ -64,7 +64,7 @@ class NewNotesUpdatedComponent extends StatelessWidget {
                 }).toList(), //
               ),
               Text(
-                S
+                I18n
                     .of(context)
                     .notes_updated,
                 style: TextStyle(color: textColor),

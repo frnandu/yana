@@ -12,7 +12,7 @@ import 'package:yana/router/follow/mention_me_router.dart';
 import 'package:yana/utils/platform_util.dart';
 import 'package:yana/utils/string_util.dart';
 
-import '../../generated/l10n.dart';
+import '../../i18n/i18n.dart';
 import '../../main.dart';
 import '../../provider/index_provider.dart';
 import '../../provider/setting_provider.dart';
@@ -82,7 +82,7 @@ class _IndexRouter extends CustState<IndexRouter>
   @override
   Widget doBuild(BuildContext context) {
     mediaDataCache.update(context);
-    var s = S.of(context);
+    var s = I18n.of(context);
 
     if (nostr == null) {
       return LoginRouter();
@@ -343,7 +343,7 @@ class _IndexRouter extends CustState<IndexRouter>
   }
 
   void doAuth() {
-    AuthUtil.authenticate(context, S.of(context).Please_authenticate_to_use_app)
+    AuthUtil.authenticate(context, I18n.of(context).Please_authenticate_to_use_app)
         .then((didAuthenticate) {
       if (didAuthenticate) {
         setState(() {

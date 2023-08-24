@@ -14,7 +14,7 @@ import '../../nostr/filter.dart';
 import '../../ui/appbar4stack.dart';
 import '../../ui/cust_state.dart';
 import '../../utils/base.dart';
-import '../../generated/l10n.dart';
+import '../../i18n/i18n.dart';
 import '../../main.dart';
 import '../index/index_app_bar.dart';
 
@@ -44,7 +44,7 @@ class _ProfileEditorRouter extends CustState<ProfileEditorRouter> {
 
   @override
   Widget doBuild(BuildContext context) {
-    var s = S.of(context);
+    var s = I18n.of(context);
     if (metadata == null) {
       var arg = RouterUtil.routerArgs(context);
       if (arg != null && arg is Metadata) {

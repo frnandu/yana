@@ -5,7 +5,7 @@ import 'package:yana/provider/relay_provider.dart';
 import 'package:provider/provider.dart';
 
 import '../../utils/base.dart';
-import '../../generated/l10n.dart';
+import '../../i18n/i18n.dart';
 import '../comfirm_dialog.dart';
 import 'content_str_link_component.dart';
 
@@ -66,7 +66,7 @@ class ContentRelayComponent extends StatelessWidget {
         main = GestureDetector(
           onTap: () async {
             var result = await ComfirmDialog.show(
-                context, S.of(context).Add_this_relay_to_local);
+                context, I18n.of(context).Add_this_relay_to_local);
             if (result == true) {
               relayProvider.addRelay(addr);
             }

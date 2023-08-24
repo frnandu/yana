@@ -13,12 +13,12 @@ import '../../nostr/event.dart';
 import '../../nostr/event_kind.dart' as kind;
 import '../../nostr/nip02/cust_contact_list.dart';
 import '../../nostr/filter.dart';
-import '../../nostr/zap/zap_num_util.dart';
+import '../../nostr/nip57/zap_num_util.dart';
 import '../../ui/cust_state.dart';
 import '../../utils/base.dart';
 import '../../utils/router_path.dart';
 import '../../models/event_mem_box.dart';
-import '../../generated/l10n.dart';
+import '../../i18n/i18n.dart';
 import '../../main.dart';
 import '../../utils/number_format_util.dart';
 import '../../utils/router_util.dart';
@@ -62,7 +62,7 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
 
   @override
   Widget doBuild(BuildContext context) {
-    var s = S.of(context);
+    var s = I18n.of(context);
     if (pubkey != null && pubkey != widget.pubkey) {
       // arg changed! reset
       contactListEvent = null;
@@ -203,7 +203,7 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
       nostr!.query([filter.toJson()], (event) {
         localContactBox!.add(event);
       }, id: fetchLocalContactsId);
-      BotToast.showText(text: S.of(context).Begin_to_load_Contact_History);
+      BotToast.showText(text: I18n.of(context).Begin_to_load_Contact_History);
     }
   }
 

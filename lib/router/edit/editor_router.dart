@@ -23,7 +23,7 @@ import '../../nostr/event_kind.dart' as kind;
 import '../../ui/cust_state.dart';
 import '../../ui/editor/custom_emoji_embed_builder.dart';
 import '../../ui/editor/editor_mixin.dart';
-import '../../generated/l10n.dart';
+import '../../i18n/i18n.dart';
 import '../../utils/string_util.dart';
 import 'editor_notify_item_component.dart';
 
@@ -111,7 +111,7 @@ class _EditorRouter extends CustState<EditorRouter> with EditorMixin {
       }
     }
 
-    var s = S.of(context);
+    var s = I18n.of(context);
     var themeData = Theme.of(context);
     var scaffoldBackgroundColor = themeData.scaffoldBackgroundColor;
     var mainColor = themeData.primaryColor;
@@ -397,7 +397,7 @@ class _EditorRouter extends CustState<EditorRouter> with EditorMixin {
     try {
       var event = await doDocumentSave();
       if (event == null) {
-        BotToast.showText(text: S.of(context).Send_fail);
+        BotToast.showText(text: I18n.of(context).Send_fail);
         return;
       }
       RouterUtil.back(context, event);

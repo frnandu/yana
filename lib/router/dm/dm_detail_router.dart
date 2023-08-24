@@ -25,7 +25,7 @@ import '../../ui/name_component.dart';
 import '../../utils/base.dart';
 import '../../models/dm_session_info.dart';
 import '../../models/metadata.dart';
-import '../../generated/l10n.dart';
+import '../../i18n/i18n.dart';
 import '../../main.dart';
 import '../../provider/dm_provider.dart';
 import '../../provider/metadata_provider.dart';
@@ -59,7 +59,7 @@ class _DMDetailRouter extends CustState<DMDetailRouter> with EditorMixin {
     var scaffoldBackgroundColor = themeData.scaffoldBackgroundColor;
 
     var hintColor = themeData.hintColor;
-    var s = S.of(context);
+    var s = I18n.of(context);
 
     var arg = RouterUtil.routerArgs(context);
     if (arg == null) {
@@ -251,7 +251,7 @@ class _DMDetailRouter extends CustState<DMDetailRouter> with EditorMixin {
     try {
       var event = await doDocumentSave();
       if (event == null) {
-        BotToast.showText(text: S.of(context).Send_fail);
+        BotToast.showText(text: I18n.of(context).Send_fail);
         return;
       }
       dmProvider.addEventAndUpdateReadedTime(detail!, event);

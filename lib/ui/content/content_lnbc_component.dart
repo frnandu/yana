@@ -1,13 +1,9 @@
-import 'dart:io';
-
-import 'package:android_intent_plus/android_intent.dart';
 import 'package:flutter/material.dart';
 import 'package:yana/utils/lightning_util.dart';
-import 'package:url_launcher/url_launcher.dart';
 
-import '../../nostr/zap/zap_num_util.dart';
+import '../../i18n/i18n.dart';
+import '../../nostr/nip57/zap_num_util.dart';
 import '../../utils/base.dart';
-import '../../generated/l10n.dart';
 
 class ContentLnbcComponent extends StatelessWidget {
   String lnbc;
@@ -16,7 +12,7 @@ class ContentLnbcComponent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var s = S.of(context);
+    var s = I18n.of(context);
     var themeData = Theme.of(context);
     var hintColor = themeData.hintColor;
     var cardColor = themeData.cardColor;

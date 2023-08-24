@@ -6,7 +6,7 @@ import 'package:provider/provider.dart';
 
 import '../../nostr/relay_metadata.dart';
 import '../../utils/base.dart';
-import '../../generated/l10n.dart';
+import '../../i18n/i18n.dart';
 import '../../utils/router_util.dart';
 
 class UserRelayRouter extends StatefulWidget {
@@ -22,7 +22,7 @@ class _UserRelayRouter extends State<UserRelayRouter> {
   Widget build(BuildContext context) {
     var themeData = Theme.of(context);
 
-    var s = S.of(context);
+    var s = I18n.of(context);
     if (relays == null) {
       relays = [];
       var arg = RouterUtil.routerArgs(context);
@@ -99,7 +99,7 @@ class RelayMetadataComponent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var s = S.of(context);
+    var s = I18n.of(context);
     var themeData = Theme.of(context);
     var cardColor = themeData.cardColor;
     var hintColor = themeData.hintColor;

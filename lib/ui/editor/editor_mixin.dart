@@ -22,7 +22,7 @@ import '../../nostr/nip19/nip19_tlv.dart';
 import '../../nostr/upload/uploader.dart';
 import '../../utils/base.dart';
 import '../../models/custom_emoji.dart';
-import '../../generated/l10n.dart';
+import '../../i18n/i18n.dart';
 import '../../main.dart';
 import '../../router/edit/poll_input_component.dart';
 import '../../router/index/index_app_bar.dart';
@@ -290,7 +290,7 @@ mixin EditorMixin {
 
   Future<void> _inputMentionEvent() async {
     var context = getContext();
-    var s = S.of(context);
+    var s = I18n.of(context);
     var value = await TextInputAndSearchDialog.show(
       context,
       s.Search,
@@ -321,7 +321,7 @@ mixin EditorMixin {
 
   Future<void> _inputMentionUser() async {
     var context = getContext();
-    var s = S.of(context);
+    var s = I18n.of(context);
     var value = await TextInputAndSearchDialog.show(
       context,
       s.Search,
@@ -354,8 +354,8 @@ mixin EditorMixin {
     var context = getContext();
     var value = await TextInputAndSearchDialog.show(
       context,
-      S.of(context).Input_Sats_num,
-      S.of(context).Please_input_lnbc_text,
+      I18n.of(context).Input_Sats_num,
+      I18n.of(context).Please_input_lnbc_text,
       GenLnbcComponent(),
       hintText: "lnbc...",
     );
@@ -379,8 +379,8 @@ mixin EditorMixin {
   Future<void> _inputTag() async {
     var context = getContext();
     var value = await TextInputDialog.show(
-        context, S.of(context).Please_input_Topic_text,
-        valueCheck: baseInputCheck, hintText: S.of(context).Topic);
+        context, I18n.of(context).Please_input_Topic_text,
+        valueCheck: baseInputCheck, hintText: I18n.of(context).Topic);
     if (StringUtil.isNotBlank(value)) {
       _submitTag(value);
     }
@@ -388,11 +388,11 @@ mixin EditorMixin {
 
   bool baseInputCheck(BuildContext context, String value) {
     if (value.contains(" ")) {
-      BotToast.showText(text: S.of(context).Text_can_t_contain_blank_space);
+      BotToast.showText(text: I18n.of(context).Text_can_t_contain_blank_space);
       return false;
     }
     if (value.contains("\n")) {
-      BotToast.showText(text: S.of(context).Text_can_t_contain_new_line);
+      BotToast.showText(text: I18n.of(context).Text_can_t_contain_new_line);
       return false;
     }
     return true;
@@ -452,7 +452,7 @@ mixin EditorMixin {
               if (StringUtil.isNotBlank(imagePath)) {
                 value = imagePath;
               } else {
-                BotToast.showText(text: S.of(context).Upload_fail);
+                BotToast.showText(text: I18n.of(context).Upload_fail);
                 return null;
               }
             }
@@ -739,7 +739,7 @@ mixin EditorMixin {
     var themeData = Theme.of(getContext());
     var fontSize = themeData.textTheme.bodyLarge!.fontSize;
     var hintColor = themeData.hintColor;
-    var s = S.of(getContext());
+    var s = I18n.of(getContext());
 
     return Container(
       // color: Colors.red,
