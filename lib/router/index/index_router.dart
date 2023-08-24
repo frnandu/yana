@@ -53,11 +53,9 @@ class _IndexRouter extends CustState<IndexRouter>
   void initState() {
     super.initState();
     int followInitTab = 0;
-    int globalsInitTab = 0;
 
     if (settingProvider.defaultTab != null) {
       if (settingProvider.defaultIndex == 1) {
-        globalsInitTab = settingProvider.defaultTab!;
       } else {
         followInitTab = settingProvider.defaultTab!;
       }
@@ -86,7 +84,6 @@ class _IndexRouter extends CustState<IndexRouter>
     mediaDataCache.update(context);
     var s = S.of(context);
 
-    var _settingProvider = Provider.of<SettingProvider>(context);
     if (nostr == null) {
       return LoginRouter();
     }
@@ -321,16 +318,22 @@ class _IndexRouter extends CustState<IndexRouter>
       return Scaffold(
           body: mainIndex,
           extendBody: true,
-          floatingActionButton: AnimatedContainer(
-              curve: Curves.ease,
-              duration: const Duration(milliseconds: 200),
-              height: _scrollingDown ? 0.0 : 50,
-              child: addBtn),
+          floatingActionButton:
+          // AnimatedContainer(
+          //     curve: Curves.ease,
+          //     duration: const Duration(milliseconds: 200),
+          //     height: _scrollingDown ? 0.0 : 50,
+          //     child:
+              addBtn
+          // )
+          ,
+
           floatingActionButtonLocation:
-              FloatingActionButtonLocation.centerDocked,
+              FloatingActionButtonLocation.endFloat,
           drawer: Drawer(
             child: IndexDrawerContnetComponnent(),
           ),
+   //       extendBodyBehindAppBar: true,
           bottomNavigationBar: AnimatedContainer(
               duration: const Duration(milliseconds: 200),
               curve: Curves.ease,
