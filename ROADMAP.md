@@ -10,6 +10,7 @@
 - ~~run web version on https://yana.fmar.link~~
 - ~~store private Key in securedStorage~~
 
+- badges when something new in home/notifications/DMS
 - allow to login with npub 
 - replace relays numbers with search, move numbers to drawer
 - fix zaps amounts in notes
