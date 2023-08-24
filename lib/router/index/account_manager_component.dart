@@ -57,7 +57,7 @@ class AccountManagerComponentState extends State<AccountManagerComponent> {
       ),
       child: IndexDrawerItem(
         iconData: Icons.account_box,
-        name: s.Account_Manager,
+        name: s.Accounts,
         onTap: () {},
       ),
     ));

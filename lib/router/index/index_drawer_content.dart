@@ -38,7 +38,6 @@ class _IndexDrawerContnetComponnent
     var paddingTop = mediaDataCache.padding.top;
     var themeData = Theme.of(context);
     var mainColor = themeData.primaryColor;
-    var cardColor = themeData.cardColor;
     var hintColor = themeData.hintColor;
     List<Widget> list = [];
 
@@ -58,37 +57,21 @@ class _IndexDrawerContnetComponnent
             return _provider.getMetadata(pubkey);
           },
         ),
-        Positioned(
-          top: paddingTop + Base.BASE_PADDING_HALF,
-          right: Base.BASE_PADDING,
-          child: Container(
-            height: profileEditBtnWidth,
-            width: profileEditBtnWidth,
-            decoration: BoxDecoration(
-              color: cardColor,
-              borderRadius: BorderRadius.circular(profileEditBtnWidth / 2),
-            ),
-            child: IconButton(
-              icon: Icon(Icons.edit_square),
-              onPressed: jumpToProfileEdit,
-            ),
-          ),
-        ),
       ]),
     ));
 
-    list.add(GestureDetector(
-      behavior: HitTestBehavior.translucent,
-      onHorizontalDragUpdate: (detail) {
-        userStatisticscontroller
-            .jumpTo(userStatisticscontroller.offset - detail.delta.dx);
-      },
-      child: SingleChildScrollView(
-        controller: userStatisticscontroller,
-        scrollDirection: Axis.horizontal,
-        child: UserStatisticsComponent(pubkey: pubkey),
-      ),
-    ));
+    // list.add(GestureDetector(
+    //   behavior: HitTestBehavior.translucent,
+    //   onHorizontalDragUpdate: (detail) {
+    //     userStatisticscontroller
+    //         .jumpTo(userStatisticscontroller.offset - detail.delta.dx);
+    //   },
+    //   child: SingleChildScrollView(
+    //     controller: userStatisticscontroller,
+    //     scrollDirection: Axis.horizontal,
+    //     child: UserStatisticsComponent(pubkey: pubkey),
+    //   ),
+    // ));
 
     if (PlatformUtil.isTableMode()) {
       list.add(IndexDrawerItem(
@@ -149,18 +132,19 @@ class _IndexDrawerContnetComponnent
     ));
 
     list.add(IndexDrawerItem(
+      iconData: Icons.filter_alt,
+      name: s.Filter,
+      onTap: () {
+        RouterUtil.router(context, RouterPath.FILTER);
+      },
+    ));
+
+
+    list.add(IndexDrawerItem(
       iconData: Icons.settings,
       name: s.Setting,
       onTap: () {
         RouterUtil.router(context, RouterPath.SETTING);
-      },
-    ));
-
-    list.add(IndexDrawerItem(
-      iconData: Icons.block,
-      name: s.Filter,
-      onTap: () {
-        RouterUtil.router(context, RouterPath.FILTER);
       },
     ));
 
@@ -179,16 +163,11 @@ class _IndexDrawerContnetComponnent
 
     list.add(IndexDrawerItem(
       iconData: Icons.account_box,
-      name: s.Account_Manager,
+      name: s.Accounts,
       onTap: () {
         _showBasicModalBottomSheet(context);
       },
     ));
-    // list.add(IndexDrawerItem(
-    //   iconData: Icons.logout,
-    //   name: "Sign out",
-    //   onTap: signOut,
-    // ));
 
     list.add(Container(
       margin: const EdgeInsets.only(top: Base.BASE_PADDING_HALF),
@@ -212,11 +191,6 @@ class _IndexDrawerContnetComponnent
         children: list,
       ),
     );
-  }
-
-  void jumpToProfileEdit() {
-    var metadata = metadataProvider.getMetadata(nostr!.publicKey);
-    RouterUtil.router(context, RouterPath.PROFILE_EDITOR, metadata);
   }
 
   void _showBasicModalBottomSheet(context) async {

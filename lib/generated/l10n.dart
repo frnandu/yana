@@ -701,20 +701,20 @@ class S {
   }
 
   /// `Blocks`
-  String get Blocks {
+  String get Blocked_Profiles {
     return Intl.message(
-      'Blocks',
-      name: 'Blocks',
+      'Blocked profiles',
+      name: 'Blocked Profiles',
       desc: '',
       args: [],
     );
   }
 
-  /// `Dirtywords`
-  String get Dirtywords {
+  /// `Blocked words`
+  String get Blocked_Words {
     return Intl.message(
-      'Dirtywords',
-      name: 'Dirtywords',
+      'Blocked words',
+      name: 'Blocked_Words',
       desc: '',
       args: [],
     );
@@ -730,11 +730,11 @@ class S {
     );
   }
 
-  /// `Account Manager`
-  String get Account_Manager {
+  /// `Accounts`
+  String get Accounts {
     return Intl.message(
-      'Account Manager',
-      name: 'Account_Manager',
+      'Accounts',
+      name: 'Accounts',
       desc: '',
       args: [],
     );

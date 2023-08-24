@@ -106,9 +106,12 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
     }
 
     Widget? imageWidget;
-    String? url = widget.metadata != null && StringUtil.isNotBlank(widget.metadata?.picture) ? widget.metadata?.picture : 'https://robohash.org/'+widget.pubkey;
+    String? url = widget.metadata != null &&
+            StringUtil.isNotBlank(widget.metadata?.picture)
+        ? widget.metadata?.picture
+        : 'https://robohash.org/' + widget.pubkey;
 
-    if (url != null){
+    if (url != null) {
       imageWidget = CachedNetworkImage(
         imageUrl: url,
         width: IMAGE_WIDTH,
@@ -137,13 +140,20 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
       )
     ];
 
-    if (!PlatformUtil.isTableMode() && widget.pubkey == nostr!.publicKey) {
-      // is phont and local
-      topBtnList.add(wrapBtn(MetadataIconBtn(
-        iconData: Icons.qr_code_scanner,
-        onTap: handleScanner,
-      )));
-    }
+    topBtnList.add(wrapBtn(
+      MetadataIconBtn(
+        iconData: Icons.edit_square,
+        onTap: jumpToProfileEdit,
+      ),
+    )
+        // if (!PlatformUtil.isTableMode() && widget.pubkey == nostr!.publicKey) {
+        //   // is phont and local
+        //   topBtnList.add(wrapBtn(MetadataIconBtn(
+        //     iconData: Icons.qr_code_scanner,
+        //     onTap: handleScanner,
+        //   )));
+        // }
+        );
 
     topBtnList.add(wrapBtn(MetadataIconBtn(
       iconData: Icons.qr_code,
@@ -330,7 +340,9 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
       ));
       if (StringUtil.isNotBlank(widget.metadata!.nip05)) {
         topList.add(MetadataIconDataComp(
-          text: widget.metadata!.nip05!.startsWith("_@") ? widget.metadata!.nip05!.replaceAll("_@", "") : widget.metadata!.nip05!,
+          text: widget.metadata!.nip05!.startsWith("_@")
+              ? widget.metadata!.nip05!.replaceAll("_@", "")
+              : widget.metadata!.nip05!,
           leftWidget: Nip05ValidComponent(pubkey: widget.pubkey),
         ));
       }
@@ -430,6 +442,11 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
     ZapAction.handleZap(context, sats, widget.pubkey);
   }
 
+  void jumpToProfileEdit() {
+    var metadata = metadataProvider.getMetadata(nostr!.publicKey);
+    RouterUtil.router(context, RouterPath.PROFILE_EDITOR, metadata);
+  }
+
   Future<void> handleScanner() async {
     var result = await RouterUtil.router(context, RouterPath.QRSCANNER);
     if (StringUtil.isNotBlank(result)) {
@@ -469,9 +486,12 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
   }
 
   void userPicturePreview() {
-    String? url = widget.metadata != null && StringUtil.isNotBlank(widget.metadata?.picture) ? widget.metadata?.picture : 'https://robohash.org/'+widget.pubkey;
+    String? url = widget.metadata != null &&
+            StringUtil.isNotBlank(widget.metadata?.picture)
+        ? widget.metadata?.picture
+        : 'https://robohash.org/' + widget.pubkey;
 
-    if (url != null ) {
+    if (url != null) {
       List<ImageProvider> imageProviders = [];
       imageProviders.add(CachedNetworkImageProvider(url));
 
@@ -496,15 +516,15 @@ class MetadataIconBtn extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var decoration = BoxDecoration(
-      borderRadius: BorderRadius.circular(14),
+      borderRadius: BorderRadius.circular(20),
       border: Border.all(width: 1),
     );
     var main = Container(
-      height: 28,
-      width: 28,
+      height: 34,
+      width: 34,
       child: Icon(
         iconData,
-        size: 18,
+        size: 22,
       ),
     );
 

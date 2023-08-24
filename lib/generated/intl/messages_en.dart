@@ -23,8 +23,8 @@ class MessageLookup extends MessageLookupByLibrary {
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
         "About": MessageLookupByLibrary.simpleMessage("About"),
-        "Account_Manager":
-            MessageLookupByLibrary.simpleMessage("Account Manager"),
+        "Accounts":
+            MessageLookupByLibrary.simpleMessage("Accounts"),
         "Add_Account": MessageLookupByLibrary.simpleMessage("Add Account"),
         "Add_Custom_Emoji":
             MessageLookupByLibrary.simpleMessage("Add Custom Emoji"),
@@ -52,7 +52,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "Begin_to_load_Contact_History": MessageLookupByLibrary.simpleMessage(
             "Begin to load Contact History"),
         "Block": MessageLookupByLibrary.simpleMessage("Block"),
-        "Blocks": MessageLookupByLibrary.simpleMessage("Blocks"),
+        "Blocked_Profiles": MessageLookupByLibrary.simpleMessage("Blocked profiles"),
         "Boost": MessageLookupByLibrary.simpleMessage("Boost"),
         "Broadcast": MessageLookupByLibrary.simpleMessage("Broadcast"),
         "Broadcast_When_Boost":
@@ -92,7 +92,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "Delete_Account_Tips": MessageLookupByLibrary.simpleMessage(
             "We will try to delete you infomation. When you login with this Key again, you will lose your data."),
         "Detail": MessageLookupByLibrary.simpleMessage("Detail"),
-        "Dirtywords": MessageLookupByLibrary.simpleMessage("Dirtywords"),
+        "Blocked_Words": MessageLookupByLibrary.simpleMessage("Blocked Words"),
         "Display_Name": MessageLookupByLibrary.simpleMessage("Display Name"),
         "Donate": MessageLookupByLibrary.simpleMessage("Donate"),
         "Dont_Compress":

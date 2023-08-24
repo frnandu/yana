@@ -58,7 +58,7 @@ class _FilterRouter extends State<FilterRouter>
               height: IndexAppBar.height,
               alignment: Alignment.center,
               child: Text(
-                s.Blocks,
+                s.Blocked_Words,
                 style: titleTextStyle,
               ),
             ),
@@ -66,7 +66,7 @@ class _FilterRouter extends State<FilterRouter>
               height: IndexAppBar.height,
               alignment: Alignment.center,
               child: Text(
-                s.Dirtywords,
+                s.Blocked_Profiles,
                 style: titleTextStyle,
               ),
             )

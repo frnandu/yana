@@ -1,25 +1,16 @@
-import 'dart:typed_data';
-
 import 'package:bot_toast/bot_toast.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:yana/client/nip19/nip19.dart';
-import 'package:yana/component/name_component.dart';
-import 'package:yana/component/user/metadata_top_component.dart';
-import 'package:yana/data/metadata.dart';
 import 'package:pretty_qr_code/pretty_qr_code.dart';
 import 'package:provider/provider.dart';
 import 'package:screenshot/screenshot.dart';
-import 'package:share_plus/share_plus.dart';
+import 'package:yana/client/nip19/nip19.dart';
+import 'package:yana/data/metadata.dart';
 
 import '../consts/base.dart';
 import '../generated/l10n.dart';
-import '../main.dart';
 import '../provider/metadata_provider.dart';
 import '../util/router_util.dart';
-import '../util/store_util.dart';
-import '../util/string_util.dart';
 
 class QrcodeDialog extends StatefulWidget {
   String pubkey;
@@ -44,50 +35,20 @@ class QrcodeDialog extends StatefulWidget {
 
 class _QrcodeDialog extends State<QrcodeDialog> {
   static const double IMAGE_WIDTH = 40;
-  static const double QR_WIDTH = 200;
+  static const double QR_WIDTH = 255;
 
   ScreenshotController screenshotController = ScreenshotController();
 
   @override
   Widget build(BuildContext context) {
     var themeData = Theme.of(context);
-    Color cardColor = themeData.cardColor;
-    var hintColor = themeData.hintColor;
+    Color cardColor = themeData.hintColor;
+    var hintColor = themeData.cardColor;
 
     List<Widget> list = [];
     var nip19Pubkey = Nip19.encodePubKey(widget.pubkey);
     Widget topWidget = Selector<MetadataProvider, Metadata?>(
       builder: (context, metadata, child) {
-        Widget? imageWidget;
-        String? url = metadata != null && StringUtil.isNotBlank(metadata.picture) ? metadata.picture : 'https://robohash.org/'+widget.pubkey;
-        if (url != null) {
-          imageWidget = CachedNetworkImage(
-            imageUrl: url,
-            width: IMAGE_WIDTH,
-            height: IMAGE_WIDTH,
-            fit: BoxFit.cover,
-            placeholder: (context, url) => CircularProgressIndicator(),
-            errorWidget: (context, url, error) => Icon(Icons.error),
-            cacheManager: localCacheManager,
-          );
-        }
-
-        Widget userImageWidget = Container(
-          alignment: Alignment.center,
-          height: IMAGE_WIDTH,
-          width: IMAGE_WIDTH,
-          clipBehavior: Clip.hardEdge,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(IMAGE_WIDTH / 2),
-            color: Colors.grey,
-          ),
-          child: imageWidget,
-        );
-
-        Widget userNameWidget = NameComponnet(
-          pubkey: widget.pubkey,
-          metadata: metadata,
-        );
 
         return Container(
           width: QR_WIDTH,
@@ -98,12 +59,10 @@ class _QrcodeDialog extends State<QrcodeDialog> {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              userImageWidget,
               Container(
                 margin: EdgeInsets.only(left: Base.BASE_PADDING_HALF),
                 child: Container(
                   width: QR_WIDTH - IMAGE_WIDTH - Base.BASE_PADDING_HALF,
-                  child: userNameWidget,
                 ),
               ),
             ],
@@ -125,7 +84,6 @@ class _QrcodeDialog extends State<QrcodeDialog> {
       child: PrettyQr(
         data: nip19Pubkey,
         size: QR_WIDTH,
-        image: AssetImage("assets/imgs/logo/logo.png"),
       ),
     ));
     list.add(GestureDetector(
@@ -164,14 +122,6 @@ class _QrcodeDialog extends State<QrcodeDialog> {
             ),
           ),
         ),
-        Positioned(
-          right: Base.BASE_PADDING_HALF,
-          top: Base.BASE_PADDING_HALF,
-          child: MetadataIconBtn(
-            iconData: Icons.share,
-            onTap: onShareTap,
-          ),
-        ),
       ],
     );
 
@@ -205,22 +155,6 @@ class _QrcodeDialog extends State<QrcodeDialog> {
   void _doCopy(String text) {
     Clipboard.setData(ClipboardData(text: text)).then((_) {
       BotToast.showText(text: S.of(context).key_has_been_copy);
-    });
-  }
-
-  void onShareTap() {
-    screenshotController.capture().then((Uint8List? imageData) async {
-      if (imageData != null) {
-        if (imageData != null) {
-          var tempFile = await StoreUtil.saveBS2TempFile(
-            "png",
-            imageData,
-          );
-          Share.shareXFiles([XFile(tempFile)]);
-        }
-      }
-    }).catchError((onError) {
-      print(onError);
     });
   }
 }
