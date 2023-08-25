@@ -53,7 +53,7 @@ Generate a new one for testing.\
 
 *If someone wants to test it running on MacOS or iOS (by some means of Sideloading), I'll happily assist in whatever way I can.*
 
-## Current Features
+## Current Features + Roadmap
 
 - [x] Event Builders / WebSocket Subscriptions ([NIP-01](https://github.com/nostr-protocol/nips/blob/master/01.md))
 - [x] Home Feed
