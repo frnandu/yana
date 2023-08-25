@@ -109,7 +109,7 @@ You can run your own web version using docker
 
 And then go to https://127.0.0.1:8080
 
-You can also check out my hosted version at https://yana.fmar.link\
+You can also check out my hosted version at https://yana.fmar.link \
 Don't use your private keys there since it still is missing NIP-07 login/sign with extension.\
 Generate a new one for testing.\
 Soon there will be possibility of login with public key.
