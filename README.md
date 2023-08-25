@@ -101,6 +101,16 @@ Or you can just download them from the release's page and install it directly wi
 - [ ] OpenTimestamps Attestations ([NIP-03](https://github.com/nostr-protocol/nips/blob/master/03.md))
 - [ ] User Statuses ([NIP-315](https://github.com/nostr-protocol/nips/pull/737))
 
+
+## Web version
+You can run your own web version using docker
+
+    docker run -d --name yana -p 8080:80  fmar/yana
+
+And then go to https://127.0.0.1:8080
+
+You can also check out my hosted version at https://yana.fmar.link
+
 ## Contributions
 
 Some initial code was used from https://github.com/haorendashu/nostrmo project.
