@@ -17,16 +17,38 @@ Having said that, I will apply for https://opensats.org/ initiative and consider
 Each amount of funding will be distributed among the contributors according to the amount of contribution.\
 This will eventually allow each contributor to spend more time on the project.
 
-## Multi-platform
-
-I've decided to use flutter to develop the app, so that with one code base it will generate native clients for a lot of platforms.\
-A big danger with this approach is if somehow the i18n code is not as high performance and free of lagging UI as manual native written code for each platform.
-
-## Freedom
+## Installation
 
 It will not be constrained to imperialist distributors, such as Apple Store or Google Store.\
 The released app will be distributed as standalone packages for each OS and can be included in free Stores (F-Droid, Obtainium and others?).\
 Or you can just download them from the release's page and install it directly without a third-party distributor.\
+
+### Android
+[<img src="https://github.com/machiav3lli/oandbackupx/blob/034b226cea5c1b30eb4f6a6f313e4dadcbb0ece4/badge_github.png"
+alt="Get it on GitHub"
+height="80">](https://github.com/frnandu/yana/releases)
+
+### Web
+
+You can run your own web version using docker
+
+    docker run -d --name yana -p 8080:80  fmar/yana
+
+And then go to https://127.0.0.1:8080
+
+You can also check out my hosted version at https://yana.fmar.link \
+Don't use your private keys there since it still is missing NIP-07 login/sign with extension.\
+Generate a new one for testing.\
+Soon there will be possibility of login with public key.
+
+### Linux
+Comming soon
+
+### Windows
+Comming soon
+
+### Iphone/Macos
+
 If someone wants to test it running on Windows, MacOS or iOS (by some means of Sideloading), I'll happily assist in whatever way I can.
 
 ## Current Features
@@ -102,18 +124,6 @@ If someone wants to test it running on Windows, MacOS or iOS (by some means of S
 - [ ] OpenTimestamps Attestations ([NIP-03](https://github.com/nostr-protocol/nips/blob/master/03.md))
 - [ ] User Statuses ([NIP-315](https://github.com/nostr-protocol/nips/pull/737))
 
-
-## Web version
-You can run your own web version using docker
-
-    docker run -d --name yana -p 8080:80  fmar/yana
-
-And then go to https://127.0.0.1:8080
-
-You can also check out my hosted version at https://yana.fmar.link \
-Don't use your private keys there since it still is missing NIP-07 login/sign with extension.\
-Generate a new one for testing.\
-Soon there will be possibility of login with public key.
 
 ## Contributions
 
