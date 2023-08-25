@@ -100,6 +100,10 @@ Or you can just download them from the release's page and install it directly wi
 - [ ] Message Sent feedback ([NIP-20](https://github.com/nostr-protocol/nips/blob/master/20.md))
 - [ ] OpenTimestamps Attestations ([NIP-03](https://github.com/nostr-protocol/nips/blob/master/03.md))
 
+## Contributions
+
+Some initial code was used from https://github.com/haorendashu/nostrmo project
+
 ## Join
 
 I welcome contributors to join the project, specially Designers UI/UX, coders, testers.\
