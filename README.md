@@ -49,7 +49,7 @@ Generate a new one for testing.\
 ### - Windows
 *Comming soon*
 
-### - Iphone/Macos
+### - Iphone/MacOS
 
 *If someone wants to test it running on MacOS or iOS (by some means of Sideloading), I'll happily assist in whatever way I can.*
 
