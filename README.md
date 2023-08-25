@@ -50,7 +50,7 @@ Comming soon
 
 ### Iphone/Macos
 
-If someone wants to test it running on Windows, MacOS or iOS (by some means of Sideloading), I'll happily assist in whatever way I can.
+If someone wants to test it running on MacOS or iOS (by some means of Sideloading), I'll happily assist in whatever way I can.
 
 ## Current Features
 
