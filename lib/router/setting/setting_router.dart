@@ -50,7 +50,6 @@ class SettingRouter extends StatefulWidget {
 }
 
 class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
-
   @override
   Widget build(BuildContext context) {
     var themeData = Theme.of(context);
@@ -102,14 +101,14 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
     //   },
     // ));
 
-    list.add(SettingGroupTitleComponent(iconData: Icons.palette, title: "UI"));
-    list.add(
-      SettingGroupItemComponent(
-        name: s.Theme_Style,
-        value: getThemeStyle(_settingProvider.themeStyle).name,
-        onTap: pickThemeStyle,
-      ),
-    );
+    // list.add(SettingGroupTitleComponent(iconData: Icons.palette, title: "UI"));
+    // list.add(
+    //   SettingGroupItemComponent(
+    //     name: s.Theme_Style,
+    //     value: getThemeStyle(_settingProvider.themeStyle).name,
+    //     onTap: pickThemeStyle,
+    //   ),
+    // );
     // list.add(SettingGroupItemComponent(
     //   name: s.Font_Family,
     //   value: getFontEnumResult(settingProvider.fontFamily),
@@ -133,30 +132,30 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
     //   ));
     // }
 
-    list.add(
-        SettingGroupTitleComponent(iconData: Icons.article, title: s.Global));
-    list.add(SettingGroupItemComponent(
-      name: s.Link_preview,
-      value: getOpenList(settingProvider.linkPreview).name,
-      onTap: pickLinkPreview,
-    ));
-    if (!PlatformUtil.isPC()) {
-      list.add(SettingGroupItemComponent(
-        name: s.Video_preview,
-        value: getOpenList(settingProvider.videoPreviewInList).name,
-        onTap: pickVideoPreviewInList,
-      ));
-    }
+    // list.add(
+    //     SettingGroupTitleComponent(iconData: Icons.article, title: s.Global));
     // list.add(SettingGroupItemComponent(
-    //   name: s.Image_service,
-    //   value: getImageServcie(settingProvider.imageService).name,
-    //   onTap: pickImageServcie,
+    //   name: s.Link_preview,
+    //   value: getOpenList(settingProvider.linkPreview).name,
+    //   onTap: pickLinkPreview,
     // ));
-    list.add(SettingGroupItemComponent(
-      name: s.Image_preview,
-      value: getOpenList(settingProvider.imagePreview).name,
-      onTap: pickImagePreview,
-    ));
+    // if (!PlatformUtil.isPC()) {
+    //   list.add(SettingGroupItemComponent(
+    //     name: s.Video_preview,
+    //     value: getOpenList(settingProvider.videoPreviewInList).name,
+    //     onTap: pickVideoPreviewInList,
+    //   ));
+    // }
+    // // list.add(SettingGroupItemComponent(
+    // //   name: s.Image_service,
+    // //   value: getImageServcie(settingProvider.imageService).name,
+    // //   onTap: pickImageServcie,
+    // // ));
+    // list.add(SettingGroupItemComponent(
+    //   name: s.Image_preview,
+    //   value: getOpenList(settingProvider.imagePreview).name,
+    //   onTap: pickImagePreview,
+    // ));
     // if (!PlatformUtil.isPC()) {
     //   list.add(SettingGroupItemComponent(
     //     name: s.Forbid_video,
@@ -217,7 +216,8 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
 
     interfaceTiles.add(SettingsTile.switchTile(
         onToggle: (value) {
-          settingProvider.themeStyle = value ? ThemeStyle.AUTO : ThemeStyle.LIGHT;
+          settingProvider.themeStyle =
+              value ? ThemeStyle.AUTO : MediaQuery.of(context).platformBrightness == Brightness.dark ? ThemeStyle.DARK: ThemeStyle.LIGHT ;
           widget.indexReload();
         },
         initialValue: settingProvider.themeStyle == ThemeStyle.AUTO,
@@ -227,11 +227,13 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
     interfaceTiles.add(SettingsTile.switchTile(
         enabled: settingProvider.themeStyle != ThemeStyle.AUTO,
         onToggle: (value) {
-          settingProvider.themeStyle = value ? ThemeStyle.DARK : ThemeStyle.LIGHT;
+          settingProvider.themeStyle =
+              value ? ThemeStyle.DARK : ThemeStyle.LIGHT;
           widget.indexReload();
         },
-
-        initialValue: settingProvider.themeStyle == ThemeStyle.DARK,
+        initialValue: settingProvider.themeStyle == ThemeStyle.AUTO
+            ? MediaQuery.of(context).platformBrightness == Brightness.dark
+            : settingProvider.themeStyle == ThemeStyle.DARK,
         leading: const Icon(Icons.dark_mode_outlined),
         title: Text(s.Dark_mode)));
 
@@ -239,7 +241,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
         onToggle: (value) {
           settingProvider.linkPreview = value ? 1 : 0;
         },
-        initialValue: settingProvider.linkPreview == OpenStatus.OPEN ,
+        initialValue: settingProvider.linkPreview == OpenStatus.OPEN,
         leading: const Icon(Icons.link_outlined),
         title: Text(s.Link_preview)));
     interfaceTiles.add(SettingsTile.switchTile(
