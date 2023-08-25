@@ -58,7 +58,7 @@ class _RelaysRouter extends CustState<RelaysRouter> with WhenStopFunction {
       body: Column(children: [
         Expanded(
           child: Container(
-            margin: EdgeInsets.only(
+            margin: const EdgeInsets.only(
               top: Base.BASE_PADDING,
             ),
             child: ListView.builder(
@@ -76,16 +76,14 @@ class _RelaysRouter extends CustState<RelaysRouter> with WhenStopFunction {
             ),
           ),
         ),
-        Container(
-          child: TextField(
-            controller: controller,
-            decoration: InputDecoration(
-              prefixIcon: Icon(Icons.lan),
-              hintText: s.Input_relay_address,
-              suffixIcon: IconButton(
-                icon: Icon(Icons.add),
-                onPressed: addRelay,
-              ),
+        TextField(
+          controller: controller,
+          decoration: InputDecoration(
+            prefixIcon: const Icon(Icons.lan),
+            hintText: s.Input_relay_address,
+            suffixIcon: IconButton(
+              icon: const Icon(Icons.add),
+              onPressed: addRelay,
             ),
           ),
         ),
@@ -144,7 +142,9 @@ class _RelaysRouter extends CustState<RelaysRouter> with WhenStopFunction {
             }
           }
         }
-        relayProvider.setRelayListAndUpdate(list);
+        setState(() {
+          relayProvider.setRelayListAndUpdate(list);
+        });
       }
     }
   }

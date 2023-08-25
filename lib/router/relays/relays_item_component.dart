@@ -28,106 +28,106 @@ class RelaysItemComponent extends StatelessWidget {
     }
 
     return GestureDetector(
-      onTap: () {
-        var relay = nostr!.getRelay(addr);
-        if (relay != null && relay.info != null) {
-          RouterUtil.router(context, RouterPath.RELAY_INFO, relay);
-        }
-      },
-      child: Container(
-        margin: const EdgeInsets.only(
-          bottom: Base.BASE_PADDING,
-          left: Base.BASE_PADDING,
-          right: Base.BASE_PADDING,
-        ),
-        clipBehavior: Clip.hardEdge,
-        decoration: BoxDecoration(
-          color: cardColor,
-          borderRadius: BorderRadius.circular(8),
-        ),
+        onTap: () {
+          var relay = nostr!.getRelay(addr);
+          if (relay != null && relay.info != null) {
+            RouterUtil.router(context, RouterPath.RELAY_INFO, relay);
+          }
+        },
         child: Container(
-          padding: const EdgeInsets.only(
-            top: Base.BASE_PADDING_HALF,
+          margin: const EdgeInsets.only(
             bottom: Base.BASE_PADDING_HALF,
             left: Base.BASE_PADDING,
             right: Base.BASE_PADDING,
           ),
+          clipBehavior: Clip.hardEdge,
           decoration: BoxDecoration(
             color: cardColor,
-            border: Border(
-              left: BorderSide(
-                width: 6,
-                color: borderLeftColor,
-              ),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Container(
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.only(
+                    left: Base.BASE_PADDING_HALF,
+                    right: Base.BASE_PADDING_HALF,
+                  ),
+                  color: borderLeftColor,
+                  height: 50,
+                  child: const Icon(
+                    Icons.lan,
+                  ),
+                ),
+                Expanded(
+                  child: Container(
+                      padding: const EdgeInsets.only(
+                        left: Base.BASE_PADDING,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            margin: const EdgeInsets.only(bottom: 2),
+                            child: Text(addr),
+                          ),
+                          Row(
+                            children: [
+                              Container(
+                                margin: const EdgeInsets.only(
+                                    right: Base.BASE_PADDING),
+                                child: RelaysItemNumComponent(
+                                  iconData: Icons.mail,
+                                  num: relayStatus.noteReceived,
+                                ),
+                              ),
+                              RelaysItemNumComponent(
+                                iconColor: Colors.red,
+                                iconData: Icons.error,
+                                num: relayStatus.error,
+                              ),
+                            ],
+                          ),
+                        ],
+                      )),
+                ),
+                GestureDetector(
+                  onTap: () {
+                    var text = NIP19Tlv.encodeNrelay(Nrelay(addr));
+                    Clipboard.setData(ClipboardData(text: text)).then((_) {
+                      BotToast.showText(text: I18n.of(context).Copy_success);
+                    });
+                  },
+                  child: Container(
+                    margin: const EdgeInsets.only(right: Base.BASE_PADDING),
+                    child: const Icon(
+                      Icons.copy,
+                    ),
+                  ),
+                ),
+                GestureDetector(
+                  onTap: () {
+                    removeRelay(addr);
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.only(
+                      right: Base.BASE_PADDING,
+                    ),
+                    child: const Icon(
+                      Icons.delete,
+                    ),
+                  ),
+                ),
+              ],
             ),
-            // borderRadius: BorderRadius.circular(8),
           ),
-          child: Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      margin: EdgeInsets.only(bottom: 2),
-                      child: Text(addr),
-                    ),
-                    Row(
-                      children: [
-                        Container(
-                          margin: EdgeInsets.only(right: Base.BASE_PADDING),
-                          child: RelaysItemNumComponent(
-                            iconData: Icons.mail,
-                            num: relayStatus.noteReceived,
-                          ),
-                        ),
-                        Container(
-                          child: RelaysItemNumComponent(
-                            iconColor: Colors.red,
-                            iconData: Icons.error,
-                            num: relayStatus.error,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              GestureDetector(
-                onTap: () {
-                  var text = NIP19Tlv.encodeNrelay(Nrelay(addr));
-                  Clipboard.setData(ClipboardData(text: text)).then((_) {
-                    BotToast.showText(text: I18n.of(context).Copy_success);
-                  });
-                },
-                child: Container(
-                  margin: EdgeInsets.only(right: Base.BASE_PADDING),
-                  child: Icon(
-                    Icons.copy,
-                  ),
-                ),
-              ),
-              GestureDetector(
-                onTap: () {
-                  removeRelay(addr);
-                },
-                child: Container(
-                  child: Icon(
-                    Icons.delete,
-                    color: Colors.red,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
+        ));
   }
 
   void removeRelay(String addr) {
     relayProvider.removeRelay(addr);
   }
+
 }
 
 class RelaysItemNumComponent extends StatelessWidget {
@@ -137,7 +137,7 @@ class RelaysItemNumComponent extends StatelessWidget {
 
   int num;
 
-  RelaysItemNumComponent({
+  RelaysItemNumComponent({super.key,
     this.iconColor,
     required this.iconData,
     required this.num,
@@ -148,26 +148,24 @@ class RelaysItemNumComponent extends StatelessWidget {
     var themeData = Theme.of(context);
     var smallFontSize = themeData.textTheme.bodySmall!.fontSize;
 
-    return Container(
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            margin: EdgeInsets.only(right: Base.BASE_PADDING_HALF),
-            child: Icon(
-              iconData,
-              color: iconColor,
-              size: smallFontSize,
-            ),
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          margin: const EdgeInsets.only(right: Base.BASE_PADDING_HALF),
+          child: Icon(
+            iconData,
+            color: iconColor,
+            size: smallFontSize,
           ),
-          Text(
-            num.toString(),
-            style: TextStyle(
-              fontSize: smallFontSize,
-            ),
+        ),
+        Text(
+          num.toString(),
+          style: TextStyle(
+            fontSize: smallFontSize,
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
