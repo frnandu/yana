@@ -148,6 +148,15 @@ class I18n {
       args: [],
     );
   }
+  /// `Messages`
+  String get Messages {
+    return Intl.message(
+      'Messages',
+      name: 'Messages',
+      desc: '',
+      args: [],
+    );
+  }
 
   /// `Setting`
   String get Settings {
@@ -1074,6 +1083,16 @@ class I18n {
     return Intl.message(
       'Following',
       name: 'Following',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Feed`
+  String get Feed {
+    return Intl.message(
+      'Feed',
+      name: 'Feed',
       desc: '',
       args: [],
     );

@@ -320,31 +320,30 @@ class _IndexRouter extends CustState<IndexRouter>
           body: mainIndex,
           extendBody: true,
           floatingActionButton:
-          // AnimatedContainer(
-          //     curve: Curves.ease,
-          //     duration: const Duration(milliseconds: 200),
-          //     height: _scrollingDown ? 0.0 : 50,
-          //     child:
+              // AnimatedContainer(
+              //     curve: Curves.ease,
+              //     duration: const Duration(milliseconds: 200),
+              //     height: _scrollingDown ? 0.0 : 50,
+              //     child:
               addBtn
           // )
           ,
-
-          floatingActionButtonLocation:
-              FloatingActionButtonLocation.endFloat,
+          floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
           drawer: Drawer(
             child: IndexDrawerContentComponent(reload: widget.reload),
           ),
-   //       extendBodyBehindAppBar: true,
+          //       extendBodyBehindAppBar: true,
           bottomNavigationBar: AnimatedContainer(
               duration: const Duration(milliseconds: 200),
               curve: Curves.ease,
-              height: _scrollingDown ? 0.0 : 50,
+              height: _scrollingDown ? 0.0 : IndexBottomBar.HEIGHT,
               child: IndexBottomBar()));
     }
   }
 
   void doAuth() {
-    AuthUtil.authenticate(context, I18n.of(context).Please_authenticate_to_use_app)
+    AuthUtil.authenticate(
+            context, I18n.of(context).Please_authenticate_to_use_app)
         .then((didAuthenticate) {
       if (didAuthenticate) {
         setState(() {

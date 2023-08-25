@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:yana/provider/index_provider.dart';
 
+import '../../i18n/i18n.dart';
 import '../../main.dart';
 
 class IndexBottomBar extends StatefulWidget {
-  static const double HEIGHT = 50;
+  static const double HEIGHT = 60;
 
-  IndexBottomBar();
+  IndexBottomBar({super.key});
 
   @override
   State<StatefulWidget> createState() {
@@ -16,14 +17,19 @@ class IndexBottomBar extends StatefulWidget {
 }
 
 class _IndexBottomBar extends State<IndexBottomBar> {
+  int selectedPageIndex = 0;
   @override
   Widget build(BuildContext context) {
+    var themeData = Theme.of(context);
     var _indexProvider = Provider.of<IndexProvider>(context);
     var currentTap = _indexProvider.currentTap;
 
     List<Widget> list = [];
 
+    List<NavigationDestination> destinations = [];
+
     int current = 0;
+    var s = I18n.of(context);
 
     list.add(IndexBottomBarButton(
       iconData: Icons.home,
@@ -40,6 +46,10 @@ class _IndexBottomBar extends State<IndexBottomBar> {
         indexProvider.followScrollToTop();
       },
     ));
+    destinations.add(NavigationDestination(
+        icon: const Icon(Icons.home_outlined),
+        label: s.Feed,
+    ));
     current++;
 
     list.add(IndexBottomBarButton(
@@ -47,18 +57,20 @@ class _IndexBottomBar extends State<IndexBottomBar> {
       index: current,
       selected: current == currentTap,
     ));
+    destinations.add(NavigationDestination(
+      icon: const Icon(Icons.search),
+      label: s.Search,
+    ));
     current++;
-
-    list.add(Expanded(
-        child: Container(
-      height: IndexBottomBar.HEIGHT,
-    )));
-
 
     list.add(IndexBottomBarButton(
       iconData: Icons.mail,
       index: current,
       selected: current == currentTap,
+    ));
+    destinations.add(NavigationDestination(
+      icon: const Icon(Icons.mail_outline),
+      label: s.Messages,
     ));
     current++;
 
@@ -79,13 +91,28 @@ class _IndexBottomBar extends State<IndexBottomBar> {
         // indexProvider.globalScrollToTop();
       },
     ));
+    destinations.add(NavigationDestination(
+      icon: const Icon(Icons.notifications_none_outlined),
+      label: s.Notifications,
+    ));
+
     current++;
 
-    // return Container(
-    //   width: double.infinity,
-    //   child: Row(
-    //     children: list,
-    //   ),
+    // return NavigationBar(
+    //   indicatorColor: themeData.primaryColor,
+    //   selectedIndex: selectedPageIndex,
+    //   onDestinationSelected: (int index) {
+    //     setState(() {
+    //       selectedPageIndex = index;
+    //       // if (index == currentTap) {
+    //       //   indexProvider.followScrollToTop();
+    //       // } else {
+    //       //   indexProvider.setCurrentTap(i);
+    //       // }
+    //
+    //     });
+    //   },
+    //   destinations: destinations,
     // );
     return BottomAppBar(
       // shape: const CircularNotchedRectangle(),
@@ -142,10 +169,11 @@ class IndexBottomBarButton extends StatelessWidget {
             onDoubleTap!();
           }
         },
-        child: Container(
+        child: SizedBox(
           height: IndexBottomBar.HEIGHT,
           child: Icon(
             iconData,
+            size: IndexBottomBar.HEIGHT*0.5,
             color: selected ? selectedColor : null,
           ),
         ),
