@@ -36,7 +36,7 @@ height="80">](https://github.com/frnandu/yana/releases)
 alt="Get it on GitHub"
 height="80">](https://github.com/frnandu/yana/releases)
 
-*Only by sideloading the .ipa file (I haven't tested it because I don't use apple devices, if somebody can confirm that it works would be great, just let me know).*
+*Only by sideloading the **.ipa** file (I haven't tested it because I don't use apple devices, if somebody can confirm that it works would be great, just let me know).*
 
 ### - Web
 
