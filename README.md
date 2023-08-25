@@ -103,7 +103,7 @@ Or you can just download them from the release's page and install it directly wi
 
 ## Contributions
 
-Some initial code was used from https://github.com/haorendashu/nostrmo project.\
+Some initial code was used from https://github.com/haorendashu/nostrmo project.
 
 ## Join
 
