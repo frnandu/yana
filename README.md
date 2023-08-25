@@ -20,7 +20,7 @@ This will eventually allow each contributor to spend more time on the project.
 ## Installation
 
 It will not be constrained to imperialist distributors, such as Apple Store or Google Store.\
-The released app will be distributed as standalone packages for each OS and can be included in free Stores (F-Droid, Obtainium and others?).\
+The released app will be distributed as standalone packages for each OS and can be included in free Stores ([F-Droid](https://f-droid.org), [Obtainium](https://github.com/ImranR98/Obtainium), etc).\
 Or you can just download them from the release's page and install it directly without a third-party distributor.\
 
 ### Android
@@ -28,6 +28,7 @@ Or you can just download them from the release's page and install it directly wi
 alt="Get it on GitHub"
 height="80">](https://github.com/frnandu/yana/releases)
 
+I strongly recommend [Obtainium](https://github.com/ImranR98/Obtainium) for keeping up-to-date with new releases.
 ### Web
 
 You can run your own web version using docker
