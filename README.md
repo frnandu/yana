@@ -23,13 +23,13 @@ It will not be constrained to imperialist distributors, such as Apple Store or G
 The released app will be distributed as standalone packages for each OS and can be included in free Stores ([F-Droid](https://f-droid.org), [Obtainium](https://github.com/ImranR98/Obtainium), etc).\
 Or you can just download them from the release's page and install it directly without a third-party distributor.
 
-### Android
+### - Android
 [<img src="https://github.com/machiav3lli/oandbackupx/blob/034b226cea5c1b30eb4f6a6f313e4dadcbb0ece4/badge_github.png"
 alt="Get it on GitHub"
 height="80">](https://github.com/frnandu/yana/releases)
 
-I strongly recommend [Obtainium](https://github.com/ImranR98/Obtainium) for keeping up-to-date with new releases.
-### Web
+*I strongly recommend [Obtainium](https://github.com/ImranR98/Obtainium) for keeping up-to-date with new releases.*
+### - Web
 
 You can run your own web version using docker
 
@@ -43,13 +43,13 @@ Generate a new one for testing.\
 [Soon](https://github.com/frnandu/yana/issues/5) there will be possibility of login with public key.
 [Planned](https://github.com/frnandu/yana/issues/34) also an Umbrel Store package so it is simple to install and run it for umbrel users 
 
-### Linux
+### - Linux
 *Comming soon*
 
-### Windows
+### - Windows
 *Comming soon*
 
-### Iphone/Macos
+### - Iphone/Macos
 
 *If someone wants to test it running on MacOS or iOS (by some means of Sideloading), I'll happily assist in whatever way I can.*
 
