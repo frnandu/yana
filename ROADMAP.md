@@ -14,6 +14,7 @@
 
 - badges when something new in home/notifications/DMS
 - allow to login with npub 
+- add SystemMouseCursors.click to everything that is clickable for web version
 - add theme icon on drawer for quick switching of dark/light theme
 - filter out new posts from replies
 - include reposts in following
