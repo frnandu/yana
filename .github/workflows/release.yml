@@ -44,8 +44,8 @@ jobs:
       - name: flutter build apk
         run: flutter build apk
 
-      - name: flutter build appbundle
-        run: flutter build appbundle
+#      - name: flutter build appbundle
+#        run: flutter build appbundle
 
 
           #  build_linux:
@@ -112,17 +112,17 @@ jobs:
           asset_name: yana-${{ github.ref_name }}.apk
           asset_content_type: application/zip
 
-      # APP BUNDLE
-      - name: Upload APP BUNDLE to release
-        id: upload-release-asset-play-universal-appbundle
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: build/app/outputs/bundle/release/app-release.aab
-          asset_name: yana-${{ github.ref_name }}.aab
-          asset_content_type: application/zip
+#      # APP BUNDLE
+#      - name: Upload APP BUNDLE to release
+#        id: upload-release-asset-play-universal-appbundle
+#        uses: actions/upload-release-asset@v1
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#        with:
+#          upload_url: ${{ steps.create_release.outputs.upload_url }}
+#          asset_path: build/app/outputs/bundle/release/app-release.aab
+#          asset_name: yana-${{ github.ref_name }}.aab
+#          asset_content_type: application/zip
 
       # LINUX APPIMAGE
 #      - name: Upload APP BUNDLE to release
