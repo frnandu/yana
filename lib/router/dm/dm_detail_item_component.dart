@@ -1,18 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:get_time_ago/get_time_ago.dart';
+import 'package:pointycastle/export.dart' as pointycastle;
+import 'package:provider/provider.dart';
 import 'package:yana/nostr/nip04/nip04.dart';
 import 'package:yana/ui/content/content_decoder.dart';
 import 'package:yana/utils/router_path.dart';
 import 'package:yana/utils/router_util.dart';
-import 'package:pointycastle/export.dart' as pointycastle;
-import 'package:provider/provider.dart';
 
 import '../../nostr/event.dart';
+import '../../provider/setting_provider.dart';
 import '../../ui/user_pic_component.dart';
 import '../../utils/base.dart';
 import '../../utils/base_consts.dart';
-import '../../main.dart';
-import '../../provider/setting_provider.dart';
 
 class DMDetailItemComponent extends StatefulWidget {
   String sessionPubkey;

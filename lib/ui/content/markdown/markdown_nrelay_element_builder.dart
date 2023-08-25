@@ -24,6 +24,7 @@ class MarkdownNrelayElementBuilder implements MarkdownElementBuilder {
     if (key != null) {
       return ContentRelayComponent(key);
     }
+    return null;
   }
 
   @override

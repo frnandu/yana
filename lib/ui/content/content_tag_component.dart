@@ -8,7 +8,7 @@ import 'content_str_link_component.dart';
 class ContentTagComponent extends StatelessWidget {
   String tag;
 
-  ContentTagComponent({required this.tag});
+  ContentTagComponent({super.key, required this.tag});
 
   @override
   Widget build(BuildContext context) {

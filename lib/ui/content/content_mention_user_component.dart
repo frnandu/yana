@@ -11,7 +11,7 @@ import 'content_str_link_component.dart';
 class ContentMentionUserComponent extends StatefulWidget {
   String pubkey;
 
-  ContentMentionUserComponent({required this.pubkey});
+  ContentMentionUserComponent({super.key, required this.pubkey});
 
   @override
   State<StatefulWidget> createState() {

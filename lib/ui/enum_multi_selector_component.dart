@@ -10,7 +10,7 @@ class EnumMultiSelectorComponent extends StatefulWidget {
 
   final List<EnumObj> values;
 
-  EnumMultiSelectorComponent({
+  const EnumMultiSelectorComponent({super.key,
     required this.list,
     required this.values,
   });

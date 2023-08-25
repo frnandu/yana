@@ -29,13 +29,13 @@ class StoreUtil {
     var tempDir = await getTemporaryDirectory();
     var folderPath = tempDir.path;
     if (StringUtil.isNotBlank(randFolderName)) {
-      folderPath = folderPath + "/" + randFolderName!;
-      checkAndCreateDir(folderPath + "/");
+      folderPath = "$folderPath/${randFolderName!}";
+      checkAndCreateDir("$folderPath/");
     }
     var tempFilePath =
-        folderPath + "/" + StringUtil.rndNameStr(12) + "." + extension;
+        "$folderPath/${StringUtil.rndNameStr(12)}.$extension";
     if (StringUtil.isNotBlank(filename)) {
-      tempFilePath = folderPath + "/" + filename! + "." + extension;
+      tempFilePath = "$folderPath/${filename!}.$extension";
     }
 
     var tempFile = File(tempFilePath);
@@ -52,22 +52,22 @@ class StoreUtil {
   static String bytesToShowStr(int bytesLength) {
     double bl = bytesLength.toDouble();
     if (bl < 1024) {
-      return bl.toString() + " B";
+      return "$bl B";
     }
 
     bl = bl / 1024;
     if (bl < 1024) {
-      return bl.toStringAsFixed(2) + " KB";
+      return "${bl.toStringAsFixed(2)} KB";
     }
 
     bl = bl / 1024;
     if (bl < 1024) {
-      return bl.toStringAsFixed(2) + " MB";
+      return "${bl.toStringAsFixed(2)} MB";
     }
 
     bl = bl / 1024;
     if (bl < 1024) {
-      return bl.toStringAsFixed(2) + " GB";
+      return "${bl.toStringAsFixed(2)} GB";
     }
 
     return "";

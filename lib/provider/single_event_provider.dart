@@ -1,11 +1,8 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 
-import '../nostr/event.dart';
-import '../nostr/event_kind.dart' as kind;
-import '../nostr/filter.dart';
 import '../main.dart';
+import '../nostr/event.dart';
+import '../nostr/filter.dart';
 import '../utils/later_function.dart';
 import '../utils/string_util.dart';
 

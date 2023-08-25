@@ -68,7 +68,7 @@ class _ContentVideoComponent extends State<ContentVideoComponent> {
 class ControlsOverlay extends StatefulWidget {
   final VideoPlayerController controller;
 
-  ControlsOverlay({required this.controller});
+  ControlsOverlay({super.key, required this.controller});
 
   @override
   State<StatefulWidget> createState() {

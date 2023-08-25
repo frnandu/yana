@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import '../nostr/event.dart';
 import '../nostr/relay.dart';
 import '../utils/find_event_interface.dart';

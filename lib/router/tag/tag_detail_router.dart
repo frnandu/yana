@@ -1,22 +1,21 @@
 import 'package:flutter/material.dart';
-import 'package:yana/ui/event_delete_callback.dart';
-import 'package:yana/router/tag/topic_map.dart';
 import 'package:provider/provider.dart';
+import 'package:yana/router/tag/topic_map.dart';
+import 'package:yana/ui/event_delete_callback.dart';
 
+import '../../main.dart';
+import '../../models/event_mem_box.dart';
 import '../../nostr/event.dart';
+import '../../nostr/event_kind.dart' as kind;
 import '../../nostr/filter.dart';
+import '../../provider/setting_provider.dart';
 import '../../ui/cust_state.dart';
 import '../../ui/event/event_list_component.dart';
 import '../../ui/tag_info_component.dart';
-import '../../utils/base.dart';
 import '../../utils/base_consts.dart';
-import '../../models/event_mem_box.dart';
-import '../../main.dart';
-import '../../provider/setting_provider.dart';
 import '../../utils/peddingevents_later_function.dart';
 import '../../utils/platform_util.dart';
 import '../../utils/router_util.dart';
-import '../../nostr/event_kind.dart' as kind;
 import '../../utils/string_util.dart';
 
 class TagDetailRouter extends StatefulWidget {

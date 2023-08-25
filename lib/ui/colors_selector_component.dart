@@ -84,7 +84,7 @@ class ColorSelectorItemComponent extends StatelessWidget {
 
   // final bool isLast;
 
-  ColorSelectorItemComponent({
+  ColorSelectorItemComponent({super.key,
     required this.color,
     // this.isLast = false,
   });

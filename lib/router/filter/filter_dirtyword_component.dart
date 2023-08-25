@@ -9,6 +9,8 @@ import '../../i18n/i18n.dart';
 import '../../utils/string_util.dart';
 
 class BlockedWordsComponent extends StatefulWidget {
+  const BlockedWordsComponent({super.key});
+
   @override
   State<StatefulWidget> createState() {
     return _FilterDirtywordComponent();
@@ -29,35 +31,31 @@ class _FilterDirtywordComponent extends State<BlockedWordsComponent> {
       list.add(FilterDirtywordItemComponent(word: dirtyword));
     }
 
-    return Container(
-      child: Column(
-        children: [
-          Expanded(
-            child: Container(
-              width: double.maxFinite,
-              padding: EdgeInsets.all(Base.BASE_PADDING),
-              child: Wrap(
-                children: list,
-                spacing: Base.BASE_PADDING,
-                runSpacing: Base.BASE_PADDING,
-              ),
+    return Column(
+      children: [
+        Expanded(
+          child: Container(
+            width: double.maxFinite,
+            padding: EdgeInsets.all(Base.BASE_PADDING),
+            child: Wrap(
+              children: list,
+              spacing: Base.BASE_PADDING,
+              runSpacing: Base.BASE_PADDING,
             ),
           ),
-          Container(
-            child: TextField(
-              controller: controller,
-              decoration: InputDecoration(
-                prefixIcon: Icon(Icons.abc),
-                hintText: s.Input_word,
-                suffixIcon: IconButton(
-                  icon: Icon(Icons.add),
-                  onPressed: addDirtyWord,
-                ),
-              ),
+        ),
+        TextField(
+          controller: controller,
+          decoration: InputDecoration(
+            prefixIcon: const Icon(Icons.abc),
+            hintText: s.Input_word,
+            suffixIcon: IconButton(
+              icon: const Icon(Icons.add),
+              onPressed: addDirtyWord,
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -78,7 +76,7 @@ class _FilterDirtywordComponent extends State<BlockedWordsComponent> {
 class FilterDirtywordItemComponent extends StatefulWidget {
   String word;
 
-  FilterDirtywordItemComponent({required this.word});
+  FilterDirtywordItemComponent({super.key, required this.word});
 
   @override
   State<StatefulWidget> createState() {

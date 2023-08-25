@@ -14,7 +14,7 @@ class SettingGroupItemComponent extends StatelessWidget {
 
   Function? onTap;
 
-  SettingGroupItemComponent({
+  SettingGroupItemComponent({super.key,
     required this.name,
     this.nameColor,
     this.value,

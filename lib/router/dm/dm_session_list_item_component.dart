@@ -1,20 +1,17 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get_time_ago/get_time_ago.dart';
-import 'package:yana/nostr/nip04/dm_session.dart';
+import 'package:pointycastle/export.dart' as pointycastle;
+import 'package:provider/provider.dart';
+import 'package:yana/models/metadata.dart';
 import 'package:yana/nostr/nip04/nip04.dart';
+import 'package:yana/provider/dm_provider.dart';
+import 'package:yana/provider/metadata_provider.dart';
 import 'package:yana/ui/name_component.dart';
 import 'package:yana/ui/point_component.dart';
 import 'package:yana/ui/user_pic_component.dart';
 import 'package:yana/utils/base.dart';
 import 'package:yana/utils/router_path.dart';
-import 'package:yana/models/metadata.dart';
-import 'package:yana/main.dart';
-import 'package:yana/provider/dm_provider.dart';
-import 'package:yana/provider/metadata_provider.dart';
 import 'package:yana/utils/router_util.dart';
-import 'package:provider/provider.dart';
-import 'package:pointycastle/export.dart' as pointycastle;
 
 import '../../utils/string_util.dart';
 

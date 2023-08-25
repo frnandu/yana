@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:yana/provider/single_event_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:widget_size/widget_size.dart';
+import 'package:yana/provider/single_event_provider.dart';
 
+import '../../main.dart';
+import '../../models/event_mem_box.dart';
 import '../../nostr/event.dart';
+import '../../nostr/event_kind.dart' as kind;
 import '../../nostr/event_relation.dart';
 import '../../nostr/filter.dart';
 import '../../ui/cust_state.dart';
@@ -12,13 +15,9 @@ import '../../ui/event/event_load_list_component.dart';
 import '../../ui/event_reply_callback.dart';
 import '../../ui/simple_name_component.dart';
 import '../../utils/base.dart';
-import '../../models/event_mem_box.dart';
-import '../../i18n/i18n.dart';
-import '../../main.dart';
 import '../../utils/peddingevents_later_function.dart';
 import '../../utils/platform_util.dart';
 import '../../utils/router_util.dart';
-import '../../nostr/event_kind.dart' as kind;
 import '../../utils/string_util.dart';
 import '../../utils/when_stop_function.dart';
 import 'thread_detail_event.dart';
@@ -113,7 +112,6 @@ class _ThreadDetailRouter extends CustState<ThreadDetailRouter>
 
   @override
   Widget doBuild(BuildContext context) {
-    var s = I18n.of(context);
     if (sourceEvent == null) {
       var obj = RouterUtil.routerArgs(context);
       if (obj != null && obj is Event) {

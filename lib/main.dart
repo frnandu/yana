@@ -136,7 +136,7 @@ Future<void> main() async {
     await windowManager.ensureInitialized();
 
     WindowOptions windowOptions = WindowOptions(
-      size: Size(1280, 800),
+      size: const Size(1280, 800),
       center: true,
       backgroundColor: Colors.transparent,
       skipTaskbar: false,
@@ -462,7 +462,6 @@ class _MyApp extends State<MyApp> {
       },
     );
 
-    Color? mainTextColor;
     Color? topFontColor = Colors.white;
     Color hintColor = Colors.grey;
 

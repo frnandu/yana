@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../models/metadata.dart';
 import '../../i18n/i18n.dart';
-import '../../main.dart';
 import '../../utils/string_util.dart';
 import '../../utils/when_stop_function.dart';
 

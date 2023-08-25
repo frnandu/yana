@@ -11,7 +11,7 @@ class ReactionEventItemComponent extends StatefulWidget {
 
   int createdAt;
 
-  ReactionEventItemComponent({
+  ReactionEventItemComponent({super.key,
     required this.pubkey,
     required this.text,
     required this.createdAt,

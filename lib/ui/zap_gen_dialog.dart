@@ -14,7 +14,7 @@ class ZapGenDialog extends StatefulWidget {
   BuildContext parentContext;
 
   ZapGenDialog(
-      {required this.pubkey, this.eventId, required this.parentContext});
+      {super.key, required this.pubkey, this.eventId, required this.parentContext});
 
   static Future<void> show(BuildContext context, String pubkey,
       {String? eventId}) async {

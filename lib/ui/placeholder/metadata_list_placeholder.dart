@@ -4,9 +4,7 @@ import 'package:yana/ui/placeholder/metadata_placeholder.dart';
 class MetadataListPlaceholder extends StatelessWidget {
   Function? onRefresh;
 
-  MetadataListPlaceholder({this.onRefresh});
-
-  ScrollController _controller = ScrollController();
+  MetadataListPlaceholder({super.key, this.onRefresh});
 
   @override
   Widget build(BuildContext context) {

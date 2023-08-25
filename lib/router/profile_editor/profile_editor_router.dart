@@ -2,21 +2,20 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
-import 'package:yana/nostr/upload/uploader.dart';
 import 'package:yana/models/metadata.dart';
+import 'package:yana/nostr/upload/uploader.dart';
 import 'package:yana/utils/platform_util.dart';
 import 'package:yana/utils/router_util.dart';
 import 'package:yana/utils/string_util.dart';
 
+import '../../i18n/i18n.dart';
+import '../../main.dart';
 import '../../nostr/event.dart';
 import '../../nostr/event_kind.dart' as kind;
 import '../../nostr/filter.dart';
 import '../../ui/appbar4stack.dart';
 import '../../ui/cust_state.dart';
 import '../../utils/base.dart';
-import '../../i18n/i18n.dart';
-import '../../main.dart';
-import '../index/index_app_bar.dart';
 
 class ProfileEditorRouter extends StatefulWidget {
   @override

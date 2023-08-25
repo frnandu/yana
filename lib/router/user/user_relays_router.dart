@@ -10,6 +10,8 @@ import '../../i18n/i18n.dart';
 import '../../utils/router_util.dart';
 
 class UserRelayRouter extends StatefulWidget {
+  const UserRelayRouter({super.key});
+
   @override
   State<StatefulWidget> createState() {
     return _UserRelayRouter();
@@ -95,7 +97,7 @@ class RelayMetadataComponent extends StatelessWidget {
 
   bool addAble;
 
-  RelayMetadataComponent({required this.relayMetadata, this.addAble = true});
+  RelayMetadataComponent({super.key, required this.relayMetadata, this.addAble = true});
 
   @override
   Widget build(BuildContext context) {

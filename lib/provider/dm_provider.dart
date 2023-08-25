@@ -13,7 +13,6 @@ import '../utils/peddingevents_later_function.dart';
 import '../utils/string_util.dart';
 
 class DMProvider extends ChangeNotifier with PenddingEventsLaterFunction {
-  static DMProvider? _dmProvider;
 
   List<DMSessionDetail> _knownList = [];
 

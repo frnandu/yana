@@ -31,14 +31,14 @@ class LnurlResponse {
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['callback'] = this.callback;
-    data['maxSendable'] = this.maxSendable;
-    data['minSendable'] = this.minSendable;
-    data['metadata'] = this.metadata;
-    data['commentAllowed'] = this.commentAllowed;
-    data['tag'] = this.tag;
-    data['allowsNostr'] = this.allowsNostr;
-    data['nostrPubkey'] = this.nostrPubkey;
+    data['callback'] = callback;
+    data['maxSendable'] = maxSendable;
+    data['minSendable'] = minSendable;
+    data['metadata'] = metadata;
+    data['commentAllowed'] = commentAllowed;
+    data['tag'] = tag;
+    data['allowsNostr'] = allowsNostr;
+    data['nostrPubkey'] = nostrPubkey;
     return data;
   }
 }

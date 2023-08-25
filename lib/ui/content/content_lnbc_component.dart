@@ -6,9 +6,9 @@ import '../../nostr/nip57/zap_num_util.dart';
 import '../../utils/base.dart';
 
 class ContentLnbcComponent extends StatelessWidget {
-  String lnbc;
+  final String lnbc;
 
-  ContentLnbcComponent({required this.lnbc});
+  const ContentLnbcComponent({super.key, required this.lnbc});
 
   @override
   Widget build(BuildContext context) {

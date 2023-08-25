@@ -48,6 +48,7 @@ class BadgeDefinition {
         return BadgeDefinition(d!, event.createdAt,
             name: name, description: description, image: image, thumb: thumb);
       }
+      return null;
     }
   }
 }

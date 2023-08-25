@@ -17,7 +17,6 @@ class PollInfo {
       var tag = event.tags[i];
       var tagLength = tag.length;
       if (tagLength > 1 && tag[1] is String) {
-        var value = tag[1] as String;
         if (tag[0] == "poll_option") {
           if (tag[1] is String && tag[2] is String) {
             pollOptions.add([tag[1] as String, tag[2] as String]);

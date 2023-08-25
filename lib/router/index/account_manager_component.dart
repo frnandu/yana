@@ -234,7 +234,7 @@ class AccountManagerItemComponent extends StatefulWidget {
 
   Function(int)? onLogoutTap;
 
-  AccountManagerItemComponent({
+  AccountManagerItemComponent({super.key,
     required this.isCurrent,
     required this.index,
     required this.privateKey,

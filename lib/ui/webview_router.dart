@@ -233,7 +233,6 @@ nip04: {
 
   @override
   Widget doBuild(BuildContext context) {
-    var s = I18n.of(context);
     var themeData = Theme.of(context);
     var paddingTop = mediaDataCache.padding.top;
     var mainColor = themeData.primaryColor;
@@ -335,7 +334,6 @@ nip04: {
   Widget getMoreWidget(Widget icon) {
     var s = I18n.of(context);
     var themeData = Theme.of(context);
-    var scaffoldBackgroundColor = themeData.scaffoldBackgroundColor;
 
     return PopupMenuButton<String>(
       itemBuilder: (context) {

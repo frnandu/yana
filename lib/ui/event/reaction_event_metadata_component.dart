@@ -13,7 +13,7 @@ import '../simple_name_component.dart';
 class ReactionEventMetadataComponent extends StatefulWidget {
   String pubkey;
 
-  ReactionEventMetadataComponent({
+  ReactionEventMetadataComponent({super.key,
     required this.pubkey,
   });
 

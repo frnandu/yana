@@ -1,10 +1,8 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 
-import '../nostr/nip58/badge_definition.dart';
 import '../main.dart';
-import '../provider/badge_definition_provider.dart';
+import '../nostr/nip58/badge_definition.dart';
 import '../utils/string_util.dart';
 
 class BedgeComponent extends StatelessWidget {

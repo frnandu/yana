@@ -12,7 +12,7 @@ class UserPicComponent extends StatefulWidget {
 
   double width;
 
-  UserPicComponent({
+  UserPicComponent({super.key,
     required this.pubkey,
     required this.width,
   });

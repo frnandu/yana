@@ -1,16 +1,15 @@
 import 'dart:convert';
-import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:yana/nostr/nip05/nip05_validor.dart';
 import 'package:yana/utils/nip05status.dart';
 
+import '../main.dart';
+import '../models/metadata.dart';
+import '../models/metadata_db.dart';
 import '../nostr/event.dart';
 import '../nostr/event_kind.dart' as kind;
 import '../nostr/filter.dart';
-import '../models/metadata.dart';
-import '../models/metadata_db.dart';
-import '../main.dart';
 import '../utils/later_function.dart';
 import '../utils/string_util.dart';
 

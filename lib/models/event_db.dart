@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:developer';
 
 import 'package:sqflite/sqflite.dart';
 
@@ -51,6 +50,7 @@ class EventDB {
     if (list.isNotEmpty) {
       return Event.fromJson(list[0]);
     }
+    return null;
   }
 
   static Future<void> deleteAll(int keyIndex, {DatabaseExecutor? db}) async {

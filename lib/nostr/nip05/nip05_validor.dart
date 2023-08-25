@@ -37,7 +37,7 @@ class Nip05Validor {
       } else {
         data = response.data;
       }
-      if (data is Map && data["names"] != null) {
+      if (data["names"] != null) {
         var dataPubkey = data["names"][name];
         if (dataPubkey != null && dataPubkey == pubkey) {
           return true;

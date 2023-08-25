@@ -31,7 +31,7 @@ class IndexProvider extends ChangeNotifier {
       ScrollController? followPostsScrollController) {
     _followPostsScrollController = followPostsScrollController;
     followPostsScrollController?.addListener(() {
-      scrollCallback?.call(followPostsScrollController!.position.userScrollDirection);
+      scrollCallback?.call(followPostsScrollController.position.userScrollDirection);
     });
   }
 
@@ -40,7 +40,7 @@ class IndexProvider extends ChangeNotifier {
   void setFollowScrollController(ScrollController? followScrollController) {
     _followScrollController = followScrollController;
     followScrollController?.addListener(() {
-      scrollCallback?.call(followScrollController!.position.userScrollDirection);
+      scrollCallback?.call(followScrollController.position.userScrollDirection);
     });
   }
 
@@ -50,7 +50,7 @@ class IndexProvider extends ChangeNotifier {
       ScrollController? mentionedScrollController) {
     _mentionedScrollController = mentionedScrollController;
     mentionedScrollController?.addListener(() {
-      scrollCallback?.call(mentionedScrollController!.position.userScrollDirection);
+      scrollCallback?.call(mentionedScrollController.position.userScrollDirection);
     });
   }
 
@@ -76,16 +76,6 @@ class IndexProvider extends ChangeNotifier {
     eventScrollController?.addListener(() {
       scrollCallback?.call(eventScrollController!.position.userScrollDirection);
     });
-  }
-
-  ScrollController? _userScrollController;
-
-  void setUserScrollController(ScrollController? userScrollController) {
-    _userScrollController = userScrollController;
-    userScrollController?.addListener(() {
-      scrollCallback?.call(userScrollController!.position.userScrollDirection);
-    });
-
   }
 
   ScrollController? get eventScrollController => _eventScrollController;

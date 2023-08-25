@@ -17,6 +17,8 @@ import '../../utils/router_util.dart';
 import '../thread/thread_detail_router.dart';
 
 class EventDetailRouter extends StatefulWidget {
+  const EventDetailRouter({super.key});
+
   @override
   State<StatefulWidget> createState() {
     return _EventDetailRouter();
@@ -30,7 +32,7 @@ class _EventDetailRouter extends State<EventDetailRouter> {
 
   bool showTitle = false;
 
-  ScrollController _controller = ScrollController();
+  final ScrollController _controller = ScrollController();
 
   double rootEventHeight = 120;
 

@@ -1,9 +1,7 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
-import '../../nostr/nip19/nip19.dart';
-import '../../utils/base.dart';
 import '../../models/metadata.dart';
+import '../../utils/base.dart';
 import '../../utils/string_util.dart';
 import '../content/content_decoder.dart';
 import 'metadata_top_component.dart';

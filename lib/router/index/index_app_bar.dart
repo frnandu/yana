@@ -1,13 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:yana/utils/platform_util.dart';
 
+import '../../main.dart';
 import '../../ui/user_pic_component.dart';
 import '../../utils/base.dart';
-import '../../utils/router_path.dart';
-import '../../main.dart';
-import '../../provider/relay_provider.dart';
-import '../../utils/router_util.dart';
 
 class IndexAppBar extends StatefulWidget {
   static const double height = 56;
@@ -29,7 +25,6 @@ class _IndexAppBar extends State<IndexAppBar> {
   Widget build(BuildContext context) {
     var themeData = Theme.of(context);
     var paddingTop = mediaDataCache.padding.top;
-    var textColor = themeData.appBarTheme.titleTextStyle!.color;
     var appBarBackgroundColor = themeData.appBarTheme.backgroundColor;
 
     Widget? userPicWidget;

@@ -13,6 +13,8 @@ import '../../utils/string_util.dart';
 import '../content/content_custom_emoji_component.dart';
 
 class CustomEmojiAddDialog extends StatefulWidget {
+  const CustomEmojiAddDialog({super.key});
+
   @override
   State<StatefulWidget> createState() {
     return _CustomEmojiAddDialog();

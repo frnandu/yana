@@ -37,6 +37,8 @@ class MarkdownMentionEventElementBuilder implements MarkdownElementBuilder {
         id: key,
       );
     }
+    return null;
+
   }
 
   @override

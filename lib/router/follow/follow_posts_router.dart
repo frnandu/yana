@@ -1,20 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:yana/main.dart';
+import 'package:yana/models/event_mem_box.dart';
+import 'package:yana/provider/follow_event_provider.dart';
+import 'package:yana/provider/follow_new_event_provider.dart';
 import 'package:yana/ui/keep_alive_cust_state.dart';
 import 'package:yana/ui/new_notes_updated_component.dart';
 import 'package:yana/utils/base.dart';
 import 'package:yana/utils/base_consts.dart';
-import 'package:yana/utils/router_path.dart';
-import 'package:yana/models/event_mem_box.dart';
-import 'package:yana/main.dart';
-import 'package:yana/provider/follow_event_provider.dart';
-import 'package:yana/provider/follow_new_event_provider.dart';
-import 'package:yana/utils/router_util.dart';
-import 'package:provider/provider.dart';
 
+import '../../provider/setting_provider.dart';
 import '../../ui/event/event_list_component.dart';
 import '../../ui/placeholder/event_list_placeholder.dart';
-import '../../ui/placeholder/event_placeholder.dart';
-import '../../provider/setting_provider.dart';
 import '../../utils/load_more_event.dart';
 import '../../utils/platform_util.dart';
 

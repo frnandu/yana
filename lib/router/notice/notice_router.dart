@@ -1,12 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:yana/ui/cust_state.dart';
-import 'package:yana/main.dart';
 import 'package:provider/provider.dart';
 
-import '../../utils/router_path.dart';
 import '../../i18n/i18n.dart';
 import '../../provider/notice_provider.dart';
-import '../../utils/router_util.dart';
 import '../edit/editor_router.dart';
 import 'notice_list_item_component.dart';
 

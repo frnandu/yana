@@ -1,6 +1,3 @@
-import 'dart:convert';
-import 'dart:developer';
-
 import 'package:bot_toast/bot_toast.dart';
 import 'package:convert/convert.dart';
 import 'package:flutter/material.dart';
@@ -10,9 +7,9 @@ import '../../i18n/i18n.dart';
 import '../../main.dart';
 import '../../models/event_reactions.dart';
 import '../../nostr/event.dart';
-import '../../nostr/nip69/poll_info.dart';
 import '../../nostr/nip57/zap_action.dart';
 import '../../nostr/nip57/zap_num_util.dart';
+import '../../nostr/nip69/poll_info.dart';
 import '../../provider/event_reactions_provider.dart';
 import '../../utils/base.dart';
 import '../../utils/number_format_util.dart';

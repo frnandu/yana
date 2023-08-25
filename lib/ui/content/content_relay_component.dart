@@ -11,7 +11,7 @@ import '../comfirm_dialog.dart';
 class ContentRelayComponent extends StatelessWidget {
   String addr;
 
-  ContentRelayComponent(this.addr);
+  ContentRelayComponent(this.addr, {super.key});
 
   @override
   Widget build(BuildContext context) {

@@ -18,6 +18,8 @@ import '../../../utils/platform_util.dart';
 import '../../../utils/string_util.dart';
 
 class GlobalsEventsRouter extends StatefulWidget {
+  const GlobalsEventsRouter({super.key});
+
   @override
   State<StatefulWidget> createState() {
     return _GlobalsEventsRouter();

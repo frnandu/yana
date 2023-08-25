@@ -1,17 +1,13 @@
 import 'dart:io';
-import 'dart:math';
 import 'dart:ui';
 
 import 'package:bot_toast/bot_toast.dart';
 import 'package:easy_image_viewer/easy_image_viewer.dart';
 import 'package:file_saver/file_saver.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:image_gallery_saver/image_gallery_saver.dart';
-import 'package:yana/utils/image_tool.dart';
-import 'package:yana/utils/store_util.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:share_plus/share_plus.dart';
+import 'package:yana/utils/image_tool.dart';
 
 import '../i18n/i18n.dart';
 

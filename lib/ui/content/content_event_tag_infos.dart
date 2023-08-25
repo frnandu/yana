@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:yana/nostr/event.dart';
 
 class ContentEventTagInfos {

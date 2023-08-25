@@ -523,7 +523,7 @@ class MetadataIconBtn extends StatelessWidget {
   Color? iconColor;
 
   MetadataIconBtn(
-      {required this.iconData, this.iconColor, this.onTap, this.onLongPress});
+      {super.key, required this.iconData, this.iconColor, this.onTap, this.onLongPress});
 
   @override
   Widget build(BuildContext context) {

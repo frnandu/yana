@@ -8,9 +8,13 @@ import '../../utils/base.dart';
 import '../../utils/index_taps.dart';
 import '../../i18n/i18n.dart';
 import '../../main.dart';
+import '../../utils/router_path.dart';
+import '../../utils/router_util.dart';
 import '../../utils/string_util.dart';
 
 class LoginRouter extends StatefulWidget {
+  const LoginRouter({super.key});
+
   @override
   State<StatefulWidget> createState() {
     return _LoginRouter();
@@ -55,13 +59,13 @@ class _LoginRouter extends State<LoginRouter>
     List<Widget> mainList = [];
     mainList.add(logoWiget);
     mainList.add(Container(
-      margin: EdgeInsets.only(
+      margin: const EdgeInsets.only(
         top: Base.BASE_PADDING,
         bottom: 40,
       ),
       child: Text(
         packageInfo.appName,
-        style: TextStyle(
+        style: const TextStyle(
           fontSize: 24,
           fontWeight: FontWeight.bold,
         ),
@@ -87,7 +91,7 @@ class _LoginRouter extends State<LoginRouter>
     ));
 
     mainList.add(Container(
-      margin: EdgeInsets.all(Base.BASE_PADDING * 2),
+      margin: const EdgeInsets.all(Base.BASE_PADDING * 2),
       child: InkWell(
         onTap: doLogin,
         child: Container(
@@ -96,7 +100,7 @@ class _LoginRouter extends State<LoginRouter>
           alignment: Alignment.center,
           child: Text(
             s.Login,
-            style: TextStyle(
+            style: const TextStyle(
               color: Colors.white,
               fontSize: 16,
               fontWeight: FontWeight.bold,
@@ -107,7 +111,7 @@ class _LoginRouter extends State<LoginRouter>
     ));
 
     mainList.add(Container(
-      margin: EdgeInsets.only(bottom: 100),
+      margin: const EdgeInsets.only(bottom: 100),
       child: GestureDetector(
         onTap: generatePK,
         child: Text(
@@ -121,13 +125,13 @@ class _LoginRouter extends State<LoginRouter>
     ));
 
     return Scaffold(
-      body: Container(
+      body: SizedBox(
         width: double.maxFinite,
         height: double.maxFinite,
         child: Stack(
           alignment: AlignmentDirectional.center,
           children: [
-            Container(
+            SizedBox(
               width: mainWidth,
               // color: Colors.red,
               child: Column(
@@ -162,6 +166,7 @@ class _LoginRouter extends State<LoginRouter>
     settingProvider.notifyListeners();
 
     firstLogin = true;
-    indexProvider.setCurrentTap(IndexTaps.FOLLOW);
+    indexProvider.setCurrentTap(1);
+    // RouterUtil.router(context, RouterPath.INDEX);
   }
 }

@@ -7,7 +7,7 @@ class SettingGroupTitleComponent extends StatelessWidget {
 
   String title;
 
-  SettingGroupTitleComponent({
+  SettingGroupTitleComponent({super.key,
     required this.iconData,
     required this.title,
   });
@@ -20,13 +20,13 @@ class SettingGroupTitleComponent extends StatelessWidget {
 
     return SliverToBoxAdapter(
       child: Container(
-        margin: EdgeInsets.only(
+        margin: const EdgeInsets.only(
           top: 30,
         ),
         child: Row(
           children: [
             Container(
-              margin: EdgeInsets.only(right: Base.BASE_PADDING_HALF),
+              margin: const EdgeInsets.only(right: Base.BASE_PADDING_HALF),
               child: Icon(
                 iconData,
                 color: hintColor,

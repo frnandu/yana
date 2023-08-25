@@ -206,10 +206,8 @@ class _IndexDrawerContnetComponnent
       child: Text("v" + packageInfo.version),
     ));
 
-    return Container(
-      child: Column(
-        children: list,
-      ),
+    return Column(
+      children: list,
     );
   }
 
@@ -241,7 +239,7 @@ class IndexDrawerItem extends StatelessWidget {
 
   // bool borderBottom;
 
-  IndexDrawerItem({
+  IndexDrawerItem({super.key,
     required this.iconData,
     required this.name,
     required this.onTap,

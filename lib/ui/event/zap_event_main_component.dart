@@ -2,13 +2,9 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 
 import '../../nostr/event.dart';
 import '../../nostr/nip57/zap_num_util.dart';
-import '../../utils/base.dart';
-import '../../models/metadata.dart';
-import '../../provider/metadata_provider.dart';
 import '../../utils/number_format_util.dart';
 import '../../utils/spider_util.dart';
 import '../../utils/string_util.dart';

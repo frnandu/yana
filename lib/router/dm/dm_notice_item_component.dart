@@ -16,7 +16,7 @@ class DMNoticeItemComponent extends StatelessWidget {
 
   bool hasNewMessage;
 
-  DMNoticeItemComponent({
+  DMNoticeItemComponent({super.key,
     required this.newestNotice,
     this.hasNewMessage = false,
   });

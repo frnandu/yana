@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 class EventBitcionIconComponent extends StatelessWidget {
+  const EventBitcionIconComponent({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Container(

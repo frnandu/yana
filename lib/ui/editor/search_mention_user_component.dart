@@ -1,11 +1,10 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
+import '../../main.dart';
+import '../../models/metadata.dart';
 import '../../nostr/nip19/nip19.dart';
 import '../../utils/base.dart';
-import '../../models/metadata.dart';
-import '../../i18n/i18n.dart';
-import '../../main.dart';
 import '../../utils/router_util.dart';
 import '../../utils/string_util.dart';
 import '../../utils/when_stop_function.dart';
@@ -79,9 +78,9 @@ class _SearchMentionUserComponent extends State<SearchMentionUserComponent>
 class SearchMentionUserItemComponent extends StatelessWidget {
   static const double IMAGE_WIDTH = 36;
 
-  Metadata metadata;
+  final Metadata metadata;
 
-  double width;
+  final double width;
 
   SearchMentionUserItemComponent({
     required this.metadata,

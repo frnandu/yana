@@ -3,19 +3,18 @@ import 'dart:convert';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get_time_ago/get_time_ago.dart';
+import 'package:provider/provider.dart';
 import 'package:yana/nostr/event_kind.dart';
 import 'package:yana/ui/name_component.dart';
 import 'package:yana/utils/router_path.dart';
 import 'package:yana/utils/router_util.dart';
 import 'package:yana/utils/string_util.dart';
-import 'package:provider/provider.dart';
 
-import '../../nostr/event.dart';
-import '../../nostr/nip19/nip19.dart';
-import '../../utils/base.dart';
-import '../../models/metadata.dart';
 import '../../main.dart';
+import '../../models/metadata.dart';
+import '../../nostr/event.dart';
 import '../../provider/metadata_provider.dart';
+import '../../utils/base.dart';
 
 class EventTopComponent extends StatefulWidget {
   Event event;

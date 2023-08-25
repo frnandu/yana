@@ -53,7 +53,7 @@ class EnumSelectorComponent extends StatelessWidget {
         bottom: Base.BASE_PADDING_HALF,
       ),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.all(Radius.circular(15)),
+        borderRadius: const BorderRadius.all(Radius.circular(15)),
         color: cardColor,
       ),
       constraints: BoxConstraints(

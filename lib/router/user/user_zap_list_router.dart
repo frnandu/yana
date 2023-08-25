@@ -1,15 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 
 import '../../nostr/event.dart';
-import '../../nostr/nip02/cust_contact_list.dart';
 import '../../ui/event/zap_event_list_component.dart';
-import '../../ui/user/metadata_component.dart';
-import '../../utils/base.dart';
-import '../../utils/router_path.dart';
-import '../../models/metadata.dart';
-import '../../i18n/i18n.dart';
-import '../../provider/metadata_provider.dart';
 import '../../utils/router_util.dart';
 
 class UserZapListRouter extends StatefulWidget {
@@ -24,7 +16,6 @@ class _UserZapListRouter extends State<UserZapListRouter> {
 
   @override
   Widget build(BuildContext context) {
-    var s = I18n.of(context);
 
     if (zapList == null) {
       var arg = RouterUtil.routerArgs(context);

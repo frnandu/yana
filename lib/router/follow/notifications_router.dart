@@ -1,28 +1,22 @@
 import 'package:flutter/material.dart';
-import 'package:yana/ui/cust_state.dart';
-import 'package:yana/ui/event/zap_event_main_component.dart';
-import 'package:yana/ui/keep_alive_cust_state.dart';
-import 'package:yana/models/event_mem_box.dart';
+import 'package:provider/provider.dart';
 import 'package:yana/main.dart';
+import 'package:yana/models/event_mem_box.dart';
 import 'package:yana/provider/mention_me_new_provider.dart';
 import 'package:yana/provider/mention_me_provider.dart';
+import 'package:yana/ui/keep_alive_cust_state.dart';
 import 'package:yana/utils/load_more_event.dart';
 import 'package:yana/utils/string_util.dart';
-import 'package:provider/provider.dart';
 
 import '../../nostr/event_kind.dart' as kind;
-import '../../nostr/filter.dart';
+import '../../provider/setting_provider.dart';
 import '../../ui/event/event_list_component.dart';
 import '../../ui/event/zap_event_list_component.dart';
 import '../../ui/new_notes_updated_component.dart';
 import '../../ui/placeholder/event_list_placeholder.dart';
-import '../../ui/placeholder/event_placeholder.dart';
 import '../../utils/base.dart';
 import '../../utils/base_consts.dart';
-import '../../utils/router_path.dart';
-import '../../provider/setting_provider.dart';
 import '../../utils/platform_util.dart';
-import '../../utils/router_util.dart';
 
 class NotificationsRouter extends StatefulWidget {
   @override

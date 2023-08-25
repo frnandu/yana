@@ -122,7 +122,7 @@ class _PollInputComponent extends State<PollInputComponent> {
     }
 
     list.add(Container(
-      margin: EdgeInsets.only(top: Base.BASE_PADDING),
+      margin: const EdgeInsets.only(top: Base.BASE_PADDING),
       child: InkWell(
         onTap: addPollOption,
         child: Container(
@@ -131,7 +131,7 @@ class _PollInputComponent extends State<PollInputComponent> {
           alignment: Alignment.center,
           child: Text(
             s.add_poll_option,
-            style: TextStyle(
+            style: const TextStyle(
               color: Colors.white,
               fontSize: 16,
               fontWeight: FontWeight.bold,

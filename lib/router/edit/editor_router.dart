@@ -1,10 +1,12 @@
-import 'dart:developer';
-
 import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:intl/intl.dart';
+import 'package:pointycastle/ecc/api.dart';
+import 'package:yana/main.dart';
 import 'package:yana/nostr/nip172/community_id.dart';
+import 'package:yana/router/edit/poll_input_component.dart';
+import 'package:yana/router/index/index_app_bar.dart';
 import 'package:yana/ui/editor/lnbc_embed_builder.dart';
 import 'package:yana/ui/editor/mention_event_embed_builder.dart';
 import 'package:yana/ui/editor/mention_user_embed_builder.dart';
@@ -12,18 +14,13 @@ import 'package:yana/ui/editor/pic_embed_builder.dart';
 import 'package:yana/ui/editor/tag_embed_builder.dart';
 import 'package:yana/ui/editor/video_embed_builder.dart';
 import 'package:yana/utils/base.dart';
-import 'package:yana/main.dart';
-import 'package:yana/router/edit/poll_input_component.dart';
-import 'package:yana/router/index/index_app_bar.dart';
 import 'package:yana/utils/router_util.dart';
-import 'package:pointycastle/ecc/api.dart';
 
+import '../../i18n/i18n.dart';
 import '../../nostr/event.dart';
-import '../../nostr/event_kind.dart' as kind;
 import '../../ui/cust_state.dart';
 import '../../ui/editor/custom_emoji_embed_builder.dart';
 import '../../ui/editor/editor_mixin.dart';
-import '../../i18n/i18n.dart';
 import '../../utils/string_util.dart';
 import 'editor_notify_item_component.dart';
 

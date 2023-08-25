@@ -2,12 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:yana/main.dart';
 import 'package:yana/utils/platform_util.dart';
 
-import '../../utils/base.dart';
 import '../../i18n/i18n.dart';
 import '../../router/index/index_app_bar.dart';
+import '../../utils/base.dart';
 import '../../utils/router_util.dart';
 import '../../utils/string_util.dart';
-import 'search_mention_user_component.dart';
 import 'text_input_dialog_inner_component.dart';
 
 class TextInputAndSearchDialog extends StatefulWidget {

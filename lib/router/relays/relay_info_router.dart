@@ -1,21 +1,16 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:yana/main.dart';
+import 'package:yana/models/metadata.dart';
 import 'package:yana/nostr/relay.dart';
-import 'package:yana/nostr/relay_info.dart';
+import 'package:yana/provider/metadata_provider.dart';
 import 'package:yana/ui/name_component.dart';
-import 'package:yana/ui/user_pic_component.dart';
 import 'package:yana/utils/base.dart';
 import 'package:yana/utils/router_path.dart';
-import 'package:yana/models/metadata.dart';
-import 'package:yana/main.dart';
-import 'package:yana/provider/metadata_provider.dart';
-import 'package:provider/provider.dart';
 
-import '../../nostr/nip19/nip19.dart';
 import '../../ui/webview_router.dart';
-import '../../i18n/i18n.dart';
 import '../../utils/router_util.dart';
-import '../../utils/string_util.dart';
 
 class RelayInfoRouter extends StatefulWidget {
   @override
@@ -31,8 +26,6 @@ class _RelayInfoRouter extends State<RelayInfoRouter> {
   Widget build(BuildContext context) {
     var themeData = Theme.of(context);
     var titleFontSize = themeData.textTheme.bodyLarge!.fontSize;
-    var mainColor = themeData.primaryColor;
-    var s = I18n.of(context);
 
     var relayItf = RouterUtil.routerArgs(context);
     if (relayItf == null || !(relayItf is Relay)) {
