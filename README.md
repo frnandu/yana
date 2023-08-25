@@ -24,9 +24,9 @@ A big danger with this approach is if somehow the i18n code is not as high perfo
 
 ## Freedom
 
-It will not be constrained to imperialist distributors, such as Apple Store or Google Store. 
-The released app will be distributed as standalone packages for each OS and can be included in free Stores (F-Droid, Obtainium and others?)
-Or you can just download them from the release's page and install it directly without a third-party distributor.
+It will not be constrained to imperialist distributors, such as Apple Store or Google Store.\
+The released app will be distributed as standalone packages for each OS and can be included in free Stores (F-Droid, Obtainium and others?).\
+Or you can just download them from the release's page and install it directly without a third-party distributor.\
 If someone wants to test it running on Windows, MacOS or iOS (by some means of Sideloading), I'll happily assist in whatever way I can.
 
 ## Current Features
