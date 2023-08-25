@@ -6,6 +6,7 @@ import 'package:yana/utils/base.dart';
 import 'package:yana/utils/platform_util.dart';
 import 'package:yana/utils/router_path.dart';
 import 'package:yana/utils/router_util.dart';
+import 'package:yana/utils/theme_style.dart';
 
 import '../../i18n/i18n.dart';
 import '../../main.dart';
@@ -15,15 +16,18 @@ import '../../provider/relay_provider.dart';
 import '../../utils/index_taps.dart';
 import 'account_manager_component.dart';
 
-class IndexDrawerContnetComponnent extends StatefulWidget {
+class IndexDrawerContentComponent extends StatefulWidget {
+  final Function reload;
+
+  const IndexDrawerContentComponent({required this.reload});
+
   @override
   State<StatefulWidget> createState() {
     return _IndexDrawerContnetComponnent();
   }
 }
 
-class _IndexDrawerContnetComponnent
-    extends State<IndexDrawerContnetComponnent> {
+class _IndexDrawerContnetComponnent extends State<IndexDrawerContentComponent> {
   // ScrollController userStatisticscontroller = ScrollController();
 
   double profileEditBtnWidth = 40;
@@ -39,24 +43,21 @@ class _IndexDrawerContnetComponnent
     var hintColor = themeData.hintColor;
     List<Widget> list = [];
 
-    list.add(Container(
-      // margin: EdgeInsets.only(bottom: Base.BASE_PADDING),
-      child: Stack(children: [
-        Selector<MetadataProvider, Metadata?>(
-          builder: (context, metadata, child) {
-            return MetadataTopComponent(
-              pubkey: pubkey,
-              metadata: metadata,
-              condensedIcons: true,
-              jumpable: true,
-            );
-          },
-          selector: (context, _provider) {
-            return _provider.getMetadata(pubkey);
-          },
-        ),
-      ]),
-    ));
+    list.add(Stack(children: [
+      Selector<MetadataProvider, Metadata?>(
+        builder: (context, metadata, child) {
+          return MetadataTopComponent(
+            pubkey: pubkey,
+            metadata: metadata,
+            condensedIcons: true,
+            jumpable: true,
+          );
+        },
+        selector: (context, _provider) {
+          return _provider.getMetadata(pubkey);
+        },
+      ),
+    ]));
 
     list.add(Container(
         margin: const EdgeInsets.only(top: Base.BASE_PADDING_HALF),
@@ -146,21 +147,20 @@ class _IndexDrawerContnetComponnent
 
     list.add(
       IndexDrawerItem(
-        iconData: Icons.lan_outlined,
-        name: s.Relays,
-        onTap: () {
-          RouterUtil.router(context, RouterPath.RELAYS);
-        },
-        rightWidget: Selector<RelayProvider, String>(
-            builder: (context, relayNum, child) {
-              return Text(
-                relayNum,
-                style: TextStyle(color: themeData.disabledColor),
-              );
-            }, selector: (context, _provider) {
-          return _provider.relayNumStr();
-        })
-      ),
+          iconData: Icons.lan_outlined,
+          name: s.Relays,
+          onTap: () {
+            RouterUtil.router(context, RouterPath.RELAYS);
+          },
+          rightWidget: Selector<RelayProvider, String>(
+              builder: (context, relayNum, child) {
+            return Text(
+              relayNum,
+              style: TextStyle(color: themeData.disabledColor),
+            );
+          }, selector: (context, _provider) {
+            return _provider.relayNumStr();
+          })),
     );
 
     list.add(IndexDrawerItem(
@@ -173,7 +173,7 @@ class _IndexDrawerContnetComponnent
 
     list.add(IndexDrawerItem(
       iconData: Icons.settings,
-      name: s.Setting,
+      name: s.Settings,
       onTap: () {
         RouterUtil.router(context, RouterPath.SETTING);
       },
@@ -188,12 +188,11 @@ class _IndexDrawerContnetComponnent
         _showBasicModalBottomSheet(context);
       },
     ));
-
     list.add(Container(
       margin: const EdgeInsets.only(top: Base.BASE_PADDING_HALF),
       padding: const EdgeInsets.only(
-        left: Base.BASE_PADDING * 2,
-        bottom: Base.BASE_PADDING / 2,
+        left: Base.BASE_PADDING,
+        bottom: Base.BASE_PADDING_HALF,
         top: Base.BASE_PADDING / 2,
       ),
       decoration: BoxDecoration(
@@ -203,7 +202,41 @@ class _IndexDrawerContnetComponnent
         color: hintColor,
       ))),
       alignment: Alignment.centerLeft,
-      child: Text("v" + packageInfo.version),
+      child: Row(children: [
+        IconButton(
+            onPressed: () {
+              if (settingProvider.themeStyle == ThemeStyle.AUTO) {
+                Brightness platformBrightness =
+                    MediaQuery
+                        .of(context)
+                        .platformBrightness;
+                if (platformBrightness == Brightness.light) {
+                  settingProvider.themeStyle = ThemeStyle.DARK;
+                } else {
+                  settingProvider.themeStyle = ThemeStyle.LIGHT;
+                }
+              } else {
+                if (settingProvider.themeStyle == ThemeStyle.DARK) {
+                  settingProvider.themeStyle = ThemeStyle.LIGHT;
+                } else {
+                  settingProvider.themeStyle = ThemeStyle.DARK;
+                }
+              }
+              widget.reload();
+            },
+            icon: Icon(
+                settingProvider.themeStyle == ThemeStyle.LIGHT ||
+                MediaQuery.of(context).platformBrightness == Brightness.light
+                    ? Icons.dark_mode_outlined
+                    : Icons.light_mode_outlined)),
+        Expanded(
+            child: Align(
+                alignment: Alignment.centerRight,
+                child: Container(
+                    padding: const EdgeInsets.only(right: Base.BASE_PADDING),
+                    child: Text("v${packageInfo.version}",
+                        style: TextStyle(color: themeData.disabledColor)))))
+      ]),
     ));
 
     return Column(
@@ -239,16 +272,17 @@ class IndexDrawerItem extends StatelessWidget {
 
   // bool borderBottom;
 
-  IndexDrawerItem({super.key,
-    required this.iconData,
-    required this.name,
-    required this.onTap,
-    this.color,
-    this.onDoubleTap,
-    this.rightWidget
-    // this.borderTop = true,
-    // this.borderBottom = false,
-  });
+  IndexDrawerItem(
+      {super.key,
+      required this.iconData,
+      required this.name,
+      required this.onTap,
+      this.color,
+      this.onDoubleTap,
+      this.rightWidget
+      // this.borderTop = true,
+      // this.borderBottom = false,
+      });
 
   @override
   Widget build(BuildContext context) {
@@ -258,31 +292,31 @@ class IndexDrawerItem extends StatelessWidget {
 
     list.add(MouseRegion(
         cursor: SystemMouseCursors.click,
-        child:Container(
-      margin: const EdgeInsets.only(
-        left: Base.BASE_PADDING * 2,
-        right: Base.BASE_PADDING,
-      ),
-      child: Icon(
-        iconData,
-        color: color,
-      ),
-    )));
+        child: Container(
+          margin: const EdgeInsets.only(
+            left: Base.BASE_PADDING * 2,
+            right: Base.BASE_PADDING,
+          ),
+          child: Icon(
+            iconData,
+            color: color,
+          ),
+        )));
 
     list.add(MouseRegion(
         cursor: SystemMouseCursors.click,
         child: Text(name,
-        style: TextStyle(color: color, fontSize: Base.BASE_FONT_SIZE + 4))));
+            style:
+                TextStyle(color: color, fontSize: Base.BASE_FONT_SIZE + 4))));
 
-    if (rightWidget!=null) {
+    if (rightWidget != null) {
       list.add(MouseRegion(
           cursor: SystemMouseCursors.click,
-          child:Container(
-          margin: const EdgeInsets.only(
-            left: Base.BASE_PADDING,
-          ),
-          child: rightWidget!)
-      ));
+          child: Container(
+              margin: const EdgeInsets.only(
+                left: Base.BASE_PADDING,
+              ),
+              child: rightWidget!)));
     }
 
     return GestureDetector(
