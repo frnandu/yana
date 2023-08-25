@@ -15,6 +15,7 @@ import 'package:yana/utils/string_util.dart';
 import '../../i18n/i18n.dart';
 import '../../main.dart';
 import '../../provider/index_provider.dart';
+import '../../provider/setting_provider.dart';
 import '../../utils/auth_util.dart';
 import '../dm/dm_router.dart';
 import '../edit/editor_router.dart';
@@ -52,9 +53,11 @@ class _IndexRouter extends CustState<IndexRouter>
   void initState() {
     super.initState();
     int followInitTab = 0;
+    int globalsInitTab = 0;
 
     if (settingProvider.defaultTab != null) {
       if (settingProvider.defaultIndex == 1) {
+        globalsInitTab = settingProvider.defaultTab!;
       } else {
         followInitTab = settingProvider.defaultTab!;
       }
@@ -83,6 +86,7 @@ class _IndexRouter extends CustState<IndexRouter>
     mediaDataCache.update(context);
     var s = I18n.of(context);
 
+    var _settingProvider = Provider.of<SettingProvider>(context);
     if (nostr == null) {
       return LoginRouter();
     }

@@ -166,7 +166,6 @@ class _LoginRouter extends State<LoginRouter>
     settingProvider.notifyListeners();
 
     firstLogin = true;
-    indexProvider.setCurrentTap(1);
-    // RouterUtil.router(context, RouterPath.INDEX);
+    indexProvider.setCurrentTap(IndexTaps.FOLLOW);
   }
 }
