@@ -47,7 +47,7 @@ class _IndexDrawerContnetComponnent
             return MetadataTopComponent(
               pubkey: pubkey,
               metadata: metadata,
-              isLocal: true,
+              condensedIcons: true,
               jumpable: true,
             );
           },
