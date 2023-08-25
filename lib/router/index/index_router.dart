@@ -255,64 +255,62 @@ class _IndexRouter extends CustState<IndexRouter>
         floatingActionButton: addBtn,
         floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
         body: Row(children: [
-          Container(
+          SizedBox(
             width: column0Width,
-            child: IndexDrawerContnetComponnent(),
+            child: IndexDrawerContentComponent(reload: widget.reload),
           ),
           Container(
             width: column1Width,
-            margin: EdgeInsets.only(
+            margin: const EdgeInsets.only(
               // left: 1,
               right: 1,
             ),
             child: mainIndex,
           ),
           Expanded(
-            child: Container(
-              child: Selector<PcRouterFakeProvider, List<RouterFakeInfo>>(
-                builder: (context, infos, child) {
-                  if (infos.isEmpty) {
-                    return Container(
-                      child: Center(
-                        child: Text(s.There_should_be_a_universe_here),
-                      ),
-                    );
-                  }
+            child: Selector<PcRouterFakeProvider, List<RouterFakeInfo>>(
+              builder: (context, infos, child) {
+                if (infos.isEmpty) {
+                  return Container(
+                    child: Center(
+                      child: Text(s.There_should_be_a_universe_here),
+                    ),
+                  );
+                }
 
-                  List<Widget> pages = [];
-                  for (var info in infos) {
-                    if (StringUtil.isNotBlank(info.routerPath) &&
-                        routes[info.routerPath] != null) {
-                      var builder = routes[info.routerPath];
-                      if (builder != null) {
-                        pages.add(PcRouterFake(
-                          info: info,
-                          child: builder(context),
-                        ));
-                      }
-                    } else if (info.buildContent != null) {
+                List<Widget> pages = [];
+                for (var info in infos) {
+                  if (StringUtil.isNotBlank(info.routerPath) &&
+                      routes[info.routerPath] != null) {
+                    var builder = routes[info.routerPath];
+                    if (builder != null) {
                       pages.add(PcRouterFake(
                         info: info,
-                        child: info.buildContent!(context),
+                        child: builder(context),
                       ));
                     }
+                  } else if (info.buildContent != null) {
+                    pages.add(PcRouterFake(
+                      info: info,
+                      child: info.buildContent!(context),
+                    ));
                   }
+                }
 
-                  return IndexedStack(
-                    index: pages.length - 1,
-                    children: pages,
-                  );
-                },
-                selector: (context, _provider) {
-                  return _provider.routerFakeInfos;
-                },
-                shouldRebuild: (previous, next) {
-                  if (previous != next) {
-                    return true;
-                  }
-                  return false;
-                },
-              ),
+                return IndexedStack(
+                  index: pages.length - 1,
+                  children: pages,
+                );
+              },
+              selector: (context, _provider) {
+                return _provider.routerFakeInfos;
+              },
+              shouldRebuild: (previous, next) {
+                if (previous != next) {
+                  return true;
+                }
+                return false;
+              },
             ),
           )
         ]),
@@ -334,7 +332,7 @@ class _IndexRouter extends CustState<IndexRouter>
           floatingActionButtonLocation:
               FloatingActionButtonLocation.endFloat,
           drawer: Drawer(
-            child: IndexDrawerContnetComponnent(),
+            child: IndexDrawerContentComponent(reload: widget.reload),
           ),
    //       extendBodyBehindAppBar: true,
           bottomNavigationBar: AnimatedContainer(

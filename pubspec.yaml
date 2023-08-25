@@ -103,6 +103,7 @@ dependencies:
   package_info_plus: ^4.1.0
   assorted_layout_widgets: ^8.0.4
   flutter_secure_storage: ^8.0.0
+  settings_ui: ^2.0.2
 
 dev_dependencies:
   flutter_launcher_icons: ^0.13.1

@@ -54,6 +54,7 @@ Or you can just download them from the release's page and install it directly wi
 - [x] Hashtag Following and Custom Hashtags
 - [x] Polls ([NIP-69](https://github.com/nostr-protocol/nips/blob/master/69.md))
 - [x] Relay Pages ([NIP-11](https://github.com/nostr-protocol/nips/blob/master/11.md))
+- [X] Multiple Accounts
 - [ ] Video/LnInvoice Previews
 - [ ] Public Chats ([NIP-28](https://github.com/nostr-protocol/nips/blob/master/28.md))
 - [ ] Automatic Translations
@@ -66,7 +67,6 @@ Or you can just download them from the release's page and install it directly wi
 - [ ] Login with QR
 - [ ] Wallet Connect API ([NIP-47](https://github.com/nostr-protocol/nips/blob/master/47.md))
 - [ ] External Identity Support ([NIP-39](https://github.com/nostr-protocol/nips/blob/master/39.md))
-- [ ] Multiple Accounts
 - [ ] Markdown Support
 - [ ] Relay Authentication ([NIP-42](https://github.com/nostr-protocol/nips/blob/master/42.md))
 - [ ] Content stored in relays themselves ([NIP-95](https://github.com/nostr-protocol/nips/blob/master/95.md))
@@ -103,9 +103,10 @@ Or you can just download them from the release's page and install it directly wi
 
 ## Contributions
 
-Some initial code was used from https://github.com/haorendashu/nostrmo project
+Some initial code was used from https://github.com/haorendashu/nostrmo project.\
 
 ## Join
 
 I welcome contributors to join the project, specially Designers UI/UX, coders, testers.\
 If you're not a coder but would like to see something added/implemented, or you have a great idea for a new feature, just don't hesitate to fill up a issue.
+All constructive feedback is welcomed.

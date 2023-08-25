@@ -7,6 +7,7 @@ import 'package:flutter_font_picker/flutter_font_picker.dart';
 import 'package:google_mlkit_translation/google_mlkit_translation.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:provider/provider.dart';
+import 'package:settings_ui/settings_ui.dart';
 import 'package:yana/models/event_mem_box.dart';
 import 'package:yana/nostr/filter.dart';
 import 'package:yana/nostr/nip02/cust_contact_list.dart';
@@ -15,25 +16,22 @@ import 'package:yana/utils/platform_util.dart';
 import 'package:yana/utils/router_util.dart';
 import 'package:yana/utils/when_stop_function.dart';
 
-import '../../utils/base.dart';
-import '../../utils/base_consts.dart';
-import '../../utils/image_services.dart';
-import '../../utils/theme_style.dart';
 import '../../i18n/i18n.dart';
 import '../../main.dart';
 import '../../models/metadata.dart';
 import '../../nostr/event.dart';
 import '../../nostr/event_kind.dart' as kind;
 import '../../provider/setting_provider.dart';
-import '../../ui/colors_selector_component.dart';
 import '../../ui/comfirm_dialog.dart';
-import '../../ui/editor/text_input_dialog.dart';
 import '../../ui/enum_multi_selector_component.dart';
 import '../../ui/enum_selector_component.dart';
 import '../../ui/translate/translate_model_manager.dart';
 import '../../utils/auth_util.dart';
+import '../../utils/base_consts.dart';
+import '../../utils/image_services.dart';
 import '../../utils/locale_util.dart';
 import '../../utils/string_util.dart';
+import '../../utils/theme_style.dart';
 import 'setting_group_item_component.dart';
 import 'setting_group_title_component.dart';
 
@@ -41,6 +39,7 @@ class SettingRouter extends StatefulWidget {
   Function indexReload;
 
   SettingRouter({
+    super.key,
     required this.indexReload,
   });
 
@@ -51,9 +50,6 @@ class SettingRouter extends StatefulWidget {
 }
 
 class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
-  void resetTheme() {
-    widget.indexReload();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -78,33 +74,33 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
 
     List<Widget> list = [];
 
-    list.add(
-      SettingGroupItemComponent(
-        name: s.Language,
-        value: getI18nList(_settingProvider.i18n, _settingProvider.i18nCC).name,
-        onTap: pickI18N,
-      ),
-    );
+    // list.add(
+    //   SettingGroupItemComponent(
+    //     name: s.Language,
+    //     value: getI18nList(_settingProvider.i18n, _settingProvider.i18nCC).name,
+    //     onTap: pickI18N,
+    //   ),
+    // );
     // list.add(SettingGroupItemComponent(
     //   name: s.Image_Compress,
     //   value: getCompressList(settingProvider.imgCompress).name,
     //   onTap: pickImageCompressList,
     // ));
-    if (!PlatformUtil.isPC()) {
-      list.add(SettingGroupItemComponent(
-        name: s.Privacy_Lock,
-        value: getLockOpenList(settingProvider.lockOpen).name,
-        onTap: pickLockOpenList,
-      ));
-    }
-    List<EnumObj> defaultTabList = defaultTabListTimeline!;
-    list.add(SettingGroupItemComponent(
-      name: s.Default_tab,
-      value: getDefaultTab(defaultTabList, settingProvider.defaultTab).name,
-      onTap: () {
-        pickDefaultTab(defaultTabList);
-      },
-    ));
+    // if (!PlatformUtil.isPC()) {
+    //   list.add(SettingGroupItemComponent(
+    //     name: s.Privacy_Lock,
+    //     value: getLockOpenList(settingProvider.lockOpen).name,
+    //     onTap: pickLockOpenList,
+    //   ));
+    // }
+    // List<EnumObj> defaultTabList = defaultTabListTimeline!;
+    // list.add(SettingGroupItemComponent(
+    //   name: s.Default_tab,
+    //   value: getDefaultTab(defaultTabList, settingProvider.defaultTab).name,
+    //   onTap: () {
+    //     pickDefaultTab(defaultTabList);
+    //   },
+    // ));
 
     list.add(SettingGroupTitleComponent(iconData: Icons.palette, title: "UI"));
     list.add(
@@ -114,37 +110,28 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
         onTap: pickThemeStyle,
       ),
     );
-    list.add(SettingGroupItemComponent(
-      name: s.Theme_Color,
-      onTap: pickColor,
-      child: Container(
-        height: 28,
-        width: 28,
-        color: mainColor,
-      ),
-    ));
-    list.add(SettingGroupItemComponent(
-      name: s.Font_Family,
-      value: getFontEnumResult(settingProvider.fontFamily),
-      onTap: pickFontEnum,
-    ));
-    list.add(SettingGroupItemComponent(
-      name: s.Font_Size,
-      value: getFontSize(settingProvider.fontSize).name,
-      onTap: pickFontSize,
-    ));
-    list.add(SettingGroupItemComponent(
-      name: s.Web_Appbar,
-      value: getOpenList(settingProvider.webviewAppbarOpen).name,
-      onTap: pickWebviewAppbar,
-    ));
-    if (!PlatformUtil.isPC()) {
-      list.add(SettingGroupItemComponent(
-        name: s.Table_Mode,
-        value: getOpenMode(settingProvider.tableMode).name,
-        onTap: pickOpenMode,
-      ));
-    }
+    // list.add(SettingGroupItemComponent(
+    //   name: s.Font_Family,
+    //   value: getFontEnumResult(settingProvider.fontFamily),
+    //   onTap: pickFontEnum,
+    // ));
+    // list.add(SettingGroupItemComponent(
+    //   name: s.Font_Size,
+    //   value: getFontSize(settingProvider.fontSize).name,
+    //   onTap: pickFontSize,
+    // ));
+    // list.add(SettingGroupItemComponent(
+    //   name: s.Web_Appbar,
+    //   value: getOpenList(settingProvider.webviewAppbarOpen).name,
+    //   onTap: pickWebviewAppbar,
+    // ));
+    // if (!PlatformUtil.isPC()) {
+    //   list.add(SettingGroupItemComponent(
+    //     name: s.Table_Mode,
+    //     value: getOpenMode(settingProvider.tableMode).name,
+    //     onTap: pickOpenMode,
+    //   ));
+    // }
 
     list.add(
         SettingGroupTitleComponent(iconData: Icons.article, title: s.Global));
@@ -155,86 +142,169 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
     ));
     if (!PlatformUtil.isPC()) {
       list.add(SettingGroupItemComponent(
-        name: s.Video_preview_in_list,
+        name: s.Video_preview,
         value: getOpenList(settingProvider.videoPreviewInList).name,
         onTap: pickVideoPreviewInList,
       ));
     }
-    String? networkHintText = settingProvider.network;
-    if (StringUtil.isBlank(networkHintText)) {
-      networkHintText = s.Please_input + " " + s.Network;
-    }
-    Widget networkWidget = Text(
-      networkHintText!,
-      style: TextStyle(
-        color: hintColor,
-        overflow: TextOverflow.ellipsis,
-        fontWeight: FontWeight.bold,
-        fontSize: 16,
-      ),
-    );
+    // list.add(SettingGroupItemComponent(
+    //   name: s.Image_service,
+    //   value: getImageServcie(settingProvider.imageService).name,
+    //   onTap: pickImageServcie,
+    // ));
     list.add(SettingGroupItemComponent(
-      name: s.Network,
-      onTap: inputNetwork,
-      child: networkWidget,
-    ));
-    list.add(SettingGroupItemComponent(
-      name: s.Image_service,
-      value: getImageServcie(settingProvider.imageService).name,
-      onTap: pickImageServcie,
-    ));
-    list.add(SettingGroupItemComponent(
-      name: s.Forbid_image,
+      name: s.Image_preview,
       value: getOpenList(settingProvider.imagePreview).name,
       onTap: pickImagePreview,
     ));
-    if (!PlatformUtil.isPC()) {
-      list.add(SettingGroupItemComponent(
-        name: s.Forbid_video,
-        value: getOpenList(settingProvider.videoPreview).name,
-        onTap: pickVideoPreview,
-      ));
-      list.add(SettingGroupItemComponent(
-        name: s.Translate,
-        value: getOpenTranslate(settingProvider.openTranslate).name,
-        onTap: pickOpenTranslate,
-      ));
-      if (settingProvider.openTranslate == OpenStatus.OPEN) {
-        list.add(SettingGroupItemComponent(
-          name: s.Translate_Source_Language,
-          value: settingProvider.translateSourceArgs,
-          onTap: pickTranslateSource,
-        ));
-        list.add(SettingGroupItemComponent(
-          name: s.Translate_Target_Language,
-          value: settingProvider.translateTarget,
-          onTap: pickTranslateTarget,
-        ));
-      }
-    }
-    list.add(SettingGroupItemComponent(
-      name: s.Broadcast_When_Boost,
-      value: getOpenList(settingProvider.broadcaseWhenBoost).name,
-      onTap: pickBroadcaseWhenBoost,
-    ));
-    list.add(SettingGroupItemComponent(
-      name: s.Auto_Open_Sensitive_Content,
-      value: getOpenListDefault(settingProvider.autoOpenSensitive).name,
-      onTap: pickAutoOpenSensitive,
-    ));
-
-    list.add(SettingGroupTitleComponent(iconData: Icons.source, title: s.Data));
-    list.add(SettingGroupItemComponent(
-      name: s.Delete_Account,
-      nameColor: Colors.red,
-      onTap: askToDeleteAccount,
-    ));
+    // if (!PlatformUtil.isPC()) {
+    //   list.add(SettingGroupItemComponent(
+    //     name: s.Forbid_video,
+    //     value: getOpenList(settingProvider.videoPreview).name,
+    //     onTap: pickVideoPreview,
+    //   ));
+    //   list.add(SettingGroupItemComponent(
+    //     name: s.Translate,
+    //     value: getOpenTranslate(settingProvider.openTranslate).name,
+    //     onTap: pickOpenTranslate,
+    //   ));
+    //   if (settingProvider.openTranslate == OpenStatus.OPEN) {
+    //     list.add(SettingGroupItemComponent(
+    //       name: s.Translate_Source_Language,
+    //       value: settingProvider.translateSourceArgs,
+    //       onTap: pickTranslateSource,
+    //     ));
+    //     list.add(SettingGroupItemComponent(
+    //       name: s.Translate_Target_Language,
+    //       value: settingProvider.translateTarget,
+    //       onTap: pickTranslateTarget,
+    //     ));
+    //   }
+    // }
+    // list.add(SettingGroupItemComponent(
+    //   name: s.Broadcast_When_Boost,
+    //   value: getOpenList(settingProvider.broadcaseWhenBoost).name,
+    //   onTap: pickBroadcaseWhenBoost,
+    // ));
+    // list.add(SettingGroupItemComponent(
+    //   name: s.Auto_Open_Sensitive_Content,
+    //   value: getOpenListDefault(settingProvider.autoOpenSensitive).name,
+    //   onTap: pickAutoOpenSensitive,
+    // ));
+    //
+    // list.add(SettingGroupTitleComponent(iconData: Icons.source, title: s.Data));
+    // list.add(SettingGroupItemComponent(
+    //   name: s.Delete_Account,
+    //   nameColor: Colors.red,
+    //   onTap: askToDeleteAccount,
+    // ));
 
     list.add(SliverToBoxAdapter(
       child: Container(
         height: 30,
       ),
     ));
+
+    List<AbstractSettingsTile> interfaceTiles = [];
+    interfaceTiles.add(SettingsTile.navigation(
+      leading: const Icon(Icons.language),
+      title: Text(s.Language),
+      value: const Text('English'),
+      onPressed: (context) {
+        pickI18N();
+      },
+    ));
+
+    interfaceTiles.add(SettingsTile.switchTile(
+        onToggle: (value) {
+          settingProvider.themeStyle = value ? ThemeStyle.AUTO : ThemeStyle.LIGHT;
+          widget.indexReload();
+        },
+        initialValue: settingProvider.themeStyle == ThemeStyle.AUTO,
+        leading: const Icon(Icons.lan),
+        title: Text(s.Theme_Style)));
+
+    interfaceTiles.add(SettingsTile.switchTile(
+        enabled: settingProvider.themeStyle != ThemeStyle.AUTO,
+        onToggle: (value) {
+          settingProvider.themeStyle = value ? ThemeStyle.DARK : ThemeStyle.LIGHT;
+          widget.indexReload();
+        },
+
+        initialValue: settingProvider.themeStyle == ThemeStyle.DARK,
+        leading: const Icon(Icons.dark_mode_outlined),
+        title: Text(s.Dark_mode)));
+
+    interfaceTiles.add(SettingsTile.switchTile(
+        onToggle: (value) {
+          settingProvider.linkPreview = value ? 1 : 0;
+        },
+        initialValue: settingProvider.linkPreview == OpenStatus.OPEN ,
+        leading: const Icon(Icons.link_outlined),
+        title: Text(s.Link_preview)));
+    interfaceTiles.add(SettingsTile.switchTile(
+        onToggle: (value) {
+          settingProvider.imagePreview = value ? 1 : 0;
+        },
+        initialValue: settingProvider.imagePreview == OpenStatus.OPEN,
+        leading: const Icon(Icons.image_outlined),
+        title: Text(s.Image_preview)));
+    interfaceTiles.add(SettingsTile.switchTile(
+        onToggle: (value) {
+          settingProvider.videoPreviewInList = value ? 1 : 0;
+        },
+        initialValue: settingProvider.videoPreviewInList == OpenStatus.OPEN,
+        leading: const Icon(Icons.video_collection_outlined),
+        title: Text(s.Video_preview)));
+
+    List<AbstractSettingsTile> securityTiles = [];
+
+    if (!PlatformUtil.isPC()) {
+      securityTiles.add(SettingsTile.switchTile(
+        onToggle: (value) {
+          authenticate(
+              value, s.Please_authenticate_to_turn_off_the_privacy_lock);
+        },
+        initialValue: settingProvider.lockOpen == OpenStatus.OPEN,
+        leading: const Icon(Icons.lock_open),
+        title: Text(s.Privacy_Lock),
+      ));
+    }
+
+    List<AbstractSettingsTile> accountTiles = [];
+
+    accountTiles.add(SettingsTile.navigation(
+      trailing: const Text(""),
+      onPressed: (context) {
+        var index = settingProvider.privateKeyIndex;
+        if (index != null) {
+          AccountsState.onLogoutTap(index, routerBack: true, context: context);
+          metadataProvider.clear();
+        } else {
+          nostr = null;
+        }
+      },
+      leading: const Icon(Icons.logout),
+      title: const Text("Logout"),
+    ));
+
+    accountTiles.add(SettingsTile.navigation(
+      trailing: const Text(""),
+      onPressed: (context) {
+        askToDeleteAccount();
+      },
+      leading: const Icon(Icons.delete_outline),
+      title: Text(s.Delete_Account, style: const TextStyle(color: Colors.red)),
+    ));
+
+    SettingsList settingsList = SettingsList(
+      applicationType: ApplicationType.both,
+      sections: [
+        SettingsSection(title: Text('Interface'), tiles: interfaceTiles),
+        SettingsSection(title: Text('Security'), tiles: securityTiles),
+        SettingsSection(title: Text('Account'), tiles: accountTiles),
+      ],
+    );
 
     return Scaffold(
       appBar: AppBar(
@@ -248,23 +318,24 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
           ),
         ),
         title: Text(
-          s.Setting,
+          s.Settings,
           style: TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: titleFontSize,
           ),
         ),
       ),
-      body: Container(
-        margin: EdgeInsets.only(top: Base.BASE_PADDING),
-        padding: EdgeInsets.only(
-          left: 20,
-          right: 20,
-        ),
-        child: CustomScrollView(
-          slivers: list,
-        ),
-      ),
+      body:
+          // CustomScrollView(
+          //   slivers: list,
+          // ),
+          Container(
+              // margin: const EdgeInsets.only(top: Base.BASE_PADDING),
+              // padding: const EdgeInsets.only(
+              //   left: 20,
+              //   right: 20,
+              // ),
+              child: settingsList),
     );
   }
 
@@ -335,7 +406,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
           }
         }
       }
-      resetTheme();
+      widget.indexReload();
       Future.delayed(Duration(seconds: 1), () {
         setState(() {
           // TODO others setting enumObjList
@@ -419,6 +490,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
       }
     }
   }
+
   List<EnumObj>? defaultTabListTimeline;
 
   void initDefaultTabListTimeline(I18n s) {
@@ -434,7 +506,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
     EnumObj? resultEnumObj = await EnumSelectorComponent.show(context, list);
     if (resultEnumObj != null) {
       settingProvider.defaultTab = resultEnumObj.value;
-      resetTheme();
+      widget.indexReload();
     }
   }
 
@@ -454,7 +526,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
       themeStyleList = [];
       themeStyleList?.add(EnumObj(ThemeStyle.AUTO, s.Follow_System));
       themeStyleList?.add(EnumObj(ThemeStyle.LIGHT, s.Light));
-      themeStyleList?.add(EnumObj(ThemeStyle.DARK, s.Dark));
+      themeStyleList?.add(EnumObj(ThemeStyle.DARK, s.Dark_mode));
     }
   }
 
@@ -463,7 +535,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
         await EnumSelectorComponent.show(context, themeStyleList!);
     if (resultEnumObj != null) {
       settingProvider.themeStyle = resultEnumObj.value;
-      resetTheme();
+      widget.indexReload();
     }
   }
 
@@ -474,14 +546,6 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
       }
     }
     return themeStyleList![0];
-  }
-
-  Future<void> pickColor() async {
-    Color? color = await ColorSelectorComponent.show(context);
-    if (color != null) {
-      settingProvider.themeColor = color.value;
-      resetTheme();
-    }
   }
 
   List<EnumObj>? fontEnumList;
@@ -509,7 +573,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
         pickFont();
       } else {
         settingProvider.fontFamily = null;
-        resetTheme();
+        widget.indexReload();
       }
     }
   }
@@ -520,7 +584,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
         builder: (context) => FontPicker(
           onFontChanged: (PickerFont font) {
             settingProvider.fontFamily = font.fontFamily;
-            resetTheme();
+            widget.indexReload();
           },
         ),
       ),
@@ -553,7 +617,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
         await EnumSelectorComponent.show(context, fontSizeList);
     if (resultEnumObj != null) {
       settingProvider.fontSize = resultEnumObj.value;
-      resetTheme();
+      widget.indexReload();
     }
   }
 
@@ -573,41 +637,30 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
     }
   }
 
-  inputNetwork() async {
-    var s = I18n.of(context);
-    var text = await TextInputDialog.show(
-      context,
-      "${s.Please_input} ${s.Network}\nSOCKS5/SOCKS4/PROXY username:password@host:port",
-      value: settingProvider.network,
-    );
-    settingProvider.network = text;
-    BotToast.showText(text: s.network_take_effect_tip);
-  }
-
-  List<EnumObj>? imageServcieList;
+  List<EnumObj>? imageServiceList;
 
   void initImageServcieList() {
-    if (imageServcieList == null) {
-      imageServcieList = [];
-      imageServcieList!
+    if (imageServiceList == null) {
+      imageServiceList = [];
+      imageServiceList!
           .add(EnumObj(ImageServices.NOSTRIMG_COM, ImageServices.NOSTRIMG_COM));
-      imageServcieList!
+      imageServiceList!
           .add(EnumObj(ImageServices.NOSTR_BUILD, ImageServices.NOSTR_BUILD));
     }
   }
 
   EnumObj getImageServcie(String? o) {
-    for (var eo in imageServcieList!) {
+    for (var eo in imageServiceList!) {
       if (eo.value == o) {
         return eo;
       }
     }
-    return imageServcieList![0];
+    return imageServiceList![0];
   }
 
   Future<void> pickImageServcie() async {
     EnumObj? resultEnumObj =
-        await EnumSelectorComponent.show(context, imageServcieList!);
+        await EnumSelectorComponent.show(context, imageServiceList!);
     if (resultEnumObj != null) {
       settingProvider.imageService = resultEnumObj.value;
     }
@@ -692,8 +745,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
     } finally {
       var index = settingProvider.privateKeyIndex;
       if (index != null) {
-        AccountsState.onLogoutTap(index,
-            routerBack: true, context: context);
+        AccountsState.onLogoutTap(index, routerBack: true, context: context);
         metadataProvider.clear();
       } else {
         nostr = null;
@@ -781,7 +833,8 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
       bcpCodes.add(translateTarget!);
 
       var translateModelManager = TranslateModelManager.getInstance();
-      BotToast.showText(text: I18n.of(context).Begin_to_download_translate_model);
+      BotToast.showText(
+          text: I18n.of(context).Begin_to_download_translate_model);
       var cancelFunc = BotToast.showLoading();
       try {
         await translateModelManager.checkAndDownloadTargetModel(bcpCodes);
@@ -843,7 +896,13 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
         await EnumSelectorComponent.show(context, openList!);
     if (resultEnumObj != null) {
       settingProvider.tableMode = resultEnumObj.value;
-      resetTheme();
+      widget.indexReload();
+    }
+  }
+
+  void authenticate(value, text) async {
+    if (await AuthUtil.authenticate(context, text)) {
+      settingProvider.lockOpen = value ? 1 : 0;
     }
   }
 }

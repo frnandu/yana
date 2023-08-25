@@ -11,11 +11,11 @@
 - ~~store private Key in securedStorage~~
 - ~~replace relays numbers with search, move numbers to drawer~~
 - ~~fix zaps amounts in notes~~
+- ~~add theme icon on drawer for quick switching of dark/light theme~~
 
 - badges when something new in home/notifications/DMS
 - allow to login with npub 
 - add SystemMouseCursors.click to everything that is clickable for web version
-- add theme icon on drawer for quick switching of dark/light theme
 - filter out new posts from replies
 - include reposts in following
 - integration with https://github.com/greenart7c3/Amber
@@ -33,7 +33,6 @@
 - in thread view decrease the tree branches padding to allow more space for content
 - only use tablet second view if horizontal tablet
 - fix zooming of pictures and X position
-- download followed & zaps in the background, not on demand
 - when new user with no following, suggest jack, fiatjaf and others
 - Nostr Wallet Connect with balance
 - linux AppImage build

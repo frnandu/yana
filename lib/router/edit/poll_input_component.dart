@@ -111,7 +111,7 @@ class _PollInputComponent extends State<PollInputComponent> {
                 onPressed: () {
                   delPollOption(controller);
                 },
-                icon: Icon(Icons.delete)),
+                icon: const Icon(Icons.delete)),
           ],
         );
       }

@@ -140,17 +140,17 @@ class I18n {
   }
 
   /// `Dark`
-  String get Dark {
+  String get Dark_mode {
     return Intl.message(
-      'Dark',
-      name: 'Dark',
+      'Dark mode',
+      name: 'Dark_mode',
       desc: '',
       args: [],
     );
   }
 
   /// `Setting`
-  String get Setting {
+  String get Settings {
     return Intl.message(
       'Setting',
       name: 'Setting',
@@ -162,18 +162,8 @@ class I18n {
   /// `Theme Style`
   String get Theme_Style {
     return Intl.message(
-      'Theme Style',
+      'Use theme from System',
       name: 'Theme_Style',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Theme Color`
-  String get Theme_Color {
-    return Intl.message(
-      'Theme Color',
-      name: 'Theme_Color',
       desc: '',
       args: [],
     );
@@ -262,7 +252,7 @@ class I18n {
   /// `Privacy Lock`
   String get Privacy_Lock {
     return Intl.message(
-      'Privacy Lock',
+      'Require unlock to use',
       name: 'Privacy_Lock',
       desc: '',
       args: [],
@@ -440,10 +430,10 @@ class I18n {
   }
 
   /// `Video preview in list`
-  String get Video_preview_in_list {
+  String get Video_preview {
     return Intl.message(
-      'Video preview in list',
-      name: 'Video_preview_in_list',
+      'Video preview',
+      name: 'Video_preview',
       desc: '',
       args: [],
     );
@@ -480,9 +470,9 @@ class I18n {
   }
 
   /// `Forbid image`
-  String get Forbid_image {
+  String get Image_preview {
     return Intl.message(
-      'Forbid image',
+      'Image Preview',
       name: 'Forbid_image',
       desc: '',
       args: [],

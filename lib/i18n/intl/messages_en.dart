@@ -113,7 +113,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "Font_Family": MessageLookupByLibrary.simpleMessage("Font Family"),
         "Font_Size": MessageLookupByLibrary.simpleMessage("Font Size"),
         "Forbid": MessageLookupByLibrary.simpleMessage("Forbid"),
-        "Forbid_image": MessageLookupByLibrary.simpleMessage("Forbid image"),
+        "Forbid_image": MessageLookupByLibrary.simpleMessage("Image preview"),
         "Forbid_video": MessageLookupByLibrary.simpleMessage("Forbid video"),
         "From": MessageLookupByLibrary.simpleMessage("From"),
         "Gen_invoice_code_error":
@@ -224,7 +224,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "Posts": MessageLookupByLibrary.simpleMessage("Posts"),
         "Posts_and_replies":
             MessageLookupByLibrary.simpleMessage("Posts & Replies"),
-        "Privacy_Lock": MessageLookupByLibrary.simpleMessage("Privacy Lock"),
+        "Privacy_Lock": MessageLookupByLibrary.simpleMessage("Require unlock to use"),
         "Private_key_is_null":
             MessageLookupByLibrary.simpleMessage("Private key is null."),
         "Quote": MessageLookupByLibrary.simpleMessage("Quote"),
@@ -258,7 +258,7 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage(
                 "The key is a random string that resembles your account password. Anyone with this key can access and control your account."),
         "Theme_Color": MessageLookupByLibrary.simpleMessage("Theme Color"),
-        "Theme_Style": MessageLookupByLibrary.simpleMessage("Theme Style"),
+        "Theme_Style": MessageLookupByLibrary.simpleMessage("Use Theme from System"),
         "There_should_be_a_universe_here": MessageLookupByLibrary.simpleMessage(
             "There should be a universe here"),
         "This_note_contains_sensitive_content":
