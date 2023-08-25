@@ -99,6 +99,7 @@ Or you can just download them from the release's page and install it directly wi
 - [ ] Mnemonic seed phrase ([NIP-06](https://github.com/nostr-protocol/nips/blob/master/06.md))
 - [ ] Message Sent feedback ([NIP-20](https://github.com/nostr-protocol/nips/blob/master/20.md))
 - [ ] OpenTimestamps Attestations ([NIP-03](https://github.com/nostr-protocol/nips/blob/master/03.md))
+- [ ] User Statuses ([NIP-315](https://github.com/nostr-protocol/nips/pull/737))
 
 ## Contributions
 
