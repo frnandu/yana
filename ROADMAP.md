@@ -9,13 +9,14 @@
 - ~~Dockerfile with web server ready to launch~~
 - ~~run web version on https://yana.fmar.link~~
 - ~~store private Key in securedStorage~~
+- ~~replace relays numbers with search, move numbers to drawer~~
+- ~~fix zaps amounts in notes~~
+- 
+- when changing accounts it doesn't refresh new profile data on UI
 
 - badges when something new in home/notifications/DMS
 - allow to login with npub 
 - add theme icon on drawer for quick switching of dark/light theme
-- replace relays numbers with search, move numbers to drawer
-- fix zaps amounts in notes
-- when changing accounts it doesn't refresh new profile data on UI
 - filter out new posts from replies
 - include reposts in following
 - integration with https://github.com/greenart7c3/Amber
