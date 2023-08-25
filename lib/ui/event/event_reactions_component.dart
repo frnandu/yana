@@ -169,7 +169,7 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             const Icon(Icons.bolt, color: Colors.orange),
-                            Text(" Zap 50", style: popFontStyle)
+                            Text(" Zap 69", style: popFontStyle)
                           ],
                         ),
                       ),
