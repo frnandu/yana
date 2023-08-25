@@ -6,13 +6,13 @@
 Why yet another client/app when there are so many already being developed?
 
 Current mobile native nostr clients suffer from one of the following:
-- UI not responsive enough in older than 1-2 years phones (Amethyst, Plebstr, Nostros)
+- UI not responsive enough in older than 1-2 years phones (Amethyst, Plebstr, Nostros, Plasma)
 - lack of a true FOSS community with lots of contributors being welcomed and encouraged to participate (Primal)
-- not multi-platform (Damus, Nozzle, Amethyst)
+- not multi-platform (Damus, Nozzle, Amethyst, Nostur)
 
-The objective of this project is not fame, glory or financial rewards.\
-My main motivator to spend time on this is to have a nostr client which I find the most pleasant to use on a everyday case.\
-And also learn more deeply about [Nostr](https://github.com/nostr-protocol/nostr) and FOSS project development.\
+The objective of this project is neither fame, glory nor financial rewards.\
+My main motivator to spend time on this is to have a nostr client which I personally find the most pleasant to use on a everyday case.\
+Also to learn more deeply about [Nostr](https://github.com/nostr-protocol/nostr) and FOSS project development.\
 Having said that, I will apply for https://opensats.org/ initiative and consider other similar donations initiatives.\
 Each amount of funding will be distributed among the contributors according to the amount of contribution.\
 This will eventually allow each contributor to spend more time on the project.
@@ -26,7 +26,8 @@ A big danger with this approach is if somehow the i18n code is not as high perfo
 
 It will not be constrained to imperialist distributors, such as Apple Store or Google Store. 
 The released app will be distributed as standalone packages for each OS and can be included in free Stores (F-Droid, Obtainium and others?)
-Or you can just download them from the release's page and install it directly without a third-party distributor.  
+Or you can just download them from the release's page and install it directly without a third-party distributor.
+If someone wants to test it running on MacOs and/or iOS by some means of Sideloading, I'll happily assist in whatever I can.
 
 ## Current Features
 
