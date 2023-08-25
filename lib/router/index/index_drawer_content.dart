@@ -294,7 +294,7 @@ class IndexDrawerItem extends StatelessWidget {
         cursor: SystemMouseCursors.click,
         child: Container(
           margin: const EdgeInsets.only(
-            left: Base.BASE_PADDING * 2,
+            left: Base.BASE_PADDING * 1.5,
             right: Base.BASE_PADDING,
           ),
           child: Icon(
@@ -307,7 +307,7 @@ class IndexDrawerItem extends StatelessWidget {
         cursor: SystemMouseCursors.click,
         child: Text(name,
             style:
-                TextStyle(color: color, fontSize: Base.BASE_FONT_SIZE + 4))));
+                TextStyle(color: color, fontSize: Base.BASE_FONT_SIZE + 2))));
 
     if (rightWidget != null) {
       list.add(MouseRegion(
@@ -330,7 +330,7 @@ class IndexDrawerItem extends StatelessWidget {
       },
       behavior: HitTestBehavior.translucent,
       child: SizedBox(
-        height: 50,
+        height: 40,
         child: Row(
           children: list,
         ),
