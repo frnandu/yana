@@ -21,7 +21,7 @@ This will eventually allow each contributor to spend more time on the project.
 
 It will not be constrained to imperialist distributors, such as Apple Store or Google Store.\
 The released app will be distributed as standalone packages for each OS and can be included in free Stores ([F-Droid](https://f-droid.org), [Obtainium](https://github.com/ImranR98/Obtainium), etc).\
-Or you can just download them from the release's page and install it directly without a third-party distributor.\
+Or you can just download them from the release's page and install it directly without a third-party distributor.
 
 ### Android
 [<img src="https://github.com/machiav3lli/oandbackupx/blob/034b226cea5c1b30eb4f6a6f313e4dadcbb0ece4/badge_github.png"
