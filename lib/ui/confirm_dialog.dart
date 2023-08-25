@@ -3,7 +3,7 @@ import 'package:yana/utils/router_util.dart';
 
 import '../i18n/i18n.dart';
 
-class ComfirmDialog {
+class ConfirmDialog {
   static Future<bool?> show(BuildContext context, String content) async {
     var s = I18n.of(context);
     return await showDialog<bool>(
@@ -20,7 +20,7 @@ class ComfirmDialog {
                 },
               ),
               TextButton(
-                child: Text(s.Comfirm),
+                child: Text(s.Confirm),
                 onPressed: () async {
                   RouterUtil.back(context, true);
                 },

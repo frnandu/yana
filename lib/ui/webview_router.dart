@@ -64,9 +64,9 @@ class _WebViewRouter extends CustState<WebViewRouter> {
         var jsonObj = jsonDecode(jsMsg.message);
         var resultId = jsonObj["resultId"];
 
-        var comfirmResult =
+        var confirmResult =
             await NIP07Dialog.show(context, NIP07Methods.getPublicKey);
-        if (comfirmResult == true) {
+        if (confirmResult == true) {
           var pubkey = nostr!.publicKey;
           var script = "window.nostr.callback(\"$resultId\", \"$pubkey\");";
           _controller.runJavaScript(script);
@@ -82,11 +82,11 @@ class _WebViewRouter extends CustState<WebViewRouter> {
         var resultId = jsonObj["resultId"];
         var content = jsonObj["msg"];
 
-        var comfirmResult = await NIP07Dialog.show(
+        var confirmResult = await NIP07Dialog.show(
             context, NIP07Methods.signEvent,
             content: content);
 
-        if (comfirmResult == true) {
+        if (confirmResult == true) {
           try {
             var eventObj = jsonDecode(content);
             var tags = eventObj["tags"];

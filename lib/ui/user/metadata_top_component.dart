@@ -22,7 +22,7 @@ import '../../nostr/nip57/zap_action.dart';
 import '../../utils/base.dart';
 import '../../models/metadata.dart';
 import '../../utils/string_util.dart';
-import '../comfirm_dialog.dart';
+import '../confirm_dialog.dart';
 import '../image_preview_dialog.dart';
 
 class MetadataTopComponent extends StatefulWidget {
@@ -476,7 +476,7 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
       } else if (NIP19Tlv.isNrelay(result)) {
         var nrelay = NIP19Tlv.decodeNrelay(result);
         if (nrelay != null) {
-          var result = await ComfirmDialog.show(
+          var result = await ConfirmDialog.show(
               context, I18n.of(context).Add_this_relay_to_local);
           if (result == true) {
             relayProvider.addRelay(nrelay.addr);

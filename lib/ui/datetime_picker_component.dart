@@ -182,7 +182,7 @@ class _DatetimePickerComponent extends State<DatetimePickerComponent> {
         color: mainColor,
         child: Center(
           child: Text(
-            s.Comfirm,
+            s.Confirm,
             style: TextStyle(
               color: Colors.white,
               fontSize: bigTextSize,

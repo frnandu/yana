@@ -60,7 +60,7 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("Buy me a coffee!"),
         "Cancel": MessageLookupByLibrary.simpleMessage("Cancel"),
         "Close_at": MessageLookupByLibrary.simpleMessage("Close at"),
-        "Comfirm": MessageLookupByLibrary.simpleMessage("Comfirm"),
+        "Confirm": MessageLookupByLibrary.simpleMessage("Confirm"),
         "Content": MessageLookupByLibrary.simpleMessage("Content"),
         "Content_warning":
             MessageLookupByLibrary.simpleMessage("Content warning"),

@@ -1,6 +1,6 @@
 import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
-import 'package:yana/ui/comfirm_dialog.dart';
+import 'package:yana/ui/confirm_dialog.dart';
 import 'package:yana/utils/when_stop_function.dart';
 import 'package:provider/provider.dart';
 
@@ -129,7 +129,7 @@ class _RelaysRouter extends CustState<RelaysRouter> with WhenStopFunction {
     if (remoteRelayEvent != null &&
         (relaysUpdatedTime == null ||
             remoteRelayEvent!.createdAt - relaysUpdatedTime > 60 * 5)) {
-      var result = await ComfirmDialog.show(context,
+      var result = await ConfirmDialog.show(context,
           I18n.of(context).Find_clouded_relay_list_do_you_want_to_download);
       if (result == true) {
         List<String> list = [];

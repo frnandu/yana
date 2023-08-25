@@ -39,11 +39,11 @@ class I18n {
     return Localizations.of<I18n>(context, I18n);
   }
 
-  /// `Comfirm`
-  String get Comfirm {
+  /// `Confirm`
+  String get Confirm {
     return Intl.message(
-      'Comfirm',
-      name: 'Comfirm',
+      'Confirm',
+      name: 'Confirm',
       desc: '',
       args: [],
     );

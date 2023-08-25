@@ -132,7 +132,7 @@ class _GenLnbcComponent extends State<GenLnbcComponent> {
                 height: 40,
                 alignment: Alignment.center,
                 child: Text(
-                  I18n.of(context).Comfirm,
+                  I18n.of(context).Confirm,
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
