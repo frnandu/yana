@@ -256,8 +256,10 @@ class IndexDrawerItem extends StatelessWidget {
     var hintColor = themeData.hintColor;
     List<Widget> list = [];
 
-    list.add(Container(
-      margin: EdgeInsets.only(
+    list.add(MouseRegion(
+        cursor: SystemMouseCursors.click,
+        child:Container(
+      margin: const EdgeInsets.only(
         left: Base.BASE_PADDING * 2,
         right: Base.BASE_PADDING,
       ),
@@ -265,20 +267,22 @@ class IndexDrawerItem extends StatelessWidget {
         iconData,
         color: color,
       ),
-    ));
+    )));
 
-    list.add(Text(name,
-        style: TextStyle(color: color, fontSize: Base.BASE_FONT_SIZE + 4)));
-
-    var borderSide = BorderSide(width: 1, color: hintColor);
+    list.add(MouseRegion(
+        cursor: SystemMouseCursors.click,
+        child: Text(name,
+        style: TextStyle(color: color, fontSize: Base.BASE_FONT_SIZE + 4))));
 
     if (rightWidget!=null) {
-      list.add(Container(
-          margin: EdgeInsets.only(
+      list.add(MouseRegion(
+          cursor: SystemMouseCursors.click,
+          child:Container(
+          margin: const EdgeInsets.only(
             left: Base.BASE_PADDING,
           ),
           child: rightWidget!)
-      );
+      ));
     }
 
     return GestureDetector(
@@ -291,7 +295,7 @@ class IndexDrawerItem extends StatelessWidget {
         }
       },
       behavior: HitTestBehavior.translucent,
-      child: Container(
+      child: SizedBox(
         height: 50,
         child: Row(
           children: list,
