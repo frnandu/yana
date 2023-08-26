@@ -20,6 +20,7 @@
 - ~~in thread view decrease the tree branches padding to allow more space for content~~
 - ~~badges when something new in home/notifications~~
 - 
+- separate posts from replies on profile
 - badges when something new in DMS
 - fix image/video preview setting (is false / not taken into effect)
 - in thread view handle better zaps instead of some weird bitcoin component
