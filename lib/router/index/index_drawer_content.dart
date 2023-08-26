@@ -94,7 +94,7 @@ class _IndexDrawerContnetComponnent extends State<IndexDrawerContentComponent> {
       ));
       list.add(IndexDrawerItem(
         iconData: Icons.mail,
-        name: "DMs",
+        name: s.Messages,
         color: _indexProvider.currentTap == IndexTaps.DM ? mainColor : null,
         onTap: () {
           indexProvider.setCurrentTap(IndexTaps.DM);
