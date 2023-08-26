@@ -14,10 +14,10 @@
 - ~~add theme icon on drawer for quick switching of dark/light theme~~
 - ~~get relays list immediately after login~~
 - ~~some kind of loader when click Login~~
+- ~~linux AppImage build~~
+- ~~fix loader on web~~
 
-- linux AppImage build
-
-- fix loader on web
+- relays loose connection and don't reconnect after some time
 - badges when something new in home/notifications/DMS
 - try to load images using Isolate and compute, so that feed scrolling does not freeze while loading images
 - allow to login with npub 

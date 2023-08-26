@@ -72,4 +72,8 @@ class PlatformUtil {
     }
     return Platform.isWindows || Platform.isMacOS || Platform.isLinux;
   }
+
+  static bool isAndroid() {
+    return Platform.isAndroid;
+  }
 }

@@ -261,7 +261,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
 
     List<AbstractSettingsTile> securityTiles = [];
 
-    if (!PlatformUtil.isPC()) {
+    if (!PlatformUtil.isWeb() && (PlatformUtil.isIOS() || PlatformUtil.isAndroid())) {
       securityTiles.add(SettingsTile.switchTile(
         onToggle: (value) {
           authenticate(
@@ -299,13 +299,18 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
       title: Text(s.Delete_Account, style: const TextStyle(color: Colors.red)),
     ));
 
+    List<SettingsSection> sections = [];
+
+    sections.add(SettingsSection(title: Text('Interface'), tiles: interfaceTiles));
+    sections.add(SettingsSection(title: Text('Account'), tiles: accountTiles));
+    if (!PlatformUtil.isWeb() && (PlatformUtil.isIOS() || PlatformUtil.isAndroid())) {
+      sections.add(SettingsSection(title: Text('Security'), tiles: securityTiles));
+    }
+
+
     SettingsList settingsList = SettingsList(
       applicationType: ApplicationType.material,
-      sections: [
-        SettingsSection(title: Text('Interface'), tiles: interfaceTiles),
-        SettingsSection(title: Text('Security'), tiles: securityTiles),
-        SettingsSection(title: Text('Account'), tiles: accountTiles),
-      ],
+      sections: sections
     );
 
     return Scaffold(
