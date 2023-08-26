@@ -7,7 +7,7 @@ import 'package:screenshot/screenshot.dart';
 import '../../utils/base.dart';
 
 class ThreadDetailItemMainComponent extends StatefulWidget {
-  static double BORDER_LEFT_WIDTH = 2;
+  static double BORDER_LEFT_WIDTH = 1;
 
   static double EVENT_MAIN_MIN_WIDTH = 200;
 
@@ -54,7 +54,7 @@ class _ThreadDetailItemMainComponent
     List<Widget> list = [];
     var currentWidth = mediaDataCache.size.width;
     var leftWidth = (widget.item.currentLevel - 1) *
-        (Base.BASE_PADDING + ThreadDetailItemMainComponent.BORDER_LEFT_WIDTH);
+        (Base.BASE_PADDING_HALF + ThreadDetailItemMainComponent.BORDER_LEFT_WIDTH);
     currentWidth = mediaDataCache.size.width - leftWidth;
     if (currentWidth < ThreadDetailItemMainComponent.EVENT_MAIN_MIN_WIDTH) {
       currentWidth = ThreadDetailItemMainComponent.EVENT_MAIN_MIN_WIDTH;
@@ -82,9 +82,8 @@ class _ThreadDetailItemMainComponent
       list.add(Container(
         alignment: Alignment.centerLeft,
         margin: const EdgeInsets.only(
-          // top: Base.BASE_PADDING,
           bottom: Base.BASE_PADDING,
-          left: Base.BASE_PADDING,
+          left: Base.BASE_PADDING_HALF,
         ),
         decoration: BoxDecoration(
           border: Border(

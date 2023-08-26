@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../nostr/event_kind.dart' as kind;
-import '../../ui/event/event_bitcion_icon_component.dart';
+import '../../ui/event/event_bitcoin_icon_component.dart';
 import '../../utils/base.dart';
 import 'thread_detail_event.dart';
 import 'thread_detail_event_main_component.dart';
@@ -46,10 +46,10 @@ class _ThreadDetailItemComponent extends State<ThreadDetailItemComponent> {
       main = Stack(
         children: [
           main,
-          Positioned(
+          const Positioned(
             top: -35,
             right: -10,
-            child: EventBitcionIconComponent(),
+            child: EventBitcoinIconComponent(),
           ),
         ],
       );
@@ -57,7 +57,7 @@ class _ThreadDetailItemComponent extends State<ThreadDetailItemComponent> {
 
     return Container(
       color: cardColor,
-      margin: EdgeInsets.only(bottom: Base.BASE_PADDING_HALF),
+      margin: const EdgeInsets.only(bottom: Base.BASE_PADDING_HALF),
       child: main,
     );
   }
