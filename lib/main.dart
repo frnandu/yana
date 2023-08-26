@@ -27,11 +27,8 @@ import 'package:yana/router/user/user_history_contact_list_router.dart';
 import 'package:yana/router/user/user_zap_list_router.dart';
 import 'package:yana/utils/platform_util.dart';
 
-import 'utils/router_path.dart';
-import 'utils/theme_style.dart';
-import 'models/db.dart';
 import 'i18n/i18n.dart';
-import 'ui/home_component.dart';
+import 'models/db.dart';
 import 'provider/community_approved_provider.dart';
 import 'provider/contact_list_provider.dart';
 import 'provider/data_util.dart';
@@ -66,11 +63,14 @@ import 'router/user/followed_communities_router.dart';
 import 'router/user/user_contact_list_router.dart';
 import 'router/user/user_relays_router.dart';
 import 'router/user/user_router.dart';
-import 'utils/system_timer.dart';
+import 'ui/home_component.dart';
 import 'utils/image/cache_manager_builder.dart';
 import 'utils/locale_util.dart';
 import 'utils/media_data_cache.dart';
+import 'utils/router_path.dart';
 import 'utils/string_util.dart';
+import 'utils/system_timer.dart';
+import 'utils/theme_style.dart';
 
 late SharedPreferences sharedPreferences;
 

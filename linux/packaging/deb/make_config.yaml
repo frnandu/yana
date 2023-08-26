@@ -1,0 +1,29 @@
+display_name: Yana
+package_name: yana
+maintainer:
+  name: fmar
+  email: me@fmar.link
+#co_authors:
+#  - name: Kingkor Roy Tirtho
+#    email: krtirtho@gmail.com
+priority: optional
+section: x11
+installed_size: 6604
+essential: false
+icon: assets/imgs/logo/logo.png
+
+postinstall_scripts:
+  - echo "Installed my awesome app"
+postuninstall_scripts:
+  - echo "Surprised Pickachu face"
+
+keywords:
+  - Nostr
+
+generic_name: Music Application
+
+categories:
+  - Music
+  - Media
+
+startup_notify: true

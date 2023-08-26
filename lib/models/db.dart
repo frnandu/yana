@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:yana/utils/platform_util.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
@@ -13,7 +15,7 @@ class DB {
     String path = _dbName;
 
     if (!PlatformUtil.isWeb()) {
-      var databasesPath = await getDatabasesPath();
+      var databasesPath = PlatformUtil.isWindowsOrLinux()? "/tmp/" : await getDatabasesPath();
       path = join(databasesPath, _dbName);
     }
 

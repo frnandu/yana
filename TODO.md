@@ -15,14 +15,16 @@
 - ~~get relays list immediately after login~~
 - ~~some kind of loader when click Login~~
 
+- linux AppImage build
+
 - fix loader on web
-- https://pub.dev/packages/objectbox
 - badges when something new in home/notifications/DMS
 - try to load images using Isolate and compute, so that feed scrolling does not freeze while loading images
 - allow to login with npub 
 - add SystemMouseCursors.click to everything that is clickable for web version
 - filter out new posts from replies
 - include reposts in following
+- https://pub.dev/packages/objectbox
 - integration with https://github.com/greenart7c3/Amber
 - close images clicking anywhere
 - long posts should be cut and have "show more"
@@ -38,7 +40,6 @@
 - umbrel store package with web client
 - when new user with no following, suggest jack, fiatjaf and others
 - Nostr Wallet Connect with balance
-- linux AppImage build
 - NIP-7 window.nostr for web version
 - make it work on iOS/MacOS
 - Push Notifications 

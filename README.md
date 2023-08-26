@@ -23,18 +23,16 @@ It will not be constrained to imperialist distributors, such as Apple Store or G
 The released app will be distributed as standalone packages for each OS and can be included in free Stores ([F-Droid](https://f-droid.org), [Obtainium](https://github.com/ImranR98/Obtainium), etc).\
 Or you can just download them from the release's page and install it directly without a third-party distributor.
 
-### - Android
 [<img src="https://github.com/machiav3lli/oandbackupx/blob/034b226cea5c1b30eb4f6a6f313e4dadcbb0ece4/badge_github.png"
 alt="Get it on GitHub"
 height="80">](https://github.com/frnandu/yana/releases)
 
+### - Android
+
+Install Apk file from releases.
 *I strongly recommend [Obtainium](https://github.com/ImranR98/Obtainium) for keeping up-to-date with new releases.*
 
 ### - iOS
-
-[<img src="https://github.com/machiav3lli/oandbackupx/blob/034b226cea5c1b30eb4f6a6f313e4dadcbb0ece4/badge_github.png"
-alt="Get it on GitHub"
-height="80">](https://github.com/frnandu/yana/releases)
 
 *Only by sideloading the **.ipa** file (I haven't tested it because I don't use apple devices, if somebody can confirm that it works would be great, just let me know).*
 
@@ -53,7 +51,13 @@ Generate a new one for testing.\
 [Planned](https://github.com/frnandu/yana/issues/34) also an Umbrel Store package so it is simple to install and run it for umbrel users 
 
 ### - Linux
-*Comming soon*
+- Run Appimage file
+or
+- Install deb file from releases
+
+    sudo dpkg -i <deb-file>
+
+*Snap comming soon*
 
 ### - Windows
 *Comming soon*
