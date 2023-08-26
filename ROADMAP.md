@@ -40,3 +40,4 @@
 - NIP-7 window.nostr for web version
 - make it work on iOS/MacOS
 - Push Notifications 
+- try https://pub.dev/packages/flutter_rust_bridge for background loading of new events
