@@ -19,6 +19,8 @@
 - ~~filter out new posts from replies~~
 - ~~in thread view decrease the tree branches padding to allow more space for content~~
 - ~~badges when something new in home/notifications~~
+
+- relays icons
 - rephrase keys backup screen
 - separate posts from replies on profile
 - badges when something new in DMS
