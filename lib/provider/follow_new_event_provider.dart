@@ -79,17 +79,27 @@ class FollowNewEventProvider extends ChangeNotifier
     notifyListeners();
   }
 
+  void clearReplies() {
+    eventPostsAndRepliesMemBox.clear();
+    notifyListeners();
+  }
+
+  void clearPosts() {
+    eventPostsMemBox.clear();
+    notifyListeners();
+  }
+
   handleEvents(List<Event> events) {
-    eventPostsAndRepliesMemBox.addList(events);
     _localSince = eventPostsAndRepliesMemBox.newestEvent!.createdAt;
 
     for (var event in events) {
       bool isPosts = FollowEventProvider.eventIsPost(event);
       if (isPosts) {
         eventPostsMemBox.add(event);
+      } else {
+        eventPostsAndRepliesMemBox.add(event);
       }
     }
-
     notifyListeners();
   }
 }

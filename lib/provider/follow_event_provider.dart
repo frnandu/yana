@@ -236,18 +236,29 @@ class FollowEventProvider extends ChangeNotifier
     return isPosts;
   }
 
-  void mergeNewEvent() {
+  void mergeNewPostAndReplyEvents() {
     var postAndRepliesEvents = followNewEventProvider.eventPostsAndRepliesMemBox.all();
-    var postEvents = followNewEventProvider.eventPostsMemBox.all();
 
     postsAndRepliesBox.addList(postAndRepliesEvents);
-    postsBox.addList(postEvents);
 
     // sort
     postsAndRepliesBox.sort();
+
+    followNewEventProvider.clearReplies();
+
+    // update ui
+    notifyListeners();
+  }
+
+  void mergeNewPostEvents() {
+    var postEvents = followNewEventProvider.eventPostsMemBox.all();
+
+    postsBox.addList(postEvents);
+
+    // sort
     postsBox.sort();
 
-    followNewEventProvider.clear();
+    followNewEventProvider.clearPosts();
 
     // update ui
     notifyListeners();
@@ -262,25 +273,21 @@ class FollowEventProvider extends ChangeNotifier
     later(event, (list) {
       bool added = false;
       for (var e in list) {
-        var result = postsAndRepliesBox.add(e);
-        if (result) {
-          // add success
-          added = true;
-
-          // check if is posts (no tag e)
-          bool isPosts = eventIsPost(e);
-          if (isPosts) {
-            postsBox.add(e);
+        bool isPosts = eventIsPost(e);
+        if (!isPosts) {
+          added = postsAndRepliesBox.add(e);
+          if (added) {
+            postsAndRepliesBox.sort();
+          }
+        } else {
+          added = postsBox.add(e);
+          if (added) {
+            postsBox.sort();
           }
         }
       }
 
       if (added) {
-        // sort
-        postsAndRepliesBox.sort();
-        postsBox.sort();
-
-        // update ui
         notifyListeners();
       }
     }, null);

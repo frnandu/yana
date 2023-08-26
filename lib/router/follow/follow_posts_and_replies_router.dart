@@ -97,7 +97,7 @@ class _FollowPostsAndRepliesRouter extends KeepAliveCustState<FollowPostsAndRepl
           return NewNotesUpdatedComponent(
             newEvents: eventMemBox.all(),
             onTap: () {
-              followEventProvider.mergeNewEvent();
+              followEventProvider.mergeNewPostAndReplyEvents();
               _controller.animateTo(0,curve: Curves.ease, duration: const Duration(seconds: 1));
             },
           );
