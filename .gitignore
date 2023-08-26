@@ -44,3 +44,5 @@ app.*.map.json
 /Yana.AppDir/lib/
 /Yana.AppDir/yana
 /Yana-x86_64.AppImage
+/appimagetool-x86_64.AppImage
+/Yana.AppDir/logo.png
