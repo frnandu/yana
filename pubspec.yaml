@@ -104,6 +104,7 @@ dependencies:
   assorted_layout_widgets: ^8.0.4
   flutter_secure_storage: ^8.0.0
   settings_ui: ^2.0.2
+  tuple: ^2.0.2
 #  flutter_spinkit: ^5.2.0
 #  loading_animation_widget: ^1.2.0
 

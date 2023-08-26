@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-class EventBitcionIconComponent extends StatelessWidget {
-  const EventBitcionIconComponent({super.key});
+class EventBitcoinIconComponent extends StatelessWidget {
+  const EventBitcoinIconComponent({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -15,7 +15,7 @@ class EventBitcionIconComponent extends StatelessWidget {
         borderRadius: BorderRadius.circular(54),
       ),
       child: Icon(
-        Icons.currency_bitcoin,
+        Icons.bolt,
         color: Colors.amber[600]!.withOpacity(0.5),
         size: 100,
       ),

@@ -7,7 +7,7 @@ import '../main.dart';
 import '../utils/peddingevents_later_function.dart';
 import '../utils/string_util.dart';
 
-class MentionMeNewProvider extends ChangeNotifier
+class NewNotificationsProvider extends ChangeNotifier
     with PenddingEventsLaterFunction {
   EventMemBox eventMemBox = EventMemBox();
 
@@ -39,6 +39,7 @@ class MentionMeNewProvider extends ChangeNotifier
   }
 
   handleEvents(List<Event> events) {
+    events = events.where((element) => element.pubKey != nostr?.publicKey).toList();
     eventMemBox.addList(events);
     _localSince = eventMemBox.newestEvent!.createdAt;
     notifyListeners();

@@ -9,13 +9,13 @@ import '../main.dart';
 import '../utils/peddingevents_later_function.dart';
 import '../utils/string_util.dart';
 
-class MentionMeProvider extends ChangeNotifier
+class NotificationsProvider extends ChangeNotifier
     with PenddingEventsLaterFunction {
   late int _initTime;
 
   late EventMemBox eventBox;
 
-  MentionMeProvider() {
+  NotificationsProvider() {
     _initTime = DateTime.now().millisecondsSinceEpoch ~/ 1000;
     eventBox = EventMemBox();
   }
@@ -42,6 +42,7 @@ class MentionMeProvider extends ChangeNotifier
   List<int> queryEventKinds() {
     return [
       kind.EventKind.TEXT_NOTE,
+      kind.EventKind.REACTION,
       kind.EventKind.REPOST,
       kind.EventKind.GENERIC_REPOST,
       kind.EventKind.ZAP,
@@ -98,6 +99,7 @@ class MentionMeProvider extends ChangeNotifier
 
   void onEvent(Event event) {
     later(event, (list) {
+      list = list.where((element) => element.pubKey != nostr?.publicKey).toList();
       var result = eventBox.addList(list);
       if (result) {
         notifyListeners();

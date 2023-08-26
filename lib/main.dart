@@ -18,7 +18,7 @@ import 'package:yana/provider/badge_definition_provider.dart';
 import 'package:yana/provider/community_info_provider.dart';
 import 'package:yana/provider/custom_emoji_provider.dart';
 import 'package:yana/provider/follow_new_event_provider.dart';
-import 'package:yana/provider/mention_me_new_provider.dart';
+import 'package:yana/provider/new_notifications_provider.dart';
 import 'package:yana/router/index/account_manager_component.dart';
 import 'package:yana/router/relays/relay_info_router.dart';
 import 'package:yana/router/search/search_router.dart';
@@ -39,7 +39,7 @@ import 'provider/filter_provider.dart';
 import 'provider/follow_event_provider.dart';
 import 'provider/index_provider.dart';
 import 'provider/link_preview_data_provider.dart';
-import 'provider/mention_me_provider.dart';
+import 'provider/notifications_provider.dart';
 import 'provider/metadata_provider.dart';
 import 'provider/notice_provider.dart';
 import 'provider/pc_router_fake_provider.dart';
@@ -85,9 +85,9 @@ late FollowEventProvider followEventProvider;
 
 late FollowNewEventProvider followNewEventProvider;
 
-late MentionMeProvider mentionMeProvider;
+late NotificationsProvider mentionMeProvider;
 
-late MentionMeNewProvider mentionMeNewProvider;
+late NewNotificationsProvider mentionMeNewProvider;
 
 late DMProvider dmProvider;
 
@@ -180,8 +180,8 @@ Future<void> main() async {
   contactListProvider = ContactListProvider.getInstance();
   followEventProvider = FollowEventProvider();
   followNewEventProvider = FollowNewEventProvider();
-  mentionMeProvider = MentionMeProvider();
-  mentionMeNewProvider = MentionMeNewProvider();
+  mentionMeProvider = NotificationsProvider();
+  mentionMeNewProvider = NewNotificationsProvider();
   dmProvider = DMProvider();
   indexProvider = IndexProvider(
     indexTap: settingProvider.defaultIndex,
@@ -302,10 +302,10 @@ class _MyApp extends State<MyApp> {
         ListenableProvider<FollowNewEventProvider>.value(
           value: followNewEventProvider,
         ),
-        ListenableProvider<MentionMeProvider>.value(
+        ListenableProvider<NotificationsProvider>.value(
           value: mentionMeProvider,
         ),
-        ListenableProvider<MentionMeNewProvider>.value(
+        ListenableProvider<NewNotificationsProvider>.value(
           value: mentionMeNewProvider,
         ),
         ListenableProvider<DMProvider>.value(

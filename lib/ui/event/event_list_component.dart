@@ -13,7 +13,7 @@ import '../../nostr/event_relation.dart';
 import '../../utils/base.dart';
 import '../../utils/router_path.dart';
 import '../../utils/router_util.dart';
-import 'event_bitcion_icon_component.dart';
+import 'event_bitcoin_icon_component.dart';
 import 'event_main_component.dart';
 
 class EventListComponent extends StatefulWidget {
@@ -90,7 +90,7 @@ class _EventListComponent extends State<EventListComponent> {
           Positioned(
             top: -35,
             right: -10,
-            child: EventBitcionIconComponent(),
+            child: EventBitcoinIconComponent(),
           ),
         ],
       );

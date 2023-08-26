@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:yana/main.dart';
 import 'package:yana/models/event_mem_box.dart';
-import 'package:yana/provider/mention_me_new_provider.dart';
-import 'package:yana/provider/mention_me_provider.dart';
+import 'package:yana/provider/new_notifications_provider.dart';
+import 'package:yana/provider/notifications_provider.dart';
 import 'package:yana/ui/keep_alive_cust_state.dart';
 import 'package:yana/utils/load_more_event.dart';
 import 'package:yana/utils/string_util.dart';
@@ -38,7 +38,7 @@ class _NotificationsRouter extends KeepAliveCustState<NotificationsRouter>
   @override
   Widget doBuild(BuildContext context) {
     var _settingProvider = Provider.of<SettingProvider>(context);
-    var _mentionMeProvider = Provider.of<MentionMeProvider>(context);
+    var _mentionMeProvider = Provider.of<NotificationsProvider>(context);
     var eventBox = _mentionMeProvider.eventBox;
     var events = eventBox.all();
     if (events.isEmpty) {
@@ -88,7 +88,7 @@ class _NotificationsRouter extends KeepAliveCustState<NotificationsRouter>
     List<Widget> stackList = [ri];
     stackList.add(Positioned(
       top: Base.BASE_PADDING,
-      child: Selector<MentionMeNewProvider, EventMemBox>(
+      child: Selector<NewNotificationsProvider, EventMemBox>(
         builder: (context, eventMemBox, child) {
           if (eventMemBox.length() <= 0) {
             return Container();

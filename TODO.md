@@ -17,12 +17,17 @@
 - ~~linux AppImage build~~
 - ~~fix loader on web~~
 
+- ~~filter out new posts from replies~~
+- ~~in thread view decrease the tree branches padding to allow more space for content~~
+
+- ~~badges when something new in home/notifications~~
+- badges when something new in DMS
+- DMS from followed should not be on request tab
+- notifications of reactions/likes (include post and if a reply the parent)
 - relays loose connection and don't reconnect after some time
-- badges when something new in home/notifications/DMS
 - try to load images using Isolate and compute, so that feed scrolling does not freeze while loading images
 - allow to login with npub 
 - add SystemMouseCursors.click to everything that is clickable for web version
-- filter out new posts from replies
 - include reposts in following
 - fix saving pictures to phone
 - https://pub.dev/packages/objectbox
@@ -35,7 +40,6 @@
 - sort following/followers list by most recent
 - add search to following/followers
 - mention livesearch editor without popup
-- in thread view decrease the tree branches padding to allow more space for content
 - only use tablet second view if horizontal tablet
 - fix zooming of pictures and X position
 - umbrel store package with web client
