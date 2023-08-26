@@ -300,7 +300,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
     ));
 
     SettingsList settingsList = SettingsList(
-      applicationType: ApplicationType.both,
+      applicationType: ApplicationType.,
       sections: [
         SettingsSection(title: Text('Interface'), tiles: interfaceTiles),
         SettingsSection(title: Text('Security'), tiles: securityTiles),

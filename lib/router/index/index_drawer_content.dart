@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:yana/provider/index_provider.dart';
 import 'package:yana/ui/user/metadata_top_component.dart';
 import 'package:yana/utils/base.dart';
@@ -28,8 +29,6 @@ class IndexDrawerContentComponent extends StatefulWidget {
 }
 
 class _IndexDrawerContnetComponnent extends State<IndexDrawerContentComponent> {
-  // ScrollController userStatisticscontroller = ScrollController();
-
   double profileEditBtnWidth = 40;
 
   @override
@@ -72,18 +71,6 @@ class _IndexDrawerContnetComponnent extends State<IndexDrawerContentComponent> {
           width: 1,
           color: hintColor,
         )))));
-    // list.add(GestureDetector(
-    //   behavior: HitTestBehavior.translucent,
-    //   onHorizontalDragUpdate: (detail) {
-    //     userStatisticscontroller
-    //         .jumpTo(userStatisticscontroller.offset - detail.delta.dx);
-    //   },
-    //   child: SingleChildScrollView(
-    //     controller: userStatisticscontroller,
-    //     scrollDirection: Axis.horizontal,
-    //     child: UserStatisticsComponent(pubkey: pubkey),
-    //   ),
-    // ));
 
     if (PlatformUtil.isTableMode()) {
       list.add(IndexDrawerItem(
@@ -91,24 +78,10 @@ class _IndexDrawerContnetComponnent extends State<IndexDrawerContentComponent> {
         name: s.Home,
         color: _indexProvider.currentTap == IndexTaps.FOLLOW ? mainColor : null,
         onTap: () {
-          indexProvider.setCurrentTap(0);
+          indexProvider.setCurrentTap(IndexTaps.FOLLOW);
         },
         onDoubleTap: () {
           indexProvider.followScrollToTop();
-        },
-      ));
-      list.add(IndexDrawerItem(
-        iconData: Icons.notifications,
-        name: s.Globals,
-        color: _indexProvider.currentTap == IndexTaps.NOTIFICATIONS
-            ? mainColor
-            : null,
-        onTap: () {
-          indexProvider.setCurrentTap(1);
-        },
-        onDoubleTap: () {
-          // TODO
-          // indexProvider.globalScrollToTop();
         },
       ));
       list.add(IndexDrawerItem(
@@ -116,7 +89,7 @@ class _IndexDrawerContnetComponnent extends State<IndexDrawerContentComponent> {
         name: s.Search,
         color: _indexProvider.currentTap == IndexTaps.SEARCH ? mainColor : null,
         onTap: () {
-          indexProvider.setCurrentTap(2);
+          indexProvider.setCurrentTap(IndexTaps.SEARCH);
         },
       ));
       list.add(IndexDrawerItem(
@@ -124,7 +97,21 @@ class _IndexDrawerContnetComponnent extends State<IndexDrawerContentComponent> {
         name: "DMs",
         color: _indexProvider.currentTap == IndexTaps.DM ? mainColor : null,
         onTap: () {
-          indexProvider.setCurrentTap(3);
+          indexProvider.setCurrentTap(IndexTaps.DM);
+        },
+      ));
+      list.add(IndexDrawerItem(
+        iconData: Icons.notifications,
+        name: s.Notifications,
+        color: _indexProvider.currentTap == IndexTaps.NOTIFICATIONS
+            ? mainColor
+            : null,
+        onTap: () {
+          indexProvider.setCurrentTap(IndexTaps.NOTIFICATIONS);
+        },
+        onDoubleTap: () {
+          // TODO
+          // indexProvider.globalScrollToTop();
         },
       ));
     }
@@ -207,9 +194,7 @@ class _IndexDrawerContnetComponnent extends State<IndexDrawerContentComponent> {
             onPressed: () {
               if (settingProvider.themeStyle == ThemeStyle.AUTO) {
                 Brightness platformBrightness =
-                    MediaQuery
-                        .of(context)
-                        .platformBrightness;
+                    MediaQuery.of(context).platformBrightness;
                 if (platformBrightness == Brightness.light) {
                   settingProvider.themeStyle = ThemeStyle.DARK;
                 } else {
@@ -224,18 +209,27 @@ class _IndexDrawerContnetComponnent extends State<IndexDrawerContentComponent> {
               }
               widget.reload();
             },
-            icon: Icon(
-                settingProvider.themeStyle == ThemeStyle.LIGHT ||
-                MediaQuery.of(context).platformBrightness == Brightness.light
-                    ? Icons.dark_mode_outlined
-                    : Icons.light_mode_outlined)),
+            icon: Icon(settingProvider.themeStyle == ThemeStyle.LIGHT ||
+                    MediaQuery.of(context).platformBrightness ==
+                        Brightness.light
+                ? Icons.dark_mode_outlined
+                : Icons.light_mode_outlined)),
         Expanded(
             child: Align(
                 alignment: Alignment.centerRight,
                 child: Container(
                     padding: const EdgeInsets.only(right: Base.BASE_PADDING),
-                    child: Text("v${packageInfo.version}",
-                        style: TextStyle(color: themeData.disabledColor)))))
+                    child: MouseRegion(
+                        cursor: SystemMouseCursors.click,
+                        child: GestureDetector(
+                            onTap: () {
+                              var url = Uri.parse(
+                                  "https://github.com/frnandu/yana/releases");
+                              launchUrl(url);
+                            },
+                            child: Text("v${packageInfo.version}",
+                                style: TextStyle(
+                                    color: themeData.disabledColor)))))))
       ]),
     ));
 
