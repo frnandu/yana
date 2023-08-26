@@ -16,6 +16,7 @@
 - ~~some kind of loader when click Login~~
 
 - fix loader on web
+- https://pub.dev/packages/objectbox
 - badges when something new in home/notifications/DMS
 - try to load images using Isolate and compute, so that feed scrolling does not freeze while loading images
 - allow to login with npub 
