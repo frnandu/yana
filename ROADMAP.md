@@ -12,16 +12,16 @@
 - ~~replace relays numbers with search, move numbers to drawer~~
 - ~~fix zaps amounts in notes~~
 - ~~add theme icon on drawer for quick switching of dark/light theme~~
+- ~~get relays list immediately after login~~
+- ~~some kind of loader when click Login~~
 
 - badges when something new in home/notifications/DMS
+- try to load images using Isolate and compute, so that feed scrolling does not freeze while loading images
 - allow to login with npub 
 - add SystemMouseCursors.click to everything that is clickable for web version
 - filter out new posts from replies
 - include reposts in following
 - integration with https://github.com/greenart7c3/Amber
-- umbrel store package with web client
-- get relays list immediately after login
-- try to load images using Isolate and compute, so that feed scrolling does not freeze while loading images
 - close images clicking anywhere
 - long posts should be cut and have "show more"
 - try to reduce as much as possible apk size
@@ -33,6 +33,7 @@
 - in thread view decrease the tree branches padding to allow more space for content
 - only use tablet second view if horizontal tablet
 - fix zooming of pictures and X position
+- umbrel store package with web client
 - when new user with no following, suggest jack, fiatjaf and others
 - Nostr Wallet Connect with balance
 - linux AppImage build

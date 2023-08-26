@@ -1,15 +1,19 @@
+import 'dart:developer';
+
 import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:yana/utils/platform_util.dart';
 
-import '../../nostr/client_utils/keys.dart';
-import '../../nostr/nip19/nip19.dart';
-import '../../utils/base.dart';
-import '../../utils/index_taps.dart';
 import '../../i18n/i18n.dart';
 import '../../main.dart';
-import '../../utils/router_path.dart';
-import '../../utils/router_util.dart';
+import '../../nostr/client_utils/keys.dart';
+import '../../nostr/event.dart';
+import '../../nostr/event_kind.dart' as kind;
+import '../../nostr/filter.dart';
+import '../../nostr/nip19/nip19.dart';
+import '../../nostr/nostr.dart';
+import '../../utils/base.dart';
+import '../../utils/index_taps.dart';
 import '../../utils/string_util.dart';
 
 class LoginRouter extends StatefulWidget {
@@ -23,7 +27,6 @@ class LoginRouter extends StatefulWidget {
 
 class _LoginRouter extends State<LoginRouter>
     with SingleTickerProviderStateMixin {
-
   bool obscureText = true;
 
   TextEditingController controller = TextEditingController();
@@ -90,22 +93,32 @@ class _LoginRouter extends State<LoginRouter>
       obscureText: obscureText,
     ));
 
+    // const spinkit = SpinKitRotatingCircle(
+    //   color: Colors.white,
+    //   size: 50.0,
+    // );
+
+    var login = Text(
+      s.Login,
+      style: const TextStyle(
+        color: Colors.white,
+        fontSize: 16,
+        fontWeight: FontWeight.bold,
+      ),
+    );
+
     mainList.add(Container(
       margin: const EdgeInsets.all(Base.BASE_PADDING * 2),
       child: InkWell(
-        onTap: doLogin,
+        onTap: () {
+          showLoaderDialog(context);
+          doLogin();
+        },
         child: Container(
           height: 36,
           color: mainColor,
           alignment: Alignment.center,
-          child: Text(
-            s.Login,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
+          child: login,
         ),
       ),
     ));
@@ -135,8 +148,8 @@ class _LoginRouter extends State<LoginRouter>
               width: mainWidth,
               // color: Colors.red,
               child: Column(
-                children: mainList,
                 mainAxisSize: MainAxisSize.min,
+                children: mainList,
               ),
             ),
           ],
@@ -150,8 +163,46 @@ class _LoginRouter extends State<LoginRouter>
     controller.text = pk;
   }
 
-  void doLogin() {
+  showLoaderDialog(BuildContext context) {
+    AlertDialog alert = AlertDialog(
+      content: Row(
+        children: [
+          const CircularProgressIndicator(),
+          Container(
+              margin: const EdgeInsets.only(left: 7),
+              child: Text(I18n.of(context).Loading)),
+        ],
+      ),
+    );
+    showDialog(
+      barrierDismissible: false,
+      context: context,
+      builder: (BuildContext context) {
+        return alert;
+      },
+    );
+  }
 
+  Future<void> handleRemoteRelays(Event? remoteRelayEvent) async {
+    var relaysUpdatedTime = relayProvider.updatedTime();
+    if (remoteRelayEvent != null &&
+        (relaysUpdatedTime == null ||
+            remoteRelayEvent!.createdAt - relaysUpdatedTime > 60 * 5)) {
+      List<String> list = [];
+      for (var tag in remoteRelayEvent!.tags) {
+        if (tag.length > 1) {
+          var key = tag[0];
+          var value = tag[1];
+          if (key == "r") {
+            list.add(value);
+          }
+        }
+      }
+      relayProvider.setRelayListAndUpdate(list);
+    }
+  }
+
+  void doLogin() {
     var pk = controller.text;
     if (StringUtil.isBlank(pk)) {
       BotToast.showText(text: I18n.of(context).Private_key_is_null);
@@ -162,10 +213,32 @@ class _LoginRouter extends State<LoginRouter>
       pk = Nip19.decode(pk);
     }
     settingProvider.addAndChangePrivateKey(pk, updateUI: false);
-    nostr = relayProvider.genNostr(pk);
-    settingProvider.notifyListeners();
 
-    firstLogin = true;
-    indexProvider.setCurrentTap(IndexTaps.FOLLOW);
+    var tempNostr = Nostr(privateKey: pk);
+
+    var filter = Filter(
+        authors: [tempNostr!.publicKey],
+        limit: 1,
+        kinds: [kind.EventKind.RELAY_LIST_METADATA]);
+
+    relayProvider.relayAddrs.forEach((relayAddr) {
+      var custRelay = relayProvider.genRelay(relayAddr);
+      try {
+        tempNostr.addRelay(custRelay, init: true);
+      } catch (e) {
+        log("relay $relayAddr add to pool error ${e.toString()}");
+      }
+    });
+
+    tempNostr!.addInitQuery([filter.toJson()], (event) {
+      handleRemoteRelays(event);
+
+      nostr = relayProvider.genNostr(pk);
+      Navigator.of(context, rootNavigator: true).pop();
+      settingProvider.notifyListeners();
+
+      firstLogin = true;
+      indexProvider.setCurrentTap(IndexTaps.FOLLOW);
+    });
   }
 }

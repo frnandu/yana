@@ -719,9 +719,9 @@ class I18n {
   }
 
   /// `loading`
-  String get loading {
+  String get Loading {
     return Intl.message(
-      'loading',
+      'Loading...',
       name: 'loading',
       desc: '',
       args: [],

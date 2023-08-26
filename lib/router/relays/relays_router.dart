@@ -26,6 +26,7 @@ class RelaysRouter extends StatefulWidget {
 
 class _RelaysRouter extends CustState<RelaysRouter> with WhenStopFunction {
   TextEditingController controller = TextEditingController();
+
   @override
   Widget doBuild(BuildContext context) {
     var s = I18n.of(context);
@@ -104,48 +105,23 @@ class _RelaysRouter extends CustState<RelaysRouter> with WhenStopFunction {
     FocusScope.of(context).unfocus();
   }
 
-  Event? remoteRelayEvent;
+  static Event? remoteRelayEvent;
 
   @override
   Future<void> onReady(BuildContext context) async {
-    var filter = Filter(
-        authors: [nostr!.publicKey],
-        limit: 1,
-        kinds: [kind.EventKind.RELAY_LIST_METADATA]);
-    nostr!.query([filter.toJson()], (event) {
-      if ((remoteRelayEvent != null &&
-              event.createdAt > remoteRelayEvent!.createdAt) ||
-          remoteRelayEvent == null) {
-        setState(() {
-          remoteRelayEvent = event;
-        });
-        whenStop(handleRemoteRelays);
-      }
-    });
-  }
-
-  Future<void> handleRemoteRelays() async {
-    var relaysUpdatedTime = relayProvider.updatedTime();
-    if (remoteRelayEvent != null &&
-        (relaysUpdatedTime == null ||
-            remoteRelayEvent!.createdAt - relaysUpdatedTime > 60 * 5)) {
-      var result = await ConfirmDialog.show(context,
-          I18n.of(context).Find_clouded_relay_list_do_you_want_to_download);
-      if (result == true) {
-        List<String> list = [];
-        for (var tag in remoteRelayEvent!.tags) {
-          if (tag.length > 1) {
-            var key = tag[0];
-            var value = tag[1];
-            if (key == "r") {
-              list.add(value);
-            }
-          }
-        }
-        setState(() {
-          relayProvider.setRelayListAndUpdate(list);
-        });
-      }
-    }
+    // var filter = Filter(
+    //     authors: [nostr!.publicKey],
+    //     limit: 1,
+    //     kinds: [kind.EventKind.RELAY_LIST_METADATA]);
+    // nostr!.query([filter.toJson()], (event) {
+    //   if ((remoteRelayEvent != null &&
+    //           event.createdAt > remoteRelayEvent!.createdAt) ||
+    //       remoteRelayEvent == null) {
+    //     setState(() {
+    //       remoteRelayEvent = event;
+    //     });
+    //     whenStop(handleRemoteRelays);
+    //   }
+    // });
   }
 }

@@ -80,7 +80,7 @@ class EventMemBox implements FindEventInterface {
     for (var value in it) {
       counter += value;
     }
-    result.avCreatedAt = counter ~/ relayNum;
+    result.avCreatedAt = relayNum>0 ? counter ~/ relayNum : 0;
 
     return result;
   }
