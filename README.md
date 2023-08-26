@@ -59,7 +59,7 @@ or install deb file from releases:
 *Snap comming soon*
 
 ### - Windows
-*Comming soon*
+*Comming later*
 
 ### - MacOS
 *Comming later*

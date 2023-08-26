@@ -728,6 +728,16 @@ class I18n {
     );
   }
 
+  /// `searching relays`
+  String get Searching_relays {
+    return Intl.message(
+      'Searching for relays...',
+      name: 'Searching_relays',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Accounts`
   String get Accounts {
     return Intl.message(
@@ -903,6 +913,16 @@ class I18n {
     return Intl.message(
       'Generate a new private key',
       name: 'Generate_a_new_private_key',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Input_for_login`
+  String get Input_for_login {
+    return Intl.message(
+      'nsec / hex private key',
+      name: 'Input_for_login',
       desc: '',
       args: [],
     );

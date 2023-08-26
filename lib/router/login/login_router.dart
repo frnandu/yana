@@ -44,7 +44,6 @@ class _LoginRouter extends State<LoginRouter>
   Widget build(BuildContext context) {
     var s = I18n.of(context);
     var themeData = Theme.of(context);
-    var mainColor = themeData.primaryColor;
     var maxWidth = mediaDataCache.size.width;
     var mainWidth = maxWidth * 0.8;
     if (PlatformUtil.isTableMode()) {
@@ -59,9 +58,9 @@ class _LoginRouter extends State<LoginRouter>
       height: 100,
     );
 
-    List<Widget> mainList = [];
-    mainList.add(logoWiget);
-    mainList.add(Container(
+    List<Widget> list = [];
+    list.add(logoWiget);
+    list.add(Container(
       margin: const EdgeInsets.only(
         top: Base.BASE_PADDING,
         bottom: 40,
@@ -83,59 +82,75 @@ class _LoginRouter extends State<LoginRouter>
       },
       child: Icon(obscureText ? Icons.visibility : Icons.visibility_off),
     );
-    mainList.add(TextField(
+    list.add(TextField(
       controller: controller,
       decoration: InputDecoration(
-        hintText: "nsec / hex private key",
+        //border: InputBorder.none,
+        hintText: s.Input_for_login,
         fillColor: Colors.white,
         suffixIcon: suffixIcon,
       ),
       obscureText: obscureText,
     ));
 
-    // const spinkit = SpinKitRotatingCircle(
-    //   color: Colors.white,
-    //   size: 50.0,
-    // );
-
-    var login = Text(
-      s.Login,
-      style: const TextStyle(
-        color: Colors.white,
-        fontSize: 16,
-        fontWeight: FontWeight.bold,
-      ),
-    );
-
-    mainList.add(Container(
-      margin: const EdgeInsets.all(Base.BASE_PADDING * 2),
+    list.add(Container(
+      margin: const EdgeInsets.all(Base.BASE_PADDING),
       child: InkWell(
         onTap: () {
-          showLoaderDialog(context);
-          doLogin();
+          doLogin(false);
         },
         child: Container(
           height: 36,
-          color: mainColor,
+          color: themeData.primaryColor,
           alignment: Alignment.center,
-          child: login,
-        ),
-      ),
-    ));
-
-    mainList.add(Container(
-      margin: const EdgeInsets.only(bottom: 100),
-      child: GestureDetector(
-        onTap: generatePK,
-        child: Text(
-          s.Generate_a_new_private_key,
-          style: TextStyle(
-            color: mainColor,
-            decoration: TextDecoration.underline,
+          child: Text(
+            s.Login,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ),
       ),
     ));
+    // list.add(Divider());
+    list.add(Container(
+      margin: const EdgeInsets.all(Base.BASE_PADDING),
+      child: InkWell(
+        onTap: () {
+          generatePK();
+          doLogin(true);
+        },
+        child: Container(
+          height: 40,
+          color: Colors.deepPurple,
+          alignment: Alignment.center,
+          child: Text(
+            s.Generate_a_new_private_key,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+      ),
+    ));
+    //
+    // mainList.add(Container(
+    //   margin: const EdgeInsets.only(bottom: 100),
+    //   child: GestureDetector(
+    //     onTap: generatePK,
+    //     child: Text(
+    //       s.Generate_a_new_private_key,
+    //       style: TextStyle(
+    //         color: mainColor,
+    //         decoration: TextDecoration.underline,
+    //       ),
+    //     ),
+    //   ),
+    // ));
 
     return Scaffold(
       body: SizedBox(
@@ -149,7 +164,7 @@ class _LoginRouter extends State<LoginRouter>
               // color: Colors.red,
               child: Column(
                 mainAxisSize: MainAxisSize.min,
-                children: mainList,
+                children: list,
               ),
             ),
           ],
@@ -170,7 +185,7 @@ class _LoginRouter extends State<LoginRouter>
           const CircularProgressIndicator(),
           Container(
               margin: const EdgeInsets.only(left: 7),
-              child: Text(I18n.of(context).Loading)),
+              child: Text(I18n.of(context).Searching_relays)),
         ],
       ),
     );
@@ -202,43 +217,62 @@ class _LoginRouter extends State<LoginRouter>
     }
   }
 
-  void doLogin() {
+  void doLogin(bool newKey) {
     var pk = controller.text;
     if (StringUtil.isBlank(pk)) {
       BotToast.showText(text: I18n.of(context).Private_key_is_null);
       return;
     }
+    showLoaderDialog(context);
 
-    if (Nip19.isPrivateKey(pk)) {
-      pk = Nip19.decode(pk);
-    }
-    settingProvider.addAndChangePrivateKey(pk, updateUI: false);
-
-    var tempNostr = Nostr(privateKey: pk);
-
-    var filter = Filter(
-        authors: [tempNostr!.publicKey],
-        limit: 1,
-        kinds: [kind.EventKind.RELAY_LIST_METADATA]);
-
-    relayProvider.relayAddrs.forEach((relayAddr) {
-      var custRelay = relayProvider.genRelay(relayAddr);
-      try {
-        tempNostr.addRelay(custRelay, init: true);
-      } catch (e) {
-        log("relay $relayAddr add to pool error ${e.toString()}");
+    try {
+      if (Nip19.isPrivateKey(pk)) {
+        pk = Nip19.decode(pk);
       }
-    });
+      settingProvider.addAndChangePrivateKey(pk, updateUI: false);
+      if (!newKey) {
+        var tempNostr = Nostr(privateKey: pk);
 
-    tempNostr!.addInitQuery([filter.toJson()], (event) {
-      handleRemoteRelays(event);
+        var filter = Filter(
+            authors: [tempNostr!.publicKey],
+            limit: 1,
+            kinds: [kind.EventKind.RELAY_LIST_METADATA]);
 
+        relayProvider.relayAddrs.forEach((relayAddr) {
+          var custRelay = relayProvider.genRelay(relayAddr);
+          try {
+            tempNostr.addRelay(custRelay, init: true);
+          } catch (e) {
+            log("relay $relayAddr add to pool error ${e.toString()}");
+          }
+        });
+        var alreadyClosed = false;
+
+        tempNostr!.addInitQuery([filter.toJson()], (event) {
+          handleRemoteRelays(event);
+          getNostrAndClose(alreadyClosed, pk);
+          alreadyClosed = true;
+        });
+        Future.delayed(Duration(seconds: 5), () {
+          getNostrAndClose(alreadyClosed, pk);
+        });
+      } else {
+        getNostrAndClose(false, pk);
+      }
+    } catch (e) {
+      BotToast.showText(text: e.toString());
+      Navigator.of(context, rootNavigator: true).pop();
+    }
+  }
+
+  void getNostrAndClose(bool alreadyClosed, String pk) {
+    if (!alreadyClosed) {
       nostr = relayProvider.genNostr(pk);
       Navigator.of(context, rootNavigator: true).pop();
       settingProvider.notifyListeners();
 
       firstLogin = true;
       indexProvider.setCurrentTap(IndexTaps.FOLLOW);
-    });
+    }
   }
 }

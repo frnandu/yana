@@ -24,6 +24,7 @@
 - add SystemMouseCursors.click to everything that is clickable for web version
 - filter out new posts from replies
 - include reposts in following
+- fix saving pictures to phone
 - https://pub.dev/packages/objectbox
 - integration with https://github.com/greenart7c3/Amber
 - close images clicking anywhere

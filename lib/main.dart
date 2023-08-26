@@ -19,6 +19,7 @@ import 'package:yana/provider/community_info_provider.dart';
 import 'package:yana/provider/custom_emoji_provider.dart';
 import 'package:yana/provider/follow_new_event_provider.dart';
 import 'package:yana/provider/mention_me_new_provider.dart';
+import 'package:yana/router/index/account_manager_component.dart';
 import 'package:yana/router/relays/relay_info_router.dart';
 import 'package:yana/router/search/search_router.dart';
 import 'package:yana/router/user/followed_router.dart';
@@ -201,7 +202,14 @@ Future<void> main() async {
   communityInfoProvider = CommunityInfoProvider();
 
   if (StringUtil.isNotBlank(settingProvider.privateKey)) {
-    nostr = relayProvider.genNostr(settingProvider.privateKey!);
+    try {
+      nostr = relayProvider.genNostr(settingProvider.privateKey!);
+    } catch (e) {
+      var index = settingProvider.privateKeyIndex;
+      if (index != null) {
+        settingProvider.removeKey(index);
+      }
+    }
   }
 
   FlutterNativeSplash.remove();

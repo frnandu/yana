@@ -171,7 +171,9 @@ class RelayProvider extends ChangeNotifier {
     relayAddrs.addAll(addrs);
     _updateRelayToData(upload: false);
 
-    nostr!.close();
+    if (nostr!=null) {
+      nostr!.close();
+    }
     nostr = Nostr(privateKey: nostr!.privateKey);
 
     // reconnect all client
