@@ -16,19 +16,20 @@
 - ~~some kind of loader when click Login~~
 - ~~linux AppImage build~~
 - ~~fix loader on web~~
-
 - ~~filter out new posts from replies~~
 - ~~in thread view decrease the tree branches padding to allow more space for content~~
-
 - ~~badges when something new in home/notifications~~
+- 
 - badges when something new in DMS
+- fix image/video preview setting (is false / not taken into effect)
+- in thread view handle better zaps instead of some weird bitcoin component
 - DMS from followed should not be on request tab
 - notifications of reactions/likes (include post and if a reply the parent)
 - relays loose connection and don't reconnect after some time
 - try to load images using Isolate and compute, so that feed scrolling does not freeze while loading images
 - allow to login with npub 
 - add SystemMouseCursors.click to everything that is clickable for web version
-- include reposts in following
+- move reposts from replies to posts? maybe new tab only for reposts?
 - fix saving pictures to phone
 - https://pub.dev/packages/objectbox
 - integration with https://github.com/greenart7c3/Amber
