@@ -29,7 +29,7 @@ height="80">](https://github.com/frnandu/yana/releases)
 
 ### - Android
 
-Install Apk file from releases.
+Install Apk file from releases.\
 *I strongly recommend [Obtainium](https://github.com/ImranR98/Obtainium) for keeping up-to-date with new releases.*
 
 ### - iOS
@@ -51,9 +51,8 @@ Generate a new one for testing.\
 [Planned](https://github.com/frnandu/yana/issues/34) also an Umbrel Store package so it is simple to install and run it for umbrel users 
 
 ### - Linux
-- Run Appimage file
-or
-- Install deb file from releases
+Run Appimage file
+or install deb file from releases:
 
     sudo dpkg -i <deb-file>
 
