@@ -22,17 +22,21 @@
 - ~~rephrase keys backup screen~~
 - ~~relays icons~~
 - ~~relays loose connection and don't reconnect after some time~~
+- ~~close images clicking anywhere~~
 
-- subcription on profile should be kept open to receive updates from WS
-- separate posts from replies on profile
+- DMS from followed should not be on request tab
 - badges when something new in DMS
-- lnbits for prism split and widget
+- remember eventMemBox (timestamps) with badge numbers between app restart
+- separate posts from replies on profile
+
+- subcription on profile should be kept open to receive updates from WS - REFACTOR logic of later loading & caching metadata
+- optimize  zaps/followed downloading (caching on db) on background 
 - relay setting of read/write
 - badges also on drawer when in tablet mode
 - fix image/video preview setting (is false / not taken into effect)
+-  not your relay list - improve looks with icons and stuff (not so easy)
 - in thread view handle better zaps instead of some weird bitcoin component
 - show common followers/followees
-- DMS from followed should not be on request tab
 - notifications of reactions/likes (include post and if a reply the parent)
 - try to load images using Isolate and compute, so that feed scrolling does not freeze while loading images
 - allow to login with npub 
@@ -40,8 +44,8 @@
 - move reposts from replies to posts? maybe new tab only for reposts?
 - fix saving pictures to phone
 - https://pub.dev/packages/objectbox
+- lnbits for prism split and widget
 - integration with https://github.com/greenart7c3/Amber
-- close images clicking anywhere
 - long posts should be cut and have "show more"
 - try to reduce as much as possible apk size
 - followers/following list more condensed

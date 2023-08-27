@@ -123,9 +123,9 @@ class RelayMetadataComponent extends StatelessWidget {
 
     return Container(
       margin: const EdgeInsets.only(
-        bottom: Base.BASE_PADDING,
-        left: Base.BASE_PADDING,
-        right: Base.BASE_PADDING,
+        bottom: Base.BASE_PADDING_HALF,
+        left: Base.BASE_PADDING_HALF,
+        right: Base.BASE_PADDING_HALF,
       ),
       clipBehavior: Clip.hardEdge,
       decoration: BoxDecoration(
@@ -141,12 +141,12 @@ class RelayMetadataComponent extends StatelessWidget {
         ),
         decoration: BoxDecoration(
           color: cardColor,
-          border: Border(
-            left: BorderSide(
-              width: 6,
-              color: hintColor,
-            ),
-          ),
+          // border: Border(
+          //   left: BorderSide(
+          //     width: 6,
+          //     color: hintColor,
+          //   ),
+          // ),
           // borderRadius: BorderRadius.circular(8),
         ),
         child: Row(

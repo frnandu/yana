@@ -44,16 +44,16 @@ class RelaysItemComponent extends StatelessWidget {
           // color: themeData.cardColor,
           borderRadius: BorderRadius.circular(10),
         ),
-
         child: CachedNetworkImage(
-      imageUrl: url,
-      width: 40,
-      height: 40,
-      fit: BoxFit.cover,
-      placeholder: (context, url) => const CircularProgressIndicator(),
-      errorWidget: (context, url, error) => CachedNetworkImage(imageUrl: StringUtil.robohash(relay!.info!.name)),
-      cacheManager: localCacheManager,
-    ));
+          imageUrl: url,
+          width: 40,
+          height: 40,
+          fit: BoxFit.cover,
+          placeholder: (context, url) => const CircularProgressIndicator(),
+          errorWidget: (context, url, error) => CachedNetworkImage(
+              imageUrl: StringUtil.robohash(relay!.info!.name)),
+          cacheManager: localCacheManager,
+        ));
 
     return GestureDetector(
         onTap: () {
@@ -92,6 +92,8 @@ class RelaysItemComponent extends StatelessWidget {
                     Container(
                         padding: const EdgeInsets.only(
                           left: Base.BASE_PADDING,
+                          top: Base.BASE_PADDING_HALF,
+                          bottom: Base.BASE_PADDING_HALF,
                           right: Base.BASE_PADDING_HALF,
                         ),
                         child: imageWidget),
@@ -116,12 +118,13 @@ class RelaysItemComponent extends StatelessWidget {
                                     num: relayStatus.noteReceived,
                                   ),
                                 ),
-                                relayStatus.error > 0 ?
-                                RelaysItemNumComponent(
-                                  iconColor: Colors.red,
-                                  iconData: Icons.error_outline,
-                                  num: relayStatus.error,
-                                ): Container(),
+                                relayStatus.error > 0
+                                    ? RelaysItemNumComponent(
+                                        iconColor: Colors.red,
+                                        iconData: Icons.error_outline,
+                                        num: relayStatus.error,
+                                      )
+                                    : Container(),
                               ],
                             ),
                           ],

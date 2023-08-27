@@ -150,7 +150,7 @@ class MetadataProvider extends ChangeNotifier with LaterFunction {
         // refresh
       }
     }
-    _penddingEvents.clear;
+    _penddingEvents.clear();
 
     notifyListeners();
   }

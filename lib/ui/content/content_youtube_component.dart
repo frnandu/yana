@@ -4,10 +4,10 @@ import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
 import 'content_link_pre_component.dart';
 
-class ContnetYoutubeComponent extends StatelessWidget {
+class ContentYoutubeComponent extends StatelessWidget {
   String link;
 
-  ContnetYoutubeComponent({
+  ContentYoutubeComponent({super.key,
     required this.link,
   });
 
@@ -23,7 +23,7 @@ class ContnetYoutubeComponent extends StatelessWidget {
     return YoutubePlayer(
       controller: YoutubePlayerController(
           initialVideoId: videoId!,
-          flags: YoutubePlayerFlags(
+          flags: const YoutubePlayerFlags(
             autoPlay: false,
           )),
     );

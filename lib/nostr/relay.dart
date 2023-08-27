@@ -38,7 +38,7 @@ class Relay {
       if (info!.nips.contains(20)) {
         final wsUrl = Uri.parse(url);
         _wsChannel = WebSocketChannel.connect(wsUrl);
-        log("Connect complete!");
+        log("Connected $url");
         _wsChannel!.stream.listen((message) {
           if (onMessage != null) {
             final List<dynamic> json = jsonDecode(message);

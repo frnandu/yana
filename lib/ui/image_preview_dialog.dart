@@ -95,6 +95,7 @@ class _ImagePreviewDialog extends State<ImagePreviewDialog> {
   DismissDirection _dismissDirection = DismissDirection.down;
   void Function()? _internalPageChangeListener;
   late final PageController _pageController;
+  bool tapDownload=false;
 
   /// This is needed because of https://github.com/thesmythgroup/easy_image_viewer/issues/27
   /// When no global key was used, the state was re-created on the initial zoom, which
@@ -126,46 +127,53 @@ class _ImagePreviewDialog extends State<ImagePreviewDialog> {
 
   @override
   Widget build(BuildContext context) {
-    var main = Scaffold(
-      backgroundColor: widget.backgroundColor.withOpacity(0.5),
-      body: Stack(
-          clipBehavior: Clip.none,
-          alignment: Alignment.center,
-          children: <Widget>[
-            EasyImageViewPager(
-                easyImageProvider: widget.imageProvider,
-                pageController: _pageController,
-                doubleTapZoomable: widget.doubleTapZoomable,
-                onScaleChanged: (scale) {
-                  setState(() {
-                    _dismissDirection = scale <= 1.0
-                        ? DismissDirection.down
-                        : DismissDirection.none;
-                  });
-                }),
-            Positioned(
-                top: 5,
-                right: 5,
-                child: IconButton(
-                  icon: const Icon(Icons.close),
-                  color: widget.closeButtonColor,
-                  tooltip: widget.closeButtonTooltip,
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                    _handleDismissal();
-                  },
-                )),
-            Positioned(
-                bottom: 5,
-                left: 5,
-                child: IconButton(
-                  icon: const Icon(Icons.download),
-                  color: widget.closeButtonColor,
-                  tooltip: widget.closeButtonTooltip,
-                  onPressed: saveImage,
-                )),
-          ]),
-    );
+    var main = GestureDetector(
+        onTap: () {
+          if (!tapDownload) {
+            Navigator.of(context).pop();
+            _handleDismissal();
+          }
+        },
+        child: Scaffold(
+          backgroundColor: Colors.black, //widget.backgroundColor.withOpacity(0.5),
+          body: Stack(
+              clipBehavior: Clip.none,
+              alignment: Alignment.center,
+              children: <Widget>[
+                EasyImageViewPager(
+                    easyImageProvider: widget.imageProvider,
+                    pageController: _pageController,
+                    doubleTapZoomable: widget.doubleTapZoomable,
+                    onScaleChanged: (scale) {
+                      setState(() {
+                        _dismissDirection = scale <= 1.0
+                            ? DismissDirection.down
+                            : DismissDirection.none;
+                      });
+                    }),
+                Positioned(
+                    top: 20,
+                    right: 5,
+                    child: IconButton(
+                      icon: const Icon(Icons.close, size: 30),
+                      color: widget.closeButtonColor,
+                      tooltip: widget.closeButtonTooltip,
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                        _handleDismissal();
+                      },
+                    )),
+                Positioned(
+                    bottom: 5,
+                    left: 5,
+                    child: IconButton(
+                      icon: const Icon(Icons.download, size: 30),
+                      color: widget.closeButtonColor,
+                      tooltip: widget.closeButtonTooltip,
+                      onPressed: saveImage,
+                    )),
+              ]),
+        ));
 
     final popScopeAwareDialog = WillPopScope(
       onWillPop: () async {
@@ -196,15 +204,16 @@ class _ImagePreviewDialog extends State<ImagePreviewDialog> {
   }
 
   Future<void> saveImage() async {
+    tapDownload = true;
     if (Platform.isIOS) {
       _doSaveImage();
     } else if (Platform.isAndroid) {
-      PermissionStatus permission = await Permission.storage.request();
-      if (permission == PermissionStatus.granted) {
-        _doSaveImage();
-      } else {
-        print("Permission not found");
-      }
+      // PermissionStatus permission = await Permission.manageExternalStorage.request();
+      // if (permission == PermissionStatus.granted) {
+      _doSaveImage();
+      // } else {
+      //   print("Permission not found");
+      // }
     } else {
       _doSaveImage(isPc: true);
     }
@@ -220,7 +229,11 @@ class _ImagePreviewDialog extends State<ImagePreviewDialog> {
         var result =
             await ImageGallerySaver.saveImage(imageAsBytes, quality: 100);
         if (result != null && result is Map && result["isSuccess"]) {
-          BotToast.showText(text: I18n.of(context).Image_save_success);
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            duration: const Duration(seconds: 3),
+            content: Text(I18n.of(context).Image_save_success),
+          ));
+          // BotToast.showSimpleNotification(duration: const Duration(seconds: 3), title: );
         }
       } else {
         var result = await FileSaver.instance.saveFile(
@@ -228,7 +241,8 @@ class _ImagePreviewDialog extends State<ImagePreviewDialog> {
           bytes: imageAsBytes,
           ext: ".png",
         );
-        BotToast.showText(text: "${I18n.of(context).Image_save_success} $result");
+        BotToast.showText(
+            text: "${I18n.of(context).Image_save_success} $result");
       }
     }
   }

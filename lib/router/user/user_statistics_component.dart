@@ -125,7 +125,6 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
       formatNum: true,
     ));
 
-
     if (isLocal) {
       list.add(Selector<RelayProvider, int>(builder: (context, num, child) {
         return UserStatisticsItemComponent(
@@ -327,10 +326,11 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
         var oldEvent = followedMap![e.pubKey];
         if (oldEvent == null || e.createdAt > oldEvent.createdAt) {
           followedMap![e.pubKey] = e;
-
-          setState(() {
-            followedNum = followedMap!.length;
-          });
+          if (!_disposed) {
+            setState(() {
+              followedNum = followedMap!.length;
+            });
+          }
         }
       }, id: followedSubscribeId);
 
@@ -359,7 +359,15 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
       var filter = Filter(kinds: [kind.EventKind.ZAP], p: [widget.pubkey]);
       zapSubscribeId = StringUtil.rndNameStr(12);
       // print(filter);
-      nostr!.query([filter.toJson()], onZapEvent, id: zapSubscribeId);
+      nostr!.query([filter.toJson()], (event) {
+        if (event.kind == kind.EventKind.ZAP && zapEventBox!.add(event)) {
+          if (!_disposed) {
+            setState(() {
+              zapNum = zapNum! + ZapNumUtil.getNumFromZapEvent(event);
+            });
+          }
+        }
+      }, id: zapSubscribeId);
 
       zapNum = 0;
     } else {
@@ -367,15 +375,6 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
       zapEventBox!.sort();
       var list = zapEventBox!.all();
       RouterUtil.router(context, RouterPath.USER_ZAP_LIST, list);
-    }
-  }
-
-  onZapEvent(Event event) {
-    // print(event.toJson());
-    if (event.kind == kind.EventKind.ZAP && zapEventBox!.add(event)) {
-      setState(() {
-        zapNum = zapNum! + ZapNumUtil.getNumFromZapEvent(event);
-      });
     }
   }
 
@@ -387,6 +386,7 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
     checkAndUnsubscribe(queryId);
     checkAndUnsubscribe(queryId2);
     checkAndUnsubscribe(zapSubscribeId);
+    checkAndUnsubscribe(followedSubscribeId);
   }
 
   void checkAndUnsubscribe(String queryId) {

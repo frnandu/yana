@@ -1111,8 +1111,18 @@ class I18n {
   /// `Following`
   String get Following {
     return Intl.message(
-      'Posts',
+      'Following',
       name: 'Following',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Posts`
+  String get Posts {
+    return Intl.message(
+      'Posts',
+      name: 'Posts',
       desc: '',
       args: [],
     );
@@ -1871,7 +1881,7 @@ class I18n {
   /// `Image save success`
   String get Image_save_success {
     return Intl.message(
-      'Image save success',
+      'Image saved successfully',
       name: 'Image_save_success',
       desc: '',
       args: [],

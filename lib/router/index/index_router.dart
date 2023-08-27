@@ -140,20 +140,18 @@ class _IndexRouter extends CustState<IndexRouter>
             alignment: Alignment.center,
             child: Selector<FollowNewEventProvider, EventMemBox>(
               builder: (context, eventMemBox, child) {
+                Text text = Text(
+                  s.Posts,
+                  style: titleTextStyle,
+                );
                 if (eventMemBox.length() <= 0) {
-                  return Text(
-                    s.Following,
-                    style: titleTextStyle,
-                  );
+                  return text ;
                 }
                 return Badge(
                     offset: const Offset(16, -4),
                     label: Text(eventMemBox.length().toString(), style: TextStyle(color: Colors.white)),
                     backgroundColor: const Color(0xFF6A1B9A),
-                    child: Text(
-                      s.Following,
-                      style: titleTextStyle,
-                    ));
+                    child: text);
               },
               selector: (context, _provider) {
                 return _provider.eventPostsMemBox;

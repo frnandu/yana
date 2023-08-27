@@ -109,7 +109,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "Followed_Communities":
             MessageLookupByLibrary.simpleMessage("Followed Communities"),
         "Followed_Tags": MessageLookupByLibrary.simpleMessage("Followed Tags"),
-        "Following": MessageLookupByLibrary.simpleMessage("Posts"),
+        "Following": MessageLookupByLibrary.simpleMessage("Following"),
         "Font_Family": MessageLookupByLibrary.simpleMessage("Font Family"),
         "Font_Size": MessageLookupByLibrary.simpleMessage("Font Size"),
         "Forbid": MessageLookupByLibrary.simpleMessage("Forbid"),
@@ -129,7 +129,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "Image_Compress":
             MessageLookupByLibrary.simpleMessage("Image Compress"),
         "Image_save_success":
-            MessageLookupByLibrary.simpleMessage("Image save success"),
+            MessageLookupByLibrary.simpleMessage("Image saved successfully"),
         "Image_service": MessageLookupByLibrary.simpleMessage("Image service"),
         "Input": MessageLookupByLibrary.simpleMessage("Input"),
         "Input_Comment": MessageLookupByLibrary.simpleMessage("Input Comment"),
