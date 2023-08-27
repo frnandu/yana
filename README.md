@@ -14,19 +14,6 @@ The objective of this project is neither fame, glory nor financial rewards.\
 My main motivator to spend time on this is to have a nostr client which I personally find the most pleasant to use on a everyday case.\
 Also to learn more deeply about [Nostr](https://github.com/nostr-protocol/nostr) and FOSS project development.\
 Having said that, I will apply for https://opensats.org/ initiative and consider other similar donations initiatives.\
-Each amount of funding will be distributed among the contributors according to the amount of contribution.\
-This will eventually allow each contributor to spend more time on the project.\
-
-Using a [Prism](https://dergigi.com/2023/03/12/lightning-prisms) address at [yana@fmar.link](https://btc.fmar.link/api/v1/invoices?storeId=7yXH2h1LUFXStGM4XPoSUpb43xkMj1riEsrAiYSWAk57&currency=SATS), each sat donation will be split into:\
-
-80% - https://nostr.com/npub1xpuz4qerklyck9evtg40wgrthq5rce2mumwuuygnxcg6q02lz9ms275ams (code)\
-10% - https://nostr.com/npub1xzeq653ms8wkekfnr49kgnzwrq7ykeljkrsf7fyh7ham9t6sl72q7v4dhh (graphics + UX)\
-10% - https://nostr.com/npub14wxtsrj7g2jugh70pfkzjln43vgn4p7655pgky9j9w9d75u465pqvagcye (PR + Marketing)\
-
-
-<a href="https://btc.fmar.link/api/v1/invoices?storeId=7yXH2h1LUFXStGM4XPoSUpb43xkMj1riEsrAiYSWAk57&currency=SATS">
-<img src="https://btc.fmar.link/img/paybutton/pay.svg" style="width:209px" alt="Pay with BTCPay Server, a Self-Hosted Bitcoin Payment Processor">
-</a>
 
 ## Installation
 
@@ -152,6 +139,21 @@ or install deb file from releases:
 ## Contributions
 
 Some initial code was used from https://github.com/haorendashu/nostrmo project.
+
+Each amount of funding will be distributed among the contributors according to the amount of contribution. \
+This will eventually allow each contributor to spend more time on the project.
+
+Using a [Prism](https://dergigi.com/2023/03/12/lightning-prisms) address at [yana@fmar.link](https://btc.fmar.link/api/v1/invoices?storeId=7yXH2h1LUFXStGM4XPoSUpb43xkMj1riEsrAiYSWAk57&currency=SATS), each sat donation will be split into:\
+
+80% - https://nostr.com/npub1xpuz4qerklyck9evtg40wgrthq5rce2mumwuuygnxcg6q02lz9ms275ams (code)\
+10% - https://nostr.com/npub1xzeq653ms8wkekfnr49kgnzwrq7ykeljkrsf7fyh7ham9t6sl72q7v4dhh (graphics + UX)\
+10% - https://nostr.com/npub14wxtsrj7g2jugh70pfkzjln43vgn4p7655pgky9j9w9d75u465pqvagcye (PR + Marketing)\
+
+
+<a href="https://btc.fmar.link/api/v1/invoices?storeId=7yXH2h1LUFXStGM4XPoSUpb43xkMj1riEsrAiYSWAk57&currency=SATS">
+<img src="https://btc.fmar.link/img/paybutton/pay.svg" style="width:209px" alt="Pay with BTCPay Server, a Self-Hosted Bitcoin Payment Processor">
+</a>
+
 
 ## Join
 
