@@ -21,14 +21,15 @@
 - ~~badges when something new in home/notifications~~
 - ~~rephrase keys backup screen~~
 
-- lnbits for prism split and widget
-- show common followers/followees
+- subcription on profile should be kept open to receive updates from WS
 - relays icons
 - separate posts from replies on profile
 - badges when something new in DMS
+- lnbits for prism split and widget
 - badges also on drawer when in tablet mode
 - fix image/video preview setting (is false / not taken into effect)
 - in thread view handle better zaps instead of some weird bitcoin component
+- show common followers/followees
 - DMS from followed should not be on request tab
 - notifications of reactions/likes (include post and if a reply the parent)
 - relays loose connection and don't reconnect after some time
