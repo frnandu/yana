@@ -24,6 +24,7 @@
 - rephrase keys backup screen
 - separate posts from replies on profile
 - badges when something new in DMS
+- badges also on drawer when in tablet mode
 - fix image/video preview setting (is false / not taken into effect)
 - in thread view handle better zaps instead of some weird bitcoin component
 - DMS from followed should not be on request tab
