@@ -17,10 +17,10 @@ Having said that, I will apply for https://opensats.org/ initiative and consider
 Each amount of funding will be distributed among the contributors according to the amount of contribution.\
 This will eventually allow each contributor to spend more time on the project.\
 
-<meta name="lightning" content="lnurlp:yana@fmar.link">
-<meta property="alby:image" content="./assets/imgs/logo/logo.png">
+<lightning-widget name="" accent="#20c997" to="yana@fmar.link" image="./assets/imgs/logo/logo.png" />
+<script src="https://embed.twentyuno.net/js/app.js"></script>
 
-Using yana@fmar.link [Prism](https://dergigi.com/2023/03/12/lightning-prisms) address each sat donation will be split into:\
+Using a [Prism](https://dergigi.com/2023/03/12/lightning-prisms) address each sat donation will be split into:\
 
 80% - https://nostr.com/npub1xpuz4qerklyck9evtg40wgrthq5rce2mumwuuygnxcg6q02lz9ms275ams (code)\
 10% - https://nostr.com/npub1xzeq653ms8wkekfnr49kgnzwrq7ykeljkrsf7fyh7ham9t6sl72q7v4dhh (graphics + UX)\
