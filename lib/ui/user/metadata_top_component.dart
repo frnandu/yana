@@ -107,7 +107,7 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
     String? url = widget.metadata != null &&
             StringUtil.isNotBlank(widget.metadata?.picture)
         ? widget.metadata?.picture
-        : 'https://robohash.org/' + widget.pubkey;
+        : StringUtil.robohash(widget.pubkey);
 
     if (url != null) {
       imageWidget = CachedNetworkImage(
@@ -496,7 +496,7 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
     String? url = widget.metadata != null &&
             StringUtil.isNotBlank(widget.metadata?.picture)
         ? widget.metadata?.picture
-        : 'https://robohash.org/' + widget.pubkey;
+        : StringUtil.robohash(widget.pubkey);
 
     if (url != null) {
       List<ImageProvider> imageProviders = [];

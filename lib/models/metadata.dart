@@ -67,6 +67,6 @@ class Metadata {
   }
 
   String? getPictureOrRobohash() {
-    return StringUtil.isNotBlank(picture) ? picture : 'https://robohash.org/'+pubKey!;
+    return StringUtil.isNotBlank(picture) ? picture : StringUtil.robohash(pubKey!);
   }
 }

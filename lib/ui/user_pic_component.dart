@@ -29,7 +29,7 @@ class _UserPicComponent extends State<UserPicComponent> {
     return Selector<MetadataProvider, Metadata?>(
       builder: (context, metadata, child) {
         Widget? imageWidget;
-        String? url = metadata != null && StringUtil.isNotBlank(metadata.picture) ? metadata.picture : 'https://robohash.org/'+widget.pubkey;
+        String? url = metadata != null && StringUtil.isNotBlank(metadata.picture) ? metadata.picture : StringUtil.robohash(widget.pubkey);
 
         if (url != null) {
             imageWidget = CachedNetworkImage(

@@ -1,6 +1,10 @@
 import 'dart:math';
 
 class StringUtil {
+
+  static String robohash(String str) {
+    return "https://robohash.v0l.io/$str.png";
+  }
   static bool isNotBlank(String? str) {
     if (str != null && str != "") {
       return true;

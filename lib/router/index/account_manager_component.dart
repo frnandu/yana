@@ -279,7 +279,7 @@ class _AccountManagerItemComponent extends State<AccountManagerItemComponent> {
 
       Widget? imageWidget;
 
-      String? url = metadata != null && StringUtil.isNotBlank(metadata?.picture) ? metadata?.picture : 'https://robohash.org/'+pubkey;
+      String? url = metadata != null && StringUtil.isNotBlank(metadata?.picture) ? metadata?.picture : StringUtil.robohash(pubkey);
 
       if (url != null) {
           imageWidget = CachedNetworkImage(
