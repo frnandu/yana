@@ -38,10 +38,9 @@ class _IndexBottomBar extends State<IndexBottomBar> {
     var s = I18n.of(context);
 
     destinations.add(NavigationDestination(
-      // selectedIcon: Icon(Icons.home, size: 30, color: themeData.dividerColor),
       icon: Selector<FollowNewEventProvider, Tuple2<EventMemBox,EventMemBox>>(
         builder: (context, tuple, child) {
-          Icon icon = Icon(Icons.home_outlined, size: 30, color: selectedPageIndex==0 ? themeData.dividerColor: themeData.disabledColor);
+          Icon icon = selectedPageIndex==0 ? Icon(Icons.home, size: 30, color: themeData.dividerColor) : Icon(Icons.home, size: 30, color: themeData.disabledColor);
           if (tuple.item1.length() <= 0 && tuple.item2.length() <=0 ) {
             return icon;
           }
@@ -75,8 +74,8 @@ class _IndexBottomBar extends State<IndexBottomBar> {
       selectedIcon: Icon(Icons.notifications, size: 30, color: themeData.dividerColor),
       icon: Selector<NewNotificationsProvider,EventMemBox>(
         builder: (context, eventMemBox, child) {
-          Icon icon = Icon(Icons.notifications_none_outlined, size: 30, color: themeData.disabledColor);
-          if (eventMemBox.length() <= 0 || selectedPageIndex==3) {
+          Icon icon = selectedPageIndex==3 ? Icon(Icons.notifications, size: 30, color: themeData.dividerColor) : Icon(Icons.notifications_none_outlined, size: 30, color: themeData.disabledColor);
+          if (eventMemBox.length() <= 0) {
             return icon;
           }
           return Badge(
