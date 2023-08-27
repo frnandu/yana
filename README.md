@@ -13,7 +13,7 @@ Current mobile native nostr clients suffer from one of the following:
 The objective of this project is neither fame, glory nor financial rewards.\
 My main motivator to spend time on this is to have a nostr client which I personally find the most pleasant to use on a everyday case.\
 Also to learn more deeply about [Nostr](https://github.com/nostr-protocol/nostr) and FOSS project development.\
-Having said that, I will apply for https://opensats.org/ initiative and consider other similar donations initiatives.\
+Having said that, I will apply for https://opensats.org/ initiative and consider other similar donations initiatives.
 
 ## Installation
 
