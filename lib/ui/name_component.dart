@@ -38,7 +38,7 @@ class _NameComponnet extends State<NameComponnet> {
     var smallTextSize = themeData.textTheme.bodySmall!.fontSize;
     Color hintColor = themeData.hintColor;
     var metadata = widget.metadata;
-    String nip19Name = Nip19.encodeSimplePubKey(widget.pubkey);
+    String nip19Name = !widget.pubkey.startsWith("npub") ? Nip19.encodeSimplePubKey(widget.pubkey) : widget.pubkey;
     String displayName = "";
     String name = "";
     if (widget.fontColor != null) {
