@@ -6,6 +6,7 @@ import 'package:yana/main.dart';
 import 'package:yana/provider/follow_event_provider.dart';
 import 'package:yana/utils/platform_util.dart';
 
+import '../../i18n/i18n.dart';
 import '../../ui/event/event_list_component.dart';
 import '../../ui/new_notes_updated_component.dart';
 import '../../ui/placeholder/event_list_placeholder.dart';
@@ -95,6 +96,7 @@ class _FollowPostsAndRepliesRouter
           }
 
           return NewNotesUpdatedComponent(
+            text: I18n.of(context).replied,
             newEvents: eventMemBox.all(),
             onTap: () {
               followEventProvider.mergeNewPostAndReplyEvents();

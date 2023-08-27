@@ -183,6 +183,19 @@ class RelayProvider extends ChangeNotifier {
     }
   }
 
+  void checkAndReconnect() {
+    // reconnect all client
+    for (var relayAddr in relayAddrs) {
+      var custRelay = genRelay(relayAddr);
+      try {
+        nostr!.addRelay(custRelay, autoSubscribe: true);
+      } catch (e) {
+        log("relay $relayAddr add to pool error ${e.toString()}");
+      }
+    }
+
+  }
+
   void clear() {
     // sharedPreferences.remove(DataKey.RELAY_LIST);
     relayStatusMap.clear();

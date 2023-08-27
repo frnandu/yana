@@ -9,6 +9,7 @@ import 'package:yana/ui/new_notes_updated_component.dart';
 import 'package:yana/utils/base.dart';
 import 'package:yana/utils/base_consts.dart';
 
+import '../../i18n/i18n.dart';
 import '../../provider/setting_provider.dart';
 import '../../ui/event/event_list_component.dart';
 import '../../ui/placeholder/event_list_placeholder.dart';
@@ -88,6 +89,7 @@ class _FollowPostsRouter extends KeepAliveCustState<FollowPostsRouter>
           }
 
           return NewNotesUpdatedComponent(
+            text: I18n.of(context).posted,
             newEvents: eventMemBox.all(),
             onTap: () {
               setState(() {

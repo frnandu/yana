@@ -46,7 +46,7 @@ class _IndexBottomBar extends State<IndexBottomBar> {
           }
           int total = tuple.item1.length() + tuple.item2.length();
           return Badge(
-              offset: const Offset(8, -4),
+              offset: const Offset(8, 0),
               label: Text(total.toString(), style: const TextStyle(color: Colors.white)),
               backgroundColor: const Color(0xFF6A1B9A),
               child: icon);
@@ -79,6 +79,7 @@ class _IndexBottomBar extends State<IndexBottomBar> {
             return icon;
           }
           return Badge(
+              offset: const Offset(8, 0),
               label: Text(eventMemBox.length().toString(), style: const TextStyle(color: Colors.white),),
               backgroundColor: const Color(0xFF6A1B9A),
               child: icon);

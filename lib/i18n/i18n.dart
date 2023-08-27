@@ -398,6 +398,16 @@ class I18n {
     );
   }
 
+  /// `new`
+  String get message_new {
+    return Intl.message(
+      'new',
+      name: 'new',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Search`
   String get Search {
     return Intl.message(
@@ -1568,11 +1578,11 @@ class I18n {
     );
   }
 
-  /// `notes updated`
-  String get notes_updated {
+  /// `posted`
+  String get posted {
     return Intl.message(
       'posted',
-      name: 'notes_updated',
+      name: 'posted',
       desc: '',
       args: [],
     );

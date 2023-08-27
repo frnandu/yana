@@ -9,8 +9,10 @@ import 'package:yana/ui/name_component.dart';
 import 'package:yana/utils/base.dart';
 import 'package:yana/utils/router_path.dart';
 
+import '../../nostr/client_utils/keys.dart';
 import '../../ui/webview_router.dart';
 import '../../utils/router_util.dart';
+import '../../utils/string_util.dart';
 
 class RelayInfoRouter extends StatefulWidget {
   @override
@@ -37,26 +39,64 @@ class _RelayInfoRouter extends State<RelayInfoRouter> {
     var relayInfo = relay.info!;
 
     List<Widget> list = [];
+    Widget imageWidget;
+    String? url = relay != null &&
+            relay.info != null &&
+            StringUtil.isNotBlank(relay.info!.icon)
+        ? relay.info!.icon
+        : StringUtil.robohash(getRandomHexString());
 
-    list.add(Container(
-      margin: EdgeInsets.only(
-        top: Base.BASE_PADDING,
-        bottom: Base.BASE_PADDING,
-      ),
-      child: Text(
-        relayInfo.name,
-        style: TextStyle(
-          fontSize: titleFontSize,
-          fontWeight: FontWeight.bold,
+    imageWidget = CachedNetworkImage(
+      imageUrl: url,
+      width: 50,
+      height: 50,
+      fit: BoxFit.cover,
+      placeholder: (context, url) => const CircularProgressIndicator(),
+      errorWidget: (context, url, error) =>
+          CachedNetworkImage(imageUrl: StringUtil.robohash(relay.info!.name)),
+      cacheManager: localCacheManager,
+    );
+
+    Row iconAndNameRow = Row(children: [
+      Container(
+          margin: const EdgeInsets.only(
+            top: Base.BASE_PADDING * 2,
+            bottom: Base.BASE_PADDING * 2,
+            left: Base.BASE_PADDING * 2,
+            right: Base.BASE_PADDING,
+          ),
+          clipBehavior: Clip.hardEdge,
+          decoration: BoxDecoration(
+            // color: themeData.cardColor,
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: imageWidget),
+      Column(children: [
+        Container(
+          margin: const EdgeInsets.only(
+              top: Base.BASE_PADDING,
+              bottom: Base.BASE_PADDING,
+              left: Base.BASE_PADDING),
+          child: Text(
+            relayInfo.name,
+            style: TextStyle(
+              fontSize: titleFontSize,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
         ),
-      ),
-    ));
+      ])
+    ]);
+
+    list.add(iconAndNameRow);
 
     list.add(Container(
-      margin: EdgeInsets.only(
-        bottom: Base.BASE_PADDING,
+      margin: const EdgeInsets.only(
+          bottom: Base.BASE_PADDING, top: Base.BASE_PADDING),
+      child: Text(
+        relayInfo.description,
+        maxLines: 3,
       ),
-      child: Text(relayInfo.description),
     ));
 
     list.add(RelayInfoItemComponent(
@@ -77,25 +117,24 @@ class _RelayInfoRouter extends State<RelayInfoRouter> {
               width: IMAGE_WIDTH,
               height: IMAGE_WIDTH,
               fit: BoxFit.cover,
-              placeholder: (context, url) => CircularProgressIndicator(),
-              errorWidget: (context, url, error) => Icon(Icons.error),
+              placeholder: (context, url) => const CircularProgressIndicator(),
+              errorWidget: (context, url, error) => const Icon(Icons.error),
               cacheManager: localCacheManager,
             );
           }
           list.add(Container(
-            alignment: Alignment.center,
             height: IMAGE_WIDTH,
             width: IMAGE_WIDTH,
             clipBehavior: Clip.hardEdge,
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(IMAGE_WIDTH / 2),
+              borderRadius: BorderRadius.circular(IMAGE_WIDTH),
               color: Colors.grey,
             ),
             child: imageWidget,
           ));
 
           list.add(Container(
-            margin: EdgeInsets.only(left: Base.BASE_PADDING),
+            margin: const EdgeInsets.only(left: Base.BASE_PADDING),
             child: NameComponnet(
               pubkey: relayInfo.pubKey,
               metadata: metadata,

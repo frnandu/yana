@@ -20,9 +20,10 @@
 - ~~in thread view decrease the tree branches padding to allow more space for content~~
 - ~~badges when something new in home/notifications~~
 - ~~rephrase keys backup screen~~
+- ~~relays icons~~
+- ~~relays loose connection and don't reconnect after some time~~
 
 - subcription on profile should be kept open to receive updates from WS
-- relays icons
 - separate posts from replies on profile
 - badges when something new in DMS
 - lnbits for prism split and widget
@@ -32,7 +33,6 @@
 - show common followers/followees
 - DMS from followed should not be on request tab
 - notifications of reactions/likes (include post and if a reply the parent)
-- relays loose connection and don't reconnect after some time
 - try to load images using Isolate and compute, so that feed scrolling does not freeze while loading images
 - allow to login with npub 
 - add SystemMouseCursors.click to everything that is clickable for web version

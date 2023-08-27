@@ -223,7 +223,7 @@ class MyApp extends StatefulWidget {
   }
 }
 
-class _MyApp extends State<MyApp> {
+class _MyApp extends State<MyApp> with WidgetsBindingObserver {
   reload() {
     setState(() {});
   }
@@ -375,6 +375,7 @@ class _MyApp extends State<MyApp> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance!.addObserver(this);
     SystemTimer.run();
   }
 
@@ -382,8 +383,22 @@ class _MyApp extends State<MyApp> {
   void dispose() {
     super.dispose();
     SystemTimer.stopTask();
+    WidgetsBinding.instance!.removeObserver(this);
   }
 
+  late AppLifecycleState _lastState;
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+
+    if (state == AppLifecycleState.resumed && (_lastState == AppLifecycleState.paused || _lastState == AppLifecycleState.hidden || _lastState == AppLifecycleState.inactive)) {
+      //now you know that your app went to the background and is back to the foreground
+      if (nostr!=null) {
+        nostr!.checkAndReconnectRelays();
+      }
+    }
+    _lastState = state; //register the last state. When you get "paused" it means the app went to the background.
+  }
   ThemeData getLightTheme() {
     Color background = const Color(0xFFF3E5F5);
 

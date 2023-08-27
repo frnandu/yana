@@ -307,4 +307,18 @@ class RelayPool {
 
     return hadSubmitSend;
   }
+
+  void checkAndReconnectRelays() {
+
+    for (Relay relay in _relays.values) {
+      try {
+        if (relay.relayStatus.connected == ClientConneccted.UN_CONNECT) {
+          relay.connect();
+        }
+      } catch (err) {
+        log(err.toString());
+        relay.relayStatus.error++;
+      }
+    }
+  }
 }

@@ -327,7 +327,9 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
       width: maxWidth,
       height: bannerHeight,
       color: Colors.grey.withOpacity(0.5),
-      child: bannerImage,
+      child:  widget.jumpable? GestureDetector(
+        onTap: jumpToUserRouter,
+        child: bannerImage) : bannerImage
     ));
     topList.add(Container(
       height: 50,
@@ -336,8 +338,9 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
         children: topBtnList,
       ),
     ));
-    topList.add(userNameComponent);
-    if (widget.metadata != null) {
+    if (widget.metadata != null && !widget.condensedIcons) {
+      topList.add(userNameComponent);
+
       topList.add(MetadataIconDataComp(
         leftWidget: Container(),
         text: nip19PubKey,

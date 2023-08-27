@@ -215,9 +215,13 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
     ));
 
     interfaceTiles.add(SettingsTile.switchTile(
+        activeSwitchColor: themeData.primaryColor,
         onToggle: (value) {
-          settingProvider.themeStyle =
-              value ? ThemeStyle.AUTO : MediaQuery.of(context).platformBrightness == Brightness.dark ? ThemeStyle.DARK: ThemeStyle.LIGHT ;
+          settingProvider.themeStyle = value
+              ? ThemeStyle.AUTO
+              : MediaQuery.of(context).platformBrightness == Brightness.dark
+                  ? ThemeStyle.DARK
+                  : ThemeStyle.LIGHT;
           widget.indexReload();
         },
         initialValue: settingProvider.themeStyle == ThemeStyle.AUTO,
@@ -225,6 +229,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
         title: Text(s.Theme_Style)));
 
     interfaceTiles.add(SettingsTile.switchTile(
+        activeSwitchColor: themeData.primaryColor,
         enabled: settingProvider.themeStyle != ThemeStyle.AUTO,
         onToggle: (value) {
           settingProvider.themeStyle =
@@ -238,6 +243,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
         title: Text(s.Dark_mode)));
 
     interfaceTiles.add(SettingsTile.switchTile(
+        activeSwitchColor: themeData.primaryColor,
         onToggle: (value) {
           settingProvider.linkPreview = value ? 1 : 0;
         },
@@ -245,6 +251,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
         leading: const Icon(Icons.link_outlined),
         title: Text(s.Link_preview)));
     interfaceTiles.add(SettingsTile.switchTile(
+        activeSwitchColor: themeData.primaryColor,
         onToggle: (value) {
           settingProvider.imagePreview = value ? 1 : 0;
         },
@@ -252,6 +259,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
         leading: const Icon(Icons.image_outlined),
         title: Text(s.Image_preview)));
     interfaceTiles.add(SettingsTile.switchTile(
+        activeSwitchColor: themeData.primaryColor,
         onToggle: (value) {
           settingProvider.videoPreviewInList = value ? 1 : 0;
         },
@@ -261,8 +269,10 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
 
     List<AbstractSettingsTile> securityTiles = [];
 
-    if (!PlatformUtil.isWeb() && (PlatformUtil.isIOS() || PlatformUtil.isAndroid())) {
+    if (!PlatformUtil.isWeb() &&
+        (PlatformUtil.isIOS() || PlatformUtil.isAndroid())) {
       securityTiles.add(SettingsTile.switchTile(
+        activeSwitchColor: themeData.primaryColor,
         onToggle: (value) {
           authenticate(
               value, s.Please_authenticate_to_turn_off_the_privacy_lock);
@@ -301,17 +311,17 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
 
     List<SettingsSection> sections = [];
 
-    sections.add(SettingsSection(title: Text('Interface'), tiles: interfaceTiles));
-    sections.add(SettingsSection(title: Text('Account'), tiles: accountTiles));
-    if (!PlatformUtil.isWeb() && (PlatformUtil.isIOS() || PlatformUtil.isAndroid())) {
-      sections.add(SettingsSection(title: Text('Security'), tiles: securityTiles));
+    sections
+        .add(SettingsSection(title: Text('Interface'), tiles: interfaceTiles));
+    if (!PlatformUtil.isWeb() &&
+        (PlatformUtil.isIOS() || PlatformUtil.isAndroid())) {
+      sections
+          .add(SettingsSection(title: Text('Security'), tiles: securityTiles));
     }
-
+    sections.add(SettingsSection(title: Text('Account'), tiles: accountTiles));
 
     SettingsList settingsList = SettingsList(
-      applicationType: ApplicationType.material,
-      sections: sections
-    );
+        applicationType: ApplicationType.material, sections: sections);
 
     return Scaffold(
       appBar: AppBar(

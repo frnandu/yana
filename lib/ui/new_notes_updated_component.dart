@@ -3,16 +3,16 @@ import 'package:flutter/material.dart';
 import 'package:yana/ui/user_pic_component.dart';
 import 'package:yana/utils/base.dart';
 
-import '../nostr/event.dart';
-import '../i18n/i18n.dart';
 import '../main.dart';
+import '../nostr/event.dart';
 
 class NewNotesUpdatedComponent extends StatelessWidget {
   Function? onTap;
+  String text;
 
   List<Event> newEvents;
 
-  NewNotesUpdatedComponent({required this.newEvents, this.onTap});
+  NewNotesUpdatedComponent({super.key, required this.newEvents, required this.text, this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -63,11 +63,7 @@ class NewNotesUpdatedComponent extends StatelessWidget {
                   return UserPicComponent(pubkey: pubKey, width: width + 10);
                 }).toList(), //
               ),
-              Text(
-                I18n
-                    .of(context)
-                    .notes_updated,
-                style: TextStyle(color: textColor),
+              Text(text,style: TextStyle(color: textColor),
               )
             ]))
     );

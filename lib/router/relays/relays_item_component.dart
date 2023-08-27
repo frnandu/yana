@@ -1,4 +1,5 @@
 import 'package:bot_toast/bot_toast.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:yana/main.dart';
@@ -8,8 +9,10 @@ import 'package:yana/utils/router_util.dart';
 
 import '../../i18n/i18n.dart';
 import '../../models/relay_status.dart';
+import '../../nostr/client_utils/keys.dart';
 import '../../utils/base.dart';
 import '../../utils/client_connected.dart';
+import '../../utils/string_util.dart';
 
 class RelaysItemComponent extends StatelessWidget {
   String addr;
@@ -26,10 +29,34 @@ class RelaysItemComponent extends StatelessWidget {
     if (relayStatus.connected != ClientConneccted.CONNECTED) {
       borderLeftColor = Colors.red;
     }
+    var relay = nostr!.getRelay(addr);
+
+    Widget imageWidget;
+    String? url = relay != null &&
+            relay.info != null &&
+            StringUtil.isNotBlank(relay.info!.icon)
+        ? relay.info!.icon
+        : StringUtil.robohash(getRandomHexString());
+
+    imageWidget = Container(
+        clipBehavior: Clip.hardEdge,
+        decoration: BoxDecoration(
+          // color: themeData.cardColor,
+          borderRadius: BorderRadius.circular(10),
+        ),
+
+        child: CachedNetworkImage(
+      imageUrl: url,
+      width: 40,
+      height: 40,
+      fit: BoxFit.cover,
+      placeholder: (context, url) => const CircularProgressIndicator(),
+      errorWidget: (context, url, error) => CachedNetworkImage(imageUrl: StringUtil.robohash(relay!.info!.name)),
+      cacheManager: localCacheManager,
+    ));
 
     return GestureDetector(
         onTap: () {
-          var relay = nostr!.getRelay(addr);
           if (relay != null && relay.info != null) {
             RouterUtil.router(context, RouterPath.RELAY_INFO, relay);
           }
@@ -37,8 +64,8 @@ class RelaysItemComponent extends StatelessWidget {
         child: Container(
           margin: const EdgeInsets.only(
             bottom: Base.BASE_PADDING_HALF,
-            left: Base.BASE_PADDING,
-            right: Base.BASE_PADDING,
+            left: Base.BASE_PADDING_HALF,
+            right: Base.BASE_PADDING_HALF,
           ),
           clipBehavior: Clip.hardEdge,
           decoration: BoxDecoration(
@@ -50,8 +77,8 @@ class RelaysItemComponent extends StatelessWidget {
               children: [
                 Container(
                   padding: const EdgeInsets.only(
-                    left: Base.BASE_PADDING_HALF,
-                    right: Base.BASE_PADDING_HALF,
+                    left: Base.BASE_PADDING_HALF / 2,
+                    right: Base.BASE_PADDING_HALF / 2,
                   ),
                   color: borderLeftColor,
                   height: 50,
@@ -60,37 +87,47 @@ class RelaysItemComponent extends StatelessWidget {
                   ),
                 ),
                 Expanded(
-                  child: Container(
-                      padding: const EdgeInsets.only(
-                        left: Base.BASE_PADDING,
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            margin: const EdgeInsets.only(bottom: 2),
-                            child: Text(addr),
-                          ),
-                          Row(
-                            children: [
-                              Container(
-                                margin: const EdgeInsets.only(
-                                    right: Base.BASE_PADDING),
-                                child: RelaysItemNumComponent(
-                                  iconData: Icons.mail,
-                                  num: relayStatus.noteReceived,
+                    child: Row(
+                  children: [
+                    Container(
+                        padding: const EdgeInsets.only(
+                          left: Base.BASE_PADDING,
+                          right: Base.BASE_PADDING_HALF,
+                        ),
+                        child: imageWidget),
+                    Container(
+                        padding: const EdgeInsets.only(
+                          left: Base.BASE_PADDING_HALF,
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              margin: const EdgeInsets.only(bottom: 2),
+                              child: Text(addr),
+                            ),
+                            Row(
+                              children: [
+                                Container(
+                                  margin: const EdgeInsets.only(
+                                      right: Base.BASE_PADDING),
+                                  child: RelaysItemNumComponent(
+                                    iconData: Icons.mail,
+                                    num: relayStatus.noteReceived,
+                                  ),
                                 ),
-                              ),
-                              RelaysItemNumComponent(
-                                iconColor: Colors.red,
-                                iconData: Icons.error,
-                                num: relayStatus.error,
-                              ),
-                            ],
-                          ),
-                        ],
-                      )),
-                ),
+                                relayStatus.error > 0 ?
+                                RelaysItemNumComponent(
+                                  iconColor: Colors.red,
+                                  iconData: Icons.error_outline,
+                                  num: relayStatus.error,
+                                ): Container(),
+                              ],
+                            ),
+                          ],
+                        ))
+                  ],
+                )),
                 GestureDetector(
                   onTap: () {
                     var text = NIP19Tlv.encodeNrelay(Nrelay(addr));
@@ -127,7 +164,6 @@ class RelaysItemComponent extends StatelessWidget {
   void removeRelay(String addr) {
     relayProvider.removeRelay(addr);
   }
-
 }
 
 class RelaysItemNumComponent extends StatelessWidget {
@@ -137,7 +173,8 @@ class RelaysItemNumComponent extends StatelessWidget {
 
   int num;
 
-  RelaysItemNumComponent({super.key,
+  RelaysItemNumComponent({
+    super.key,
     this.iconColor,
     required this.iconData,
     required this.num,

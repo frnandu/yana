@@ -8,6 +8,7 @@ import 'package:yana/ui/keep_alive_cust_state.dart';
 import 'package:yana/utils/load_more_event.dart';
 import 'package:yana/utils/string_util.dart';
 
+import '../../i18n/i18n.dart';
 import '../../nostr/event_kind.dart' as kind;
 import '../../provider/setting_provider.dart';
 import '../../ui/event/event_list_component.dart';
@@ -95,6 +96,8 @@ class _NotificationsRouter extends KeepAliveCustState<NotificationsRouter>
           }
 
           return NewNotesUpdatedComponent(
+            text: I18n.of(context).message_new,
+
             newEvents: eventMemBox.all(),
             onTap: () {
               mentionMeProvider.mergeNewEvent();

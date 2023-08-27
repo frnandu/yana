@@ -23,8 +23,10 @@ class SystemTimer {
 
   static void runTask() {
     // log("SystemTimer runTask");
+    if (nostr!=null) {
+      nostr!.checkAndReconnectRelays();
+    }
     if (counter % 2 == 0 && nostr != null) {
-      // relayProvider.checkAndReconnect();
       if (counter > 4) {
         mentionMeNewProvider.queryNew();
         dmProvider.query();

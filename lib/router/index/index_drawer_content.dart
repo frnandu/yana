@@ -24,11 +24,11 @@ class IndexDrawerContentComponent extends StatefulWidget {
 
   @override
   State<StatefulWidget> createState() {
-    return _IndexDrawerContnetComponnent();
+    return _IndexDrawerContentComponnent();
   }
 }
 
-class _IndexDrawerContnetComponnent extends State<IndexDrawerContentComponent> {
+class _IndexDrawerContentComponnent extends State<IndexDrawerContentComponent> {
   double profileEditBtnWidth = 40;
 
   @override

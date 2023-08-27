@@ -1,18 +1,20 @@
+import 'dart:developer';
+
 import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
-import 'package:yana/ui/confirm_dialog.dart';
-import 'package:yana/utils/when_stop_function.dart';
 import 'package:provider/provider.dart';
+import 'package:yana/nostr/event_kind.dart';
+import 'package:yana/router/login/login_router.dart';
+import 'package:yana/utils/when_stop_function.dart';
 
-import '../../nostr/event.dart';
-import '../../nostr/event_kind.dart' as kind;
-import '../../nostr/filter.dart';
-import '../../ui/cust_state.dart';
-import '../../utils/base.dart';
-import '../../models/relay_status.dart';
 import '../../i18n/i18n.dart';
 import '../../main.dart';
+import '../../models/relay_status.dart';
+import '../../nostr/event.dart';
+import '../../nostr/filter.dart';
 import '../../provider/relay_provider.dart';
+import '../../ui/cust_state.dart';
+import '../../utils/base.dart';
 import '../../utils/router_util.dart';
 import '../../utils/string_util.dart';
 import 'relays_item_component.dart';
@@ -59,22 +61,36 @@ class _RelaysRouter extends CustState<RelaysRouter> with WhenStopFunction {
       body: Column(children: [
         Expanded(
           child: Container(
-            margin: const EdgeInsets.only(
-              top: Base.BASE_PADDING,
-            ),
-            child: ListView.builder(
-              itemBuilder: (context, index) {
-                var addr = relayAddrs[index];
-                var relayStatus = relayStatusMap[addr];
-                relayStatus ??= RelayStatus(addr);
+              margin: const EdgeInsets.only(
+                top: Base.BASE_PADDING,
+              ),
+              child: RefreshIndicator(
+                onRefresh: () async {
+                  var filter = Filter(
+                      authors: [nostr!.publicKey],
+                      limit: 1,
+                      kinds: [EventKind.RELAY_LIST_METADATA]);
 
-                return RelaysItemComponent(
-                  addr: addr,
-                  relayStatus: relayStatus,
-                );
-              },
-              itemCount: relayAddrs.length,
-            ),
+                  nostr!.query([filter.toJson()], (event) {
+                    LoginRouter.handleRemoteRelays(event);
+                    nostr!.checkAndReconnectRelays();
+                  });
+                  nostr!.checkAndReconnectRelays();
+                },
+                child: ListView.builder(
+                  itemBuilder: (context, index) {
+                    var addr = relayAddrs[index];
+                    var relayStatus = relayStatusMap[addr];
+                    relayStatus ??= RelayStatus(addr);
+
+                    return RelaysItemComponent(
+                      addr: addr,
+                      relayStatus: relayStatus,
+                    );
+                  },
+                  itemCount: relayAddrs.length,
+                ),
+              )
           ),
         ),
         TextField(
