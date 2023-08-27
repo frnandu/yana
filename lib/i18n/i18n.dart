@@ -381,7 +381,7 @@ class I18n {
   /// `Following Replies`
   String get Following_replies {
     return Intl.message(
-      'Following Replies',
+      'Replies',
       name: 'Following_replies',
       desc: '',
       args: [],
@@ -851,7 +851,7 @@ class I18n {
   /// `Backup and Safety tips`
   String get Backup_and_Safety_tips {
     return Intl.message(
-      'Backup and Safety tips',
+      'Backup keys',
       name: 'Backup_and_Safety_tips',
       desc: '',
       args: [],
@@ -871,7 +871,7 @@ class I18n {
   /// `Copy Key`
   String get Copy_Key {
     return Intl.message(
-      'Copy Key',
+      'Copy to clipboard',
       name: 'Copy_Key',
       desc: '',
       args: [],
@@ -1101,7 +1101,7 @@ class I18n {
   /// `Following`
   String get Following {
     return Intl.message(
-      'Following',
+      'Posts',
       name: 'Following',
       desc: '',
       args: [],

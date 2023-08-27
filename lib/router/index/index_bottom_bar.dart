@@ -33,22 +33,24 @@ class _IndexBottomBar extends State<IndexBottomBar> {
     var _followEventProvider = Provider.of<FollowNewEventProvider>(context);
     var _mentionMeProvider = Provider.of<NewNotificationsProvider>(context);
 
-
     List<Widget> destinations = [];
 
     var s = I18n.of(context);
 
     destinations.add(NavigationDestination(
+      // selectedIcon: Icon(Icons.home, size: 30, color: themeData.dividerColor),
       icon: Selector<FollowNewEventProvider, Tuple2<EventMemBox,EventMemBox>>(
         builder: (context, tuple, child) {
-          if (tuple.item1.length() <= 0 && tuple.item2.length() <=0 || selectedPageIndex==0) {
-            return const Icon(Icons.home_outlined);
+          Icon icon = Icon(Icons.home_outlined, size: 30, color: selectedPageIndex==0 ? themeData.dividerColor: themeData.disabledColor);
+          if (tuple.item1.length() <= 0 && tuple.item2.length() <=0 ) {
+            return icon;
           }
           int total = tuple.item1.length() + tuple.item2.length();
           return Badge(
-              label: Text(total.toString()),
-              backgroundColor: themeData.primaryColor,
-              child: const Icon(Icons.home_outlined));
+              offset: const Offset(8, -4),
+              label: Text(total.toString(), style: const TextStyle(color: Colors.white)),
+              backgroundColor: const Color(0xFF6A1B9A),
+              child: icon);
         },
         selector: (context, _provider) {
           return Tuple2(_provider.eventPostsMemBox, _provider.eventPostsAndRepliesMemBox);
@@ -58,25 +60,29 @@ class _IndexBottomBar extends State<IndexBottomBar> {
     ));
 
     destinations.add(NavigationDestination(
-      icon: const Icon(Icons.search),
+      selectedIcon: Icon(Icons.search, size: 30, color: themeData.dividerColor),
+      icon: Icon(Icons.search, size: 30, color: themeData.disabledColor),
       label: s.Search,
     ));
 
     destinations.add(NavigationDestination(
-      icon: const Icon(Icons.mail_outline),
+      selectedIcon: Icon(Icons.mail, size: 30, color: themeData.dividerColor),
+      icon: Icon(Icons.mail_outline, size: 30, color: themeData.disabledColor),
       label: s.Messages,
     ));
 
     destinations.add(NavigationDestination(
+      selectedIcon: Icon(Icons.notifications, size: 30, color: themeData.dividerColor),
       icon: Selector<NewNotificationsProvider,EventMemBox>(
         builder: (context, eventMemBox, child) {
+          Icon icon = Icon(Icons.notifications_none_outlined, size: 30, color: themeData.disabledColor);
           if (eventMemBox.length() <= 0 || selectedPageIndex==3) {
-            return const Icon(Icons.notifications_none_outlined);
+            return icon;
           }
           return Badge(
-              label: Text(eventMemBox.length().toString()),
-              backgroundColor: themeData.primaryColor,
-              child: const Icon(Icons.notifications_none_outlined));
+              label: Text(eventMemBox.length().toString(), style: const TextStyle(color: Colors.white),),
+              backgroundColor: const Color(0xFF6A1B9A),
+              child: icon);
         },
         selector: (context, _provider) {
           return _provider.eventMemBox;
@@ -86,8 +92,8 @@ class _IndexBottomBar extends State<IndexBottomBar> {
     ));
 
     return NavigationBar(
-      labelBehavior: NavigationDestinationLabelBehavior.onlyShowSelected,
-      indicatorColor: themeData.primaryColor,
+      labelBehavior: NavigationDestinationLabelBehavior.alwaysHide,
+      indicatorColor: themeData.cardColor,
       selectedIndex: selectedPageIndex,
       onDestinationSelected: (int index) {
         if (selectedPageIndex == index) {

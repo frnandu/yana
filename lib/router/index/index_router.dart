@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:provider/provider.dart';
+import 'package:tuple/tuple.dart';
 import 'package:yana/provider/pc_router_fake_provider.dart';
 import 'package:yana/router/follow/notifications_router.dart';
 import 'package:yana/ui/cust_state.dart';
@@ -14,6 +15,9 @@ import 'package:yana/utils/string_util.dart';
 
 import '../../i18n/i18n.dart';
 import '../../main.dart';
+import '../../models/event_mem_box.dart';
+import '../../provider/follow_event_provider.dart';
+import '../../provider/follow_new_event_provider.dart';
 import '../../provider/index_provider.dart';
 import '../../provider/setting_provider.dart';
 import '../../utils/auth_util.dart';
@@ -87,6 +91,10 @@ class _IndexRouter extends CustState<IndexRouter>
     var s = I18n.of(context);
 
     var _settingProvider = Provider.of<SettingProvider>(context);
+    var _followEventProvider = Provider.of<FollowEventProvider>(context);
+    var _followEventNewProvider = Provider.of<FollowNewEventProvider>(context);
+    var _indexProvider = Provider.of<IndexProvider>(context);
+
     if (nostr == null) {
       return LoginRouter();
     }
@@ -95,7 +103,6 @@ class _IndexRouter extends CustState<IndexRouter>
       return Scaffold();
     }
 
-    var _indexProvider = Provider.of<IndexProvider>(context);
     _indexProvider.setFollowTabController(followTabController);
 
     _indexProvider.addScrollListener((direction) {
@@ -114,7 +121,7 @@ class _IndexRouter extends CustState<IndexRouter>
     var themeData = Theme.of(context);
     var titleTextColor = themeData.appBarTheme.titleTextStyle!.color;
     var titleTextStyle = TextStyle(
-      fontWeight: FontWeight.bold,
+      fontWeight: FontWeight.normal,
       color: titleTextColor,
     );
     Color? indicatorColor = titleTextColor;
@@ -125,24 +132,55 @@ class _IndexRouter extends CustState<IndexRouter>
     Widget? appBarCenter;
     if (_indexProvider.currentTap == IndexTaps.FOLLOW) {
       appBarCenter = TabBar(
-        indicatorColor: indicatorColor,
-        indicatorWeight: 3,
+        indicatorColor:  const Color(0xFF6A1B9A),
+        indicatorWeight: 2,
         tabs: [
           Container(
             height: IndexAppBar.height,
             alignment: Alignment.center,
-            child: Text(
-              s.Following,
-              style: titleTextStyle,
+            child: Selector<FollowNewEventProvider, EventMemBox>(
+              builder: (context, eventMemBox, child) {
+                if (eventMemBox.length() <= 0) {
+                  return Text(
+                    s.Following,
+                    style: titleTextStyle,
+                  );
+                }
+                return Badge(
+                    offset: const Offset(16, -4),
+                    label: Text(eventMemBox.length().toString(), style: TextStyle(color: Colors.white)),
+                    backgroundColor: const Color(0xFF6A1B9A),
+                    child: Text(
+                      s.Following,
+                      style: titleTextStyle,
+                    ));
+              },
+              selector: (context, _provider) {
+                return _provider.eventPostsMemBox;
+              },
             ),
           ),
           Container(
             height: IndexAppBar.height,
             alignment: Alignment.center,
-            child: Text(
-              s.Following_replies,
-              textAlign: TextAlign.center,
-              style: titleTextStyle,
+            child: Selector<FollowNewEventProvider, EventMemBox>(
+              builder: (context, eventMemBox, child) {
+                Text text = Text(
+                  s.Following_replies,
+                  style: titleTextStyle,
+                );
+                if (eventMemBox.length() <= 0) {
+                  return text ;
+                }
+                return Badge(
+                    offset: const Offset(16, -4),
+                    label: Text(eventMemBox.length().toString(), style: TextStyle(color: Colors.white)),
+                    backgroundColor: const Color(0xFF6A1B9A),
+                    child: text);
+              },
+              selector: (context, _provider) {
+                return _provider.eventPostsAndRepliesMemBox;
+              },
             ),
           ),
           Container(
@@ -336,7 +374,7 @@ class _IndexRouter extends CustState<IndexRouter>
           bottomNavigationBar: AnimatedContainer(
               duration: const Duration(milliseconds: 200),
               curve: Curves.ease,
-              height: _scrollingDown ? 0.0 : IndexBottomBar.HEIGHT,
+              height: _scrollingDown ? 0.0 : 50,
               child: IndexBottomBar()));
     }
   }

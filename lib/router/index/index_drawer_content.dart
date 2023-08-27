@@ -124,14 +124,6 @@ class _IndexDrawerContnetComponnent extends State<IndexDrawerContentComponent> {
       },
     ));
 
-    list.add(IndexDrawerItem(
-      iconData: Icons.key,
-      name: s.Key_Backup,
-      onTap: () {
-        RouterUtil.router(context, RouterPath.KEY_BACKUP);
-      },
-    ));
-
     list.add(
       IndexDrawerItem(
           iconData: Icons.lan_outlined,
@@ -141,11 +133,11 @@ class _IndexDrawerContnetComponnent extends State<IndexDrawerContentComponent> {
           },
           rightWidget: Selector<RelayProvider, String>(
               builder: (context, relayNum, child) {
-            return Text(
-              relayNum,
-              style: TextStyle(color: themeData.disabledColor),
-            );
-          }, selector: (context, _provider) {
+                return Text(
+                  relayNum,
+                  style: TextStyle(color: themeData.disabledColor),
+                );
+              }, selector: (context, _provider) {
             return _provider.relayNumStr();
           })),
     );
@@ -155,6 +147,14 @@ class _IndexDrawerContnetComponnent extends State<IndexDrawerContentComponent> {
       name: s.Filters,
       onTap: () {
         RouterUtil.router(context, RouterPath.FILTER);
+      },
+    ));
+
+    list.add(IndexDrawerItem(
+      iconData: Icons.key,
+      name: s.Key_Backup,
+      onTap: () {
+        RouterUtil.router(context, RouterPath.KEY_BACKUP);
       },
     ));
 

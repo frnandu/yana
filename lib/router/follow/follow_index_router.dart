@@ -21,12 +21,12 @@ class _FollowIndexRouter extends State<FollowIndexRouter> {
     return Container(
       color: Theme.of(context).scaffoldBackgroundColor,
       child: TabBarView(
+        controller: widget.tabController,
         children: [
           FollowPostsRouter(),
           FollowPostsAndRepliesRouter(),
-          GlobalsEventsRouter(),
+          const GlobalsEventsRouter(),
         ],
-        controller: widget.tabController,
       ),
     );
   }

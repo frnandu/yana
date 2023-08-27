@@ -63,10 +63,9 @@ class _EventListComponent extends State<EventListComponent> {
       controller: screenshotController,
       child: Container(
         color: cardColor,
-        margin: const EdgeInsets.only(bottom: Base.BASE_PADDING_HALF),
+        margin: const EdgeInsets.only(bottom: 1),
         padding: const EdgeInsets.only(
           top: Base.BASE_PADDING,
-          // bottom: Base.BASE_PADDING,
         ),
         child: EventMainComponent(
           screenshotController: screenshotController,
@@ -87,7 +86,7 @@ class _EventListComponent extends State<EventListComponent> {
       main = Stack(
         children: [
           main,
-          Positioned(
+          const Positioned(
             top: -35,
             right: -10,
             child: EventBitcoinIconComponent(),

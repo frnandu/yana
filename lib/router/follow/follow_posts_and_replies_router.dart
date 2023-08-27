@@ -22,8 +22,8 @@ class FollowPostsAndRepliesRouter extends StatefulWidget {
   }
 }
 
-class _FollowPostsAndRepliesRouter extends KeepAliveCustState<FollowPostsAndRepliesRouter>
-    with LoadMoreEvent {
+class _FollowPostsAndRepliesRouter
+    extends KeepAliveCustState<FollowPostsAndRepliesRouter> with LoadMoreEvent {
   ScrollController _controller = ScrollController();
 
   @override
@@ -42,7 +42,7 @@ class _FollowPostsAndRepliesRouter extends KeepAliveCustState<FollowPostsAndRepl
     if (events.isEmpty) {
       return EventListPlaceholder(
         onRefresh: () {
-          followEventProvider.refresh();
+          followEventProvider.refreshReplies();
         },
       );
     }
@@ -70,7 +70,7 @@ class _FollowPostsAndRepliesRouter extends KeepAliveCustState<FollowPostsAndRepl
 
     Widget ri = RefreshIndicator(
       onRefresh: () async {
-        followEventProvider.refresh();
+        followEventProvider.refreshReplies();
       },
       child: main,
     );
@@ -98,7 +98,8 @@ class _FollowPostsAndRepliesRouter extends KeepAliveCustState<FollowPostsAndRepl
             newEvents: eventMemBox.all(),
             onTap: () {
               followEventProvider.mergeNewPostAndReplyEvents();
-              _controller.animateTo(0,curve: Curves.ease, duration: const Duration(seconds: 1));
+              _controller.animateTo(0,
+                  curve: Curves.ease, duration: const Duration(seconds: 1));
             },
           );
         },
@@ -107,10 +108,15 @@ class _FollowPostsAndRepliesRouter extends KeepAliveCustState<FollowPostsAndRepl
         },
       ),
     ));
-    return Stack(
-      alignment: Alignment.center,
-      children: stackList,
-    );
+    return Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(50),
+          color: Colors.white,
+        ),
+        child: Stack(
+          alignment: Alignment.center,
+          children: stackList,
+        ));
   }
 
   @override

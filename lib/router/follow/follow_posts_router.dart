@@ -42,7 +42,7 @@ class _FollowPostsRouter extends KeepAliveCustState<FollowPostsRouter>
     if (events.isEmpty) {
       return EventListPlaceholder(
         onRefresh: () {
-          followEventProvider.refresh();
+          followEventProvider.refreshPosts();
         },
       );
     }
@@ -63,7 +63,7 @@ class _FollowPostsRouter extends KeepAliveCustState<FollowPostsRouter>
 
     Widget ri = RefreshIndicator(
       onRefresh: () async {
-        followEventProvider.refresh();
+        followEventProvider.refreshReplies();
       },
       child: main,
     );
@@ -90,8 +90,10 @@ class _FollowPostsRouter extends KeepAliveCustState<FollowPostsRouter>
           return NewNotesUpdatedComponent(
             newEvents: eventMemBox.all(),
             onTap: () {
-              followEventProvider.mergeNewPostEvents();
-              _controller.animateTo(0,curve: Curves.ease, duration: const Duration(seconds: 1));
+              setState(() {
+                followEventProvider.mergeNewPostEvents();
+                _controller.animateTo(0,curve: Curves.ease, duration: const Duration(seconds: 1));
+              });
             },
           );
         },
@@ -100,10 +102,16 @@ class _FollowPostsRouter extends KeepAliveCustState<FollowPostsRouter>
         },
       ),
     ));
-    return Stack(
-      alignment: Alignment.center,
-      children: stackList,
-    );
+    return Container(
+        clipBehavior: Clip.hardEdge,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(60 / 2),
+          color: Colors.grey,
+        ),
+        child: Stack(
+          alignment: Alignment.center,
+          children: stackList,
+        ));
   }
 
   @override

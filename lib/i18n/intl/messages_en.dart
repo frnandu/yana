@@ -43,7 +43,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "Auto_Open_Sensitive_Content":
             MessageLookupByLibrary.simpleMessage("Auto Open Sensitive Content"),
         "Backup_and_Safety_tips":
-            MessageLookupByLibrary.simpleMessage("Backup and Safety tips"),
+            MessageLookupByLibrary.simpleMessage("Backup private key"),
         "Banner": MessageLookupByLibrary.simpleMessage("Banner"),
         "Begin_to_download_translate_model":
             MessageLookupByLibrary.simpleMessage(
@@ -109,7 +109,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "Followed_Communities":
             MessageLookupByLibrary.simpleMessage("Followed Communities"),
         "Followed_Tags": MessageLookupByLibrary.simpleMessage("Followed Tags"),
-        "Following": MessageLookupByLibrary.simpleMessage("Following"),
+        "Following": MessageLookupByLibrary.simpleMessage("Posts"),
         "Font_Family": MessageLookupByLibrary.simpleMessage("Font Family"),
         "Font_Size": MessageLookupByLibrary.simpleMessage("Font Size"),
         "Forbid": MessageLookupByLibrary.simpleMessage("Forbid"),
@@ -202,9 +202,6 @@ class MessageLookup extends MessageLookupByLibrary {
             "Please authenticate to use app"),
         "Please_check_the_tips":
             MessageLookupByLibrary.simpleMessage("Please check the tips."),
-        "Please_do_not_disclose_or_share_the_key_to_anyone":
-            MessageLookupByLibrary.simpleMessage(
-                "Please do not disclose or share the key to anyone."),
         "Please_input": MessageLookupByLibrary.simpleMessage("Please input"),
         "Please_input_Topic_text":
             MessageLookupByLibrary.simpleMessage("Please input Topic text"),
@@ -254,9 +251,6 @@ class MessageLookup extends MessageLookupByLibrary {
             "Text can\'t contain blank space"),
         "Text_can_t_contain_new_line": MessageLookupByLibrary.simpleMessage(
             "Text can\'t contain new line"),
-        "The_key_is_a_random_string_that_resembles_":
-            MessageLookupByLibrary.simpleMessage(
-                "The key is a random string that resembles your account password. Anyone with this key can access and control your account."),
         "Theme_Color": MessageLookupByLibrary.simpleMessage("Theme Color"),
         "Theme_Style": MessageLookupByLibrary.simpleMessage("Use Theme from System"),
         "There_should_be_a_universe_here": MessageLookupByLibrary.simpleMessage(

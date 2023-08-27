@@ -36,13 +36,20 @@ class FollowEventProvider extends ChangeNotifier
     return postsAndRepliesBox.listByPubkey(pubkey);
   }
 
-  void refresh() {
+  void refreshPosts() {
     _initTime = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-    postsAndRepliesBox.clear();
     postsBox.clear();
     doQuery();
 
-    followNewEventProvider.clear();
+    followNewEventProvider.clearPosts();
+  }
+
+  void refreshReplies() {
+    _initTime = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+    postsAndRepliesBox.clear();
+    doQuery();
+
+    followNewEventProvider.clearReplies();
   }
 
   int lastTime() {

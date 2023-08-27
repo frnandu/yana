@@ -22,18 +22,18 @@ class _KeyBackupRouter extends State<KeyBackupRouter> {
 
   List<CheckboxItem>? checkboxItems;
 
-  void initCheckBoxItems(BuildContext context) {
-    if (checkboxItems == null) {
-      var s = I18n.of(context);
-      checkboxItems = [];
-      checkboxItems!.add(CheckboxItem(
-          s.Please_do_not_disclose_or_share_the_key_to_anyone, false));
-      checkboxItems!.add(CheckboxItem(
-          s.Developers_will_never_require_a_key_from_you, false));
-      checkboxItems!.add(CheckboxItem(
-          s.Please_keep_the_key_properly_for_account_recovery, false));
-    }
-  }
+  // void initCheckBoxItems(BuildContext context) {
+  //   if (checkboxItems == null) {
+  //     var s = I18n.of(context);
+  //     checkboxItems = [];
+  //     checkboxItems!.add(CheckboxItem(
+  //         s.Please_do_not_disclose_or_share_the_key_to_anyone, false));
+  //     checkboxItems!.add(CheckboxItem(
+  //         s.Developers_will_never_require_a_key_from_you, false));
+  //     checkboxItems!.add(CheckboxItem(
+  //         s.Please_keep_the_key_properly_for_account_recovery, false));
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -42,7 +42,7 @@ class _KeyBackupRouter extends State<KeyBackupRouter> {
     var cardColor = themeData.cardColor;
     var mainColor = themeData.primaryColor;
 
-    initCheckBoxItems(context);
+    // initCheckBoxItems(context);
 
     Color? appbarBackgroundColor = Colors.transparent;
     var appBar = Appbar4Stack(
@@ -52,26 +52,26 @@ class _KeyBackupRouter extends State<KeyBackupRouter> {
 
     List<Widget> list = [];
     list.add(Container(
-      margin: EdgeInsets.only(bottom: 20),
+      margin: const EdgeInsets.only(bottom: 20),
       child: Text(
         s.Backup_and_Safety_tips,
-        style: TextStyle(
+        style: const TextStyle(
           fontWeight: FontWeight.bold,
           fontSize: 20,
         ),
       ),
     ));
 
-    list.add(Container(
-      margin: EdgeInsets.only(bottom: Base.BASE_PADDING_HALF),
-      child: Text(
-        s.The_key_is_a_random_string_that_resembles_,
-      ),
-    ));
-
-    for (var item in checkboxItems!) {
-      list.add(checkboxView(item));
-    }
+    // list.add(Container(
+    //   margin: EdgeInsets.only(bottom: Base.BASE_PADDING_HALF),
+    //   child: Text(
+    //     s.The_key_is_a_random_string_that_resembles_,
+    //   ),
+    // ));
+    //
+    // for (var item in checkboxItems!) {
+    //   list.add(checkboxView(item));
+    // }
 
     list.add(Container(
       margin: EdgeInsets.all(Base.BASE_PADDING),
@@ -93,18 +93,18 @@ class _KeyBackupRouter extends State<KeyBackupRouter> {
       ),
     ));
 
-    list.add(Container(
-      child: GestureDetector(
-        onTap: copyHexKey,
-        child: Text(
-          s.Copy_Hex_Key,
-          style: TextStyle(
-            color: mainColor,
-            decoration: TextDecoration.underline,
-          ),
-        ),
-      ),
-    ));
+    // list.add(Container(
+    //   child: GestureDetector(
+    //     onTap: copyHexKey,
+    //     child: Text(
+    //       s.Copy_Hex_Key,
+    //       style: TextStyle(
+    //         color: mainColor,
+    //         decoration: TextDecoration.underline,
+    //       ),
+    //     ),
+    //   ),
+    // ));
 
     return Scaffold(
       body: Stack(
@@ -181,18 +181,18 @@ class _KeyBackupRouter extends State<KeyBackupRouter> {
     return true;
   }
 
-  void copyHexKey() {
-    if (!checkTips()) {
-      return;
-    }
-
-    doCopy(nostr!.privateKey!);
-  }
+  // void copyHexKey() {
+  //   if (!checkTips()) {
+  //     return;
+  //   }
+  //
+  //   doCopy(nostr!.privateKey!);
+  // }
 
   void copyKey() {
-    if (!checkTips()) {
-      return;
-    }
+    // if (!checkTips()) {
+    //   return;
+    // }
 
     var pk = nostr!.privateKey;
     var nip19Key = Nip19.encodePrivateKey(pk!);
