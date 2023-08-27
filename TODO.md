@@ -21,6 +21,7 @@
 - ~~badges when something new in home/notifications~~
 - ~~rephrase keys backup screen~~
 
+- show commom followers/followees
 - relays icons
 - separate posts from replies on profile
 - badges when something new in DMS
