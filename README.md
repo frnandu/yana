@@ -152,7 +152,7 @@ Using a [Prism](https://dergigi.com/2023/03/12/lightning-prisms) address at [yan
 
 
 <a href="https://btc.fmar.link/api/v1/invoices?storeId=7yXH2h1LUFXStGM4XPoSUpb43xkMj1riEsrAiYSWAk57&currency=SATS">
-<img src="https://btc.fmar.link/img/paybutton/pay.svg" style="width:100px" alt="Pay with BTCPay Server, a Self-Hosted Bitcoin Payment Processor">
+<img src="https://btc.fmar.link/img/paybutton/pay.svg" style="width:150px" alt="Pay with BTCPay Server, a Self-Hosted Bitcoin Payment Processor">
 </a>
 
 
