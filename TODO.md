@@ -35,7 +35,8 @@
 - relay setting of read/write
 - badges also on drawer when in tablet mode
 - fix image/video preview setting (is false / not taken into effect)
--  not your relay list - improve looks with icons and stuff (not so easy)
+- add signing keys to google app store using non-KYC method
+- not your relay list - improve looks with icons and stuff (not so easy)
 - in thread view handle better zaps instead of some weird bitcoin component
 - show common followers/followees
 - notifications of reactions/likes (include post and if a reply the parent)
