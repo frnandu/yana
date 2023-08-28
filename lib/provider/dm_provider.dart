@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../nostr/event_kind.dart' as kind;
 import '../nostr/event.dart';
 import '../nostr/filter.dart';
+import '../nostr/nip02/contact.dart';
 import '../nostr/nip04/dm_session.dart';
 import '../nostr/nostr.dart';
 import '../models/dm_session_info.dart';
@@ -14,6 +15,8 @@ import '../utils/string_util.dart';
 
 class DMProvider extends ChangeNotifier with PenddingEventsLaterFunction {
 
+  List<DMSessionDetail> _followingList = [];
+
   List<DMSessionDetail> _knownList = [];
 
   List<DMSessionDetail> _unknownList = [];
@@ -23,6 +26,8 @@ class DMProvider extends ChangeNotifier with PenddingEventsLaterFunction {
   Map<String, DMSessionInfo> infoMap = {};
 
   String? localPubkey;
+
+  List<DMSessionDetail> get followingList => _followingList;
 
   List<DMSessionDetail> get knownList => _knownList;
 
@@ -54,8 +59,9 @@ class DMProvider extends ChangeNotifier with PenddingEventsLaterFunction {
 
   void updateReadedTime(DMSessionDetail? detail) {
     if (detail != null &&
-        detail.info != null &&
+        // detail.info != null &&
         detail.dmSession.newestEvent != null) {
+      detail.info ??= DMSessionInfo(pubkey: detail.dmSession.pubkey, readedTime: 0);
       detail.info!.readedTime = detail.dmSession.newestEvent!.createdAt;
       DMSessionInfoDB.update(detail.info!);
       notifyListeners();
@@ -136,10 +142,15 @@ class DMProvider extends ChangeNotifier with PenddingEventsLaterFunction {
 
       var info = infoMap[pubkey];
       var detail = DMSessionDetail(session, info: info);
-      if (info != null) {
-        _knownList.add(detail);
+      Contact? contact = contactListProvider.getContact(pubkey);
+      if (contact!=null) {
+       _followingList.add(detail);
       } else {
-        _unknownList.add(detail);
+        if (info != null) {
+          _knownList.add(detail);
+        } else {
+          _unknownList.add(detail);
+        }
       }
     }
 
@@ -150,6 +161,16 @@ class DMProvider extends ChangeNotifier with PenddingEventsLaterFunction {
   void _sortDetailList() {
     _doSortDetailList(_knownList);
     _doSortDetailList(_unknownList);
+  }
+
+  int howManyNewDMSessionsWithNewMessages(List<DMSessionDetail> list) {
+    int count = 0;
+    list.forEach((element) {
+      if (element.hasNewMessage()) {
+        count++;
+      }
+    });
+    return count;
   }
 
   void _doSortDetailList(List<DMSessionDetail> detailList) {

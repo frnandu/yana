@@ -428,11 +428,21 @@ class I18n {
     );
   }
 
-  /// `Request`
-  String get Request {
+  /// `Requests`
+  String get Requests {
     return Intl.message(
-      'Request',
-      name: 'Request',
+      'Requests',
+      name: 'Requests',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Others`
+  String get Others {
+    return Intl.message(
+      'Others',
+      name: 'Others',
       desc: '',
       args: [],
     );

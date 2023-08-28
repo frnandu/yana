@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:yana/router/dm/dm_following_router.dart';
 
 import '../../nostr/nip04/nip04.dart';
 import '../../main.dart';
+import '../../provider/index_provider.dart';
 import 'dm_known_list_router.dart';
 import 'dm_unknown_list_router.dart';
 
 class DMRouter extends StatefulWidget {
   TabController tabController;
+  ScrollDirectionCallback scrollCallback;
 
-  DMRouter({required this.tabController});
+  DMRouter({required this.tabController, required this.scrollCallback});
 
   @override
   State<StatefulWidget> createState() {
@@ -27,12 +30,9 @@ class _DMRouter extends State<DMRouter> {
       child: TabBarView(
         controller: widget.tabController,
         children: [
-          DMKnownListRouter(
-            agreement: agreement,
-          ),
-          DMUnknownListRouter(
-            agreement: agreement,
-          ),
+          DMFollowingRouter(agreement: agreement, scrollCallback: widget.scrollCallback),
+          DMKnownListRouter(agreement: agreement, scrollCallback: widget.scrollCallback),
+          DMUnknownListRouter(agreement: agreement, scrollCallback: widget.scrollCallback),
         ],
       ),
     );

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:yana/provider/notice_provider.dart';
 import 'package:pointycastle/ecc/api.dart';
 import 'package:provider/provider.dart';
@@ -9,23 +8,23 @@ import '../../provider/index_provider.dart';
 import 'dm_notice_item_component.dart';
 import 'dm_session_list_item_component.dart';
 
-class DMKnownListRouter extends StatefulWidget {
+class DMFollowingRouter extends StatefulWidget {
   ECDHBasicAgreement agreement;
   ScrollDirectionCallback scrollCallback;
 
-  DMKnownListRouter({required this.agreement, required this.scrollCallback});
+  DMFollowingRouter({required this.agreement, required this.scrollCallback});
 
   @override
   State<StatefulWidget> createState() {
-    return _DMKnownListRouter();
+    return _DMFollowingRouter();
   }
 }
 
-class _DMKnownListRouter extends State<DMKnownListRouter> {
+class _DMFollowingRouter extends State<DMFollowingRouter> {
   @override
   Widget build(BuildContext context) {
     var _dmProvider = Provider.of<DMProvider>(context);
-    var details = _dmProvider.knownList;
+    var details = _dmProvider.followingList;
     var allLength = details.length;
 
     var _noticeProvider = Provider.of<NoticeProvider>(context);
@@ -42,28 +41,27 @@ class _DMKnownListRouter extends State<DMKnownListRouter> {
       widget.scrollCallback.call(scrollController.position.userScrollDirection);
     });
 
-    return Container(
-      child: ListView.builder(
-        controller: scrollController,
-        itemBuilder: (context, index) {
-          if (index >= allLength) {
-            return null;
-          }
-          if (index == 0 && flag > 0) {
-            return DMNoticeItemComponent(
-              newestNotice: notices.last,
-              hasNewMessage: hasNewNotice,
-            );
-          } else {
-            var detail = details[index - flag];
-            return DMSessionListItemComponent(
-              detail: detail,
-              agreement: widget.agreement,
-            );
-          }
-        },
-        itemCount: allLength,
-      ),
+    return ListView.builder(
+      controller: scrollController,
+      itemBuilder: (context, index) {
+        if (index >= allLength) {
+          return null;
+        }
+
+        if (index == 0 && flag > 0) {
+          return DMNoticeItemComponent(
+            newestNotice: notices.last,
+            hasNewMessage: hasNewNotice,
+          );
+        } else {
+          var detail = details[index - flag];
+          return DMSessionListItemComponent(
+            detail: detail,
+            agreement: widget.agreement,
+          );
+        }
+      },
+      itemCount: allLength,
     );
   }
 }

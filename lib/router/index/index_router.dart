@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:provider/provider.dart';
 import 'package:tuple/tuple.dart';
+import 'package:yana/provider/dm_provider.dart';
 import 'package:yana/provider/pc_router_fake_provider.dart';
 import 'package:yana/router/follow/notifications_router.dart';
 import 'package:yana/ui/cust_state.dart';
@@ -69,7 +70,7 @@ class _IndexRouter extends CustState<IndexRouter>
 
     followTabController =
         TabController(initialIndex: followInitTab, length: 3, vsync: this);
-    dmTabController = TabController(length: 2, vsync: this);
+    dmTabController = TabController(length: 3, vsync: this);
   }
 
   @override
@@ -105,7 +106,11 @@ class _IndexRouter extends CustState<IndexRouter>
 
     _indexProvider.setFollowTabController(followTabController);
 
-    _indexProvider.addScrollListener((direction) {
+
+    scrollDirectionCallback(direction) {
+      if (direction == ScrollDirection.idle && _scrollingDown) {
+        _scrollingDown = false;
+      }
       if (direction == ScrollDirection.reverse && !_scrollingDown) {
         setState(() {
           _scrollingDown = true;
@@ -116,7 +121,8 @@ class _IndexRouter extends CustState<IndexRouter>
           _scrollingDown = false;
         });
       }
-    });
+    }
+    _indexProvider.addScrollListener(scrollDirectionCallback);
 
     var themeData = Theme.of(context);
     var titleTextColor = themeData.appBarTheme.titleTextStyle!.color;
@@ -129,10 +135,16 @@ class _IndexRouter extends CustState<IndexRouter>
       indicatorColor = themeData.primaryColor;
     }
 
+    dmTabController.addListener(() {
+      setState(() {
+        _scrollingDown=false;
+      });
+    });
+
     Widget? appBarCenter;
     if (_indexProvider.currentTap == IndexTaps.FOLLOW) {
       appBarCenter = TabBar(
-        indicatorColor:  const Color(0xFF6A1B9A),
+        indicatorColor: const Color(0xFF6A1B9A),
         indicatorWeight: 2,
         tabs: [
           Container(
@@ -145,11 +157,12 @@ class _IndexRouter extends CustState<IndexRouter>
                   style: titleTextStyle,
                 );
                 if (eventMemBox.length() <= 0) {
-                  return text ;
+                  return text;
                 }
                 return Badge(
                     offset: const Offset(16, -4),
-                    label: Text(eventMemBox.length().toString(), style: TextStyle(color: Colors.white)),
+                    label: Text(eventMemBox.length().toString(),
+                        style: TextStyle(color: Colors.white)),
                     backgroundColor: const Color(0xFF6A1B9A),
                     child: text);
               },
@@ -168,11 +181,12 @@ class _IndexRouter extends CustState<IndexRouter>
                   style: titleTextStyle,
                 );
                 if (eventMemBox.length() <= 0) {
-                  return text ;
+                  return text;
                 }
                 return Badge(
                     offset: const Offset(16, -4),
-                    label: Text(eventMemBox.length().toString(), style: TextStyle(color: Colors.white)),
+                    label: Text(eventMemBox.length().toString(),
+                        style: TextStyle(color: Colors.white)),
                     backgroundColor: const Color(0xFF6A1B9A),
                     child: text);
               },
@@ -208,27 +222,86 @@ class _IndexRouter extends CustState<IndexRouter>
       );
     } else if (_indexProvider.currentTap == IndexTaps.DM) {
       appBarCenter = TabBar(
-        indicatorColor: indicatorColor,
-        indicatorWeight: 3,
+        controller: dmTabController,
+        indicatorColor: const Color(0xFF6A1B9A),
+        indicatorWeight: 2,
         tabs: [
           Container(
             height: IndexAppBar.height,
             alignment: Alignment.center,
-            child: Text(
-              "DMs",
-              style: themeData.appBarTheme.titleTextStyle,
+            child: Selector<DMProvider, int>(
+              builder: (context, count, child) {
+                Text text = Text(
+                  s.Following,
+                  style: themeData.appBarTheme.titleTextStyle,
+                );
+                if (count <= 0) {
+                  return text;
+                }
+                return Badge(
+                    offset: const Offset(16, -4),
+                    label: Text(count.toString(),
+                        style: TextStyle(color: Colors.white)),
+                    backgroundColor: const Color(0xFF6A1B9A),
+                    child: text);
+              },
+              selector: (context, _provider) {
+                return _provider.howManyNewDMSessionsWithNewMessages(
+                    _provider.followingList);
+              },
             ),
+          ),
+          Container(
+              height: IndexAppBar.height,
+              alignment: Alignment.center,
+              child: Selector<DMProvider, int>(
+                builder: (context, count, child) {
+                  Text text = Text(
+                    s.Others,
+                    style: themeData.appBarTheme.titleTextStyle,
+                  );
+                  if (count <= 0) {
+                    return text;
+                  }
+                  return Badge(
+                      offset: const Offset(16, -4),
+                      label: Text(count.toString(),
+                          style: TextStyle(color: Colors.white)),
+                      backgroundColor: const Color(0xFF6A1B9A),
+                      child: text);
+                },
+                selector: (context, _provider) {
+                  return _provider.howManyNewDMSessionsWithNewMessages(
+                      _provider.knownList);
+                },
+              )
           ),
           Container(
             height: IndexAppBar.height,
             alignment: Alignment.center,
-            child: Text(
-              s.Request,
-              style: themeData.appBarTheme.titleTextStyle,
-            ),
+              child: Selector<DMProvider, int>(
+                builder: (context, count, child) {
+                  Text text = Text(
+                    s.Requests,
+                    style: themeData.appBarTheme.titleTextStyle,
+                  );
+                  if (count <= 0) {
+                    return text;
+                  }
+                  return Badge(
+                      offset: const Offset(16, -4),
+                      label: Text(count.toString(),
+                          style: TextStyle(color: Colors.white)),
+                      backgroundColor: const Color(0xFF6A1B9A),
+                      child: text);
+                },
+                selector: (context, _provider) {
+                  return _provider.howManyNewDMSessionsWithNewMessages(
+                      _provider.unknownList);
+                },
+              )
           ),
         ],
-        controller: dmTabController,
       );
     }
 
@@ -253,6 +326,7 @@ class _IndexRouter extends CustState<IndexRouter>
           SearchRouter(),
           DMRouter(
             tabController: dmTabController,
+            scrollCallback: scrollDirectionCallback,
           ),
           NotificationsRouter(),
           // NoticeRouter(),
@@ -356,6 +430,7 @@ class _IndexRouter extends CustState<IndexRouter>
           body: mainIndex,
           extendBody: true,
           floatingActionButton:
+
               // AnimatedContainer(
               //     curve: Curves.ease,
               //     duration: const Duration(milliseconds: 200),

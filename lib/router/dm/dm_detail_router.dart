@@ -11,6 +11,7 @@ import 'package:yana/ui/editor/editor_mixin.dart';
 import '../../i18n/i18n.dart';
 import '../../main.dart';
 import '../../models/metadata.dart';
+import '../../nostr/nip02/contact.dart';
 import '../../nostr/nip04/nip04.dart';
 import '../../provider/dm_provider.dart';
 import '../../provider/metadata_provider.dart';
@@ -189,38 +190,41 @@ class _DMDetailRouter extends CustState<DMDetailRouter> with EditorMixin {
     );
 
     if (detail!.info == null && detail!.dmSession.newestEvent != null) {
-      main = Container(
-        width: double.maxFinite,
-        height: double.maxFinite,
-        child: Stack(
-          children: [
-            Positioned.fill(child: main),
-            Positioned(
-              child: GestureDetector(
-                onTap: addDmSessionToKnown,
-                child: Container(
-                  margin: const EdgeInsets.all(Base.BASE_PADDING),
-                  height: 30,
-                  width: double.maxFinite,
-                  decoration: BoxDecoration(
-                    color: Colors.orange,
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Center(
-                    child: Text(
-                      s.Add_to_known_list,
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
+      Contact? contact = contactListProvider.getContact(detail!.dmSession.pubkey);
+      if (contact==null) {
+        main = Container(
+          width: double.maxFinite,
+          height: double.maxFinite,
+          child: Stack(
+            children: [
+              Positioned.fill(child: main),
+              Positioned(
+                child: GestureDetector(
+                  onTap: addDmSessionToKnown,
+                  child: Container(
+                    margin: const EdgeInsets.all(Base.BASE_PADDING),
+                    height: 30,
+                    width: double.maxFinite,
+                    decoration: BoxDecoration(
+                      color: Colors.orange,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Center(
+                      child: Text(
+                        s.Add_to_known_list,
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ),
                 ),
               ),
-            ),
-          ],
-        ),
-      );
+            ],
+          ),
+        );
+      }
     }
 
     return Scaffold(
@@ -266,7 +270,7 @@ class _DMDetailRouter extends CustState<DMDetailRouter> with EditorMixin {
   @override
   Future<void> onReady(BuildContext context) async {
     if (detail != null &&
-        detail!.info != null &&
+        // detail!.info != null &&
         detail!.dmSession.newestEvent != null) {
       // detail!.info!.readedTime = detail!.dmSession.newestEvent!.createdAt;
       // DMSessionInfoDB.update(detail!.info!);

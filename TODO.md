@@ -23,9 +23,9 @@
 - ~~relays icons~~
 - ~~relays loose connection and don't reconnect after some time~~
 - ~~close images clicking anywhere~~
+- ~~DMS from followed should not be on request tab~~
+- ~~badges when something new in DMS~~
 
-- DMS from followed should not be on request tab
-- badges when something new in DMS
 - remember eventMemBox (timestamps) with badge numbers between app restart
 - separate posts from replies on profile
 

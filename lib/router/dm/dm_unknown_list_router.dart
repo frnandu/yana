@@ -3,12 +3,14 @@ import 'package:pointycastle/ecc/api.dart';
 import 'package:provider/provider.dart';
 
 import '../../provider/dm_provider.dart';
+import '../../provider/index_provider.dart';
 import 'dm_session_list_item_component.dart';
 
 class DMUnknownListRouter extends StatefulWidget {
   ECDHBasicAgreement agreement;
+  ScrollDirectionCallback scrollCallback;
 
-  DMUnknownListRouter({required this.agreement});
+  DMUnknownListRouter({required this.agreement, required this.scrollCallback});
 
   @override
   State<StatefulWidget> createState() {
@@ -22,8 +24,14 @@ class _DMUnknownListRouter extends State<DMUnknownListRouter> {
     var _dmProvider = Provider.of<DMProvider>(context);
     var details = _dmProvider.unknownList;
 
+    ScrollController scrollController = ScrollController();
+    scrollController.addListener(() {
+      widget.scrollCallback.call(scrollController.position.userScrollDirection);
+    });
+
     return Container(
       child: ListView.builder(
+        controller: scrollController,
         itemBuilder: (context, index) {
           if (index >= details.length) {
             return null;

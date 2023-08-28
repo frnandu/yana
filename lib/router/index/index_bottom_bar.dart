@@ -1,6 +1,9 @@
+import 'dart:ffi';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:tuple/tuple.dart';
+import 'package:yana/provider/dm_provider.dart';
 import 'package:yana/provider/index_provider.dart';
 
 import '../../i18n/i18n.dart';
@@ -22,9 +25,6 @@ class IndexBottomBar extends StatefulWidget {
 
 class _IndexBottomBar extends State<IndexBottomBar> {
   int selectedPageIndex = 0;
-  int feedBadgeCount = 0;
-  int messagesBadgeCount = 0;
-  int notificaationsBadgeCount = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -38,21 +38,25 @@ class _IndexBottomBar extends State<IndexBottomBar> {
     var s = I18n.of(context);
 
     destinations.add(NavigationDestination(
-      icon: Selector<FollowNewEventProvider, Tuple2<EventMemBox,EventMemBox>>(
+      icon: Selector<FollowNewEventProvider, Tuple2<EventMemBox, EventMemBox>>(
         builder: (context, tuple, child) {
-          Icon icon = selectedPageIndex==0 ? Icon(Icons.home, size: 30, color: themeData.dividerColor) : Icon(Icons.home, size: 30, color: themeData.disabledColor);
-          if (tuple.item1.length() <= 0 && tuple.item2.length() <=0 ) {
+          Icon icon = selectedPageIndex == 0 ? Icon(
+              Icons.home, size: 30, color: themeData.dividerColor) : Icon(
+              Icons.home, size: 30, color: themeData.disabledColor);
+          if (tuple.item1.length() <= 0 && tuple.item2.length() <= 0) {
             return icon;
           }
           int total = tuple.item1.length() + tuple.item2.length();
           return Badge(
               offset: const Offset(8, 0),
-              label: Text(total.toString(), style: const TextStyle(color: Colors.white)),
+              label: Text(total.toString(),
+                  style: const TextStyle(color: Colors.white)),
               backgroundColor: const Color(0xFF6A1B9A),
               child: icon);
         },
         selector: (context, _provider) {
-          return Tuple2(_provider.eventPostsMemBox, _provider.eventPostsAndRepliesMemBox);
+          return Tuple2(
+              _provider.eventPostsMemBox, _provider.eventPostsAndRepliesMemBox);
         },
       ),
       label: s.Feed,
@@ -65,22 +69,53 @@ class _IndexBottomBar extends State<IndexBottomBar> {
     ));
 
     destinations.add(NavigationDestination(
-      selectedIcon: Icon(Icons.mail, size: 30, color: themeData.dividerColor),
-      icon: Icon(Icons.mail_outline, size: 30, color: themeData.disabledColor),
+      icon: Selector<DMProvider, int>(
+        builder: (context, count, child) {
+          Icon icon = selectedPageIndex == 2 ? Icon(
+              Icons.mail, size: 30, color: themeData.dividerColor) : Icon(
+              Icons.mail_outline, size: 30, color: themeData.disabledColor);
+          if (count <= 0) {
+            return icon;
+          }
+          return Badge(
+              offset: const Offset(8, 0),
+              label: Text(count.toString(),
+                  style: const TextStyle(color: Colors.white)),
+              backgroundColor: const Color(0xFF6A1B9A),
+              child: icon);
+        },
+        selector: (context, _provider) {
+          return
+            _provider.howManyNewDMSessionsWithNewMessages(
+                _provider.followingList) +
+                _provider.howManyNewDMSessionsWithNewMessages(
+                    _provider.knownList) +
+                _provider.howManyNewDMSessionsWithNewMessages(
+                    _provider.unknownList)
+          ;
+        },
+      ),
       label: s.Messages,
     ));
 
+
     destinations.add(NavigationDestination(
-      selectedIcon: Icon(Icons.notifications, size: 30, color: themeData.dividerColor),
-      icon: Selector<NewNotificationsProvider,EventMemBox>(
+      selectedIcon: Icon(
+          Icons.notifications, size: 30, color: themeData.dividerColor),
+      icon: Selector<NewNotificationsProvider, EventMemBox>(
         builder: (context, eventMemBox, child) {
-          Icon icon = selectedPageIndex==3 ? Icon(Icons.notifications, size: 30, color: themeData.dividerColor) : Icon(Icons.notifications_none_outlined, size: 30, color: themeData.disabledColor);
+          Icon icon = selectedPageIndex == 3
+              ? Icon(
+              Icons.notifications, size: 30, color: themeData.dividerColor)
+              : Icon(Icons.notifications_none_outlined, size: 30,
+              color: themeData.disabledColor);
           if (eventMemBox.length() <= 0) {
             return icon;
           }
           return Badge(
               offset: const Offset(8, 0),
-              label: Text(eventMemBox.length().toString(), style: const TextStyle(color: Colors.white),),
+              label: Text(eventMemBox.length().toString(),
+                style: const TextStyle(color: Colors.white),),
               backgroundColor: const Color(0xFF6A1B9A),
               child: icon);
         },

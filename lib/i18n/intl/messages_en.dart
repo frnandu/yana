@@ -229,7 +229,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "Recovery": MessageLookupByLibrary.simpleMessage("Recovery"),
         "Relays": MessageLookupByLibrary.simpleMessage("Relays"),
         "Replying": MessageLookupByLibrary.simpleMessage("Replying"),
-        "Request": MessageLookupByLibrary.simpleMessage("Request"),
+        "Requests": MessageLookupByLibrary.simpleMessage("Requests"),
         "Search": MessageLookupByLibrary.simpleMessage("Search"),
         "Search_User_from_cache":
             MessageLookupByLibrary.simpleMessage("Search User from cache"),

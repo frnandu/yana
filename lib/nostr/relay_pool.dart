@@ -164,14 +164,14 @@ class RelayPool {
           }
         }
       }
-    } else if (messageType == "NOTICE") {
-      if (json.length < 2) {
-        log("NOTICE result not right.");
-        return;
-      }
-
-      // notice save, TODO maybe should change code
-      noticeProvider.onNotice(relay.url, json[1] as String);
+    // } else if (messageType == "NOTICE") {
+    //   if (json.length < 2) {
+    //     log("NOTICE result not right.");
+    //     return;
+    //   }
+    //
+    //   // notice save, TODO maybe should change code
+    //   noticeProvider.onNotice(relay.url, json[1] as String);
     } else if (messageType == "AUTH") {
       // auth needed
       if (json.length < 2) {
