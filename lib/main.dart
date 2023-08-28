@@ -151,22 +151,22 @@ Future<void> main() async {
     });
   }
 
-  String appBadgeSupported;
-  try {
-    bool res = await FlutterAppBadger.isAppBadgeSupported();
-    if (res) {
-      appBadgeSupported = 'Supported';
-      try {
-        FlutterAppBadger.updateBadgeCount(69);
-      } on Exception {
-        print("FUCK");
-      }
-    } else {
-      appBadgeSupported = 'Not supported';
-    }
-  } on PlatformException {
-    appBadgeSupported = 'Failed to get badge support.';
-  }
+  // String appBadgeSupported;
+  // try {
+  //   bool res = await FlutterAppBadger.isAppBadgeSupported();
+  //   if (res) {
+  //     appBadgeSupported = 'Supported';
+  //     try {
+  //       FlutterAppBadger.updateBadgeCount(69);
+  //     } on Exception {
+  //       print("FUCK");
+  //     }
+  //   } else {
+  //     appBadgeSupported = 'Not supported';
+  //   }
+  // } on PlatformException {
+  //   appBadgeSupported = 'Failed to get badge support.';
+  // }
 
   if (PlatformUtil.isWeb()) {
     databaseFactory = databaseFactoryFfiWeb;
