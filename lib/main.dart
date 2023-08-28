@@ -156,17 +156,16 @@ Future<void> main() async {
     bool res = await FlutterAppBadger.isAppBadgeSupported();
     if (res) {
       appBadgeSupported = 'Supported';
+      try {
+        FlutterAppBadger.updateBadgeCount(69);
+      } on Exception {
+        print("FUCK");
+      }
     } else {
       appBadgeSupported = 'Not supported';
     }
   } on PlatformException {
     appBadgeSupported = 'Failed to get badge support.';
-  }
-
-  try {
-    FlutterAppBadger.updateBadgeCount(69);
-  } on Exception {
-    print("FUCK");
   }
 
   if (PlatformUtil.isWeb()) {
