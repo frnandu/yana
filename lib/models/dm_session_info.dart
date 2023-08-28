@@ -3,6 +3,8 @@ class DMSessionInfo {
 
   String? pubkey;
 
+  bool known=false;
+
   /// the last readed event created at
   int? readedTime;
 
@@ -18,6 +20,7 @@ class DMSessionInfo {
   DMSessionInfo.fromJson(Map<String, dynamic> json) {
     keyIndex = json['key_index'];
     pubkey = json['pubkey'];
+    known = json['known'] ?? false;
     readedTime = json['readed_time'];
     if (readedTime == null || readedTime! < 0) {
       readedTime = 0;

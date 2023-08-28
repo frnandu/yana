@@ -146,7 +146,7 @@ class DMProvider extends ChangeNotifier with PenddingEventsLaterFunction {
       if (contact!=null) {
        _followingList.add(detail);
       } else {
-        if (info != null) {
+        if (info != null && info.known) {
           _knownList.add(detail);
         } else {
           _unknownList.add(detail);
@@ -288,8 +288,9 @@ class DMSessionDetail {
 
   bool hasNewMessage() {
     if (info == null) {
-      return true;
-    } else if (dmSession.newestEvent != null &&
+      return false;
+    } else
+    if (dmSession.newestEvent != null &&
         info!.readedTime! < dmSession.newestEvent!.createdAt) {
       return true;
     }

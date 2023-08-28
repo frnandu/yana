@@ -29,6 +29,7 @@
 - remember eventMemBox (timestamps) with badge numbers between app restart
 - separate posts from replies on profile
 
+- floating icon (+) on DMS sends new msg to CHOOSE
 - subcription on profile should be kept open to receive updates from WS - REFACTOR logic of later loading & caching metadata
 - optimize  zaps/followed downloading (caching on db) on background 
 - relay setting of read/write
