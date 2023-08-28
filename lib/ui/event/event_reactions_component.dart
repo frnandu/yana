@@ -357,7 +357,7 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
     } else if (value == "delete") {
       nostr!.deleteEvent(widget.event.id);
       followEventProvider.deleteEvent(widget.event.id);
-      mentionMeProvider.deleteEvent(widget.event.id);
+      notificationsProvider.deleteEvent(widget.event.id);
       var deleteCallback = EventDeleteCallback.of(context);
       if (deleteCallback != null) {
         deleteCallback.onDelete(widget.event);

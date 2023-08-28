@@ -45,7 +45,7 @@ class _NotificationsRouter extends KeepAliveCustState<NotificationsRouter>
     if (events.isEmpty) {
       return EventListPlaceholder(
         onRefresh: () {
-          mentionMeProvider.refresh();
+          notificationsProvider.refresh();
         },
       );
     }
@@ -71,7 +71,7 @@ class _NotificationsRouter extends KeepAliveCustState<NotificationsRouter>
 
     Widget ri = RefreshIndicator(
       onRefresh: () async {
-        mentionMeProvider.refresh();
+        notificationsProvider.refresh();
       },
       child: main,
     );
@@ -100,7 +100,7 @@ class _NotificationsRouter extends KeepAliveCustState<NotificationsRouter>
 
             newEvents: eventMemBox.all(),
             onTap: () {
-              mentionMeProvider.mergeNewEvent();
+              notificationsProvider.mergeNewEvent();
               _controller.animateTo(0,curve: Curves.ease, duration: const Duration(seconds: 1));
             },
           );
@@ -119,12 +119,12 @@ class _NotificationsRouter extends KeepAliveCustState<NotificationsRouter>
   @override
   void doQuery() {
     preQuery();
-    mentionMeProvider.doQuery(until: until);
+    notificationsProvider.doQuery(until: until);
   }
 
   @override
   EventMemBox getEventBox() {
-    return mentionMeProvider.eventBox;
+    return notificationsProvider.eventBox;
   }
 
   @override

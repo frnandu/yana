@@ -23,14 +23,14 @@ class NewNotificationsProvider extends ChangeNotifier
     }
 
     _localSince =
-        _localSince == null || mentionMeProvider.lastTime() > _localSince!
-            ? mentionMeProvider.lastTime()
+        _localSince == null || notificationsProvider.lastTime() > _localSince!
+            ? notificationsProvider.lastTime()
             : _localSince;
 
     subscribeId = StringUtil.rndNameStr(12);
     var filter = Filter(
       since: _localSince! + 1,
-      kinds: mentionMeProvider.queryEventKinds(),
+      kinds: notificationsProvider.queryEventKinds(),
       p: [nostr!.publicKey],
     );
     nostr!.query([filter.toJson()], (event) {

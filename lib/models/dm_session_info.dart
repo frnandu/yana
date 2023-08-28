@@ -3,7 +3,7 @@ class DMSessionInfo {
 
   String? pubkey;
 
-  bool known=false;
+  int known=0;
 
   /// the last readed event created at
   int? readedTime;
@@ -34,6 +34,7 @@ class DMSessionInfo {
     final Map<String, dynamic> data = new Map<String, dynamic>();
     data['key_index'] = this.keyIndex;
     data['pubkey'] = this.pubkey;
+    data['known'] = this.known;
     data['readed_time'] = this.readedTime;
     data['value1'] = this.value1;
     data['value2'] = this.value2;

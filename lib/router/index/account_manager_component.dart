@@ -202,7 +202,7 @@ class AccountsState extends State<AccountsComponent> {
   }
 
   static void clearCurrentMemInfo() {
-    mentionMeProvider.clear();
+    notificationsProvider.clear();
     followEventProvider.clear();
     dmProvider.clear();
     noticeProvider.clear();

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app_badger/flutter_app_badger.dart';
 import 'package:provider/provider.dart';
 import 'package:tuple/tuple.dart';
 import 'package:yana/provider/dm_provider.dart';
@@ -72,6 +73,7 @@ class _IndexBottomBar extends State<IndexBottomBar> {
           Icon icon = selectedPageIndex == 2 ? Icon(
               Icons.mail, size: 30, color: themeData.dividerColor) : Icon(
               Icons.mail_outline, size: 30, color: themeData.disabledColor);
+          FlutterAppBadger.updateBadgeCount(count);
           if (count <= 0) {
             return icon;
           }

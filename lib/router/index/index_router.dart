@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:provider/provider.dart';
-import 'package:tuple/tuple.dart';
 import 'package:yana/provider/dm_provider.dart';
 import 'package:yana/provider/pc_router_fake_provider.dart';
 import 'package:yana/router/follow/notifications_router.dart';
@@ -445,7 +444,7 @@ class _IndexRouter extends CustState<IndexRouter>
           ),
           //       extendBodyBehindAppBar: true,
           bottomNavigationBar: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
+              duration: const Duration(milliseconds: 400),
               curve: Curves.ease,
               height: _scrollingDown ? 0.0 : 50,
               child: IndexBottomBar()));

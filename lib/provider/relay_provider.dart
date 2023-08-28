@@ -76,9 +76,11 @@ class RelayProvider extends ChangeNotifier {
     contactListProvider.reload(targetNostr: _nostr);
     contactListProvider.query(targetNostr: _nostr);
     followEventProvider.doQuery(targetNostr: _nostr, initQuery: true);
-    mentionMeProvider.doQuery(targetNostr: _nostr, initQuery: true);
+    notificationsProvider.doQuery(targetNostr: _nostr, initQuery: true);
     dmInitFuture.then((_) {
-      dmProvider.query(targetNostr: _nostr, initQuery: true);
+      dmProvider.query(targetNostr: _nostr, subscribe: false);
+    }).then((_) {
+      dmProvider.query(targetNostr: _nostr, subscribe: true);
     });
 
     for (var relayAddr in relayAddrs) {

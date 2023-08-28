@@ -28,8 +28,8 @@ class SystemTimer {
     }
     if (counter % 2 == 0 && nostr != null) {
       if (counter > 4) {
-        mentionMeNewProvider.queryNew();
-        dmProvider.query();
+        newNotificationsProvider.queryNew();
+        // dmProvider.query();
       }
     } else {
       if (counter > 4) {

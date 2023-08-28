@@ -61,9 +61,15 @@ class DMProvider extends ChangeNotifier with PenddingEventsLaterFunction {
     if (detail != null &&
         // detail.info != null &&
         detail.dmSession.newestEvent != null) {
-      detail.info ??= DMSessionInfo(pubkey: detail.dmSession.pubkey, readedTime: 0);
-      detail.info!.readedTime = detail.dmSession.newestEvent!.createdAt;
-      DMSessionInfoDB.update(detail.info!);
+
+      bool create = detail.info==null;
+      detail.info ??= DMSessionInfo(pubkey: detail.dmSession.pubkey, readedTime: detail.dmSession.newestEvent!.createdAt);
+      detail.info!.keyIndex = settingProvider.privateKeyIndex!;
+      if (create || detail.hasNewMessage()) {
+        create ? DMSessionInfoDB.insert(detail.info!) : DMSessionInfoDB.update(
+            detail.info!);
+        dmProvider.infoMap[detail.dmSession.pubkey] = detail.info!;
+      }
       notifyListeners();
     }
   }
@@ -75,15 +81,19 @@ class DMProvider extends ChangeNotifier with PenddingEventsLaterFunction {
   }
 
   Future<DMSessionDetail> addDmSessionToKnown(DMSessionDetail detail) async {
-    var keyIndex = settingProvider.privateKeyIndex!;
-    var pubkey = detail.dmSession.pubkey;
-    DMSessionInfo o = DMSessionInfo(pubkey: pubkey);
-    o.keyIndex = keyIndex;
-    o.readedTime = detail.dmSession.newestEvent!.createdAt;
-    await DMSessionInfoDB.insert(o);
+    bool create = detail.info==null;
+    detail.info ??= DMSessionInfo(pubkey: detail.dmSession.pubkey, readedTime: detail.dmSession.newestEvent!.createdAt);
+    detail.info!.keyIndex = settingProvider.privateKeyIndex!;
+    detail.info!.known = 1;
 
-    dmProvider.infoMap[pubkey] = o;
-    detail.info = o;
+    create ? await DMSessionInfoDB.insert(detail.info!) : await DMSessionInfoDB.update(detail.info!);
+
+    // DMSessionInfo o = DMSessionInfo(pubkey: pubkey);
+    // o.keyIndex = keyIndex;
+    // o.readedTime = detail.dmSession.newestEvent!.createdAt;
+    // await DMSessionInfoDB.insert(o);
+
+    dmProvider.infoMap[detail.dmSession.pubkey] = detail.info!;
 
     unknownList.remove(detail);
     knownList.add(detail);
@@ -146,7 +156,7 @@ class DMProvider extends ChangeNotifier with PenddingEventsLaterFunction {
       if (contact!=null) {
        _followingList.add(detail);
       } else {
-        if (info != null && info.known) {
+        if (info != null && info.known == 1) {
           _knownList.add(detail);
         } else {
           _unknownList.add(detail);
@@ -159,6 +169,7 @@ class DMProvider extends ChangeNotifier with PenddingEventsLaterFunction {
   }
 
   void _sortDetailList() {
+    _doSortDetailList(_followingList);
     _doSortDetailList(_knownList);
     _doSortDetailList(_unknownList);
   }
@@ -186,7 +197,7 @@ class DMProvider extends ChangeNotifier with PenddingEventsLaterFunction {
     // return newlist;
   }
 
-  String? _getPubkey(String localPubkey, Event event) {
+  String? _getPubkey(String? localPubkey, Event event) {
     if (event.pubKey != localPubkey) {
       return event.pubKey;
     }
@@ -210,6 +221,16 @@ class DMProvider extends ChangeNotifier with PenddingEventsLaterFunction {
     if (session == null) {
       session = DMSession(pubkey: pubkey!);
       _sessions[pubkey] = session;
+      if (this.localPubkey!=null) {
+        var detail = DMSessionDetail(session);
+        var pubkey = _getPubkey(localPubkey, event);
+        Contact? contact = contactListProvider.getContact(pubkey!);
+        if (contact != null) {
+          _followingList.add(detail);
+        } else {
+          _unknownList.add(detail);
+        }
+      }
     }
     var addResult = session.addEvent(event);
 
@@ -221,7 +242,7 @@ class DMProvider extends ChangeNotifier with PenddingEventsLaterFunction {
     return addResult;
   }
 
-  void query({Nostr? targetNostr, bool initQuery = false}) {
+  void query({Nostr? targetNostr, bool subscribe = false}) {
     targetNostr ??= nostr;
     var filter0 = Filter(
       kinds: [kind.EventKind.DIRECT_MESSAGE],
@@ -234,11 +255,11 @@ class DMProvider extends ChangeNotifier with PenddingEventsLaterFunction {
       since: _initSince + 1,
     );
 
-    if (initQuery) {
+    if (!subscribe) {
       targetNostr.addInitQuery([filter0.toJson(), filter1.toJson()], onEvent);
     } else {
-      // targetNostr.pool.subscribe([filter0.toJson(), filter1.toJson()], onEvent);
-      targetNostr.query([filter0.toJson(), filter1.toJson()], onEvent);
+      // targetNostr.query([filter0.toJson(), filter1.toJson()], onEvent);
+      targetNostr.subscribe([filter0.toJson(), filter1.toJson()], onEvent);
     }
   }
 
@@ -273,6 +294,7 @@ class DMProvider extends ChangeNotifier with PenddingEventsLaterFunction {
 
   void clear() {
     _sessions.clear();
+    _followingList.clear();
     _knownList.clear();
     _unknownList.clear();
 
@@ -287,11 +309,11 @@ class DMSessionDetail {
   DMSessionDetail(this.dmSession, {this.info});
 
   bool hasNewMessage() {
-    if (info == null) {
-      return false;
-    } else
+    // if (info == null) {
+    //   return false;
+    // } else
     if (dmSession.newestEvent != null &&
-        info!.readedTime! < dmSession.newestEvent!.createdAt) {
+        (info==null || info!.readedTime! < dmSession.newestEvent!.createdAt)) {
       return true;
     }
     return false;

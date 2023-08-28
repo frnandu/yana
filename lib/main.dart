@@ -1,6 +1,7 @@
 import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_app_badger/flutter_app_badger.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
@@ -85,9 +86,9 @@ late FollowEventProvider followEventProvider;
 
 late FollowNewEventProvider followNewEventProvider;
 
-late NotificationsProvider mentionMeProvider;
+late NotificationsProvider notificationsProvider;
 
-late NewNotificationsProvider mentionMeNewProvider;
+late NewNotificationsProvider newNotificationsProvider;
 
 late DMProvider dmProvider;
 
@@ -150,6 +151,24 @@ Future<void> main() async {
     });
   }
 
+  String appBadgeSupported;
+  try {
+    bool res = await FlutterAppBadger.isAppBadgeSupported();
+    if (res) {
+      appBadgeSupported = 'Supported';
+    } else {
+      appBadgeSupported = 'Not supported';
+    }
+  } on PlatformException {
+    appBadgeSupported = 'Failed to get badge support.';
+  }
+
+  try {
+    FlutterAppBadger.updateBadgeCount(69);
+  } on Exception {
+    print("FUCK");
+  }
+
   if (PlatformUtil.isWeb()) {
     databaseFactory = databaseFactoryFfiWeb;
   } else if (PlatformUtil.isWindowsOrLinux()) {
@@ -180,8 +199,8 @@ Future<void> main() async {
   contactListProvider = ContactListProvider.getInstance();
   followEventProvider = FollowEventProvider();
   followNewEventProvider = FollowNewEventProvider();
-  mentionMeProvider = NotificationsProvider();
-  mentionMeNewProvider = NewNotificationsProvider();
+  notificationsProvider = NotificationsProvider();
+  newNotificationsProvider = NewNotificationsProvider();
   dmProvider = DMProvider();
   indexProvider = IndexProvider(
     indexTap: settingProvider.defaultIndex,
@@ -303,10 +322,10 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
           value: followNewEventProvider,
         ),
         ListenableProvider<NotificationsProvider>.value(
-          value: mentionMeProvider,
+          value: notificationsProvider,
         ),
         ListenableProvider<NewNotificationsProvider>.value(
-          value: mentionMeNewProvider,
+          value: newNotificationsProvider,
         ),
         ListenableProvider<DMProvider>.value(
           value: dmProvider,

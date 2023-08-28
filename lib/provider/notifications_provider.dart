@@ -25,7 +25,7 @@ class NotificationsProvider extends ChangeNotifier
     eventBox.clear();
     doQuery();
 
-    mentionMeNewProvider.clear();
+    newNotificationsProvider.clear();
   }
 
   void deleteEvent(String id) {
@@ -113,14 +113,14 @@ class NotificationsProvider extends ChangeNotifier
   }
 
   void mergeNewEvent() {
-    var allEvents = mentionMeNewProvider.eventMemBox.all();
+    var allEvents = newNotificationsProvider.eventMemBox.all();
 
     eventBox.addList(allEvents);
 
     // sort
     eventBox.sort();
 
-    mentionMeNewProvider.clear();
+    newNotificationsProvider.clear();
 
     // update ui
     notifyListeners();
