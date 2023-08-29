@@ -159,5 +159,6 @@ Using a [Prism](https://dergigi.com/2023/03/12/lightning-prisms) address at [yan
 ## Join
 
 Contributors are welcome to join the project, specially Designers UI/UX, coders, testers.\
-If you're not a coder but would like to see something added/implemented, or you have a great idea for a new feature, just don't hesitate to fill up a issue.
+If you're not a coder but would like to see something added/implemented, or you have a great idea for a new feature, just don't hesitate to fill up a issue, 
+or you can also post a bounty on https://nostrbounties.com/ or https://bountsr.org .\
 All constructive feedback is welcomed.
