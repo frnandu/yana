@@ -12,6 +12,8 @@ import '../../utils/router_util.dart';
 import '../../utils/string_util.dart';
 
 class FollowedRouter extends StatefulWidget {
+  const FollowedRouter({super.key});
+
   @override
   State<StatefulWidget> createState() {
     return _FollowedRouter();

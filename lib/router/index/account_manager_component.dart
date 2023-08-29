@@ -156,8 +156,8 @@ class AccountsState extends State<AccountsComponent> {
     return true;
   }
 
-  void doLogin() {
-    nostr = relayProvider.genNostr(settingProvider.privateKey!);
+  void doLogin() async {
+    nostr = await relayProvider.genNostr(settingProvider.privateKey!);
   }
 
   void onLoginTap(int index) {
@@ -179,7 +179,7 @@ class AccountsState extends State<AccountsComponent> {
   }
 
   static void onLogoutTap(int index,
-      {bool routerBack = true, BuildContext? context}) {
+      {bool routerBack = true, BuildContext? context}) async {
     var oldIndex = settingProvider.privateKeyIndex;
     clearLocalData(index);
 
@@ -191,7 +191,7 @@ class AccountsState extends State<AccountsComponent> {
       // signOut complete
       if (settingProvider.privateKey != null) {
         // use next privateKey to login
-        nostr = relayProvider.genNostr(settingProvider.privateKey!);
+        nostr = await relayProvider.genNostr(settingProvider.privateKey!);
       }
     }
 

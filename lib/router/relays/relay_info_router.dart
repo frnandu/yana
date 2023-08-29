@@ -15,6 +15,8 @@ import '../../utils/router_util.dart';
 import '../../utils/string_util.dart';
 
 class RelayInfoRouter extends StatefulWidget {
+  const RelayInfoRouter({super.key});
+
   @override
   State<StatefulWidget> createState() {
     return _RelayInfoRouter();

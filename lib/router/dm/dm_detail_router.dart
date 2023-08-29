@@ -28,7 +28,7 @@ import '../../utils/router_util.dart';
 import 'dm_detail_item_component.dart';
 
 class DMDetailRouter extends StatefulWidget {
-  DMDetailRouter();
+  const DMDetailRouter({super.key});
 
   @override
   State<StatefulWidget> createState() {
@@ -112,7 +112,7 @@ class _DMDetailRouter extends CustState<DMDetailRouter> with EditorMixin {
 
     list.add(Expanded(
       child: Container(
-        margin: EdgeInsets.only(
+        margin: const EdgeInsets.only(
           bottom: Base.BASE_PADDING,
         ),
         child: listWidget,
@@ -153,7 +153,7 @@ class _DMDetailRouter extends CustState<DMDetailRouter> with EditorMixin {
               autoFocus: false,
               expands: false,
               // padding: EdgeInsets.zero,
-              padding: EdgeInsets.only(
+              padding: const EdgeInsets.only(
                 left: Base.BASE_PADDING,
                 right: Base.BASE_PADDING,
               ),
@@ -161,6 +161,8 @@ class _DMDetailRouter extends CustState<DMDetailRouter> with EditorMixin {
             ),
           ),
           TextButton(
+            onPressed: send,
+            style: const ButtonStyle(),
             child: Text(
               s.Send,
               style: TextStyle(
@@ -168,8 +170,6 @@ class _DMDetailRouter extends CustState<DMDetailRouter> with EditorMixin {
                 fontSize: 16,
               ),
             ),
-            onPressed: send,
-            style: ButtonStyle(),
           )
         ],
       ),
@@ -192,7 +192,7 @@ class _DMDetailRouter extends CustState<DMDetailRouter> with EditorMixin {
     if (detail!.info == null && detail!.dmSession.newestEvent != null) {
       Contact? contact = contactListProvider.getContact(detail!.dmSession.pubkey);
       if (contact==null) {
-        main = Container(
+        main = SizedBox(
           width: double.maxFinite,
           height: double.maxFinite,
           child: Stack(
@@ -212,7 +212,7 @@ class _DMDetailRouter extends CustState<DMDetailRouter> with EditorMixin {
                     child: Center(
                       child: Text(
                         s.Add_to_known_list,
-                        style: TextStyle(
+                        style: const TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
                         ),

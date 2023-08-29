@@ -23,6 +23,8 @@ import '../../utils/string_util.dart';
 import '../edit/editor_router.dart';
 
 class CommunityDetailRouter extends StatefulWidget {
+  const CommunityDetailRouter({super.key});
+
   @override
   State<StatefulWidget> createState() {
     return _CommunityDetailRouter();

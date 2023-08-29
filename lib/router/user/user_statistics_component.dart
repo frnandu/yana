@@ -184,8 +184,7 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
     }
 
     return Container(
-      // color: Colors.red,
-      margin: EdgeInsets.only(bottom: Base.BASE_PADDING),
+      margin: const EdgeInsets.only(bottom: Base.BASE_PADDING),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: list,

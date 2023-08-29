@@ -8,6 +8,8 @@ import '../../utils/router_util.dart';
 import '../index/index_app_bar.dart';
 
 class FilterRouter extends StatefulWidget {
+  const FilterRouter({super.key});
+
   @override
   State<StatefulWidget> createState() {
     return _FilterRouter();

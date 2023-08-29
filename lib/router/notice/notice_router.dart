@@ -7,6 +7,8 @@ import '../edit/editor_router.dart';
 import 'notice_list_item_component.dart';
 
 class NoticeRouter extends StatefulWidget {
+  const NoticeRouter({super.key});
+
   @override
   State<StatefulWidget> createState() {
     return _NoticeRouter();

@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:yana/utils/platform_util.dart';
 
 import '../../i18n/i18n.dart';
@@ -24,7 +25,7 @@ class LoginRouter extends StatefulWidget {
     return _LoginRouter();
   }
 
-  static Future<void> handleRemoteRelays(Event? remoteRelayEvent) async {
+  static Future<void> handleRemoteRelays(Event? remoteRelayEvent, String privKey) async {
     var relaysUpdatedTime = relayProvider.updatedTime();
     if (remoteRelayEvent != null &&
         (relaysUpdatedTime == null ||
@@ -39,7 +40,7 @@ class LoginRouter extends StatefulWidget {
           }
         }
       }
-      relayProvider.setRelayListAndUpdate(list);
+      relayProvider.setRelayListAndUpdate(list, privKey);
     }
   }
 }
@@ -170,7 +171,40 @@ class _LoginRouter extends State<LoginRouter>
     //     ),
     //   ),
     // ));
+    if (PlatformUtil.isWeb()) {
+      var github = Image.asset("assets/imgs/github.png", width: 200);
+      list.add(MouseRegion(
+          cursor: SystemMouseCursors.click,
+          child: GestureDetector(
+              onTap: () {
+                var url = Uri.parse(
+                    "https://github.com/frnandu/yana/releases/tag/v${packageInfo.version}");
+                launchUrl(url, mode: LaunchMode.externalApplication);
+              },
+              child: github)));
 
+      var obtainium = Image.asset("assets/imgs/obtainium.png", width: 200);
+      list.add(MouseRegion(
+          cursor: SystemMouseCursors.click,
+          child: GestureDetector(
+              onTap: () {
+                var url = Uri.parse("https://github.com/ImranR98/Obtainium");
+                launchUrl(url, mode: LaunchMode.externalApplication);
+              },
+              child: obtainium)));
+
+      // var f_droid = Image.asset(
+      //   "assets/imgs/f-droid.png",
+      //     width: 200
+      // );
+      // list.add(MouseRegion(
+      //                         cursor: SystemMouseCursors.click,
+      //                         child: GestureDetector(onTap: () {
+      //   var url = Uri.parse(
+      //       "TODO");
+      //   launchUrl(url, mode: LaunchMode.externalApplication);
+      // }, child: f_droid)));
+    }
     return Scaffold(
       body: SizedBox(
         width: double.maxFinite,
@@ -249,7 +283,9 @@ class _LoginRouter extends State<LoginRouter>
         var alreadyClosed = false;
 
         tempNostr!.addInitQuery([filter.toJson()], (event) {
-          LoginRouter.handleRemoteRelays(event);
+          if (tempNostr!=null) {
+            LoginRouter.handleRemoteRelays(event, tempNostr!.privateKey!);
+          }
           getNostrAndClose(alreadyClosed, pk);
           alreadyClosed = true;
         });
@@ -265,9 +301,9 @@ class _LoginRouter extends State<LoginRouter>
     }
   }
 
-  void getNostrAndClose(bool alreadyClosed, String pk) {
+  void getNostrAndClose(bool alreadyClosed, String pk) async {
     if (!alreadyClosed) {
-      nostr = relayProvider.genNostr(pk);
+      nostr = await relayProvider.genNostr(pk);
       Navigator.of(context, rootNavigator: true).pop();
       settingProvider.notifyListeners();
 

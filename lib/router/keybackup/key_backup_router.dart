@@ -9,6 +9,8 @@ import '../../ui/appbar4stack.dart';
 import '../../i18n/i18n.dart';
 
 class KeyBackupRouter extends StatefulWidget {
+  const KeyBackupRouter({super.key});
+
   @override
   State<StatefulWidget> createState() {
     return _KeyBackupRouter();

@@ -29,10 +29,16 @@
 - remember eventMemBox (timestamps) with badge numbers between app restart
 - separate posts from replies on profile
 
+- zaps for split@yana.do (Lnbits)
+- on login screen add get it on github 
+- verify signing of notes
 - floating icon (+) on DMS sends new msg to CHOOSE
 - subcription on profile should be kept open to receive updates from WS - REFACTOR logic of later loading & caching metadata
 - optimize  zaps/followed downloading (caching on db) on background 
 - relay setting of read/write
+- https://docs.flutter.dev/ui/navigation/deep-linking
+- mark all DMs as read feature
+- submit to f-droid
 - badges also on drawer when in tablet mode
 - fix image/video preview setting (is false / not taken into effect)
 - add signing keys to google app store using non-KYC method

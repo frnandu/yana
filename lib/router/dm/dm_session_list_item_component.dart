@@ -20,7 +20,7 @@ class DMSessionListItemComponent extends StatefulWidget {
 
   pointycastle.ECDHBasicAgreement agreement;
 
-  DMSessionListItemComponent({
+  DMSessionListItemComponent({super.key,
     required this.detail,
     required this.agreement,
   });
@@ -29,119 +29,125 @@ class DMSessionListItemComponent extends StatefulWidget {
   State<StatefulWidget> createState() {
     return _DMSessionListItemComponent();
   }
+
 }
 
 class _DMSessionListItemComponent extends State<DMSessionListItemComponent> {
   static const double IMAGE_WIDTH = 34;
 
-  static const double HALF_IMAGE_WIDTH = 17;
+  String? content;
+
+  @override
+  void initState() {
+    content = NIP04.decrypt(
+        widget.detail.dmSession.newestEvent!.content, widget.agreement, widget.detail.dmSession.pubkey);
+    if (content!=null) {
+      content = content!.replaceAll("\r", " ");
+      content = content!.replaceAll("\n", " ");
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
-    var main = Selector<MetadataProvider, Metadata?>(
-      builder: (context, metadata, child) {
-        var themeData = Theme.of(context);
-        var mainColor = themeData.primaryColor;
-        var hintColor = themeData.hintColor;
-        var smallTextSize = themeData.textTheme.bodySmall!.fontSize;
+    var themeData = Theme.of(context);
+    var mainColor = themeData.primaryColor;
+    var hintColor = themeData.hintColor;
+    var smallTextSize = themeData.textTheme.bodySmall!.fontSize;
 
-        var dmSession = widget.detail.dmSession;
+    var dmSession = widget.detail.dmSession;
 
-        var content = NIP04.decrypt(
-            dmSession.newestEvent!.content, widget.agreement, dmSession.pubkey);
-        content = content.replaceAll("\r", " ");
-        content = content.replaceAll("\n", " ");
+    var leftWidget = Container(
+      margin: const EdgeInsets.only(top: 4),
+      child: UserPicComponent(
+        pubkey: dmSession.pubkey,
+        width: IMAGE_WIDTH,
+      ),
+    );
 
-        var leftWidget = Container(
-          margin: EdgeInsets.only(top: 4),
-          child: UserPicComponent(
-            pubkey: dmSession.pubkey,
-            width: IMAGE_WIDTH,
+    var lastEvent = dmSession.newestEvent!;
+
+    bool hasNewMessage = widget.detail.hasNewMessage();
+
+    List<Widget> contentList = [
+      Expanded(
+        child: Text(
+          StringUtil.breakWord(content ?? ""),
+          style: TextStyle(
+            fontSize: smallTextSize,
+            color: themeData.hintColor,
+            overflow: TextOverflow.ellipsis,
           ),
-        );
+        ),
+      )
+    ];
+    if (hasNewMessage) {
+      contentList.add(PointComponent(color: mainColor));
+    }
 
-        var lastEvent = dmSession.newestEvent!;
-
-        bool hasNewMessage = widget.detail.hasNewMessage();
-
-        List<Widget> contentList = [
+    var main = Container(
+      padding: const EdgeInsets.all(Base.BASE_PADDING),
+      decoration: BoxDecoration(
+          border: Border(
+              bottom: BorderSide(
+                width: 1,
+                color: hintColor,
+              ))),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          leftWidget,
           Expanded(
-            child: Text(
-              StringUtil.breakWord(content),
-              style: TextStyle(
-                fontSize: smallTextSize,
-                color: themeData.hintColor,
-                overflow: TextOverflow.ellipsis,
+            child: Container(
+              padding: const EdgeInsets.only(
+                left: Base.BASE_PADDING,
+                right: Base.BASE_PADDING,
+                top: 4,
               ),
-            ),
-          )
-        ];
-        if (hasNewMessage) {
-          contentList.add(Container(
-            child: PointComponent(color: mainColor),
-          ));
-        }
-
-        return Container(
-          padding: EdgeInsets.all(Base.BASE_PADDING),
-          decoration: BoxDecoration(
-              border: Border(
-                  bottom: BorderSide(
-            width: 1,
-            color: hintColor,
-          ))),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              leftWidget,
-              Expanded(
-                child: Container(
-                  padding: const EdgeInsets.only(
-                    left: Base.BASE_PADDING,
-                    right: Base.BASE_PADDING,
-                    top: 4,
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
                     children: [
-                      Row(
-                        children: [
-                          NameComponnet(
+                      Selector<MetadataProvider, Metadata?>(
+                        builder: (context, metadata, child) {
+                          return NameComponnet(
                             pubkey: dmSession.pubkey,
                             metadata: metadata,
-                          ),
-                          Expanded(
-                            child: Container(
-                              alignment: Alignment.centerRight,
-                              child: Text(
-                                GetTimeAgo.parse(
-                                    DateTime.fromMillisecondsSinceEpoch(
-                                        lastEvent.createdAt * 1000)),
-                                style: TextStyle(
-                                  fontSize: smallTextSize,
-                                  color: themeData.hintColor,
-                                ),
-                              ),
+                          );
+                        },
+                        selector: (context, _provider) {
+                          return _provider.getMetadata(widget.detail.dmSession
+                              .pubkey);
+                        },
+                      ),
+                      Expanded(
+                        child: Container(
+                          alignment: Alignment.centerRight,
+                          child: Text(
+                            GetTimeAgo.parse(
+                                DateTime.fromMillisecondsSinceEpoch(
+                                    lastEvent.createdAt * 1000)),
+                            style: TextStyle(
+                              fontSize: smallTextSize,
+                              color: themeData.hintColor,
                             ),
                           ),
-                        ],
-                      ),
-                      Container(
-                        margin: const EdgeInsets.only(top: 2),
-                        child: Row(children: contentList),
+                        ),
                       ),
                     ],
                   ),
-                ),
+                  Container(
+                    margin: const EdgeInsets.only(top: 2),
+                    child: Row(children: contentList),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
-        );
-      },
-      selector: (context, _provider) {
-        return _provider.getMetadata(widget.detail.dmSession.pubkey);
-      },
+        ],
+      ),
     );
 
     return GestureDetector(

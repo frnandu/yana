@@ -85,7 +85,7 @@ class ContactListProvider extends ChangeNotifier {
         kinds: [kind.EventKind.CONTACT_LIST],
         limit: 1,
         authors: [targetNostr!.publicKey]);
-    targetNostr.addInitQuery([filter.toJson()], _onEvent, id: subscriptId);
+    targetNostr.query([filter.toJson()], _onEvent, id: subscriptId);
   }
 
   void _onEvent(Event e) {

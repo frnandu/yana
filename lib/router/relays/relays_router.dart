@@ -20,6 +20,8 @@ import '../../utils/string_util.dart';
 import 'relays_item_component.dart';
 
 class RelaysRouter extends StatefulWidget {
+  const RelaysRouter({super.key});
+
   @override
   State<StatefulWidget> createState() {
     return _RelaysRouter();
@@ -72,7 +74,7 @@ class _RelaysRouter extends CustState<RelaysRouter> with WhenStopFunction {
                       kinds: [EventKind.RELAY_LIST_METADATA]);
 
                   nostr!.query([filter.toJson()], (event) {
-                    LoginRouter.handleRemoteRelays(event);
+                    LoginRouter.handleRemoteRelays(event, nostr!.privateKey!);
                     nostr!.checkAndReconnectRelays();
                   });
                   nostr!.checkAndReconnectRelays();

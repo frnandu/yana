@@ -11,6 +11,8 @@ import '../../main.dart';
 import '../../utils/router_util.dart';
 
 class FollowedCommunitiesRouter extends StatefulWidget {
+  const FollowedCommunitiesRouter({super.key});
+
   @override
   State<StatefulWidget> createState() {
     return _FollowedCommunitiesRouter();

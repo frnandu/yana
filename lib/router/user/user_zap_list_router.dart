@@ -5,6 +5,8 @@ import '../../ui/event/zap_event_list_component.dart';
 import '../../utils/router_util.dart';
 
 class UserZapListRouter extends StatefulWidget {
+  const UserZapListRouter({super.key});
+
   @override
   State<StatefulWidget> createState() {
     return _UserZapListRouter();

@@ -1,3 +1,5 @@
+import 'package:bot_toast/bot_toast.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../nostr/event_kind.dart' as kind;
@@ -63,9 +65,13 @@ class DMProvider extends ChangeNotifier with PenddingEventsLaterFunction {
         detail.dmSession.newestEvent != null) {
 
       bool create = detail.info==null;
-      detail.info ??= DMSessionInfo(pubkey: detail.dmSession.pubkey, readedTime: detail.dmSession.newestEvent!.createdAt);
+      bool hasNewMessage = detail.hasNewMessage();
+      detail.info ??= DMSessionInfo(pubkey: detail.dmSession.pubkey);
       detail.info!.keyIndex = settingProvider.privateKeyIndex!;
-      if (create || detail.hasNewMessage()) {
+      double now = DateTime.now().millisecondsSinceEpoch/1000;
+      detail.info!.readedTime = now.toInt();
+
+      if (create || hasNewMessage) {
         create ? DMSessionInfoDB.insert(detail.info!) : DMSessionInfoDB.update(
             detail.info!);
         dmProvider.infoMap[detail.dmSession.pubkey] = detail.info!;
@@ -76,7 +82,7 @@ class DMProvider extends ChangeNotifier with PenddingEventsLaterFunction {
 
   void addEventAndUpdateReadedTime(DMSessionDetail detail, Event event) {
     penddingEvents.add(event);
-    eventLaterHandle(penddingEvents, updateUI: false);
+    eventLaterHandle(penddingEvents, updateUI: true);
     updateReadedTime(detail);
   }
 
@@ -119,7 +125,10 @@ class DMProvider extends ChangeNotifier with PenddingEventsLaterFunction {
       // find the newest event, subscribe behind the new newest event
       _initSince = events.first.createdAt;
     }
-
+    if (kDebugMode) {
+      BotToast.showText(
+          text: "Loaded ${events.length} DM events from DB");
+    }
     Map<String, List<Event>> eventListMap = {};
     for (var event in events) {
       // print("dmEvent");
@@ -221,16 +230,16 @@ class DMProvider extends ChangeNotifier with PenddingEventsLaterFunction {
     if (session == null) {
       session = DMSession(pubkey: pubkey!);
       _sessions[pubkey] = session;
-      // if (this.localPubkey!=null) {
-      //   var detail = DMSessionDetail(session);
-      //   var pubkey = _getPubkey(localPubkey, event);
-      //   Contact? contact = contactListProvider.getContact(pubkey!);
-      //   if (contact != null) {
-      //     _followingList.add(detail);
-      //   } else {
-      //     _unknownList.add(detail);
-      //   }
-      // }
+      if (this.localPubkey!=null) {
+        var detail = DMSessionDetail(session);
+        var pubkey = _getPubkey(localPubkey, event);
+        Contact? contact = contactListProvider.getContact(pubkey!);
+        if (contact != null) {
+          _followingList.add(detail);
+        } else {
+          _unknownList.add(detail);
+        }
+      }
     }
     var addResult = session.addEvent(event);
 
@@ -255,12 +264,12 @@ class DMProvider extends ChangeNotifier with PenddingEventsLaterFunction {
       since: _initSince + 1,
     );
 
-    if (!subscribe) {
-      targetNostr.addInitQuery([filter0.toJson(), filter1.toJson()], onEvent);
-    } else {
+    // if (!subscribe) {
+    //   targetNostr.addInitQuery([filter0.toJson(), filter1.toJson()], onEvent);
+    // } else {
       targetNostr.query([filter0.toJson(), filter1.toJson()], onEvent);
       // targetNostr.subscribe([filter0.toJson(), filter1.toJson()], onEvent);
-    }
+    // }
   }
 
   // void handleEventImmediately(Event event) {
@@ -275,6 +284,10 @@ class DMProvider extends ChangeNotifier with PenddingEventsLaterFunction {
   void eventLaterHandle(List<Event> events, {bool updateUI = true}) {
     bool updated = false;
     var keyIndex = settingProvider.privateKeyIndex!;
+    if (kDebugMode) {
+      BotToast.showText(
+          text: "Loaded ${events.length} DM events from relays");
+    }
     for (var event in events) {
       var addResult = _addEvent(localPubkey!, event);
       // save to local

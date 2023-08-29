@@ -30,6 +30,8 @@ import '../../utils/router_util.dart';
 import '../../utils/string_util.dart';
 
 class SearchRouter extends StatefulWidget {
+  const SearchRouter({super.key});
+
   @override
   State<StatefulWidget> createState() {
     return _SearchRouter();

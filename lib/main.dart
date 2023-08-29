@@ -220,7 +220,7 @@ Future<void> main() async {
 
   if (StringUtil.isNotBlank(settingProvider.privateKey)) {
     try {
-      nostr = relayProvider.genNostr(settingProvider.privateKey!);
+      nostr = await relayProvider.genNostr(settingProvider.privateKey!);
     } catch (e) {
       var index = settingProvider.privateKeyIndex;
       if (index != null) {
@@ -274,29 +274,29 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
 
     routes = {
       RouterPath.INDEX: (context) => IndexRouter(reload: reload),
-      RouterPath.USER: (context) => UserRouter(),
-      RouterPath.USER_CONTACT_LIST: (context) => UserContactListRouter(),
+      RouterPath.USER: (context) => const UserRouter(),
+      RouterPath.USER_CONTACT_LIST: (context) => const UserContactListRouter(),
       RouterPath.USER_HISTORY_CONTACT_LIST: (context) =>
           UserHistoryContactListRouter(),
-      RouterPath.USER_ZAP_LIST: (context) => UserZapListRouter(),
-      RouterPath.USER_RELAYS: (context) => UserRelayRouter(),
-      RouterPath.DM_DETAIL: (context) => DMDetailRouter(),
-      RouterPath.THREAD_DETAIL: (context) => ThreadDetailRouter(),
-      RouterPath.EVENT_DETAIL: (context) => EventDetailRouter(),
-      RouterPath.TAG_DETAIL: (context) => TagDetailRouter(),
-      RouterPath.NOTICES: (context) => NoticeRouter(),
-      RouterPath.SEARCH: (context) => SearchRouter(),
-      RouterPath.KEY_BACKUP: (context) => KeyBackupRouter(),
-      RouterPath.RELAYS: (context) => RelaysRouter(),
-      RouterPath.FILTER: (context) => FilterRouter(),
-      RouterPath.PROFILE_EDITOR: (context) => ProfileEditorRouter(),
+      RouterPath.USER_ZAP_LIST: (context) => const UserZapListRouter(),
+      RouterPath.USER_RELAYS: (context) => const UserRelayRouter(),
+      RouterPath.DM_DETAIL: (context) => const DMDetailRouter(),
+      RouterPath.THREAD_DETAIL: (context) => const ThreadDetailRouter(),
+      RouterPath.EVENT_DETAIL: (context) => const EventDetailRouter(),
+      RouterPath.TAG_DETAIL: (context) => const TagDetailRouter(),
+      RouterPath.NOTICES: (context) => const NoticeRouter(),
+      RouterPath.SEARCH: (context) => const SearchRouter(),
+      RouterPath.KEY_BACKUP: (context) => const KeyBackupRouter(),
+      RouterPath.RELAYS: (context) => const RelaysRouter(),
+      RouterPath.FILTER: (context) => const FilterRouter(),
+      RouterPath.PROFILE_EDITOR: (context) => const ProfileEditorRouter(),
       RouterPath.SETTING: (context) => SettingRouter(indexReload: reload),
-      RouterPath.QRSCANNER: (context) => QRScannerRouter(),
-      RouterPath.RELAY_INFO: (context) => RelayInfoRouter(),
-      RouterPath.FOLLOWED_TAGS_LIST: (context) => FollowedTagsListRouter(),
-      RouterPath.COMMUNITY_DETAIL: (context) => CommunityDetailRouter(),
-      RouterPath.FOLLOWED_COMMUNITIES: (context) => FollowedCommunitiesRouter(),
-      RouterPath.FOLLOWED: (context) => FollowedRouter(),
+      RouterPath.QRSCANNER: (context) => const QRScannerRouter(),
+      RouterPath.RELAY_INFO: (context) => const RelayInfoRouter(),
+      RouterPath.FOLLOWED_TAGS_LIST: (context) => const FollowedTagsListRouter(),
+      RouterPath.COMMUNITY_DETAIL: (context) => const CommunityDetailRouter(),
+      RouterPath.FOLLOWED_COMMUNITIES: (context) => const FollowedCommunitiesRouter(),
+      RouterPath.FOLLOWED: (context) => const FollowedRouter(),
     };
 
     return MultiProvider(

@@ -28,11 +28,12 @@ class NotificationsRouter extends StatefulWidget {
 
 class _NotificationsRouter extends KeepAliveCustState<NotificationsRouter>
     with LoadMoreEvent {
-  ScrollController _controller = ScrollController();
+  final ScrollController _controller = ScrollController();
 
   @override
   void initState() {
     super.initState();
+    notificationsProvider.doQuery();
     bindLoadMoreScroll(_controller);
   }
 

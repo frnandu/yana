@@ -67,32 +67,36 @@ class RelayProvider extends ChangeNotifier {
     return relayAddrs.length;
   }
 
-  Nostr genNostr(String pk) {
+  Future<Nostr> genNostr(String pk) async {
     var _nostr = Nostr(privateKey: pk);
-    log("nostr init over");
-
-    // add initQuery
-    var dmInitFuture = dmProvider.initDMSessions(_nostr.publicKey);
-    contactListProvider.reload(targetNostr: _nostr);
-    contactListProvider.query(targetNostr: _nostr);
-    followEventProvider.doQuery(targetNostr: _nostr, initQuery: true);
-    notificationsProvider.doQuery(targetNostr: _nostr, initQuery: true);
-    dmInitFuture.then((_) {
-      dmProvider.query(targetNostr: _nostr, subscribe: false);
-    }).then((_) {
-      dmProvider.query(targetNostr: _nostr, subscribe: true);
-    });
+    // log("nostr init over");
 
     for (var relayAddr in relayAddrs) {
-      log("begin to init $relayAddr");
+      // log("begin to init $relayAddr");
       var custRelay = genRelay(relayAddr);
       try {
-        _nostr.addRelay(custRelay, init: true);
+        await _nostr.addRelay(custRelay, init: true);
       } catch (e) {
         log("relay $relayAddr add to pool error ${e.toString()}");
       }
     }
 
+    // add initQuery
+    contactListProvider.reload(targetNostr: _nostr);
+    contactListProvider.query(targetNostr: _nostr);
+    followEventProvider.doQuery(targetNostr: _nostr, initQuery: true);
+    notificationsProvider.doQuery(targetNostr: _nostr, initQuery: true);
+    Future.delayed(
+        const Duration(seconds: 3),
+        () => {
+              dmProvider.initDMSessions(_nostr.publicKey).then((_) {
+                dmProvider.query(targetNostr: _nostr, subscribe: false);
+              })
+            });
+    // .then((_) {
+    //   dmProvider.query(targetNostr: _nostr, subscribe: true);
+    // })
+    ;
     return _nostr;
   }
 
@@ -162,17 +166,17 @@ class RelayProvider extends ChangeNotifier {
     )..relayStatusCallback = onRelayStatusChange;
   }
 
-  void setRelayListAndUpdate(List<String> addrs) {
+  void setRelayListAndUpdate(List<String> addrs, String privKey) {
     relayStatusMap.clear();
 
     relayAddrs.clear();
     relayAddrs.addAll(addrs);
     _updateRelayToData(upload: false);
 
-    if (nostr!=null) {
+    if (nostr != null) {
       nostr!.close();
     }
-    nostr = Nostr(privateKey: nostr!.privateKey);
+    nostr = Nostr(privateKey: privKey);
 
     // reconnect all client
     for (var relayAddr in relayAddrs) {
@@ -195,7 +199,6 @@ class RelayProvider extends ChangeNotifier {
         log("relay $relayAddr add to pool error ${e.toString()}");
       }
     }
-
   }
 
   void clear() {

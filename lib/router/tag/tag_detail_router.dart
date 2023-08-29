@@ -19,6 +19,8 @@ import '../../utils/router_util.dart';
 import '../../utils/string_util.dart';
 
 class TagDetailRouter extends StatefulWidget {
+  const TagDetailRouter({super.key});
+
   @override
   State<StatefulWidget> createState() {
     return _TagDetailRouter();

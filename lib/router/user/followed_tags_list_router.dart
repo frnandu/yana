@@ -7,6 +7,8 @@ import '../../i18n/i18n.dart';
 import '../../utils/router_util.dart';
 
 class FollowedTagsListRouter extends StatefulWidget {
+  const FollowedTagsListRouter({super.key});
+
   @override
   State<StatefulWidget> createState() {
     return _FollowedTagsListRouter();

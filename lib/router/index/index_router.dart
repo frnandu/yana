@@ -33,7 +33,7 @@ import 'index_drawer_content.dart';
 class IndexRouter extends StatefulWidget {
   Function reload;
 
-  IndexRouter({required this.reload});
+  IndexRouter({super.key, required this.reload});
 
   @override
   State<StatefulWidget> createState() {
@@ -105,7 +105,6 @@ class _IndexRouter extends CustState<IndexRouter>
 
     _indexProvider.setFollowTabController(followTabController);
 
-
     scrollDirectionCallback(direction) {
       if (direction == ScrollDirection.idle && _scrollingDown) {
         _scrollingDown = false;
@@ -121,6 +120,7 @@ class _IndexRouter extends CustState<IndexRouter>
         });
       }
     }
+
     _indexProvider.addScrollListener(scrollDirectionCallback);
 
     var themeData = Theme.of(context);
@@ -136,7 +136,7 @@ class _IndexRouter extends CustState<IndexRouter>
 
     dmTabController.addListener(() {
       setState(() {
-        _scrollingDown=false;
+        _scrollingDown = false;
       });
     });
 
@@ -270,14 +270,13 @@ class _IndexRouter extends CustState<IndexRouter>
                       child: text);
                 },
                 selector: (context, _provider) {
-                  return _provider.howManyNewDMSessionsWithNewMessages(
-                      _provider.knownList);
+                  return _provider
+                      .howManyNewDMSessionsWithNewMessages(_provider.knownList);
                 },
-              )
-          ),
+              )),
           Container(
-            height: IndexAppBar.height,
-            alignment: Alignment.center,
+              height: IndexAppBar.height,
+              alignment: Alignment.center,
               child: Selector<DMProvider, int>(
                 builder: (context, count, child) {
                   Text text = Text(
@@ -298,8 +297,7 @@ class _IndexRouter extends CustState<IndexRouter>
                   return _provider.howManyNewDMSessionsWithNewMessages(
                       _provider.unknownList);
                 },
-              )
-          ),
+              )),
         ],
       );
     }
@@ -428,26 +426,35 @@ class _IndexRouter extends CustState<IndexRouter>
       return Scaffold(
           body: mainIndex,
           extendBody: true,
-          floatingActionButton:
-
-              AnimatedContainer(
-                  curve: Curves.ease,
-                  duration: const Duration(milliseconds: 200),
-                  height: _scrollingDown ? 0.0 : 100,
-                  child:
-              addBtn
+          floatingActionButton: AnimatedOpacity(
+            opacity: _scrollingDown ? 0 : 1,
+            curve: Curves.fastOutSlowIn,
+            duration: const Duration(milliseconds: 400),
+            child: addBtn,
           )
+          //
+          //     AnimatedContainer(
+          //         curve: Curves.ease,
+          //         duration: const Duration(milliseconds: 200),
+          //         height: _scrollingDown ? 0.0 : 100,
+          //         child:
+          //     addBtn
+          // )
           ,
           floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
           drawer: Drawer(
             child: IndexDrawerContentComponent(reload: widget.reload),
           ),
           //       extendBodyBehindAppBar: true,
-          bottomNavigationBar: AnimatedContainer(
+          bottomNavigationBar: AnimatedOpacity(
+              opacity: _scrollingDown ? 0 : 1,
+              curve: Curves.fastOutSlowIn,
               duration: const Duration(milliseconds: 400),
-              curve: Curves.ease,
-              height: _scrollingDown ? 0.0 : 50,
-              child: IndexBottomBar()));
+              child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 400),
+                  curve: Curves.ease,
+                  height: _scrollingDown ? 0.0 : 50,
+                  child: IndexBottomBar())));
     }
   }
 

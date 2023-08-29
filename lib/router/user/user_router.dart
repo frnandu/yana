@@ -13,6 +13,7 @@ import '../../ui/appbar4stack.dart';
 import '../../ui/cust_state.dart';
 import '../../ui/event/event_list_component.dart';
 import '../../ui/user/metadata_component.dart';
+import '../../utils/base.dart';
 import '../../utils/base_consts.dart';
 import '../../utils/load_more_event.dart';
 import '../../utils/peddingevents_later_function.dart';
@@ -21,6 +22,8 @@ import '../../utils/string_util.dart';
 import 'user_statistics_component.dart';
 
 class UserRouter extends StatefulWidget {
+  const UserRouter({super.key});
+
   @override
   State<StatefulWidget> createState() {
     return _UserRouter();
@@ -162,6 +165,19 @@ class _UserRouter extends CustState<UserRouter>
                   userPicturePreview: true,
                 ),
               ),
+              // Container(
+              //     margin: const EdgeInsets.only(top: Base.BASE_PADDING_HALF),
+              //     padding: const EdgeInsets.only(
+              //       left: Base.BASE_PADDING * 2,
+              //       bottom: Base.BASE_PADDING / 2,
+              //       top: Base.BASE_PADDING / 2,
+              //     ),
+              //     decoration: BoxDecoration(
+              //         border: Border(
+              //             top: BorderSide(
+              //               width: 1,
+              //               color: themeData.hintColor,
+              //             )))),
               SliverToBoxAdapter(
                 child: SingleChildScrollView(
                   scrollDirection: Axis.horizontal,

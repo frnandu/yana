@@ -18,6 +18,8 @@ import '../../ui/cust_state.dart';
 import '../../utils/base.dart';
 
 class ProfileEditorRouter extends StatefulWidget {
+  const ProfileEditorRouter({super.key});
+
   @override
   State<StatefulWidget> createState() {
     return _ProfileEditorRouter();
