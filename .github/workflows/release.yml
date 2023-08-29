@@ -110,7 +110,7 @@ jobs:
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
-          asset_name: yana-${{ github.ref_name }}.apk
+          asset_name: yana-${{ github.ref_name }}-arm64-v8a.apk
           asset_content_type: application/zip
       - name: Upload APK to release
         uses: actions/upload-release-asset@v1
@@ -119,7 +119,7 @@ jobs:
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk
-          asset_name: yana-${{ github.ref_name }}.apk
+          asset_name: yana-${{ github.ref_name }}-armeabi-v7a.apk
           asset_content_type: application/zip
       - name: Upload APK to release
         uses: actions/upload-release-asset@v1
@@ -128,7 +128,7 @@ jobs:
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: build/app/outputs/flutter-apk/app-x86_64-release.apk
-          asset_name: yana-${{ github.ref_name }}.apk
+          asset_name: yana-${{ github.ref_name }}-x86_64.apk
           asset_content_type: application/zip
 
 #      # APP BUNDLE
