@@ -10,6 +10,8 @@ Current mobile native nostr clients suffer from one of the following:
 - lack of a true FOSS community with lots of contributors being welcomed and encouraged to participate (Primal)
 - not multi-platform (Damus, Nozzle, Amethyst, Nostur)
 
+<img src="https://miro.medium.com/v2/resize:fit:1400/1*ikIM4VRMIlRKawtAbY7bzw.png"/>
+
 The objective of this project is neither fame, glory nor financial rewards.\
 My main motivator to spend time on this is to have a nostr client which I personally find the most pleasant to use on a everyday case.\
 Also to learn more deeply about [Nostr](https://github.com/nostr-protocol/nostr) and FOSS project development.\
