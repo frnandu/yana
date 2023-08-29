@@ -25,13 +25,11 @@
 - ~~close images clicking anywhere~~
 - ~~DMS from followed should not be on request tab~~
 - ~~badges when something new in DMS~~
+- ~~remember eventMemBox (timestamps) with badge numbers between app restart~~
+- ~~on login screen add get it on github~~
 
-- remember eventMemBox (timestamps) with badge numbers between app restart
 - separate posts from replies on profile
-
 - zaps for split@yana.do (Lnbits)
-- on login screen add get it on github 
-- verify signing of notes
 - floating icon (+) on DMS sends new msg to CHOOSE
 - subcription on profile should be kept open to receive updates from WS - REFACTOR logic of later loading & caching metadata
 - optimize  zaps/followed downloading (caching on db) on background 
@@ -52,7 +50,6 @@
 - move reposts from replies to posts? maybe new tab only for reposts?
 - fix saving pictures to phone
 - https://pub.dev/packages/objectbox
-- lnbits for prism split and widget
 - integration with https://github.com/greenart7c3/Amber
 - long posts should be cut and have "show more"
 - try to reduce as much as possible apk size
