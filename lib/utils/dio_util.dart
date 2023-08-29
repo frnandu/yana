@@ -4,6 +4,7 @@ import 'package:cookie_jar/cookie_jar.dart';
 import 'package:dio/dio.dart';
 import 'package:dio/io.dart';
 import 'package:dio_cookie_manager/dio_cookie_manager.dart';
+import 'package:flutter/foundation.dart';
 
 Dio? _dio;
 var cookieJar = CookieJar();
@@ -23,8 +24,7 @@ class DioUtil {
 
       // _dio!.options.connectTimeout = Duration(minutes: 1);
       // _dio!.options.receiveTimeout = Duration(minutes: 1);
-      _dio!.options.headers["user-agent"] =
-          "Yana";
+      _dio!.options.headers["user-agent"] = "Yana";
       _dio!.options.headers["accept-encoding"] = "gzip";
       CookieManager cookieManager = CookieManager(cookieJar);
       _dio!.interceptors.add(cookieManager);
@@ -43,14 +43,24 @@ class DioUtil {
     if (header != null) {
       dio.options.headers.addAll(header);
     }
-    Response resp = await dio.get(link, queryParameters: queryParameters);
-    if (resp.statusCode == 200) {
-      if (resp.data is String) {
-        return json.decode(resp.data);
+    try {
+      Response resp = await dio.get(link, queryParameters: queryParameters);
+      if (resp.statusCode == 200) {
+        if (resp.data is String) {
+          return json.decode(resp.data);
+        }
+        return resp.data;
+      } else {
+        return null;
       }
-      return resp.data;
-    } else {
-      return null;
+    } on DioException catch (ex) {
+      if (kDebugMode) {
+        print(ex.error);
+      }
+      // if (ex.type == DioExceptionType.co) {
+      //   throw Exception("Connection  Timeout Exception");
+      // }
+      // throw Exception(ex.message);
     }
   }
 
@@ -61,12 +71,18 @@ class DioUtil {
     if (header != null) {
       dio.options.headers.addAll(header);
     }
-    Response resp =
-        await dio.get<String>(link, queryParameters: queryParameters);
-    if (resp.statusCode == 200) {
-      return resp.data;
-    } else {
-      return null;
+    try {
+      Response resp =
+          await dio.get<String>(link, queryParameters: queryParameters);
+      if (resp.statusCode == 200) {
+        return resp.data;
+      } else {
+        return null;
+      }
+    } on DioException catch (ex) {
+      if (kDebugMode) {
+        print(ex.error);
+      }
     }
   }
 
