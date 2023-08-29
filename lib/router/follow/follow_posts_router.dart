@@ -51,26 +51,38 @@ class _FollowPostsRouter extends KeepAliveCustState<FollowPostsRouter>
     indexProvider.setFollowPostsScrollController(_controller);
     preBuild();
 
-    var main = SingleChildScrollView(
-        controller: _controller,
-        child: Column(mainAxisSize: MainAxisSize.min, children: <Widget>[
-          Flexible(
-              child: ListView.builder(
-            addAutomaticKeepAlives: true,
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            // controller: _controller,
-            itemBuilder: (BuildContext context, int index) {
-              var event = events[index];
-              return EventListComponent(
-                event: event,
-                showVideo:
-                    _settingProvider.videoPreviewInList == OpenStatus.OPEN,
-              );
-            },
-            itemCount: events.length,
-          ))
-        ]));
+    var main = ListView.builder(
+      controller: _controller,
+      itemBuilder: (BuildContext context, int index) {
+        var event = events[index];
+        return EventListComponent(
+          event: event,
+          showVideo: _settingProvider.videoPreviewInList == OpenStatus.OPEN,
+        );
+      },
+      itemCount: events.length,
+    );
+
+    // var main = SingleChildScrollView(
+    //     controller: _controller,
+    //     child: Column(mainAxisSize: MainAxisSize.min, children: <Widget>[
+    //       Flexible(
+    //           child: ListView.builder(
+    //         addAutomaticKeepAlives: true,
+    //         shrinkWrap: true,
+    //         physics: const NeverScrollableScrollPhysics(),
+    //         // controller: _controller,
+    //         itemBuilder: (BuildContext context, int index) {
+    //           var event = events[index];
+    //           return EventListComponent(
+    //             event: event,
+    //             showVideo:
+    //                 _settingProvider.videoPreviewInList == OpenStatus.OPEN,
+    //           );
+    //         },
+    //         itemCount: events.length,
+    //       ))
+    //     ]));
 
     Widget ri = RefreshIndicator(
       onRefresh: () async {

@@ -430,13 +430,13 @@ class _IndexRouter extends CustState<IndexRouter>
           extendBody: true,
           floatingActionButton:
 
-              // AnimatedContainer(
-              //     curve: Curves.ease,
-              //     duration: const Duration(milliseconds: 200),
-              //     height: _scrollingDown ? 0.0 : 50,
-              //     child:
+              AnimatedContainer(
+                  curve: Curves.ease,
+                  duration: const Duration(milliseconds: 200),
+                  height: _scrollingDown ? 0.0 : 100,
+                  child:
               addBtn
-          // )
+          )
           ,
           floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
           drawer: Drawer(
