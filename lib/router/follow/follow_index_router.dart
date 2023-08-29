@@ -7,7 +7,7 @@ import 'follow_posts_router.dart';
 class FollowIndexRouter extends StatefulWidget {
   TabController tabController;
 
-  FollowIndexRouter({required this.tabController});
+  FollowIndexRouter({super.key, required this.tabController});
 
   @override
   State<StatefulWidget> createState() {
