@@ -224,7 +224,7 @@ class _IndexDrawerContentComponnent extends State<IndexDrawerContentComponent> {
                         child: GestureDetector(
                             onTap: () {
                               var url = Uri.parse(
-                                  "https://github.com/frnandu/yana/releases/tag/v${packageInfo.version}");
+                                  "https://github.com/frnandu/yana/releases");
                               launchUrl(url, mode: LaunchMode.externalApplication);
                             },
                             child: Text("v${packageInfo.version}",

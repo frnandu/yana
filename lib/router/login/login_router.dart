@@ -178,7 +178,7 @@ class _LoginRouter extends State<LoginRouter>
           child: GestureDetector(
               onTap: () {
                 var url = Uri.parse(
-                    "https://github.com/frnandu/yana/releases/tag/v${packageInfo.version}");
+                    "https://github.com/frnandu/yana/releases");
                 launchUrl(url, mode: LaunchMode.externalApplication);
               },
               child: github)));
