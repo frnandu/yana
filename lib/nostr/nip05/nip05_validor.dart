@@ -1,6 +1,8 @@
 import 'package:dio/dio.dart';
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
+
 class Nip05Validor {
   static Map<String, int> _checking = {};
 
@@ -29,19 +31,26 @@ class Nip05Validor {
     }
 
     var url = "https://$address/.well-known/nostr.json?name=$name";
-    var response = await dio.get(url);
-    if (response.data != null) {
-      Map<String, dynamic> data;
-      if (response.data is! Map && response.data is String) {
-        data = json.decode(response.data);
-      } else {
-        data = response.data;
-      }
-      if (data["names"] != null) {
-        var dataPubkey = data["names"][name];
-        if (dataPubkey != null && dataPubkey == pubkey) {
-          return true;
+    try {
+      var response = await dio.get(url);
+
+      if (response.data != null) {
+        Map<String, dynamic> data;
+        if (response.data is! Map && response.data is String) {
+          data = json.decode(response.data);
+        } else {
+          data = response.data;
         }
+        if (data["names"] != null) {
+          var dataPubkey = data["names"][name];
+          if (dataPubkey != null && dataPubkey == pubkey) {
+            return true;
+          }
+        }
+      }
+    } on DioException catch (ex) {
+      if (kDebugMode) {
+        print(ex.error);
       }
     }
 
