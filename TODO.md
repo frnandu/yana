@@ -31,8 +31,8 @@
 - separate posts from replies on profile
 - zaps for split@yana.do (Lnbits)
 - floating icon (+) on DMS sends new msg to CHOOSE
-- subcription on profile should be kept open to receive updates from WS - REFACTOR logic of later loading & caching metadata
-- optimize  zaps/followed downloading (caching on db) on background 
+- subscription on profile/DMS/notifications should be kept open to receive updates from WS - REFACTOR logic of later loading & caching metadata
+- optimize zaps/followed downloading (caching on db) on background 
 - relay setting of read/write
 - https://docs.flutter.dev/ui/navigation/deep-linking
 - mark all DMs as read feature
