@@ -221,16 +221,16 @@ class DMProvider extends ChangeNotifier with PenddingEventsLaterFunction {
     if (session == null) {
       session = DMSession(pubkey: pubkey!);
       _sessions[pubkey] = session;
-      if (this.localPubkey!=null) {
-        var detail = DMSessionDetail(session);
-        var pubkey = _getPubkey(localPubkey, event);
-        Contact? contact = contactListProvider.getContact(pubkey!);
-        if (contact != null) {
-          _followingList.add(detail);
-        } else {
-          _unknownList.add(detail);
-        }
-      }
+      // if (this.localPubkey!=null) {
+      //   var detail = DMSessionDetail(session);
+      //   var pubkey = _getPubkey(localPubkey, event);
+      //   Contact? contact = contactListProvider.getContact(pubkey!);
+      //   if (contact != null) {
+      //     _followingList.add(detail);
+      //   } else {
+      //     _unknownList.add(detail);
+      //   }
+      // }
     }
     var addResult = session.addEvent(event);
 
@@ -258,8 +258,8 @@ class DMProvider extends ChangeNotifier with PenddingEventsLaterFunction {
     if (!subscribe) {
       targetNostr.addInitQuery([filter0.toJson(), filter1.toJson()], onEvent);
     } else {
-      // targetNostr.query([filter0.toJson(), filter1.toJson()], onEvent);
-      targetNostr.subscribe([filter0.toJson(), filter1.toJson()], onEvent);
+      targetNostr.query([filter0.toJson(), filter1.toJson()], onEvent);
+      // targetNostr.subscribe([filter0.toJson(), filter1.toJson()], onEvent);
     }
   }
 
