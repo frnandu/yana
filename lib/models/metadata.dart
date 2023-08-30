@@ -66,6 +66,16 @@ class Metadata {
     return data;
   }
 
+  String getName() {
+    if (displayName!=null && StringUtil.isNotBlank(displayName)) {
+      return displayName!;
+    }
+    if (name!=null && StringUtil.isNotBlank(name)) {
+      return name!;
+    }
+    return pubKey!;
+  }
+
   String? getPictureOrRobohash() {
     return StringUtil.isNotBlank(picture) ? picture : StringUtil.robohash(pubKey!);
   }
