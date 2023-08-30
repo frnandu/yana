@@ -1,7 +1,16 @@
+import 'dart:async';
+import 'dart:io';
+import 'dart:ui';
+
+import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:bot_toast/bot_toast.dart';
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_background_service/flutter_background_service.dart';
+import 'package:flutter_background_service_android/flutter_background_service_android.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:get_time_ago/get_time_ago.dart';
@@ -19,7 +28,6 @@ import 'package:yana/provider/community_info_provider.dart';
 import 'package:yana/provider/custom_emoji_provider.dart';
 import 'package:yana/provider/follow_new_event_provider.dart';
 import 'package:yana/provider/new_notifications_provider.dart';
-import 'package:yana/router/index/account_manager_component.dart';
 import 'package:yana/router/relays/relay_info_router.dart';
 import 'package:yana/router/search/search_router.dart';
 import 'package:yana/router/user/followed_router.dart';
@@ -39,9 +47,9 @@ import 'provider/filter_provider.dart';
 import 'provider/follow_event_provider.dart';
 import 'provider/index_provider.dart';
 import 'provider/link_preview_data_provider.dart';
-import 'provider/notifications_provider.dart';
 import 'provider/metadata_provider.dart';
 import 'provider/notice_provider.dart';
+import 'provider/notifications_provider.dart';
 import 'provider/pc_router_fake_provider.dart';
 import 'provider/relay_provider.dart';
 import 'provider/setting_provider.dart';
@@ -123,11 +131,100 @@ late CommunityApprovedProvider communityApprovedProvider;
 
 late CommunityInfoProvider communityInfoProvider;
 
+AppLifecycleState appState = AppLifecycleState.resumed;
+
 Nostr? nostr;
 
 bool firstLogin = false;
 
 late PackageInfo packageInfo;
+
+int c = 0;
+
+@pragma('vm:entry-point')
+void onStart(ServiceInstance service) async {
+  // Only available for flutter 3.0.0 and later
+  DartPluginRegistrant.ensureInitialized();
+
+  // For flutter prior to version 3.0.0
+  // We have to register the plugin manually
+
+  SharedPreferences preferences = await SharedPreferences.getInstance();
+  await preferences.setString("hello", "world");
+
+  /// OPTIONAL when use custom notification
+  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+  FlutterLocalNotificationsPlugin();
+
+  if (service is AndroidServiceInstance) {
+    service.on('setAsForeground').listen((event) {
+      service.setAsForegroundService();
+    });
+
+    service.on('setAsBackground').listen((event) {
+      service.setAsBackgroundService();
+    });
+  }
+
+  service.on('stopService').listen((event) {
+    service.stopSelf();
+  });
+
+  // bring to foreground
+  Timer.periodic(const Duration(seconds: 10), (timer) async {
+    if (service is AndroidServiceInstance) {
+      if (await service.isForegroundService()) {
+        /// OPTIONAL for use custom notification
+        /// the notification id must be equals with AndroidConfiguration when you call configure() method.
+        flutterLocalNotificationsPlugin.show(
+          888,
+          'COOL SERVICE',
+          'Awesome ${DateTime.now()}',
+          const NotificationDetails(
+            android: AndroidNotificationDetails(
+              'my_foreground',
+              'MY FOREGROUND SERVICE',
+              icon: 'ic_bg_service_small',
+              ongoing: true,
+            ),
+          ),
+        );
+
+        service.setForegroundNotificationInfo(title: "", content: "");
+        // if you don't using custom notification, uncomment this
+        // service.setForegroundNotificationInfo(
+        //   title: "My App Service",
+        //   content: "Updated at ${DateTime.now()}",
+        // );
+      }
+    }
+
+    SystemTimer.notifications();
+    /// you can see this log in logcat
+    print('FLUTTER BACKGROUND SERVICE: ${DateTime.now()}');
+
+    // test using external plugin
+    final deviceInfo = DeviceInfoPlugin();
+    String? device;
+    if (Platform.isAndroid) {
+      final androidInfo = await deviceInfo.androidInfo;
+      device = androidInfo.model;
+    }
+
+    if (Platform.isIOS) {
+      final iosInfo = await deviceInfo.iosInfo;
+      device = iosInfo.model;
+    }
+
+    service.invoke(
+      'update',
+      {
+        "current_date": DateTime.now().toIso8601String(),
+        "device": device,
+      },
+    );
+  });
+}
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -230,7 +327,84 @@ Future<void> main() async {
   }
 
   FlutterNativeSplash.remove();
+  initService();
   runApp(MyApp());
+}
+
+void initService() async {
+  AwesomeNotifications().isNotificationAllowed().then((isAllowed) async {
+    print(isAllowed);
+    if (!isAllowed) {
+      await AwesomeNotifications().requestPermissionToSendNotifications(
+          permissions: [
+            NotificationPermission.Vibration,
+            NotificationPermission.Badge,
+            NotificationPermission.Light,
+            NotificationPermission.Sound,
+            NotificationPermission.PreciseAlarms,
+          ]);
+    }
+  });
+  AwesomeNotifications().initialize('resource://drawable/splash', [
+    // notification icon
+    NotificationChannel(
+      channelGroupKey: 'basic_test',
+      channelKey: 'basic',
+      channelName: 'Basic notifications',
+      channelDescription: 'Notification channel for basic tests',
+      channelShowBadge: true,
+    ),
+  ]);
+  AwesomeNotifications().setListeners(
+    onActionReceivedMethod: NewNotificationsProvider.onActionReceivedMethod,
+    onNotificationCreatedMethod: NewNotificationsProvider.onNotificationCreatedMethod,
+  );
+
+
+  /// OPTIONAL, using custom notification channel id
+  const AndroidNotificationChannel channel = AndroidNotificationChannel(
+    'my_foreground', // id
+    'MY FOREGROUND SERVICE', // title
+    description:
+    'This channel is used for important notifications.', // description
+    importance: Importance.low, // importance must be at low or higher level
+  );
+
+  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+  FlutterLocalNotificationsPlugin();
+  final service = FlutterBackgroundService();
+  await flutterLocalNotificationsPlugin
+      .resolvePlatformSpecificImplementation<
+      AndroidFlutterLocalNotificationsPlugin>()
+      ?.createNotificationChannel(channel);
+
+  await service.configure(
+    androidConfiguration: AndroidConfiguration(
+      // this will be executed when app is in foreground or background in separated isolate
+      onStart: onStart,
+
+      // auto start service
+      autoStart: true,
+      isForegroundMode: true,
+
+      notificationChannelId: 'my_foreground',
+      initialNotificationTitle: 'AWESOME SERVICE',
+      initialNotificationContent: 'Initializing',
+      foregroundServiceNotificationId: 888,
+    ),
+    iosConfiguration: IosConfiguration(
+      // auto start service
+      autoStart: true,
+
+      // this will be executed when app is in foreground in separated isolate
+      onForeground: onStart,
+
+      // you have to enable background fetch capability on xcode project
+      // onBackground: onIosBackground,
+    ),
+  );
+
+  await service.startService();
 }
 
 class MyApp extends StatefulWidget {
@@ -293,9 +467,11 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
       RouterPath.SETTING: (context) => SettingRouter(indexReload: reload),
       RouterPath.QRSCANNER: (context) => const QRScannerRouter(),
       RouterPath.RELAY_INFO: (context) => const RelayInfoRouter(),
-      RouterPath.FOLLOWED_TAGS_LIST: (context) => const FollowedTagsListRouter(),
+      RouterPath.FOLLOWED_TAGS_LIST: (context) =>
+          const FollowedTagsListRouter(),
       RouterPath.COMMUNITY_DETAIL: (context) => const CommunityDetailRouter(),
-      RouterPath.FOLLOWED_COMMUNITIES: (context) => const FollowedCommunitiesRouter(),
+      RouterPath.FOLLOWED_COMMUNITIES: (context) =>
+          const FollowedCommunitiesRouter(),
       RouterPath.FOLLOWED: (context) => const FollowedRouter(),
     };
 
@@ -403,19 +579,23 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
     WidgetsBinding.instance!.removeObserver(this);
   }
 
-  late AppLifecycleState _lastState;
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
 
-    if (state == AppLifecycleState.resumed && (_lastState == AppLifecycleState.paused || _lastState == AppLifecycleState.hidden || _lastState == AppLifecycleState.inactive)) {
+    if (state == AppLifecycleState.resumed &&
+        (appState == AppLifecycleState.paused ||
+            appState == AppLifecycleState.hidden ||
+            appState == AppLifecycleState.inactive)) {
       //now you know that your app went to the background and is back to the foreground
-      if (nostr!=null) {
+      if (nostr != null) {
         nostr!.checkAndReconnectRelays();
       }
     }
-    _lastState = state; //register the last state. When you get "paused" it means the app went to the background.
+    //register the last state. When you get "paused" it means the app went to the background.
+    appState = state;
   }
+
   ThemeData getLightTheme() {
     Color background = const Color(0xFFF3E5F5);
 

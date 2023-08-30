@@ -21,12 +21,12 @@ class RelayProvider extends ChangeNotifier {
   static RelayProvider getInstance() {
     if (_relayProvider == null) {
       _relayProvider = RelayProvider();
-      _relayProvider!._load();
+      _relayProvider!.load();
     }
     return _relayProvider!;
   }
 
-  List<String>? _load() {
+  List<String>? load() {
     relayAddrs.clear();
     var list = sharedPreferences.getStringList(DataKey.RELAY_LIST);
     if (list != null) {
@@ -67,19 +67,23 @@ class RelayProvider extends ChangeNotifier {
     return relayAddrs.length;
   }
 
-  Future<Nostr> genNostr(String pk) async {
-    var _nostr = Nostr(privateKey: pk);
-    // log("nostr init over");
-
+  void addRelays(Nostr nostr) async {
     for (var relayAddr in relayAddrs) {
       // log("begin to init $relayAddr");
       var custRelay = genRelay(relayAddr);
       try {
-        await _nostr.addRelay(custRelay, init: true);
+        await nostr.addRelay(custRelay, init: true);
       } catch (e) {
         log("relay $relayAddr add to pool error ${e.toString()}");
       }
     }
+  }
+
+  Future<Nostr> genNostr(String pk) async {
+    var _nostr = Nostr(privateKey: pk);
+    // log("nostr init over");
+
+    addRelays(_nostr);
 
     // add initQuery
     contactListProvider.reload(targetNostr: _nostr);
@@ -204,6 +208,6 @@ class RelayProvider extends ChangeNotifier {
   void clear() {
     // sharedPreferences.remove(DataKey.RELAY_LIST);
     relayStatusMap.clear();
-    _load();
+    load();
   }
 }
