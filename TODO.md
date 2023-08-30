@@ -30,6 +30,7 @@
 
 - on fresh start (empty DB), mark all as read.
 
+- NIP-78 preferences and messages read state
 - separate posts from replies on profile
 - zaps for split@yana.do (Lnbits)
 - remember eventMemBox for Posts/Replies on DB (on just timestamp lastRead) so badge counter persists between app restarts

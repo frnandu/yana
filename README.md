@@ -123,6 +123,7 @@ or install deb file from releases:
 - [ ] Events with a Subject ([NIP-14](https://github.com/nostr-protocol/nips/blob/master/14.md))
 - [ ] Live Activities & Live Chats ([NIP-53](https://github.com/nostr-protocol/nips/blob/master/50.md))
 - [ ] Zapraiser (NIP-TBD)
+- [ ] Application Settings/Preferences ([NIP-78](https://github.com/nostr-protocol/nips/blob/master/78.md))
 - [ ] Moderated Communities ([NIP-72](https://github.com/nostr-protocol/nips/blob/master/72.md))
 - [ ] Emoji Packs (Kind:30030)
 - [ ] Personal Emoji Lists (Kind:10030)
