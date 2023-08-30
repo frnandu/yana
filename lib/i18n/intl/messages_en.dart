@@ -253,8 +253,6 @@ class MessageLookup extends MessageLookupByLibrary {
             "Text can\'t contain new line"),
         "Theme_Color": MessageLookupByLibrary.simpleMessage("Theme Color"),
         "Theme_Style": MessageLookupByLibrary.simpleMessage("Use Theme from System"),
-        "There_should_be_a_universe_here": MessageLookupByLibrary.simpleMessage(
-            "There should be a universe here"),
         "This_note_contains_sensitive_content":
             MessageLookupByLibrary.simpleMessage(
                 "This note contains sensitive content"),

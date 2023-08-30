@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:developer';
 
+import 'package:flutter/foundation.dart';
 import 'package:yana/nostr/relay_info_util.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
@@ -71,6 +72,10 @@ class Relay {
         return true;
       } catch (e) {
         _onError(e.toString(), reconnect: true);
+      }
+    } else {
+      if (kDebugMode) {
+        print("Relay $url (status:+${relayStatus.connected} , _wsChannel "+(_wsChannel==null?"NULL!!":"not null")+") is NOT CONNECTED!!! while trying to send message ");
       }
     }
     return false;

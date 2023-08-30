@@ -1818,16 +1818,6 @@ class I18n {
     );
   }
 
-  /// `There should be a universe here`
-  String get There_should_be_a_universe_here {
-    return Intl.message(
-      'There should be a universe here',
-      name: 'There_should_be_a_universe_here',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `More`
   String get More {
     return Intl.message(

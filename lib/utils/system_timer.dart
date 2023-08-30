@@ -29,7 +29,7 @@ class SystemTimer {
     if (counter % 2 == 0 && nostr != null) {
       if (counter > 4) {
         newNotificationsProvider.queryNew();
-        // dmProvider.query();
+        dmProvider.query(subscribe: false);
       }
     } else {
       if (counter > 4) {
