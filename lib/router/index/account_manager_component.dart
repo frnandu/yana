@@ -119,20 +119,24 @@ class AccountsState extends State<AccountsComponent> {
         context, I18n.of(context).Input_account_private_key,
         valueCheck: addAccountCheck);
     if (StringUtil.isNotBlank(privateKey)) {
-      var result = await ConfirmDialog.show(
-          context, I18n.of(context).Add_account_and_login);
-      if (result == true) {
-        if (Nip19.isPrivateKey(privateKey!)) {
-          privateKey = Nip19.decode(privateKey);
-        }
-        // logout current and login new
-        var oldIndex = settingProvider.privateKeyIndex;
-        var newIndex = settingProvider.addAndChangePrivateKey(privateKey);
-        if (oldIndex != newIndex) {
-          clearCurrentMemInfo();
-          doLogin();
-          settingProvider.notifyListeners();
-          RouterUtil.back(context);
+      if (mounted) {
+        var result = await ConfirmDialog.show(
+            context, I18n
+            .of(context)
+            .Add_account_and_login);
+        if (result == true) {
+          if (Nip19.isPrivateKey(privateKey!)) {
+            privateKey = Nip19.decode(privateKey);
+          }
+          // logout current and login new
+          var oldIndex = settingProvider.privateKeyIndex;
+          var newIndex = settingProvider.addAndChangePrivateKey(privateKey);
+          if (oldIndex != newIndex) {
+            clearCurrentMemInfo();
+            doLogin();
+            settingProvider.notifyListeners();
+            RouterUtil.back(context);
+          }
         }
       }
     }
@@ -224,11 +228,11 @@ class AccountsState extends State<AccountsComponent> {
 }
 
 class AccountManagerItemComponent extends StatefulWidget {
-  bool isCurrent;
+  final bool isCurrent;
 
-  int index;
+  final int index;
 
-  String privateKey;
+  final String privateKey;
 
   Function(int)? onLoginTap;
 
@@ -264,7 +268,6 @@ class _AccountManagerItemComponent extends State<AccountManagerItemComponent> {
   @override
   Widget build(BuildContext context) {
     var themeData = Theme.of(context);
-    var hintColor = themeData.hintColor;
     Color? cardColor = themeData.cardColor;
     if (cardColor == Colors.white) {
       cardColor = Colors.grey[300];
@@ -279,7 +282,7 @@ class _AccountManagerItemComponent extends State<AccountManagerItemComponent> {
 
       Widget? imageWidget;
 
-      String? url = metadata != null && StringUtil.isNotBlank(metadata?.picture) ? metadata?.picture : StringUtil.robohash(pubkey);
+      String? url = metadata != null && StringUtil.isNotBlank(metadata.picture) ? metadata.picture : StringUtil.robohash(pubkey);
 
       if (url != null) {
           imageWidget = CachedNetworkImage(

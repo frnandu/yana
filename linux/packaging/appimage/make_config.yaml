@@ -33,4 +33,5 @@ startup_notify: true
 #
 # include:
 #   - libcurl.so.4
-include: []
+include:
+  - libjsoncpp.so.1

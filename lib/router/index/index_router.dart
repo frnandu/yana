@@ -378,11 +378,7 @@ class _IndexRouter extends CustState<IndexRouter>
             child: Selector<PcRouterFakeProvider, List<RouterFakeInfo>>(
               builder: (context, infos, child) {
                 if (infos.isEmpty) {
-                  return Container(
-                    child: Center(
-                      child: Text(s.There_should_be_a_universe_here),
-                    ),
-                  );
+                  return const Center();
                 }
 
                 List<Widget> pages = [];
