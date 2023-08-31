@@ -93,15 +93,17 @@ class NewNotificationsProvider extends ChangeNotifier
                     : "??"}: ${events
                     .first.content}",
                 payload: {"name": "FlutterCampus"},
-                badge: eventMemBox.length() +
-                    dmProvider.howManyNewDMSessionsWithNewMessages(
-                        dmProvider.followingList) +
-                    dmProvider
-                        .howManyNewDMSessionsWithNewMessages(
-                        dmProvider.knownList) +
-                    dmProvider
-                        .howManyNewDMSessionsWithNewMessages(
-                        dmProvider.unknownList)),
+                badge: 0
+                // eventMemBox.length() +
+                //     dmProvider.howManyNewDMSessionsWithNewMessages(
+                //         dmProvider.followingList) +
+                //     dmProvider
+                //         .howManyNewDMSessionsWithNewMessages(
+                //         dmProvider.knownList) +
+                //     dmProvider
+                //         .howManyNewDMSessionsWithNewMessages(
+                //         dmProvider.unknownList)
+                ),
           );
         }
       });

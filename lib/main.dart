@@ -162,23 +162,11 @@ void onStart(ServiceInstance service) async {
       service.setAsBackgroundService();
     });
   }
-  service.invoke("removeBadge");
-
 
   service.on('stopService').listen((event) {
     service.stopSelf();
   });
 
-  AwesomeNotifications().createNotification(
-    content: NotificationContent(
-        id: Random.secure().nextInt(1000),
-        channelKey: 'yana',
-        title: "",
-        payload: {"name": "FlutterCampus"},
-        badge: 0)
-  );
-
-  FlutterAppBadger.removeBadge();
   sharedPreferences = await DataUtil.getInstance();
   metadataProvider = await MetadataProvider.getInstance();
   relayProvider = RelayProvider.getInstance();
@@ -205,8 +193,7 @@ void onStart(ServiceInstance service) async {
 
 
   // bring to foreground
-  Timer.periodic(const Duration(seconds: 30), (timer) async {
-    FlutterAppBadger.removeBadge();
+  Timer.periodic(const Duration(seconds: 10), (timer) async {
 
     if (service is AndroidServiceInstance) {
         // if (await service.isForegroundService()) {
@@ -240,15 +227,22 @@ void onStart(ServiceInstance service) async {
       // if (aa != null && aa != "AppLifecycleState.resumed") {
       //   SystemTimer.notifications();
       // }
+      // AwesomeNotifications().createNotification(
+      //   content: NotificationContent(
+      //       id: Random.secure().nextInt(100000),
+      //       channelKey: 'yana',
+      //       title: "aaa",
+      //       payload: {"name": "FlutterCampus"},
+      //       badge: 0
+      //   ),
+      // );
+
       AwesomeNotifications().getAppLifeCycle().then((value) {
         if (value.toString() != "NotificationLifeCycle.Foreground") {
           nostr!.checkAndReconnectRelays();
           newNotificationsProvider.queryNew();
         }
       });
-
-      service.invoke("removeBadge");
-      service.invoke('updateBadgeCount', {"count": 0});
 
       // test using external plugin
       final deviceInfo = DeviceInfoPlugin();
@@ -286,23 +280,6 @@ Future<void> main() async {
       await windowManager.focus();
     });
   }
-
-  // String appBadgeSupported;
-  // try {
-  //   bool res = await FlutterAppBadger.isAppBadgeSupported();
-  //   if (res) {
-  //     appBadgeSupported = 'Supported';
-  //     try {
-  //       FlutterAppBadger.updateBadgeCount(69);
-  //     } on Exception {
-  //       print("FUCK");
-  //     }
-  //   } else {
-  //     appBadgeSupported = 'Not supported';
-  //   }
-  // } on PlatformException {
-  //   appBadgeSupported = 'Failed to get badge support.';
-  // }
 
   if (PlatformUtil.isWeb()) {
     databaseFactory = databaseFactoryFfiWeb;
@@ -390,7 +367,7 @@ void initBackgroundService() async {
     NotificationChannel(
       channelGroupKey: 'yana',
       channelKey: 'yana',
-      channelShowBadge: false,
+      channelShowBadge: true,
       channelName: 'Basic notifications',
       channelDescription: 'Notification channel for basic tests',
       // channelShowBadge: true,
@@ -414,10 +391,10 @@ void initBackgroundService() async {
 
   flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
   backgroundService = FlutterBackgroundService();
-  // await flutterLocalNotificationsPlugin
-  //     .resolvePlatformSpecificImplementation<
-  //         AndroidFlutterLocalNotificationsPlugin>()
-  //     ?.createNotificationChannel(channel);
+  await flutterLocalNotificationsPlugin
+      .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin>()
+      ?.createNotificationChannel(channel);
 
   await backgroundService!.configure(
     androidConfiguration: AndroidConfiguration(
