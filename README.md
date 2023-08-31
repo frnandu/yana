@@ -150,7 +150,8 @@ Some initial code was used from https://github.com/haorendashu/nostrmo project.
 
 Using a [Prism](https://dergigi.com/2023/03/12/lightning-prisms) address at [yana@fmar.link](https://btc.fmar.link/api/v1/invoices?storeId=7yXH2h1LUFXStGM4XPoSUpb43xkMj1riEsrAiYSWAk57&currency=SATS), each sat donation will be split into:
 
-80% - https://nostr.com/npub1xpuz4qerklyck9evtg40wgrthq5rce2mumwuuygnxcg6q02lz9ms275ams (code)\
+70% - https://nostr.com/npub1xpuz4qerklyck9evtg40wgrthq5rce2mumwuuygnxcg6q02lz9ms275ams (code)\
+10% - https://nostr.com/npub19yeqjawls407xjnmgkk6yss7936pcd7qzd5srlj8wye6j8433vrsjazqwk (initial code fragments)\
 10% - https://nostr.com/npub1xzeq653ms8wkekfnr49kgnzwrq7ykeljkrsf7fyh7ham9t6sl72q7v4dhh (graphics + UX)\
 10% - https://nostr.com/npub14wxtsrj7g2jugh70pfkzjln43vgn4p7655pgky9j9w9d75u465pqvagcye (PR + Marketing)
 
