@@ -1,3 +1,5 @@
+import 'package:yana/main.dart';
+
 import '../nostr/event.dart';
 import '../nostr/relay.dart';
 import '../utils/find_event_interface.dart';
@@ -104,6 +106,7 @@ class EventMemBox implements FindEventInterface {
 
   bool add(Event event) {
     var oldEvent = _idMap[event.id];
+
     if (oldEvent != null) {
       if (event.sources.isNotEmpty &&
           !oldEvent.sources.contains(event.sources[0])) {
@@ -158,6 +161,10 @@ class EventMemBox implements FindEventInterface {
 
   List<Event> all() {
     return _eventList;
+  }
+
+  bool containsId(String id) {
+    return _idMap.containsKey(id);
   }
 
   List<Event> listByPubkey(String pubkey) {

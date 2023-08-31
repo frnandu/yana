@@ -40,8 +40,9 @@ class _NotificationsRouter extends KeepAliveCustState<NotificationsRouter>
   @override
   Widget doBuild(BuildContext context) {
     var _settingProvider = Provider.of<SettingProvider>(context);
-    var _mentionMeProvider = Provider.of<NotificationsProvider>(context);
-    var eventBox = _mentionMeProvider.eventBox;
+    var _notificationsProvider = Provider.of<NotificationsProvider>(context);
+    var _newNotificationsProvider = Provider.of<NewNotificationsProvider>(context);
+    var eventBox = _notificationsProvider.eventBox;
     var events = eventBox.all();
     if (events.isEmpty) {
       return EventListPlaceholder(

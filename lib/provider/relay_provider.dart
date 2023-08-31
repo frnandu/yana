@@ -67,7 +67,7 @@ class RelayProvider extends ChangeNotifier {
     return relayAddrs.length;
   }
 
-  void addRelays(Nostr nostr) async {
+  Future<Object> addRelays(Nostr nostr) async {
     for (var relayAddr in relayAddrs) {
       // log("begin to init $relayAddr");
       var custRelay = genRelay(relayAddr);
@@ -77,6 +77,7 @@ class RelayProvider extends ChangeNotifier {
         log("relay $relayAddr add to pool error ${e.toString()}");
       }
     }
+    return Object();
   }
 
   Future<Nostr> genNostr(String pk) async {

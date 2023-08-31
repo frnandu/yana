@@ -40,7 +40,7 @@ class _IndexBottomBar extends State<IndexBottomBar> {
         builder: (context, tuple, child) {
           Icon icon = selectedPageIndex == 0 ? Icon(
               Icons.home, size: 30, color: themeData.dividerColor) : Icon(
-              Icons.home, size: 30, color: themeData.disabledColor);
+              Icons.home_outlined, size: 30, color: themeData.disabledColor);
           if (tuple.item1.length() <= 0 && tuple.item2.length() <= 0) {
             return icon;
           }
@@ -99,8 +99,6 @@ class _IndexBottomBar extends State<IndexBottomBar> {
 
 
     destinations.add(NavigationDestination(
-      selectedIcon: Icon(
-          Icons.notifications, size: 30, color: themeData.dividerColor),
       icon: Selector<NewNotificationsProvider, EventMemBox>(
         builder: (context, eventMemBox, child) {
           Icon icon = selectedPageIndex == 3

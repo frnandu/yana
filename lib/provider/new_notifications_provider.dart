@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/foundation.dart';
@@ -24,6 +26,7 @@ class NewNotificationsProvider extends ChangeNotifier
       ReceivedAction receivedAction) async {
     BotToast.showText(
         text: "Received notification " + receivedAction.payload.toString());
+    newNotificationsProvider.queryNew();
     //
     // // Navigate into pages, avoiding to open the notification details page over another details page already opened
     // MyApp.navigatorKey.currentState?.pushNamedAndRemoveUntil('/notification-page',
@@ -55,7 +58,7 @@ class NewNotificationsProvider extends ChangeNotifier
 
     subscribeId = StringUtil.rndNameStr(12);
     var filter = Filter(
-      since: _localSince! + 1,
+      since: _localSince!,
       kinds: notificationsProvider.queryEventKinds(),
       p: [nostr!.publicKey],
     );
@@ -65,29 +68,43 @@ class NewNotificationsProvider extends ChangeNotifier
   }
 
   handleEvents(List<Event> events) {
+    int previousCount = eventMemBox.length();
+    // BotToast.showText(
+    //     text: "Received ${events.length} notification events");
     events =
-        events.where((element) => element.pubKey != nostr?.publicKey).toList();
+        events.where((event) => event.pubKey != nostr?.publicKey && !notificationsProvider.eventBox.containsId(event.id)).toList();
+    if (events.isEmpty) {
+      return;
+    }
     eventMemBox.addList(events);
     _localSince = eventMemBox.newestEvent!.createdAt;
-    if (appState != AppLifecycleState.resumed) {
-      Metadata? metadata = metadataProvider.getMetadata(events.first.pubKey);
-      AwesomeNotifications().createNotification(
-        content: NotificationContent(
-            id: events.first.id.hashCode,
-            channelKey: 'basic',
-            largeIcon: metadata?.picture,
-            title: "${metadata != null ? metadata.getName() : "??"}: ${events
-                .first.content}",
-            payload: {"name": "FlutterCampus"},
-            badge: eventMemBox.length() +
-                dmProvider.howManyNewDMSessionsWithNewMessages(
-                    dmProvider.followingList) +
-                dmProvider
-                    .howManyNewDMSessionsWithNewMessages(dmProvider.knownList) +
-                dmProvider
-                    .howManyNewDMSessionsWithNewMessages(
-                    dmProvider.unknownList)),
-      );
+    if (eventMemBox.length() > previousCount) {
+      AwesomeNotifications().getAppLifeCycle().then((value) {
+        if (value.toString() != "NotificationLifeCycle.Foreground") {
+          Metadata? metadata = metadataProvider.getMetadata(
+              events.first.pubKey);
+          AwesomeNotifications().createNotification(
+            content: NotificationContent(
+                id: events.first.id.hashCode,
+                channelKey: 'basic',
+                largeIcon: metadata?.picture,
+                title: "${metadata != null
+                    ? metadata.getName()
+                    : "??"}: ${events
+                    .first.content}",
+                payload: {"name": "FlutterCampus"},
+                badge: eventMemBox.length() +
+                    dmProvider.howManyNewDMSessionsWithNewMessages(
+                        dmProvider.followingList) +
+                    dmProvider
+                        .howManyNewDMSessionsWithNewMessages(
+                        dmProvider.knownList) +
+                    dmProvider
+                        .howManyNewDMSessionsWithNewMessages(
+                        dmProvider.unknownList)),
+          );
+        }
+      });
     }
     notifyListeners();
   }

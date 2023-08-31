@@ -312,7 +312,7 @@ class RelayPool {
 
     for (Relay relay in _relays.values) {
       try {
-        if (relay.relayStatus.connected == ClientConneccted.UN_CONNECT) {
+        if (relay.relayStatus.connected != ClientConneccted.CONNECTED) {
           relay.connect();
         }
       } catch (err) {
