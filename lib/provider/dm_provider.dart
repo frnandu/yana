@@ -326,7 +326,7 @@ class DMSessionDetail {
     //   return false;
     // } else
     if (dmSession.newestEvent != null &&
-        (info==null || info!.readedTime! < dmSession.newestEvent!.createdAt)) {
+        (info!=null && info!.readedTime! < dmSession.newestEvent!.createdAt)) {
       return true;
     }
     return false;

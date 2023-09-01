@@ -84,11 +84,11 @@ class RelayProvider extends ChangeNotifier {
     var _nostr = Nostr(privateKey: pk);
     // log("nostr init over");
 
-    addRelays(_nostr);
+    await addRelays(_nostr);
 
     // add initQuery
-    contactListProvider.reload(targetNostr: _nostr);
     contactListProvider.query(targetNostr: _nostr);
+    contactListProvider.reload(targetNostr: _nostr);
     followEventProvider.doQuery(targetNostr: _nostr, initQuery: true);
     notificationsProvider.doQuery(targetNostr: _nostr, initQuery: true);
     Future.delayed(

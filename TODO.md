@@ -27,12 +27,14 @@
 - ~~badges when something new in DMS~~
 - ~~remember eventMemBox (timestamps) with badge numbers between app restart~~
 - ~~on login screen add get it on github~~
+- ~~on fresh start (empty DB), mark all as read.~~
+- ~~zaps for prism@yana.do (Lnbits)~~
 
-- on fresh start (empty DB), mark all as read.
-
+- pull notifications / background service
+- 
 - NIP-78 preferences and messages read state
 - separate posts from replies on profile
-- zaps for split@yana.do (Lnbits)
+- update service check for new release from github
 - remember eventMemBox for Posts/Replies on DB (on just timestamp lastRead) so badge counter persists between app restarts
 - floating icon (+) on DMS sends new msg to CHOOSE
 - subscription on profile/DMS/notifications should be kept open to receive updates from WS - REFACTOR logic of later loading & caching metadata
@@ -69,5 +71,4 @@
 - Nostr Wallet Connect with balance
 - NIP-7 window.nostr for web version
 - make it work on iOS/MacOS
-- Push Notifications 
 - try https://pub.dev/packages/flutter_rust_bridge for background loading of new events
