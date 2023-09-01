@@ -381,8 +381,8 @@ void initBackgroundService() async {
 
   /// OPTIONAL, using custom notification channel id
   const AndroidNotificationChannel channel = AndroidNotificationChannel(
-    'yana', // id
-    'Yana', // title
+    'yana-service', // id
+    'Yana notifications service', // title
     showBadge: false,
     description:
         'This channel is used for important notifications.', // description
@@ -401,9 +401,9 @@ void initBackgroundService() async {
       onStart: onStart,
       autoStart: false,
       isForegroundMode: true,
-      notificationChannelId: 'yana',
-      initialNotificationTitle: 'Yana',
-      initialNotificationContent: 'notifications service running...',
+      notificationChannelId: 'yana-service',
+      initialNotificationTitle: 'Yana notifications service',
+      initialNotificationContent: 'running...',
       foregroundServiceNotificationId: 888,
     ),
     iosConfiguration: IosConfiguration(
