@@ -97,9 +97,13 @@ class FollowNewEventProvider extends ChangeNotifier
     for (var event in events) {
       bool isPosts = FollowEventProvider.eventIsPost(event);
       if (isPosts) {
-        eventPostsMemBox.add(event);
+        if (!followEventProvider.postsBox.containsId(event.id)) {
+          eventPostsMemBox.add(event);
+        }
       } else {
-        eventPostsAndRepliesMemBox.add(event);
+        if (!followEventProvider.postsAndRepliesBox.containsId(event.id)) {
+          eventPostsAndRepliesMemBox.add(event);
+        }
       }
     }
     notifyListeners();

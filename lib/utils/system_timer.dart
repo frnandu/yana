@@ -22,7 +22,7 @@ class SystemTimer {
     if (timer != null) {
       timer!.cancel();
     }
-    timer = Timer.periodic(Duration(seconds: 15), (timer) {
+    timer = Timer.periodic(const Duration(seconds: 30), (timer) {
       try {
         runTask();
         counter++;
@@ -40,54 +40,21 @@ class SystemTimer {
           if (kDebugMode) {
             print('!!!!!!!!!!!!!!! SystemTimer.runTask');
           }
-          nostr!.checkAndReconnectRelays();
-          newNotificationsProvider.queryNew();
-          followNewEventProvider.queryNew();
-          dmProvider.query(subscribe: false);
+          nostr!.checkAndReconnectRelays().then((a) {
+            newNotificationsProvider.queryNew();
+            dmProvider.query(subscribe: false);
+            if (counter % 2 == 0) {
+              followNewEventProvider.queryNew();
+            }
+          });
         }
       });
-    }
-    if (counter % 2 == 0 && nostr != null) {
-      if (counter > 4) {
-      }
-    } else {
-      if (counter > 4) {
-      }
     }
   }
 
   static void stopTask() {
     if (timer != null) {
       timer!.cancel();
-    }
-  }
-
-  static void notifications() async {
-    if (kDebugMode) {
-      print('!!!!!!!!!!!!!!! SystemTimer.notifications');
-    }
-    sharedPreferences = await DataUtil.getInstance();
-    relayProvider = RelayProvider.getInstance();
-    relayProvider!.load();
-
-    settingProvider = await SettingProvider.getInstance();
-    if (StringUtil.isNotBlank(settingProvider.privateKey)) {
-      try {
-        nostr = Nostr(privateKey: settingProvider.privateKey);
-        // log("nostr init over");
-        relayProvider.addRelays(nostr!).then((bla) {
-          nostr!.checkAndReconnectRelays();
-          filterProvider = FilterProvider.getInstance();
-          notificationsProvider = NotificationsProvider();
-          newNotificationsProvider = NewNotificationsProvider();
-          newNotificationsProvider.queryNew();
-        });
-      } catch (e) {
-        var index = settingProvider.privateKeyIndex;
-        if (index != null) {
-          settingProvider.removeKey(index);
-        }
-      }
     }
   }
 }

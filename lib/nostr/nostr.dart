@@ -168,7 +168,7 @@ class Nostr {
     return _pool.getRelay(url);
   }
 
-  void checkAndReconnectRelays() {
-    _pool.checkAndReconnectRelays();
+  Future<void> checkAndReconnectRelays() async {
+    await _pool.checkAndReconnectRelays();
   }
 }

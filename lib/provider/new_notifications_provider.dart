@@ -4,6 +4,7 @@ import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:yana/utils/index_taps.dart';
 
 import '../models/metadata.dart';
 import '../nostr/event.dart';
@@ -27,6 +28,10 @@ class NewNotificationsProvider extends ChangeNotifier
     BotToast.showText(
         text: "Received notification " + receivedAction.payload.toString());
     newNotificationsProvider.queryNew();
+    notificationsProvider.mergeNewEvent();
+    //_controller.animateTo(0,curve: Curves.ease, duration: const Duration(seconds: 1));
+
+    indexProvider.setCurrentTap(IndexTaps.NOTIFICATIONS);
     //
     // // Navigate into pages, avoiding to open the notification details page over another details page already opened
     // MyApp.navigatorKey.currentState?.pushNamedAndRemoveUntil('/notification-page',

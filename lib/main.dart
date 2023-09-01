@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:isolate';
-import 'dart:math';
 import 'dart:ui';
 
 import 'package:awesome_notifications/awesome_notifications.dart';
@@ -9,11 +8,9 @@ import 'package:bot_toast/bot_toast.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_app_badger/flutter_app_badger.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_background_service_android/flutter_background_service_android.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
-import 'package:flutter_isolate/flutter_isolate.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
@@ -167,6 +164,65 @@ void onStart(ServiceInstance service) async {
     service.stopSelf();
   });
 
+  initProvidersAndStuff();
+
+  // bring to foreground
+  Timer.periodic(const Duration(seconds: 30), (timer) async {
+    if (service is AndroidServiceInstance) {
+      // if (await service.isForegroundService()) {
+      /// OPTIONAL for use custom notification
+      /// the notification id must be equals with AndroidConfiguration when you call configure() method.
+      // flutterLocalNotificationsPlugin.show(
+      //   888,
+      //   'COOL SERVICE',
+      //   'Awesome ${DateTime.now()}',
+      //   const NotificationDetails(
+      //     android: AndroidNotificationDetails(
+      //       'my_foreground',
+      //       'MY FOREGROUND SERVICE',
+      //       icon: 'ic_bg_service_small',
+      //       ongoing: true,
+      //     ),
+      //   ),
+      // );
+      // service.setForegroundNotificationInfo(title: "", content: "");
+      // if you don't using custom notification, uncomment this
+      //   service.setForegroundNotificationInfo(
+      //     title: "My App Service",
+      //     content: "Updated at ${DateTime.now()}",
+      //   );
+      // }
+
+      // }
+      // }
+      // final SharedPreferences sp = await SharedPreferences.getInstance();
+      // String? aa = sp.getString("appState");
+      // if (aa != null && aa != "AppLifecycleState.resumed") {
+      //   SystemTimer.notifications();
+      // }
+      // AwesomeNotifications().createNotification(
+      //   content: NotificationContent(
+      //       id: Random.secure().nextInt(100000),
+      //       channelKey: 'yana',
+      //       title: "aaa",
+      //       payload: {"name": "FlutterCampus"},
+      //       badge: 0
+      //   ),
+      // );
+
+      AwesomeNotifications().getAppLifeCycle().then((value) {
+        if (value.toString() != "NotificationLifeCycle.Foreground") {
+          nostr!.checkAndReconnectRelays().then((a) {
+            newNotificationsProvider.queryNew();
+          });
+        }
+      });
+    }
+  });
+}
+
+void initProvidersAndStuff() async {
+
   sharedPreferences = await DataUtil.getInstance();
   metadataProvider = await MetadataProvider.getInstance();
   relayProvider = RelayProvider.getInstance();
@@ -190,74 +246,6 @@ void onStart(ServiceInstance service) async {
       }
     }
   }
-
-
-  // bring to foreground
-  Timer.periodic(const Duration(seconds: 10), (timer) async {
-
-    if (service is AndroidServiceInstance) {
-        // if (await service.isForegroundService()) {
-          /// OPTIONAL for use custom notification
-          /// the notification id must be equals with AndroidConfiguration when you call configure() method.
-          // flutterLocalNotificationsPlugin.show(
-          //   888,
-          //   'COOL SERVICE',
-          //   'Awesome ${DateTime.now()}',
-          //   const NotificationDetails(
-          //     android: AndroidNotificationDetails(
-          //       'my_foreground',
-          //       'MY FOREGROUND SERVICE',
-          //       icon: 'ic_bg_service_small',
-          //       ongoing: true,
-          //     ),
-          //   ),
-          // );
-          // service.setForegroundNotificationInfo(title: "", content: "");
-          // if you don't using custom notification, uncomment this
-        //   service.setForegroundNotificationInfo(
-        //     title: "My App Service",
-        //     content: "Updated at ${DateTime.now()}",
-        //   );
-        // }
-
-      // }
-      // }
-      // final SharedPreferences sp = await SharedPreferences.getInstance();
-      // String? aa = sp.getString("appState");
-      // if (aa != null && aa != "AppLifecycleState.resumed") {
-      //   SystemTimer.notifications();
-      // }
-      // AwesomeNotifications().createNotification(
-      //   content: NotificationContent(
-      //       id: Random.secure().nextInt(100000),
-      //       channelKey: 'yana',
-      //       title: "aaa",
-      //       payload: {"name": "FlutterCampus"},
-      //       badge: 0
-      //   ),
-      // );
-
-      AwesomeNotifications().getAppLifeCycle().then((value) {
-        if (value.toString() != "NotificationLifeCycle.Foreground") {
-          nostr!.checkAndReconnectRelays();
-          newNotificationsProvider.queryNew();
-        }
-      });
-
-      // test using external plugin
-      final deviceInfo = DeviceInfoPlugin();
-      String? device;
-      if (Platform.isAndroid) {
-        final androidInfo = await deviceInfo.androidInfo;
-        device = androidInfo.model;
-      }
-
-      if (Platform.isIOS) {
-        final iosInfo = await deviceInfo.iosInfo;
-        device = iosInfo.model;
-      }
-    }
-  });
 }
 
 Future<void> main() async {
@@ -349,6 +337,11 @@ Future<void> main() async {
 }
 
 void initBackgroundService() async {
+
+  // await AndroidAlarmManager.initialize();
+  // const int helloAlarmID = 0;
+  // await AndroidAlarmManager.periodic(const Duration(seconds: 10), helloAlarmID, printHello, wakeup: true, exact: true, allowWhileIdle: true, rescheduleOnReboot: true);
+
   AwesomeNotifications().isNotificationAllowed().then((isAllowed) async {
     print(isAllowed);
     if (!isAllowed) {
@@ -382,10 +375,10 @@ void initBackgroundService() async {
   /// OPTIONAL, using custom notification channel id
   const AndroidNotificationChannel channel = AndroidNotificationChannel(
     'yana-service', // id
-    'Yana notifications service', // title
+    'Background service (can be hidden)', // title
     showBadge: false,
     description:
-        'This channel is used for important notifications.', // description
+        'This channel is needed to be running in order for the system not to kill all used for important notifications.', // description
     importance: Importance.low, // importance must be at low or higher level
   );
 
@@ -639,10 +632,10 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
         nostr!.checkAndReconnectRelays();
       }
     }
-    if (newState != AppLifecycleState.resumed &&
-        (appState == AppLifecycleState.resumed) &&
+    if (newState != AppLifecycleState.paused &&
+        (appState == AppLifecycleState.resumed || appState == AppLifecycleState.hidden || appState == AppLifecycleState.inactive) &&
         backgroundService != null) {
-        backgroundService!.startService();
+      backgroundService!.startService();
     }
     // if (newState == AppLifecycleState.paused) {
     //   //now you know that your app went to the background and is back to the foreground

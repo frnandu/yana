@@ -308,12 +308,12 @@ class RelayPool {
     return hadSubmitSend;
   }
 
-  void checkAndReconnectRelays() {
+  Future<void> checkAndReconnectRelays() async {
 
     for (Relay relay in _relays.values) {
       try {
         if (relay.relayStatus.connected != ClientConneccted.CONNECTED) {
-          relay.connect();
+          await relay.connect();
         }
       } catch (err) {
         log(err.toString());

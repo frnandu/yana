@@ -39,6 +39,7 @@
 - info on someones profile if they follow you
 - update service check for new release from github
 - remember eventMemBox for Posts/Replies on DB (on just timestamp lastRead) so badge counter persists between app restarts
+- make sure background service starts after device reboot
 - floating icon (+) on DMS sends new msg to CHOOSE
 - subscription on profile/DMS/notifications should be kept open to receive updates from WS - REFACTOR logic of later loading & caching metadata
 - optimize zaps/followed downloading (caching on db) on background 

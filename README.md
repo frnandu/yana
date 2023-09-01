@@ -34,7 +34,13 @@ height="80">](https://github.com/frnandu/yana/releases)
 
 ### - Android
 
-Install Apk file from releases.\
+Install by choosing your architecture[^3] from [releases](https://github.com/frnandu/yana/releases).\
+Verify the signature of the .apk file:
+
+    keytool -printcert -jarfile <.apk-file> |grep SHA256
+
+Compare this with the SHA256 found on nostr profile for [Yana]()
+
 *I strongly recommend [Obtainium](https://github.com/ImranR98/Obtainium) for keeping up-to-date with new releases.*
 
 ### - iOS
@@ -169,3 +175,4 @@ All constructive feedback is welcomed.
 --------------------
 [^1]: https://github.com/haorendashu/nostrmo
 [^2]: https://dergigi.com/2023/03/12/lightning-prisms
+[^3]: https://www.howtogeek.com/339665/how-to-find-your-android-devices-info-for-correct-apk-downloads/
