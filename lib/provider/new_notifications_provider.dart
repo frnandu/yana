@@ -86,15 +86,16 @@ class NewNotificationsProvider extends ChangeNotifier
           AwesomeNotifications().createNotification(
             content: NotificationContent(
                 id: events.first.id.hashCode,
-                channelKey: 'basic',
+                channelKey: 'yana',
                 largeIcon: metadata?.picture,
                 title: "${metadata != null
                     ? metadata.getName()
                     : "??"}: ${events
                     .first.content}",
                 payload: {"name": "FlutterCampus"},
-                badge: 0
-                // eventMemBox.length() +
+                badge:
+                    eventMemBox.length()
+                // +
                 //     dmProvider.howManyNewDMSessionsWithNewMessages(
                 //         dmProvider.followingList) +
                 //     dmProvider
