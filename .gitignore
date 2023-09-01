@@ -41,9 +41,9 @@ dist
 /android/app/debug
 /android/app/profile
 /android/app/release
-/Yana.AppDir/data/
-/Yana.AppDir/lib/
-/Yana.AppDir/yana
+/linux/Yana.AppDir/data/
+/linux/Yana.AppDir/lib/
+/linux/Yana.AppDir/yana
 /Yana-x86_64.AppImage
 /appimagetool-x86_64.AppImage
-/Yana.AppDir/logo.png
+/linux/Yana.AppDir/logo.png

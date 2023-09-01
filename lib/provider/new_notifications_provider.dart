@@ -46,6 +46,7 @@ class NewNotificationsProvider extends ChangeNotifier
     // Your code goes here
   }
 
+  @pragma('vm:entry-point')
   void queryNew() {
     if (kDebugMode) {
       print('!!!!!!!!!!!!!!! New notifications queryNew');

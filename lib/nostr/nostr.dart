@@ -168,6 +168,7 @@ class Nostr {
     return _pool.getRelay(url);
   }
 
+  @pragma('vm:entry-point')
   Future<void> checkAndReconnectRelays() async {
     await _pool.checkAndReconnectRelays();
   }

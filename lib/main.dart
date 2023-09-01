@@ -393,7 +393,7 @@ void initBackgroundService() async {
     androidConfiguration: AndroidConfiguration(
       onStart: onStart,
       autoStart: false,
-      isForegroundMode: false,
+      isForegroundMode: true,
       notificationChannelId: 'yana-service',
       initialNotificationTitle: 'Yana notifications service',
       initialNotificationContent: 'running...',
@@ -634,7 +634,7 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
     }
     if (newState != AppLifecycleState.paused &&
         (appState == AppLifecycleState.resumed || appState == AppLifecycleState.hidden || appState == AppLifecycleState.inactive) &&
-        backgroundService != null) {
+        backgroundService != null && nostr!=null && StringUtil.isNotBlank(nostr!.privateKey)) {
       backgroundService!.startService();
     }
     // if (newState == AppLifecycleState.paused) {
