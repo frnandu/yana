@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:yana/main.dart';
 import 'package:yana/models/event_mem_box.dart';
+import 'package:yana/nostr/event.dart';
 import 'package:yana/provider/new_notifications_provider.dart';
 import 'package:yana/provider/notifications_provider.dart';
 import 'package:yana/ui/keep_alive_cust_state.dart';
@@ -58,6 +59,9 @@ class _NotificationsRouter extends KeepAliveCustState<NotificationsRouter>
       controller: _controller,
       itemBuilder: (BuildContext context, int index) {
         var event = events[index];
+        Map<String, dynamic> map = event.toJson();
+        map['content'] = map['content'].replaceAll('+', '❤');
+        event = Event.fromJson(map);
         if (event.kind == kind.EventKind.ZAP &&
             StringUtil.isBlank(event.content)) {
           return ZapEventListComponent(event: event);

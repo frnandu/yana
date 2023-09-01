@@ -211,7 +211,7 @@ void onStart(ServiceInstance service) async {
       // );
 
       AwesomeNotifications().getAppLifeCycle().then((value) {
-        if (value.toString() != "NotificationLifeCycle.Foreground") {
+        if (value.toString() != "NotificationLifeCycle.Foreground" && nostr!=null) {
           nostr!.checkAndReconnectRelays().then((a) {
             newNotificationsProvider.queryNew();
           });
@@ -393,7 +393,7 @@ void initBackgroundService() async {
     androidConfiguration: AndroidConfiguration(
       onStart: onStart,
       autoStart: false,
-      isForegroundMode: true,
+      isForegroundMode: false,
       notificationChannelId: 'yana-service',
       initialNotificationTitle: 'Yana notifications service',
       initialNotificationContent: 'running...',
@@ -423,25 +423,25 @@ void initBackgroundService() async {
   // });
 }
 
-@pragma('vm:entry-point')
-entryPoint(SendPort sendPort) async {
-  // Open the ReceivePort to listen for incoming messages (optional)
-  var port = ReceivePort();
-
-  // Send messages to other Isolates
-  sendPort.send(port.sendPort);
-  sendPort.send("notifications");
-
-  Timer.periodic(const Duration(seconds: 30), (timer) async {
-    print('ISOLATE THREAD sending notifications: ${DateTime.now()}');
-    sendPort.send("notifications");
-  });
-  // Listen for messages (optional)
-  // await for (var data in port) {
-  //   print("ISOLATE data received " + data.toString());
-  //   // `data` is the message received.
-  // }
-}
+// @pragma('vm:entry-point')
+// entryPoint(SendPort sendPort) async {
+//   // Open the ReceivePort to listen for incoming messages (optional)
+//   var port = ReceivePort();
+//
+//   // Send messages to other Isolates
+//   sendPort.send(port.sendPort);
+//   sendPort.send("notifications");
+//
+//   Timer.periodic(const Duration(seconds: 30), (timer) async {
+//     print('ISOLATE THREAD sending notifications: ${DateTime.now()}');
+//     sendPort.send("notifications");
+//   });
+//   // Listen for messages (optional)
+//   // await for (var data in port) {
+//   //   print("ISOLATE data received " + data.toString());
+//   //   // `data` is the message received.
+//   // }
+// }
 
 class MyApp extends StatefulWidget {
   @override

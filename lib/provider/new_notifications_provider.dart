@@ -96,7 +96,7 @@ class NewNotificationsProvider extends ChangeNotifier
                 title: "${metadata != null
                     ? metadata.getName()
                     : "??"}: ${events
-                    .first.content}",
+                    .first.content.replaceAll('+', '❤')}",
                 payload: {"name": "FlutterCampus"},
                 badge:
                     eventMemBox.length()
