@@ -160,8 +160,6 @@ Using a [Prism](https://dergigi.com/2023/03/12/lightning-prisms) address at [pri
 <img src="https://btc.fmar.link/img/paybutton/pay.svg" style="width:150px" alt="Pay with BTCPay Server, a Self-Hosted Bitcoin Payment Processor">
 </a>
 
-<a href="lnurlp://prism@yana.do">PRISM</a>
-
 ## Join
 
 Contributors are welcome to join the project, specially Designers UI/UX, coders, testers.\
