@@ -148,7 +148,7 @@ or install deb file from releases:
 ## Contributions
 Some initial code was used from https://github.com/haorendashu/nostrmo project.
 
-Using a [Prism](https://dergigi.com/2023/03/12/lightning-prisms) address at [⚡prism@yana.do](<a href="https://btc.fmar.link/api/v1/invoices?storeId=7yXH2h1LUFXStGM4XPoSUpb43xkMj1riEsrAiYSWAk57&currency=SATS">), each sat donation will be split into:
+Using a [Prism](https://dergigi.com/2023/03/12/lightning-prisms) address at ⚡prism@yana.do, each sat donation will be split into:
 
 70% - <a href="https://nostr.com/npub1xpuz4qerklyck9evtg40wgrthq5rce2mumwuuygnxcg6q02lz9ms275ams">fmar <img width="20" height="20" src="https://nostr.build/i/27747076d9db02572ee4b71110615a08900e7a0be52f477bc977fa4a65edbaf6.jpg"></a> (code)\
 10% - <a href="https://nostr.com/npub19yeqjawls407xjnmgkk6yss7936pcd7qzd5srlj8wye6j8433vrsjazqwk">DASHU <img width="20" height="20" src="https://nostr.build/i/nostr.build_4879348f3314f17dcf4914240dc87851370af10ae91b91a3366497d1e3e567cf.png"></a> (code)\
