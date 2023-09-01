@@ -167,5 +167,4 @@ or you can also post a bounty on https://nostrbounties.com/ or https://bountsr.o
 All constructive feedback is welcomed.
 
 --------------------
-### Prisms
-(1) https://dergigi.com/2023/03/12/lightning-prisms
+<a id="prisms"></a>(1) https://dergigi.com/2023/03/12/lightning-prisms
