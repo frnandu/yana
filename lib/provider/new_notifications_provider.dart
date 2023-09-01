@@ -43,7 +43,7 @@ class NewNotificationsProvider extends ChangeNotifier
 
   void queryNew() {
     if (kDebugMode) {
-      print('!!!!!!!!!!!!!!! New notifications queryNew: ${DateTime.now()}');
+      print('!!!!!!!!!!!!!!! New notifications queryNew');
     }
     if (subscribeId != null) {
       try {
