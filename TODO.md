@@ -31,15 +31,19 @@
 - ~~zaps for prism@yana.do (Lnbits)~~
 
 - pull notifications / background service
+  Alarms -> setExactAndAllowWhileIdle().
+
 - 
 - NIP-78 preferences and messages read state
 - separate posts from replies on profile
+- info on someones profile if they follow you
 - update service check for new release from github
 - remember eventMemBox for Posts/Replies on DB (on just timestamp lastRead) so badge counter persists between app restarts
 - floating icon (+) on DMS sends new msg to CHOOSE
 - subscription on profile/DMS/notifications should be kept open to receive updates from WS - REFACTOR logic of later loading & caching metadata
 - optimize zaps/followed downloading (caching on db) on background 
 - relay setting of read/write
+- Auto-Translate/detect language note contents using something else than google services 
 - https://docs.flutter.dev/ui/navigation/deep-linking
 - mark all DMs as read feature
 - submit to f-droid
