@@ -44,7 +44,8 @@ class MetadataTopComponent extends StatefulWidget {
 
   bool userPicturePreview;
 
-  MetadataTopComponent({super.key,
+  MetadataTopComponent({
+    super.key,
     required this.pubkey,
     this.condensedIcons = false,
     this.metadata,
@@ -245,39 +246,40 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
             iconColor: Colors.orange,
           ),
         )));
-        topBtnList.add(wrapBtn(MetadataIconBtn(
-          iconData: Icons.mail,
-          onTap: openDMSession,
-        )));
-        topBtnList.add(Selector<ContactListProvider, Contact?>(
-          builder: (context, contact, child) {
-            if (contact == null) {
-              return wrapBtn(MetadataTextBtn(
-                text: "Follow",
-                borderColor: mainColor,
-                onTap: () {
-                  contactListProvider
-                      .addContact(Contact(publicKey: widget.pubkey));
-                },
-              ));
-            } else {
-              return wrapBtn(MetadataTextBtn(
-                text: "Unfollow",
-                borderColor: mainColor,
-                onTap: () {
-                  contactListProvider.removeContact(widget.pubkey);
-                },
-              ));
-            }
-          },
-          selector: (context, _provider) {
-            return _provider.getContact(widget.pubkey);
-          },
-        ));
       }
-      }
+      topBtnList.add(wrapBtn(MetadataIconBtn(
+        iconData: Icons.mail,
+        onTap: openDMSession,
+      )));
+      topBtnList.add(Selector<ContactListProvider, Contact?>(
+        builder: (context, contact, child) {
+          if (contact == null) {
+            return wrapBtn(MetadataTextBtn(
+              text: "Follow",
+              borderColor: mainColor,
+              onTap: () {
+                contactListProvider
+                    .addContact(Contact(publicKey: widget.pubkey));
+              },
+            ));
+          } else {
+            return wrapBtn(MetadataTextBtn(
+              text: "Unfollow",
+              borderColor: mainColor,
+              onTap: () {
+                contactListProvider.removeContact(widget.pubkey);
+              },
+            ));
+          }
+        },
+        selector: (context, _provider) {
+          return _provider.getContact(widget.pubkey);
+        },
+      ));
+    }
 
     List<Widget> nameList = [];
+
     if (StringUtil.isBlank(displayName)) {
       displayName = nip19Name;
     }
@@ -324,13 +326,12 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
 
     List<Widget> topList = [];
     topList.add(Container(
-      width: maxWidth,
-      height: bannerHeight,
-      color: Colors.grey.withOpacity(0.5),
-      child:  widget.jumpable? GestureDetector(
-        onTap: jumpToUserRouter,
-        child: bannerImage) : bannerImage
-    ));
+        width: maxWidth,
+        height: bannerHeight,
+        color: Colors.grey.withOpacity(0.5),
+        child: widget.jumpable
+            ? GestureDetector(onTap: jumpToUserRouter, child: bannerImage)
+            : bannerImage));
     topList.add(Container(
       height: 50,
       // color: Colors.red,
@@ -523,16 +524,20 @@ class MetadataIconBtn extends StatelessWidget {
   Color? iconColor;
 
   MetadataIconBtn(
-      {super.key, required this.iconData, this.iconColor, this.onTap, this.onLongPress});
+      {super.key,
+      required this.iconData,
+      this.iconColor,
+      this.onTap,
+      this.onLongPress});
 
   @override
   Widget build(BuildContext context) {
     final IconThemeData iconTheme = IconTheme.of(context);
 
     var decoration = BoxDecoration(
-      // borderRadius: BorderRadius.circular(20),
-      // border: Border.all(width: 1),
-    );
+        // borderRadius: BorderRadius.circular(20),
+        // border: Border.all(width: 1),
+        );
     var main = Container(
       // height: 34,
       // width: 34,
