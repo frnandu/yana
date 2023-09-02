@@ -148,6 +148,7 @@ or install deb file from releases:
 - [ ] Message Sent feedback ([NIP-20](https://github.com/nostr-protocol/nips/blob/master/20.md))
 - [ ] OpenTimestamps Attestations ([NIP-03](https://github.com/nostr-protocol/nips/blob/master/03.md))
 - [ ] User Statuses ([NIP-315](https://github.com/nostr-protocol/nips/pull/737))
+- [ ] follower count using [NIP-45](https://github.com/nostr-protocol/nips/blob/master/45.md)
 
 
 <a name="contributors"></a>
