@@ -18,7 +18,10 @@ import '../../../utils/platform_util.dart';
 import '../../../utils/string_util.dart';
 
 class GlobalsEventsRouter extends StatefulWidget {
-  const GlobalsEventsRouter({super.key});
+
+  GlobalsEventsRouter({super.key});
+
+  EventMemBox eventBox = EventMemBox(sortAfterAdd: false);
 
   @override
   State<StatefulWidget> createState() {
@@ -32,33 +35,36 @@ class _GlobalsEventsRouter extends KeepAliveCustState<GlobalsEventsRouter>
 
   int? _initTime = DateTime.now().millisecondsSinceEpoch ~/ 1000 - 3600;
 
-  EventMemBox eventBox = EventMemBox(sortAfterAdd: false);
 
   @override
   Widget doBuild(BuildContext context) {
     var _settingProvider = Provider.of<SettingProvider>(context);
 
-    if (eventBox.isEmpty()) {
+    if (widget.eventBox.isEmpty()) {
       return EventListPlaceholder(
         onRefresh: refresh,
       );
     }
-    var list = eventBox.all();
+    var list = widget.eventBox.all();
 
-    var main = EventDeleteCallback(
-      onDeleteCallback: onDeleteCallback,
-      child: ListView.builder(
-        controller: scrollController,
-        itemBuilder: (context, index) {
-          var event = list[index];
-          return EventListComponent(
-            event: event,
-            showVideo: _settingProvider.videoPreview == OpenStatus.OPEN,
-          );
+    var main = RefreshIndicator(
+        onRefresh: () async {
+          refresh();
         },
-        itemCount: list.length,
-      ),
-    );
+        child: EventDeleteCallback(
+          onDeleteCallback: onDeleteCallback,
+          child: ListView.builder(
+            controller: scrollController,
+            itemBuilder: (context, index) {
+              var event = list[index];
+              return EventListComponent(
+                event: event,
+                showVideo: _settingProvider.videoPreview == OpenStatus.OPEN,
+              );
+            },
+            itemCount: list.length,
+          ),
+        ));
 
     if (PlatformUtil.isTableMode()) {
       return GestureDetector(
@@ -79,12 +85,16 @@ class _GlobalsEventsRouter extends KeepAliveCustState<GlobalsEventsRouter>
   Future<void> onReady(BuildContext context) async {
     indexProvider.setEventScrollController(scrollController);
     scrollController.addListener(() {
-      if (scrollController.position.userScrollDirection == ScrollDirection.reverse && !_scrollingDown) {
+      if (scrollController.position.userScrollDirection ==
+              ScrollDirection.reverse &&
+          !_scrollingDown) {
         setState(() {
           _scrollingDown = true;
         });
       }
-      if (scrollController.position.userScrollDirection == ScrollDirection.forward && _scrollingDown) {
+      if (scrollController.position.userScrollDirection ==
+              ScrollDirection.forward &&
+          _scrollingDown) {
         setState(() {
           _scrollingDown = false;
         });
@@ -111,18 +121,18 @@ class _GlobalsEventsRouter extends KeepAliveCustState<GlobalsEventsRouter>
     //
     var filter = Filter(kinds: [kind.EventKind.TEXT_NOTE], since: _initTime);
     nostr!.subscribe([filter.toJson()], (event) {
-      if (eventBox.isEmpty()) {
+      if (widget.eventBox.isEmpty()) {
         laterTimeMS = 200;
       } else {
         laterTimeMS = 1000;
       }
 
       later(event, (list) {
-        eventBox.addList(list);
-        if (eventBox.newestEvent!=null) {
-          _initTime = eventBox.newestEvent!.createdAt;
-        }
         setState(() {
+          widget.eventBox.addList(list);
+          if (widget.eventBox.newestEvent != null) {
+            _initTime = widget.eventBox.newestEvent!.createdAt;
+          }
         });
       }, null);
     }, id: subscribeId);
@@ -143,7 +153,7 @@ class _GlobalsEventsRouter extends KeepAliveCustState<GlobalsEventsRouter>
   }
 
   onDeleteCallback(Event event) {
-    eventBox.delete(event.id);
+    widget.eventBox.delete(event.id);
     setState(() {});
   }
 }
