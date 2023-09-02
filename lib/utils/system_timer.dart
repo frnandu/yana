@@ -22,7 +22,7 @@ class SystemTimer {
     if (timer != null) {
       timer!.cancel();
     }
-    timer = Timer.periodic(const Duration(seconds: 30), (timer) {
+    timer = Timer.periodic(const Duration(seconds: 60), (timer) {
       try {
         runTask();
         counter++;
@@ -34,7 +34,7 @@ class SystemTimer {
 
   static void runTask() {
     // log("SystemTimer runTask");
-    if (nostr!=null) {
+    if (nostr != null) {
       AwesomeNotifications().getAppLifeCycle().then((value) {
         if (value.toString() == "NotificationLifeCycle.Foreground") {
           if (kDebugMode) {

@@ -25,7 +25,7 @@ class _FollowIndexRouter extends State<FollowIndexRouter> {
         children: [
           FollowPostsRouter(),
           FollowPostsAndRepliesRouter(),
-          const GlobalsEventsRouter(),
+          GlobalsEventsRouter(),
         ],
       ),
     );

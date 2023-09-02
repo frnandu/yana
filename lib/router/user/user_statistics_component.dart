@@ -1,11 +1,15 @@
+import 'dart:convert';
+
 import 'package:bot_toast/bot_toast.dart';
 import 'package:convert/convert.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:yana/models/relay_status.dart';
 import 'package:yana/provider/contact_list_provider.dart';
 import 'package:yana/provider/relay_provider.dart';
 import 'package:yana/ui/enum_selector_component.dart';
 import 'package:yana/utils/base_consts.dart';
+import 'package:yana/utils/client_connected.dart';
 
 import '../../i18n/i18n.dart';
 import '../../main.dart';
@@ -15,6 +19,9 @@ import '../../nostr/event_kind.dart' as kind;
 import '../../nostr/filter.dart';
 import '../../nostr/nip02/cust_contact_list.dart';
 import '../../nostr/nip57/zap_num_util.dart';
+import '../../nostr/nostr.dart';
+import '../../nostr/relay.dart';
+import '../../nostr/relay_metadata.dart';
 import '../../ui/cust_state.dart';
 import '../../utils/base.dart';
 import '../../utils/number_format_util.dart';
@@ -25,7 +32,10 @@ import '../../utils/string_util.dart';
 class UserStatisticsComponent extends StatefulWidget {
   String pubkey;
 
-  UserStatisticsComponent({required this.pubkey});
+  Function(CustContactList)? onContactListLoaded;
+
+  UserStatisticsComponent(
+      {super.key, required this.pubkey, this.onContactListLoaded});
 
   @override
   State<StatefulWidget> createState() {
@@ -40,7 +50,7 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
 
   Event? relaysEvent;
 
-  List<dynamic>? relaysTags;
+  List<RelayMetadata>? relays;
 
   EventMemBox? zapEventBox;
 
@@ -60,8 +70,9 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
 
   @override
   void initState() {
-    onFollowedTap();
-    onZapTap();
+    if (!isLocal) {
+      doQuery();
+    }
   }
 
   @override
@@ -72,7 +83,7 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
       contactListEvent = null;
       contactList = null;
       relaysEvent = null;
-      relaysTags = null;
+      relays = null;
       zapEventBox = null;
       followedMap = null;
 
@@ -82,7 +93,6 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
       followedCommunitiesLength = 0;
       zapNum = null;
       followedNum = null;
-      doQuery();
     }
     pubkey = widget.pubkey;
 
@@ -112,14 +122,14 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
     }
 
     list.add(UserStatisticsItemComponent(
-      num: followedNum,
+      num: followedNum??0,
       name: s.Followers,
       onTap: onFollowedTap,
       formatNum: true,
     ));
 
     list.add(UserStatisticsItemComponent(
-      num: zapNum,
+      num: zapNum??0,
       name: "Zap",
       onTap: onZapTap,
       formatNum: true,
@@ -133,8 +143,8 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
         return _provider.total();
       }));
     } else {
-      if (relaysTags != null) {
-        relaysNum = relaysTags!.length;
+      if (relays != null) {
+        relaysNum = relays!.length;
       }
       list.add(UserStatisticsItemComponent(
           num: relaysNum, name: s.Relays, onTap: onRelaysTap));
@@ -243,30 +253,37 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
 
   @override
   Future<void> onReady(BuildContext context) async {
-    if (!isLocal) {
-      doQuery();
-    }
+    // if (!isLocal) {
+    //   doQuery();
+    // }
+    onFollowedTap();
+    onZapTap();
   }
 
   void doQuery() {
-    {
-      queryId = StringUtil.rndNameStr(16);
-      var filter = Filter(
-          authors: [widget.pubkey],
-          limit: 1,
-          kinds: [kind.EventKind.CONTACT_LIST]);
-      nostr!.query([filter.toJson()], (event) {
-        if (((contactListEvent != null &&
-                    event.createdAt > contactListEvent!.createdAt) ||
-                contactListEvent == null) &&
-            !_disposed) {
-          setState(() {
-            contactListEvent = event;
-            contactList = CustContactList.fromJson(event.tags);
-          });
-        }
-      }, id: queryId);
-    }
+    // {
+    //   queryId = StringUtil.rndNameStr(16);
+    //   var filter = Filter(
+    //       authors: [widget.pubkey],
+    //       limit: 1,
+    //       kinds: [kind.EventKind.CONTACT_LIST]);
+    //   nostr!.query([filter.toJson()], (event) {
+    //     if (((contactListEvent != null &&
+    //                 event.createdAt > contactListEvent!.createdAt) ||
+    //             contactListEvent == null) &&
+    //         !_disposed) {
+    //       setState(() {
+    //         contactListEvent = event;
+    //         contactList = CustContactList.fromJson(event.tags);
+    //         if (widget.onContactListLoaded != null && contactList != null) {
+    //           widget.onContactListLoaded!(contactList!);
+    //         }
+    //       });
+    //     }
+    //   }, id: queryId, onComplete: () {
+    //
+    //   });
+    // }
 
     {
       queryId2 = StringUtil.rndNameStr(16);
@@ -274,18 +291,102 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
           authors: [widget.pubkey],
           limit: 1,
           kinds: [kind.EventKind.RELAY_LIST_METADATA]);
-      nostr!.query([filter.toJson()], (event) {
-        if (((relaysEvent != null &&
-                    event.createdAt > relaysEvent!.createdAt) ||
-                relaysEvent == null) &&
-            !_disposed) {
-          setState(() {
-            relaysEvent = event;
-            relaysTags = event.tags;
-          });
-        }
-      }, id: queryId2);
+      nostr!.query(
+          [filter.toJson()],
+          (event) {
+            // BotToast.showText(text: "loaded relay list from "+event.sources.toString()+" with ${event.tags.length} relays");
+            if (((relaysEvent != null &&
+                        event.createdAt > relaysEvent!.createdAt) ||
+                    relaysEvent == null) &&
+                !_disposed) {
+              Nostr targetNostr = Nostr(publicKey: widget.pubkey);
+              List<RelayMetadata>? relays = [];
+              for (var tag in event.tags) {
+                if (tag is List<dynamic>) {
+                  var length = tag.length;
+                  bool write = true;
+                  bool read = true;
+                  if (length > 1) {
+                    var name = tag[0];
+                    var value = tag[1];
+                    if (name == "r") {
+                      if (length > 2) {
+                        var operType = tag[2];
+                        if (operType == "read") {
+                          write = false;
+                        } else if (operType == "write") {
+                          read = false;
+                        }
+                      }
+                      relays!.add(RelayMetadata(value, read, write));
+                      // RelayStatus status = RelayStatus(value);
+                      // status.connected = ClientConneccted.CONNECTED;
+                      // targetNostr.addRelay(Relay(value,status), checkInfo: false);
+                    }
+                  }
+                }
+              }
+              setState(() {
+                relaysEvent = event;
+                this.relays = relays;
+              });
+            }
+          },
+          id: queryId2,
+          // onComplete: () {
+          //   loadContactList(nostr!);
+          // }
+    );
     }
+    loadContactList(nostr!);
+  }
+
+  void loadContactList(Nostr targetNostr) {
+    queryId = StringUtil.rndNameStr(16);
+    var filter = Filter(
+        authors: [widget.pubkey],
+        limit: 1,
+        kinds: [kind.EventKind.CONTACT_LIST]);
+    targetNostr.query(
+        [filter.toJson()],
+        (event) {
+          // BotToast.showText(text: "loaded contact list from "+event.sources.toString()+" with ${event.tags.length} contacts");
+
+          if (((contactListEvent != null &&
+                      event.createdAt > contactListEvent!.createdAt) ||
+                  contactListEvent == null) &&
+              !_disposed) {
+            setState(() {
+              contactListEvent = event;
+              contactList = CustContactList.fromJson(contactListEvent!.tags);
+              if (widget.onContactListLoaded != null && contactList != null) {
+                widget.onContactListLoaded!(contactList!);
+              }
+            });
+          }
+          if (((relaysEvent != null &&
+              event.createdAt > relaysEvent!.createdAt) ||
+              relaysEvent == null) && StringUtil.isNotBlank(event.content) &&
+              !_disposed) {
+            Map<String,dynamic> json = jsonDecode(event.content);
+            relaysEvent = event;
+            List<RelayMetadata>? relays = [];
+            for (var entry in json.entries) {
+              bool write=true;
+              bool read=true;
+              write = entry.value["write"];
+              read = entry.value["read"];
+              relays!.add(RelayMetadata(entry.key.toString(), read, write));
+            }
+            setState(() {
+              relaysEvent = event;
+              this.relays = relays;
+            });
+          }
+        },
+        id: queryId,
+        onComplete: () {
+        });
   }
 
   onFollowingTap() {
@@ -342,8 +443,8 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
   }
 
   onRelaysTap() {
-    if (relaysTags != null && relaysTags!.isNotEmpty) {
-      RouterUtil.router(context, RouterPath.USER_RELAYS, relaysTags);
+    if (relays != null && relays!.isNotEmpty) {
+      RouterUtil.router(context, RouterPath.USER_RELAYS, relays);
     } else if (isLocal) {
       RouterUtil.router(context, RouterPath.RELAYS);
     }
@@ -450,11 +551,6 @@ class UserStatisticsItemComponent extends StatelessWidget {
         style: TextStyle(
           fontSize: fontSize,
         ),
-      ));
-    } else {
-      list.add(const Icon(
-        Icons.download,
-        size: 18,
       ));
     }
     list.add(Container(

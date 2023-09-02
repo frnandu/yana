@@ -32,7 +32,7 @@ class MetadataProvider extends ChangeNotifier with LaterFunction {
         _metadataProvider!._metadataCache[md.pubKey!] = md;
       }
       // lazyTimeMS begin bigger and request less
-      _metadataProvider!.laterTimeMS = 2000;
+      _metadataProvider!.laterTimeMS = 500;
     }
 
     return _metadataProvider!;
@@ -87,8 +87,31 @@ class MetadataProvider extends ChangeNotifier with LaterFunction {
       _needUpdatePubKeys.add(pubkey);
     }
     later(_laterCallback, null);
-
     return null;
+  }
+
+  void getMostRecentMetadata(String pubkey, Function(Metadata) onEvent) {
+    var metadata = _metadataCache[pubkey];
+    if (metadata != null) {
+      onEvent(metadata);
+    } else {
+      nostr!.query([
+        Filter(kinds: [kind.EventKind.METADATA], authors: [pubkey], limit: 1)
+            .toJson()
+      ], (event) {
+        var existing = _metadataCache[event.pubKey];
+        if (existing == null ||
+            existing.updated_at == null ||
+            existing.updated_at! < event.createdAt) {
+          handleEvent(event);
+        }
+      }, onComplete: () {
+        var metadata = _metadataCache[pubkey];
+        if (metadata != null) {
+          onEvent(metadata);
+        }
+      });
+    }
   }
 
   int getNip05Status(String pubkey) {
@@ -126,7 +149,6 @@ class MetadataProvider extends ChangeNotifier with LaterFunction {
       if (StringUtil.isBlank(event.content)) {
         continue;
       }
-
       _handingPubkeys.remove(event.pubKey);
 
       var jsonObj = jsonDecode(event.content);
@@ -188,5 +210,31 @@ class MetadataProvider extends ChangeNotifier with LaterFunction {
   void clear() {
     _metadataCache.clear();
     MetadataDB.deleteAll();
+  }
+
+  Metadata handleEvent(Event event) {
+    _handingPubkeys.remove(event.pubKey);
+
+    var jsonObj = jsonDecode(event.content);
+    var md = Metadata.fromJson(jsonObj);
+    md.pubKey = event.pubKey;
+    md.updated_at = event.createdAt;
+
+    // check cache
+    var oldMetadata = _metadataCache[md.pubKey];
+    if (oldMetadata == null) {
+      // db
+      MetadataDB.insert(md);
+      // cache
+      _metadataCache[md.pubKey!] = md;
+      // refresh
+    } else if (oldMetadata.updated_at! < md.updated_at!) {
+      // db
+      MetadataDB.update(md);
+      // cache
+      _metadataCache[md.pubKey!] = md;
+      // refresh
+    }
+    return md;
   }
 }

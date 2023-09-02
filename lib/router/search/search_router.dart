@@ -153,7 +153,7 @@ class _SearchRouter extends CustState<SearchRouter>
               return EventListComponent(
                 event: event,
                 showVideo:
-                    _settingProvider.videoPreviewInList == OpenStatus.OPEN,
+                    _settingProvider.videoPreview == OpenStatus.OPEN,
               );
             },
             itemCount: events.length,
@@ -171,7 +171,7 @@ class _SearchRouter extends CustState<SearchRouter>
               return EventListComponent(
                 event: event,
                 showVideo:
-                    _settingProvider.videoPreviewInList == OpenStatus.OPEN,
+                    _settingProvider.videoPreview == OpenStatus.OPEN,
               );
             },
             itemCount: itemLength,

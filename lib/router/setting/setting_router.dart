@@ -142,8 +142,8 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
     // if (!PlatformUtil.isPC()) {
     //   list.add(SettingGroupItemComponent(
     //     name: s.Video_preview,
-    //     value: getOpenList(settingProvider.videoPreviewInList).name,
-    //     onTap: pickVideoPreviewInList,
+    //     value: getOpenList(settingProvider.videoPreview).name,
+    //     onTap: pickvideoPreview,
     //   ));
     // }
     // // list.add(SettingGroupItemComponent(
@@ -206,9 +206,9 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
 
     List<AbstractSettingsTile> interfaceTiles = [];
     interfaceTiles.add(SettingsTile.navigation(
+      trailing: Text("English"),
       leading: const Icon(Icons.language),
       title: Text(s.Language),
-      value: const Text('English'),
       onPressed: (context) {
         pickI18N();
       },
@@ -261,9 +261,9 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
     interfaceTiles.add(SettingsTile.switchTile(
         activeSwitchColor: themeData.primaryColor,
         onToggle: (value) {
-          settingProvider.videoPreviewInList = value ? 1 : 0;
+          settingProvider.videoPreview = value ? 1 : 0;
         },
-        initialValue: settingProvider.videoPreviewInList == OpenStatus.OPEN,
+        initialValue: settingProvider.videoPreview == OpenStatus.OPEN,
         leading: const Icon(Icons.video_collection_outlined),
         title: Text(s.Video_preview)));
 
@@ -280,6 +280,26 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
         initialValue: settingProvider.lockOpen == OpenStatus.OPEN,
         leading: const Icon(Icons.lock_open),
         title: Text(s.Privacy_Lock),
+      ));
+    }
+
+    List<AbstractSettingsTile> notificationTiles = [];
+
+    if (!PlatformUtil.isWeb() &&
+        (PlatformUtil.isIOS() || PlatformUtil.isAndroid())) {
+      notificationTiles.add(SettingsTile.switchTile(
+        activeSwitchColor: themeData.primaryColor,
+        onToggle: (value) {
+          settingProvider.backgroundService = value;
+          if (!value && backgroundService != null) {
+            backgroundService!
+                .isRunning()
+                .whenComplete(() => {backgroundService!.invoke('stopService')});
+          }
+        },
+        initialValue: settingProvider.backgroundService,
+        leading: const Icon(Icons.notification_important_outlined),
+        title: const Text("Start pull background service"),
       ));
     }
 
@@ -315,6 +335,8 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
         .add(SettingsSection(title: Text('Interface'), tiles: interfaceTiles));
     if (!PlatformUtil.isWeb() &&
         (PlatformUtil.isIOS() || PlatformUtil.isAndroid())) {
+      sections.add(SettingsSection(
+          title: Text('Notifications'), tiles: notificationTiles));
       sections
           .add(SettingsSection(title: Text('Security'), tiles: securityTiles));
     }
@@ -646,11 +668,11 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
     }
   }
 
-  Future<void> pickVideoPreviewInList() async {
+  Future<void> pickvideoPreview() async {
     EnumObj? resultEnumObj =
         await EnumSelectorComponent.show(context, openList!);
     if (resultEnumObj != null) {
-      settingProvider.videoPreviewInList = resultEnumObj.value;
+      settingProvider.videoPreview = resultEnumObj.value;
     }
   }
 

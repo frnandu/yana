@@ -57,7 +57,7 @@ class _FollowPostsRouter extends KeepAliveCustState<FollowPostsRouter>
         var event = events[index];
         return EventListComponent(
           event: event,
-          showVideo: _settingProvider.videoPreviewInList == OpenStatus.OPEN,
+          showVideo: _settingProvider.videoPreview == OpenStatus.OPEN,
         );
       },
       itemCount: events.length,
@@ -77,7 +77,7 @@ class _FollowPostsRouter extends KeepAliveCustState<FollowPostsRouter>
     //           return EventListComponent(
     //             event: event,
     //             showVideo:
-    //                 _settingProvider.videoPreviewInList == OpenStatus.OPEN,
+    //                 _settingProvider.videoPreview == OpenStatus.OPEN,
     //           );
     //         },
     //         itemCount: events.length,

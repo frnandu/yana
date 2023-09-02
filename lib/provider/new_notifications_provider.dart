@@ -25,11 +25,14 @@ class NewNotificationsProvider extends ChangeNotifier
   @pragma("vm:entry-point")
   static Future<void> onActionReceivedMethod(
       ReceivedAction receivedAction) async {
-    BotToast.showText(
-        text: "Received notification " + receivedAction.payload.toString());
+    if (kDebugMode) {
+      BotToast.showText(
+          text: "Received notification " + receivedAction.payload.toString());
+    }
     newNotificationsProvider.queryNew();
-    notificationsProvider.mergeNewEvent();
-    //_controller.animateTo(0,curve: Curves.ease, duration: const Duration(seconds: 1));
+    Future.delayed(Duration(seconds: 1), () {
+      notificationsProvider.mergeNewEvent();
+    });
 
     indexProvider.setCurrentTap(IndexTaps.NOTIFICATIONS);
     //
@@ -87,20 +90,19 @@ class NewNotificationsProvider extends ChangeNotifier
     if (eventMemBox.length() > previousCount) {
       AwesomeNotifications().getAppLifeCycle().then((value) {
         if (value.toString() != "NotificationLifeCycle.Foreground") {
-          Metadata? metadata = metadataProvider.getMetadata(
-              events.first.pubKey);
-          AwesomeNotifications().createNotification(
-            content: NotificationContent(
-                id: events.first.id.hashCode,
-                channelKey: 'yana',
-                largeIcon: metadata?.picture,
-                title: "${metadata != null
-                    ? metadata.getName()
-                    : "??"}: ${events
-                    .first.content.replaceAll('+', '❤')}",
-                payload: {"name": "FlutterCampus"},
-                badge:
-                    eventMemBox.length()
+          metadataProvider.getMostRecentMetadata(events.first.pubKey, (metadata) {
+            AwesomeNotifications().createNotification(
+              content: NotificationContent(
+                  id: events.first.id.hashCode,
+                  channelKey: 'yana',
+                  largeIcon: metadata?.picture,
+                  title: "${metadata != null
+                      ? metadata.getName()
+                      : "??"}: ${events
+                      .first.content.replaceAll('+', '❤')}",
+                  payload: {"name": "new notification"},
+                  badge:
+                  eventMemBox.length()
                 // +
                 //     dmProvider.howManyNewDMSessionsWithNewMessages(
                 //         dmProvider.followingList) +
@@ -110,8 +112,9 @@ class NewNotificationsProvider extends ChangeNotifier
                 //     dmProvider
                 //         .howManyNewDMSessionsWithNewMessages(
                 //         dmProvider.unknownList)
-                ),
-          );
+              ),
+            );
+          });
         }
       });
     }

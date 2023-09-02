@@ -28,17 +28,28 @@
 - ~~remember eventMemBox (timestamps) with badge numbers between app restart~~
 - ~~on login screen add get it on github~~
 - ~~on fresh start (empty DB), mark all as read.~~
+- ~~try to reduce as much as possible apk size~~
 - ~~zaps for prism@yana.do (Lnbits)~~
+- ~~fix saving pictures to phone~~
+- ~~pull notifications / background service~~
+- ~~get metadata from not in contact list for notification metadata~~
+- ~~info on someones profile if they follow you~~
+- ~~fix image/video preview setting (is false / not taken into effect)~~
 
-- pull notifications / background service
-  Alarms -> setExactAndAllowWhileIdle().
 
-- 
+- why fucked up global?
+- notifications/replies of reactions/likes (include post and if a reply the parent)
+- reply position on thread when linking from outside is wrong
+
+
+=======================
+
 - NIP-78 preferences and messages read state
 - separate posts from replies on profile
-- info on someones profile if they follow you
 - update service check for new release from github
+- 
 - remember eventMemBox for Posts/Replies on DB (on just timestamp lastRead) so badge counter persists between app restarts
+- 
 - make sure background service starts after device reboot
 - floating icon (+) on DMS sends new msg to CHOOSE
 - subscription on profile/DMS/notifications should be kept open to receive updates from WS - REFACTOR logic of later loading & caching metadata
@@ -49,21 +60,17 @@
 - mark all DMs as read feature
 - submit to f-droid
 - badges also on drawer when in tablet mode
-- fix image/video preview setting (is false / not taken into effect)
 - add signing keys to google app store using non-KYC method
 - not your relay list - improve looks with icons and stuff (not so easy)
 - in thread view handle better zaps instead of some weird bitcoin component
 - show common followers/followees
-- notifications of reactions/likes (include post and if a reply the parent)
 - try to load images using Isolate and compute, so that feed scrolling does not freeze while loading images
 - allow to login with npub 
 - add SystemMouseCursors.click to everything that is clickable for web version
 - move reposts from replies to posts? maybe new tab only for reposts?
-- fix saving pictures to phone
 - https://pub.dev/packages/objectbox
 - integration with https://github.com/greenart7c3/Amber
 - long posts should be cut and have "show more"
-- try to reduce as much as possible apk size
 - followers/following list more condensed
 - Database offline check
 - sort following/followers list by most recent

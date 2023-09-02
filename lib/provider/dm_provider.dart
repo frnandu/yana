@@ -247,6 +247,7 @@ class DMProvider extends ChangeNotifier with PenddingEventsLaterFunction {
       session = session.clone();
       _sessions[pubkey!] = session;
     }
+    _initSince = event.createdAt;
 
     return addResult;
   }

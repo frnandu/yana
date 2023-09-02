@@ -206,6 +206,7 @@ class _LoginRouter extends State<LoginRouter>
       // }, child: f_droid)));
     }
     return Scaffold(
+      backgroundColor: const Color(0xff1e022c) ,
       body: SizedBox(
         width: double.maxFinite,
         height: double.maxFinite,

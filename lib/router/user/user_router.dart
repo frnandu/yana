@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:yana/nostr/nip02/cust_contact_list.dart';
 
 import '../../main.dart';
 import '../../models/event_mem_box.dart';
 import '../../models/metadata.dart';
 import '../../nostr/event_kind.dart' as kind;
 import '../../nostr/filter.dart';
+import '../../nostr/nip02/contact.dart';
 import '../../nostr/nip19/nip19.dart';
 import '../../provider/metadata_provider.dart';
 import '../../provider/setting_provider.dart';
@@ -39,6 +41,8 @@ class _UserRouter extends CustState<UserRouter>
   String? pubkey;
 
   bool showTitle = false;
+
+  bool followsYou = false;
 
   bool showAppbarBG = false;
 
@@ -163,6 +167,7 @@ class _UserRouter extends CustState<UserRouter>
                   metadata: metadata,
                   showBadges: true,
                   userPicturePreview: true,
+                  followsYou: followsYou,
                 ),
               ),
               // Container(
@@ -183,6 +188,14 @@ class _UserRouter extends CustState<UserRouter>
                   scrollDirection: Axis.horizontal,
                   child: UserStatisticsComponent(
                     pubkey: pubkey!,
+                    onContactListLoaded: (contactList) {
+                      Contact? c = contactList.get(nostr!.publicKey);
+                      if (nostr!=null && contactList.get(nostr!.publicKey) != null) {
+                        setState(() {
+                          followsYou = true;
+                        });
+                      }
+                    },
                   ),
                 ),
               ),
@@ -200,7 +213,7 @@ class _UserRouter extends CustState<UserRouter>
                 return EventListComponent(
                   event: event,
                   showVideo:
-                      _settingProvider.videoPreviewInList == OpenStatus.OPEN,
+                      _settingProvider.videoPreview == OpenStatus.OPEN,
                 );
               },
               itemCount: box.length(),

@@ -30,13 +30,13 @@ class Relay {
 
   WebSocketChannel? _wsChannel;
 
-  Future<bool> connect() async {
+  Future<bool> connect({bool checkInfo=true}) async {
     try {
       relayStatus.connected = ClientConneccted.CONNECTING;
-      info = await RelayInfoUtil.get(url);
+      info = checkInfo? await RelayInfoUtil.get(url) : null;
 
       // Relay must support NIP-15 and NIP-20, but NIP-15 had meger into NIP-01
-      if (info!.nips.contains(20)) {
+      if (info==null || info!.nips.contains(20)) {
         final wsUrl = Uri.parse(url);
         _wsChannel = WebSocketChannel.connect(wsUrl);
         log("Connected $url");

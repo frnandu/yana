@@ -22,7 +22,6 @@ class IndexBottomBar extends StatefulWidget {
 }
 
 class _IndexBottomBar extends State<IndexBottomBar> {
-  int selectedPageIndex = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -38,7 +37,7 @@ class _IndexBottomBar extends State<IndexBottomBar> {
     destinations.add(NavigationDestination(
       icon: Selector<FollowNewEventProvider, Tuple2<EventMemBox, EventMemBox>>(
         builder: (context, tuple, child) {
-          Icon icon = selectedPageIndex == 0 ? Icon(
+          Icon icon = _indexProvider.currentTap == 0 ? Icon(
               Icons.home, size: 30, color: themeData.dividerColor) : Icon(
               Icons.home_outlined, size: 30, color: themeData.disabledColor);
           if (tuple.item1.length() <= 0 && tuple.item2.length() <= 0) {
@@ -69,7 +68,7 @@ class _IndexBottomBar extends State<IndexBottomBar> {
     destinations.add(NavigationDestination(
       icon: Selector<DMProvider, int>(
         builder: (context, count, child) {
-          Icon icon = selectedPageIndex == 2 ? Icon(
+          Icon icon = _indexProvider.currentTap == 2 ? Icon(
               Icons.mail, size: 30, color: themeData.dividerColor) : Icon(
               Icons.mail_outline, size: 30, color: themeData.disabledColor);
           // FlutterAppBadger.updateBadgeCount(count);
@@ -101,7 +100,7 @@ class _IndexBottomBar extends State<IndexBottomBar> {
     destinations.add(NavigationDestination(
       icon: Selector<NewNotificationsProvider, EventMemBox>(
         builder: (context, eventMemBox, child) {
-          Icon icon = selectedPageIndex == 3
+          Icon icon = _indexProvider.currentTap == 3
               ? Icon(
               Icons.notifications, size: 30, color: themeData.dividerColor)
               : Icon(Icons.notifications_none_outlined, size: 30,
@@ -126,16 +125,15 @@ class _IndexBottomBar extends State<IndexBottomBar> {
     return NavigationBar(
       labelBehavior: NavigationDestinationLabelBehavior.alwaysHide,
       indicatorColor: themeData.cardColor,
-      selectedIndex: selectedPageIndex,
+      selectedIndex: _indexProvider.currentTap,
       onDestinationSelected: (int index) {
-        if (selectedPageIndex == index) {
-          if (index == 0) indexProvider.followScrollToTop();
-        } else {
-          indexProvider.setCurrentTap(index);
-        }
 
         setState(() {
-          selectedPageIndex = index;
+          if (_indexProvider.currentTap == index) {
+            if (index == 0) indexProvider.followScrollToTop();
+          } else {
+            indexProvider.setCurrentTap(index);
+          }
         });
       },
       destinations: destinations,

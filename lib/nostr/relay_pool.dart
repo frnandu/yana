@@ -27,11 +27,10 @@ class RelayPool {
 
   RelayPool(this.localNostr, this.eventVerification);
 
-  Future<bool> add(
-    Relay relay, {
-    bool autoSubscribe = false,
-    bool init = false,
-  }) async {
+  Future<bool> add(Relay relay,
+      {bool autoSubscribe = false,
+      bool init = false,
+      bool checkInfo = true}) async {
     if (_relays.containsKey(relay.url)) {
       return true;
     }
@@ -39,7 +38,7 @@ class RelayPool {
     // add to pool first and will reconnect by pool
     _relays[relay.url] = relay;
 
-    if (await relay.connect()) {
+    if (await relay.connect(checkInfo: checkInfo)) {
       if (autoSubscribe) {
         for (Subscription subscription in _subscriptions.values) {
           relay.send(subscription.toJson());
@@ -113,11 +112,9 @@ class RelayPool {
           // add some statistics
           relay.relayStatus.noteReceived++;
 
-          // check block pubkey
           if (filterProvider.checkBlock(event.pubKey)) {
             return;
           }
-          // check dirtyword
           if (filterProvider.checkDirtyword(event.content)) {
             return;
           }
@@ -153,7 +150,6 @@ class RelayPool {
           bool completeQuery = true;
           for (var r in it) {
             if (r.checkQuery(subId)) {
-              // this relay hadn't compltete query
               completeQuery = false;
               break;
             }
@@ -164,14 +160,14 @@ class RelayPool {
           }
         }
       }
-    // } else if (messageType == "NOTICE") {
-    //   if (json.length < 2) {
-    //     log("NOTICE result not right.");
-    //     return;
-    //   }
-    //
-    //   // notice save, TODO maybe should change code
-    //   noticeProvider.onNotice(relay.url, json[1] as String);
+      // } else if (messageType == "NOTICE") {
+      //   if (json.length < 2) {
+      //     log("NOTICE result not right.");
+      //     return;
+      //   }
+      //
+      //   // notice save, TODO maybe should change code
+      //   noticeProvider.onNotice(relay.url, json[1] as String);
     } else if (messageType == "AUTH") {
       // auth needed
       if (json.length < 2) {
@@ -309,7 +305,6 @@ class RelayPool {
   }
 
   Future<void> checkAndReconnectRelays() async {
-
     for (Relay relay in _relays.values) {
       try {
         if (relay.relayStatus.connected != ClientConneccted.CONNECTED) {

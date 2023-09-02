@@ -116,7 +116,7 @@ class _CommunityDetailRouter extends CustState<CommunityDetailRouter>
 
           return EventListComponent(
             event: event,
-            showVideo: _settingProvider.videoPreviewInList == OpenStatus.OPEN,
+            showVideo: _settingProvider.videoPreview == OpenStatus.OPEN,
             showCommunity: false,
           );
         },

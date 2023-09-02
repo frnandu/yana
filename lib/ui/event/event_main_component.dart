@@ -359,7 +359,7 @@ class _EventMainComponent extends State<EventMainComponent> {
                 list.add(ContentImageComponent(imageUrl: url));
               } else if (fileType == "video" && !PlatformUtil.isPC()) {
                 if (settingProvider.videoPreview != OpenStatus.OPEN &&
-                    (settingProvider.videoPreviewInList == OpenStatus.OPEN ||
+                    (settingProvider.videoPreview == OpenStatus.OPEN ||
                         widget.showVideo)) {
                   list.add(ContentVideoComponent(url: url));
                 } else {

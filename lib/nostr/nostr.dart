@@ -17,7 +17,7 @@ class Nostr {
   Nostr({
     String? privateKey,
     String? publicKey,
-    bool eventVerification = false,
+    bool eventVerification = true,
   }) {
     if (StringUtil.isNotBlank(privateKey)) {
       _privateKey = privateKey!;
@@ -152,8 +152,10 @@ class Nostr {
     Relay relay, {
     bool autoSubscribe = false,
     bool init = false,
+    bool checkInfo = true,
   }) async {
-    return await _pool.add(relay, autoSubscribe: autoSubscribe, init: init);
+    return await _pool.add(relay,
+        autoSubscribe: autoSubscribe, init: init, checkInfo: checkInfo);
   }
 
   void removeRelay(String url) {

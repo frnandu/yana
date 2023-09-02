@@ -28,30 +28,8 @@ class _UserRelayRouter extends State<UserRelayRouter> {
     if (relays == null) {
       relays = [];
       var arg = RouterUtil.routerArgs(context);
-      if (arg != null && arg is List<dynamic>) {
-        for (var tag in arg as List<dynamic>) {
-          if (tag is List<dynamic>) {
-            var length = tag.length;
-            bool write = true;
-            bool read = true;
-            if (length > 1) {
-              var name = tag[0];
-              var value = tag[1];
-              if (name == "r") {
-                if (length > 2) {
-                  var operType = tag[2];
-                  if (operType == "read") {
-                    write = false;
-                  } else if (operType == "write") {
-                    read = false;
-                  }
-                }
-
-                relays!.add(RelayMetadata(value, read, write));
-              }
-            }
-          }
-        }
+      if (arg != null && arg is List<RelayMetadata>) {
+        relays = arg;
       }
     }
 

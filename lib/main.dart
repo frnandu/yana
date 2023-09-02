@@ -166,50 +166,8 @@ void onStart(ServiceInstance service) async {
 
   initProvidersAndStuff();
 
-  // bring to foreground
-  Timer.periodic(const Duration(seconds: 30), (timer) async {
+  Timer.periodic(const Duration(seconds: 60), (timer) async {
     if (service is AndroidServiceInstance) {
-      // if (await service.isForegroundService()) {
-      /// OPTIONAL for use custom notification
-      /// the notification id must be equals with AndroidConfiguration when you call configure() method.
-      // flutterLocalNotificationsPlugin.show(
-      //   888,
-      //   'COOL SERVICE',
-      //   'Awesome ${DateTime.now()}',
-      //   const NotificationDetails(
-      //     android: AndroidNotificationDetails(
-      //       'my_foreground',
-      //       'MY FOREGROUND SERVICE',
-      //       icon: 'ic_bg_service_small',
-      //       ongoing: true,
-      //     ),
-      //   ),
-      // );
-      // service.setForegroundNotificationInfo(title: "", content: "");
-      // if you don't using custom notification, uncomment this
-      //   service.setForegroundNotificationInfo(
-      //     title: "My App Service",
-      //     content: "Updated at ${DateTime.now()}",
-      //   );
-      // }
-
-      // }
-      // }
-      // final SharedPreferences sp = await SharedPreferences.getInstance();
-      // String? aa = sp.getString("appState");
-      // if (aa != null && aa != "AppLifecycleState.resumed") {
-      //   SystemTimer.notifications();
-      // }
-      // AwesomeNotifications().createNotification(
-      //   content: NotificationContent(
-      //       id: Random.secure().nextInt(100000),
-      //       channelKey: 'yana',
-      //       title: "aaa",
-      //       payload: {"name": "FlutterCampus"},
-      //       badge: 0
-      //   ),
-      // );
-
       AwesomeNotifications().getAppLifeCycle().then((value) {
         if (value.toString() != "NotificationLifeCycle.Foreground" && nostr!=null) {
           nostr!.checkAndReconnectRelays().then((a) {
@@ -331,7 +289,7 @@ Future<void> main() async {
     }
   }
 
-  FlutterNativeSplash.remove();
+  // FlutterNativeSplash.remove();
   initBackgroundService();
   runApp(MyApp());
 }
@@ -625,28 +583,19 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
             appState == AppLifecycleState.inactive)) {
       //now you know that your app went to the background and is back to the foreground
       if (nostr != null) {
-        if (backgroundService != null) {
-          FlutterBackgroundService? b = backgroundService;
-          b!.invoke('stopService');
+        if (backgroundService != null && settingProvider.backgroundService) {
+          backgroundService!.invoke('stopService');
         }
         nostr!.checkAndReconnectRelays();
       }
     }
     if (newState != AppLifecycleState.paused &&
         (appState == AppLifecycleState.resumed || appState == AppLifecycleState.hidden || appState == AppLifecycleState.inactive) &&
-        backgroundService != null && nostr!=null && StringUtil.isNotBlank(nostr!.privateKey)) {
+        backgroundService != null && nostr!=null && StringUtil.isNotBlank(nostr!.privateKey) &&
+        settingProvider.backgroundService
+    ) {
       backgroundService!.startService();
     }
-    // if (newState == AppLifecycleState.paused) {
-    //   //now you know that your app went to the background and is back to the foreground
-    //   backgroundService.startService();
-    // }
-
-    Future.delayed(const Duration(seconds: 1), () async {
-      final SharedPreferences sp = await SharedPreferences.getInstance();
-      await sp.setString("appState", newState.toString());
-    });
-    //register the last state. When you get "paused" it means the app went to the background.
     appState = newState;
   }
 
@@ -692,6 +641,7 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
     }
 
     return ThemeData(
+      fontFamily: 'Montserrat',
       useMaterial3: true,
       brightness: Brightness.light,
       platform: TargetPlatform.iOS,
@@ -759,6 +709,7 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
     }
 
     return ThemeData(
+      fontFamily: 'Montserrat',
       brightness: Brightness.dark,
       platform: TargetPlatform.iOS,
       primarySwatch: themeColor,

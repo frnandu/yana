@@ -169,21 +169,19 @@ class SettingProvider extends ChangeNotifier {
 
   int? get defaultTab => _settingData!.defaultTab;
 
+  bool get backgroundService => _settingData!.backgroundService ?? true;
+
   int get linkPreview => _settingData!.linkPreview != null
       ? _settingData!.linkPreview!
       : OpenStatus.OPEN;
-
-  int get videoPreviewInList => _settingData!.videoPreviewInList != null
-      ? _settingData!.videoPreviewInList!
-      : OpenStatus.CLOSE;
 
   String? get network => _settingData!.network;
 
   String? get imageService => _settingData!.imageService;
 
-  int? get videoPreview => _settingData!.videoPreview;
+  int? get videoPreview => _settingData!.videoPreview ?? OpenStatus.OPEN;
 
-  int? get imagePreview => _settingData!.imagePreview;
+  int? get imagePreview => _settingData!.imagePreview ?? OpenStatus.OPEN;
 
   /// i18n
   String? get i18n => _settingData!.i18n;
@@ -286,8 +284,8 @@ class SettingProvider extends ChangeNotifier {
     saveAndNotifyListeners();
   }
 
-  set videoPreviewInList(int o) {
-    _settingData!.videoPreviewInList = o;
+  set videoPreview(int? o) {
+    _settingData!.videoPreview = o;
     saveAndNotifyListeners();
   }
 
@@ -301,13 +299,13 @@ class SettingProvider extends ChangeNotifier {
     saveAndNotifyListeners();
   }
 
-  set videoPreview(int? o) {
-    _settingData!.videoPreview = o;
+  set imagePreview(int? o) {
+    _settingData!.imagePreview = o;
     saveAndNotifyListeners();
   }
 
-  set imagePreview(int? o) {
-    _settingData!.imagePreview = o;
+  set backgroundService(bool? o) {
+    _settingData!.backgroundService = o;
     saveAndNotifyListeners();
   }
 
@@ -417,13 +415,13 @@ class SettingData {
 
   int? linkPreview;
 
-  int? videoPreviewInList;
+  int? videoPreview;
 
   String? network;
 
-  String? imageService;
+  bool? backgroundService;
 
-  int? videoPreview;
+  String? imageService;
 
   int? imagePreview;
 
@@ -470,10 +468,10 @@ class SettingData {
     this.defaultIndex,
     this.defaultTab,
     this.linkPreview,
-    this.videoPreviewInList,
-    this.network,
-    this.imageService,
     this.videoPreview,
+    this.network,
+    this.backgroundService,
+    this.imageService,
     this.imagePreview,
     this.i18n,
     this.i18nCC,
@@ -501,10 +499,11 @@ class SettingData {
     } else {
       lockOpen = OpenStatus.CLOSE;
     }
+    backgroundService = json['backgroundService'];
     defaultIndex = json['defaultIndex'];
     defaultTab = json['defaultTab'];
     linkPreview = json['linkPreview'];
-    videoPreviewInList = json['videoPreviewInList'];
+    videoPreview = json['videoPreview'];
     network = json['network'];
     imageService = json['imageService'];
     videoPreview = json['videoPreview'];
@@ -548,7 +547,7 @@ class SettingData {
     data['defaultIndex'] = this.defaultIndex;
     data['defaultTab'] = this.defaultTab;
     data['linkPreview'] = this.linkPreview;
-    data['videoPreviewInList'] = this.videoPreviewInList;
+    data['videoPreview'] = this.videoPreview;
     data['network'] = this.network;
     data['imageService'] = this.imageService;
     data['videoPreview'] = this.videoPreview;

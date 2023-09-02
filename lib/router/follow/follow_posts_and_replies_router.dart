@@ -63,7 +63,7 @@ class _FollowPostsAndRepliesRouter
         var event = events[index];
         return EventListComponent(
           event: event,
-          showVideo: _settingProvider.videoPreviewInList == OpenStatus.OPEN,
+          showVideo: _settingProvider.videoPreview == OpenStatus.OPEN,
         );
       },
       itemCount: events.length,

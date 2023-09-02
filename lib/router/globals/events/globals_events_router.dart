@@ -30,6 +30,7 @@ class _GlobalsEventsRouter extends KeepAliveCustState<GlobalsEventsRouter>
     with PenddingEventsLaterFunction {
   ScrollController scrollController = ScrollController();
 
+  int? _initTime = DateTime.now().millisecondsSinceEpoch ~/ 1000 - 3600;
 
   EventMemBox eventBox = EventMemBox(sortAfterAdd: false);
 
@@ -52,7 +53,7 @@ class _GlobalsEventsRouter extends KeepAliveCustState<GlobalsEventsRouter>
           var event = list[index];
           return EventListComponent(
             event: event,
-            showVideo: _settingProvider.videoPreviewInList == OpenStatus.OPEN,
+            showVideo: _settingProvider.videoPreview == OpenStatus.OPEN,
           );
         },
         itemCount: list.length,
@@ -108,7 +109,7 @@ class _GlobalsEventsRouter extends KeepAliveCustState<GlobalsEventsRouter>
     //   }
     // }
     //
-    var filter = Filter(kinds: [kind.EventKind.TEXT_NOTE]);
+    var filter = Filter(kinds: [kind.EventKind.TEXT_NOTE], since: _initTime);
     nostr!.subscribe([filter.toJson()], (event) {
       if (eventBox.isEmpty()) {
         laterTimeMS = 200;
@@ -118,6 +119,9 @@ class _GlobalsEventsRouter extends KeepAliveCustState<GlobalsEventsRouter>
 
       later(event, (list) {
         eventBox.addList(list);
+        if (eventBox.newestEvent!=null) {
+          _initTime = eventBox.newestEvent!.createdAt;
+        }
         setState(() {
         });
       }, null);
