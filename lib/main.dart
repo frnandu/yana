@@ -290,7 +290,9 @@ Future<void> main() async {
   }
 
   // FlutterNativeSplash.remove();
-  initBackgroundService();
+  if (PlatformUtil.isAndroid() || PlatformUtil.isIOS()) {
+    initBackgroundService();
+  }
   runApp(MyApp());
 }
 

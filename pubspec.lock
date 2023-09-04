@@ -1357,6 +1357,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.0"
+  secp256k1:
+    dependency: "direct main"
+    description:
+      name: secp256k1
+      sha256: "66310c1fce68d0c3cfae61f9f23aba11f459fb8c84a50bdc6520548c62a4828a"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.3.0"
   settings_ui:
     dependency: "direct main"
     description:

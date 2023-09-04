@@ -1,10 +1,12 @@
 // Need to decide header
 import 'dart:convert';
+import 'dart:ffi';
 import 'package:crypto/crypto.dart';
 import 'package:clock/clock.dart';
 import 'package:bip340/bip340.dart' as schnorr;
 import 'package:flutter/foundation.dart';
 import 'package:hex/hex.dart';
+import 'package:secp256k1/secp256k1.dart';
 
 import 'client_utils/keys.dart';
 
@@ -120,8 +122,27 @@ class Event {
     return true;
   }
 
+  static int count = 0;
+  static Map<int, int?> kindMapCount = {};
+
   bool get isSigned {
-    if (!kDebugMode && !schnorr.verify(pubKey, id, sig)) {
+    count++;
+    int? kindCount = kindMapCount[kind];
+    if (kindCount == null) {
+      kindCount = 0;
+    }
+    kindCount++;
+    kindMapCount[kind] = kindCount;
+    final startTime = DateTime.now();
+    bool v = schnorr.verify(pubKey, id, sig);
+    final endTime = DateTime.now();
+
+    // Calculate the elapsed time
+    final duration = endTime.difference(startTime);
+
+    // Log the elapsed time
+    print("Execution time: ${duration.inMilliseconds} milliseconds (total count:$count, kind $kind count $kindMapCount.toString())");
+    if (!kDebugMode && !v) {
       return false;
     }
     return true;
