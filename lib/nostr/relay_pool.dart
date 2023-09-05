@@ -15,8 +15,6 @@ class RelayPool {
 
   final Map<String, Relay> _relays = {};
 
-  final bool eventVerification;
-
   // subscription
   final Map<String, Subscription> _subscriptions = {};
 
@@ -25,7 +23,7 @@ class RelayPool {
 
   final Map<String, Function> _queryCompleteCallbacks = {};
 
-  RelayPool(this.localNostr, this.eventVerification);
+  RelayPool(this.localNostr);
 
   Future<bool> add(Relay relay,
       {bool autoSubscribe = false,
@@ -103,12 +101,15 @@ class RelayPool {
     return false;
   }
 
-  void _onEvent(Relay relay, List<dynamic> json) {
+  Future<void> _onEvent(Relay relay, List<dynamic> json) async {
     final messageType = json[0];
     if (messageType == 'EVENT') {
       try {
         final event = Event.fromJson(json[2]);
-        if (!eventVerification || (event.isValid && event.isSigned)) {
+        List<bool> bools = await Future.wait([event.isValid,event.isSigned]);
+        if (bools.any((element) => element == false)) {
+          return;
+        } else {
           // add some statistics
           relay.relayStatus.noteReceived++;
 

@@ -34,7 +34,7 @@ class _NotificationsRouter extends KeepAliveCustState<NotificationsRouter>
   @override
   void initState() {
     super.initState();
-    notificationsProvider.doQuery();
+    // notificationsProvider.doQuery();
     bindLoadMoreScroll(_controller);
   }
 

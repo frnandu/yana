@@ -164,7 +164,7 @@ class FollowEventProvider extends ChangeNotifier
           if (oldestCreatedAt != null) {
             filter.until = oldestCreatedAt;
             if (!forceUserLimit) {
-              filter.limit = null;
+              // filter.limit = null;
               if (filter.until! < oldestCreatedAts.avCreatedAt - 60 * 60 * 18) {
                 filter.since = oldestCreatedAt - 60 * 60 * 12;
               } else if (filter.until! >
@@ -282,23 +282,25 @@ class FollowEventProvider extends ChangeNotifier
       laterTimeMS = 500;
     }
     later(event, (list) {
-      bool added = false;
+    // var e = event;
+      bool addedPosts = false;
+      bool addedReplies = false;
       for (var e in list) {
         bool isPosts = eventIsPost(e);
         if (!isPosts) {
-          added = postsAndRepliesBox.add(e);
-          if (added) {
-            postsAndRepliesBox.sort();
-          }
+          addedReplies = postsAndRepliesBox.add(e);
         } else {
-          added = postsBox.add(e);
-          if (added) {
-            postsBox.sort();
-          }
+          addedPosts = postsBox.add(e);
         }
       }
+      if (addedReplies) {
+        postsAndRepliesBox.sort();
+      }
+      if (addedPosts) {
+        postsBox.sort();
+      }
 
-      if (added) {
+      if (addedPosts || addedReplies) {
         notifyListeners();
       }
     }, null);

@@ -89,13 +89,13 @@ class RelayProvider extends ChangeNotifier {
     // add initQuery
     contactListProvider.query(targetNostr: _nostr);
     contactListProvider.reload(targetNostr: _nostr);
-    followEventProvider.doQuery(targetNostr: _nostr, initQuery: true);
-    notificationsProvider.doQuery(targetNostr: _nostr, initQuery: true);
+    // followEventProvider.doQuery(targetNostr: _nostr, initQuery: true);
+    // notificationsProvider.doQuery(targetNostr: _nostr, initQuery: true);
     Future.delayed(
         const Duration(seconds: 3),
         () => {
               dmProvider.initDMSessions(_nostr.publicKey).then((_) {
-                dmProvider.query(targetNostr: _nostr, subscribe: false);
+                // dmProvider.query(targetNostr: _nostr, subscribe: false);
               })
             });
     // .then((_) {

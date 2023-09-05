@@ -41,10 +41,10 @@ class SystemTimer {
             print('!!!!!!!!!!!!!!! SystemTimer.runTask');
           }
           nostr!.checkAndReconnectRelays().then((a) {
-            newNotificationsProvider.queryNew();
-            dmProvider.query(subscribe: false);
+            // newNotificationsProvider.queryNew();
+            // dmProvider.query(subscribe: false);
             if (counter % 2 == 0) {
-              followNewEventProvider.queryNew();
+              // followNewEventProvider.queryNew();
             }
           });
         }

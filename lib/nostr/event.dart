@@ -1,12 +1,13 @@
 // Need to decide header
 import 'dart:convert';
-import 'dart:ffi';
-import 'package:crypto/crypto.dart';
-import 'package:clock/clock.dart';
+
 import 'package:bip340/bip340.dart' as schnorr;
+import 'package:bot_toast/bot_toast.dart';
+import 'package:clock/clock.dart';
+import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:hex/hex.dart';
-import 'package:secp256k1/secp256k1.dart';
 
 import 'client_utils/keys.dart';
 
@@ -114,7 +115,7 @@ class Event {
     }
   }
 
-  bool get isValid {
+  Future<bool> get isValid async{
     // Validate event data
     if (id != _getId(pubKey, createdAt, kind, tags, content)) {
       return false;
@@ -123,25 +124,37 @@ class Event {
   }
 
   static int count = 0;
+  static int timeSum = 0;
   static Map<int, int?> kindMapCount = {};
 
-  bool get isSigned {
+  static const platform = MethodChannel('flutter.native/helper');
+
+  Future<bool> get isSigned async {
     count++;
     int? kindCount = kindMapCount[kind];
-    if (kindCount == null) {
-      kindCount = 0;
-    }
+    kindCount ??= 0;
     kindCount++;
     kindMapCount[kind] = kindCount;
     final startTime = DateTime.now();
-    bool v = schnorr.verify(pubKey, id, sig);
+    // bool v = schnorr.verify(pubKey, id, sig);
+    bool v = await platform.invokeMethod("verifySignature", {
+      "signature": HEX.decode(sig),
+      "hash": HEX.decode(id),
+      "pubKey": HEX.decode(pubKey)
+    });
+
     final endTime = DateTime.now();
 
     // Calculate the elapsed time
     final duration = endTime.difference(startTime);
+    timeSum+=duration.inMilliseconds;
 
-    // Log the elapsed time
-    print("Execution time: ${duration.inMilliseconds} milliseconds (total count:$count, kind $kind count $kindMapCount.toString())");
+    double avg = timeSum / count;
+
+    print("Execution time: ${duration.inMilliseconds} milliseconds, total count:$count, avgTime:${avg}ms |  kind $kind count $kindMapCount.toString())");
+    if (count % 100 == 0) {
+      BotToast.showText(text:"total count:$count, avgTime:${avg}ms |  kind $kind count $kindMapCount)", duration: Duration(seconds: 10) );
+    }
     if (!kDebugMode && !v) {
       return false;
     }
