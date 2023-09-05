@@ -132,6 +132,9 @@ class Event {
   static const platform = MethodChannel('flutter.native/helper');
 
   Future<bool> get isSigned async {
+    if (PlatformUtil.isWeb()) {
+      return true;
+    }
     count++;
     int? kindCount = kindMapCount[kind];
     kindCount ??= 0;

@@ -43,8 +43,12 @@ class PlatformUtil {
     if (isWeb()) {
       return false;
     }
+    try {
+      return Platform.isIOS;
+    } catch (e) {
+      return false;
+    }
 
-    return Platform.isIOS;
   }
 
   static bool isWeb() {
@@ -63,17 +67,29 @@ class PlatformUtil {
     if (isWeb()) {
       return false;
     }
-    return Platform.isWindows || Platform.isLinux;
+    try {
+      return Platform.isWindows || Platform.isLinux;
+    } catch (e) {
+      return false;
+    }
   }
 
   static bool isPC() {
     if (isWeb()) {
       return false;
     }
-    return Platform.isWindows || Platform.isMacOS || Platform.isLinux;
+    try {
+      return Platform.isWindows || Platform.isMacOS || Platform.isLinux;
+    } catch (e) {
+      return false;
+    }
   }
 
   static bool isAndroid() {
-    return Platform.isAndroid;
+    try {
+      return Platform.isAndroid;
+    } catch (e) {
+      return false;
+    }
   }
 }

@@ -38,6 +38,7 @@
 
 - notifications/replies of reactions/likes (include post and if a reply the parent)
 - reply position on thread when linking from outside is wrong
+- fast secp256k1 verify signature for web JS
 
 =======================
 
