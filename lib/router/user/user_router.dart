@@ -52,7 +52,7 @@ class _UserRouter extends CustState<UserRouter>
   void initState() {
     super.initState();
 
-    queryLimit = 200;
+    queryLimit = 100;
 
     _controller.addListener(() {
       var _showTitle = false;
