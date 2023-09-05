@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
 
@@ -21,7 +22,7 @@ class Relay {
 
   RelayInfo? info;
 
-  Function(Relay, List<dynamic>)? onMessage;
+  FutureOr<void> Function(Relay, List<dynamic>)? onMessage;
 
   // quries
   final Map<String, Subscription> _queries = {};
@@ -43,7 +44,7 @@ class Relay {
         _wsChannel!.stream.listen((message) {
           if (onMessage != null) {
             final List<dynamic> json = jsonDecode(message);
-            onMessage!(this, json);
+            onMessage!.call(this, json);
           }
         }, onError: (error) async {
           print(error);

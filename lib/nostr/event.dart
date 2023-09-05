@@ -1,4 +1,5 @@
 // Need to decide header
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:bip340/bip340.dart' as schnorr;
@@ -8,6 +9,7 @@ import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:hex/hex.dart';
+import 'package:yana/utils/platform_util.dart';
 
 import 'client_utils/keys.dart';
 
@@ -115,7 +117,7 @@ class Event {
     }
   }
 
-  Future<bool> get isValid async{
+  bool get isValid {
     // Validate event data
     if (id != _getId(pubKey, createdAt, kind, tags, content)) {
       return false;
@@ -136,13 +138,16 @@ class Event {
     kindCount++;
     kindMapCount[kind] = kindCount;
     final startTime = DateTime.now();
-    // bool v = schnorr.verify(pubKey, id, sig);
-    bool v = await platform.invokeMethod("verifySignature", {
-      "signature": HEX.decode(sig),
-      "hash": HEX.decode(id),
-      "pubKey": HEX.decode(pubKey)
-    });
-
+    late bool v;
+    if (PlatformUtil.isAndroid()) {
+      v = await platform.invokeMethod("verifySignature", {
+        "signature": HEX.decode(sig),
+        "hash": HEX.decode(id),
+        "pubKey": HEX.decode(pubKey)
+      });
+    } else {
+      v = schnorr.verify(pubKey, id, sig);
+    }
     final endTime = DateTime.now();
 
     // Calculate the elapsed time
@@ -151,14 +156,16 @@ class Event {
 
     double avg = timeSum / count;
 
-    print("Execution time: ${duration.inMilliseconds} milliseconds, total count:$count, avgTime:${avg}ms |  kind $kind count $kindMapCount.toString())");
-    if (count % 100 == 0) {
-      BotToast.showText(text:"total count:$count, avgTime:${avg}ms |  kind $kind count $kindMapCount)", duration: Duration(seconds: 10) );
+    if (kDebugMode) {
+      print("Execution time: ${duration
+          .inMilliseconds} milliseconds, total count:$count, avgTime:${avg}ms |  kind $kind count $kindMapCount.toString())");
+      if (count % 100 == 0) {
+        BotToast.showText(
+            text: "total count:$count, avgTime:${avg}ms |  kind $kind count $kindMapCount)",
+            duration: Duration(seconds: 10));
+      }
     }
-    if (!kDebugMode && !v) {
-      return false;
-    }
-    return true;
+    return v;
   }
 
   // Individual events with the same "id" are equivalent

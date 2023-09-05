@@ -89,8 +89,8 @@ class RelayProvider extends ChangeNotifier {
     // add initQuery
     contactListProvider.query(targetNostr: _nostr);
     contactListProvider.reload(targetNostr: _nostr);
-    // followEventProvider.doQuery(targetNostr: _nostr, initQuery: true);
-    // notificationsProvider.doQuery(targetNostr: _nostr, initQuery: true);
+    followEventProvider.doQuery(targetNostr: _nostr, initQuery: true);
+    notificationsProvider.doQuery(targetNostr: _nostr, initQuery: true);
     Future.delayed(
         const Duration(seconds: 3),
         () => {

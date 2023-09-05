@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:developer';
 
 import 'package:yana/utils/string_util.dart';
@@ -104,12 +105,14 @@ class RelayPool {
   Future<void> _onEvent(Relay relay, List<dynamic> json) async {
     final messageType = json[0];
     if (messageType == 'EVENT') {
+      final subId = json[1] as String;
+      var subscription = _subscriptions[subId];
+      subscription ??= relay.getRequestSubscription(subId);
+
       try {
         final event = Event.fromJson(json[2]);
-        List<bool> bools = await Future.wait([event.isValid,event.isSigned]);
-        if (bools.any((element) => element == false)) {
-          return;
-        } else {
+        // List<bool> bools =
+        if (event.isValid && await event.isSigned) {
           // add some statistics
           relay.relayStatus.noteReceived++;
 
@@ -122,14 +125,14 @@ class RelayPool {
 
           event.sources.add(relay.url);
           final subId = json[1] as String;
-          var subscription = _subscriptions[subId];
-
-          if (subscription != null) {
-            subscription.onEvent(event);
-          } else {
-            subscription = relay.getRequestSubscription(subId);
+          // var subscription = _subscriptions[subId];
+          //
+          // if (subscription != null) {
+          //   subscription.onEvent(event);
+          // } else {
+          //   subscription = relay.getRequestSubscription(subId);
             subscription?.onEvent(event);
-          }
+          // }
         }
       } catch (err) {
         log(err.toString());

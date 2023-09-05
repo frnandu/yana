@@ -36,11 +36,8 @@
 - ~~info on someones profile if they follow you~~
 - ~~fix image/video preview setting (is false / not taken into effect)~~
 
-
-- why fucked up global?
 - notifications/replies of reactions/likes (include post and if a reply the parent)
 - reply position on thread when linking from outside is wrong
-
 
 =======================
 

@@ -164,7 +164,7 @@ class FollowEventProvider extends ChangeNotifier
           if (oldestCreatedAt != null) {
             filter.until = oldestCreatedAt;
             if (!forceUserLimit) {
-              // filter.limit = null;
+              filter.limit = null;
               if (filter.until! < oldestCreatedAts.avCreatedAt - 60 * 60 * 18) {
                 filter.since = oldestCreatedAt - 60 * 60 * 12;
               } else if (filter.until! >
