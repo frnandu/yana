@@ -38,8 +38,9 @@
 - ~~notifications/replies of reactions/likes (include post and if a reply the parent)~~
 - ~~in thread view handle better zaps instead of some weird bitcoin component~~
 
-
-- reply position on thread when linking from outside is wrong (only for non subRoot events, rendered only on visible and cannot jump to something not created)
+- STOP followers/zaps events from blocking the relay, when navigate away from that profile
+- get notifications in background for all accounts
+- reply position on thread when linking from outside is wrong
 
 =======================
 
@@ -62,6 +63,7 @@
 - badges also on drawer when in tablet mode
 - add signing keys to google app store using non-KYC method
 - not your relay list - improve looks with icons and stuff (not so easy)
+- in thread view handle better zaps instead of some weird bitcoin component
 - show common followers/followees
 - try to load images using Isolate and compute, so that feed scrolling does not freeze while loading images
 - allow to login with npub 
