@@ -114,6 +114,7 @@ dependencies:
   flutter_local_notifications: ^15.1.1
   flutter_isolate: ^2.0.4
 #  secp256k1: ^0.3.0
+  scrollable_positioned_list: ^0.3.8
 
 dev_dependencies:
   flutter_launcher_icons: ^0.13.1

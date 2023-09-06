@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:widget_size/widget_size.dart';
 import 'package:yana/provider/single_event_provider.dart';
 
@@ -67,10 +68,15 @@ class _ThreadDetailRouter extends CustState<ThreadDetailRouter>
   EventMemBox box = EventMemBox();
 
   Event? sourceEvent;
+  int? sourceIdx;
 
   bool showTitle = false;
 
-  ScrollController _controller = ScrollController();
+  final ScrollController _controller = ScrollController();
+  // final ItemScrollController itemScrollController = ItemScrollController();
+  // final ScrollOffsetController scrollOffsetController = ScrollOffsetController();
+  // final ItemPositionsListener itemPositionsListener = ItemPositionsListener.create();
+  // final ScrollOffsetListener scrollOffsetListener = ScrollOffsetListener.create();
 
   double rootEventHeight = 120;
 
@@ -189,19 +195,23 @@ class _ThreadDetailRouter extends CustState<ThreadDetailRouter>
         rootEventHeight = size.height;
       },
     ));
-
+    int idx =1;
     for (var item in rootSubList!) {
       var totalLevelNum = item.totalLevelNum;
       var needWidth = (totalLevelNum - 1) *
               (Base.BASE_PADDING +
                   ThreadDetailItemMainComponent.BORDER_LEFT_WIDTH) +
           ThreadDetailItemMainComponent.EVENT_MAIN_MIN_WIDTH;
+      if (sourceEvent!=null && item.event.id == sourceEvent!.id) {
+        sourceIdx = idx;
+      }
       if (needWidth > mediaDataCache.size.width) {
         mainList.add(SingleChildScrollView(
           scrollDirection: Axis.horizontal,
-          child: Container(
+          child: SizedBox(
             width: needWidth,
             child: ThreadDetailItemComponent(
+              // key: sourceEvent!=null && item.event.id == sourceEvent!.id? sourceEventKey : null,
               item: item,
               totalMaxWidth: needWidth,
               sourceEventId: sourceEvent!.id,
@@ -211,18 +221,32 @@ class _ThreadDetailRouter extends CustState<ThreadDetailRouter>
         ));
       } else {
         mainList.add(ThreadDetailItemComponent(
+          // key: sourceEvent!=null && item.event.id == sourceEvent!.id? sourceEventKey : null,
           item: item,
           totalMaxWidth: needWidth,
           sourceEventId: sourceEvent!.id,
           sourceEventKey: sourceEventKey,
         ));
       }
+      idx++;
     }
+
 
     Widget main = ListView(
       controller: _controller,
       children: mainList,
     );
+
+    // Widget main = ScrollablePositionedList.builder(
+    //   itemCount: mainList.length,
+    //   itemBuilder: (context, index) => mainList[index],
+    //   itemScrollController: itemScrollController,
+    //   scrollOffsetController: scrollOffsetController,
+    //   itemPositionsListener: itemPositionsListener,
+    //   scrollOffsetListener: scrollOffsetListener,
+    //   // controller: _controller,
+    //   // children: mainList,
+    // );
 
     if (PlatformUtil.isTableMode()) {
       main = GestureDetector(
@@ -254,8 +278,8 @@ class _ThreadDetailRouter extends CustState<ThreadDetailRouter>
         title: appBarTitle,
       ),
       body: EventReplyCallback(
-        child: main,
         onReplyCallback: onReplyCallback,
+        child: main,
       ),
     );
   }
@@ -310,6 +334,12 @@ class _ThreadDetailRouter extends CustState<ThreadDetailRouter>
     }, null);
   }
 
+  @override
+  void dispose() {
+    super.dispose();
+    disposeLater();
+  }
+
   void listToTree({bool refresh = true}) {
     // event in box had been sorted. The last one is the oldest.
     var all = box.all();
@@ -350,6 +380,9 @@ class _ThreadDetailRouter extends CustState<ThreadDetailRouter>
       //   Scrollable.ensureVisible(sourceEventKey.currentContext!);
       // });
       whenStop(() {
+        // if (sourceIdx!=null) {
+        //   itemScrollController.jumpTo(index: sourceIdx!);
+        // }
         if (sourceEventKey.currentContext != null) {
           Scrollable.ensureVisible(sourceEventKey.currentContext!);
         }
@@ -357,12 +390,6 @@ class _ThreadDetailRouter extends CustState<ThreadDetailRouter>
 
       setState(() {});
     }
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-    disposeLater();
   }
 
   onReplyCallback(Event event) {

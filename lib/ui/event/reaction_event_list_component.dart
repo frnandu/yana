@@ -38,7 +38,7 @@ class _ReactionEventListComponent extends State<ReactionEventListComponent> {
       ),
       child: ReactionEventItemComponent(
         pubkey: widget.event.pubKey,
-        text: widget.text,
+        text: Text(" ${widget.text} "),
         createdAt: widget.event.createdAt,
       ),
     );

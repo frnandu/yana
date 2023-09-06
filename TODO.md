@@ -35,13 +35,15 @@
 - ~~get metadata from not in contact list for notification metadata~~
 - ~~info on someones profile if they follow you~~
 - ~~fix image/video preview setting (is false / not taken into effect)~~
+- ~~notifications/replies of reactions/likes (include post and if a reply the parent)~~
+- ~~in thread view handle better zaps instead of some weird bitcoin component~~
 
-- notifications/replies of reactions/likes (include post and if a reply the parent)
-- reply position on thread when linking from outside is wrong
-- fast secp256k1 verify signature for web JS
+
+- reply position on thread when linking from outside is wrong (only for non subRoot events, rendered only on visible and cannot jump to something not created)
 
 =======================
 
+- fast secp256k1 verify signature for web JS
 - NIP-78 preferences and messages read state
 - separate posts from replies on profile
 - update service check for new release from github
@@ -60,7 +62,6 @@
 - badges also on drawer when in tablet mode
 - add signing keys to google app store using non-KYC method
 - not your relay list - improve looks with icons and stuff (not so easy)
-- in thread view handle better zaps instead of some weird bitcoin component
 - show common followers/followees
 - try to load images using Isolate and compute, so that feed scrolling does not freeze while loading images
 - allow to login with npub 

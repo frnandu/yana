@@ -7,7 +7,7 @@ import 'reaction_event_metadata_component.dart';
 class ReactionEventItemComponent extends StatefulWidget {
   String pubkey;
 
-  String text;
+  Widget text;
 
   int createdAt;
 
@@ -33,7 +33,8 @@ class _ReactionEventItemComponent extends State<ReactionEventItemComponent> {
 
     list.add(ReactionEventMetadataComponent(pubkey: widget.pubkey));
 
-    list.add(Text(" " + widget.text + " "));
+    list.add(widget.text);
+    // Text(" " + widget.text + " "));
 
     list.add(Text(
       GetTimeAgo.parse(

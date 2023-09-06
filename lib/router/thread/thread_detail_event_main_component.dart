@@ -19,7 +19,7 @@ class ThreadDetailItemMainComponent extends StatefulWidget {
 
   GlobalKey sourceEventKey;
 
-  ThreadDetailItemMainComponent({
+  ThreadDetailItemMainComponent({super.key,
     required this.item,
     required this.totalMaxWidth,
     required this.sourceEventId,
@@ -68,14 +68,18 @@ class _ThreadDetailItemMainComponent
     if (widget.item.subItems != null && widget.item.subItems.isNotEmpty) {
       List<Widget> subWidgets = [];
       for (var subItem in widget.item.subItems) {
+        Key? currentEventKey;
+        if (subItem.event.id == widget.sourceEventId) {
+          currentEventKey = widget.sourceEventKey;
+        }
+
         subWidgets.add(
-          Container(
-            child: ThreadDetailItemMainComponent(
-              item: subItem,
-              totalMaxWidth: widget.totalMaxWidth,
-              sourceEventId: widget.sourceEventId,
-              sourceEventKey: widget.sourceEventKey,
-            ),
+          ThreadDetailItemMainComponent(
+            key: currentEventKey,
+            item: subItem,
+            totalMaxWidth: widget.totalMaxWidth,
+            sourceEventId: widget.sourceEventId,
+            sourceEventKey: widget.sourceEventKey,
           ),
         );
       }
@@ -105,9 +109,11 @@ class _ThreadDetailItemMainComponent
       currentEventKey = widget.sourceEventKey;
     }
 
-    return Screenshot(
-      controller: screenshotController,
-      child: Container(
+    return
+      // Screenshot(
+      // controller: screenshotController,
+      // child:
+      Container(
         key: currentEventKey,
         padding: const EdgeInsets.only(
           top: Base.BASE_PADDING,
@@ -118,7 +124,7 @@ class _ThreadDetailItemMainComponent
           crossAxisAlignment: CrossAxisAlignment.start,
           children: list,
         ),
-      ),
+      // ),
     );
   }
 }

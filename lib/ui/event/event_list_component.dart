@@ -10,7 +10,9 @@ import 'package:screenshot/screenshot.dart';
 import '../../nostr/event_kind.dart' as kind;
 import '../../nostr/event.dart';
 import '../../nostr/event_relation.dart';
+import '../../nostr/nip57/zap_num_util.dart';
 import '../../utils/base.dart';
+import '../../utils/number_format_util.dart';
 import '../../utils/router_path.dart';
 import '../../utils/router_util.dart';
 import 'event_bitcoin_icon_component.dart';
@@ -59,9 +61,11 @@ class _EventListComponent extends State<EventListComponent> {
     var cardColor = themeData.cardColor;
     var eventRelation = EventRelation.fromEvent(widget.event);
 
-    Widget main = Screenshot(
-      controller: screenshotController,
-      child: Container(
+    Widget main =
+    // Screenshot(
+    //   controller: screenshotController,
+    //   child:
+      Container(
         color: cardColor,
         margin: const EdgeInsets.only(bottom: 1),
         padding: const EdgeInsets.only(
@@ -79,13 +83,37 @@ class _EventListComponent extends State<EventListComponent> {
           showCommunity: widget.showCommunity,
           eventRelation: eventRelation,
         ),
-      ),
+      // ),
     );
 
     if (widget.event.kind == kind.EventKind.ZAP) {
+      var zapNum = ZapNumUtil.getNumFromZapEvent(widget.event);
+      String zapNumStr = NumberFormatUtil.format(zapNum);
+
       main = Stack(
         children: [
           main,
+          RichText(
+            text: TextSpan(
+              style: DefaultTextStyle.of(context).style, // default text style
+              children: <TextSpan>[
+                TextSpan(
+                    text: ' zapped ',
+                    style: DefaultTextStyle.of(context).style),
+                TextSpan(
+                  text: zapNumStr.toString(),
+                  style: const TextStyle(
+                    color: Colors.orange, // set the color here
+                    fontWeight:
+                        FontWeight.bold, // you can also apply other styles
+                  ),
+                ),
+                TextSpan(
+                    text: ' sats   ',
+                    style: DefaultTextStyle.of(context).style),
+              ],
+            ),
+          ),
           const Positioned(
             top: -35,
             right: -10,

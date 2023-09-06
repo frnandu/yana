@@ -295,6 +295,12 @@ class _EventMainComponent extends State<EventMainComponent> {
               children: replyingList,
             ),
           ));
+          if (eventRelation.replyId!=null) {
+            list.add(EventQuoteComponent(
+              id: eventRelation.replyId,
+              showVideo: widget.showVideo,
+            ));
+          }
         } else {
           // hide the reply note subject!
           if (widget.showSubject) {
@@ -315,6 +321,7 @@ class _EventMainComponent extends State<EventMainComponent> {
             }
           }
         }
+
 
         list.add(
           buildContentWidget(_settingProvider, imagePreview, videoPreview),

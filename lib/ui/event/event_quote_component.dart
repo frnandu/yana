@@ -69,9 +69,11 @@ class _EventQuoteComponent extends CustState<EventQuoteComponent> {
 
   Widget buildEventWidget(
       Event event, Color cardColor, BoxDecoration boxDecoration) {
-    return Screenshot(
-      controller: screenshotController,
-      child: Container(
+    return
+      // Screenshot(
+      // controller: screenshotController,
+      // child:
+      Container(
         padding: const EdgeInsets.only(top: Base.BASE_PADDING),
         margin: const EdgeInsets.all(Base.BASE_PADDING),
         decoration: boxDecoration,
@@ -91,7 +93,7 @@ class _EventQuoteComponent extends CustState<EventQuoteComponent> {
             imageListMode: true,
           ),
         ),
-      ),
+      // ),
     );
   }
 

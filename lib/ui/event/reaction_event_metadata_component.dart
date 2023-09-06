@@ -25,7 +25,7 @@ class ReactionEventMetadataComponent extends StatefulWidget {
 
 class _ReactionEventMetadataComponent
     extends State<ReactionEventMetadataComponent> {
-  static const double IMAGE_WIDTH = 20;
+  static const double IMAGE_WIDTH = 30;
 
   @override
   Widget build(BuildContext context) {
