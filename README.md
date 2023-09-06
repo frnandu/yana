@@ -39,7 +39,7 @@ Verify the signature of the .apk file:
 
     keytool -printcert -jarfile <.apk-file> |grep SHA256
 
-Compare this with the SHA256 found on nostr profile for [Yana]()
+Compare this with the SHA256 found on nostr profile for [Yana](https://nostr.com/npub1gp4xzpmluelsakjtayc4wtzj97fhj5kakqjvsannu00xkdlf4x8s0xdqyq)
 
 *I strongly recommend [Obtainium](https://github.com/ImranR98/Obtainium) for keeping up-to-date with new releases.*
 
