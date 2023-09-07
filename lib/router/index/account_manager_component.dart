@@ -64,13 +64,15 @@ class AccountsState extends State<AccountsComponent> {
 
     privateKeyMap.forEach((key, value) {
       var index = int.tryParse(key);
+      bool isPrivate = _settingProvider.keyIsPrivateMap[key] ?? true;
       if (index == null) {
         log("parse index key error");
         return;
       }
       list.add(AccountManagerItemComponent(
         index: index,
-        privateKey: value,
+        privateKey: isPrivate? value: null,
+        publicKey: !isPrivate? value: null,
         isCurrent: _settingProvider.privateKeyIndex == index,
         onLoginTap: onLoginTap,
         onLogoutTap: (index) {
@@ -121,9 +123,7 @@ class AccountsState extends State<AccountsComponent> {
     if (StringUtil.isNotBlank(key)) {
       if (mounted) {
         var result = await ConfirmDialog.show(
-            context, I18n
-            .of(context)
-            .Add_account_and_login);
+            context, I18n.of(context).Add_account_and_login);
         if (result == true) {
           bool isPublic = Nip19.isPubkey(key!);
           if (isPublic || Nip19.isPrivateKey(key)) {
@@ -164,7 +164,8 @@ class AccountsState extends State<AccountsComponent> {
   void doLogin() async {
     String? key = settingProvider.key;
     bool isPrivate = settingProvider.isPrivateKey;
-    nostr = await relayProvider.genNostr(privateKey: isPrivate? key: null, publicKey: isPrivate?null:key);
+    nostr = await relayProvider.genNostr(
+        privateKey: isPrivate ? key : null, publicKey: isPrivate ? null : key);
   }
 
   void onLoginTap(int index) {
@@ -200,7 +201,9 @@ class AccountsState extends State<AccountsComponent> {
       if (settingProvider.key != null) {
         // use next privateKey to login
         bool isPrivate = settingProvider.isPrivateKey;
-        nostr = await relayProvider.genNostr(privateKey: isPrivate? key: null, publicKey: isPrivate?null:key);
+        nostr = await relayProvider.genNostr(
+            privateKey: isPrivate ? key : null,
+            publicKey: isPrivate ? null : key);
       }
     }
 
@@ -237,16 +240,19 @@ class AccountManagerItemComponent extends StatefulWidget {
 
   final int index;
 
-  final String privateKey;
+  final String? privateKey;
+  final String? publicKey;
 
   Function(int)? onLoginTap;
 
   Function(int)? onLogoutTap;
 
-  AccountManagerItemComponent({super.key,
+  AccountManagerItemComponent({
+    super.key,
     required this.isCurrent,
     required this.index,
-    required this.privateKey,
+    this.privateKey,
+    this.publicKey,
     this.onLoginTap,
     this.onLogoutTap,
   });
@@ -267,7 +273,10 @@ class _AccountManagerItemComponent extends State<AccountManagerItemComponent> {
   @override
   void initState() {
     super.initState();
-    pubkey = getPublicKey(widget.privateKey);
+    pubkey = StringUtil.isBlank(widget.publicKey) &&
+            StringUtil.isNotBlank(widget.privateKey)
+        ? getPublicKey(widget.privateKey!)
+        : widget.publicKey!;
   }
 
   @override
@@ -287,18 +296,20 @@ class _AccountManagerItemComponent extends State<AccountManagerItemComponent> {
 
       Widget? imageWidget;
 
-      String? url = metadata != null && StringUtil.isNotBlank(metadata.picture) ? metadata.picture : StringUtil.robohash(pubkey);
+      String? url = metadata != null && StringUtil.isNotBlank(metadata.picture)
+          ? metadata.picture
+          : StringUtil.robohash(pubkey);
 
       if (url != null) {
-          imageWidget = CachedNetworkImage(
-            imageUrl: url,
-            width: IMAGE_WIDTH,
-            height: IMAGE_WIDTH,
-            fit: BoxFit.cover,
-            placeholder: (context, url) => const CircularProgressIndicator(),
-            errorWidget: (context, url, error) => const Icon(Icons.error),
-            cacheManager: localCacheManager,
-          );
+        imageWidget = CachedNetworkImage(
+          imageUrl: url,
+          width: IMAGE_WIDTH,
+          height: IMAGE_WIDTH,
+          fit: BoxFit.cover,
+          placeholder: (context, url) => const CircularProgressIndicator(),
+          errorWidget: (context, url, error) => const Icon(Icons.error),
+          cacheManager: localCacheManager,
+        );
       }
 
       list.add(Container(

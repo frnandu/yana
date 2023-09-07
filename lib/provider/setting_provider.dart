@@ -88,6 +88,8 @@ class SettingProvider extends ChangeNotifier {
 
   Map<String, String> get keyMap => _keyMap;
 
+  Map<String, bool> get keyIsPrivateMap => _keyIsPrivateMap;
+
   String? get key {
     if (_settingData!.privateKeyIndex != null &&
         _keyMap.isNotEmpty) {

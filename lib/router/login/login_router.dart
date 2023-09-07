@@ -1,4 +1,6 @@
 import 'dart:js_util';
+import 'package:flutter/foundation.dart';
+
 import '/js/js_library.dart' as js;
 import 'dart:developer';
 
@@ -119,7 +121,7 @@ class _LoginRouter extends State<LoginRouter>
       margin: const EdgeInsets.all(Base.BASE_PADDING),
       child: InkWell(
         onTap: () {
-          doLogin(false);
+          doLogin(controller.text, false, false);
         },
         child: Container(
           height: 36,
@@ -144,8 +146,13 @@ class _LoginRouter extends State<LoginRouter>
           onTap: () async {
             var pubKey = await promiseToFuture(await js.getPublicKey());
             if (StringUtil.isNotBlank(pubKey)) {
-              BotToast.showText(text: pubKey);
-              print("PUBLIC KEY: " + pubKey);
+              if (kDebugMode) {
+                BotToast.showText(text: pubKey);
+                print("PUBLIC KEY: " + pubKey);
+              }
+              doLogin(pubKey, true, false);
+            } else {
+              BotToast.showText(text: "Invalid public key");
             }
           },
           child: Container(
@@ -171,7 +178,7 @@ class _LoginRouter extends State<LoginRouter>
       child: InkWell(
         onTap: () {
           generatePK();
-          doLogin(true);
+          doLogin(controller.text, false, true);
         },
         child: Container(
           height: 40,
@@ -283,8 +290,7 @@ class _LoginRouter extends State<LoginRouter>
     );
   }
 
-  void doLogin(bool newKey) {
-    var key = controller.text;
+  void doLogin(String key,bool pubOnly, bool newKey) {
     if (StringUtil.isBlank(key)) {
       BotToast.showText(text: I18n.of(context).Private_key_is_null);
       return;
@@ -292,8 +298,8 @@ class _LoginRouter extends State<LoginRouter>
     showLoaderDialog(context);
 
     try {
-      bool isPublic = Nip19.isPubkey(key);
-      if (isPublic || Nip19.isPrivateKey(key)) {
+      bool isPublic = pubOnly || Nip19.isPubkey(key);
+      if (Nip19.isPubkey(key) || Nip19.isPrivateKey(key)) {
         key = Nip19.decode(key);
       }
       settingProvider.addAndChangeKey(key, !isPublic, updateUI: false);
