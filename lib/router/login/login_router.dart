@@ -1,7 +1,6 @@
-import 'dart:js_util';
 import 'package:flutter/foundation.dart';
 
-import '/js/js_library.dart' as js;
+import '/js/js_helper.dart' as js;
 import 'dart:developer';
 
 import 'package:bot_toast/bot_toast.dart';
@@ -144,7 +143,7 @@ class _LoginRouter extends State<LoginRouter>
         margin: const EdgeInsets.all(Base.BASE_PADDING),
         child: InkWell(
           onTap: () async {
-            var pubKey = await promiseToFuture(await js.getPublicKey());
+            var pubKey = await js.getPublicKeyAsync();
             if (StringUtil.isNotBlank(pubKey)) {
               if (kDebugMode) {
                 BotToast.showText(text: pubKey);

@@ -8,9 +8,8 @@ import 'event.dart';
 import 'event_kind.dart';
 import 'nip02/cust_contact_list.dart';
 import 'relay.dart';
-import 'dart:js_util';
 
-import '/js/js_library.dart' as js;
+import '/js/js_helper.dart' as js;
 
 class Nostr {
   String? _privateKey;
@@ -117,11 +116,11 @@ class Nostr {
     if (StringUtil.isNotBlank(_privateKey)) {
       event.sign(_privateKey!);
     } else {
-      var signedEvent = await promiseToFuture(await js.signEvent(event));
-      BotToast.showText(text: signedEvent);
+      var signedEvent = await js.signEventAsync(event);
+      BotToast.showText(text: signedEvent.toString());
       if (kDebugMode) {
-        BotToast.showText(text: signedEvent);
-        print("SIGNED EVENT: " + signedEvent);
+        BotToast.showText(text: signedEvent.toString());
+        print("SIGNED EVENT: " + signedEvent.toString());
       }
     }
   }
