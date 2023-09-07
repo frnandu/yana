@@ -35,7 +35,7 @@ class AccountsState extends State<AccountsComponent> {
   Widget build(BuildContext context) {
     var s = I18n.of(context);
     var _settingProvider = Provider.of<SettingProvider>(context);
-    var privateKeyMap = _settingProvider.privateKeyMap;
+    var privateKeyMap = _settingProvider.keyMap;
 
     var themeData = Theme.of(context);
     var hintColor = themeData.hintColor;
@@ -115,22 +115,23 @@ class AccountsState extends State<AccountsComponent> {
   }
 
   Future<void> addAccount() async {
-    var privateKey = await TextInputDialog.show(
+    String? key = await TextInputDialog.show(
         context, I18n.of(context).Input_account_private_key,
         valueCheck: addAccountCheck);
-    if (StringUtil.isNotBlank(privateKey)) {
+    if (StringUtil.isNotBlank(key)) {
       if (mounted) {
         var result = await ConfirmDialog.show(
             context, I18n
             .of(context)
             .Add_account_and_login);
         if (result == true) {
-          if (Nip19.isPrivateKey(privateKey!)) {
-            privateKey = Nip19.decode(privateKey);
+          bool isPublic = Nip19.isPubkey(key!);
+          if (isPublic || Nip19.isPrivateKey(key)) {
+            key = Nip19.decode(key);
           }
           // logout current and login new
           var oldIndex = settingProvider.privateKeyIndex;
-          var newIndex = settingProvider.addAndChangePrivateKey(privateKey);
+          var newIndex = settingProvider.addAndChangeKey(key, !isPublic);
           if (oldIndex != newIndex) {
             clearCurrentMemInfo();
             doLogin();
@@ -161,7 +162,9 @@ class AccountsState extends State<AccountsComponent> {
   }
 
   void doLogin() async {
-    nostr = await relayProvider.genNostr(settingProvider.privateKey!);
+    String? key = settingProvider.key;
+    bool isPrivate = settingProvider.isPrivateKey;
+    nostr = await relayProvider.genNostr(privateKey: isPrivate? key: null, publicKey: isPrivate?null:key);
   }
 
   void onLoginTap(int index) {
@@ -173,7 +176,7 @@ class AccountsState extends State<AccountsComponent> {
       settingProvider.privateKeyIndex = index;
 
       // signOut complete
-      if (settingProvider.privateKey != null) {
+      if (settingProvider.key != null) {
         // use next privateKey to login
         doLogin();
         settingProvider.notifyListeners();
@@ -193,9 +196,11 @@ class AccountsState extends State<AccountsComponent> {
       nostr = null;
 
       // signOut complete
-      if (settingProvider.privateKey != null) {
+      String? key = settingProvider.key;
+      if (settingProvider.key != null) {
         // use next privateKey to login
-        nostr = await relayProvider.genNostr(settingProvider.privateKey!);
+        bool isPrivate = settingProvider.isPrivateKey;
+        nostr = await relayProvider.genNostr(privateKey: isPrivate? key: null, publicKey: isPrivate?null:key);
       }
     }
 

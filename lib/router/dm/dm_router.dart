@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:yana/router/dm/dm_following_router.dart';
+import 'package:yana/utils/string_util.dart';
 
 import '../../nostr/nip04/nip04.dart';
 import '../../main.dart';
@@ -23,7 +24,8 @@ class _DMRouter extends State<DMRouter> {
   @override
   Widget build(BuildContext context) {
     var themeData = Theme.of(context);
-    var agreement = NIP04.getAgreement(nostr!.privateKey!);
+    bool isPrivate = StringUtil.isNotBlank(nostr!.privateKey);
+    var agreement = isPrivate ? NIP04.getAgreement(nostr!.privateKey!) : null;
 
     return Container(
       color: themeData.scaffoldBackgroundColor,

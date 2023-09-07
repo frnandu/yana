@@ -10,10 +10,10 @@ import 'dm_notice_item_component.dart';
 import 'dm_session_list_item_component.dart';
 
 class DMKnownListRouter extends StatefulWidget {
-  ECDHBasicAgreement agreement;
+  ECDHBasicAgreement? agreement;
   ScrollDirectionCallback scrollCallback;
 
-  DMKnownListRouter({required this.agreement, required this.scrollCallback});
+  DMKnownListRouter({this.agreement, required this.scrollCallback});
 
   @override
   State<StatefulWidget> createState() {

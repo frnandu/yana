@@ -18,11 +18,11 @@ import '../../utils/string_util.dart';
 class DMSessionListItemComponent extends StatefulWidget {
   DMSessionDetail detail;
 
-  pointycastle.ECDHBasicAgreement agreement;
+  pointycastle.ECDHBasicAgreement? agreement;
 
   DMSessionListItemComponent({super.key,
     required this.detail,
-    required this.agreement,
+    this.agreement,
   });
 
   @override
@@ -39,8 +39,11 @@ class _DMSessionListItemComponent extends State<DMSessionListItemComponent> {
 
   @override
   void initState() {
-    content = NIP04.decrypt(
-        widget.detail.dmSession.newestEvent!.content, widget.agreement, widget.detail.dmSession.pubkey);
+    if (widget.agreement!=null) {
+      content = NIP04.decrypt(
+          widget.detail.dmSession.newestEvent!.content, widget.agreement!,
+          widget.detail.dmSession.pubkey);
+    }
     if (content!=null) {
       content = content!.replaceAll("\r", " ");
       content = content!.replaceAll("\n", " ");

@@ -1,3 +1,5 @@
+import 'dart:js_util';
+import '/js/js_library.dart' as js;
 import 'dart:developer';
 
 import 'package:bot_toast/bot_toast.dart';
@@ -134,6 +136,35 @@ class _LoginRouter extends State<LoginRouter>
         ),
       ),
     ));
+
+    if (PlatformUtil.isWeb()) {
+      list.add(Container(
+        margin: const EdgeInsets.all(Base.BASE_PADDING),
+        child: InkWell(
+          onTap: () async {
+            var pubKey = await promiseToFuture(await js.getPublicKey());
+            if (StringUtil.isNotBlank(pubKey)) {
+              BotToast.showText(text: pubKey);
+              print("PUBLIC KEY: " + pubKey);
+            }
+          },
+          child: Container(
+            height: 36,
+            color: themeData.primaryColor,
+            alignment: Alignment.center,
+            child: const Text(
+              "Login with Extension",
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ),
+      ));
+    }
+
     // list.add(Divider());
     list.add(Container(
       margin: const EdgeInsets.all(Base.BASE_PADDING),
@@ -253,20 +284,21 @@ class _LoginRouter extends State<LoginRouter>
   }
 
   void doLogin(bool newKey) {
-    var pk = controller.text;
-    if (StringUtil.isBlank(pk)) {
+    var key = controller.text;
+    if (StringUtil.isBlank(key)) {
       BotToast.showText(text: I18n.of(context).Private_key_is_null);
       return;
     }
     showLoaderDialog(context);
 
     try {
-      if (Nip19.isPrivateKey(pk)) {
-        pk = Nip19.decode(pk);
+      bool isPublic = Nip19.isPubkey(key);
+      if (isPublic || Nip19.isPrivateKey(key)) {
+        key = Nip19.decode(key);
       }
-      settingProvider.addAndChangePrivateKey(pk, updateUI: false);
+      settingProvider.addAndChangeKey(key, !isPublic, updateUI: false);
       if (!newKey) {
-        var tempNostr = Nostr(privateKey: pk);
+        var tempNostr = Nostr(privateKey: !isPublic?key:null, publicKey: isPublic?key:null);
 
         var filter = Filter(
             authors: [tempNostr!.publicKey],
@@ -287,14 +319,14 @@ class _LoginRouter extends State<LoginRouter>
           if (tempNostr!=null) {
             LoginRouter.handleRemoteRelays(event, tempNostr!.privateKey!);
           }
-          getNostrAndClose(alreadyClosed, pk);
+          getNostrAndClose(alreadyClosed, key, !isPublic);
           alreadyClosed = true;
         });
         Future.delayed(Duration(seconds: 5), () {
-          getNostrAndClose(alreadyClosed, pk);
+          getNostrAndClose(alreadyClosed, key, !isPublic);
         });
       } else {
-        getNostrAndClose(false, pk);
+        getNostrAndClose(false, key, !isPublic);
       }
     } catch (e) {
       BotToast.showText(text: e.toString());
@@ -302,9 +334,9 @@ class _LoginRouter extends State<LoginRouter>
     }
   }
 
-  void getNostrAndClose(bool alreadyClosed, String pk) async {
+  void getNostrAndClose(bool alreadyClosed, String key, bool isPrivate) async {
     if (!alreadyClosed) {
-      nostr = await relayProvider.genNostr(pk);
+      nostr = await relayProvider.genNostr(privateKey: isPrivate? key: null, publicKey: isPrivate?null:key);
       Navigator.of(context, rootNavigator: true).pop();
       settingProvider.notifyListeners();
 

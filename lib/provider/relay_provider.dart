@@ -80,8 +80,8 @@ class RelayProvider extends ChangeNotifier {
     return Object();
   }
 
-  Future<Nostr> genNostr(String pk) async {
-    var _nostr = Nostr(privateKey: pk);
+  Future<Nostr> genNostr({String? privateKey, String? publicKey}) async {
+    var _nostr = Nostr(privateKey: privateKey, publicKey: publicKey);
     // log("nostr init over");
 
     await addRelays(_nostr);

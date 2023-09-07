@@ -941,7 +941,7 @@ class I18n {
   /// `Input_for_login`
   String get Input_for_login {
     return Intl.message(
-      'nsec / hex private key',
+      'nsec/npub/hex private/public key',
       name: 'Input_for_login',
       desc: '',
       args: [],

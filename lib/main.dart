@@ -183,9 +183,9 @@ void initProvidersAndStuff() async {
   relayProvider!.load();
 
   settingProvider = await SettingProvider.getInstance();
-  if (StringUtil.isNotBlank(settingProvider.privateKey)) {
+  if (StringUtil.isNotBlank(settingProvider.key)) {
     try {
-      nostr = Nostr(privateKey: settingProvider.privateKey);
+      nostr = Nostr(privateKey: settingProvider.key);
       // log("nostr init over");
       relayProvider.addRelays(nostr!).then((bla) {
         filterProvider = FilterProvider.getInstance();
@@ -274,9 +274,11 @@ Future<void> main() async {
   communityApprovedProvider = CommunityApprovedProvider();
   communityInfoProvider = CommunityInfoProvider();
 
-  if (StringUtil.isNotBlank(settingProvider.privateKey)) {
+  String? key = settingProvider.key;
+  if (StringUtil.isNotBlank(key)) {
+    bool isPrivate = settingProvider.isPrivateKey;
     try {
-      nostr = await relayProvider.genNostr(settingProvider.privateKey!);
+      nostr = await relayProvider.genNostr(privateKey: isPrivate? key: null, publicKey: isPrivate?null:key);
     } catch (e) {
       var index = settingProvider.privateKeyIndex;
       if (index != null) {
@@ -592,7 +594,7 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
     }
     if (newState != AppLifecycleState.paused &&
         (appState == AppLifecycleState.resumed || appState == AppLifecycleState.hidden || appState == AppLifecycleState.inactive) &&
-        backgroundService != null && nostr!=null && StringUtil.isNotBlank(nostr!.privateKey) &&
+        backgroundService != null && nostr!=null && !nostr!.isEmpty()! &&
         settingProvider.backgroundService
     ) {
       backgroundService!.startService();

@@ -30,9 +30,12 @@ class SettingProvider extends ChangeNotifier {
 
   SettingData? _settingData;
 
-  Map<String, String> _privateKeyMap = {};
+  Map<String, String> _keyMap = {};
 
-  final String PRIVATE_KEYS_MAP = "private_keys_map";
+  Map<String, bool> _keyIsPrivateMap = {};
+
+  final String KEYS_MAP = "private_keys_map";
+  final String IS_PRIVATE_MAP = "keys_is_private_map";
 
   static Future<SettingProvider> getInstance() async {
     if (_settingProvider == null) {
@@ -51,36 +54,22 @@ class SettingProvider extends ChangeNotifier {
       if (jsonMap != null) {
         var setting = SettingData.fromJson(jsonMap);
         _settingData = setting;
-        _privateKeyMap.clear();
+        _keyMap.clear();
 
-        // move privateKeyMap to encryptPrivateKeyMap since 1.2.0
-        // String? privateKeyMapText = _settingData!.encryptPrivateKeyMap;
-        String? privateKeyMapText = await secureStorage.read(key: PRIVATE_KEYS_MAP);
-
-        try {
-          if (StringUtil.isNotBlank(privateKeyMapText)) {
-            privateKeyMapText = privateKeyMapText!;
-          // } else if (StringUtil.isNotBlank(_settingData!.privateKeyMap) &&
-          //     StringUtil.isBlank(_settingData!.encryptPrivateKeyMap)) {
-          //   privateKeyMapText = _settingData!.privateKeyMap;
-          //   _settingData!.encryptPrivateKeyMap = _settingData!.privateKeyMap!;
-          //   _settingData!.privateKeyMap = null;
-          }
-        } catch (e) {
-          log("settingProvider handle privateKey error");
-          log(e.toString());
-        }
-
-        if (StringUtil.isNotBlank(privateKeyMapText)) {
+        String? keyMapJson = await secureStorage.read(key: KEYS_MAP);
+        String? keyIsPrivateMapJson= await secureStorage.read(key: IS_PRIVATE_MAP);
+        if (StringUtil.isNotBlank(keyMapJson)) {
           try {
-            var jsonKeyMap = jsonDecode(privateKeyMapText!);
+            var jsonKeyMap = jsonDecode(keyMapJson!);
+            var isPrivateJsonKeyMap = keyIsPrivateMapJson!=null?jsonDecode(keyIsPrivateMapJson!):null;
             if (jsonKeyMap != null) {
               for (var entry in (jsonKeyMap as Map<String, dynamic>).entries) {
-                _privateKeyMap[entry.key] = entry.value;
+                _keyMap[entry.key] = entry.value;
+                _keyIsPrivateMap[entry.key] = isPrivateJsonKeyMap!=null && isPrivateJsonKeyMap[entry.key];
               }
             }
           } catch (e) {
-            log("_settingData!.privateKeyMap! jsonDecode error");
+            log("secureStorage reading key KEYS_MAP jsonDecode error");
             log(e.toString());
           }
         }
@@ -97,21 +86,25 @@ class SettingProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Map<String, String> get privateKeyMap => _privateKeyMap;
+  Map<String, String> get keyMap => _keyMap;
 
-  String? get privateKey {
+  String? get key {
     if (_settingData!.privateKeyIndex != null &&
-        _privateKeyMap.isNotEmpty) {
-      return _privateKeyMap[_settingData!.privateKeyIndex.toString()];
+        _keyMap.isNotEmpty) {
+      return _keyMap[_settingData!.privateKeyIndex.toString()];
     }
     return null;
   }
+  
+  bool get isPrivateKey {
+    return _keyIsPrivateMap[_settingData!.privateKeyIndex] ?? false;
+  }
 
-  int addAndChangePrivateKey(String pk, {bool updateUI = false}) {
+  int addAndChangeKey(String key, bool isPrivate, {bool updateUI = false}) {
     int? findIndex;
-    var entries = _privateKeyMap.entries;
+    var entries = _keyMap.entries;
     for (var entry in entries) {
-      if (entry.value == pk) {
+      if (entry.value == key) {
         findIndex = int.tryParse(entry.key);
         break;
       }
@@ -123,13 +116,15 @@ class SettingProvider extends ChangeNotifier {
 
     for (var i = 0; i < 20; i++) {
       var index = i.toString();
-      var _pk = _privateKeyMap[index];
+      var _pk = _keyMap[index];
       if (_pk == null) {
-        _privateKeyMap[index] = pk;
+        _keyMap[index] = key;
+        _keyIsPrivateMap[index] = isPrivate;
 
         _settingData!.privateKeyIndex = i;
 
-        secureStorage.write(key: PRIVATE_KEYS_MAP,value: json.encode(_privateKeyMap));
+        secureStorage.write(key: KEYS_MAP,value: json.encode(_keyMap));
+        secureStorage.write(key: IS_PRIVATE_MAP,value: json.encode(_keyIsPrivateMap));
         saveAndNotifyListeners(updateUI: updateUI);
 
         return i;
@@ -141,14 +136,14 @@ class SettingProvider extends ChangeNotifier {
 
   void removeKey(int index) {
     var indexStr = index.toString();
-    _privateKeyMap.remove(indexStr);
-    secureStorage.write(key: PRIVATE_KEYS_MAP,value: json.encode(_privateKeyMap));
+    _keyMap.remove(indexStr);
+    secureStorage.write(key: KEYS_MAP,value: json.encode(_keyMap));
     if (_settingData!.privateKeyIndex == index) {
-      if (_privateKeyMap.isEmpty) {
+      if (_keyMap.isEmpty) {
         _settingData!.privateKeyIndex = null;
       } else {
         // find a index
-        var keyIndex = _privateKeyMap.keys.first;
+        var keyIndex = _keyMap.keys.first;
         _settingData!.privateKeyIndex = int.tryParse(keyIndex);
       }
     }

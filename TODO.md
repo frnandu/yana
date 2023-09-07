@@ -38,6 +38,12 @@
 - ~~notifications/replies of reactions/likes (include post and if a reply the parent)~~
 - ~~in thread view handle better zaps instead of some weird bitcoin component~~
 
+
+- login with npub
+- login with extension on web
+- login with nip05 
+- login with mnemonic
+
 - STOP followers/zaps events from blocking the relay, when navigate away from that profile
 - get notifications in background for all accounts
 - reply position on thread when linking from outside is wrong
@@ -66,7 +72,6 @@
 - in thread view handle better zaps instead of some weird bitcoin component
 - show common followers/followees
 - try to load images using Isolate and compute, so that feed scrolling does not freeze while loading images
-- allow to login with npub 
 - add SystemMouseCursors.click to everything that is clickable for web version
 - move reposts from replies to posts? maybe new tab only for reposts?
 - https://pub.dev/packages/objectbox

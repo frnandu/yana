@@ -173,4 +173,8 @@ class Nostr {
   Future<void> checkAndReconnectRelays() async {
     await _pool.checkAndReconnectRelays();
   }
+
+  bool isEmpty() {
+    return StringUtil.isBlank(privateKey) && StringUtil.isBlank(publicKey);
+  }
 }
