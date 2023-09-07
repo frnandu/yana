@@ -693,6 +693,18 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
     double baseFontSize = settingProvider.fontSize;
 
     var textTheme = TextTheme(
+      displaySmall: TextStyle(fontSize: baseFontSize - 2, fontFamily: 'Montserrat'),
+      displayMedium: TextStyle(fontSize: baseFontSize, fontFamily: 'Montserrat'),
+      displayLarge: TextStyle(fontSize: baseFontSize + 2, fontFamily: 'Montserrat'),
+      headlineSmall: TextStyle(fontSize: baseFontSize - 2, fontFamily: 'Montserrat'),
+      headlineMedium: TextStyle(fontSize: baseFontSize, fontFamily: 'Montserrat'),
+      headlineLarge: TextStyle(fontSize: baseFontSize + 2, fontFamily: 'Montserrat'),
+      titleSmall: TextStyle(fontSize: baseFontSize - 2, fontFamily: 'Montserrat'),
+      titleMedium: TextStyle(fontSize: baseFontSize, fontFamily: 'Montserrat'),
+      titleLarge: TextStyle(fontSize: baseFontSize + 2, fontFamily: 'Montserrat'),
+      labelSmall: TextStyle(fontSize: baseFontSize - 2, fontFamily: 'Montserrat'),
+      labelMedium: TextStyle(fontSize: baseFontSize, fontFamily: 'Montserrat'),
+      labelLarge: TextStyle(fontSize: baseFontSize + 2, fontFamily: 'Montserrat'),
       bodyLarge: TextStyle(fontSize: baseFontSize + 2, height: 1.4),
       bodyMedium: TextStyle(fontSize: baseFontSize, height: 1.4),
       bodySmall: TextStyle(fontSize: baseFontSize - 2, height: 1.4),
@@ -710,7 +722,6 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
     }
 
     return ThemeData(
-      fontFamily: 'Montserrat',
       brightness: Brightness.dark,
       platform: TargetPlatform.iOS,
       primarySwatch: themeColor,
