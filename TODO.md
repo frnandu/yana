@@ -39,12 +39,10 @@
 - ~~in thread view handle better zaps instead of some weird bitcoin component~~
 - ~~login with npub~~
 - ~~login with extension on web~~
-- 
-- signEvent
-- login with nip05 
-- login with mnemonic
+- ~~text color on light theme login screen YANA + input is dark~~
 
-- text color on light theme login screen YANA + input is dark
+- signEvent
+
 - STOP followers/zaps events from blocking the relay, when navigate away from that profile
 - get notifications in background for all accounts
 - reply position on thread when linking from outside is wrong
@@ -55,6 +53,8 @@
 - NIP-78 preferences and messages read state
 - separate posts from replies on profile
 - update service check for new release from github
+- login with nip05
+- login with mnemonic
 - 
 - remember eventMemBox for Posts/Replies on DB (on just timestamp lastRead) so badge counter persists between app restarts
 - 
