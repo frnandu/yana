@@ -37,10 +37,10 @@
 - ~~fix image/video preview setting (is false / not taken into effect)~~
 - ~~notifications/replies of reactions/likes (include post and if a reply the parent)~~
 - ~~in thread view handle better zaps instead of some weird bitcoin component~~
-
-
-- login with npub
-- login with extension on web
+- ~~login with npub~~
+- ~~login with extension on web~~
+- 
+- signEvent
 - login with nip05 
 - login with mnemonic
 
