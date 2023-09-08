@@ -51,7 +51,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "Begin_to_load_Contact_History": MessageLookupByLibrary.simpleMessage(
             "Begin to load Contact History"),
         "Block": MessageLookupByLibrary.simpleMessage("Block"),
-        "Blocked_Profiles": MessageLookupByLibrary.simpleMessage("Blocked profiles"),
+        "Blocked_Profiles": MessageLookupByLibrary.simpleMessage("Blocked Profiles"),
         "Boost": MessageLookupByLibrary.simpleMessage("Boost"),
         "Broadcast": MessageLookupByLibrary.simpleMessage("Broadcast"),
         "Broadcast_When_Boost":

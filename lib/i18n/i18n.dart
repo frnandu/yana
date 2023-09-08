@@ -721,7 +721,7 @@ class I18n {
   /// `Blocks`
   String get Blocked_Profiles {
     return Intl.message(
-      'Blocked profiles',
+      'Blocked Profiles',
       name: 'Blocked Profiles',
       desc: '',
       args: [],

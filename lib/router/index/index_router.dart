@@ -86,6 +86,7 @@ class _IndexRouter extends CustState<IndexRouter>
   }
 
   bool unlock = false;
+  var badgeTextStyle = const TextStyle(color: Colors.white, fontFamily: "Roboto");
 
   @override
   Widget doBuild(BuildContext context) {
@@ -164,8 +165,7 @@ class _IndexRouter extends CustState<IndexRouter>
                 }
                 return Badge(
                     offset: const Offset(16, -4),
-                    label: Text(eventMemBox.length().toString(),
-                        style: const TextStyle(color: Colors.white)),
+                    label: Text(eventMemBox.length().toString(),style: badgeTextStyle),
                     backgroundColor: const Color(0xFF6A1B9A),
                     child: text);
               },
@@ -188,8 +188,7 @@ class _IndexRouter extends CustState<IndexRouter>
                 }
                 return Badge(
                     offset: const Offset(16, -4),
-                    label: Text(eventMemBox.length().toString(),
-                        style: const TextStyle(color: Colors.white)),
+                    label: Text(eventMemBox.length().toString(), style: badgeTextStyle),
                     backgroundColor: const Color(0xFF6A1B9A),
                     child: text);
               },
@@ -247,8 +246,7 @@ class _IndexRouter extends CustState<IndexRouter>
                 }
                 return Badge(
                     offset: const Offset(16, -4),
-                    label: Text(count.toString(),
-                        style: const TextStyle(color: Colors.white)),
+                    label: Text(count.toString(), style: badgeTextStyle),
                     backgroundColor: const Color(0xFF6A1B9A),
                     child: text);
               },
@@ -272,8 +270,7 @@ class _IndexRouter extends CustState<IndexRouter>
                   }
                   return Badge(
                       offset: const Offset(16, -4),
-                      label: Text(count.toString(),
-                          style: const TextStyle(color: Colors.white)),
+                      label: Text(count.toString(), style: badgeTextStyle),
                       backgroundColor: const Color(0xFF6A1B9A),
                       child: text);
                 },
@@ -296,8 +293,7 @@ class _IndexRouter extends CustState<IndexRouter>
                   }
                   return Badge(
                       offset: const Offset(16, -4),
-                      label: Text(count.toString(),
-                          style: TextStyle(color: Colors.white)),
+                      label: Text(count.toString(), style: badgeTextStyle),
                       backgroundColor: const Color(0xFF6A1B9A),
                       child: text);
                 },
