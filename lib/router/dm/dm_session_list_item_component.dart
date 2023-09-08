@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get_time_ago/get_time_ago.dart';
 import 'package:pointycastle/export.dart' as pointycastle;
 import 'package:provider/provider.dart';
+import 'package:sizer/sizer.dart';
 import 'package:yana/models/metadata.dart';
 import 'package:yana/nostr/nip04/nip04.dart';
 import 'package:yana/provider/dm_provider.dart';
@@ -20,7 +21,8 @@ class DMSessionListItemComponent extends StatefulWidget {
 
   pointycastle.ECDHBasicAgreement? agreement;
 
-  DMSessionListItemComponent({super.key,
+  DMSessionListItemComponent({
+    super.key,
     required this.detail,
     this.agreement,
   });
@@ -29,7 +31,6 @@ class DMSessionListItemComponent extends StatefulWidget {
   State<StatefulWidget> createState() {
     return _DMSessionListItemComponent();
   }
-
 }
 
 class _DMSessionListItemComponent extends State<DMSessionListItemComponent> {
@@ -39,17 +40,15 @@ class _DMSessionListItemComponent extends State<DMSessionListItemComponent> {
 
   @override
   void initState() {
-    if (widget.agreement!=null) {
-      content = NIP04.decrypt(
-          widget.detail.dmSession.newestEvent!.content, widget.agreement!,
-          widget.detail.dmSession.pubkey);
+    if (widget.agreement != null) {
+      content = NIP04.decrypt(widget.detail.dmSession.newestEvent!.content,
+          widget.agreement!, widget.detail.dmSession.pubkey);
     }
-    if (content!=null) {
+    if (content != null) {
       content = content!.replaceAll("\r", " ");
       content = content!.replaceAll("\n", " ");
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -93,9 +92,9 @@ class _DMSessionListItemComponent extends State<DMSessionListItemComponent> {
       decoration: BoxDecoration(
           border: Border(
               bottom: BorderSide(
-                width: 1,
-                color: hintColor,
-              ))),
+        width: 1,
+        color: hintColor,
+      ))),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -113,32 +112,37 @@ class _DMSessionListItemComponent extends State<DMSessionListItemComponent> {
                 children: [
                   Row(
                     children: [
-                      Selector<MetadataProvider, Metadata?>(
-                        builder: (context, metadata, child) {
-                          return NameComponnet(
-                            pubkey: dmSession.pubkey,
-                            metadata: metadata,
-                          );
-                        },
-                        selector: (context, _provider) {
-                          return _provider.getMetadata(widget.detail.dmSession
-                              .pubkey);
-                        },
-                      ),
                       Expanded(
-                        child: Container(
-                          alignment: Alignment.centerRight,
-                          child: Text(
-                            GetTimeAgo.parse(
-                                DateTime.fromMillisecondsSinceEpoch(
-                                    lastEvent.createdAt * 1000)),
-                            style: TextStyle(
-                              fontSize: smallTextSize,
-                              color: themeData.hintColor,
-                            ),
+                          child: SizedBox(
+                              width: 200,
+                              child: Selector<MetadataProvider, Metadata?>(
+                                builder: (context, metadata, child) {
+                                  return NameComponent(
+                                    pubkey: dmSession.pubkey,
+                                    showNip05: false,
+                                    metadata: metadata,
+                                  );
+                                },
+                                selector: (context, _provider) {
+                                  return _provider.getMetadata(
+                                      widget.detail.dmSession.pubkey);
+                                },
+                              ))),
+                      // Expanded(
+                      //   child:
+                      Container(
+                        padding: const EdgeInsets.only(left:Base.BASE_PADDING),
+                        alignment: Alignment.centerRight,
+                        child: Text(
+                          GetTimeAgo.parse(DateTime.fromMillisecondsSinceEpoch(
+                              lastEvent.createdAt * 1000 ), pattern: "dd MMM HH:mm"),
+                          style: TextStyle(
+                            fontSize: smallTextSize,
+                            color: themeData.disabledColor,
                           ),
                         ),
                       ),
+                      // ),
                     ],
                   ),
                   Container(

@@ -65,7 +65,7 @@ class _DMDetailRouter extends CustState<DMDetailRouter> with EditorMixin {
 
     var nameComponnet = Selector<MetadataProvider, Metadata?>(
       builder: (context, metadata, child) {
-        return NameComponnet(
+        return NameComponent(
           pubkey: detail!.dmSession.pubkey,
           metadata: metadata,
         );

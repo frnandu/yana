@@ -5,7 +5,7 @@ import 'package:yana/models/metadata.dart';
 import '../nostr/nip19/nip19.dart';
 import '../utils/string_util.dart';
 
-class NameComponnet extends StatefulWidget {
+class NameComponent extends StatefulWidget {
   String pubkey;
 
   Metadata? metadata;
@@ -16,7 +16,7 @@ class NameComponnet extends StatefulWidget {
 
   Color? fontColor;
 
-  NameComponnet({
+  NameComponent({super.key,
     required this.pubkey,
     this.metadata,
     this.showNip05 = true,
@@ -30,7 +30,7 @@ class NameComponnet extends StatefulWidget {
   }
 }
 
-class _NameComponnet extends State<NameComponnet> {
+class _NameComponnet extends State<NameComponent> {
   @override
   Widget build(BuildContext context) {
     var themeData = Theme.of(context);
@@ -75,6 +75,7 @@ class _NameComponnet extends State<NameComponnet> {
         fontWeight: FontWeight.bold,
         fontSize: widget.fontSize ?? textSize,
         color: widget.fontColor,
+        overflow: TextOverflow.fade,
       ),
     ));
     if (StringUtil.isNotBlank(name)) {

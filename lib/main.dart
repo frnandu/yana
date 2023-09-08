@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:ui';
+import 'package:sizer/sizer.dart';
 
 import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:bot_toast/bot_toast.dart';
@@ -165,7 +166,8 @@ void onStart(ServiceInstance service) async {
   Timer.periodic(const Duration(seconds: 60), (timer) async {
     if (service is AndroidServiceInstance) {
       AwesomeNotifications().getAppLifeCycle().then((value) {
-        if (value.toString() != "NotificationLifeCycle.Foreground" && nostr!=null) {
+        if (value.toString() != "NotificationLifeCycle.Foreground" &&
+            nostr != null) {
           nostr!.checkAndReconnectRelays().then((a) {
             newNotificationsProvider.queryNew();
           });
@@ -176,7 +178,6 @@ void onStart(ServiceInstance service) async {
 }
 
 void initProvidersAndStuff() async {
-
   sharedPreferences = await DataUtil.getInstance();
   metadataProvider = await MetadataProvider.getInstance();
   relayProvider = RelayProvider.getInstance();
@@ -278,7 +279,8 @@ Future<void> main() async {
   if (StringUtil.isNotBlank(key)) {
     bool isPrivate = settingProvider.isPrivateKey;
     try {
-      nostr = await relayProvider.genNostr(privateKey: isPrivate? key: null, publicKey: isPrivate?null:key);
+      nostr = await relayProvider.genNostr(privateKey: isPrivate ? key : null,
+          publicKey: isPrivate ? null : key);
     } catch (e) {
       var index = settingProvider.privateKeyIndex;
       if (index != null) {
@@ -288,17 +290,15 @@ Future<void> main() async {
   }
 
   // FlutterNativeSplash.remove();
-  try{
+  try {
     if (PlatformUtil.isAndroid() || PlatformUtil.isIOS()) {
       initBackgroundService();
     }
-  } catch(e){
-  }
+  } catch (e) {}
   runApp(MyApp());
 }
 
 void initBackgroundService() async {
-
   // await AndroidAlarmManager.initialize();
   // const int helloAlarmID = 0;
   // await AndroidAlarmManager.periodic(const Duration(seconds: 10), helloAlarmID, printHello, wakeup: true, exact: true, allowWhileIdle: true, rescheduleOnReboot: true);
@@ -330,7 +330,7 @@ void initBackgroundService() async {
   AwesomeNotifications().setListeners(
     onActionReceivedMethod: NewNotificationsProvider.onActionReceivedMethod,
     onNotificationCreatedMethod:
-        NewNotificationsProvider.onNotificationCreatedMethod,
+    NewNotificationsProvider.onNotificationCreatedMethod,
   );
 
   /// OPTIONAL, using custom notification channel id
@@ -339,7 +339,8 @@ void initBackgroundService() async {
     'Background service (can be hidden)', // title
     showBadge: false,
     description:
-        'This channel is needed to be running in order for the system not to kill all used for important notifications.', // description
+    'This channel is needed to be running in order for the system not to kill all used for important notifications.',
+    // description
     importance: Importance.low, // importance must be at low or higher level
   );
 
@@ -347,7 +348,7 @@ void initBackgroundService() async {
   backgroundService = FlutterBackgroundService();
   await flutterLocalNotificationsPlugin
       .resolvePlatformSpecificImplementation<
-          AndroidFlutterLocalNotificationsPlugin>()
+      AndroidFlutterLocalNotificationsPlugin>()
       ?.createNotificationChannel(channel);
 
   await backgroundService!.configure(
@@ -465,100 +466,104 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
       RouterPath.QRSCANNER: (context) => const QRScannerRouter(),
       RouterPath.RELAY_INFO: (context) => const RelayInfoRouter(),
       RouterPath.FOLLOWED_TAGS_LIST: (context) =>
-          const FollowedTagsListRouter(),
+      const FollowedTagsListRouter(),
       RouterPath.COMMUNITY_DETAIL: (context) => const CommunityDetailRouter(),
       RouterPath.FOLLOWED_COMMUNITIES: (context) =>
-          const FollowedCommunitiesRouter(),
+      const FollowedCommunitiesRouter(),
       RouterPath.FOLLOWED: (context) => const FollowedRouter(),
     };
 
     return MultiProvider(
-      providers: [
-        ListenableProvider<SettingProvider>.value(
-          value: settingProvider,
-        ),
-        ListenableProvider<MetadataProvider>.value(
-          value: metadataProvider,
-        ),
-        ListenableProvider<IndexProvider>.value(
-          value: indexProvider,
-        ),
-        ListenableProvider<ContactListProvider>.value(
-          value: contactListProvider,
-        ),
-        ListenableProvider<FollowEventProvider>.value(
-          value: followEventProvider,
-        ),
-        ListenableProvider<FollowNewEventProvider>.value(
-          value: followNewEventProvider,
-        ),
-        ListenableProvider<NotificationsProvider>.value(
-          value: notificationsProvider,
-        ),
-        ListenableProvider<NewNotificationsProvider>.value(
-          value: newNotificationsProvider,
-        ),
-        ListenableProvider<DMProvider>.value(
-          value: dmProvider,
-        ),
-        ListenableProvider<EventReactionsProvider>.value(
-          value: eventReactionsProvider,
-        ),
-        ListenableProvider<NoticeProvider>.value(
-          value: noticeProvider,
-        ),
-        ListenableProvider<SingleEventProvider>.value(
-          value: singleEventProvider,
-        ),
-        ListenableProvider<RelayProvider>.value(
-          value: relayProvider,
-        ),
-        ListenableProvider<FilterProvider>.value(
-          value: filterProvider,
-        ),
-        ListenableProvider<LinkPreviewDataProvider>.value(
-          value: linkPreviewDataProvider,
-        ),
-        ListenableProvider<BadgeDefinitionProvider>.value(
-          value: badgeDefinitionProvider,
-        ),
-        ListenableProvider<PcRouterFakeProvider>.value(
-          value: pcRouterFakeProvider,
-        ),
-        ListenableProvider<WebViewProvider>.value(
-          value: webViewProvider,
-        ),
-        ListenableProvider<CustomEmojiProvider>.value(
-          value: customEmojiProvider,
-        ),
-        ListenableProvider<CommunityApprovedProvider>.value(
-          value: communityApprovedProvider,
-        ),
-        ListenableProvider<CommunityInfoProvider>.value(
-          value: communityInfoProvider,
-        ),
-      ],
-      child: HomeComponent(
-        locale: _locale,
-        theme: defaultTheme,
-        child: MaterialApp(
-          builder: BotToastInit(),
-          navigatorObservers: [BotToastNavigatorObserver()],
+        providers: [
+          ListenableProvider<SettingProvider>.value(
+            value: settingProvider,
+          ),
+          ListenableProvider<MetadataProvider>.value(
+            value: metadataProvider,
+          ),
+          ListenableProvider<IndexProvider>.value(
+            value: indexProvider,
+          ),
+          ListenableProvider<ContactListProvider>.value(
+            value: contactListProvider,
+          ),
+          ListenableProvider<FollowEventProvider>.value(
+            value: followEventProvider,
+          ),
+          ListenableProvider<FollowNewEventProvider>.value(
+            value: followNewEventProvider,
+          ),
+          ListenableProvider<NotificationsProvider>.value(
+            value: notificationsProvider,
+          ),
+          ListenableProvider<NewNotificationsProvider>.value(
+            value: newNotificationsProvider,
+          ),
+          ListenableProvider<DMProvider>.value(
+            value: dmProvider,
+          ),
+          ListenableProvider<EventReactionsProvider>.value(
+            value: eventReactionsProvider,
+          ),
+          ListenableProvider<NoticeProvider>.value(
+            value: noticeProvider,
+          ),
+          ListenableProvider<SingleEventProvider>.value(
+            value: singleEventProvider,
+          ),
+          ListenableProvider<RelayProvider>.value(
+            value: relayProvider,
+          ),
+          ListenableProvider<FilterProvider>.value(
+            value: filterProvider,
+          ),
+          ListenableProvider<LinkPreviewDataProvider>.value(
+            value: linkPreviewDataProvider,
+          ),
+          ListenableProvider<BadgeDefinitionProvider>.value(
+            value: badgeDefinitionProvider,
+          ),
+          ListenableProvider<PcRouterFakeProvider>.value(
+            value: pcRouterFakeProvider,
+          ),
+          ListenableProvider<WebViewProvider>.value(
+            value: webViewProvider,
+          ),
+          ListenableProvider<CustomEmojiProvider>.value(
+            value: customEmojiProvider,
+          ),
+          ListenableProvider<CommunityApprovedProvider>.value(
+            value: communityApprovedProvider,
+          ),
+          ListenableProvider<CommunityInfoProvider>.value(
+            value: communityInfoProvider,
+          ),
+        ],
+        child: HomeComponent(
           locale: _locale,
-          title: packageInfo.appName,
-          localizationsDelegates: const [
-            I18n.delegate,
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
-          ],
-          supportedLocales: I18n.delegate.supportedLocales,
           theme: defaultTheme,
-          darkTheme: defaultDarkTheme,
-          initialRoute: RouterPath.INDEX,
-          routes: routes,
-        ),
-      ),
+          child: Sizer(
+            builder: (context, orientation, deviceType) {
+              return MaterialApp(
+                builder: BotToastInit(),
+                navigatorObservers: [BotToastNavigatorObserver()],
+                locale: _locale,
+                title: packageInfo.appName,
+                localizationsDelegates: const [
+                  I18n.delegate,
+                  GlobalMaterialLocalizations.delegate,
+                  GlobalWidgetsLocalizations.delegate,
+                  GlobalCupertinoLocalizations.delegate,
+                ],
+                supportedLocales: I18n.delegate.supportedLocales,
+                theme: defaultTheme,
+                darkTheme: defaultDarkTheme,
+                initialRoute: RouterPath.INDEX,
+                routes: routes,
+              );
+            },
+          ),
+        )
     );
   }
 
@@ -589,12 +594,17 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
         if (backgroundService != null && settingProvider.backgroundService) {
           backgroundService!.invoke('stopService');
         }
-        nostr!.checkAndReconnectRelays();
+        nostr!.checkAndReconnectRelays().then((a) {
+          newNotificationsProvider.queryNew();
+          followNewEventProvider.queryNew();
+        });
       }
     }
     if (newState != AppLifecycleState.paused &&
-        (appState == AppLifecycleState.resumed || appState == AppLifecycleState.hidden || appState == AppLifecycleState.inactive) &&
-        backgroundService != null && nostr!=null && !nostr!.isEmpty()! &&
+        (appState == AppLifecycleState.resumed ||
+            appState == AppLifecycleState.hidden ||
+            appState == AppLifecycleState.inactive) &&
+        backgroundService != null && nostr != null && !nostr!.isEmpty()! &&
         settingProvider.backgroundService
     ) {
       backgroundService!.startService();
@@ -628,6 +638,29 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
     double baseFontSize = settingProvider.fontSize;
 
     var textTheme = TextTheme(
+      displaySmall: TextStyle(
+          fontSize: baseFontSize - 2, fontFamily: 'Montserrat'),
+      displayMedium: TextStyle(
+          fontSize: baseFontSize, fontFamily: 'Montserrat'),
+      displayLarge: TextStyle(
+          fontSize: baseFontSize + 2, fontFamily: 'Montserrat'),
+      headlineSmall: TextStyle(
+          fontSize: baseFontSize - 2, fontFamily: 'Montserrat'),
+      headlineMedium: TextStyle(
+          fontSize: baseFontSize, fontFamily: 'Montserrat'),
+      headlineLarge: TextStyle(
+          fontSize: baseFontSize + 2, fontFamily: 'Montserrat'),
+      titleSmall: TextStyle(
+          fontSize: baseFontSize - 2, fontFamily: 'Montserrat'),
+      titleMedium: TextStyle(fontSize: baseFontSize, fontFamily: 'Montserrat'),
+      titleLarge: TextStyle(
+          fontSize: baseFontSize + 2, fontFamily: 'Montserrat'),
+      labelSmall: TextStyle(
+          fontSize: baseFontSize - 2, fontFamily: 'Montserrat'),
+      labelMedium: TextStyle(fontSize: baseFontSize, fontFamily: 'Montserrat'),
+      labelLarge: TextStyle(
+          fontSize: baseFontSize + 2, fontFamily: 'Montserrat'),
+
       bodyLarge: TextStyle(fontSize: baseFontSize + 2, height: 1.4),
       bodyMedium: TextStyle(fontSize: baseFontSize, height: 1.4),
       bodySmall: TextStyle(fontSize: baseFontSize - 2, height: 1.4),
@@ -644,7 +677,7 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
     }
 
     return ThemeData(
-      fontFamily: 'Montserrat',
+      // fontFamily: 'Montserrat',
       useMaterial3: true,
       brightness: Brightness.light,
       platform: TargetPlatform.iOS,
@@ -656,7 +689,7 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
       appBarTheme: AppBarTheme(
         // color: Base.APPBAR_COLOR,
         backgroundColor:
-            PlatformUtil.isPC() ? scaffoldBackgroundColor : themeColor[500],
+        PlatformUtil.isPC() ? scaffoldBackgroundColor : themeColor[500],
         titleTextStyle: titleTextStyle,
         elevation: 0,
       ),
@@ -695,18 +728,28 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
     double baseFontSize = settingProvider.fontSize;
 
     var textTheme = TextTheme(
-      displaySmall: TextStyle(fontSize: baseFontSize - 2, fontFamily: 'Montserrat'),
-      displayMedium: TextStyle(fontSize: baseFontSize, fontFamily: 'Montserrat'),
-      displayLarge: TextStyle(fontSize: baseFontSize + 2, fontFamily: 'Montserrat'),
-      headlineSmall: TextStyle(fontSize: baseFontSize - 2, fontFamily: 'Montserrat'),
-      headlineMedium: TextStyle(fontSize: baseFontSize, fontFamily: 'Montserrat'),
-      headlineLarge: TextStyle(fontSize: baseFontSize + 2, fontFamily: 'Montserrat'),
-      titleSmall: TextStyle(fontSize: baseFontSize - 2, fontFamily: 'Montserrat'),
+      displaySmall: TextStyle(
+          fontSize: baseFontSize - 2, fontFamily: 'Montserrat'),
+      displayMedium: TextStyle(
+          fontSize: baseFontSize, fontFamily: 'Montserrat'),
+      displayLarge: TextStyle(
+          fontSize: baseFontSize + 2, fontFamily: 'Montserrat'),
+      headlineSmall: TextStyle(
+          fontSize: baseFontSize - 2, fontFamily: 'Montserrat'),
+      headlineMedium: TextStyle(
+          fontSize: baseFontSize, fontFamily: 'Montserrat'),
+      headlineLarge: TextStyle(
+          fontSize: baseFontSize + 2, fontFamily: 'Montserrat'),
+      titleSmall: TextStyle(
+          fontSize: baseFontSize - 2, fontFamily: 'Montserrat'),
       titleMedium: TextStyle(fontSize: baseFontSize, fontFamily: 'Montserrat'),
-      titleLarge: TextStyle(fontSize: baseFontSize + 2, fontFamily: 'Montserrat'),
-      labelSmall: TextStyle(fontSize: baseFontSize - 2, fontFamily: 'Montserrat'),
+      titleLarge: TextStyle(
+          fontSize: baseFontSize + 2, fontFamily: 'Montserrat'),
+      labelSmall: TextStyle(
+          fontSize: baseFontSize - 2, fontFamily: 'Montserrat'),
       labelMedium: TextStyle(fontSize: baseFontSize, fontFamily: 'Montserrat'),
-      labelLarge: TextStyle(fontSize: baseFontSize + 2, fontFamily: 'Montserrat'),
+      labelLarge: TextStyle(
+          fontSize: baseFontSize + 2, fontFamily: 'Montserrat'),
       bodyLarge: TextStyle(fontSize: baseFontSize + 2, height: 1.4),
       bodyMedium: TextStyle(fontSize: baseFontSize, height: 1.4),
       bodySmall: TextStyle(fontSize: baseFontSize - 2, height: 1.4),
@@ -724,6 +767,7 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
     }
 
     return ThemeData(
+      useMaterial3: true,
       brightness: Brightness.dark,
       platform: TargetPlatform.iOS,
       primarySwatch: themeColor,

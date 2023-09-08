@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:provider/provider.dart';
+import 'package:sizer/sizer.dart';
 import 'package:yana/provider/dm_provider.dart';
 import 'package:yana/provider/pc_router_fake_provider.dart';
 import 'package:yana/router/follow/notifications_router.dart';
@@ -21,6 +22,7 @@ import '../../provider/follow_new_event_provider.dart';
 import '../../provider/index_provider.dart';
 import '../../provider/setting_provider.dart';
 import '../../utils/auth_util.dart';
+import '../../utils/base.dart';
 import '../dm/dm_router.dart';
 import '../edit/editor_router.dart';
 import '../follow/follow_index_router.dart';
@@ -126,7 +128,9 @@ class _IndexRouter extends CustState<IndexRouter>
     var themeData = Theme.of(context);
     var titleTextColor = themeData.appBarTheme.titleTextStyle!.color;
     var titleTextStyle = TextStyle(
-      fontWeight: FontWeight.normal,
+      fontFamily: 'Montserrat',
+      fontWeight: FontWeight.w600,
+      fontSize: 12.sp,
       color: titleTextColor,
     );
     Color? indicatorColor = titleTextColor;
@@ -161,7 +165,7 @@ class _IndexRouter extends CustState<IndexRouter>
                 return Badge(
                     offset: const Offset(16, -4),
                     label: Text(eventMemBox.length().toString(),
-                        style: TextStyle(color: Colors.white)),
+                        style: const TextStyle(color: Colors.white)),
                     backgroundColor: const Color(0xFF6A1B9A),
                     child: text);
               },
@@ -185,7 +189,7 @@ class _IndexRouter extends CustState<IndexRouter>
                 return Badge(
                     offset: const Offset(16, -4),
                     label: Text(eventMemBox.length().toString(),
-                        style: TextStyle(color: Colors.white)),
+                        style: const TextStyle(color: Colors.white)),
                     backgroundColor: const Color(0xFF6A1B9A),
                     child: text);
               },
@@ -221,6 +225,10 @@ class _IndexRouter extends CustState<IndexRouter>
       );
     } else if (_indexProvider.currentTap == IndexTaps.DM) {
       appBarCenter = TabBar(
+        labelPadding: const EdgeInsets.only(
+          left: Base.BASE_PADDING_HALF,
+          right: Base.BASE_PADDING_HALF,
+        ),
         controller: dmTabController,
         indicatorColor: const Color(0xFF6A1B9A),
         indicatorWeight: 2,
@@ -232,7 +240,7 @@ class _IndexRouter extends CustState<IndexRouter>
               builder: (context, count, child) {
                 Text text = Text(
                   s.Following,
-                  style: themeData.appBarTheme.titleTextStyle,
+                  style: titleTextStyle
                 );
                 if (count <= 0) {
                   return text;
@@ -240,7 +248,7 @@ class _IndexRouter extends CustState<IndexRouter>
                 return Badge(
                     offset: const Offset(16, -4),
                     label: Text(count.toString(),
-                        style: TextStyle(color: Colors.white)),
+                        style: const TextStyle(color: Colors.white)),
                     backgroundColor: const Color(0xFF6A1B9A),
                     child: text);
               },
@@ -257,7 +265,7 @@ class _IndexRouter extends CustState<IndexRouter>
                 builder: (context, count, child) {
                   Text text = Text(
                     s.Others,
-                    style: themeData.appBarTheme.titleTextStyle,
+                    style: titleTextStyle,
                   );
                   if (count <= 0) {
                     return text;
@@ -265,7 +273,7 @@ class _IndexRouter extends CustState<IndexRouter>
                   return Badge(
                       offset: const Offset(16, -4),
                       label: Text(count.toString(),
-                          style: TextStyle(color: Colors.white)),
+                          style: const TextStyle(color: Colors.white)),
                       backgroundColor: const Color(0xFF6A1B9A),
                       child: text);
                 },
@@ -281,7 +289,7 @@ class _IndexRouter extends CustState<IndexRouter>
                 builder: (context, count, child) {
                   Text text = Text(
                     s.Requests,
-                    style: themeData.appBarTheme.titleTextStyle,
+                    style: titleTextStyle
                   );
                   if (count <= 0) {
                     return text;

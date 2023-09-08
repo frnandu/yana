@@ -63,6 +63,7 @@ dependencies:
   dio_cookie_manager: ^3.0.0
   emoji_picker_flutter: ^1.6.1
   widget_size: ^1.0.0
+  sizer: ^2.0.15
   webview_flutter: ^4.2.1
   screenshot: ^2.1.0
   share_plus: ^7.0.1

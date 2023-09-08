@@ -339,7 +339,7 @@ class _AccountManagerItemComponent extends State<AccountManagerItemComponent> {
 
       list.add(Container(
         margin: EdgeInsets.only(left: 5, right: 5),
-        child: NameComponnet(
+        child: NameComponent(
           pubkey: pubkey,
           metadata: metadata,
         ),

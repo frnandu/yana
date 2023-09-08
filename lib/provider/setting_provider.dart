@@ -99,7 +99,7 @@ class SettingProvider extends ChangeNotifier {
   }
   
   bool get isPrivateKey {
-    return _keyIsPrivateMap[_settingData!.privateKeyIndex] ?? false;
+    return _keyIsPrivateMap[_settingData!.privateKeyIndex.toString()] ?? false;
   }
 
   int addAndChangeKey(String key, bool isPrivate, {bool updateUI = false}) {
