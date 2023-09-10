@@ -131,7 +131,7 @@ class _IndexRouter extends CustState<IndexRouter>
     var titleTextStyle = TextStyle(
       fontFamily: 'Montserrat',
       fontWeight: FontWeight.w600,
-      fontSize: 12.sp,
+      fontSize: 14,
       color: titleTextColor,
     );
     Color? indicatorColor = titleTextColor;
