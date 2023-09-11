@@ -76,28 +76,28 @@ class _LoginRouter extends State<LoginRouter>
     }
 
     var logoWiget = Image.asset(
-      "assets/imgs/logo/logo.png",
+      "assets/imgs/logo/logo-with-name.png",
       width: 100,
       height: 100,
     );
 
     List<Widget> list = [];
     list.add(logoWiget);
-    list.add(Container(
-      margin: const EdgeInsets.only(
-        top: Base.BASE_PADDING,
-        bottom: 40,
-      ),
-      child: Text(
-        packageInfo.appName,
-        style: const TextStyle(
-          fontFamily: 'Montserrat',
-          color: Colors.white,
-          fontSize: 30,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-    ));
+    // list.add(Container(
+    //   margin: const EdgeInsets.only(
+    //     top: Base.BASE_PADDING,
+    //     bottom: 40,
+    //   ),
+    //   child: Text(
+    //     packageInfo.appName,
+    //     style: const TextStyle(
+    //       fontFamily: 'Montserrat',
+    //       color: Colors.white,
+    //       fontSize: 30,
+    //       fontWeight: FontWeight.bold,
+    //     ),
+    //   ),
+    // ));
 
     var suffixIcon = GestureDetector(
       onTap: () {
@@ -249,7 +249,7 @@ class _LoginRouter extends State<LoginRouter>
       // }, child: f_droid)));
     }
     return Scaffold(
-      backgroundColor: const Color(0xff1e022c) ,
+      backgroundColor: const Color(0xff281237) ,
       body: SizedBox(
         width: double.maxFinite,
         height: double.maxFinite,

@@ -146,7 +146,8 @@ flutter:
   uses-material-design: true
   assets:
     - assets/imgs/
-    - assets/imgs/logo/logo.png
+    - assets/imgs/logo/logo-new.png
+    - assets/imgs/logo/logo-with-name.png
   # To add assets to your application, add an assets section, like this:
   # assets:
   #   - images/a_dot_burr.jpeg
@@ -234,28 +235,28 @@ flutter:
 
 # new version icons
 flutter_launcher_icons:
-  image_path_ios: 'assets/imgs/logo/logo.png'
-  image_path_android: 'assets/imgs/logo/logo.png'
+  image_path_ios: 'assets/imgs/logo/logo-new.png'
+  image_path_android: 'assets/imgs/logo/logo-new.png'
   android: true
   ios: true
   windows:
     generate: true
-    image_path: "assets/imgs/logo/logo.png"
+    image_path: "assets/imgs/logo/logo-new.png"
   macos:
     generate: true
-    image_path: "assets/imgs/logo/logo.png"
+    image_path: "assets/imgs/logo/logo-new.png"
 
 flutter_native_splash:
-  color: "#1e022c"
+  color: "#281237"
   android_12:
-    color: "#1e022c"
-    icon_background_color: "#1e022c"
-    icon_background_color_dark: "#1e022c"
-    image: assets/imgs/logo/logo.png
-  icon_background_color: "#1e022c"
-  icon_background_color_dark: "#1e022c"
-  color_dark: "#1e022c"
-  image: assets/imgs/logo/logo.png
+    color: "#281237"
+    icon_background_color: "#281237"
+    icon_background_color_dark: "#281237"
+    image: assets/imgs/logo/logo-splash.png
+  icon_background_color: "#281237"
+  icon_background_color_dark: "#281237"
+  color_dark: "#281237"
+  image: assets/imgs/logo/logo-splash.png
   fullscreen: true
 
 flutter_intl:

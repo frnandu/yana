@@ -704,7 +704,7 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
   }
 
   ThemeData getDarkTheme() {
-    Color background = const Color(0xff1e022c);
+    Color background = const Color(0xff281237);
 
     MaterialColor themeColor = const MaterialColor(
       0xffb583ce,

@@ -1,4 +1,4 @@
-<img align="right" src="./assets/imgs/logo/logo.png" width="100px" />
+<img align="right" src="./assets/imgs/logo/logo-new.png" width="100px" />
 
 # yana - Yet Another Nostr Application
 

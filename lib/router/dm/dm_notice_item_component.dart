@@ -42,7 +42,7 @@ class DMNoticeItemComponent extends StatelessWidget {
           borderRadius: BorderRadius.circular(IMAGE_WIDTH / 2),
           color: Colors.grey,
         ),
-        child: Image.asset("assets/imgs/logo/logo.png"),
+        child: Image.asset("assets/imgs/logo/logo-new.png"),
       ),
     );
 
