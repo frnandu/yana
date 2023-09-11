@@ -84,8 +84,17 @@ class _LoginRouter extends State<LoginRouter>
 
     // var logoWidget = SvgPicture.asset(
     //     "assets/imgs/logo/logo-name.svg",
-    //     semanticsLabel: 'Acme Logo'
+    //   colorFilter: ColorFilter.mode(Colors.red, BlendMode.srcIn),
     // );
+
+    // var logoWidget =  Stack(children: [
+    //   Container(
+    //   width: 200,
+    //   height: 200,
+    //   child: SvgPicture.asset(
+    //     "assets/imgs/logo/logo-name.svg",
+    //     fit: BoxFit.cover,
+    //   ),)]);
 
     List<Widget> list = [];
     list.add(logoWidget);

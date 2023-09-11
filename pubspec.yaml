@@ -149,6 +149,7 @@ flutter:
     - assets/imgs/
     - assets/imgs/logo/logo-new.png
     - assets/imgs/logo/logo-name.svg
+    - assets/imgs/logo/logo-name.png
     - assets/imgs/logo/logo-with-name.png
   # To add assets to your application, add an assets section, like this:
   # assets:
@@ -254,11 +255,11 @@ flutter_native_splash:
     color: "#281237"
     icon_background_color: "#281237"
     icon_background_color_dark: "#281237"
-    image: assets/imgs/logo/logo-new.png
+    image: assets/imgs/logo/logo-splash.png
   icon_background_color: "#281237"
   icon_background_color_dark: "#281237"
   color_dark: "#281237"
-  image: assets/imgs/logo/logo-new.png
+  image: assets/imgs/logo/logo-splash.png
   fullscreen: true
 
 flutter_intl:
