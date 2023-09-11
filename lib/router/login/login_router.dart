@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 import '/js/js_helper.dart' as js;
 import 'dart:developer';
@@ -75,14 +76,19 @@ class _LoginRouter extends State<LoginRouter>
       }
     }
 
-    var logoWiget = Image.asset(
+    var logoWidget = Image.asset(
       "assets/imgs/logo/logo-with-name.png",
-      width: 100,
-      height: 100,
+      width: 200,
+      height: 200,
     );
 
+    // var logoWidget = SvgPicture.asset(
+    //     "assets/imgs/logo/logo-name.svg",
+    //     semanticsLabel: 'Acme Logo'
+    // );
+
     List<Widget> list = [];
-    list.add(logoWiget);
+    list.add(logoWidget);
     // list.add(Container(
     //   margin: const EdgeInsets.only(
     //     top: Base.BASE_PADDING,

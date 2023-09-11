@@ -116,6 +116,7 @@ dependencies:
 #  secp256k1: ^0.3.0
   scrollable_positioned_list: ^0.3.8
   #js: ^0.6.7
+  flutter_svg: ^2.0.7
 
 dev_dependencies:
   flutter_launcher_icons: ^0.13.1
@@ -147,6 +148,7 @@ flutter:
   assets:
     - assets/imgs/
     - assets/imgs/logo/logo-new.png
+    - assets/imgs/logo/logo-name.svg
     - assets/imgs/logo/logo-with-name.png
   # To add assets to your application, add an assets section, like this:
   # assets:
@@ -252,11 +254,11 @@ flutter_native_splash:
     color: "#281237"
     icon_background_color: "#281237"
     icon_background_color_dark: "#281237"
-    image: assets/imgs/logo/logo-splash.png
+    image: assets/imgs/logo/logo-new.png
   icon_background_color: "#281237"
   icon_background_color_dark: "#281237"
   color_dark: "#281237"
-  image: assets/imgs/logo/logo-splash.png
+  image: assets/imgs/logo/logo-new.png
   fullscreen: true
 
 flutter_intl:
