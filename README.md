@@ -153,7 +153,7 @@ or install deb file from releases:
 ## Contributions
 Some initial code was used from nostrmo[^1] project.
 
-Using a Prism[^2] address at ⚡prism@yana.do, each sat donation will be split into:
+Using a Prism[^2] address at ⚡[prism@yana.do](https://www.lnurlpay.com/prism@yana.do), each sat donation will be split into:
 
 70% - <a href="https://nostr.com/npub1xpuz4qerklyck9evtg40wgrthq5rce2mumwuuygnxcg6q02lz9ms275ams">fmar <img width="20" height="20" src="https://nostr.build/i/27747076d9db02572ee4b71110615a08900e7a0be52f477bc977fa4a65edbaf6.jpg"></a> (code)\
 10% - <a href="https://nostr.com/npub19yeqjawls407xjnmgkk6yss7936pcd7qzd5srlj8wye6j8433vrsjazqwk">DASHU <img width="20" height="20" src="https://nostr.build/i/nostr.build_4879348f3314f17dcf4914240dc87851370af10ae91b91a3366497d1e3e567cf.png"></a> (code)\
