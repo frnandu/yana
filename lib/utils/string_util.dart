@@ -1,9 +1,12 @@
 import 'dart:math';
 
+import 'package:yana/utils/platform_util.dart';
+
 class StringUtil {
 
   static String robohash(String str) {
-    return "https://robohash.v0l.io/$str.png";
+    // robohash.v0l.io does not set CORS origin *
+    return PlatformUtil.isWeb() ? 'https://robohash.org/'+str: "https://robohash.v0l.io/$str.png";
   }
   static bool isNotBlank(String? str) {
     if (str != null && str != "") {
