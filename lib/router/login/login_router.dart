@@ -137,8 +137,8 @@ class _LoginRouter extends State<LoginRouter>
     list.add(Container(
       margin: const EdgeInsets.all(Base.BASE_PADDING),
       child: InkWell(
-        onTap: () {
-          doLogin(controller.text, false, false);
+        onTap: () async {
+          await doLogin(controller.text, false, false);
         },
         child: Container(
           height: 36,
@@ -168,7 +168,7 @@ class _LoginRouter extends State<LoginRouter>
                 BotToast.showText(text: pubKey);
                 print("PUBLIC KEY: " + pubKey);
               }
-              doLogin(pubKey, true, false);
+              await doLogin(pubKey, true, false);
             } else {
               BotToast.showText(text: "Invalid public key");
             }
@@ -195,9 +195,9 @@ class _LoginRouter extends State<LoginRouter>
     list.add(Container(
       margin: const EdgeInsets.all(Base.BASE_PADDING),
       child: InkWell(
-        onTap: () {
+        onTap: () async {
           generatePK();
-          doLogin(controller.text, false, true);
+          await doLogin(controller.text, false, true);
         },
         child: Container(
           height: 40,
@@ -310,7 +310,7 @@ class _LoginRouter extends State<LoginRouter>
     );
   }
 
-  void doLogin(String key,bool pubOnly, bool newKey) {
+  Future<void> doLogin(String key,bool pubOnly, bool newKey) async {
     if (StringUtil.isBlank(key)) {
       BotToast.showText(text: I18n.of(context).Private_key_is_null);
       return;
@@ -322,7 +322,7 @@ class _LoginRouter extends State<LoginRouter>
       if (Nip19.isPubkey(key) || Nip19.isPrivateKey(key)) {
         key = Nip19.decode(key);
       }
-      settingProvider.addAndChangeKey(key, !isPublic, updateUI: false);
+      await settingProvider.addAndChangeKey(key, !isPublic, updateUI: false);
       if (!newKey) {
         var tempNostr = Nostr(privateKey: !isPublic?key:null, publicKey: isPublic?key:null);
 

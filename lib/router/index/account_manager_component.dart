@@ -131,7 +131,7 @@ class AccountsState extends State<AccountsComponent> {
           }
           // logout current and login new
           var oldIndex = settingProvider.privateKeyIndex;
-          var newIndex = settingProvider.addAndChangeKey(key, !isPublic);
+          var newIndex = await settingProvider.addAndChangeKey(key, !isPublic);
           if (oldIndex != newIndex) {
             clearCurrentMemInfo();
             doLogin();

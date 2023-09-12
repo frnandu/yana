@@ -102,7 +102,7 @@ class SettingProvider extends ChangeNotifier {
     return _keyIsPrivateMap[_settingData!.privateKeyIndex.toString()] ?? false;
   }
 
-  int addAndChangeKey(String key, bool isPrivate, {bool updateUI = false}) {
+  Future<int> addAndChangeKey(String key, bool isPrivate, {bool updateUI = false}) async {
     int? findIndex;
     var entries = _keyMap.entries;
     for (var entry in entries) {
@@ -125,8 +125,8 @@ class SettingProvider extends ChangeNotifier {
 
         _settingData!.privateKeyIndex = i;
 
-        secureStorage.write(key: KEYS_MAP,value: json.encode(_keyMap));
-        secureStorage.write(key: IS_PRIVATE_MAP,value: json.encode(_keyIsPrivateMap));
+        await secureStorage.write(key: KEYS_MAP,value: json.encode(_keyMap));
+        await secureStorage.write(key: IS_PRIVATE_MAP,value: json.encode(_keyIsPrivateMap));
         saveAndNotifyListeners(updateUI: updateUI);
 
         return i;
