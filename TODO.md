@@ -40,8 +40,7 @@
 - ~~login with npub~~
 - ~~login with extension on web~~
 - ~~text color on light theme login screen YANA + input is dark~~
-
-- signEvent
+- ~~signEvent~~
 
 - STOP followers/zaps events from blocking the relay, when navigate away from that profile
 - get notifications in background for all accounts

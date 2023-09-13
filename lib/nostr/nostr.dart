@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/foundation.dart';
 import 'package:yana/nostr/relay_pool.dart';
@@ -100,28 +102,33 @@ class Nostr {
   }
 
   Event? sendEvent(Event event) {
-    if (StringUtil.isBlank(_privateKey)) {
-      // TODO to show Notice
-      throw StateError("Private key is missing. Message can't be signed.");
-    }
-    signEvent(event);
-    var result = _pool.send(["EVENT", event.toJson()]);
-    if (result) {
-      return event;
-    }
+    // if (StringUtil.isBlank(_privateKey)) {
+    //   // TODO to show Notice
+    //   throw StateError("Private key is missing. Message can't be signed.");
+    // }
+    signEvent(event).then((signedEvent) {
+      var result = _pool.send(["EVENT", signedEvent.toJson()]);
+      if (result) {
+        return signedEvent;
+      }
+    });
     return null;
   }
 
-  void signEvent(Event event) async {
+  Future<Event> signEvent(Event event) async {
     if (StringUtil.isNotBlank(_privateKey)) {
       event.sign(_privateKey!);
+      return event;
     } else {
-      var signedEvent = await js.signEventAsync(event);
-      BotToast.showText(text: signedEvent.toString());
+      // Event signedEvent = await js.signEventAsync(event);
+      String sig = await js.signSchnorrAsync(event.id);
+      event.sig = sig;
+      Event signedEvent = event;
       if (kDebugMode) {
         BotToast.showText(text: signedEvent.toString());
         print("SIGNED EVENT: " + signedEvent.toString());
       }
+      return signedEvent;
     }
   }
 

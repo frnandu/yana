@@ -7,3 +7,7 @@ Future<String> getPublicKeyAsync() {
 Future<Event> signEventAsync(Event event) {
   return Future.value(null);
 }
+
+Future<String> signSchnorrAsync(String msg) {
+  return Future.value(null);
+}
