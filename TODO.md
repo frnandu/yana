@@ -42,6 +42,7 @@
 - ~~text color on light theme login screen YANA + input is dark~~
 - ~~signEvent~~
 
+- zaps on web with NIP-07 should call webln or something
 - STOP followers/zaps events from blocking the relay, when navigate away from that profile
 - reply position on thread when linking from outside is wrong
 
