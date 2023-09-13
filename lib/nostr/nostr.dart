@@ -40,7 +40,7 @@ class Nostr {
 
   String get publicKey => _publicKey;
 
-  Event? sendLike(String id) {
+  Future<Event?> sendLike(String id) async{
     Event event = Event(
         _publicKey,
         EventKind.REACTION,
@@ -48,10 +48,10 @@ class Nostr {
           ["e", id]
         ],
         "+");
-    return sendEvent(event);
+    return await sendEvent(event);
   }
 
-  Event? deleteEvent(String eventId) {
+  Future<Event?> deleteEvent(String eventId) async {
     Event event = Event(
         _publicKey,
         EventKind.EVENT_DELETION,
@@ -59,60 +59,59 @@ class Nostr {
           ["e", eventId]
         ],
         "delete");
-    return sendEvent(event);
+    return await sendEvent(event);
   }
 
-  Event? deleteEvents(List<String> eventIds) {
+  Future<Event?> deleteEvents(List<String> eventIds) async {
     List<List<dynamic>> tags = [];
     for (var eventId in eventIds) {
       tags.add(["e", eventId]);
     }
 
     Event event = Event(_publicKey, EventKind.EVENT_DELETION, tags, "delete");
-    return sendEvent(event);
+    return await sendEvent(event);
   }
 
-  Event? sendRepost(String id, {String? relayAddr, String content = ""}) {
+  Future<Event?> sendRepost(String id, {String? relayAddr, String content = ""}) async {
     List<dynamic> tag = ["e", id];
     if (StringUtil.isNotBlank(relayAddr)) {
       tag.add(relayAddr);
     }
     Event event = Event(_publicKey, EventKind.REPOST, [tag], content);
-    return sendEvent(event);
+    return await sendEvent(event);
   }
 
-  Event? sendTextNote(String text, [List<dynamic> tags = const []]) {
+  Future<Event?> sendTextNote(String text, [List<dynamic> tags = const []]) async {
     Event event = Event(_publicKey, EventKind.TEXT_NOTE, tags, text);
-    return sendEvent(event);
+    return await sendEvent(event);
   }
 
-  Event? recommendServer(String url) {
+  Future<Event?> recommendServer(String url) async {
     if (!url.contains(RegExp(
         r'^(wss?:\/\/)([0-9]{1,3}(?:\.[0-9]{1,3}){3}|[^:]+):?([0-9]{1,5})?$'))) {
       throw ArgumentError.value(url, 'url', 'Not a valid relay URL');
     }
     final event = Event(_publicKey, EventKind.RECOMMEND_SERVER, [], url);
-    return sendEvent(event);
+    return await sendEvent(event);
   }
 
-  Event? sendContactList(CustContactList contacts) {
+  Future<Event?> sendContactList(CustContactList contacts) async {
     final tags = contacts.toJson();
     final event = Event(_publicKey, EventKind.CONTACT_LIST, tags, "");
-    return sendEvent(event);
+    return await sendEvent(event);
   }
 
-  Event? sendEvent(Event event) {
+  FutureOr<Event> sendEvent(Event event) async {
     // if (StringUtil.isBlank(_privateKey)) {
     //   // TODO to show Notice
     //   throw StateError("Private key is missing. Message can't be signed.");
     // }
-    signEvent(event).then((signedEvent) {
-      var result = _pool.send(["EVENT", signedEvent.toJson()]);
-      if (result) {
-        return signedEvent;
-      }
-    });
-    return null;
+    Event signedEvent = await signEvent(event);
+    var result = _pool.send(["EVENT", signedEvent.toJson()]);
+    if (result) {
+      return signedEvent;
+    }
+    return event;
   }
 
   Future<Event> signEvent(Event event) async {

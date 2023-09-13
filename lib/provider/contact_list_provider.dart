@@ -124,23 +124,23 @@ class ContactListProvider extends ChangeNotifier {
     return _contactList!.total();
   }
 
-  void addContact(Contact contact) {
+  Future<void> addContact(Contact contact) async {
     _contactList!.add(contact);
-    _event = nostr!.sendContactList(_contactList!);
+    _event = await nostr!.sendContactList(_contactList!);
 
     _saveAndNotify();
   }
 
-  void removeContact(String pubKey) {
+  Future<void> removeContact(String pubKey) async{
     _contactList!.remove(pubKey);
-    _event = nostr!.sendContactList(_contactList!);
+    _event = await nostr!.sendContactList(_contactList!);
 
     _saveAndNotify();
   }
 
-  void updateContacts(CustContactList contactList) {
+  Future<void> updateContacts(CustContactList contactList) async {
     _contactList = contactList;
-    _event = nostr!.sendContactList(contactList);
+    _event = await nostr!.sendContactList(contactList);
 
     _saveAndNotify();
   }
@@ -178,16 +178,16 @@ class ContactListProvider extends ChangeNotifier {
     }
   }
 
-  void addTag(String tag) {
+  Future<void> addTag(String tag) async {
     _contactList!.addTag(tag);
-    _event = nostr!.sendContactList(_contactList!);
+    _event = await nostr!.sendContactList(_contactList!);
 
     _saveAndNotify();
   }
 
-  void removeTag(String tag) {
+  Future<void> removeTag(String tag) async {
     _contactList!.removeTag(tag);
-    _event = nostr!.sendContactList(_contactList!);
+    _event = await nostr!.sendContactList(_contactList!);
 
     _saveAndNotify();
   }
@@ -204,16 +204,16 @@ class ContactListProvider extends ChangeNotifier {
     return _contactList!.containsCommunity(id);
   }
 
-  void addCommunity(String tag) {
+  void addCommunity(String tag) async {
     _contactList!.addCommunity(tag);
-    _event = nostr!.sendContactList(_contactList!);
+    _event = await nostr!.sendContactList(_contactList!);
 
     _saveAndNotify();
   }
 
-  void removeCommunity(String tag) {
+  void removeCommunity(String tag) async {
     _contactList!.removeCommunity(tag);
-    _event = nostr!.sendContactList(_contactList!);
+    _event = await nostr!.sendContactList(_contactList!);
 
     _saveAndNotify();
   }

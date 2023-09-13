@@ -206,7 +206,6 @@ void initProvidersAndStuff() async {
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  DartPluginRegistrant.ensureInitialized();
   packageInfo = await PackageInfo.fromPlatform();
 
   if (!PlatformUtil.isWeb() && PlatformUtil.isPC()) {

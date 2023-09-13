@@ -441,10 +441,10 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
     }
   }
 
-  void onLikeTap() {
+  void onLikeTap() async {
     if (eventReactions?.myLikeEvents == null || eventReactions!.myLikeEvents!.isEmpty) {
       // like
-      var likeEvent = nostr!.sendLike(widget.event.id);
+      var likeEvent = await nostr!.sendLike(widget.event.id);
       if (likeEvent != null) {
         eventReactionsProvider.addLike(widget.event.id, likeEvent);
       }

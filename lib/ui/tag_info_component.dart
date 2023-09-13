@@ -56,9 +56,9 @@ class _TagInfoComponent extends State<TagInfoComponent> {
               color = Colors.yellow;
             }
             return GestureDetector(
-              onTap: () {
+              onTap: () async {
                 if (exist) {
-                  contactListProvider.removeTag(widget.tag);
+                  await contactListProvider.removeTag(widget.tag);
                 } else {
                   contactListProvider.addTag(widget.tag);
                 }
