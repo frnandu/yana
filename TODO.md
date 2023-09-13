@@ -43,7 +43,6 @@
 - ~~signEvent~~
 
 - STOP followers/zaps events from blocking the relay, when navigate away from that profile
-- get notifications in background for all accounts
 - reply position on thread when linking from outside is wrong
 
 =======================
@@ -57,6 +56,7 @@
 - 
 - remember eventMemBox for Posts/Replies on DB (on just timestamp lastRead) so badge counter persists between app restarts
 - 
+- get notifications in background for all accounts
 - make sure background service starts after device reboot
 - floating icon (+) on DMS sends new msg to CHOOSE
 - subscription on profile/DMS/notifications should be kept open to receive updates from WS - REFACTOR logic of later loading & caching metadata
