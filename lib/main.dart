@@ -168,6 +168,7 @@ void onStart(ServiceInstance service) async {
       AwesomeNotifications().getAppLifeCycle().then((value) {
         if (value.toString() != "NotificationLifeCycle.Foreground" &&
             nostr != null) {
+          appState = AppLifecycleState.inactive;
           nostr!.checkAndReconnectRelays().then((a) {
             newNotificationsProvider.queryNew();
           });
@@ -205,6 +206,7 @@ void initProvidersAndStuff() async {
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  DartPluginRegistrant.ensureInitialized();
   packageInfo = await PackageInfo.fromPlatform();
 
   if (!PlatformUtil.isWeb() && PlatformUtil.isPC()) {

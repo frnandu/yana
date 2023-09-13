@@ -1,6 +1,7 @@
 // Need to decide header
 import 'dart:async';
 import 'dart:convert';
+import 'dart:ui';
 
 import 'package:bip340/bip340.dart' as schnorr;
 import 'package:bot_toast/bot_toast.dart';
@@ -11,6 +12,7 @@ import 'package:flutter/services.dart';
 import 'package:hex/hex.dart';
 import 'package:yana/utils/platform_util.dart';
 
+import '../main.dart';
 import 'client_utils/keys.dart';
 
 class Event {
@@ -142,7 +144,7 @@ class Event {
     kindMapCount[kind] = kindCount;
     final startTime = DateTime.now();
     late bool v;
-    if (PlatformUtil.isAndroid()) {
+    if (PlatformUtil.isAndroid() && appState != AppLifecycleState.inactive) {
       v = await platform.invokeMethod("verifySignature", {
         "signature": HEX.decode(sig),
         "hash": HEX.decode(id),
