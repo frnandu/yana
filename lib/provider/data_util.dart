@@ -25,4 +25,11 @@ class DataKey {
   static final String DIRTYWORD_LIST = "dirtywordList";
 
   static final String CUSTOM_EMOJI_LIST = "customEmojiList";
+
+  static final String NWC_PERMISSIONS = "nwcPermissions";
+
+  static final String NWC_PUB_KEY= "nwcPubKey";
+
+  static final String NWC_RELAY= "nwcRelay";
+
 }

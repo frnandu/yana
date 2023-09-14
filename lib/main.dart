@@ -32,6 +32,7 @@ import 'package:yana/router/user/followed_router.dart';
 import 'package:yana/router/user/followed_tags_list_router.dart';
 import 'package:yana/router/user/user_history_contact_list_router.dart';
 import 'package:yana/router/user/user_zap_list_router.dart';
+import 'package:yana/router/wallet_router.dart';
 import 'package:yana/utils/platform_util.dart';
 
 import 'i18n/i18n.dart';
@@ -460,6 +461,7 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
       RouterPath.NOTICES: (context) => const NoticeRouter(),
       RouterPath.SEARCH: (context) => const SearchRouter(),
       RouterPath.KEY_BACKUP: (context) => const KeyBackupRouter(),
+      RouterPath.WALLET: (context) => const WalletRouter(),
       RouterPath.RELAYS: (context) => const RelaysRouter(),
       RouterPath.FILTER: (context) => const FilterRouter(),
       RouterPath.PROFILE_EDITOR: (context) => const ProfileEditorRouter(),

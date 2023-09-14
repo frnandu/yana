@@ -36,6 +36,8 @@ class SettingProvider extends ChangeNotifier {
 
   final String KEYS_MAP = "private_keys_map";
   final String IS_PRIVATE_MAP = "keys_is_private_map";
+  final String NWC_URI = "nwc_uri";
+  final String NWC_SECRET = "nwc_secret";
 
   static Future<SettingProvider> getInstance() async {
     if (_settingProvider == null) {
@@ -134,6 +136,22 @@ class SettingProvider extends ChangeNotifier {
     }
 
     return -1;
+  }
+
+  Future<String?> getNwc() async {
+    return await secureStorage.read(key: NWC_URI);
+  }
+
+  Future<void> setNwc(String uri) async {
+    await secureStorage.write(key: NWC_URI,value: uri);
+  }
+
+  Future<String?> getNwcSecret() async {
+    return await secureStorage.read(key: NWC_SECRET);
+  }
+
+  Future<void> setNwcSecret(String secret) async {
+    await secureStorage.write(key: NWC_SECRET,value: secret);
   }
 
   void removeKey(int index) {

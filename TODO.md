@@ -42,12 +42,26 @@
 - ~~text color on light theme login screen YANA + input is dark~~
 - ~~signEvent~~
 
+
+
+- Nostr Wallet Connect with balance
+    ~~input URI (textfield | QR SCANNER)~~
+    show balance, payments
+    pay_invoice
+    alby new nwc -> deep linking
+
+- Wallet LndHub
+
+- for web: https://github.com/aniketambore/flutter_webln
+
+- mention livesearch editor without popup
+
+
+- nip19 nprofile
+=======================
 - zaps on web with NIP-07 should call webln or something
 - STOP followers/zaps events from blocking the relay, when navigate away from that profile
 - reply position on thread when linking from outside is wrong
-
-=======================
-
 - fast secp256k1 verify signature for web JS
 - NIP-78 preferences and messages read state
 - separate posts from replies on profile
@@ -82,12 +96,9 @@
 - Database offline check
 - sort following/followers list by most recent
 - add search to following/followers
-- mention livesearch editor without popup
 - only use tablet second view if horizontal tablet
 - fix zooming of pictures and X position
 - umbrel store package with web client
 - when new user with no following, suggest jack, fiatjaf and others
-- Nostr Wallet Connect with balance
-- NIP-7 window.nostr for web version
 - make it work on iOS/MacOS
 - try https://pub.dev/packages/flutter_rust_bridge for background loading of new events

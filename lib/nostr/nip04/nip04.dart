@@ -22,7 +22,7 @@ class NIP04 {
       String message, ECDHBasicAgreement agreement, String pk) {
     var pubKey = getPubKey(pk);
     var agreementD0 = agreement.calculateAgreement(pubKey);
-    var enctyptKey = agreementD0.toRadixString(16).padLeft(64, "0");
+    var encryptKey = agreementD0.toRadixString(16).padLeft(64, "0");
 
     final random = Random.secure();
     var ivData =
@@ -34,7 +34,7 @@ class NIP04 {
         PaddedBlockCipherImpl(PKCS7Padding(), CBCBlockCipher(AESEngine()));
     final paramsCbc = PaddedBlockCipherParameters(
         ParametersWithIV(
-            KeyParameter(Uint8List.fromList(hex.decode(enctyptKey))), ivData),
+            KeyParameter(Uint8List.fromList(hex.decode(encryptKey))), ivData),
         null);
     cipherCbc.init(true, paramsCbc);
 

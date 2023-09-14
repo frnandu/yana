@@ -261,100 +261,106 @@ class ContentDecoder {
               // }
             }
           }
-        } else if (subStr.indexOf(NOTE_REFERENCES) == 0 ||
-            subStr.indexOf(NOTE_REFERENCES_AT) == 0) {
-          var key = subStr.replaceFirst(NOTE_REFERENCES_AT, "");
-          key = key.replaceFirst(NOTE_REFERENCES, "");
+        } else if ((subStr.indexOf(NOTE_REFERENCES) == 0 || subStr.indexOf(NOTE_REFERENCES_AT) == 0)) {
+          // var key = subStr.replaceFirst(NOTE_REFERENCES_AT, "");
+          // key = key.replaceFirst(NOTE_REFERENCES, "");
 
-          String? otherStr;
+          RegExpMatch? match = Nip19.nip19regex.firstMatch(subStr);
 
-          if (Nip19.isPubkey(key)) {
-            // inline
-            // mention user
-            if (key.length > NPUB_LENGTH) {
-              otherStr = key.substring(NPUB_LENGTH);
-              key = key.substring(0, NPUB_LENGTH);
-            }
-            key = Nip19.decode(key);
-            handledStr = _closeHandledStr(handledStr, inlines);
-            inlines.add(ContentMentionUserComponent(pubkey: key));
-          } else if (Nip19.isNoteId(key)) {
-            // block
-            if (key.length > NOTEID_LENGTH) {
-              otherStr = key.substring(NOTEID_LENGTH);
-              key = key.substring(0, NOTEID_LENGTH);
-            }
-            key = Nip19.decode(key);
-            handledStr = _closeHandledStr(handledStr, inlines);
-            _closeInlines(inlines, list, textOnTap: textOnTap);
-            var widget = EventQuoteComponent(
-              id: key,
-              showVideo: showVideo,
-            );
-            list.add(widget);
-          } else if (NIP19Tlv.isNprofile(key)) {
-            var nprofile = NIP19Tlv.decodeNprofile(key);
-            if (nprofile != null) {
+          if (match!=null) {
+            var key = match.group(2)!+match.group(3)!;
+            String? otherStr;
+
+            if (Nip19.isPubkey(key)) {
               // inline
               // mention user
+              if (key.length > NPUB_LENGTH) {
+                otherStr = key.substring(NPUB_LENGTH);
+                key = key.substring(0, NPUB_LENGTH);
+              }
+              key = Nip19.decode(key);
               handledStr = _closeHandledStr(handledStr, inlines);
-              inlines.add(ContentMentionUserComponent(pubkey: nprofile.pubkey));
-            } else {
-              handledStr = _addToHandledStr(handledStr, subStr);
-            }
-          } else if (NIP19Tlv.isNrelay(key)) {
-            var nrelay = NIP19Tlv.decodeNrelay(key);
-            if (nrelay != null) {
-              // inline
-              handledStr = _closeHandledStr(handledStr, inlines);
-              inlines.add(ContentRelayComponent(nrelay.addr));
-            } else {
-              handledStr = _addToHandledStr(handledStr, subStr);
-            }
-          } else if (NIP19Tlv.isNevent(key)) {
-            var nevent = NIP19Tlv.decodeNevent(key);
-            if (nevent != null) {
+              inlines.add(ContentMentionUserComponent(pubkey: key));
+            } else if (Nip19.isNoteId(key)) {
               // block
+              if (key.length > NOTEID_LENGTH) {
+                otherStr = key.substring(NOTEID_LENGTH);
+                key = key.substring(0, NOTEID_LENGTH);
+              }
+              key = Nip19.decode(key);
               handledStr = _closeHandledStr(handledStr, inlines);
               _closeInlines(inlines, list, textOnTap: textOnTap);
               var widget = EventQuoteComponent(
-                id: nevent.id,
+                id: key,
                 showVideo: showVideo,
               );
               list.add(widget);
-            } else {
-              handledStr = _addToHandledStr(handledStr, subStr);
-            }
-          } else if (NIP19Tlv.isNaddr(key)) {
-            var naddr = NIP19Tlv.decodeNaddr(key);
-            if (naddr != null) {
-              if (StringUtil.isNotBlank(naddr.id) &&
-                  naddr.kind == EventKind.TEXT_NOTE) {
+            } else if (NIP19Tlv.isNprofile(key)) {
+              var nprofile = NIP19Tlv.decodeNprofile(key);
+              if (nprofile != null) {
+                // inline
+                // mention user
+                handledStr = _closeHandledStr(handledStr, inlines);
+                inlines.add(
+                    ContentMentionUserComponent(pubkey: nprofile.pubkey));
+              } else {
+                handledStr = _addToHandledStr(handledStr, subStr);
+              }
+            } else if (NIP19Tlv.isNrelay(key)) {
+              var nrelay = NIP19Tlv.decodeNrelay(key);
+              if (nrelay != null) {
+                // inline
+                handledStr = _closeHandledStr(handledStr, inlines);
+                inlines.add(ContentRelayComponent(nrelay.addr));
+              } else {
+                handledStr = _addToHandledStr(handledStr, subStr);
+              }
+            } else if (NIP19Tlv.isNevent(key)) {
+              var nevent = NIP19Tlv.decodeNevent(key);
+              if (nevent != null) {
                 // block
                 handledStr = _closeHandledStr(handledStr, inlines);
                 _closeInlines(inlines, list, textOnTap: textOnTap);
                 var widget = EventQuoteComponent(
-                  id: naddr.id,
+                  id: nevent.id,
                   showVideo: showVideo,
                 );
                 list.add(widget);
-              } else if (StringUtil.isNotBlank(naddr.author) &&
-                  naddr.kind == EventKind.METADATA) {
-                // inline
-                handledStr = _closeHandledStr(handledStr, inlines);
-                inlines.add(ContentMentionUserComponent(pubkey: naddr.author));
+              } else {
+                handledStr = _addToHandledStr(handledStr, subStr);
+              }
+            } else if (NIP19Tlv.isNaddr(key)) {
+              var naddr = NIP19Tlv.decodeNaddr(key);
+              if (naddr != null) {
+                if (StringUtil.isNotBlank(naddr.id) &&
+                    naddr.kind == EventKind.TEXT_NOTE) {
+                  // block
+                  handledStr = _closeHandledStr(handledStr, inlines);
+                  _closeInlines(inlines, list, textOnTap: textOnTap);
+                  var widget = EventQuoteComponent(
+                    id: naddr.id,
+                    showVideo: showVideo,
+                  );
+                  list.add(widget);
+                } else if (StringUtil.isNotBlank(naddr.author) &&
+                    naddr.kind == EventKind.METADATA) {
+                  // inline
+                  handledStr = _closeHandledStr(handledStr, inlines);
+                  inlines.add(
+                      ContentMentionUserComponent(pubkey: naddr.author));
+                } else {
+                  handledStr = _addToHandledStr(handledStr, subStr);
+                }
               } else {
                 handledStr = _addToHandledStr(handledStr, subStr);
               }
             } else {
               handledStr = _addToHandledStr(handledStr, subStr);
             }
-          } else {
-            handledStr = _addToHandledStr(handledStr, subStr);
-          }
 
-          if (StringUtil.isNotBlank(otherStr)) {
-            handledStr = _addToHandledStr(handledStr, otherStr!);
+            if (StringUtil.isNotBlank(otherStr)) {
+              handledStr = _addToHandledStr(handledStr, otherStr!);
+            }
           }
         } else if (subStr.indexOf(MENTION_USER) == 0) {
           var key = subStr.replaceFirst("@", "");

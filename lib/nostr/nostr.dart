@@ -1,8 +1,11 @@
 import 'dart:async';
+import 'dart:developer';
 
 import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/foundation.dart';
+import 'package:yana/main.dart';
 import 'package:yana/nostr/relay_pool.dart';
+import 'package:yana/nostr/subscription.dart';
 import 'package:yana/utils/string_util.dart';
 
 import 'client_utils/keys.dart';
@@ -40,7 +43,7 @@ class Nostr {
 
   String get publicKey => _publicKey;
 
-  Future<Event?> sendLike(String id) async{
+  Future<Event?> sendLike(String id) async {
     Event event = Event(
         _publicKey,
         EventKind.REACTION,
@@ -72,7 +75,8 @@ class Nostr {
     return await sendEvent(event);
   }
 
-  Future<Event?> sendRepost(String id, {String? relayAddr, String content = ""}) async {
+  Future<Event?> sendRepost(String id,
+      {String? relayAddr, String content = ""}) async {
     List<dynamic> tag = ["e", id];
     if (StringUtil.isNotBlank(relayAddr)) {
       tag.add(relayAddr);
@@ -81,7 +85,8 @@ class Nostr {
     return await sendEvent(event);
   }
 
-  Future<Event?> sendTextNote(String text, [List<dynamic> tags = const []]) async {
+  Future<Event?> sendTextNote(String text,
+      [List<dynamic> tags = const []]) async {
     Event event = Event(_publicKey, EventKind.TEXT_NOTE, tags, text);
     return await sendEvent(event);
   }
@@ -112,6 +117,29 @@ class Nostr {
       return signedEvent;
     }
     return event;
+  }
+
+  FutureOr<bool> sendRelayEvent(Event event, String relay) async {
+    Relay r = relayProvider.genRelay(relay);
+    r.connectSync();
+    // r.onMessage = (Relay relay, List<dynamic> json) async {
+    //   final messageType = json[0];
+    //   if (messageType == 'EVENT') {
+    //     final subId = json[1] as String;
+    //     try {
+    //       final event = Event.fromJson(json[2]);
+    //       // List<bool> bools =
+    //       if (event.isValid && await event.isSigned) {
+    //         onEvent(event);
+    //       }
+    //     } catch (err) {
+    //       log(err.toString());
+    //     }
+    //   }
+    // };
+
+    Event signedEvent = await signEvent(event);
+    return r.send(["EVENT", signedEvent.toJson()]);
   }
 
   Future<Event> signEvent(Event event) async {
@@ -157,6 +185,30 @@ class Nostr {
   String query(List<Map<String, dynamic>> filters, Function(Event) onEvent,
       {String? id, Function? onComplete}) {
     return _pool.query(filters, onEvent, id: id, onComplete: onComplete);
+  }
+
+  String queryRelay(Map<String, dynamic> filter, String relay,
+      Function(Event) onEvent, {String? id}) {
+    Relay r = relayProvider.genRelay(relay);
+    r.connectSync();
+    r.onMessage = (Relay relay, List<dynamic> json) async {
+      final messageType = json[0];
+      if (messageType == 'EVENT') {
+        // final subId = json[1] as String;
+        try {
+          final event = Event.fromJson(json[2]);
+          if (event.isValid && await event.isSigned) {
+            event.sources = [relay.url];
+            onEvent(event);
+          }
+        } catch (err) {
+          log(err.toString());
+        }
+      }
+    };
+    Subscription subscription = Subscription([filter], onEvent, id);
+    r.doQuery(subscription);
+    return subscription.id;
   }
 
   String queryByFilters(Map<String, List<Map<String, dynamic>>> filtersMap,

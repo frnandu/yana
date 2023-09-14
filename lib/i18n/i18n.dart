@@ -838,6 +838,16 @@ class I18n {
     );
   }
 
+  /// `Wallet`
+  String get Wallet {
+    return Intl.message(
+      'Wallet',
+      name: 'Wallet',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Please do not disclose or share the key to anyone.`
   String get Please_do_not_disclose_or_share_the_key_to_anyone {
     return Intl.message(

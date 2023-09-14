@@ -45,7 +45,7 @@ class RelayPool {
       }
       if (init) {
         for (Subscription subscription in _initQuery.values) {
-          relayDoQuery(relay, subscription);
+          relay.doQuery(subscription);
         }
       }
 
@@ -83,23 +83,6 @@ class RelayPool {
 
   Relay? getRelay(String url) {
     return _relays[url];
-  }
-
-  bool relayDoQuery(Relay relay, Subscription subscription) {
-    if (relay.access == WriteAccess.writeOnly) {
-      return false;
-    }
-
-    relay.saveQuery(subscription);
-
-    try {
-      return relay.send(subscription.toJson());
-    } catch (err) {
-      log(err.toString());
-      relay.relayStatus.error++;
-    }
-
-    return false;
   }
 
   Future<void> _onEvent(Relay relay, List<dynamic> json) async {
@@ -256,7 +239,7 @@ class RelayPool {
       var relay = _relays[url];
       if (relay != null) {
         Subscription subscription = Subscription(filters, onEvent, id);
-        relayDoQuery(relay, subscription);
+        relay.doQuery(subscription);
       }
     }
     return id;
@@ -275,10 +258,11 @@ class RelayPool {
       _queryCompleteCallbacks[subscription.id] = onComplete;
     }
     for (Relay relay in _relays.values) {
-      relayDoQuery(relay, subscription);
+      relay.doQuery(subscription);
     }
     return subscription.id;
   }
+
 
   bool send(List<dynamic> message) {
     bool hadSubmitSend = false;

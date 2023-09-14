@@ -3,6 +3,7 @@ class RouterPath {
   static const String EDITOR = "/editor";
   static const String NOTICES = "/notices";
   static const String KEY_BACKUP = "/keyBackup";
+  static const String WALLET = "/wallet";
   static const String RELAYS = "/relays";
   static const String FILTER = "/filter";
   static const String USER = "/user";

@@ -147,6 +147,7 @@ flutter:
   uses-material-design: true
   assets:
     - assets/imgs/
+    - assets/imgs/alby.png
     - assets/imgs/logo/logo-new.png
     - assets/imgs/logo/logo-name.svg
     - assets/imgs/logo/logo-name.png

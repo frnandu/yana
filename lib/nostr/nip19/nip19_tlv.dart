@@ -60,7 +60,6 @@ class NIP19Tlv {
         relays.add(relay);
       }
     }
-
     if (pubkey != null) {
       return Nprofile(pubkey: pubkey, relays: relays);
     }

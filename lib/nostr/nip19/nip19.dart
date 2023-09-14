@@ -10,6 +10,12 @@ class Nip19 {
   //   return Bech32.encode(Hrps.PUBLIC_KEY, data);
   // }
 
+  static RegExp nip19regex = RegExp(r'@?(nostr:)?@?(nsec1|npub1|nevent1|naddr1|note1|nprofile1|nrelay1)([qpzry9x8gf2tvdw0s3jn54khce6mua7l]+)([\\S]*)', caseSensitive: false);
+
+  static bool isNip19(String str) {
+    return nip19regex.firstMatch(str)!=null;
+  }
+
   static bool isKey(String hrp, String str) {
     if (str.indexOf(hrp) == 0) {
       return true;

@@ -124,6 +124,13 @@ class _IndexDrawerContentComponnent extends State<IndexDrawerContentComponent> {
       },
     ));
 
+    list.add(IndexDrawerItem(
+      iconData: Icons.account_balance_wallet,
+      name: s.Wallet,
+      onTap: () {
+        RouterUtil.router(context, RouterPath.WALLET);
+      },
+    ));
     list.add(
       IndexDrawerItem(
           iconData: Icons.lan_outlined,
