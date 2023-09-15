@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:ui';
 import 'package:sizer/sizer.dart';
+import 'package:protocol_handler/protocol_handler.dart';
 
 import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:bot_toast/bot_toast.dart';
@@ -26,13 +27,15 @@ import 'package:yana/provider/community_info_provider.dart';
 import 'package:yana/provider/custom_emoji_provider.dart';
 import 'package:yana/provider/follow_new_event_provider.dart';
 import 'package:yana/provider/new_notifications_provider.dart';
+import 'package:yana/provider/nwc_provider.dart';
 import 'package:yana/router/relays/relay_info_router.dart';
 import 'package:yana/router/search/search_router.dart';
 import 'package:yana/router/user/followed_router.dart';
 import 'package:yana/router/user/followed_tags_list_router.dart';
 import 'package:yana/router/user/user_history_contact_list_router.dart';
 import 'package:yana/router/user/user_zap_list_router.dart';
-import 'package:yana/router/wallet_router.dart';
+import 'package:yana/router/wallet/nwc_router.dart';
+import 'package:yana/router/wallet/wallet_router.dart';
 import 'package:yana/utils/platform_util.dart';
 
 import 'i18n/i18n.dart';
@@ -130,6 +133,8 @@ late CommunityApprovedProvider communityApprovedProvider;
 
 late CommunityInfoProvider communityInfoProvider;
 
+late NwcProvider nwcProvider;
+
 AppLifecycleState appState = AppLifecycleState.resumed;
 
 Nostr? nostr;
@@ -208,6 +213,7 @@ void initProvidersAndStuff() async {
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   packageInfo = await PackageInfo.fromPlatform();
+  await protocolHandler.register('nostr+walletconnect');
 
   if (!PlatformUtil.isWeb() && PlatformUtil.isPC()) {
     await windowManager.ensureInitialized();
@@ -257,6 +263,7 @@ Future<void> main() async {
   followEventProvider = FollowEventProvider();
   followNewEventProvider = FollowNewEventProvider();
   notificationsProvider = NotificationsProvider();
+  notificationsProvider = NotificationsProvider();
   newNotificationsProvider = NewNotificationsProvider();
   dmProvider = DMProvider();
   indexProvider = IndexProvider(
@@ -276,6 +283,7 @@ Future<void> main() async {
   customEmojiProvider = CustomEmojiProvider.load();
   communityApprovedProvider = CommunityApprovedProvider();
   communityInfoProvider = CommunityInfoProvider();
+  nwcProvider = NwcProvider.getInstance();
 
   String? key = settingProvider.key;
   if (StringUtil.isNotBlank(key)) {
@@ -462,6 +470,7 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
       RouterPath.SEARCH: (context) => const SearchRouter(),
       RouterPath.KEY_BACKUP: (context) => const KeyBackupRouter(),
       RouterPath.WALLET: (context) => const WalletRouter(),
+      RouterPath.NWC: (context) => const NwcRouter(),
       RouterPath.RELAYS: (context) => const RelaysRouter(),
       RouterPath.FILTER: (context) => const FilterRouter(),
       RouterPath.PROFILE_EDITOR: (context) => const ProfileEditorRouter(),
@@ -540,6 +549,9 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
           ),
           ListenableProvider<CommunityInfoProvider>.value(
             value: communityInfoProvider,
+          ),
+          ListenableProvider<NwcProvider>.value(
+            value: nwcProvider,
           ),
         ],
         child: HomeComponent(

@@ -382,7 +382,7 @@ nip04: {
       _doCopy(widget.url);
     } else if (value == "openInBrowser") {
       var _url = Uri.parse(widget.url);
-      launchUrl(_url);
+      launchUrl(_url, mode: LaunchMode.externalApplication);
     } else if (value == "hideBrowser") {
       webViewProvider.hide();
     } else if (value == "close") {

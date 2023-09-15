@@ -142,7 +142,7 @@ class SettingProvider extends ChangeNotifier {
     return await secureStorage.read(key: NWC_URI);
   }
 
-  Future<void> setNwc(String uri) async {
+  Future<void> setNwc(String? uri) async {
     await secureStorage.write(key: NWC_URI,value: uri);
   }
 
@@ -150,7 +150,7 @@ class SettingProvider extends ChangeNotifier {
     return await secureStorage.read(key: NWC_SECRET);
   }
 
-  Future<void> setNwcSecret(String secret) async {
+  Future<void> setNwcSecret(String? secret) async {
     await secureStorage.write(key: NWC_SECRET,value: secret);
   }
 

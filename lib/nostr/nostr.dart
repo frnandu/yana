@@ -139,7 +139,7 @@ class Nostr {
     // };
 
     Event signedEvent = await signEvent(event);
-    return r.send(["EVENT", signedEvent.toJson()]);
+    return r.send(["EVENT", signedEvent.toJson()], reconnect: false);
   }
 
   Future<Event> signEvent(Event event) async {
@@ -194,7 +194,6 @@ class Nostr {
     r.onMessage = (Relay relay, List<dynamic> json) async {
       final messageType = json[0];
       if (messageType == 'EVENT') {
-        // final subId = json[1] as String;
         try {
           final event = Event.fromJson(json[2]);
           if (event.isValid && await event.isSigned) {

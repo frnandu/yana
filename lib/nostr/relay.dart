@@ -31,6 +31,21 @@ class Relay {
 
   WebSocketChannel? _wsChannel;
 
+  Future<bool> connect({bool checkInfo = true}) async {
+    try {
+      relayStatus.connected = ClientConneccted.CONNECTING;
+      info = checkInfo ? await RelayInfoUtil.get(url) : null;
+
+      // Relay must support NIP-15 and NIP-20, but NIP-15 had merger into NIP-01
+      if (info == null || info!.nips.contains(20)) {
+        return connectSync();
+      }
+    } catch (e) {
+      _onError(e.toString(), reconnect: true);
+    }
+    return false;
+  }
+
   bool connectSync() {
     final wsUrl = Uri.parse(url);
     _wsChannel = WebSocketChannel.connect(wsUrl);
@@ -53,22 +68,7 @@ class Relay {
     return true;
   }
 
-  Future<bool> connect({bool checkInfo = true}) async {
-    try {
-      relayStatus.connected = ClientConneccted.CONNECTING;
-      info = checkInfo ? await RelayInfoUtil.get(url) : null;
-
-      // Relay must support NIP-15 and NIP-20, but NIP-15 had merger into NIP-01
-      if (info == null || info!.nips.contains(20)) {
-        return connectSync();
-      }
-    } catch (e) {
-      _onError(e.toString(), reconnect: true);
-    }
-    return false;
-  }
-
-  bool send(List<dynamic> message) {
+  bool send(List<dynamic> message, { bool reconnect = true}) {
     if (_wsChannel != null &&
         relayStatus.connected == ClientConneccted.CONNECTED) {
       try {
@@ -76,7 +76,7 @@ class Relay {
         _wsChannel!.sink.add(encoded);
         return true;
       } catch (e) {
-        _onError(e.toString(), reconnect: true);
+        _onError(e.toString(), reconnect: reconnect);
       }
     } else {
       if (kDebugMode) {

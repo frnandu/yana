@@ -1309,6 +1309,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.13.1"
+  protocol_handler:
+    dependency: "direct main"
+    description:
+      name: protocol_handler
+      sha256: be85285f5cdc2541bb5ae5368f1c9924eeaae8d28e74c7235b7cd2c02521d760
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.1.5"
   provider:
     dependency: "direct main"
     description:

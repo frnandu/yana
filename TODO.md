@@ -43,16 +43,19 @@
 - ~~signEvent~~
 
 
-
 - Nostr Wallet Connect with balance
-    ~~input URI (textfield | QR SCANNER)~~
-    show balance, payments
+   ~~input URI (textfield | QR SCANNER)~~
+  ~~show balance~~
+  ~~alby new nwc -> deep linking~~
+
     pay_invoice
-    alby new nwc -> deep linking
+    payments    
+    balance in FIAT (choose currency) from coingecko/kraken?
 
-- Wallet LndHub
+  - Mutiny Wallet 
+  - LndHub Wallet
 
-- for web: https://github.com/aniketambore/flutter_webln
+  - for web: https://github.com/aniketambore/flutter_webln
 
 - mention livesearch editor without popup
 
