@@ -37,6 +37,7 @@ import 'package:yana/router/user/user_zap_list_router.dart';
 import 'package:yana/router/wallet/nwc_router.dart';
 import 'package:yana/router/wallet/wallet_router.dart';
 import 'package:yana/utils/platform_util.dart';
+import 'package:yana/utils/router_util.dart';
 
 import 'i18n/i18n.dart';
 import 'models/db.dart';
@@ -416,13 +417,15 @@ void initBackgroundService() async {
 // }
 
 class MyApp extends StatefulWidget {
+
   @override
   State<StatefulWidget> createState() {
     return _MyApp();
   }
 }
 
-class _MyApp extends State<MyApp> with WidgetsBindingObserver {
+class _MyApp extends State<MyApp> with WidgetsBindingObserver{
+
   reload() {
     setState(() {});
   }

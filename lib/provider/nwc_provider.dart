@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
+import 'package:yana/nostr/event_kind.dart';
 
 import '../main.dart';
 import '../nostr/event.dart';
@@ -42,7 +43,7 @@ class NwcProvider extends ChangeNotifier {
     if (StringUtil.isNotBlank(uri) && StringUtil.isNotBlank(secret)) {
       walletPubKey = sharedPreferences.getString(DataKey.NWC_PUB_KEY);
       relay = sharedPreferences.getString(DataKey.NWC_RELAY);
-      await requestBalance();
+      await connect(uri!);
     }
   }
 
@@ -102,6 +103,12 @@ class NwcProvider extends ChangeNotifier {
           maxAmount = maxAmount! ~/ 1000;
         }
         notifyListeners();
+      } else if (data!=null && data.containsKey("error")) {
+        var error = data['error']['code'];
+        if (error == "UNAUTHORIZED") {
+          await disconnect();
+          notifyListeners();
+        }
       }
     }
   }
@@ -200,7 +207,7 @@ class NwcProvider extends ChangeNotifier {
         var preImage = data['result']['preimage'];
         BotToast.showText(text: "Zap payed");
         if (payInvoiceEventId!=null) {
-          eventReactionsProvider.update(payInvoiceEventId!);
+          eventReactionsProvider.update(payInvoiceEventId!, EventKind.ZAP);
         }
         notifyListeners();
         await requestBalance();

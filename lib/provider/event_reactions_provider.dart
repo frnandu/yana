@@ -58,9 +58,11 @@ class EventReactionsProvider extends ChangeNotifier
     }
   }
 
-  void update(String id) {
-    _penddingIds[id] = 1;
-    whenStop(laterFunc);
+  void update(String id, int kind) {
+    var filter = Filter(e: [id], kinds: [kind]);
+    nostr!.query([filter.toJson()], _handleSingleEvent2, onComplete: () {
+      notifyListeners();
+    });
   }
 
   EventReactions? get(String id) {
@@ -128,32 +130,63 @@ class EventReactionsProvider extends ChangeNotifier
     bool updated = false;
 
     for (var event in _penddingEvents) {
-      for (var tag in event.tags) {
-        if (tag.length > 1) {
-          var tagType = tag[0] as String;
-          if (tagType == "e") {
-            var id = tag[1] as String;
-            var er = _eventReactionsMap[id];
-            if (er == null) {
-              er = EventReactions(id);
-              _eventReactionsMap[id] = er;
-            } else {
-              er = er.clone();
-              _eventReactionsMap[id] = er;
-            }
-
-            if (er.onEvent(event)) {
-              updated = true;
-            }
-          }
-        }
-      }
+      updated = updated || _handleSingleEvent(event);
     }
     _penddingEvents.clear();
 
     if (updated) {
       notifyListeners();
     }
+  }
+
+  bool _handleSingleEvent(Event event) {
+    bool updated = false;
+    for (var tag in event.tags) {
+      if (tag.length > 1) {
+        var tagType = tag[0] as String;
+        if (tagType == "e") {
+          var id = tag[1] as String;
+          var er = _eventReactionsMap[id];
+          if (er == null) {
+            er = EventReactions(id);
+            _eventReactionsMap[id] = er;
+          } else {
+            er = er.clone();
+            _eventReactionsMap[id] = er;
+          }
+
+          if (er.onEvent(event)) {
+            updated = true;
+          }
+        }
+      }
+    }
+    return updated;
+  }
+
+  bool _handleSingleEvent2(Event event) {
+    bool updated = false;
+    for (var tag in event.tags) {
+      if (tag.length > 1) {
+        var tagType = tag[0] as String;
+        if (tagType == "e") {
+          var id = tag[1] as String;
+          var er = _eventReactionsMap[id];
+          if (er == null) {
+            er = EventReactions(id);
+            _eventReactionsMap[id] = er;
+          } else {
+            er = er.clone();
+            _eventReactionsMap[id] = er;
+          }
+
+          if (er.onEvent(event)) {
+            updated = true;
+          }
+        }
+      }
+    }
+    return updated;
   }
 
   void removePendding(String id) {

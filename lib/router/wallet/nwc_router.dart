@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -43,7 +44,12 @@ class _NwcRouter extends State<NwcRouter> with ProtocolListener {
     if (StringUtil.isNotBlank(url)) {
       Future.delayed(const Duration(microseconds: 1), () async {
         await nwcProvider.connect(url);
-        await RouterUtil.router(context, RouterPath.WALLET);
+        var route = ModalRoute.of(context);
+        if (route!=null && route!.settings.name!=null && route!.settings.name! == RouterPath.NWC) {
+          RouterUtil.back(context);
+        } else {
+          RouterUtil.router(context, RouterPath.WALLET);
+        }
       });
     }
   }
