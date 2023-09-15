@@ -25,31 +25,7 @@ class _WalletRouter extends State<WalletRouter> {
   @override
   void initState() {
     nwcProvider.reload();
-    // String? perms = sharedPreferences.getString(DataKey.NWC_PERMISSIONS);
-    // if (StringUtil.isNotBlank(perms)) {
-    //   permissions = perms!.split(",");
-    // }
-    //
-    // WidgetsBinding.instance.addPostFrameCallback((_) {
-    //   readNwc();
-    // });
   }
-
-  // void readNwc() async {
-  //   uri = await settingProvider.getNwc();
-  //   if (StringUtil.isNotBlank(uri)) {
-  //     await getBalance();
-  //     setState(() {
-  //       controller.text = uri!;
-  //     });
-  //   }
-  //   controller.addListener(() async {
-  //     if (uri == null || uri != controller.text) {
-  //       uri = controller.text;
-  //       await settingProvider.setNwc(uri!);
-  //     }
-  //   });
-  // }
 
   @override
   Widget build(BuildContext context) {
@@ -127,30 +103,6 @@ class _WalletRouter extends State<WalletRouter> {
                         margin: const EdgeInsets.all(Base.BASE_PADDING),
                         child: const Text("Disconnect wallet")),
                   )));
-
-          // list.add(
-          //   InkWell(
-          //     onTap: () async {
-          //       controller.text = "";
-          //       await nwcProvider.disconnect();
-          //     },
-          //     child: Container(
-          //       margin: const EdgeInsets.all(Base.BASE_PADDING),
-          //       height: 36,
-          //       color: mainColor,
-          //       alignment: Alignment.center,
-          //       child: const Text(
-          //         "Disconnect wallet",
-          //         style: TextStyle(
-          //           fontFamily: "Montserrat",
-          //           color: Colors.white,
-          //           fontSize: 16,
-          //           fontWeight: FontWeight.bold,
-          //         ),
-          //       ),
-          //     ),
-          //   ),
-          // );
         } else {
           list.add(
             GestureDetector(
@@ -222,39 +174,6 @@ class _WalletRouter extends State<WalletRouter> {
           //         child: Icon(Icons.qr_code_scanner,
           //             size: 25, color: themeData.iconTheme.color)))
 
-          // list.add(Row(
-          //   children: [
-          //     Expanded(
-          //         child: TextField(
-          //       controller: controller,
-          //       decoration:
-          //           const InputDecoration(hintText: "nostr+walletconnect:"),
-          //     )),
-          //   ],
-          // ));
-          //
-          // list.add(Container(
-          //   margin: const EdgeInsets.all(Base.BASE_PADDING),
-          //   child: InkWell(
-          //     onTap: () async {
-          //       await _nwcProvider.connect(controller.text);
-          //     },
-          //     child: Container(
-          //       height: 36,
-          //       color: mainColor,
-          //       alignment: Alignment.center,
-          //       child: const Text(
-          //         "Connect",
-          //         style: TextStyle(
-          //           fontFamily: "Montserrat",
-          //           color: Colors.white,
-          //           fontSize: 16,
-          //           fontWeight: FontWeight.bold,
-          //         ),
-          //       ),
-          //     ),
-          //   ),
-          // ));
         }
         return Column(
           mainAxisSize: MainAxisSize.min,
@@ -265,139 +184,6 @@ class _WalletRouter extends State<WalletRouter> {
         return _provider.isConnected;
       },
     );
-
-    // if (false) {
-    // if (StringUtil.isNotBlank(uri) && permissions.isNotEmpty) {
-    // permissions
-    //     .where((element) => element != NWC_GET_BALANCE_PERMISSION)
-    //     .forEach((permission) {
-    //   list.add(Container(
-    //       margin: const EdgeInsets.all(Base.BASE_PADDING),
-    //       child: Text(permission)));
-    // });
-    // if (balance != null) {
-    //   list.add(Container(
-    //       margin: const EdgeInsets.all(Base.BASE_PADDING),
-    //       child: Text("${balance!} sats", style: balanceTextStyle)));
-    //   if (maxAmount != null && maxAmount! > 0) {
-    //     list.add(Container(
-    //         margin: const EdgeInsets.all(Base.BASE_PADDING),
-    //         child: Text("Max amount: ${maxAmount!} sats")));
-    //   }
-    // } else if (permissions.contains(NWC_GET_BALANCE_PERMISSION)) {
-    //   list.add(
-    //     InkWell(
-    //       onTap: _nwcProvider.requestBalance,
-    //       child: Container(
-    //         height: 36,
-    //         color: mainColor,
-    //         margin: const EdgeInsets.all(Base.BASE_PADDING),
-    //         alignment: Alignment.center,
-    //         child: const Text(
-    //           "Get balance",
-    //           style: TextStyle(
-    //             fontFamily: "Montserrat",
-    //             color: Colors.white,
-    //             fontSize: 16,
-    //             fontWeight: FontWeight.bold,
-    //           ),
-    //         ),
-    //       ),
-    //     ),
-    //   );
-    // }
-    // if (permissions.contains(NWC_GET_BALANCE_PERMISSION)) {
-    //   list.add(
-    //     InkWell(
-    //       onTap: _nwcProvider.payInvoice,
-    //       child: Container(
-    //         height: 36,
-    //         color: mainColor,
-    //         margin: const EdgeInsets.all(Base.BASE_PADDING),
-    //         alignment: Alignment.center,
-    //         child: const Text(
-    //           "Pay invoice",
-    //           style: TextStyle(
-    //             fontFamily: "Montserrat",
-    //             color: Colors.white,
-    //             fontSize: 16,
-    //             fontWeight: FontWeight.bold,
-    //           ),
-    //         ),
-    //       ),
-    //     ),
-    //   );
-    // }
-
-    // list.add(
-    //   InkWell(
-    //     onTap: _nwcProvider.disconnect,
-    //     child: Container(
-    //       margin: const EdgeInsets.all(Base.BASE_PADDING),
-    //       height: 36,
-    //       color: mainColor,
-    //       alignment: Alignment.center,
-    //       child: const Text(
-    //         "Disconnect",
-    //         style: TextStyle(
-    //           fontFamily: "Montserrat",
-    //           color: Colors.white,
-    //           fontSize: 16,
-    //           fontWeight: FontWeight.bold,
-    //         ),
-    //       ),
-    //     ),
-    //   ),
-    // );
-    // } else {
-    //   list.add(Row(children: [
-    //     const Text("Wallet Connect URI (NWC)"),
-    //     Container(
-    //       margin: const EdgeInsets.only(left: Base.BASE_PADDING),
-    //       child: Image.asset("assets/imgs/alby.png", width: 30, height: 30),
-    //     ),
-    //     Container(
-    //         margin: const EdgeInsets.only(left: Base.BASE_PADDING),
-    //         child: GestureDetector(
-    //             behavior: HitTestBehavior.translucent,
-    //             onTap: scanNWC,
-    //             child: Icon(Icons.qr_code_scanner,
-    //                 size: 25, color: themeData.iconTheme.color)))
-    //   ]));
-    //
-    //   list.add(Row(
-    //     children: [
-    //       Expanded(
-    //           child: TextField(
-    //         controller: controller,
-    //         decoration: const InputDecoration(hintText: "nostr+walletconnect:"),
-    //       )),
-    //     ],
-    //   ));
-    //
-    //   list.add(Container(
-    //     margin: const EdgeInsets.all(Base.BASE_PADDING),
-    //     child: InkWell(
-    //       onTap: () async {
-    //         await _nwcProvider.connect(controller.text);
-    //       },
-    //       child: Container(
-    //         height: 36,
-    //         color: mainColor,
-    //         alignment: Alignment.center,
-    //         child: const Text(
-    //           "Connect",
-    //           style: TextStyle(
-    //             fontFamily: "Montserrat",
-    //             color: Colors.white,
-    //             fontSize: 16,
-    //             fontWeight: FontWeight.bold,
-    //           ),
-    //         ),
-    //       ),
-    //     ),
-    //   ));
-    // }
 
     return Scaffold(
       body: Stack(

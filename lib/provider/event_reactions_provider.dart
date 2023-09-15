@@ -58,10 +58,10 @@ class EventReactionsProvider extends ChangeNotifier
     }
   }
 
-  // void update(String id) {
-  //   _penddingIds[id] = 1;
-  //   whenStop(laterFunc);
-  // }
+  void update(String id) {
+    _penddingIds[id] = 1;
+    whenStop(laterFunc);
+  }
 
   EventReactions? get(String id) {
     var er = _eventReactionsMap[id];

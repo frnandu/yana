@@ -41,26 +41,24 @@
 - ~~login with extension on web~~
 - ~~text color on light theme login screen YANA + input is dark~~
 - ~~signEvent~~
-
-
-- Nostr Wallet Connect with balance
+- ~~Nostr Wallet Connect with balance~~
    ~~input URI (textfield | QR SCANNER)~~
   ~~show balance~~
   ~~alby new nwc -> deep linking~~
+  ~~pay_invoice~~
 
-    pay_invoice
-    payments    
-    balance in FIAT (choose currency) from coingecko/kraken?
+- Wallet list of transactions    
+- Wallet balance in FIAT (choose currency) from coingecko/kraken?
 
-  - Mutiny Wallet 
-  - LndHub Wallet
+- Mutiny Wallet 
+- LndHub Wallet
 
-  - for web: https://github.com/aniketambore/flutter_webln
+- WebLN for web: https://github.com/aniketambore/flutter_webln
 
 - mention livesearch editor without popup
 
-
 - nip19 nprofile
+- custom zap amounts
 =======================
 - zaps on web with NIP-07 should call webln or something
 - STOP followers/zaps events from blocking the relay, when navigate away from that profile

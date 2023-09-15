@@ -97,7 +97,7 @@ class Relay {
   }
 
   void _onError(String errMsg, {bool reconnect = false}) {
-    log("relay error $errMsg");
+    log("relay error in $url : $errMsg");
     relayStatus.error++;
     relayStatus.connected = ClientConneccted.UN_CONNECT;
     if (relayStatusCallback != null) {

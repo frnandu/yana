@@ -10,6 +10,7 @@ class LightningUtil {
   static Future<void> goToPay(BuildContext context, String invoiceCode) async {
     var link = 'lightning:' + invoiceCode;
     if (PlatformUtil.isPC() || PlatformUtil.isWeb()) {
+      // TODO webln
       await LightningQrcodeDialog.show(context, link);
     } else {
       if (Platform.isAndroid) {

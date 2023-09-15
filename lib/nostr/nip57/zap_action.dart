@@ -20,8 +20,17 @@ class ZapAction {
         BotToast.showText(text: s.Gen_invoice_code_error);
         return;
       }
-
-      await LightningUtil.goToPay(context, invoiceCode!);
+      bool sendWithWallet = false;
+      if (await nwcProvider.isConnected) {
+        int? balance = await nwcProvider.getBalance;
+        if (balance!=null && balance > 10) {
+          await nwcProvider.payInvoice(invoiceCode!, eventId);
+          sendWithWallet = true;
+        }
+      }
+      if (!sendWithWallet) {
+        await LightningUtil.goToPay(context, invoiceCode!);
+      }
     } finally {
       cancelFunc.call();
     }

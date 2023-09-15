@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import '../main.dart';
 import '../nostr/event.dart';
 import '../nostr/event_kind.dart' as kind;
@@ -113,6 +115,22 @@ class EventReactions implements FindEventInterface {
         // if (StringUtil.isNotBlank(event.content)) {
           if (event.pubKey == nostr!.publicKey) {
             hasMyZap = true;
+          } else {
+            var tagLength = event.tags.length;
+            for (var i = 0; i < tagLength; i++) {
+              var tag = event.tags[i];
+              if (tag is List && tag.length > 1) {
+                var key = tag[0];
+                var value = tag[1];
+                if (key == "description") {
+                  var description = json.decode(value);
+                  if (description['pubkey'] == nostr!.publicKey) {
+                    hasMyZap = true;
+                    break;
+                  }
+                }
+              }
+            }
           }
           replyNum++;
           replies.add(event);

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:yana/utils/lightning_util.dart';
 
 import '../../i18n/i18n.dart';
+import '../../main.dart';
 import '../../nostr/nip57/zap_num_util.dart';
 import '../../utils/base.dart';
 
@@ -101,6 +102,14 @@ class ContentLnbcComponent extends StatelessWidget {
             child: InkWell(
               onTap: () async {
                 // call to pay
+                bool sendWithWallet = false;
+                if (await nwcProvider.isConnected) {
+                  int? balance = await nwcProvider.getBalance;
+                  if (balance!=null && balance > 10) {
+                    await nwcProvider.payInvoice(lnbc, null);
+                    sendWithWallet = true;
+                  }
+                }
                 LightningUtil.goToPay(context, lnbc);
               },
               child: Container(
