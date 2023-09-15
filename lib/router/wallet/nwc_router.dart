@@ -185,7 +185,7 @@ class _NwcRouter extends State<NwcRouter> with ProtocolListener {
             child: Row(children: [
               Container(
                   margin: const EdgeInsets.all(Base.BASE_PADDING),
-                  child: Icon(Icons.qr_code_scanner,
+                  child: Icon(Icons.edit_note,
                       size: 25, color: themeData.iconTheme.color)),
               const Text("Connect custom URI"),
             ]))));
