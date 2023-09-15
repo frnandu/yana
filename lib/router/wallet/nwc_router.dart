@@ -171,7 +171,7 @@ class _NwcRouter extends State<NwcRouter> with ProtocolListener {
         behavior: HitTestBehavior.translucent,
         onTap: () async {
           await _nwcProvider.connect(controller.text);
-          await RouterUtil.router(context, RouterPath.WALLET);
+          RouterUtil.back(context);
         },
         child: Container(
             margin: EdgeInsets.all(Base.BASE_PADDING),
@@ -389,7 +389,7 @@ class _NwcRouter extends State<NwcRouter> with ProtocolListener {
     if (StringUtil.isNotBlank(result)) {
       controller.text = result;
       await nwcProvider.connect(controller.text);
-      await RouterUtil.router(context, RouterPath.WALLET);
+      RouterUtil.back(context);
     }
   }
 }
