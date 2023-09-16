@@ -111,10 +111,10 @@ class _FollowPostsAndRepliesRouter
       ),
     ));
     return Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(50),
-          color: Colors.white,
-        ),
+        // decoration: BoxDecoration(
+        //   borderRadius: BorderRadius.circular(50),
+        //   color: Colors.white,
+        // ),
         child: Stack(
           alignment: Alignment.center,
           children: stackList,

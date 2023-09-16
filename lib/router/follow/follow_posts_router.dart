@@ -127,11 +127,11 @@ class _FollowPostsRouter extends KeepAliveCustState<FollowPostsRouter>
       ),
     ));
     return Container(
-        clipBehavior: Clip.hardEdge,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(60 / 2),
-          color: Colors.grey,
-        ),
+        // clipBehavior: Clip.hardEdge,
+        // decoration: BoxDecoration(
+        //   borderRadius: BorderRadius.circular(60 / 2),
+        //   color: Colors.grey,
+        // ),
         child: Stack(
           alignment: Alignment.center,
           children: stackList,
