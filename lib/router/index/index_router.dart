@@ -166,7 +166,7 @@ class _IndexRouter extends CustState<IndexRouter>
                 return Badge(
                     offset: const Offset(16, -4),
                     label: Text(eventMemBox.length().toString(),style: badgeTextStyle),
-                    backgroundColor: const Color(0xFF6A1B9A),
+                    backgroundColor: themeData.primaryColor,
                     child: text);
               },
               selector: (context, _provider) {
@@ -189,7 +189,7 @@ class _IndexRouter extends CustState<IndexRouter>
                 return Badge(
                     offset: const Offset(16, -4),
                     label: Text(eventMemBox.length().toString(), style: badgeTextStyle),
-                    backgroundColor: const Color(0xFF6A1B9A),
+                    backgroundColor: themeData.primaryColor,
                     child: text);
               },
               selector: (context, _provider) {
@@ -247,7 +247,7 @@ class _IndexRouter extends CustState<IndexRouter>
                 return Badge(
                     offset: const Offset(16, -4),
                     label: Text(count.toString(), style: badgeTextStyle),
-                    backgroundColor: const Color(0xFF6A1B9A),
+                    backgroundColor: themeData.primaryColor,
                     child: text);
               },
               selector: (context, _provider) {
@@ -271,7 +271,7 @@ class _IndexRouter extends CustState<IndexRouter>
                   return Badge(
                       offset: const Offset(16, -4),
                       label: Text(count.toString(), style: badgeTextStyle),
-                      backgroundColor: const Color(0xFF6A1B9A),
+                      backgroundColor: themeData.primaryColor,
                       child: text);
                 },
                 selector: (context, _provider) {
@@ -294,7 +294,7 @@ class _IndexRouter extends CustState<IndexRouter>
                   return Badge(
                       offset: const Offset(16, -4),
                       label: Text(count.toString(), style: badgeTextStyle),
-                      backgroundColor: const Color(0xFF6A1B9A),
+                      backgroundColor: themeData.primaryColor,
                       child: text);
                 },
                 selector: (context, _provider) {
@@ -307,6 +307,8 @@ class _IndexRouter extends CustState<IndexRouter>
     }
 
     var addBtn = FloatingActionButton(
+      shape: CircleBorder(
+      ),
       backgroundColor: themeData.primaryColor,
       child: Icon(Icons.add),
       onPressed: () {

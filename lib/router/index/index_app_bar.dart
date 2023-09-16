@@ -25,6 +25,7 @@ class _IndexAppBar extends State<IndexAppBar> {
   Widget build(BuildContext context) {
     var themeData = Theme.of(context);
     var paddingTop = mediaDataCache.padding.top;
+
     var appBarBackgroundColor = themeData.appBarTheme.backgroundColor;
 
     Widget? userPicWidget;

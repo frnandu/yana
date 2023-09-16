@@ -632,6 +632,7 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver{
   }
 
   ThemeData getLightTheme() {
+    // Color background = const Color(0xff281237);
     Color background = const Color(0xFFF3E5F5);
 
     MaterialColor themeColor = const MaterialColor(
@@ -642,7 +643,7 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver{
         200: Color(0xFFCE93D8),
         300: Color(0xFFBA68C8),
         400: Color(0xFFAB47BC),
-        500: Color(0xffb583ce),
+        500: Color(0xffaa529d),
         600: Color(0xFF8E24AA),
         700: Color(0xFF7B1FA2),
         800: Color(0xFF6A1B9A),
@@ -707,8 +708,8 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver{
       primaryColor: themeColor[500],
       appBarTheme: AppBarTheme(
         // color: Base.APPBAR_COLOR,
-        backgroundColor:
-        PlatformUtil.isPC() ? scaffoldBackgroundColor : themeColor[500],
+        backgroundColor: const Color(0xff281237),
+        //   PlatformUtil.isPC() ? scaffoldBackgroundColor : themeColor[500],
         titleTextStyle: titleTextStyle,
         elevation: 0,
       ),
@@ -735,7 +736,7 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver{
         200: Color(0xFFCE93D8),
         300: Color(0xFFBA68C8),
         400: Color(0xFFAB47BC),
-        500: Color(0xffb583ce),
+        500: Color(0xffaa529d),
         600: Color(0xFF8E24AA),
         700: Color(0xFF7B1FA2),
         800: Color(0xFF6A1B9A),

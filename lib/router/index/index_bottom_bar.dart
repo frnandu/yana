@@ -48,7 +48,7 @@ class _IndexBottomBar extends State<IndexBottomBar> {
           return Badge(
               offset: const Offset(8, 0),
               label: Text(total.toString(), style: badgeTextStyle),
-              backgroundColor: const Color(0xFF6A1B9A),
+              backgroundColor: themeData.primaryColor,
               child: icon);
         },
         selector: (context, _provider) {
@@ -78,7 +78,7 @@ class _IndexBottomBar extends State<IndexBottomBar> {
           return Badge(
               offset: const Offset(8, 0),
               label: Text(count.toString(),style: badgeTextStyle),
-              backgroundColor: const Color(0xFF6A1B9A),
+              backgroundColor: themeData.primaryColor,
               child: icon);
         },
         selector: (context, _provider) {
@@ -110,7 +110,7 @@ class _IndexBottomBar extends State<IndexBottomBar> {
           return Badge(
               offset: const Offset(8, 0),
               label: Text(eventMemBox.length().toString(),style: badgeTextStyle),
-              backgroundColor: const Color(0xFF6A1B9A),
+              backgroundColor: themeData.primaryColor,
               child: icon);
         },
         selector: (context, _provider) {

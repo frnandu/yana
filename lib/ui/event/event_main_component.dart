@@ -547,8 +547,8 @@ class _EventMainComponent extends State<EventMainComponent> {
       },
       styleSheet: MarkdownStyleSheet(
         a: TextStyle(
-          color: themeData.primaryColor,
-          decoration: TextDecoration.underline,
+          color: themeData.highlightColor,
+          // decoration: TextDecoration.underline,
         ),
       ),
       onTapLink: (String text, String? href, String title) async {

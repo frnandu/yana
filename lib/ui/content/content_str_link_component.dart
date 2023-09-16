@@ -25,8 +25,8 @@ class ContentStrLinkComponent extends StatelessWidget {
           StringUtil.breakWord(str),
           style: TextStyle(
             color: mainColor,
-            decoration:
-                showUnderline ? TextDecoration.underline : TextDecoration.none,
+            // decoration:
+            //     showUnderline ? TextDecoration.underline : TextDecoration.none,
           ),
         ),
       ),
