@@ -4,6 +4,7 @@ import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:provider/provider.dart';
 import 'package:screenshot/screenshot.dart';
 import 'package:share_plus/share_plus.dart';
@@ -53,6 +54,7 @@ class EventReactionsComponent extends StatefulWidget {
 
 class _EventReactionsComponent extends State<EventReactionsComponent> {
   EventReactions? eventReactions;
+  bool zapping = false;
 
   @override
   Widget build(BuildContext context) {
@@ -88,7 +90,8 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
           if (eventReactions.hasMyRepost) {
             repostColor = themeData.primaryColor;
           }
-          if (eventReactions.myLikeEvents != null && eventReactions.myLikeEvents!.isNotEmpty) {
+          if (eventReactions.myLikeEvents != null &&
+              eventReactions.myLikeEvents!.isNotEmpty) {
             likeColor = Colors.red;
           }
           if (eventReactions.hasMyZap) {
@@ -105,7 +108,7 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
                 num: replyNum,
                 iconData: Icons.mode_comment_outlined,
                 onTap: onCommmentTap,
-                color: replyNum>0 ? replyColor : themeData.disabledColor,
+                color: replyNum > 0 ? replyColor : themeData.disabledColor,
                 fontSize: fontSize,
               )),
               // Expanded(
@@ -135,7 +138,8 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
                   child: EventReactionNumComponent(
                     num: repostNum,
                     iconData: Icons.repeat,
-                    color: repostNum>0 ? repostColor : themeData.disabledColor,
+                    color:
+                        repostNum > 0 ? repostColor : themeData.disabledColor,
                     fontSize: fontSize,
                   ),
                 ),
@@ -145,7 +149,7 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
                 num: likeNum,
                 iconData: Icons.favorite_border,
                 onTap: onLikeTap,
-                color: likeNum>0 ? likeColor : themeData.disabledColor,
+                color: likeNum > 0 ? likeColor : themeData.disabledColor,
                 fontSize: fontSize,
               )),
               Expanded(
@@ -226,14 +230,20 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
                     ];
                   },
                   onSelected: onZapSelect,
-                  child: EventReactionNumComponent(
-                    num: zapNum,
-                    iconData: Icons.bolt,
-                    onTap: null,
-                    onLongPress: genZap,
-                    color: zapNum>0 ? zapColor : themeData.disabledColor,
-                    fontSize: fontSize,
-                  ),
+                  child: zapping
+                      ? SpinKitFadingCircle(
+                          color: themeData.disabledColor,
+                          size: 20.0,
+                        )
+                      : EventReactionNumComponent(
+                          num: zapNum,
+                          iconData: Icons.bolt,
+                          onTap: null,
+                          onLongPress: genZap,
+                          color:
+                              zapNum > 0 ? zapColor : themeData.disabledColor,
+                          fontSize: fontSize,
+                        ),
                 ),
               ),
               Expanded(
@@ -442,7 +452,8 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
   }
 
   void onLikeTap() async {
-    if (eventReactions?.myLikeEvents == null || eventReactions!.myLikeEvents!.isEmpty) {
+    if (eventReactions?.myLikeEvents == null ||
+        eventReactions!.myLikeEvents!.isEmpty) {
       // like
       var likeEvent = await nostr!.sendLike(widget.event.id);
       if (likeEvent != null) {
@@ -458,11 +469,18 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
   }
 
   Future<void> onZapSelect(int sats) async {
+    setState(() {
+      zapping = true;
+    });
     if (sats < 0) {
       genZap();
     } else {
       await ZapAction.handleZap(context, sats, widget.event.pubKey,
-          eventId: widget.event.id);
+          eventId: widget.event.id, onZapped: (success) {
+            setState(() {
+              zapping = false;
+            });
+          });
     }
   }
 
@@ -483,7 +501,11 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
   }
 
   void genZap() {
-    ZapGenDialog.show(context, widget.event.pubKey, eventId: widget.event.id);
+    ZapGenDialog.show(context, widget.event.pubKey, eventId: widget.event.id, onZapped: (success) {
+      setState(() {
+        zapping=false;
+      });
+    });
   }
 }
 

@@ -70,7 +70,11 @@ class _WalletRouter extends State<WalletRouter> {
           Widget balance = Selector<NwcProvider, int?>(
             builder: (context, balance, child) {
               if (balance != null) {
-                return Expanded(child:Row(children: [
+                return
+                  Expanded( child:
+                  Container(
+                    alignment: Alignment.center,
+                    child: Row(children: [
                   const Icon(
                     Icons.currency_bitcoin,
                     color: Colors.orange,
@@ -79,16 +83,17 @@ class _WalletRouter extends State<WalletRouter> {
                   NumberFormatUtil.formatBitcoinAmount(
                       balance / 100000000,
                       TextStyle(
-                          color: themeData.disabledColor,
-                          fontSize: 30, fontWeight: FontWeight.bold)
-                      ,
+                          color: themeData.focusColor,
+                          fontSize: 30,
+                          fontWeight: FontWeight.bold),
                       TextStyle(
                           color: themeData.dividerColor,
-                          fontSize: 30, fontWeight: FontWeight.bold)
-                  ),
-                  Text(" sats", style: const TextStyle(
-                      fontSize: 30, fontWeight: FontWeight.w100)),
-                ]));
+                          fontSize: 30,
+                          fontWeight: FontWeight.bold)),
+                  const Text(" sats",
+                      style:
+                          TextStyle(fontSize: 30, fontWeight: FontWeight.w100)),
+                ])));
               }
               return Container();
             },
@@ -97,6 +102,55 @@ class _WalletRouter extends State<WalletRouter> {
             },
           );
           list.add(balance);
+          // list.add(Row(children: [
+          //   Expanded(
+          //       child: GestureDetector(
+          //           behavior: HitTestBehavior.translucent,
+          //           onTap: () async {
+          //             // TODO choose recipient
+          //           },
+          //           child: Container(
+          //             width: 150,
+          //             margin: const EdgeInsets.all(Base.BASE_PADDING),
+          //             decoration: BoxDecoration(
+          //               borderRadius:
+          //                   const BorderRadius.all(Radius.circular(20.0)),
+          //               border: Border.all(
+          //                 width: 1,
+          //                 color: themeData.hintColor,
+          //               ),
+          //             ),
+          //             child:
+          //               Container(
+          //                   alignment: Alignment.center,
+          //                   margin: const EdgeInsets.all(Base.BASE_PADDING),
+          //                   child: const Text("Receive")),
+          //           ))),
+          //   Expanded(
+          //       child: GestureDetector(
+          //           behavior: HitTestBehavior.translucent,
+          //           onTap: () async {
+          //             // TODO choose recipient
+          //           },
+          //           child: Container(
+          //             alignment: Alignment.center,
+          //             margin: const EdgeInsets.all(Base.BASE_PADDING),
+          //             decoration: BoxDecoration(
+          //               borderRadius:
+          //                   const BorderRadius.all(Radius.circular(20.0)),
+          //               border: Border.all(
+          //                 width: 1,
+          //                 color: themeData.hintColor,
+          //               ),
+          //             ),
+          //             child: Container(
+          //                 alignment: Alignment.center,
+          //                 margin: const EdgeInsets.all(Base.BASE_PADDING),
+          //                 child: const Text("Send",
+          //                     style: TextStyle(fontFamily: 'Monserrat'))),
+          //             //             size: 25, color: themeData.iconTheme.color)
+          //           )))
+          // ]));
           list.add(Container(margin: const EdgeInsets.all(200)));
           list.add(GestureDetector(
               behavior: HitTestBehavior.translucent,
@@ -120,23 +174,23 @@ class _WalletRouter extends State<WalletRouter> {
               )));
         } else {
           list.add(GestureDetector(
-              onTap: () {
-                RouterUtil.router(context, RouterPath.NWC);
-              },
-              // child:
-              // Expanded(
-              child: Container(
-                margin: const EdgeInsets.only(top: Base.BASE_PADDING),
-                padding: const EdgeInsets.all(Base.BASE_PADDING),
-                height: 60.0,
-                decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                        colors: [Color(0xffFFDE6E), Colors.orange]),
-                    borderRadius: BorderRadius.all(Radius.circular(20.0))),
-                child: Center(
-                    child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
+                  onTap: () {
+                    RouterUtil.router(context, RouterPath.NWC);
+                  },
+                  // child:
+                  // Expanded(
+                  child: Container(
+                    margin: const EdgeInsets.only(top: Base.BASE_PADDING),
+                    padding: const EdgeInsets.all(Base.BASE_PADDING),
+                    height: 60.0,
+                    decoration: const BoxDecoration(
+                        gradient: LinearGradient(
+                            colors: [Color(0xffFFDE6E), Colors.orange]),
+                        borderRadius: BorderRadius.all(Radius.circular(20.0))),
+                    child: Center(
+                        child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
                           Container(
                               margin: const EdgeInsets.only(
                                   right: Base.BASE_PADDING),
@@ -144,36 +198,35 @@ class _WalletRouter extends State<WalletRouter> {
                           const Text('Nostr Wallet Connect',
                               style: TextStyle(color: Colors.black))
                         ])),
-              ))
-            // ),
-          );
+                  ))
+              // ),
+              );
           list.add(Row(children: [
             Expanded(
                 child: Container(
-                  margin: const EdgeInsets.only(top: Base.BASE_PADDING * 2),
-                  padding: const EdgeInsets.all(Base.BASE_PADDING),
-                  height: 60.0,
-                  decoration: const BoxDecoration(
-                      gradient: LinearGradient(
-                          colors: [Color(0xff800000), Color(0xff550000)]),
-                      borderRadius: BorderRadius.all(Radius.circular(20.0))),
-                  child: Center(
-                      child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Container(
-                                margin: const EdgeInsets.only(
-                                    right: Base.BASE_PADDING),
-                                child: Image.asset("assets/imgs/mutiny.png")),
-                            Text('Mutiny Wallet Connect',
-                                style: TextStyle(color: Colors.white)),
-                            Text('  (soon)',
-                                style: TextStyle(
-                                    color: themeData.hintColor,
-                                    fontFamily: "Montserrat",
-                                    fontSize: 12))
-                          ])),
-                )),
+              margin: const EdgeInsets.only(top: Base.BASE_PADDING * 2),
+              padding: const EdgeInsets.all(Base.BASE_PADDING),
+              height: 60.0,
+              decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                      colors: [Color(0xff800000), Color(0xff550000)]),
+                  borderRadius: BorderRadius.all(Radius.circular(20.0))),
+              child: Center(
+                  child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                    Container(
+                        margin: const EdgeInsets.only(right: Base.BASE_PADDING),
+                        child: Image.asset("assets/imgs/mutiny.png")),
+                    Text('Mutiny Wallet Connect',
+                        style: TextStyle(color: Colors.white)),
+                    Text('  (soon)',
+                        style: TextStyle(
+                            color: themeData.hintColor,
+                            fontFamily: "Montserrat",
+                            fontSize: 12))
+                  ])),
+            )),
           ]));
 
           // TODO Lndhub wallet connect
@@ -212,9 +265,9 @@ class _WalletRouter extends State<WalletRouter> {
               color: cardColor,
               child: Center(
                 child:
-                //main
-                Container(
-                    width: mediaDataCache.size.width * 0.8, child: main),
+                    //main
+                    Container(
+                        width: mediaDataCache.size.width * 0.8, child: main),
               ),
             ),
           ),

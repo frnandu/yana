@@ -26,7 +26,7 @@ class _SearchMentionUserComponent extends State<SearchMentionUserComponent>
     var contentWidth = mediaDataCache.size.width - 4 * Base.BASE_PADDING;
     itemWidth = (contentWidth - 10) / 2;
 
-    return SaerchMentionComponent(
+    return SearchMentionComponent(
       resultBuildFunc: resultBuild,
       handleSearchFunc: handleSearch,
     );

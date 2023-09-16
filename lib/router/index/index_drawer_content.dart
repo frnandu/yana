@@ -143,12 +143,12 @@ class _IndexDrawerContentComponnent extends State<IndexDrawerContentComponent> {
               ),
               NumberFormatUtil.formatBitcoinAmount(
                 balance / 100000000,
-                TextStyle(color: themeData.disabledColor),
+                TextStyle(color: themeData.focusColor),
                 TextStyle(color: themeData.dividerColor),
               ),
               Text(
                 " sats",
-                style: TextStyle(color: themeData.disabledColor, fontWeight: FontWeight.w100, fontSize: 12),
+                style: TextStyle(fontWeight: FontWeight.w100, fontSize: 12),
               )
             ]);
           }

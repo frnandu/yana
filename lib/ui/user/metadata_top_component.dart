@@ -265,7 +265,9 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
           onSelected: onZapSelect,
           child: MetadataIconBtn(
             onLongPress: () {
-              ZapGenDialog.show(context, widget.pubkey);
+              ZapGenDialog.show(context, widget.pubkey, onZapped: (success) {
+
+              });
             },
             iconData: Icons.bolt,
             iconColor: Colors.orange,
@@ -477,7 +479,7 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
   }
 
   void onZapSelect(int sats) {
-    ZapAction.handleZap(context, sats, widget.pubkey);
+    ZapAction.handleZap(context, sats, widget.pubkey, onZapped: (bool ) {  });
   }
 
   void jumpToProfileEdit() {

@@ -291,7 +291,6 @@ Future<void> main() async {
     try {
       nostr = await relayProvider.genNostr(privateKey: isPrivate ? key : null,
           publicKey: isPrivate ? null : key);
-      nwcProvider = await NwcProvider.getInstance();
 
     } catch (e) {
       var index = settingProvider.privateKeyIndex;
@@ -300,6 +299,7 @@ Future<void> main() async {
       }
     }
   }
+  nwcProvider = await NwcProvider.getInstance();
 
   // FlutterNativeSplash.remove();
   try {

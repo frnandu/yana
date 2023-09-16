@@ -29,7 +29,9 @@ class NwcProvider extends ChangeNotifier {
 
   static Future<NwcProvider> getInstance() async {
     _nwcProvider ??= NwcProvider();
-    await _nwcProvider!._init();
+    if (nostr!=null) {
+      await _nwcProvider!._init();
+    }
     return _nwcProvider!;
   }
 
@@ -168,7 +170,7 @@ class NwcProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> payInvoice(String invoice, String? eventId) async {
+  Future<void> payInvoice(String invoice, String? eventId, Function(bool) onZapped) async {
     if (StringUtil.isNotBlank(walletPubKey) &&
         StringUtil.isNotBlank(relay) &&
         StringUtil.isNotBlank(secret)) {
@@ -187,13 +189,13 @@ class NwcProvider extends ChangeNotifier {
       await nwcNostr!.sendRelayEvent(event, relay!);
       var filter = Filter(
           kinds: [NwcKind.RESPONSE], authors: [walletPubKey!], e: [event.id]);
-      nwcNostr!.queryRelay(filter.toJson(), relay!, onPayInvoiceResponse);
+      nwcNostr!.queryRelay2(filter.toJson(), relay!, onPayInvoiceResponse, onZapped: onZapped);
     } else {
       BotToast.showText(text: "missing pubKey and/or relay for connecting");
     }
   }
 
-  void onPayInvoiceResponse(Event event) async {
+  Future<void> onPayInvoiceResponse(Event event, Function(bool) onZapped) async {
     if (event.kind == NwcKind.RESPONSE &&
         StringUtil.isNotBlank(event.content) &&
         StringUtil.isNotBlank(secret) &&
@@ -212,7 +214,9 @@ class NwcProvider extends ChangeNotifier {
         }
         notifyListeners();
         await requestBalance();
+        onZapped(true);
       } else if (data!=null && data.containsKey("error")){
+        onZapped(false);
         BotToast.showText(text: "error: ${data['error'].toString()}");
       }
     }

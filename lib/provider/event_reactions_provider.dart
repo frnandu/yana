@@ -186,6 +186,9 @@ class EventReactionsProvider extends ChangeNotifier
         }
       }
     }
+    if (updated) {
+      notifyListeners();
+    }
     return updated;
   }
 

@@ -234,7 +234,7 @@ class _EventPollComponent extends State<EventPollComponent> {
           num,
           widget.event.pubKey,
           eventId: widget.event.id,
-          pollOption: selectKey,
+          pollOption: selectKey, onZapped: (success) {  },
         );
       }
     }

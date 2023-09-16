@@ -13,19 +13,25 @@ class ZapGenDialog extends StatefulWidget {
 
   BuildContext parentContext;
 
+  Function(bool) onZapped;
+
   ZapGenDialog(
-      {super.key, required this.pubkey, this.eventId, required this.parentContext});
+      {super.key,
+      required this.pubkey,
+      this.eventId,
+      required this.parentContext,
+      required this.onZapped});
 
   static Future<void> show(BuildContext context, String pubkey,
-      {String? eventId}) async {
+      {String? eventId, required Function(bool) onZapped}) async {
     return await showDialog<void>(
       context: context,
       builder: (_context) {
         return ZapGenDialog(
-          pubkey: pubkey,
-          eventId: eventId,
-          parentContext: context,
-        );
+            pubkey: pubkey,
+            eventId: eventId,
+            parentContext: context,
+            onZapped: onZapped);
       },
     );
   }
@@ -106,7 +112,7 @@ class _ZapGenDialog extends State<ZapGenDialog> {
         decoration: BoxDecoration(color: mainColor),
         child: InkWell(
           onTap: () {
-            _onComfirm();
+            _onConfirm();
           },
           highlightColor: mainColor.withOpacity(0.2),
           child: Container(
@@ -164,7 +170,7 @@ class _ZapGenDialog extends State<ZapGenDialog> {
     );
   }
 
-  Future<void> _onComfirm() async {
+  Future<void> _onConfirm() async {
     var text = controller.text;
     var num = int.tryParse(text);
     if (num == null) {
@@ -176,6 +182,6 @@ class _ZapGenDialog extends State<ZapGenDialog> {
     RouterUtil.back(context);
 
     await ZapAction.handleZap(widget.parentContext, num, widget.pubkey,
-        eventId: widget.eventId, comment: comment);
+        eventId: widget.eventId, comment: comment, onZapped: widget.onZapped);
   }
 }

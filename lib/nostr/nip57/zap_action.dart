@@ -9,7 +9,7 @@ import 'zap.dart';
 
 class ZapAction {
   static Future<void> handleZap(BuildContext context, int sats, String pubkey,
-      {String? eventId, String? pollOption, String? comment}) async {
+      {String? eventId, String? pollOption, String? comment, required Function(bool) onZapped}) async {
     var s = I18n.of(context);
     var cancelFunc = BotToast.showLoading();
     try {
@@ -24,7 +24,7 @@ class ZapAction {
       if (await nwcProvider.isConnected) {
         int? balance = await nwcProvider.getBalance;
         if (balance!=null && balance > 10) {
-          await nwcProvider.payInvoice(invoiceCode!, eventId);
+          await nwcProvider.payInvoice(invoiceCode!, eventId, onZapped);
           sendWithWallet = true;
         }
       }
@@ -32,6 +32,7 @@ class ZapAction {
         await LightningUtil.goToPay(context, invoiceCode!);
       }
     } finally {
+      onZapped(true);
       cancelFunc.call();
     }
   }

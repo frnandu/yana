@@ -210,6 +210,29 @@ class Nostr {
     return subscription.id;
   }
 
+  String queryRelay2(Map<String, dynamic> filter, String relay,
+      Function(Event, Function(bool)) onEvent, {String? id, required Function(bool) onZapped}) {
+    Relay r = relayProvider.genRelay(relay);
+    r.connectSync();
+    r.onMessage = (Relay relay, List<dynamic> json) async {
+      final messageType = json[0];
+      if (messageType == 'EVENT') {
+        try {
+          final event = Event.fromJson(json[2]);
+          if (event.isValid && await event.isSigned) {
+            event.sources = [relay.url];
+            onEvent(event, onZapped);
+          }
+        } catch (err) {
+          log(err.toString());
+        }
+      }
+    };
+    Subscription subscription = Subscription([filter], onEvent, id);
+    r.doQuery(subscription);
+    return subscription.id;
+  }
+
   String queryByFilters(Map<String, List<Map<String, dynamic>>> filtersMap,
       Function(Event) onEvent,
       {String? id, Function? onComplete}) {
