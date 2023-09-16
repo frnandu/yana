@@ -206,4 +206,19 @@ class Event {
     }
     return zeros;
   }
+
+  String? getEId() {
+    for (var tag in tags) {
+      if (tag.length > 1) {
+        var key = tag[0];
+        var value = tag[1];
+
+        if (key == "e") {
+          return value as String;
+        }
+      }
+    }
+    return null;
+  }
+
 }

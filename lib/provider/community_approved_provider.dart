@@ -45,7 +45,7 @@ class CommunityApprovedProvider extends ChangeNotifier with LaterFunction {
       bool updated = false;
 
       for (var e in penddingEvents) {
-        var eid = getEId(e);
+        var eid = e.getEId();
         if (eid != null) {
           // TODO need to check pubkey is Moderated or not.
           if (_approvedMap[eid] == null) {
@@ -66,21 +66,5 @@ class CommunityApprovedProvider extends ChangeNotifier with LaterFunction {
   void onEvent(Event e) {
     penddingEvents.add(e);
     later(laterFunction, null);
-  }
-
-  String? getEId(Event e) {
-    var tags = e.tags;
-    for (var tag in tags) {
-      if (tag.length > 1) {
-        var key = tag[0];
-        var value = tag[1];
-
-        if (key == "e") {
-          return value as String;
-        }
-      }
-    }
-
-    return null;
   }
 }

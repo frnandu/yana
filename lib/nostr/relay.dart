@@ -107,7 +107,7 @@ class Relay {
 
     if (reconnect) {
       Future.delayed(Duration(seconds: 30), () {
-        connect();
+        connect(checkInfo: info!=null);
       });
     }
   }
