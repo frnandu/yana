@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:yana/provider/index_provider.dart';
+import 'package:yana/provider/nwc_provider.dart';
 import 'package:yana/ui/user/metadata_top_component.dart';
 import 'package:yana/utils/base.dart';
+import 'package:yana/utils/number_format_util.dart';
 import 'package:yana/utils/platform_util.dart';
 import 'package:yana/utils/router_path.dart';
 import 'package:yana/utils/router_util.dart';
@@ -125,12 +127,38 @@ class _IndexDrawerContentComponnent extends State<IndexDrawerContentComponent> {
     ));
 
     list.add(IndexDrawerItem(
-      iconData: Icons.account_balance_wallet,
-      name: s.Wallet,
-      onTap: () {
-        RouterUtil.router(context, RouterPath.WALLET);
-      },
-    ));
+        iconData: Icons.account_balance_wallet,
+        name: s.Wallet,
+        onTap: () {
+          RouterUtil.router(context, RouterPath.WALLET);
+        },
+        rightWidget:
+            Selector<NwcProvider, int?>(builder: (context, balance, child) {
+          if (balance != null) {
+            return Row(children: [
+              const Icon(
+                Icons.currency_bitcoin,
+                color: Colors.orange,
+                size: 16,
+              ),
+              NumberFormatUtil.formatBitcoinAmount(
+                balance / 100000000,
+                TextStyle(color: themeData.disabledColor),
+                TextStyle(color: themeData.dividerColor),
+              ),
+              Text(
+                " sats",
+                style: TextStyle(color: themeData.disabledColor, fontWeight: FontWeight.w100, fontSize: 12),
+              )
+            ]);
+          }
+          return Text(
+            "not connected",
+            style: TextStyle(color: themeData.disabledColor),
+          );
+        }, selector: (context, _provider) {
+          return  _provider.isConnected ? _provider.getBalance: null;
+        })));
     list.add(
       IndexDrawerItem(
           iconData: Icons.lan_outlined,
@@ -140,11 +168,11 @@ class _IndexDrawerContentComponnent extends State<IndexDrawerContentComponent> {
           },
           rightWidget: Selector<RelayProvider, String>(
               builder: (context, relayNum, child) {
-                return Text(
-                  relayNum,
-                  style: TextStyle(color: themeData.disabledColor),
-                );
-              }, selector: (context, _provider) {
+            return Text(
+              relayNum,
+              style: TextStyle(color: themeData.disabledColor),
+            );
+          }, selector: (context, _provider) {
             return _provider.relayNumStr();
           })),
     );
@@ -232,7 +260,8 @@ class _IndexDrawerContentComponnent extends State<IndexDrawerContentComponent> {
                             onTap: () {
                               var url = Uri.parse(
                                   "https://github.com/frnandu/yana/releases");
-                              launchUrl(url, mode: LaunchMode.externalApplication);
+                              launchUrl(url,
+                                  mode: LaunchMode.externalApplication);
                             },
                             child: Text("v${packageInfo.version}",
                                 style: TextStyle(
@@ -308,7 +337,7 @@ class IndexDrawerItem extends StatelessWidget {
         cursor: SystemMouseCursors.click,
         child: Text(name,
             style:
-                TextStyle(color: color, fontSize: Base.BASE_FONT_SIZE + 2))));
+                TextStyle(color: color, fontSize: Base.BASE_FONT_SIZE + 3, fontFamily: "Montserrat"))));
 
     if (rightWidget != null) {
       list.add(MouseRegion(

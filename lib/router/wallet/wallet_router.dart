@@ -7,6 +7,7 @@ import 'package:yana/utils/string_util.dart';
 
 import '../../../i18n/i18n.dart';
 import '../../../ui/appbar4stack.dart';
+import '../../utils/number_format_util.dart';
 import '../../utils/router_path.dart';
 import '../../utils/router_util.dart';
 
@@ -31,10 +32,8 @@ class _WalletRouter extends State<WalletRouter> {
   Widget build(BuildContext context) {
     var _nwcProvider = Provider.of<NwcProvider>(context);
 
-    var s = I18n.of(context);
     var themeData = Theme.of(context);
     var cardColor = themeData.cardColor;
-    var mainColor = themeData.primaryColor;
 
     Color? appbarBackgroundColor = Colors.transparent;
 
@@ -70,12 +69,28 @@ class _WalletRouter extends State<WalletRouter> {
         if (isConnected) {
           Widget balance = Selector<NwcProvider, int?>(
             builder: (context, balance, child) {
-              // TODO format nicely BTC 0.0011000 sats
-              return balance != null
-                  ? Text("$balance sats",
-                      style: const TextStyle(
-                          fontSize: 40, fontWeight: FontWeight.bold))
-                  : Container();
+              if (balance != null) {
+                return Expanded(child:Row(children: [
+                  const Icon(
+                    Icons.currency_bitcoin,
+                    color: Colors.orange,
+                    size: 40,
+                  ),
+                  NumberFormatUtil.formatBitcoinAmount(
+                      balance / 100000000,
+                      TextStyle(
+                          color: themeData.disabledColor,
+                          fontSize: 30, fontWeight: FontWeight.bold)
+                      ,
+                      TextStyle(
+                          color: themeData.dividerColor,
+                          fontSize: 30, fontWeight: FontWeight.bold)
+                  ),
+                  Text(" sats", style: const TextStyle(
+                      fontSize: 30, fontWeight: FontWeight.w100)),
+                ]));
+              }
+              return Container();
             },
             selector: (context, _provider) {
               return _provider.getBalance;
@@ -90,73 +105,75 @@ class _WalletRouter extends State<WalletRouter> {
                 await nwcProvider.disconnect();
               },
               child: Container(
-                  margin: EdgeInsets.all(Base.BASE_PADDING),
-                  decoration: BoxDecoration(
-                    borderRadius: const BorderRadius.all(Radius.circular(20.0)),
-                    border: Border.all(
-                      width: 1,
-                      color: themeData.hintColor,
-                    ),
+                margin: EdgeInsets.all(Base.BASE_PADDING),
+                decoration: BoxDecoration(
+                  borderRadius: const BorderRadius.all(Radius.circular(20.0)),
+                  border: Border.all(
+                    width: 1,
+                    color: themeData.hintColor,
                   ),
-                  child: Container(
+                ),
+                child: Container(
                     alignment: Alignment.center,
-                        margin: const EdgeInsets.all(Base.BASE_PADDING),
-                        child: const Text("Disconnect wallet")),
-                  )));
+                    margin: const EdgeInsets.all(Base.BASE_PADDING),
+                    child: const Text("Disconnect wallet")),
+              )));
         } else {
-          list.add(
-            GestureDetector(
-                onTap: () {
-                  RouterUtil.router(context, RouterPath.NWC);
-                },
-                child: Expanded(
-                    child: Container(
-                  margin: const EdgeInsets.only(top: Base.BASE_PADDING),
+          list.add(GestureDetector(
+              onTap: () {
+                RouterUtil.router(context, RouterPath.NWC);
+              },
+              // child:
+              // Expanded(
+              child: Container(
+                margin: const EdgeInsets.only(top: Base.BASE_PADDING),
+                padding: const EdgeInsets.all(Base.BASE_PADDING),
+                height: 60.0,
+                decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                        colors: [Color(0xffFFDE6E), Colors.orange]),
+                    borderRadius: BorderRadius.all(Radius.circular(20.0))),
+                child: Center(
+                    child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Container(
+                              margin: const EdgeInsets.only(
+                                  right: Base.BASE_PADDING),
+                              child: Image.asset("assets/imgs/nwc.png")),
+                          const Text('Nostr Wallet Connect',
+                              style: TextStyle(color: Colors.black))
+                        ])),
+              ))
+            // ),
+          );
+          list.add(Row(children: [
+            Expanded(
+                child: Container(
+                  margin: const EdgeInsets.only(top: Base.BASE_PADDING * 2),
                   padding: const EdgeInsets.all(Base.BASE_PADDING),
                   height: 60.0,
                   decoration: const BoxDecoration(
                       gradient: LinearGradient(
-                          colors: [Color(0xffFFDE6E), Colors.orange]),
+                          colors: [Color(0xff800000), Color(0xff550000)]),
                       borderRadius: BorderRadius.all(Radius.circular(20.0))),
                   child: Center(
                       child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                        Container(
-                            margin:
-                                const EdgeInsets.only(right: Base.BASE_PADDING),
-                            child: Image.asset("assets/imgs/nwc.png")),
-                        const Text('Nostr Wallet Connect',
-                            style: TextStyle(color: Colors.black))
-                      ])),
-                ))),
-          );
-          list.add(Row(children: [
-            Expanded(
-                child: Container(
-              margin: const EdgeInsets.only(top: Base.BASE_PADDING * 2),
-              padding: const EdgeInsets.all(Base.BASE_PADDING),
-              height: 60.0,
-              decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                      colors: [Color(0xff800000), Color(0xff550000)]),
-                  borderRadius: BorderRadius.all(Radius.circular(20.0))),
-              child: Center(
-                  child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                    Container(
-                        margin: const EdgeInsets.only(right: Base.BASE_PADDING),
-                        child: Image.asset("assets/imgs/mutiny.png")),
-                    Text('Mutiny Wallet Connect',
-                        style: TextStyle(color: Colors.white)),
-                    Text('  (soon)',
-                        style: TextStyle(
-                            color: themeData.hintColor,
-                            fontFamily: "Montserrat",
-                            fontSize: 12))
-                  ])),
-            )),
+                            Container(
+                                margin: const EdgeInsets.only(
+                                    right: Base.BASE_PADDING),
+                                child: Image.asset("assets/imgs/mutiny.png")),
+                            Text('Mutiny Wallet Connect',
+                                style: TextStyle(color: Colors.white)),
+                            Text('  (soon)',
+                                style: TextStyle(
+                                    color: themeData.hintColor,
+                                    fontFamily: "Montserrat",
+                                    fontSize: 12))
+                          ])),
+                )),
           ]));
 
           // TODO Lndhub wallet connect
@@ -173,7 +190,6 @@ class _WalletRouter extends State<WalletRouter> {
           //         onTap: scanNWC,
           //         child: Icon(Icons.qr_code_scanner,
           //             size: 25, color: themeData.iconTheme.color)))
-
         }
         return Column(
           mainAxisSize: MainAxisSize.min,
@@ -195,7 +211,9 @@ class _WalletRouter extends State<WalletRouter> {
             child: Container(
               color: cardColor,
               child: Center(
-                child: Container(
+                child:
+                //main
+                Container(
                     width: mediaDataCache.size.width * 0.8, child: main),
               ),
             ),

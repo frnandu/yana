@@ -284,7 +284,6 @@ Future<void> main() async {
   customEmojiProvider = CustomEmojiProvider.load();
   communityApprovedProvider = CommunityApprovedProvider();
   communityInfoProvider = CommunityInfoProvider();
-  nwcProvider = NwcProvider.getInstance();
 
   String? key = settingProvider.key;
   if (StringUtil.isNotBlank(key)) {
@@ -292,6 +291,8 @@ Future<void> main() async {
     try {
       nostr = await relayProvider.genNostr(privateKey: isPrivate ? key : null,
           publicKey: isPrivate ? null : key);
+      nwcProvider = await NwcProvider.getInstance();
+
     } catch (e) {
       var index = settingProvider.privateKeyIndex;
       if (index != null) {
@@ -711,15 +712,17 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver{
         titleTextStyle: titleTextStyle,
         elevation: 0,
       ),
-      dividerColor: Colors.grey,
+      // dividerColor: Colors.grey,
       cardColor: Colors.white,
-      // dividerColor: Colors.grey[200],
+      dividerColor: Colors.black,
       // indicatorColor: ColorsUtil.hexToColor("#818181"),
       textTheme: textTheme,
       hintColor: hintColor,
       buttonTheme: ButtonThemeData(),
     );
   }
+
+  //===========================================================================================
 
   ThemeData getDarkTheme() {
     Color background = const Color(0xff281237);

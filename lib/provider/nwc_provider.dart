@@ -27,8 +27,9 @@ class NwcProvider extends ChangeNotifier {
 
   List<String> permissions = [];
 
-  static NwcProvider getInstance() {
+  static Future<NwcProvider> getInstance() async {
     _nwcProvider ??= NwcProvider();
+    await _nwcProvider!._init();
     return _nwcProvider!;
   }
 

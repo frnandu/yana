@@ -1,27 +1,14 @@
-import 'dart:convert';
-
-import 'package:awesome_notifications/awesome_notifications.dart';
-import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:protocol_handler/protocol_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:yana/nostr/event.dart';
-import 'package:yana/nostr/nip47/nwc_commands.dart';
-import 'package:yana/nostr/nip47/nwc_kind.dart';
+import 'package:yana/main.dart';
 import 'package:yana/provider/nwc_provider.dart';
 import 'package:yana/utils/base.dart';
-import 'package:yana/main.dart';
 import 'package:yana/utils/string_util.dart';
 
-import '../../../ui/appbar4stack.dart';
 import '../../../i18n/i18n.dart';
-import '../../nostr/filter.dart';
-import '../../nostr/nip04/nip04.dart';
-import '../../nostr/nostr.dart';
-import '../../provider/data_util.dart';
-import '../../ui/webview_router.dart';
+import '../../../ui/appbar4stack.dart';
 import '../../utils/router_path.dart';
 import '../../utils/router_util.dart';
 
@@ -77,10 +64,8 @@ class _NwcRouter extends State<NwcRouter> with ProtocolListener {
   Widget build(BuildContext context) {
     var _nwcProvider = Provider.of<NwcProvider>(context);
 
-    var s = I18n.of(context);
     var themeData = Theme.of(context);
     var cardColor = themeData.cardColor;
-    var mainColor = themeData.primaryColor;
 
     Color? appbarBackgroundColor = Colors.transparent;
 

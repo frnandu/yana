@@ -54,9 +54,10 @@ class RelayProvider extends ChangeNotifier {
     var total = relayAddrs.length;
 
     int connectedNum = 0;
-    var it = relayStatusMap.values;
-    for (var status in it) {
-      if (status.connected == ClientConneccted.CONNECTED) {
+    var it = relayAddrs;
+    for (var url in it) {
+      RelayStatus? status = relayStatusMap[url];
+      if (status !=null && status.connected == ClientConneccted.CONNECTED) {
         connectedNum++;
       }
     }
