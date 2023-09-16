@@ -46,8 +46,7 @@
   ~~show balance~~
   ~~alby new nwc -> deep linking~~
   ~~pay_invoice~~
-
-- ZAP loading icon until response/confirmation of zap receipt
+- ~~ZAP loading icon until response/confirmation of zap receipt~~
 
 - Wallet list of transactions    
 - Wallet balance in FIAT (choose currency) from coingecko/kraken?
@@ -62,7 +61,6 @@
 - nip19 nprofile
 - custom zap amounts
 =======================
-- zaps on web with NIP-07 should call webln or something
 - STOP followers/zaps events from blocking the relay, when navigate away from that profile
 - reply position on thread when linking from outside is wrong
 - fast secp256k1 verify signature for web JS

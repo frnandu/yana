@@ -58,8 +58,8 @@ class EventReactionsProvider extends ChangeNotifier
     }
   }
 
-  void update(String id, int kind) {
-    var filter = Filter(e: [id], kinds: [kind]);
+  void update(String id, int? kind) {
+    var filter = kind!=null ? Filter(e: [id], kinds: [kind]) : Filter(e: [id]);
     nostr!.query([filter.toJson()], _handleSingleEvent2, onComplete: () {
       notifyListeners();
     });
@@ -69,21 +69,22 @@ class EventReactionsProvider extends ChangeNotifier
     var er = _eventReactionsMap[id];
     if (er == null) {
       // plan to pull
-      _penddingIds[id] = 1;
-      // later(laterFunc, null);
-      whenStop(laterFunc);
-      // set a empty er to avoid pull many times
+      update(id, null);
+      // _penddingIds[id] = 1;
+      // // later(laterFunc, null);
+      // whenStop(laterFunc);
+      // // set a empty er to avoid pull many times
       er = EventReactions(id);
       _eventReactionsMap[id] = er;
     } else {
       var now = DateTime.now();
       // check dataTime if need to update
-      if (now.millisecondsSinceEpoch - er.dataTime.millisecondsSinceEpoch >
-          update_time) {
-        _penddingIds[id] = 1;
-        // later(laterFunc, null);
-        whenStop(laterFunc);
-      }
+      // if (now.millisecondsSinceEpoch - er.dataTime.millisecondsSinceEpoch >
+      //     update_time) {
+      //   _penddingIds[id] = 1;
+      //   // later(laterFunc, null);
+      //   whenStop(laterFunc);
+      // }
       // set the access time, remove cache base on this time.
       er.access(now);
     }
