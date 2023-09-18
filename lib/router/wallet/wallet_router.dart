@@ -209,7 +209,7 @@ class _WalletRouter extends State<WalletRouter> {
               height: 60.0,
               decoration: const BoxDecoration(
                   gradient: LinearGradient(
-                      colors: [Color(0xff800000), Color(0xff550000)]),
+                      colors: [Color(0xff8bd7f9), Color(0xff174697)]),
                   borderRadius: BorderRadius.all(Radius.circular(20.0))),
               child: Center(
                   child: Row(
@@ -217,8 +217,10 @@ class _WalletRouter extends State<WalletRouter> {
                       children: [
                     Container(
                         margin: const EdgeInsets.only(right: Base.BASE_PADDING),
-                        child: Image.asset("assets/imgs/mutiny.png")),
-                    Text('Mutiny Wallet Connect',
+                        child: ClipRRect(
+                            borderRadius: BorderRadius.circular(5.0),
+                            child: Image.asset("assets/imgs/lndhub.png"))),
+                    const Text('LndHub Connect',
                         style: TextStyle(color: Colors.white)),
                     Text('  (soon)',
                         style: TextStyle(

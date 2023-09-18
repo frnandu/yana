@@ -62,6 +62,65 @@ class NwcProvider extends ChangeNotifier {
       permissions.isNotEmpty &&
       StringUtil.isNotBlank(secret);
 
+  Future<void> connect(String nwc) async {
+    nwc = nwc.replaceAll("yana:", "nostr+walletconnect:");
+    Uri uri = Uri.parse(nwc.replaceAll("nostr+walletconnect:", "https:"));
+    String? pubKey = uri.host;
+    String? relay = uri.queryParameters['relay'];
+    secret = uri.queryParameters['secret'];
+    // String? lud16 = uri.queryParameters['lub16'];
+    if (StringUtil.isBlank(relay)) {
+      BotToast.showText(text: "missing relay parameter");
+      return;
+    }
+    if (StringUtil.isBlank(secret)) {
+      BotToast.showText(text: "missing secret parameter");
+      return;
+    }
+    if (StringUtil.isBlank(pubKey)) {
+      BotToast.showText(text: "missing pubKey from connection uri");
+      return;
+    }
+    relay = Uri.decodeFull(relay!);
+    await settingProvider.setNwc(nwc);
+    await settingProvider.setNwcSecret(secret!);
+    var filter = Filter(kinds: [NwcKind.INFO_REQUEST], authors: [pubKey!]);
+    nostr!.queryRelay(filter.toJson(), relay!, onEventInfo);
+    // walletPubKey = pubKey;
+    // this.relay = relay;
+    // permissions = ["get_balance","pay_invoice"];
+    // await requestBalance();
+  }
+
+  Future<void> onEventInfo(Event event) async {
+    if (event.kind == NwcKind.INFO_REQUEST &&
+        StringUtil.isNotBlank(event.content)) {
+      walletPubKey = event.pubKey;
+      relay = event.sources[0];
+      sharedPreferences.setString(DataKey.NWC_PERMISSIONS, event.content);
+      sharedPreferences.setString(DataKey.NWC_RELAY, relay!);
+      sharedPreferences.setString(DataKey.NWC_PUB_KEY, walletPubKey!);
+      permissions = event.content.split(",");
+      if (permissions.contains(NwcCommand.GET_BALANCE)) {
+        await requestBalance();
+      }
+      notifyListeners();
+    }
+  }
+
+  Future<void> disconnect() async {
+    sharedPreferences.setString(DataKey.NWC_PERMISSIONS, "");
+    await settingProvider.setNwc(null);
+    await settingProvider.setNwcSecret(null);
+    sharedPreferences.remove(DataKey.NWC_PERMISSIONS);
+    sharedPreferences.remove(DataKey.NWC_RELAY);
+    sharedPreferences.remove(DataKey.NWC_PUB_KEY);
+    balance = null;
+    maxAmount = null;
+    uri = null;
+    permissions = [];
+    notifyListeners();
+  }
   Future<void> requestBalance() async {
     if (StringUtil.isNotBlank(walletPubKey) &&
         StringUtil.isNotBlank(relay) &&
@@ -70,12 +129,12 @@ class NwcProvider extends ChangeNotifier {
 
       var agreement = NIP04.getAgreement(secret!);
       var encrypted =
-          NIP04.encrypt('{"method":"get_balance"}', agreement, walletPubKey!);
+      NIP04.encrypt('{"method":"get_balance"}', agreement, walletPubKey!);
       var tags = [
         ["p", walletPubKey]
       ];
       final event =
-          Event(nwcNostr!.publicKey, NwcKind.REQUEST, tags, encrypted);
+      Event(nwcNostr!.publicKey, NwcKind.REQUEST, tags, encrypted);
       await nwcNostr!.sendRelayEvent(event, relay!);
       var filter = Filter(
           kinds: [NwcKind.RESPONSE], authors: [walletPubKey!], e: [event.id]);
@@ -114,60 +173,6 @@ class NwcProvider extends ChangeNotifier {
         }
       }
     }
-  }
-
-  Future<void> connect(String nwc) async {
-    Uri uri = Uri.parse(nwc.replaceAll("nostr+walletconnect:", "https:"));
-    String? pubKey = uri.host;
-    String? relay = uri.queryParameters['relay'];
-    secret = uri.queryParameters['secret'];
-    // String? lud16 = uri.queryParameters['lub16'];
-    if (StringUtil.isBlank(relay)) {
-      BotToast.showText(text: "missing relay parameter");
-      return;
-    }
-    if (StringUtil.isBlank(secret)) {
-      BotToast.showText(text: "missing secret parameter");
-      return;
-    }
-    if (StringUtil.isBlank(pubKey)) {
-      BotToast.showText(text: "missing pubKey from connection uri");
-      return;
-    }
-    await settingProvider.setNwc(nwc);
-    await settingProvider.setNwcSecret(secret!);
-    var filter = Filter(kinds: [NwcKind.INFO_REQUEST], authors: [pubKey!]);
-    nostr!.queryRelay(filter.toJson(), relay!, onEventInfo);
-  }
-
-  Future<void> onEventInfo(Event event) async {
-    if (event.kind == NwcKind.INFO_REQUEST &&
-        StringUtil.isNotBlank(event.content)) {
-      walletPubKey = event.pubKey;
-      relay = event.sources[0];
-      sharedPreferences.setString(DataKey.NWC_PERMISSIONS, event.content);
-      sharedPreferences.setString(DataKey.NWC_RELAY, relay!);
-      sharedPreferences.setString(DataKey.NWC_PUB_KEY, walletPubKey!);
-      permissions = event.content.split(",");
-      if (permissions.contains(NwcCommand.GET_BALANCE)) {
-        await requestBalance();
-      }
-      notifyListeners();
-    }
-  }
-
-  Future<void> disconnect() async {
-    sharedPreferences.setString(DataKey.NWC_PERMISSIONS, "");
-    await settingProvider.setNwc(null);
-    await settingProvider.setNwcSecret(null);
-    sharedPreferences.remove(DataKey.NWC_PERMISSIONS);
-    sharedPreferences.remove(DataKey.NWC_RELAY);
-    sharedPreferences.remove(DataKey.NWC_PUB_KEY);
-    balance = null;
-    maxAmount = null;
-    uri = null;
-    permissions = [];
-    notifyListeners();
   }
 
   Future<void> payInvoice(String invoice, String? eventId, Function(bool) onZapped) async {

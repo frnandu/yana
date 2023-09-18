@@ -7,7 +7,6 @@ import 'package:yana/provider/nwc_provider.dart';
 import 'package:yana/utils/base.dart';
 import 'package:yana/utils/string_util.dart';
 
-import '../../../i18n/i18n.dart';
 import '../../../ui/appbar4stack.dart';
 import '../../utils/router_path.dart';
 import '../../utils/router_util.dart';
@@ -32,7 +31,9 @@ class _NwcRouter extends State<NwcRouter> with ProtocolListener {
       Future.delayed(const Duration(microseconds: 1), () async {
         await nwcProvider.connect(url);
         var route = ModalRoute.of(context);
-        if (route!=null && route!.settings.name!=null && route!.settings.name! == RouterPath.NWC) {
+        if (route != null &&
+            route!.settings.name != null &&
+            route!.settings.name! == RouterPath.NWC) {
           RouterUtil.back(context);
         } else {
           RouterUtil.router(context, RouterPath.WALLET);
@@ -40,8 +41,13 @@ class _NwcRouter extends State<NwcRouter> with ProtocolListener {
       });
     }
   }
+
   @override
   void initState() {
+    String? uri = nwcProvider.uri;
+    if (StringUtil.isNotBlank(uri)) {
+      controller.text = uri!;
+    }
     protocolHandler.addListener(this);
     // controller.addListener(() async {
     //   if (uri == null || uri != controller.text) {
@@ -95,21 +101,47 @@ class _NwcRouter extends State<NwcRouter> with ProtocolListener {
               mode: LaunchMode.externalApplication);
         },
         child: Container(
-            margin: EdgeInsets.all(Base.BASE_PADDING),
-            decoration: BoxDecoration(
-              borderRadius: const BorderRadius.all(Radius.circular(20.0)),
-              border: Border.all(
-                width: 1,
-                color: themeData.hintColor,
-              ),
-            ),
+            margin: const EdgeInsets.all(Base.BASE_PADDING),
+            padding: const EdgeInsets.only(left: Base.BASE_PADDING),
+            decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                    colors: [Color(0xffFFDE6E), Colors.orange]),
+                borderRadius: BorderRadius.all(Radius.circular(20.0))),
             child: Row(children: [
               Container(
                 margin: const EdgeInsets.all(Base.BASE_PADDING),
                 child:
                     Image.asset("assets/imgs/alby.png", width: 30, height: 30),
               ),
-              const Text("Connect with Alby (custodial)"),
+              const Text("Connect with Alby account",
+                  style: TextStyle(color: Colors.black))
+            ]))));
+    list.add(GestureDetector(
+        // onTap: () {
+        //   launchUrl(
+        //       Uri.parse(
+        //           "https://app.mutinywallet.com/settings/connections?callbackUri=yana&name=${packageInfo.appName}"),
+        //       mode: LaunchMode.externalApplication);
+        // },
+        child: Container(
+            margin: const EdgeInsets.all(Base.BASE_PADDING),
+            padding: const EdgeInsets.only(left: Base.BASE_PADDING),
+            decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                    colors: [Color(0xff800000), Color(0xff550000)]),
+                borderRadius: BorderRadius.all(Radius.circular(20.0))),
+            child: Row(children: [
+              Container(
+                margin: const EdgeInsets.all(Base.BASE_PADDING),
+                child: Image.asset("assets/imgs/mutiny.png",
+                    width: 30, height: 30),
+              ),
+              const Text("Connect with Mutiny wallet"),
+              Text('  (soon)',
+                  style: TextStyle(
+                      color: themeData.hintColor,
+                      fontFamily: "Montserrat",
+                      fontSize: 12))
             ]))));
     list.add(GestureDetector(
         behavior: HitTestBehavior.translucent,
@@ -128,16 +160,22 @@ class _NwcRouter extends State<NwcRouter> with ProtocolListener {
                   margin: const EdgeInsets.all(Base.BASE_PADDING),
                   child: Icon(Icons.qr_code_scanner,
                       size: 25, color: themeData.iconTheme.color)),
-              const Text("QR Scan (self-hosted or Alby)"),
+              const Text("QR Scan pairing secret"),
             ]))));
+    list.add(Divider());
+    list.add(Container(
+      alignment: Alignment.center,
+      margin: EdgeInsets.all(Base.BASE_PADDING),
+      child: Text("or")
+    ));
 
     list.add(Row(
       children: [
         Expanded(
             child: TextField(
           controller: controller,
-          decoration: const InputDecoration(
-              hintText: "custom nostr+walletconnect URI"),
+          decoration:
+              const InputDecoration(hintText: "enter manually nostr+walletconnect://..."),
         )),
       ],
     ));
@@ -162,7 +200,7 @@ class _NwcRouter extends State<NwcRouter> with ProtocolListener {
                   margin: const EdgeInsets.all(Base.BASE_PADDING),
                   child: Icon(Icons.edit_note,
                       size: 25, color: themeData.iconTheme.color)),
-              const Text("Connect custom URI"),
+              const Text("Connect manual address"),
             ]))));
 
     return Scaffold(
