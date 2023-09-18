@@ -47,6 +47,7 @@
   ~~alby new nwc -> deep linking~~
   ~~pay_invoice~~
 - ~~ZAP loading icon until response/confirmation of zap receipt~~
+- ~~mention livesearch editor without popup~~
 
 - Wallet list of transactions    
 - Wallet balance in FIAT (choose currency) from coingecko/kraken?
@@ -56,7 +57,6 @@
 
 - WebLN for web: https://github.com/aniketambore/flutter_webln
 
-- mention livesearch editor without popup
 
 - nip19 nprofile
 - custom zap amounts

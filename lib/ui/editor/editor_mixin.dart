@@ -11,6 +11,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:pointycastle/ecc/api.dart';
 import 'package:provider/provider.dart';
+import 'package:yana/models/metadata.dart';
 import 'package:yana/ui/datetime_picker_component.dart';
 import 'package:yana/provider/custom_emoji_provider.dart';
 
@@ -45,6 +46,8 @@ mixin EditorMixin {
   var focusNode = FocusNode();
 
   bool inputPoll = false;
+
+  List<Metadata> mentionResults = [];
 
   // dm arg
   ECDHBasicAgreement? getAgreement();
@@ -117,10 +120,10 @@ mixin EditorMixin {
         onPressed: emojiBeginToSelect,
         icon: Icon(Icons.tag_faces),
       ),
-      quill.QuillIconButton(
-        onPressed: _inputMentionUser,
-        icon: Icon(Icons.alternate_email_sharp),
-      ),
+      // quill.QuillIconButton(
+      //   onPressed: _inputMentionUser,
+      //   icon: Icon(Icons.alternate_email_sharp),
+      // ),
       quill.QuillIconButton(
         onPressed: _inputMentionEvent,
         icon: Icon(Icons.format_quote),

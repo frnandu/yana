@@ -38,6 +38,9 @@ class _SearchMentionUserComponent extends State<SearchMentionUserComponent>
       userWidgetList.add(SearchMentionUserItemComponent(
         metadata: metadata,
         width: itemWidth,
+        onTap: (metadata) {
+
+        },
       ));
     }
     return SingleChildScrollView(
@@ -82,9 +85,12 @@ class SearchMentionUserItemComponent extends StatelessWidget {
 
   final double width;
 
-  SearchMentionUserItemComponent({
+  Function(Metadata) onTap;
+
+  SearchMentionUserItemComponent({super.key,
     required this.metadata,
     required this.width,
+    required this.onTap
   });
 
   @override
@@ -165,7 +171,8 @@ class SearchMentionUserItemComponent extends StatelessWidget {
 
     return GestureDetector(
       onTap: () {
-        RouterUtil.back(context, metadata.pubKey);
+        onTap(metadata);
+        // RouterUtil.back(context, metadata.pubKey);
       },
       child: main,
     );

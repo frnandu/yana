@@ -28,7 +28,7 @@ class _ContentMentionUserComponent extends State<ContentMentionUserComponent> {
             SimpleNameComponent.getSimpleName(widget.pubkey, metadata);
 
         return ContentStrLinkComponent(
-          str: "@$name",
+          str: "$name",
           showUnderline: false,
           onTap: () {
             RouterUtil.router(context, RouterPath.USER, widget.pubkey);

@@ -17,10 +17,13 @@ import 'package:yana/utils/base.dart';
 import 'package:yana/utils/router_util.dart';
 
 import '../../i18n/i18n.dart';
+import '../../models/metadata.dart';
 import '../../nostr/event.dart';
 import '../../ui/cust_state.dart';
+import '../../ui/editor/cust_embed_types.dart';
 import '../../ui/editor/custom_emoji_embed_builder.dart';
 import '../../ui/editor/editor_mixin.dart';
+import '../../ui/editor/search_mention_user_component.dart';
 import '../../utils/string_util.dart';
 import 'editor_notify_item_component.dart';
 
@@ -38,6 +41,9 @@ class EditorRouter extends StatefulWidget {
   List<dynamic> tagsAddedWhenSend = [];
 
   List<dynamic> tagPs = [];
+
+  int? mentionWordEditingStart;
+  int? mentionWordEditingEnd;
 
   List<quill.BlockEmbed>? initEmbeds;
 
@@ -236,7 +242,7 @@ class _EditorRouter extends CustState<EditorRouter> with EditorMixin {
       autoFocus: false,
       expands: false,
       // padding: EdgeInsets.zero,
-      padding: EdgeInsets.only(
+      padding: const EdgeInsets.only(
         left: Base.BASE_PADDING,
         right: Base.BASE_PADDING,
       ),
@@ -251,6 +257,22 @@ class _EditorRouter extends CustState<EditorRouter> with EditorMixin {
       editorList.add(PollInputComponent(
         pollInputController: pollInputController,
       ));
+    }
+
+    if (mentionResults != null && mentionResults.isNotEmpty) {
+      editorList.add(ListView.builder(
+          physics: const BouncingScrollPhysics(),
+          shrinkWrap: true,
+          itemBuilder: (context, index) {
+            return SearchMentionUserItemComponent(
+              metadata: mentionResults[index],
+              width: 400,
+              onTap: (metadata) {
+                replaceMentionUser(metadata.pubKey);
+              },
+            );
+          },
+          itemCount: mentionResults.length));
     }
 
     list.add(Expanded(
@@ -322,6 +344,19 @@ class _EditorRouter extends CustState<EditorRouter> with EditorMixin {
     );
   }
 
+  void replaceMentionUser(String? value) {
+    if (value != null && value.isNotEmpty && widget.mentionWordEditingStart!=null) {
+      final index = widget.mentionWordEditingStart;
+      final length = widget.mentionWordEditingEnd! - widget.mentionWordEditingStart!;
+
+      editorController.replaceText(index!, length,
+          quill.CustomBlockEmbed(CustEmbedTypes.mention_user, value), null);
+
+      editorController.moveCursorToPosition(index + 1);
+    }
+  }
+
+
   @override
   Future<void> onReady(BuildContext context) async {
     if (widget.initEmbeds != null && widget.initEmbeds!.isNotEmpty) {
@@ -351,8 +386,11 @@ class _EditorRouter extends CustState<EditorRouter> with EditorMixin {
       bool updated = false;
       Map<String, int> mentionUserMap = {};
 
+      TextEditingValue value = editorController.plainTextEditingValue;
+
       var delta = editorController.document.toDelta();
       var operations = delta.toList();
+      List<Metadata> list = [];
       for (var operation in operations) {
         if (operation.key == "insert") {
           if (operation.data is Map) {
@@ -361,10 +399,26 @@ class _EditorRouter extends CustState<EditorRouter> with EditorMixin {
             if (StringUtil.isNotBlank(value)) {
               mentionUserMap[value] = 1;
             }
+          } else if (operation.data is String) {
+            String word =
+                findPreviousWord(value.text, value.selection.baseOffset);
+            if (word != null && word.startsWith("@")) {
+              widget.mentionWordEditingStart = value.selection.baseOffset - word!.length;
+              widget.mentionWordEditingEnd = value.selection.baseOffset;
+              list = metadataProvider.findUser(word.replaceAll("@", "")!,
+                  limit: 100);
+            } else {
+              widget.mentionWordEditingStart = null;
+              widget.mentionWordEditingEnd = null;
+            }
           }
         }
       }
-
+      if (list.length != mentionResults.length) {
+        setState(() {
+          mentionResults = list;
+        });
+      }
       List<EditorNotifyItem> needDeleds = [];
       for (var item in editorNotifyItems!) {
         var exist = mentionUserMap.remove(item.pubkey);
@@ -387,6 +441,21 @@ class _EditorRouter extends CustState<EditorRouter> with EditorMixin {
         setState(() {});
       }
     });
+  }
+
+  String findPreviousWord(String inputString, int position) {
+    if (position <= 0 || position >= inputString.length) {
+      return "Position out of bounds or at the beginning of the string.";
+    }
+
+    int start = position - 1;
+    int end = position;
+
+    // Move backward to find the beginning of the previous word
+    while (start > 0 && inputString[start - 1] != ' ') {
+      start--;
+    }
+    return inputString.substring(start, end);
   }
 
   Future<void> documentSave() async {
