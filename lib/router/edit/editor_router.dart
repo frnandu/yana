@@ -458,7 +458,7 @@ class _EditorRouter extends CustState<EditorRouter> with EditorMixin {
     int end = position;
 
     // Move backward to find the beginning of the previous word
-    while (start > 0 && inputString[start - 1] != ' ') {
+    while (start > 0 && inputString[start - 1] != ' ' && inputString[start - 1] != '\n') {
       start--;
     }
     return inputString.substring(start, end);

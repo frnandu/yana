@@ -20,11 +20,12 @@ class ContentStrLinkComponent extends StatelessWidget {
         this.onTap();
       },
       child: Container(
-        // margin: const EdgeInsets.only(right: 3),
+        // margin: const EdgeInsets.only(top: 3),
         child: Text(
           StringUtil.breakWord(str),
           style: TextStyle(
             color: mainColor,
+            fontSize: themeData.textTheme.bodyLarge!.fontSize! - 1
             // decoration:
             //     showUnderline ? TextDecoration.underline : TextDecoration.none,
           ),
