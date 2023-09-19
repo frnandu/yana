@@ -4,7 +4,7 @@
     <application
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
-        android:label="Yana"
+        android:label="@string/app_name"
         android:requestLegacyExternalStorage="true">
         <activity
             android:name=".MainActivity"
