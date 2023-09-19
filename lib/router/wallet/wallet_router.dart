@@ -103,6 +103,8 @@ class _WalletRouter extends State<WalletRouter> {
             },
           );
           list.add(balance);
+          list.add(Text("One-tap Zaps will now be sent from this wallet, no confirmation will be asked."));
+
           // list.add(Row(children: [
           //   Expanded(
           //       child: GestureDetector(
