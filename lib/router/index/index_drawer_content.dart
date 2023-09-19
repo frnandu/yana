@@ -133,31 +133,42 @@ class _IndexDrawerContentComponnent extends State<IndexDrawerContentComponent> {
           RouterUtil.router(context, RouterPath.WALLET);
         },
         rightWidget:
-            Selector<NwcProvider, int?>(builder: (context, balance, child) {
-          if (balance != null) {
-            return Row(children: [
-              const Icon(
-                Icons.currency_bitcoin,
-                color: Colors.orange,
-                size: 16,
-              ),
-              NumberFormatUtil.formatBitcoinAmount(
-                balance / 100000000,
-                TextStyle(color: themeData.focusColor),
-                TextStyle(color: themeData.dividerColor),
-              ),
-              Text(
-                " sats",
-                style: TextStyle(fontWeight: FontWeight.w100, fontSize: 12),
-              )
-            ]);
+            Selector<NwcProvider, bool>(builder: (context, connected, child) {
+          if (connected) {
+            return Selector<NwcProvider, int?>(
+                builder: (context, balance, child) {
+              if (balance != null) {
+                return Row(children: [
+                  const Icon(
+                    Icons.currency_bitcoin,
+                    color: Colors.orange,
+                    size: 16,
+                  ),
+                  NumberFormatUtil.formatBitcoinAmount(
+                    balance / 100000000,
+                    TextStyle(color: themeData.focusColor),
+                    TextStyle(color: themeData.dividerColor),
+                  ),
+                  const Text(" sats",style: TextStyle(fontWeight: FontWeight.w100, fontSize: 12),
+                  )
+                ]);
+              } else {
+                return Text(
+                  "connected",
+                  style: TextStyle(color: themeData.disabledColor),
+                );
+              }
+            }, selector: (context, _provider) {
+              return _provider.isConnected ? _provider.getBalance : null;
+            });
+          } else {
+            return Text(
+              "not connected",
+              style: TextStyle(color: themeData.disabledColor),
+            );
           }
-          return Text(
-            "not connected",
-            style: TextStyle(color: themeData.disabledColor),
-          );
         }, selector: (context, _provider) {
-          return  _provider.isConnected ? _provider.getBalance: null;
+          return _provider.isConnected;
         })));
     list.add(
       IndexDrawerItem(
@@ -336,8 +347,10 @@ class IndexDrawerItem extends StatelessWidget {
     list.add(MouseRegion(
         cursor: SystemMouseCursors.click,
         child: Text(name,
-            style:
-                TextStyle(color: color, fontSize: Base.BASE_FONT_SIZE + 3, fontFamily: "Montserrat"))));
+            style: TextStyle(
+                color: color,
+                fontSize: Base.BASE_FONT_SIZE + 3,
+                fontFamily: "Montserrat"))));
 
     if (rightWidget != null) {
       list.add(MouseRegion(
