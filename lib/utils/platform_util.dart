@@ -36,7 +36,8 @@ class PlatformUtil {
     } else if (settingProvider.tableMode == OpenStatus.CLOSE) {
       return false;
     }
-    return isTableModeWithoutSetting() &&  mediaDataCache.size.width >= 900;
+    num size = Platform.isLinux? 900 : mediaDataCache.size.width;
+    return isTableModeWithoutSetting() &&  size >= 900;
   }
 
   static bool isIOS() {
