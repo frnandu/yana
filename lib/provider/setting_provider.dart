@@ -253,7 +253,7 @@ class SettingProvider extends ChangeNotifier {
 
   double get fontSize =>
       _settingData!.fontSize ??
-      (PlatformUtil.isTableMode()
+      (PlatformUtil.isTableModeWithoutSetting()
           ? Base.BASE_FONT_SIZE_PC
           : Base.BASE_FONT_SIZE);
 
