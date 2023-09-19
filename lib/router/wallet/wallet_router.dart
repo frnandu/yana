@@ -70,31 +70,30 @@ class _WalletRouter extends State<WalletRouter> {
           Widget balance = Selector<NwcProvider, int?>(
             builder: (context, balance, child) {
               if (balance != null) {
-                return
-                  Expanded( child:
-                  Container(
-                    margin: EdgeInsets.only(left: Base.BASE_PADDING),
-                    alignment: Alignment.center,
-                    child: Row(children: [
-                  const Icon(
-                    Icons.currency_bitcoin,
-                    color: Colors.orange,
-                    size: 40,
-                  ),
-                  NumberFormatUtil.formatBitcoinAmount(
-                      balance / 100000000,
-                      TextStyle(
-                          color: themeData.focusColor,
-                          fontSize: 30,
-                          fontWeight: FontWeight.bold),
-                      TextStyle(
-                          color: themeData.dividerColor,
-                          fontSize: 30,
-                          fontWeight: FontWeight.bold)),
-                  const Text(" sats",
-                      style:
-                          TextStyle(fontSize: 30, fontWeight: FontWeight.w100)),
-                ])));
+                return Expanded(
+                    child: Container(
+                        margin: EdgeInsets.only(left: Base.BASE_PADDING),
+                        alignment: Alignment.center,
+                        child: Row(children: [
+                          const Icon(
+                            Icons.currency_bitcoin,
+                            color: Colors.orange,
+                            size: 40,
+                          ),
+                          NumberFormatUtil.formatBitcoinAmount(
+                              balance / 100000000,
+                              TextStyle(
+                                  color: themeData.focusColor,
+                                  fontSize: 30,
+                                  fontWeight: FontWeight.bold),
+                              TextStyle(
+                                  color: themeData.dividerColor,
+                                  fontSize: 30,
+                                  fontWeight: FontWeight.bold)),
+                          const Text(" sats",
+                              style: TextStyle(
+                                  fontSize: 30, fontWeight: FontWeight.w100)),
+                        ])));
               }
               return Container();
             },
@@ -103,7 +102,8 @@ class _WalletRouter extends State<WalletRouter> {
             },
           );
           list.add(balance);
-          list.add(Text("One-tap Zaps will now be sent from this wallet, no confirmation will be asked."));
+          list.add(Text(
+              "One-tap Zaps will now be sent from this wallet, no confirmation will be asked."));
 
           // list.add(Row(children: [
           //   Expanded(
@@ -155,33 +155,38 @@ class _WalletRouter extends State<WalletRouter> {
           //           )))
           // ]));
           list.add(Container(margin: const EdgeInsets.all(200)));
-          list.add(GestureDetector(
-              behavior: HitTestBehavior.translucent,
-              onTap: () async {
-                controller.text = "";
-                await nwcProvider.disconnect();
-              },
-              child: Container(
-                margin: EdgeInsets.all(Base.BASE_PADDING),
-                decoration: BoxDecoration(
-                  borderRadius: const BorderRadius.all(Radius.circular(20.0)),
-                  border: Border.all(
-                    width: 1,
-                    color: themeData.hintColor,
-                  ),
-                ),
-                child: Container(
-                    alignment: Alignment.center,
-                    margin: const EdgeInsets.all(Base.BASE_PADDING),
-                    child: const Text("Disconnect wallet")),
-              )));
+          list.add(MouseRegion(
+              cursor: SystemMouseCursors.click,
+              child: GestureDetector(
+                  behavior: HitTestBehavior.translucent,
+                  onTap: () async {
+                    controller.text = "";
+                    await nwcProvider.disconnect();
+                  },
+                  child: Container(
+                    margin: EdgeInsets.all(Base.BASE_PADDING),
+                    decoration: BoxDecoration(
+                      borderRadius:
+                          const BorderRadius.all(Radius.circular(20.0)),
+                      border: Border.all(
+                        width: 1,
+                        color: themeData.hintColor,
+                      ),
+                    ),
+                    child: Container(
+                        alignment: Alignment.center,
+                        margin: const EdgeInsets.all(Base.BASE_PADDING),
+                        child: const Text("Disconnect wallet")),
+                  ))));
         } else {
           list.add(GestureDetector(
-                  onTap: () {
-                    RouterUtil.router(context, RouterPath.NWC);
-                  },
-                  // child:
-                  // Expanded(
+              onTap: () {
+                RouterUtil.router(context, RouterPath.NWC);
+              },
+              // child:
+              // Expanded(
+              child: MouseRegion(
+                  cursor: SystemMouseCursors.click,
                   child: Container(
                     margin: const EdgeInsets.only(top: Base.BASE_PADDING),
                     padding: const EdgeInsets.all(Base.BASE_PADDING),
@@ -203,10 +208,12 @@ class _WalletRouter extends State<WalletRouter> {
                         ])),
                   ))
               // ),
-              );
+              ));
           list.add(Row(children: [
             Expanded(
-                child: Container(
+          child: MouseRegion(
+          cursor: SystemMouseCursors.click,
+              child: Container(
               margin: const EdgeInsets.only(top: Base.BASE_PADDING * 2),
               padding: const EdgeInsets.all(Base.BASE_PADDING),
               height: 60.0,
@@ -230,7 +237,7 @@ class _WalletRouter extends State<WalletRouter> {
                             color: themeData.hintColor,
                             fontFamily: "Montserrat",
                             fontSize: 12))
-                  ])),
+                  ]))),
             )),
           ]));
 

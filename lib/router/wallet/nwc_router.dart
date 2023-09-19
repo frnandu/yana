@@ -101,22 +101,24 @@ class _NwcRouter extends State<NwcRouter> with ProtocolListener {
                   "https://nwc.getalby.com/apps/new?c=${packageInfo.appName}"),
               mode: LaunchMode.externalApplication);
         },
-        child: Container(
-            margin: const EdgeInsets.all(Base.BASE_PADDING),
-            padding: const EdgeInsets.only(left: Base.BASE_PADDING),
-            decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                    colors: [Color(0xffFFDE6E), Colors.orange]),
-                borderRadius: BorderRadius.all(Radius.circular(20.0))),
-            child: Row(children: [
-              Container(
+        child: MouseRegion(
+            cursor: SystemMouseCursors.click,
+            child: Container(
                 margin: const EdgeInsets.all(Base.BASE_PADDING),
-                child:
-                    Image.asset("assets/imgs/alby.png", width: 30, height: 30),
-              ),
-              const Text("Connect with Alby account",
-                  style: TextStyle(color: Colors.black))
-            ]))));
+                padding: const EdgeInsets.only(left: Base.BASE_PADDING),
+                decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                        colors: [Color(0xffFFDE6E), Colors.orange]),
+                    borderRadius: BorderRadius.all(Radius.circular(20.0))),
+                child: Row(children: [
+                  Container(
+                    margin: const EdgeInsets.all(Base.BASE_PADDING),
+                    child: Image.asset("assets/imgs/alby.png",
+                        width: 30, height: 30),
+                  ),
+                  const Text("Connect with Alby account",
+                      style: TextStyle(color: Colors.black))
+                ])))));
     list.add(GestureDetector(
         // onTap: () {
         //   launchUrl(
@@ -124,32 +126,34 @@ class _NwcRouter extends State<NwcRouter> with ProtocolListener {
         //           "https://app.mutinywallet.com/settings/connections?callbackUri=yana&name=${packageInfo.appName}"),
         //       mode: LaunchMode.externalApplication);
         // },
-        child: Container(
-            margin: const EdgeInsets.all(Base.BASE_PADDING),
-            padding: const EdgeInsets.only(left: Base.BASE_PADDING),
-            decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                    colors: [Color(0xff800000), Color(0xff550000)]),
-                borderRadius: BorderRadius.all(Radius.circular(20.0))),
-            child: Row(children: [
-              Container(
+        child: MouseRegion(
+            cursor: SystemMouseCursors.click,
+            child: Container(
                 margin: const EdgeInsets.all(Base.BASE_PADDING),
-                child: Image.asset("assets/imgs/mutiny.png",
-                    width: 30, height: 30),
-              ),
-              const Text("Connect with Mutiny wallet"),
-              Text('  (soon)',
-                  style: TextStyle(
-                      color: themeData.hintColor,
-                      fontFamily: "Montserrat",
-                      fontSize: 12))
-            ]))));
+                padding: const EdgeInsets.only(left: Base.BASE_PADDING),
+                decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                        colors: [Color(0xff800000), Color(0xff550000)]),
+                    borderRadius: BorderRadius.all(Radius.circular(20.0))),
+                child: Row(children: [
+                  Container(
+                    margin: const EdgeInsets.all(Base.BASE_PADDING),
+                    child: Image.asset("assets/imgs/mutiny.png",
+                        width: 30, height: 30),
+                  ),
+                  const Text("Connect with Mutiny wallet"),
+                  Text('  (soon)',
+                      style: TextStyle(
+                          color: themeData.hintColor,
+                          fontFamily: "Montserrat",
+                          fontSize: 12))
+                ])))));
     if (!PlatformUtil.isWeb()) {
       list.add(GestureDetector(
           behavior: HitTestBehavior.translucent,
           onTap: scanNWC,
           child: Container(
-              margin: EdgeInsets.all(Base.BASE_PADDING),
+              margin: const EdgeInsets.all(Base.BASE_PADDING),
               decoration: BoxDecoration(
                 borderRadius: const BorderRadius.all(Radius.circular(20.0)),
                 border: Border.all(
@@ -167,18 +171,17 @@ class _NwcRouter extends State<NwcRouter> with ProtocolListener {
     }
     list.add(Divider());
     list.add(Container(
-      alignment: Alignment.center,
-      margin: EdgeInsets.all(Base.BASE_PADDING),
-      child: Text("or")
-    ));
+        alignment: Alignment.center,
+        margin: EdgeInsets.all(Base.BASE_PADDING),
+        child: Text("or")));
 
     list.add(Row(
       children: [
         Expanded(
             child: TextField(
           controller: controller,
-          decoration:
-              const InputDecoration(hintText: "enter manually nostr+walletconnect://..."),
+          decoration: const InputDecoration(
+              hintText: "enter manually nostr+walletconnect://..."),
         )),
       ],
     ));
@@ -189,22 +192,24 @@ class _NwcRouter extends State<NwcRouter> with ProtocolListener {
           await _nwcProvider.connect(controller.text);
           RouterUtil.back(context);
         },
-        child: Container(
-            margin: EdgeInsets.all(Base.BASE_PADDING),
-            decoration: BoxDecoration(
-              borderRadius: const BorderRadius.all(Radius.circular(20.0)),
-              border: Border.all(
-                width: 1,
-                color: themeData.hintColor,
-              ),
-            ),
-            child: Row(children: [
-              Container(
-                  margin: const EdgeInsets.all(Base.BASE_PADDING),
-                  child: Icon(Icons.edit_note,
-                      size: 25, color: themeData.iconTheme.color)),
-              const Text("Connect manual address"),
-            ]))));
+        child: MouseRegion(
+            cursor: SystemMouseCursors.click,
+            child: Container(
+                margin: EdgeInsets.all(Base.BASE_PADDING),
+                decoration: BoxDecoration(
+                  borderRadius: const BorderRadius.all(Radius.circular(20.0)),
+                  border: Border.all(
+                    width: 1,
+                    color: themeData.hintColor,
+                  ),
+                ),
+                child: Row(children: [
+                  Container(
+                      margin: const EdgeInsets.all(Base.BASE_PADDING),
+                      child: Icon(Icons.edit_note,
+                          size: 25, color: themeData.iconTheme.color)),
+                  const Text("Connect manual address"),
+                ])))));
 
     return Scaffold(
       body: Stack(
