@@ -214,8 +214,12 @@ void initProvidersAndStuff() async {
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   packageInfo = await PackageInfo.fromPlatform();
-  await protocolHandler.register('nostr+walletconnect');
-  await protocolHandler.register('yana');
+  try {
+    await protocolHandler.register('nostr+walletconnect');
+    await protocolHandler.register('yana');
+  }  catch(err) {
+    print(err);
+  }
 
   if (!PlatformUtil.isWeb() && PlatformUtil.isPC()) {
     await windowManager.ensureInitialized();

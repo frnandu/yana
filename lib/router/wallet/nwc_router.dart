@@ -8,6 +8,7 @@ import 'package:yana/utils/base.dart';
 import 'package:yana/utils/string_util.dart';
 
 import '../../../ui/appbar4stack.dart';
+import '../../utils/platform_util.dart';
 import '../../utils/router_path.dart';
 import '../../utils/router_util.dart';
 
@@ -143,25 +144,27 @@ class _NwcRouter extends State<NwcRouter> with ProtocolListener {
                       fontFamily: "Montserrat",
                       fontSize: 12))
             ]))));
-    list.add(GestureDetector(
-        behavior: HitTestBehavior.translucent,
-        onTap: scanNWC,
-        child: Container(
-            margin: EdgeInsets.all(Base.BASE_PADDING),
-            decoration: BoxDecoration(
-              borderRadius: const BorderRadius.all(Radius.circular(20.0)),
-              border: Border.all(
-                width: 1,
-                color: themeData.hintColor,
+    if (!PlatformUtil.isWeb()) {
+      list.add(GestureDetector(
+          behavior: HitTestBehavior.translucent,
+          onTap: scanNWC,
+          child: Container(
+              margin: EdgeInsets.all(Base.BASE_PADDING),
+              decoration: BoxDecoration(
+                borderRadius: const BorderRadius.all(Radius.circular(20.0)),
+                border: Border.all(
+                  width: 1,
+                  color: themeData.hintColor,
+                ),
               ),
-            ),
-            child: Row(children: [
-              Container(
-                  margin: const EdgeInsets.all(Base.BASE_PADDING),
-                  child: Icon(Icons.qr_code_scanner,
-                      size: 25, color: themeData.iconTheme.color)),
-              const Text("QR Scan pairing secret"),
-            ]))));
+              child: Row(children: [
+                Container(
+                    margin: const EdgeInsets.all(Base.BASE_PADDING),
+                    child: Icon(Icons.qr_code_scanner,
+                        size: 25, color: themeData.iconTheme.color)),
+                const Text("QR Scan pairing secret"),
+              ]))));
+    }
     list.add(Divider());
     list.add(Container(
       alignment: Alignment.center,

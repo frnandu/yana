@@ -73,6 +73,7 @@ class _WalletRouter extends State<WalletRouter> {
                 return
                   Expanded( child:
                   Container(
+                    margin: EdgeInsets.only(left: Base.BASE_PADDING),
                     alignment: Alignment.center,
                     child: Row(children: [
                   const Icon(

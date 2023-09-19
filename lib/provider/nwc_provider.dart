@@ -65,7 +65,7 @@ class NwcProvider extends ChangeNotifier {
   Future<void> connect(String nwc) async {
     nwc = nwc.replaceAll("yana:", "nostr+walletconnect:");
     Uri uri = Uri.parse(nwc.replaceAll("nostr+walletconnect:", "https:"));
-    String? pubKey = uri.host;
+    String? walletPubKey = uri.host;
     String? relay = uri.queryParameters['relay'];
     secret = uri.queryParameters['secret'];
     // String? lud16 = uri.queryParameters['lub16'];
@@ -77,14 +77,14 @@ class NwcProvider extends ChangeNotifier {
       BotToast.showText(text: "missing secret parameter");
       return;
     }
-    if (StringUtil.isBlank(pubKey)) {
+    if (StringUtil.isBlank(walletPubKey)) {
       BotToast.showText(text: "missing pubKey from connection uri");
       return;
     }
     relay = Uri.decodeFull(relay!);
     await settingProvider.setNwc(nwc);
     await settingProvider.setNwcSecret(secret!);
-    var filter = Filter(kinds: [NwcKind.INFO_REQUEST], authors: [pubKey!]);
+    var filter = Filter(kinds: [NwcKind.INFO_REQUEST], authors: [walletPubKey!]);
     nostr!.queryRelay(filter.toJson(), relay!, onEventInfo);
     // walletPubKey = pubKey;
     // this.relay = relay;

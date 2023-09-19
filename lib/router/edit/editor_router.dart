@@ -352,7 +352,9 @@ class _EditorRouter extends CustState<EditorRouter> with EditorMixin {
       editorController.replaceText(index!, length,
           quill.CustomBlockEmbed(CustEmbedTypes.mention_user, value), null);
 
-      editorController.moveCursorToPosition(index + 1);
+      editorController.moveCursorToPosition( widget.mentionWordEditingEnd! + 1);
+      widget.mentionWordEditingEnd = null;
+      widget.mentionWordEditingStart = null;
     }
   }
 
