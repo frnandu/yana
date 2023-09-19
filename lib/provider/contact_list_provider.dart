@@ -117,6 +117,8 @@ class ContactListProvider extends ChangeNotifier {
     sharedPreferences.setString(DataKey.CONTACT_LISTS, jsonStr);
     notifyListeners();
 
+
+    _contactList!.list().forEach((contact) { metadataProvider.update(contact.publicKey);});
     followEventProvider.metadataUpdatedCallback(_contactList);
   }
 
