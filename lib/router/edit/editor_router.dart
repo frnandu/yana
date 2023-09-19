@@ -346,13 +346,17 @@ class _EditorRouter extends CustState<EditorRouter> with EditorMixin {
 
   void replaceMentionUser(String? value) {
     if (value != null && value.isNotEmpty && widget.mentionWordEditingStart!=null) {
-      final index = widget.mentionWordEditingStart;
-      final length = widget.mentionWordEditingEnd! - widget.mentionWordEditingStart!;
 
-      editorController.replaceText(index!, length,
+      final length = widget.mentionWordEditingEnd! - widget.mentionWordEditingStart!;
+      final index = editorController.selection.baseOffset;
+
+      editorController.replaceText(index-length, length,
           quill.CustomBlockEmbed(CustEmbedTypes.mention_user, value), null);
 
-      editorController.moveCursorToPosition( widget.mentionWordEditingEnd! + 1);
+      editorController.moveCursorToPosition(index + 1);
+
+      focusNode.requestFocus();
+
       widget.mentionWordEditingEnd = null;
       widget.mentionWordEditingStart = null;
     }
@@ -404,7 +408,7 @@ class _EditorRouter extends CustState<EditorRouter> with EditorMixin {
           } else if (operation.data is String) {
             String word =
                 findPreviousWord(value.text, value.selection.baseOffset);
-            if (word != null && word.startsWith("@")) {
+            if (word != null && (word[0] == "@" || word[1] == "@")) {
               widget.mentionWordEditingStart = value.selection.baseOffset - word!.length;
               widget.mentionWordEditingEnd = value.selection.baseOffset;
               list = metadataProvider.findUser(word.replaceAll("@", "")!,
