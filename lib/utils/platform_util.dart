@@ -36,7 +36,7 @@ class PlatformUtil {
     } else if (settingProvider.tableMode == OpenStatus.CLOSE) {
       return false;
     }
-    return isTableModeWithoutSetting() &&  mediaDataCache.size.width >= 1000;
+    return isTableModeWithoutSetting() &&  mediaDataCache.size.width >= 900;
   }
 
   static bool isIOS() {
