@@ -45,7 +45,7 @@ class IndexRouter extends StatefulWidget {
 
 class _IndexRouter extends CustState<IndexRouter>
     with TickerProviderStateMixin {
-  static double PC_MAX_COLUMN_0 = 300;
+  static double PC_MAX_COLUMN_0 = 280;
 
   static double PC_MAX_COLUMN_1 = 550;
 
@@ -354,10 +354,13 @@ class _IndexRouter extends CustState<IndexRouter>
 
     if (PlatformUtil.isTableMode()) {
       var maxWidth = mediaDataCache.size.width;
-      double column0Width = (maxWidth * 1) / 3;
-      double column1Width = (maxWidth * 2) / 3;
+      double column0Width = (maxWidth * 1) / 5;
+      double column1Width = (maxWidth * 2) / 5;
       if (column0Width > PC_MAX_COLUMN_0) {
         column0Width = PC_MAX_COLUMN_0;
+      }
+      if (column0Width < 280) {
+        column0Width = 280;
       }
       if (column1Width > PC_MAX_COLUMN_1) {
         column1Width = PC_MAX_COLUMN_1;
