@@ -564,6 +564,7 @@ class SettingData {
     data['linkPreview'] = this.linkPreview;
     data['videoPreview'] = this.videoPreview;
     data['network'] = this.network;
+    data['backgroundService'] = this.backgroundService;
     data['imageService'] = this.imageService;
     data['videoPreview'] = this.videoPreview;
     data['imagePreview'] = this.imagePreview;
