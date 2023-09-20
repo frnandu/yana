@@ -13,10 +13,10 @@ class MentionUserEmbedBuilder extends EmbedBuilder {
     var pubkey = node.value.data;
     return AbsorbPointer(
       child: Container(
-        // margin: const EdgeInsets.only(
-        //   left: 4,
-        //   right: 4,
-        // ),
+        margin: const EdgeInsets.only(
+          left: 4,
+          right: 4,
+        ),
         child: ContentMentionUserComponent(pubkey: pubkey),
       ),
     );
