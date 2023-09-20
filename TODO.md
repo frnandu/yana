@@ -49,6 +49,8 @@
 - ~~ZAP loading icon until response/confirmation of zap receipt~~
 - ~~mention livesearch editor without popup~~
 
+- solve floating icon in tablet mode above buttons
+
 - Wallet list of transactions    
 - Wallet balance in FIAT (choose currency) from coingecko/kraken?
 
