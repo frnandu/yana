@@ -6,6 +6,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:yana/utils/platform_util.dart';
 
+import '../main.dart';
 import '../utils/base.dart';
 import '../utils/base_consts.dart';
 import '../utils/theme_style.dart';
@@ -322,6 +323,7 @@ class SettingProvider extends ChangeNotifier {
   set backgroundService(bool? o) {
     _settingData!.backgroundService = o;
     saveAndNotifyListeners();
+    initBackgroundService(backgroundService);
   }
 
   /// i18n

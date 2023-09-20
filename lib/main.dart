@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 import 'dart:ui';
 import 'package:sizer/sizer.dart';
 import 'package:protocol_handler/protocol_handler.dart';
@@ -169,20 +170,24 @@ void onStart(ServiceInstance service) async {
   });
 
   initProvidersAndStuff();
-
-  Timer.periodic(const Duration(seconds: 60), (timer) async {
-    if (service is AndroidServiceInstance) {
-      AwesomeNotifications().getAppLifeCycle().then((value) {
-        if (value.toString() != "NotificationLifeCycle.Foreground" &&
-            nostr != null) {
-          appState = AppLifecycleState.inactive;
-          nostr!.checkAndReconnectRelays().then((a) {
-            newNotificationsProvider.queryNew();
-          });
-        }
-      });
-    }
-  });
+  SettingProvider ss = await SettingProvider.getInstance();
+  if (!ss.backgroundService) {
+    service.stopSelf();
+  } else {
+    Timer.periodic(const Duration(seconds: 60), (timer) async {
+      if (service is AndroidServiceInstance) {
+        AwesomeNotifications().getAppLifeCycle().then((value) {
+          if (value.toString() != "NotificationLifeCycle.Foreground" &&
+              nostr != null) {
+            appState = AppLifecycleState.inactive;
+            nostr!.checkAndReconnectRelays().then((a) {
+              newNotificationsProvider.queryNew();
+            });
+          }
+        });
+      }
+    });
+  }
 }
 
 void initProvidersAndStuff() async {
@@ -309,19 +314,18 @@ Future<void> main() async {
   // FlutterNativeSplash.remove();
   try {
     if (PlatformUtil.isAndroid() || PlatformUtil.isIOS()) {
-      initBackgroundService();
+      initBackgroundService(true);
     }
   } catch (e) {}
   runApp(MyApp());
 }
 
-void initBackgroundService() async {
+void initBackgroundService(bool startOnBoot) async {
   // await AndroidAlarmManager.initialize();
   // const int helloAlarmID = 0;
   // await AndroidAlarmManager.periodic(const Duration(seconds: 10), helloAlarmID, printHello, wakeup: true, exact: true, allowWhileIdle: true, rescheduleOnReboot: true);
 
   AwesomeNotifications().isNotificationAllowed().then((isAllowed) async {
-    print(isAllowed);
     if (!isAllowed) {
       await AwesomeNotifications()
           .requestPermissionToSendNotifications(permissions: [
@@ -333,8 +337,7 @@ void initBackgroundService() async {
       ]);
     }
   });
-  AwesomeNotifications().initialize('resource://drawable/splash', [
-    // notification icon
+  AwesomeNotifications().initialize('resource://drawable/white', [
     NotificationChannel(
       channelGroupKey: 'yana',
       channelKey: 'yana',
@@ -362,29 +365,37 @@ void initBackgroundService() async {
   );
 
   flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
-  backgroundService = FlutterBackgroundService();
-  await flutterLocalNotificationsPlugin
-      .resolvePlatformSpecificImplementation<
-      AndroidFlutterLocalNotificationsPlugin>()
-      ?.createNotificationChannel(channel);
+  // if (startOnBoot) {
+    backgroundService = FlutterBackgroundService();
+    await flutterLocalNotificationsPlugin
+        .resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin>()
+        ?.createNotificationChannel(channel);
 
-  await backgroundService!.configure(
-    androidConfiguration: AndroidConfiguration(
-      onStart: onStart,
-      autoStart: false,
-      isForegroundMode: true,
-      notificationChannelId: 'yana-service',
-      initialNotificationTitle: 'Yana notifications service',
-      initialNotificationContent: 'running...',
-      foregroundServiceNotificationId: 888,
-    ),
-    iosConfiguration: IosConfiguration(
-      autoStart: false,
-      onForeground: onStart,
-      // you have to enable background fetch capability on xcode project
-      // onBackground: onIosBackground,
-    ),
-  );
+    await backgroundService!.configure(
+      androidConfiguration: AndroidConfiguration(
+        onStart: onStart,
+        autoStart: false,
+        autoStartOnBoot: startOnBoot,
+        isForegroundMode: true,
+        notificationChannelId: 'yana-service',
+        initialNotificationTitle: 'Yana notifications service',
+        initialNotificationContent: 'this notification can be hidden',
+        foregroundServiceNotificationId: 888,
+      ),
+      iosConfiguration: IosConfiguration(
+        autoStart: false,
+        onForeground: onStart,
+        // you have to enable background fetch capability on xcode project
+        // onBackground: onIosBackground,
+      ),
+    );
+  // } else {
+  //   if (backgroundService!=null) {
+  //     backgroundService!.invoke('stopService');
+  //     backgroundService = null;
+  //   }
+  // }
 
   // var receivePort = ReceivePort();
   // await FlutterIsolate.spawn(entryPoint, receivePort.sendPort);
