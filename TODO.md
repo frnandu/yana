@@ -52,7 +52,8 @@
 - Wallet list of transactions    
 - Wallet balance in FIAT (choose currency) from coingecko/kraken?
 
-- Mutiny Wallet 
+- Mutiny NWC Wallet
+- Current.io NWC Wallet
 - LndHub Wallet
 
 - WebLN for web: https://github.com/aniketambore/flutter_webln
