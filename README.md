@@ -110,7 +110,7 @@ or install deb file from releases:
 - [ ] Online Relay Search ([NIP-50](https://github.com/nostr-protocol/nips/blob/master/50.md))
 - [ ] Verifiable static content in URLs (NIP-94)
 - [ ] Login with QR
-- [ ] Wallet Connect API ([NIP-47](https://github.com/nostr-protocol/nips/blob/master/47.md))
+- [X] Wallet Connect API ([NIP-47](https://github.com/nostr-protocol/nips/blob/master/47.md))
 - [ ] External Identity Support ([NIP-39](https://github.com/nostr-protocol/nips/blob/master/39.md))
 - [ ] Markdown Support
 - [ ] Relay Authentication ([NIP-42](https://github.com/nostr-protocol/nips/blob/master/42.md))
@@ -119,7 +119,6 @@ or install deb file from releases:
 - [ ] Zap Forwarding
 - [ ] Text Note References ([NIP-27](https://github.com/nostr-protocol/nips/blob/master/27.md))
 - [ ] Audio Tracks (zapstr.live) (Kind:31337)
-- [ ] Push Notifications (Zaps and Messages)
 - [ ] Generic Tags ([NIP-12](https://github.com/nostr-protocol/nips/blob/master/12.md))
 - [ ] Sensitive Content ([NIP-36](https://github.com/nostr-protocol/nips/blob/master/36.md))
 - [ ] View Individual Reactions (Like, Boost, Zaps, Reports) per Post
@@ -139,7 +138,7 @@ or install deb file from releases:
 - [ ] Bookmarks, Pinned Posts, Muted Events ([NIP-51](https://github.com/nostr-protocol/nips/blob/master/51.md))
 - [ ] Proof of Work in the Phone ([NIP-13](https://github.com/nostr-protocol/nips/blob/master/13.md), [NIP-20](https://github.com/nostr-protocol/nips/blob/master/20.md))
 - [ ] Expiration Support ([NIP-40](https://github.com/nostr-protocol/nips/blob/master/40.md))
-- [ ] Relay List Metadata ([NIP-65](https://github.com/nostr-protocol/nips/blob/master/65.md))
+- [X] Relay List Metadata ([NIP-65](https://github.com/nostr-protocol/nips/blob/master/65.md))
 - [ ] Delegated Event Signing ([NIP-26](https://github.com/nostr-protocol/nips/blob/master/26.md))
 - [ ] Account Creation / Backup Guidance
 - [ ] Mnemonic seed phrase ([NIP-06](https://github.com/nostr-protocol/nips/blob/master/06.md))
