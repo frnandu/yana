@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:provider/provider.dart';
 import 'package:screenshot/screenshot.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:yana/ui/content/content_video_component.dart';
 import 'package:yana/ui/content/markdown/markdown_mention_event_element_builder.dart';
 import 'package:yana/utils/platform_util.dart';
@@ -555,7 +556,8 @@ class _EventMainComponent extends State<EventMainComponent> {
         // print("text $text href $href title $title");
         if (StringUtil.isNotBlank(href)) {
           if (href!.indexOf("http") == 0) {
-            WebViewRouter.open(context, href);
+            launchUrl(Uri.parse(href), mode: LaunchMode.externalApplication);
+            // WebViewRouter.open(context, href);
           } else if (href.indexOf("nostr:") == 0) {
             var link = href.replaceFirst("nostr:", "");
             if (Nip19.isPubkey(link)) {

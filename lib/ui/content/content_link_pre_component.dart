@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_link_previewer/flutter_link_previewer.dart';
 import 'package:flutter_chat_types/flutter_chat_types.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:yana/main.dart';
 import 'package:yana/provider/link_preview_data_provider.dart';
 import 'package:provider/provider.dart';
@@ -50,7 +51,8 @@ class _ContentLinkPreComponent extends State<ContentLinkPreComponent> {
             text: widget.link,
             width: mediaDataCache.size.width,
             onLinkPressed: (link) {
-              WebViewRouter.open(context, link);
+              launchUrl(Uri.parse(link), mode: LaunchMode.externalApplication);
+              // WebViewRouter.open(context, link);
             },
           ),
         );

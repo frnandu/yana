@@ -4,6 +4,7 @@ import 'package:easy_image_viewer/easy_image_viewer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:yana/nostr/nip19/nip19_tlv.dart';
 import 'package:yana/ui/nip05_valid_component.dart';
 import 'package:yana/ui/qrcode_dialog.dart';
@@ -392,7 +393,8 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
             textColor: themeData.primaryColor,
             text: widget.metadata!.website!,
             onTap: () {
-              WebViewRouter.open(context, widget.metadata!.website!);
+              launchUrl(Uri.parse(widget.metadata!.website!), mode: LaunchMode.externalApplication);
+              // WebViewRouter.open(context, widget.metadata!.website!);
             },
           ));
         }
@@ -516,7 +518,8 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
           }
         }
       } else if (result.indexOf("http") == 0) {
-        WebViewRouter.open(context, result);
+        launchUrl(Uri.parse(result), mode: LaunchMode.externalApplication);
+        // WebViewRouter.open(context, result);
       } else {
         Clipboard.setData(ClipboardData(text: result)).then((_) {
           BotToast.showText(text: I18n.of(context).Copy_success);
