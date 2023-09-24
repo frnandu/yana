@@ -58,6 +58,8 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
 
   @override
   Widget build(BuildContext context) {
+    var _eventReactionsProvider = Provider.of<EventReactionsProvider>(context);
+
     var s = I18n.of(context);
     var themeData = Theme.of(context);
     var fontSize = themeData.textTheme.bodyMedium!.fontSize!;

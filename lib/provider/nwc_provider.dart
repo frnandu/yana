@@ -191,10 +191,10 @@ class NwcProvider extends ChangeNotifier {
       ];
       final event =
           Event(nwcNostr!.publicKey, NwcKind.REQUEST, tags, encrypted);
-      await nwcNostr!.sendRelayEvent(event, relay!);
       var filter = Filter(
           kinds: [NwcKind.RESPONSE], authors: [walletPubKey!], e: [event.id]);
       nwcNostr!.queryRelay2(filter.toJson(), relay!, onPayInvoiceResponse, onZapped: onZapped);
+      await nwcNostr!.sendRelayEvent(event, relay!);
     } else {
       BotToast.showText(text: "missing pubKey and/or relay for connecting");
     }
