@@ -104,24 +104,24 @@ class _SearchRouter extends CustState<SearchRouter>
 
     bool? loadable = true;
     var events = eventMemBox.all();
-    print("contacts: ${metadatasFromContacts.length} profile: ${metadatasFromSearch.length} events: ${events.length}");
+    print("contacts: ${metadatasFromCache.length} profile: ${metadatasFromSearch.length} events: ${events.length}");
     Widget body = ListView.builder(
         controller: scrollController,
         itemBuilder: (BuildContext context, int index) {
 
           Metadata? metadata;
 
-          if (index < metadatasFromContacts.length) {
-            metadata = metadatasFromContacts[index];
-          } else if (index < (metadatasFromContacts.length + metadatasFromSearch.length) ) {
-            metadata = metadatasFromSearch[index - metadatasFromContacts.length];
+          if (index < metadatasFromCache.length) {
+            metadata = metadatasFromCache[index];
+          } else if (index < (metadatasFromCache.length + metadatasFromSearch.length) ) {
+            metadata = metadatasFromSearch[index - metadatasFromCache.length];
           } else {
-            var event = events[index - metadatasFromContacts.length - metadatasFromSearch.length];
+            var event = events[index - metadatasFromCache.length - metadatasFromSearch.length];
             if (event.kind == kind.EventKind.METADATA) {
               var jsonObj = jsonDecode(event.content);
               metadata = Metadata.fromJson(jsonObj);
               metadata.pubKey = event.pubKey;
-              bool inMetadatasAlready = metadatasFromContacts.any((element) =>
+              bool inMetadatasAlready = metadatasFromCache.any((element) =>
               element.pubKey == metadata!.pubKey);
               if (!metadata.matchesSearch(controller.text) ||
                   inMetadatasAlready) {
@@ -145,7 +145,7 @@ class _SearchRouter extends CustState<SearchRouter>
           }
           return Container();
         },
-        itemCount: metadatasFromContacts.length + metadatasFromSearch.length + events.length);
+        itemCount: metadatasFromCache.length + metadatasFromSearch.length + events.length);
 
     Widget body2 = ListView.builder(
       controller: scrollController,
@@ -401,12 +401,12 @@ class _SearchRouter extends CustState<SearchRouter>
     }
   }
 
-  List<Metadata> metadatasFromContacts = [];
+  List<Metadata> metadatasFromCache = [];
   List<Metadata> metadatasFromSearch = [];
 
   searchMetadataFromCache() {
     // hideKeyBoard();
-    metadatasFromContacts.clear();
+    metadatasFromCache.clear();
     searchAction = SearchActions.searchMetadataFromCache;
 
     var text = controller.text;
@@ -414,7 +414,7 @@ class _SearchRouter extends CustState<SearchRouter>
       var list = metadataProvider.findUser(text, limit: searchMemLimit);
 
       setState(() {
-        metadatasFromContacts = list;
+        metadatasFromCache = list;
       });
     } else {
       setState(() {});
@@ -446,7 +446,7 @@ class _SearchRouter extends CustState<SearchRouter>
   checkInput() {
     searchAction = null;
     searchAbles.clear();
-    metadatasFromContacts.clear();
+    metadatasFromCache.clear();
     metadatasFromSearch.clear();
     eventMemBox.clear();
 
@@ -457,7 +457,7 @@ class _SearchRouter extends CustState<SearchRouter>
 
     if (StringUtil.isNotBlank(text)) {
       searchMetadataFromCache();
-      if (text.trim().length>=3 && metadatasFromContacts.length < 20) {
+      if (text.trim().length>=3 && metadatasFromCache.length < 20) {
         searchNoteContent();
       }
       if (Nip19.isPubkey(text)) {
@@ -526,7 +526,6 @@ class _SearchRouter extends CustState<SearchRouter>
     // }
 
     eventMemBox = EventMemBox();
-    metadatasFromContacts.clear();
     until = null;
     filterMap = Filter(kinds: searchEventKinds, limit: queryLimit).toJson();
     filterMap!.remove("authors");

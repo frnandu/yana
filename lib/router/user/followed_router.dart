@@ -55,21 +55,19 @@ class _FollowedRouter extends State<FollowedRouter> {
           margin: EdgeInsets.only(bottom: Base.BASE_PADDING_HALF),
           child: Selector<MetadataProvider, Metadata?>(
             builder: (context, metadata, child) {
-              return GestureDetector(
-                  onTap: () {
-                    RouterUtil.router(context, RouterPath.USER, pubkey);
-                  },
-                  behavior: HitTestBehavior.translucent,
-                  child: metadata != null
+              return  metadata != null
                       ? SearchMentionUserItemComponent(
-                          metadata: metadata!, onTap: (metadata) {}, width: 400)
-                      : Container()
+                          metadata: metadata!,
+                          onTap: (metadata) {
+                            RouterUtil.router(context, RouterPath.USER, pubkey);
+                          },
+                          width: 400)
+                      : Container();
                   // MetadataComponent(
                   //   pubKey: pubkey,
                   //   metadata: metadata,
                   //   jumpable: true,
                   // ),
-                  );
             },
             selector: (context, _provider) {
               return _provider.getMetadata(pubkey);
