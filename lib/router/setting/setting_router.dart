@@ -68,7 +68,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
 
     initThemeStyleList(s);
     initFontEnumList(s);
-    initImageServcieList();
+    initImageServiceList();
     initTranslateLanguages();
 
     List<Widget> list = [];
@@ -678,7 +678,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
 
   List<EnumObj>? imageServiceList;
 
-  void initImageServcieList() {
+  void initImageServiceList() {
     if (imageServiceList == null) {
       imageServiceList = [];
       imageServiceList!
@@ -688,7 +688,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
     }
   }
 
-  EnumObj getImageServcie(String? o) {
+  EnumObj getImageService(String? o) {
     for (var eo in imageServiceList!) {
       if (eo.value == o) {
         return eo;
@@ -697,7 +697,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
     return imageServiceList![0];
   }
 
-  Future<void> pickImageServcie() async {
+  Future<void> pickImageService() async {
     EnumObj? resultEnumObj =
         await EnumSelectorComponent.show(context, imageServiceList!);
     if (resultEnumObj != null) {

@@ -489,45 +489,6 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
     RouterUtil.router(context, RouterPath.PROFILE_EDITOR, metadata);
   }
 
-  Future<void> handleScanner() async {
-    var result = await RouterUtil.router(context, RouterPath.QRSCANNER);
-    if (StringUtil.isNotBlank(result)) {
-      if (Nip19.isPubkey(result)) {
-        var pubkey = Nip19.decode(result);
-        RouterUtil.router(context, RouterPath.USER, pubkey);
-      } else if (NIP19Tlv.isNprofile(result)) {
-        var nprofile = NIP19Tlv.decodeNprofile(result);
-        if (nprofile != null) {
-          RouterUtil.router(context, RouterPath.USER, nprofile!.pubkey);
-        }
-      } else if (Nip19.isNoteId(result)) {
-        var noteId = Nip19.decode(result);
-        RouterUtil.router(context, RouterPath.EVENT_DETAIL, noteId);
-      } else if (NIP19Tlv.isNevent(result)) {
-        var nevent = NIP19Tlv.decodeNevent(result);
-        if (nevent != null) {
-          RouterUtil.router(context, RouterPath.EVENT_DETAIL, nevent.id);
-        }
-      } else if (NIP19Tlv.isNrelay(result)) {
-        var nrelay = NIP19Tlv.decodeNrelay(result);
-        if (nrelay != null) {
-          var result = await ConfirmDialog.show(
-              context, I18n.of(context).Add_this_relay_to_local);
-          if (result == true) {
-            relayProvider.addRelay(nrelay.addr);
-          }
-        }
-      } else if (result.indexOf("http") == 0) {
-        launchUrl(Uri.parse(result), mode: LaunchMode.externalApplication);
-        // WebViewRouter.open(context, result);
-      } else {
-        Clipboard.setData(ClipboardData(text: result)).then((_) {
-          BotToast.showText(text: I18n.of(context).Copy_success);
-        });
-      }
-    }
-  }
-
   void userPicturePreview() {
     String? url = widget.metadata != null &&
             StringUtil.isNotBlank(widget.metadata?.picture)

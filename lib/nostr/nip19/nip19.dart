@@ -41,7 +41,7 @@ class Nip19 {
   static String encodeSimplePubKey(String pubKey) {
     var code = encodePubKey(pubKey);
     var length = code.length;
-    return code.substring(0, 6) + ":" + code.substring(length - 6);
+    return code.substring(0, 10) + ":" + code.substring(length - 10);
   }
 
   // static String decode(String npub) {

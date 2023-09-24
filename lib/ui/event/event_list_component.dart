@@ -31,6 +31,8 @@ class EventListComponent extends StatefulWidget {
 
   bool showDetailBtn;
 
+  bool showContent;
+
   bool showLongContent;
 
   bool showCommunity;
@@ -40,6 +42,7 @@ class EventListComponent extends StatefulWidget {
     this.pagePubkey,
     this.jumpable = true,
     this.showVideo = false,
+    this.showContent = true,
     this.imageListMode = true,
     this.showDetailBtn = true,
     this.showLongContent = false,

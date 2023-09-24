@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../../nostr/nip02/contact.dart';
 import '../../nostr/nip02/cust_contact_list.dart';
+import '../../ui/editor/search_mention_user_component.dart';
 import '../../ui/user/metadata_component.dart';
 import '../../utils/base.dart';
 import '../../utils/router_path.dart';
@@ -45,11 +46,15 @@ class _UserContactListComponent extends State<UserContactListComponent> {
                       context, RouterPath.USER, contact.publicKey);
                 },
                 behavior: HitTestBehavior.translucent,
-                child: MetadataComponent(
-                  pubKey: contact.publicKey,
-                  metadata: metadata,
-                  jumpable: true,
-                ),
+                  child: metadata != null
+                      ? SearchMentionUserItemComponent(
+                      metadata: metadata!, onTap: (metadata) {}, width: 400)
+                      : Container()
+                // child: MetadataComponent(
+                //   pubKey: contact.publicKey,
+                //   metadata: metadata,
+                //   jumpable: true,
+                // ),
               );
             },
             selector: (context, _provider) {

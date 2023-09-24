@@ -8,6 +8,7 @@ import '../../utils/base.dart';
 import '../../utils/router_util.dart';
 import '../../utils/string_util.dart';
 import '../../utils/when_stop_function.dart';
+import '../name_component.dart';
 import 'search_mention_component.dart';
 
 class SearchMentionUserComponent extends StatefulWidget {
@@ -79,7 +80,7 @@ class _SearchMentionUserComponent extends State<SearchMentionUserComponent>
 }
 
 class SearchMentionUserItemComponent extends StatelessWidget {
-  static const double IMAGE_WIDTH = 36;
+  static const double IMAGE_WIDTH = 50;
 
   final Metadata metadata;
 
@@ -118,9 +119,18 @@ class SearchMentionUserItemComponent extends StatelessWidget {
     String name = "";
     if (StringUtil.isNotBlank(metadata.displayName)) {
       displayName = metadata.displayName!;
-    }
-    if (metadata.name != null) {
-      name = metadata.name!;
+      if (StringUtil.isNotBlank(metadata.name)) {
+        name = metadata.name!;
+      } else {
+        name = nip19Name;
+      }
+    } else {
+      if (StringUtil.isNotBlank(metadata.name)) {
+        displayName = metadata.name!;
+        name = nip19Name;
+      } else {
+        displayName = nip19Name;
+      }
     }
 
     var main = Container(
@@ -140,19 +150,22 @@ class SearchMentionUserItemComponent extends StatelessWidget {
             ),
             child: imageWidget,
           ),
-          Expanded(
+
+    Expanded(
             child: Container(
               padding: const EdgeInsets.only(left: Base.BASE_PADDING_HALF),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    displayName,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                  ),
+                  NameComponent(pubkey: metadata.pubKey!, metadata: metadata)
+                  // Text(
+                  //   displayName,
+                  //   style: const TextStyle(
+                  //     fontWeight: FontWeight.bold,
+                  //   ),
+                  //   overflow: TextOverflow.ellipsis,
+                  // ),
+                  ,
                   Text(
                     name,
                     style: TextStyle(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../ui/editor/search_mention_user_component.dart';
 import '../../ui/user/metadata_component.dart';
 import '../../utils/base.dart';
 import '../../utils/router_path.dart';
@@ -55,16 +56,20 @@ class _FollowedRouter extends State<FollowedRouter> {
           child: Selector<MetadataProvider, Metadata?>(
             builder: (context, metadata, child) {
               return GestureDetector(
-                onTap: () {
-                  RouterUtil.router(context, RouterPath.USER, pubkey);
-                },
-                behavior: HitTestBehavior.translucent,
-                child: MetadataComponent(
-                  pubKey: pubkey,
-                  metadata: metadata,
-                  jumpable: true,
-                ),
-              );
+                  onTap: () {
+                    RouterUtil.router(context, RouterPath.USER, pubkey);
+                  },
+                  behavior: HitTestBehavior.translucent,
+                  child: metadata != null
+                      ? SearchMentionUserItemComponent(
+                          metadata: metadata!, onTap: (metadata) {}, width: 400)
+                      : Container()
+                  // MetadataComponent(
+                  //   pubKey: pubkey,
+                  //   metadata: metadata,
+                  //   jumpable: true,
+                  // ),
+                  );
             },
             selector: (context, _provider) {
               return _provider.getMetadata(pubkey);

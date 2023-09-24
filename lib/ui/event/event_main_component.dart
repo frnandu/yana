@@ -324,10 +324,11 @@ class _EventMainComponent extends State<EventMainComponent> {
         }
 
 
-        list.add(
-          buildContentWidget(_settingProvider, imagePreview, videoPreview),
-        );
-
+        if (widget.event.kind != kind.EventKind.METADATA) {
+          list.add(
+            buildContentWidget(_settingProvider, imagePreview, videoPreview),
+          );
+        }
         if (widget.event.kind == kind.EventKind.POLL) {
           list.add(EventPollComponent(
             event: widget.event,

@@ -67,16 +67,29 @@ class Metadata {
   }
 
   String getName() {
-    if (displayName!=null && StringUtil.isNotBlank(displayName)) {
+    if (displayName != null && StringUtil.isNotBlank(displayName)) {
       return displayName!;
     }
-    if (name!=null && StringUtil.isNotBlank(name)) {
+    if (name != null && StringUtil.isNotBlank(name)) {
       return name!;
     }
     return pubKey!;
   }
 
   String? getPictureOrRobohash() {
-    return StringUtil.isNotBlank(picture) ? picture : StringUtil.robohash(pubKey!);
+    return StringUtil.isNotBlank(picture)
+        ? picture
+        : StringUtil.robohash(pubKey!);
+  }
+
+  bool matchesSearch(String str) {
+    str = str.trim().toLowerCase();
+    String d = displayName != null ? displayName!.toLowerCase()! : "";
+    String n = name != null ? name!.toLowerCase()! : "";
+    String str2 = " " + str;
+    return d.startsWith(str) ||
+        d.contains(str2) ||
+        n.startsWith(str) ||
+        n.contains(str2);
   }
 }

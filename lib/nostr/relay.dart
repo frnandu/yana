@@ -140,6 +140,12 @@ class Relay {
     if (access == WriteAccess.writeOnly) {
       return false;
     }
+    if (subscription.filters!=null) {
+      bool a = subscription.filters.any((element) => element.containsKey("search"));
+      if (a && info!=null && !info!.nips.contains(50)) {
+        return false;
+      }
+    }
 
     saveQuery(subscription);
 

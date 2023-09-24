@@ -38,6 +38,7 @@ class RelayProvider extends ChangeNotifier {
       relayAddrs = [
         "wss://nos.lol",
         "wss://nostr.wine",
+        "wss://relay.nostr.band", // for search (NIP-50)
         "wss://atlas.nostr.land",
         "wss://relay.orangepill.dev",
         "wss://relay.damus.io",

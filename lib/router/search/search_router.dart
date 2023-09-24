@@ -1,12 +1,13 @@
-import 'dart:developer';
+import 'dart:convert';
 
+import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:yana/models/event_find_util.dart';
 import 'package:yana/models/metadata.dart';
-import 'package:yana/router/search/search_action_item_component.dart';
 import 'package:yana/router/search/search_actions.dart';
-import 'package:yana/ui/user/metadata_top_component.dart';
 import 'package:yana/utils/when_stop_function.dart';
 
 import '../../i18n/i18n.dart';
@@ -17,8 +18,11 @@ import '../../nostr/event.dart';
 import '../../nostr/event_kind.dart' as kind;
 import '../../nostr/filter.dart';
 import '../../nostr/nip19/nip19.dart';
+import '../../nostr/nip19/nip19_tlv.dart';
 import '../../provider/setting_provider.dart';
+import '../../ui/confirm_dialog.dart';
 import '../../ui/cust_state.dart';
+import '../../ui/editor/search_mention_user_component.dart';
 import '../../ui/event/event_list_component.dart';
 import '../../ui/event_delete_callback.dart';
 import '../../utils/base_consts.dart';
@@ -46,6 +50,8 @@ class _SearchRouter extends CustState<SearchRouter>
 
   ScrollController scrollController = ScrollController();
 
+  FocusNode focusNode = FocusNode();
+
   @override
   Future<void> onReady(BuildContext context) async {
     bindLoadMoreScroll(loadableScrollController);
@@ -56,7 +62,7 @@ class _SearchRouter extends CustState<SearchRouter>
         setState(() {
           showSuffix = true;
         });
-        return;
+        // return;
       } else if (showSuffix && !hasText) {
         setState(() {
           showSuffix = false;
@@ -80,105 +86,114 @@ class _SearchRouter extends CustState<SearchRouter>
       suffixWidget = GestureDetector(
         onTap: () {
           controller.text = "";
+          focusNode.requestFocus();
         },
         child: Icon(Icons.close),
       );
-    }
-
-    bool? loadable;
-    Widget? body;
-    if (searchAction == null && searchAbles.isNotEmpty) {
-      // no searchAction, show searchAbles
-      List<Widget> list = [];
-      for (var action in searchAbles) {
-        if (action == SearchActions.openPubkey) {
-          list.add(SearchActionItemComponent(
-              title: s.Open_User_page, onTap: openPubkey));
-        } else if (action == SearchActions.openNoteId) {
-          list.add(SearchActionItemComponent(
-              title: s.Open_Note_detail, onTap: openNoteId));
-        } else if (action == SearchActions.searchMetadataFromCache) {
-          list.add(SearchActionItemComponent(
-              title: s.Search_User_from_cache, onTap: searchMetadataFromCache));
-        } else if (action == SearchActions.searchEventFromCache) {
-          list.add(SearchActionItemComponent(
-              title: s.Open_Event_from_cache, onTap: searchEventFromCache));
-        } else if (action == SearchActions.searchPubkeyEvent) {
-          list.add(SearchActionItemComponent(
-              title: s.Search_pubkey_event, onTap: onEditingComplete));
-        } else if (action == SearchActions.searchNoteContent) {
-          list.add(SearchActionItemComponent(
-              title: "${s.Search_note_content} NIP-50",
-              onTap: searchNoteContent));
-        }
-      }
-      body = Container(
-        // width: double.infinity,
-        // height: double.infinity,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: list,
-        ),
-      );
     } else {
-      if (searchAction == SearchActions.searchMetadataFromCache) {
-        loadable = false;
-        body = Container(
-          child: ListView.builder(
-            controller: scrollController,
-            itemBuilder: (BuildContext context, int index) {
-              var metadata = metadatas[index];
-
-              return GestureDetector(
-                onTap: () {
-                  RouterUtil.router(context, RouterPath.USER, metadata.pubKey);
-                },
-                child: MetadataTopComponent(
-                  pubkey: metadata.pubKey!,
-                  metadata: metadata,
-                ),
-              );
-            },
-            itemCount: metadatas.length,
-          ),
-        );
-      } else if (searchAction == SearchActions.searchEventFromCache) {
-        loadable = false;
-        body = Container(
-          child: ListView.builder(
-            controller: scrollController,
-            itemBuilder: (BuildContext context, int index) {
-              var event = events[index];
-
-              return EventListComponent(
-                event: event,
-                showVideo:
-                    _settingProvider.videoPreview == OpenStatus.OPEN,
-              );
-            },
-            itemCount: events.length,
-          ),
-        );
-      } else if (searchAction == SearchActions.searchPubkeyEvent) {
-        loadable = true;
-        var events = eventMemBox.all();
-        body = Container(
-          child: ListView.builder(
-            controller: loadableScrollController,
-            itemBuilder: (BuildContext context, int index) {
-              var event = events[index];
-
-              return EventListComponent(
-                event: event,
-                showVideo:
-                    _settingProvider.videoPreview == OpenStatus.OPEN,
-              );
-            },
-            itemCount: itemLength,
-          ),
-        );
-      }
+      suffixWidget = !PlatformUtil.isTableMode()
+          ? GestureDetector(
+              onTap: () {
+                handleScanner();
+              },
+              child: const Icon(Icons.qr_code_scanner),
+            )
+          : Container();
+      //     onTap: handleScanner,
     }
+
+    bool? loadable = true;
+    var events = eventMemBox.all();
+    print("contacts: ${metadatasFromContacts.length} profile: ${metadatasFromSearch.length} events: ${events.length}");
+    Widget body = ListView.builder(
+        controller: scrollController,
+        itemBuilder: (BuildContext context, int index) {
+
+          Metadata? metadata;
+
+          if (index < metadatasFromContacts.length) {
+            metadata = metadatasFromContacts[index];
+          } else if (index < (metadatasFromContacts.length + metadatasFromSearch.length) ) {
+            metadata = metadatasFromSearch[index - metadatasFromContacts.length];
+          } else {
+            var event = events[index - metadatasFromContacts.length - metadatasFromSearch.length];
+            if (event.kind == kind.EventKind.METADATA) {
+              var jsonObj = jsonDecode(event.content);
+              metadata = Metadata.fromJson(jsonObj);
+              metadata.pubKey = event.pubKey;
+              bool inMetadatasAlready = metadatasFromContacts.any((element) =>
+              element.pubKey == metadata!.pubKey);
+              if (!metadata.matchesSearch(controller.text) ||
+                  inMetadatasAlready) {
+                metadata = null;
+              }
+            } else {
+              return EventListComponent(
+                          event: event,
+                          showVideo: _settingProvider.videoPreview == OpenStatus.OPEN,
+                        );
+            }
+          }
+          if (metadata!=null && metadata.pubKey!=null) {
+            return SearchMentionUserItemComponent(
+                metadata: metadata,
+                onTap: (metadata) {
+                  RouterUtil.router(context, RouterPath.USER, metadata!.pubKey);
+                },
+                width: 400,
+              );
+          }
+          return Container();
+        },
+        itemCount: metadatasFromContacts.length + metadatasFromSearch.length + events.length);
+
+    Widget body2 = ListView.builder(
+      controller: scrollController,
+      itemBuilder: (BuildContext context, int index) {
+        var event = events[index];
+
+        return EventListComponent(
+          event: event,
+          showVideo: _settingProvider.videoPreview == OpenStatus.OPEN,
+        );
+      },
+      itemCount: events.length,
+    );
+    // if (searchAction == SearchActions.searchEventFromCache) {
+    //   loadable = false;
+    //   body = Container(
+    //     child: ListView.builder(
+    //       controller: scrollController,
+    //       itemBuilder: (BuildContext context, int index) {
+    //         var event = events[index];
+    //
+    //         return EventListComponent(
+    //           event: event,
+    //           showVideo: _settingProvider.videoPreview == OpenStatus.OPEN,
+    //         );
+    //       },
+    //       itemCount: events.length,
+    //     ),
+    //   );
+    // } else if (searchAction == SearchActions.searchPubkeyEvent) {
+    //   loadable = true;
+    //   var events = eventMemBox.all();
+    //   body = Container(
+    //     child: ListView.builder(
+    //       controller: loadableScrollController,
+    //       itemBuilder: (BuildContext context, int index) {
+    //         var event = events[index];
+    //
+    //         return EventListComponent(
+    //           event: event,
+    //           showVideo: _settingProvider.videoPreview == OpenStatus.OPEN,
+    //         );
+    //       },
+    //       itemCount: itemLength,
+    //     ),
+    //   );
+    // }
+    // }
     if (body != null) {
       if (loadable != null && PlatformUtil.isTableMode()) {
         body = GestureDetector(
@@ -207,10 +222,12 @@ class _SearchRouter extends CustState<SearchRouter>
           child: Column(children: [
             Container(
               child: TextField(
+                autofocus: true,
+                focusNode: focusNode,
                 controller: controller,
                 decoration: InputDecoration(
                   prefixIcon: Icon(Icons.search),
-                  hintText: s.Please_input_search_content,
+                  // hintText: "contacts, profiles by name, #hashtags",
                   suffixIcon: suffixWidget,
                 ),
                 onEditingComplete: onEditingComplete,
@@ -227,11 +244,12 @@ class _SearchRouter extends CustState<SearchRouter>
 
   List<int> searchEventKinds = [
     kind.EventKind.TEXT_NOTE,
-    kind.EventKind.REPOST,
-    kind.EventKind.GENERIC_REPOST,
-    kind.EventKind.LONG_FORM,
-    kind.EventKind.FILE_HEADER,
-    kind.EventKind.POLL,
+    // kind.EventKind.REPOST,
+    // kind.EventKind.GENERIC_REPOST,
+    // kind.EventKind.LONG_FORM,
+    // kind.EventKind.FILE_HEADER,
+    // kind.EventKind.POLL,
+    kind.EventKind.METADATA
   ];
 
   String? subscribeId;
@@ -275,12 +293,19 @@ class _SearchRouter extends CustState<SearchRouter>
   }
 
   void onQueryEvent(Event event) {
-    later(event, (list) {
-      var addResult = eventMemBox.addList(list);
-      if (addResult) {
-        setState(() {});
-      }
-    }, null);
+    if (event.kind == kind.EventKind.METADATA) {
+      var jsonObj = jsonDecode(event.content);
+      Metadata metadata = Metadata.fromJson(jsonObj);
+      metadata.pubKey = event.pubKey;
+      metadatasFromSearch.add(metadata);
+    } else {
+      later(event, (list) {
+        var addResult = eventMemBox.addList(list);
+        if (addResult) {
+          setState(() {});
+        }
+      }, null);
+    }
   }
 
   void unSubscribe() {
@@ -289,7 +314,7 @@ class _SearchRouter extends CustState<SearchRouter>
   }
 
   void onEditingComplete() {
-    hideKeyBoard();
+    // hideKeyBoard();
     searchAction = SearchActions.searchPubkeyEvent;
 
     var value = controller.text;
@@ -304,7 +329,7 @@ class _SearchRouter extends CustState<SearchRouter>
         var result = Nip19.decode(value);
         authors = [result];
       } catch (e) {
-        log(e.toString());
+        print(e.toString());
         // TODO handle error
         return;
       }
@@ -376,11 +401,12 @@ class _SearchRouter extends CustState<SearchRouter>
     }
   }
 
-  List<Metadata> metadatas = [];
+  List<Metadata> metadatasFromContacts = [];
+  List<Metadata> metadatasFromSearch = [];
 
   searchMetadataFromCache() {
-    hideKeyBoard();
-    metadatas.clear();
+    // hideKeyBoard();
+    metadatasFromContacts.clear();
     searchAction = SearchActions.searchMetadataFromCache;
 
     var text = controller.text;
@@ -388,8 +414,10 @@ class _SearchRouter extends CustState<SearchRouter>
       var list = metadataProvider.findUser(text, limit: searchMemLimit);
 
       setState(() {
-        metadatas = list;
+        metadatasFromContacts = list;
       });
+    } else {
+      setState(() {});
     }
   }
 
@@ -418,13 +446,20 @@ class _SearchRouter extends CustState<SearchRouter>
   checkInput() {
     searchAction = null;
     searchAbles.clear();
+    metadatasFromContacts.clear();
+    metadatasFromSearch.clear();
+    eventMemBox.clear();
 
     var text = controller.text;
-    if (text == lastText) {
-      return;
-    }
+    // if (text == lastText) {
+    //   return;
+    // }
 
     if (StringUtil.isNotBlank(text)) {
+      searchMetadataFromCache();
+      if (text.trim().length>=3 && metadatasFromContacts.length < 20) {
+        searchNoteContent();
+      }
       if (Nip19.isPubkey(text)) {
         searchAbles.add(SearchActions.openPubkey);
       }
@@ -441,8 +476,47 @@ class _SearchRouter extends CustState<SearchRouter>
     setState(() {});
   }
 
+  Future<void> handleScanner() async {
+    var result = await RouterUtil.router(context, RouterPath.QRSCANNER);
+    if (StringUtil.isNotBlank(result)) {
+      if (Nip19.isPubkey(result)) {
+        var pubkey = Nip19.decode(result);
+        RouterUtil.router(context, RouterPath.USER, pubkey);
+      } else if (NIP19Tlv.isNprofile(result)) {
+        var nprofile = NIP19Tlv.decodeNprofile(result);
+        if (nprofile != null) {
+          RouterUtil.router(context, RouterPath.USER, nprofile!.pubkey);
+        }
+      } else if (Nip19.isNoteId(result)) {
+        var noteId = Nip19.decode(result);
+        RouterUtil.router(context, RouterPath.EVENT_DETAIL, noteId);
+      } else if (NIP19Tlv.isNevent(result)) {
+        var nevent = NIP19Tlv.decodeNevent(result);
+        if (nevent != null) {
+          RouterUtil.router(context, RouterPath.EVENT_DETAIL, nevent.id);
+        }
+      } else if (NIP19Tlv.isNrelay(result)) {
+        var nrelay = NIP19Tlv.decodeNrelay(result);
+        if (nrelay != null) {
+          var result = await ConfirmDialog.show(
+              context, I18n.of(context).Add_this_relay_to_local);
+          if (result == true) {
+            relayProvider.addRelay(nrelay.addr);
+          }
+        }
+      } else if (result.indexOf("http") == 0) {
+        launchUrl(Uri.parse(result), mode: LaunchMode.externalApplication);
+        // WebViewRouter.open(context, result);
+      } else {
+        Clipboard.setData(ClipboardData(text: result)).then((_) {
+          BotToast.showText(text: I18n.of(context).Copy_success);
+        });
+      }
+    }
+  }
+
   searchNoteContent() {
-    hideKeyBoard();
+    // hideKeyBoard();
     searchAction = SearchActions.searchPubkeyEvent;
 
     var value = controller.text;
@@ -452,6 +526,7 @@ class _SearchRouter extends CustState<SearchRouter>
     // }
 
     eventMemBox = EventMemBox();
+    metadatasFromContacts.clear();
     until = null;
     filterMap = Filter(kinds: searchEventKinds, limit: queryLimit).toJson();
     filterMap!.remove("authors");
