@@ -44,7 +44,7 @@ class FilterProvider extends ChangeNotifier {
     if (dirtywordList.isEmpty) {
       return false;
     }
-    return trieTree.check(targetStr);
+    return trieTree.check(targetStr.toLowerCase());
   }
 
   void removeDirtyword(String word) {
@@ -61,7 +61,7 @@ class FilterProvider extends ChangeNotifier {
 
   void addDirtyword(String word) {
     dirtywordList.add(word);
-    trieTree.root.insertWord(word.codeUnits, []);
+    trieTree.root.insertWord(word.toLowerCase().codeUnits, []);
 
     _updateDirtyword();
   }
