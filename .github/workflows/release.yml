@@ -104,6 +104,7 @@ jobs:
       - run: flutter build linux
       - run: dart pub global activate flutter_distributor
       - run: flutter_distributor package --platform linux --targets deb
+      - run: cp dist/*/*.deb yana-linux-x86_64-${{ github.ref_name }}.deb
       #- run: flutter_distributor package --platform linux --targets appimage
 
       - run: wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
@@ -131,7 +132,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ needs.release.outputs.upload_url }}
-          asset_path: dist/${{ github.ref_name }}/yana-${{ github.ref_name }}+${{ github.ref_name }}-linux.deb
+          asset_path: yana-linux-x86_64-${{ github.ref_name }}.deb
           asset_name: yana-linux-x86_64-${{ github.ref_name }}.deb
           asset_content_type: application/zip
 
