@@ -4,6 +4,7 @@ import 'dart:ui';
 import 'package:sizer/sizer.dart';
 import 'package:protocol_handler/protocol_handler.dart';
 
+import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -324,28 +325,28 @@ void initBackgroundService(bool startOnBoot) async {
   // const int helloAlarmID = 0;
   // await AndroidAlarmManager.periodic(const Duration(seconds: 10), helloAlarmID, printHello, wakeup: true, exact: true, allowWhileIdle: true, rescheduleOnReboot: true);
 
-  // AwesomeNotifications().isNotificationAllowed().then((isAllowed) async {
-  //   if (!isAllowed) {
-  //     await AwesomeNotifications()
-  //         .requestPermissionToSendNotifications(permissions: [
-  //       NotificationPermission.Vibration,
-  //       NotificationPermission.Badge,
-  //       NotificationPermission.Light,
-  //       NotificationPermission.Sound,
-  //       NotificationPermission.PreciseAlarms,
-  //     ]);
-  //   }
-  // });
-  // AwesomeNotifications().initialize('resource://drawable/white', [
-  //   NotificationChannel(
-  //     channelGroupKey: 'yana',
-  //     channelKey: 'yana',
-  //     channelShowBadge: true,
-  //     channelName: 'Basic notifications',
-  //     channelDescription: 'Notification channel for basic tests',
-  //     // channelShowBadge: true,
-  //   ),
-  // ]);
+  AwesomeNotifications().isNotificationAllowed().then((isAllowed) async {
+    if (!isAllowed) {
+      await AwesomeNotifications()
+          .requestPermissionToSendNotifications(permissions: [
+        NotificationPermission.Vibration,
+        NotificationPermission.Badge,
+        NotificationPermission.Light,
+        NotificationPermission.Sound,
+        NotificationPermission.PreciseAlarms,
+      ]);
+    }
+  });
+  AwesomeNotifications().initialize('resource://drawable/white', [
+    NotificationChannel(
+      channelGroupKey: 'yana',
+      channelKey: 'yana',
+      channelShowBadge: true,
+      channelName: 'Basic notifications',
+      channelDescription: 'Notification channel for basic tests',
+      // channelShowBadge: true,
+    ),
+  ]);
   // AwesomeNotifications().setListeners(
   //   onActionReceivedMethod: NewNotificationsProvider.onActionReceivedMethod,
   //   onNotificationCreatedMethod:
