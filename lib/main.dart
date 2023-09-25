@@ -176,15 +176,15 @@ void onStart(ServiceInstance service) async {
   } else {
     Timer.periodic(const Duration(seconds: 60), (timer) async {
       if (service is AndroidServiceInstance) {
-        AwesomeNotifications().getAppLifeCycle().then((value) {
-          if (value.toString() != "NotificationLifeCycle.Foreground" &&
-              nostr != null) {
+        // AwesomeNotifications().getAppLifeCycle().then((value) {
+        //   if (value.toString() != "NotificationLifeCycle.Foreground" &&
+        //       nostr != null) {
             appState = AppLifecycleState.inactive;
             nostr!.checkAndReconnectRelays().then((a) {
               newNotificationsProvider.queryNew();
             });
-          }
-        });
+        //   }
+        // });
       }
     });
   }
@@ -347,11 +347,11 @@ void initBackgroundService(bool startOnBoot) async {
       // channelShowBadge: true,
     ),
   ]);
-  AwesomeNotifications().setListeners(
-    onActionReceivedMethod: NewNotificationsProvider.onActionReceivedMethod,
-    onNotificationCreatedMethod:
-    NewNotificationsProvider.onNotificationCreatedMethod,
-  );
+  // AwesomeNotifications().setListeners(
+  //   onActionReceivedMethod: NewNotificationsProvider.onActionReceivedMethod,
+  //   onNotificationCreatedMethod:
+  //   NewNotificationsProvider.onNotificationCreatedMethod,
+  // );
 
   /// OPTIONAL, using custom notification channel id
   const AndroidNotificationChannel channel = AndroidNotificationChannel(
