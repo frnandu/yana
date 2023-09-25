@@ -113,7 +113,7 @@ jobs:
       - run: ./appimagetool-x86_64.AppImage Yana.AppDir/
 
       # LINUX APPIMAGE
-      - name: Upload APPIMAGE to release
+      - name: Upload appImage to release
         id: upload-release-asset-appimage
         uses: actions/upload-release-asset@v1
         env:
