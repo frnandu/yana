@@ -190,7 +190,7 @@ jobs:
 #          prerelease: true
 
   publish-release:
-    needs: build_android,build_linux
+    needs: [build_android,build_linux]
     runs-on: ubuntu-latest
 
     steps:
