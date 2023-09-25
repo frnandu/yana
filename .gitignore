@@ -47,3 +47,7 @@ dist
 /Yana-x86_64.AppImage
 /appimagetool-x86_64.AppImage
 /linux/Yana.AppDir/logo.png
+/Yana.AppDir/logo.png
+/Yana.AppDir/yana
+/Yana.AppDir/lib/
+/Yana.AppDir/data/

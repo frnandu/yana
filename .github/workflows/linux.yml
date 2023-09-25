@@ -38,11 +38,11 @@ jobs:
       - run: flutter_distributor package --platform linux --targets deb
       #- run: flutter_distributor package --platform linux --targets appimage
 
-#      - run: wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
-#      - run: chmod +x  appimagetool-x86_64.AppImage
-#      - run: cp -r build/linux/x64/release/bundle/* Yana.AppDir/
-#      - run: cp -r assets/imgs/logo/logo.png Yana.AppDir/
-#      - run: ./appimagetool-x86_64.AppImage Yana.AppDir/
+      - run: wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
+      - run: chmod +x  appimagetool-x86_64.AppImage
+      - run: cp -r build/linux/x64/release/bundle/* Yana.AppDir/
+      - run: cp -r assets/imgs/logo/logo-new.png Yana.AppDir/logo.png
+      - run: ./appimagetool-x86_64.AppImage Yana.AppDir/
 
 #      - name: 'Artifact'
 #        uses: actions/upload-artifact@v2
