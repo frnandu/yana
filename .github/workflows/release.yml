@@ -9,7 +9,7 @@ on:
 
 jobs:
   build_android:
-    depends: release
+    needs: release
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -79,7 +79,7 @@ jobs:
 
 
   build_linux:
-    depends: release
+    needs: release
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -190,7 +190,7 @@ jobs:
 #          prerelease: true
 
   publish-release:
-    depends: build_android,build_linux
+    needs: build_android,build_linux
     runs-on: ubuntu-latest
 
     steps:
