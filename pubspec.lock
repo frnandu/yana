@@ -65,14 +65,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.2.1"
-  awesome_notifications:
-    dependency: "direct main"
-    description:
-      name: awesome_notifications
-      sha256: "86b524299d2bec2b0df66ae4d8e337a8ba29542a5e2382bc1023978bc75f41b6"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.6.19"
   bech32:
     dependency: "direct main"
     description:

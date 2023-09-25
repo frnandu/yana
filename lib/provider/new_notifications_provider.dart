@@ -1,6 +1,5 @@
 import 'dart:math';
 
-import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -22,32 +21,32 @@ class NewNotificationsProvider extends ChangeNotifier
 
   String? subscribeId;
 
-  @pragma("vm:entry-point")
-  static Future<void> onActionReceivedMethod(
-      ReceivedAction receivedAction) async {
-    if (kDebugMode) {
-      BotToast.showText(
-          text: "Received notification " + receivedAction.payload.toString());
-    }
-    newNotificationsProvider.queryNew();
-    Future.delayed(Duration(seconds: 1), () {
-      notificationsProvider.mergeNewEvent();
-    });
-
-    indexProvider.setCurrentTap(IndexTaps.NOTIFICATIONS);
-    //
-    // // Navigate into pages, avoiding to open the notification details page over another details page already opened
-    // MyApp.navigatorKey.currentState?.pushNamedAndRemoveUntil('/notification-page',
-    //         (route) => (route.settings.name != '/notification-page') || route.isFirst,
-    //     arguments: receivedAction);
-  }
-
+  // @pragma("vm:entry-point")
+  // static Future<void> onActionReceivedMethod(
+  //     ReceivedAction receivedAction) async {
+  //   if (kDebugMode) {
+  //     BotToast.showText(
+  //         text: "Received notification " + receivedAction.payload.toString());
+  //   }
+  //   newNotificationsProvider.queryNew();
+  //   Future.delayed(Duration(seconds: 1), () {
+  //     notificationsProvider.mergeNewEvent();
+  //   });
+  //
+  //   indexProvider.setCurrentTap(IndexTaps.NOTIFICATIONS);
+  //   //
+  //   // // Navigate into pages, avoiding to open the notification details page over another details page already opened
+  //   // MyApp.navigatorKey.currentState?.pushNamedAndRemoveUntil('/notification-page',
+  //   //         (route) => (route.settings.name != '/notification-page') || route.isFirst,
+  //   //     arguments: receivedAction);
+  // }
+  //
   /// Use this method to detect when a new notification or a schedule is created
-  @pragma("vm:entry-point")
-  static Future<void> onNotificationCreatedMethod(
-      ReceivedNotification receivedNotification) async {
-    // Your code goes here
-  }
+  // @pragma("vm:entry-point")
+  // static Future<void> onNotificationCreatedMethod(
+  //     ReceivedNotification receivedNotification) async {
+  //   // Your code goes here
+  // }
 
   @pragma('vm:entry-point')
   void queryNew() {
@@ -91,29 +90,20 @@ class NewNotificationsProvider extends ChangeNotifier
       // AwesomeNotifications().getAppLifeCycle().then((value) {
       //   if (value.toString() != "NotificationLifeCycle.Foreground") {
           metadataProvider.getMostRecentMetadata(events.first.pubKey, (metadata) {
-            AwesomeNotifications().createNotification(
-              content: NotificationContent(
-                  id: events.first.id.hashCode,
-                  channelKey: 'yana',
-                  largeIcon: metadata?.picture,
-                  title: "${metadata != null
-                      ? metadata.getName()
-                      : "??"}: ${events
-                      .first.content.replaceAll('+', '❤')}",
-                  payload: {"name": "new notification"},
-                  // badge:
-                  // eventMemBox.length()
-                // +
-                //     dmProvider.howManyNewDMSessionsWithNewMessages(
-                //         dmProvider.followingList) +
-                //     dmProvider
-                //         .howManyNewDMSessionsWithNewMessages(
-                //         dmProvider.knownList) +
-                //     dmProvider
-                //         .howManyNewDMSessionsWithNewMessages(
-                //         dmProvider.unknownList)
-              ),
-            );
+            // AwesomeNotifications().createNotification(
+            //   content: NotificationContent(
+            //       id: events.first.id.hashCode,
+            //       channelKey: 'yana',
+            //       largeIcon: metadata?.picture,
+            //       title: "${metadata != null
+            //           ? metadata.getName()
+            //           : "??"}: ${events
+            //           .first.content.replaceAll('+', '❤')}",
+            //       payload: {"name": "new notification"},
+            //       // badge:
+            //       // eventMemBox.length()
+            //   ),
+            // );
           });
         // }
       // });
