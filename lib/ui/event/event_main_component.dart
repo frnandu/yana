@@ -64,6 +64,8 @@ class EventMainComponent extends StatefulWidget {
 
   bool showSubject;
 
+  bool showReactions;
+
   bool showCommunity;
 
   EventRelation? eventRelation;
@@ -79,6 +81,7 @@ class EventMainComponent extends StatefulWidget {
     this.imageListMode = false,
     this.showDetailBtn = true,
     this.showLongContent = false,
+    this.showReactions = true,
     this.showSubject = true,
     this.showCommunity = true,
     this.eventRelation,
@@ -236,12 +239,14 @@ class _EventMainComponent extends State<EventMainComponent> {
           ));
         }
 
-        list.add(EventReactionsComponent(
-          screenshotController: widget.screenshotController,
-          event: widget.event,
-          eventRelation: eventRelation,
-          showDetailBtn: widget.showDetailBtn,
-        ));
+        if (widget.showReactions) {
+          list.add(EventReactionsComponent(
+            screenshotController: widget.screenshotController,
+            event: widget.event,
+            eventRelation: eventRelation,
+            showDetailBtn: widget.showDetailBtn,
+          ));
+        }
       } else if (widget.event.kind == kind.EventKind.REPOST ||
           widget.event.kind == kind.EventKind.GENERIC_REPOST) {
         list.add(Container(
@@ -251,11 +256,13 @@ class _EventMainComponent extends State<EventMainComponent> {
         if (repostEvent != null) {
           list.add(EventQuoteComponent(
             event: repostEvent,
+            showReactions:  widget.showReactions,
             showVideo: widget.showVideo,
           ));
         } else if (StringUtil.isNotBlank(eventRelation.rootId)) {
           list.add(EventQuoteComponent(
             id: eventRelation.rootId,
+            showReactions:  widget.showReactions,
             showVideo: widget.showVideo,
           ));
         } else {
@@ -299,6 +306,7 @@ class _EventMainComponent extends State<EventMainComponent> {
           if (eventRelation.replyId!=null) {
             list.add(EventQuoteComponent(
               id: eventRelation.replyId,
+              showReactions:  widget.showReactions,
               showVideo: widget.showVideo,
             ));
           }
@@ -381,7 +389,7 @@ class _EventMainComponent extends State<EventMainComponent> {
           }
         }
 
-        if (widget.event.kind != kind.EventKind.ZAP) {
+        if (widget.event.kind != kind.EventKind.ZAP && widget.showReactions) {
           list.add(EventReactionsComponent(
             screenshotController: widget.screenshotController,
             event: widget.event,

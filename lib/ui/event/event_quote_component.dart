@@ -18,9 +18,12 @@ class EventQuoteComponent extends StatefulWidget {
 
   bool showVideo;
 
+  bool showReactions;
+
   EventQuoteComponent({
     this.event,
     this.id,
+    this.showReactions = false,
     this.showVideo = false,
   });
 
@@ -85,6 +88,7 @@ class _EventQuoteComponent extends CustState<EventQuoteComponent> {
           child: EventMainComponent(
             screenshotController: screenshotController,
             event: event,
+            showReactions: widget.showReactions,
             showReplying: false,
             textOnTap: () {
               jumpToThread(event);

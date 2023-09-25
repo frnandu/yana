@@ -7,6 +7,8 @@ import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:yana/models/event_find_util.dart';
 import 'package:yana/models/metadata.dart';
+import 'package:yana/provider/relay_provider.dart';
+import 'package:yana/router/search/search_action_item_component.dart';
 import 'package:yana/router/search/search_actions.dart';
 import 'package:yana/utils/when_stop_function.dart';
 
@@ -79,6 +81,7 @@ class _SearchRouter extends CustState<SearchRouter>
   Widget doBuild(BuildContext context) {
     var s = I18n.of(context);
     var _settingProvider = Provider.of<SettingProvider>(context);
+    var _relayProvider = Provider.of<RelayProvider>(context);
     preBuild();
 
     Widget? suffixWidget;
@@ -130,6 +133,7 @@ class _SearchRouter extends CustState<SearchRouter>
             } else {
               return EventListComponent(
                           event: event,
+                          showReactions: false,
                           showVideo: _settingProvider.videoPreview == OpenStatus.OPEN,
                         );
             }
@@ -147,18 +151,16 @@ class _SearchRouter extends CustState<SearchRouter>
         },
         itemCount: metadatasFromCache.length + metadatasFromSearch.length + events.length);
 
-    Widget body2 = ListView.builder(
-      controller: scrollController,
-      itemBuilder: (BuildContext context, int index) {
-        var event = events[index];
+    if (StringUtil.isBlank(controller.text)) {
+      bool anyNip50 = nostr!.activeRelays().any((relay) => relay.info!=null && relay.info!.nips!=null && relay.info!.nips.contains(50));
+      if (!anyNip50) {
+        body = SearchActionItemComponent(onTap: () {
+          RouterUtil.router(context, RouterPath.RELAYS);
+        },
+            title: "⚠ You have no relays with search capabilities (NIP-50 support).\nConsider adding some (ex.: wss://relay.nostr.band), otherwise ONLY your contacts metadata will be searched.\nClick to relay settings >>");
+      }
+    }
 
-        return EventListComponent(
-          event: event,
-          showVideo: _settingProvider.videoPreview == OpenStatus.OPEN,
-        );
-      },
-      itemCount: events.length,
-    );
     // if (searchAction == SearchActions.searchEventFromCache) {
     //   loadable = false;
     //   body = Container(
@@ -244,11 +246,11 @@ class _SearchRouter extends CustState<SearchRouter>
 
   List<int> searchEventKinds = [
     kind.EventKind.TEXT_NOTE,
-    // kind.EventKind.REPOST,
-    // kind.EventKind.GENERIC_REPOST,
-    // kind.EventKind.LONG_FORM,
-    // kind.EventKind.FILE_HEADER,
-    // kind.EventKind.POLL,
+    kind.EventKind.REPOST,
+    kind.EventKind.GENERIC_REPOST,
+    kind.EventKind.LONG_FORM,
+    kind.EventKind.FILE_HEADER,
+    kind.EventKind.POLL,
     kind.EventKind.METADATA
   ];
 
@@ -368,7 +370,7 @@ class _SearchRouter extends CustState<SearchRouter>
     disposeWhenStop();
   }
 
-  static const int searchMemLimit = 100;
+  static const int searchMemLimit = 20;
 
   onDeletedCallback(Event event) {
     eventMemBox.delete(event.id);

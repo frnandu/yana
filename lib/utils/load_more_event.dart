@@ -27,11 +27,11 @@ mixin LoadMoreEvent {
     }
   }
 
-  int queryInterval = 1000 * 15;
+  int queryInterval = 1000 * 5;
 
   int? until;
 
-  int queryLimit = 50;
+  int queryLimit = 20;
 
   DateTime? queryTime;
 

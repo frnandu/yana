@@ -31,6 +31,8 @@ class EventListComponent extends StatefulWidget {
 
   bool showDetailBtn;
 
+  bool showReactions;
+
   bool showContent;
 
   bool showLongContent;
@@ -45,6 +47,7 @@ class EventListComponent extends StatefulWidget {
     this.showContent = true,
     this.imageListMode = true,
     this.showDetailBtn = true,
+    this.showReactions = true,
     this.showLongContent = false,
     this.showCommunity = true,
   });
@@ -82,6 +85,7 @@ class _EventListComponent extends State<EventListComponent> {
           showVideo: widget.showVideo,
           imageListMode: widget.imageListMode,
           showDetailBtn: widget.showDetailBtn,
+          showReactions: widget.showReactions,
           showLongContent: widget.showLongContent,
           showCommunity: widget.showCommunity,
           eventRelation: eventRelation,
