@@ -4,6 +4,7 @@ import 'dart:developer';
 import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_font_picker/flutter_font_picker.dart';
+import 'package:google_mlkit_translation/google_mlkit_translation.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:provider/provider.dart';
 import 'package:settings_ui/settings_ui.dart';
@@ -24,6 +25,7 @@ import '../../provider/setting_provider.dart';
 import '../../ui/confirm_dialog.dart';
 import '../../ui/enum_multi_selector_component.dart';
 import '../../ui/enum_selector_component.dart';
+import '../../ui/translate/translate_model_manager.dart';
 import '../../utils/auth_util.dart';
 import '../../utils/base_consts.dart';
 import '../../utils/image_services.dart';
@@ -798,9 +800,9 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
   void initTranslateLanguages() {
     if (translateLanguages == null) {
       translateLanguages = [];
-      // for (var tl in TranslateLanguage.values) {
-      //   translateLanguages!.add(EnumObj(tl.bcpCode, tl.bcpCode));
-      // }
+      for (var tl in TranslateLanguage.values) {
+        translateLanguages!.add(EnumObj(tl.bcpCode, tl.bcpCode));
+      }
     }
   }
 
@@ -869,15 +871,15 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
       List<String> bcpCodes = translateSourceArgs!.split(",");
       bcpCodes.add(translateTarget!);
 
-      // var translateModelManager = TranslateModelManager.getInstance();
-      // BotToast.showText(
-      //     text: I18n.of(context).Begin_to_download_translate_model);
-      // var cancelFunc = BotToast.showLoading();
-      // try {
-      //   await translateModelManager.checkAndDownloadTargetModel(bcpCodes);
-      // } finally {
-      //   cancelFunc.call();
-      // }
+      var translateModelManager = TranslateModelManager.getInstance();
+      BotToast.showText(
+          text: I18n.of(context).Begin_to_download_translate_model);
+      var cancelFunc = BotToast.showLoading();
+      try {
+        await translateModelManager.checkAndDownloadTargetModel(bcpCodes);
+      } finally {
+        cancelFunc.call();
+      }
     }
   }
 
