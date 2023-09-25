@@ -44,11 +44,17 @@ jobs:
       - run: cp -r assets/imgs/logo/logo-new.png Yana.AppDir/logo.png
       - run: ./appimagetool-x86_64.AppImage Yana.AppDir/
 
-#      - name: 'Artifact'
-#        uses: actions/upload-artifact@v2
-#        with:
-#          name: Yana-x86_64.AppImage
-#          path: Yana-x86_64.AppImage
+      - name: 'Artifact'
+        uses: actions/upload-artifact@v2
+        with:
+          name: Yana-x86_64.AppImage
+          path: Yana-x86_64.AppImage
+
+      - name: 'Artifact'
+        uses: actions/upload-artifact@v2
+        with:
+          name: deb
+          path: dist/*
 #
 #  release:
 #    needs: build_android
