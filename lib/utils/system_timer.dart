@@ -35,8 +35,8 @@ class SystemTimer {
   static void runTask() {
     // log("SystemTimer runTask");
     if (nostr != null) {
-      // AwesomeNotifications().getAppLifeCycle().then((value) {
-      //   if (value.toString() == "NotificationLifeCycle.Foreground") {
+      AwesomeNotifications().getAppLifeCycle().then((value) {
+        if (value.toString() == "NotificationLifeCycle.Foreground") {
           if (kDebugMode) {
             print('!!!!!!!!!!!!!!! SystemTimer.runTask');
           }
@@ -47,8 +47,8 @@ class SystemTimer {
               followNewEventProvider.queryNew();
             }
           });
-      //   }
-      // });
+        }
+      });
     }
   }
 

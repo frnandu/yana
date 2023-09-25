@@ -3,6 +3,7 @@
 #
 
 list(APPEND FLUTTER_PLUGIN_LIST
+  awesome_notifications
   emoji_picker_flutter
   file_saver
   file_selector_windows

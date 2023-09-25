@@ -88,8 +88,8 @@ class NewNotificationsProvider extends ChangeNotifier
     eventMemBox.addList(events);
     _localSince = eventMemBox.newestEvent!.createdAt;
     if (eventMemBox.length() > previousCount) {
-      // AwesomeNotifications().getAppLifeCycle().then((value) {
-      //   if (value.toString() != "NotificationLifeCycle.Foreground") {
+      AwesomeNotifications().getAppLifeCycle().then((value) {
+        if (value.toString() != "NotificationLifeCycle.Foreground") {
           metadataProvider.getMostRecentMetadata(events.first.pubKey, (metadata) {
             AwesomeNotifications().createNotification(
               content: NotificationContent(
@@ -101,8 +101,8 @@ class NewNotificationsProvider extends ChangeNotifier
                       : "??"}: ${events
                       .first.content.replaceAll('+', '❤')}",
                   payload: {"name": "new notification"},
-                  // badge:
-                  // eventMemBox.length()
+                  badge:
+                  eventMemBox.length()
                 // +
                 //     dmProvider.howManyNewDMSessionsWithNewMessages(
                 //         dmProvider.followingList) +
@@ -115,8 +115,8 @@ class NewNotificationsProvider extends ChangeNotifier
               ),
             );
           });
-        // }
-      // });
+        }
+      });
     }
     notifyListeners();
   }
