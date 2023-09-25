@@ -188,7 +188,6 @@ jobs:
           asset_name: yana-linux-x86_64-${{ github.ref_name }}.deb
           asset_content_type: application/zip
   dockerimage:
-    needs: release
     name: Push Docker image to Docker Hub
     runs-on: ubuntu-latest
     steps:
