@@ -46,7 +46,7 @@ Compare this with the SHA256 found on nostr profile for [Yana](https://nostr.com
 
 ### - iOS
 
-*Only by sideloading the **.ipa** file (I haven't tested it because I don't use apple devices, if somebody can confirm that it works would be great, just let me know).*
+Use https://sideloadly.io/ to sideload the yana-version-ios.ipa file onto your ios device.
 
 ### - Web
 
