@@ -49,6 +49,8 @@
 - ~~ZAP loading icon until response/confirmation of zap receipt~~
 - ~~mention livesearch editor without popup~~
 
+
+- CORS on yana.do
 - solve floating icon in tablet mode above buttons
 
 - Wallet list of transactions    
