@@ -164,8 +164,6 @@ Using a Prism[^2] address at ⚡[prism@yana.do](https://www.lnurlpay.com/prism@y
 <img src="https://btc.fmar.link/img/paybutton/pay.svg" style="width:150px" alt="Pay with BTCPay Server, a Self-Hosted Bitcoin Payment Processor">
 </a>
 
-# Hacktoberfest
-
 ## Join
 
 Contributors are welcome to join the project, specially Designers UI/UX, coders, testers.\
