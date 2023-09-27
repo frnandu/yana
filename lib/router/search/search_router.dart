@@ -224,7 +224,7 @@ class _SearchRouter extends CustState<SearchRouter>
           child: Column(children: [
             Container(
               child: TextField(
-                autofocus: true,
+                // autofocus: true,
                 focusNode: focusNode,
                 controller: controller,
                 decoration: InputDecoration(
