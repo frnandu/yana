@@ -53,7 +53,7 @@
 - CORS on yana.do using imgproxy (darthsim/imgproxy)
 - wallet connect separated to each key/account
 - solve floating icon in tablet mode above buttons
-
+- crowdin.com using github actions
 
 - Wallet list of transactions    
 - Wallet balance in FIAT (choose currency) from coingecko/kraken?
