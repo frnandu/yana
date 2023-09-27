@@ -9,7 +9,6 @@ import '../../utils/base64.dart';
 import '../../utils/platform_util.dart';
 import '../../utils/string_util.dart';
 import '../event/event_quote_component.dart';
-import '../translate/line_translate_component.dart';
 import 'content_custom_emoji_component.dart';
 import 'content_event_tag_infos.dart';
 import 'content_image_component.dart';
@@ -67,10 +66,10 @@ class ContentDecoder {
           //   inlines[0],
           //   textOnTap: textOnTap,
           // ));
-          list.add(LineTranslateComponent(
-            []..add(inlines[0]),
-            textOnTap: textOnTap,
-          ));
+          // list.add(LineTranslateComponent(
+          //   []..add(inlines[0]),
+          //   textOnTap: textOnTap,
+          // ));
         } else {
           list.add(inlines[0]);
         }
@@ -89,10 +88,10 @@ class ContentDecoder {
         // }
         // list.add(Text.rich(TextSpan(children: spans)));
 
-        list.add(LineTranslateComponent(
-          []..addAll(inlines),
-          textOnTap: textOnTap,
-        ));
+        // list.add(LineTranslateComponent(
+        //   []..addAll(inlines),
+        //   textOnTap: textOnTap,
+        // ));
       }
       inlines.clear();
     }
