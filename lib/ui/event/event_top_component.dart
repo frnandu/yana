@@ -15,6 +15,7 @@ import '../../models/metadata.dart';
 import '../../nostr/event.dart';
 import '../../provider/metadata_provider.dart';
 import '../../utils/base.dart';
+import '../user_pic_component.dart';
 
 class EventTopComponent extends StatefulWidget {
   Event event;
@@ -66,21 +67,10 @@ class _EventTopComponent extends State<EventTopComponent> {
       builder: (context, metadata, child) {
         var themeData = Theme.of(context);
 
-        Widget? imageWidget;
-        if (metadata != null) {
-          if (StringUtil.isNotBlank(metadata.picture)) {
-            imageWidget = CachedNetworkImage(
-              imageUrl: metadata.picture!,
-              width: IMAGE_WIDTH,
-              height: IMAGE_WIDTH,
-              fit: BoxFit.cover,
-              placeholder: (context, url) => const CircularProgressIndicator(),
-              errorWidget: (context, url, error) => const Icon(Icons.error),
-              cacheManager: localCacheManager,
-            );
-          }
-        }
-
+        Widget? imageWidget = UserPicComponent(
+          pubkey: widget.event.pubKey,
+          width: IMAGE_WIDTH,
+        );
         return Container(
           padding: const EdgeInsets.only(
             left: Base.BASE_PADDING,

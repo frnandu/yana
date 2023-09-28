@@ -16,6 +16,16 @@ class RelayProvider extends ChangeNotifier {
 
   List<String> relayAddrs = [];
 
+  static const List<String> STATIC_RELAY_ADDRS =  [
+    "wss://relay.damus.io",
+    "wss://nos.lol",
+    "wss://nostr.wine",
+    "wss://atlas.nostr.land",
+    "wss://relay.orangepill.dev",
+    "wss://relay.snort.social",
+    "wss://relay.nostr.band", // for search (NIP-50)
+  ];
+
   Map<String, RelayStatus> relayStatusMap = {};
 
   static RelayProvider getInstance() {
@@ -26,6 +36,7 @@ class RelayProvider extends ChangeNotifier {
     return _relayProvider!;
   }
 
+
   List<String>? load() {
     relayAddrs.clear();
     var list = sharedPreferences.getStringList(DataKey.RELAY_LIST);
@@ -35,15 +46,7 @@ class RelayProvider extends ChangeNotifier {
 
     if (relayAddrs.isEmpty) {
       // init relays
-      relayAddrs = [
-        "wss://nos.lol",
-        "wss://nostr.wine",
-        "wss://relay.nostr.band", // for search (NIP-50)
-        "wss://atlas.nostr.land",
-        "wss://relay.orangepill.dev",
-        "wss://relay.damus.io",
-        "wss://relay.snort.social",
-      ];
+      relayAddrs = List<String>.from(STATIC_RELAY_ADDRS);
     }
   }
 
@@ -142,7 +145,7 @@ class RelayProvider extends ChangeNotifier {
     return sharedPreferences.getInt(DataKey.RELAY_UPDATED_TIME);
   }
 
-  void _updateRelayToData({bool upload = true}) {
+  void _updateRelayToData({bool upload = true, List<String> broadcastToRelays = STATIC_RELAY_ADDRS}) {
     sharedPreferences.setStringList(DataKey.RELAY_LIST, relayAddrs);
     sharedPreferences.setInt(DataKey.RELAY_UPDATED_TIME,
         DateTime.now().millisecondsSinceEpoch ~/ 1000);
@@ -153,9 +156,27 @@ class RelayProvider extends ChangeNotifier {
       for (var addr in relayAddrs) {
         tags.add(["r", addr, ""]);
       }
+
+      Set<String> uniqueRelays = Set<String>.from(broadcastToRelays);
+      uniqueRelays.addAll(relayAddrs);
+      var tempNostr = Nostr(privateKey: nostr!.privateKey, publicKey: nostr!.publicKey);
+
+      uniqueRelays.forEach((relayAddr) {
+        Relay r = Relay(
+          relayAddr,
+          RelayStatus(relayAddr),
+          access: WriteAccess.readWrite,
+        );
+        try {
+          tempNostr.addRelay(r, checkInfo: false);
+        } catch (e) {
+          log("relay $relayAddr add to temp nostr for broadcasting of nip065 relay list: ${e.toString()}");
+        }
+      });
+
       var event =
-          Event(nostr!.publicKey, kind.EventKind.RELAY_LIST_METADATA, tags, "");
-      nostr!.sendEvent(event);
+          Event(tempNostr!.publicKey, kind.EventKind.RELAY_LIST_METADATA, tags, "");
+      tempNostr!.sendEvent(event);
     }
   }
 

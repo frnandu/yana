@@ -4,15 +4,19 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:yana/models/metadata.dart';
 import 'package:yana/nostr/upload/uploader.dart';
+import 'package:yana/provider/relay_provider.dart';
 import 'package:yana/utils/platform_util.dart';
 import 'package:yana/utils/router_util.dart';
 import 'package:yana/utils/string_util.dart';
 
 import '../../i18n/i18n.dart';
 import '../../main.dart';
+import '../../models/relay_status.dart';
 import '../../nostr/event.dart';
 import '../../nostr/event_kind.dart' as kind;
 import '../../nostr/filter.dart';
+import '../../nostr/nostr.dart';
+import '../../nostr/relay.dart';
 import '../../ui/appbar4stack.dart';
 import '../../ui/cust_state.dart';
 import '../../utils/base.dart';
@@ -290,9 +294,26 @@ class _ProfileEditorRouter extends CustState<ProfileEditorRouter> {
     metadataMap["lud16"] = lud16Controller.text;
     metadataMap["lud06"] = lud06Controller.text;
 
+    Set<String> uniqueRelays = Set<String>.from(RelayProvider.STATIC_RELAY_ADDRS);
+    uniqueRelays.addAll(relayProvider.relayAddrs);
+    var tempNostr = Nostr(privateKey: nostr!.privateKey, publicKey: nostr!.publicKey);
+
+    uniqueRelays.forEach((relayAddr) {
+      Relay r = Relay(
+        relayAddr,
+        RelayStatus(relayAddr),
+        access: WriteAccess.readWrite,
+      );
+      try {
+        tempNostr.addRelay(r, checkInfo: false);
+      } catch (e) {
+        log("relay $relayAddr add to temp nostr for broadcasting of nip065 relay list: ${e.toString()}");
+      }
+    });
+
     var updateEvent = Event(
-        nostr!.publicKey, kind.EventKind.METADATA, [], jsonEncode(metadataMap));
-    nostr!.sendEvent(updateEvent);
+        tempNostr!.publicKey, kind.EventKind.METADATA, [], jsonEncode(metadataMap));
+    tempNostr!.sendEvent(updateEvent);
 
     RouterUtil.back(context);
   }

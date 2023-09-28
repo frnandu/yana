@@ -44,12 +44,6 @@ class MetadataProvider extends ChangeNotifier with LaterFunction {
       var values = _metadataCache.values;
       for (var metadata in values) {
         if (metadata.matchesSearch(str)) {
-        // String d = metadata.displayName!=null ? metadata.displayName!.toLowerCase()! : "";
-        // String n = metadata.name!=null ? metadata.name!.toLowerCase()! : "";
-        // if (d.startsWith(str) || d.contains(str2) || n.startsWith(str) || n.contains(str2)) {
-        // if ((metadata.displayName != null &&
-        //         metadata.displayName!.toLowerCase()!.contains(str)) ||
-        //     (metadata.name != null && metadata.name!.toLowerCase()!.contains(str))) {
           list.add(metadata);
 
           if (limit != null && list.length >= limit) {

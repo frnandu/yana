@@ -50,6 +50,7 @@
 - ~~mention livesearch editor without popup~~
 
 
+- broadcast NIP-65 kind=10002 to as many as possible
 - CORS on yana.do using imgproxy (darthsim/imgproxy)
 - wallet connect separated to each key/account
 - solve floating icon in tablet mode above buttons

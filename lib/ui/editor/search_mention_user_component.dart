@@ -9,6 +9,7 @@ import '../../utils/router_util.dart';
 import '../../utils/string_util.dart';
 import '../../utils/when_stop_function.dart';
 import '../name_component.dart';
+import '../user_pic_component.dart';
 import 'search_mention_component.dart';
 
 class SearchMentionUserComponent extends StatefulWidget {
@@ -101,18 +102,22 @@ class SearchMentionUserItemComponent extends StatelessWidget {
     var cardColor = themeData.cardColor;
     Color hintColor = themeData.hintColor;
 
-    Widget? imageWidget;
-    if (StringUtil.isNotBlank(metadata.picture)) {
-      imageWidget = CachedNetworkImage(
-        imageUrl: metadata.picture!,
-        width: IMAGE_WIDTH,
-        height: IMAGE_WIDTH,
-        fit: BoxFit.cover,
-        placeholder: (context, url) => CircularProgressIndicator(),
-        errorWidget: (context, url, error) => Icon(Icons.error),
-        cacheManager: localCacheManager,
-      );
-    }
+    Widget? imageWidget = UserPicComponent(
+      pubkey: metadata.pubKey!,
+      width: IMAGE_WIDTH,
+    );
+    //
+    // if (StringUtil.isNotBlank(metadata.picture)) {
+    //   imageWidget = CachedNetworkImage(
+    //     imageUrl: metadata.picture!,
+    //     width: IMAGE_WIDTH,
+    //     height: IMAGE_WIDTH,
+    //     fit: BoxFit.cover,
+    //     placeholder: (context, url) => CircularProgressIndicator(),
+    //     errorWidget: (context, url, error) => Icon(Icons.error),
+    //     cacheManager: localCacheManager,
+    //   );
+    // }
 
     String nip19Name = Nip19.encodeSimplePubKey(metadata.pubKey!);
     String displayName = nip19Name;

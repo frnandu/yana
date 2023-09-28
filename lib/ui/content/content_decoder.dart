@@ -51,8 +51,8 @@ class ContentDecoder {
 
   static String _closeHandledStr(String handledStr, List<dynamic> inlines) {
     if (StringUtil.isNotBlank(handledStr)) {
-      // inlines.add(Text(handledStr));
-      inlines.add(handledStr);
+      inlines.add(Text(handledStr));
+      // inlines.add(handledStr);
     }
     return "";
   }

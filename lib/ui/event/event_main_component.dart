@@ -484,21 +484,23 @@ class _EventMainComponent extends State<EventMainComponent> {
 
   Widget buildContentWidget(
       SettingProvider _settingProvider, bool imagePreview, bool videoPreview) {
+    List<Widget> content = ContentDecoder.decode(
+      context,
+      null,
+      widget.event,
+      textOnTap: widget.textOnTap,
+      showImage: imagePreview,
+      showVideo: videoPreview,
+      showLinkPreview: _settingProvider.linkPreview == OpenStatus.OPEN,
+      imageListMode: widget.imageListMode,
+    );
+
     var main = Container(
       width: double.maxFinite,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
-        children: ContentDecoder.decode(
-          context,
-          null,
-          widget.event,
-          textOnTap: widget.textOnTap,
-          showImage: imagePreview,
-          showVideo: videoPreview,
-          showLinkPreview: _settingProvider.linkPreview == OpenStatus.OPEN,
-          imageListMode: widget.imageListMode,
-        ),
+        children: content,
       ),
     );
 
