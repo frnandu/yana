@@ -301,6 +301,24 @@ class _UserRouter extends CustState<UserRouter>
     );
     subscribeId = StringUtil.rndNameStr(16);
 
+    // Set<String> uniqueRelays = Set<String>.from(broadcastToRelays);
+    // uniqueRelays.addAll(relayAddrs);
+    // var tempNostr = Nostr(privateKey: nostr!.privateKey, publicKey: nostr!.publicKey);
+    //
+    // uniqueRelays.forEach((relayAddr) {
+    //   Relay r = Relay(
+    //     relayAddr,
+    //     RelayStatus(relayAddr),
+    //     access: WriteAccess.readWrite,
+    //   );
+    //   try {
+    //     tempNostr.addRelay(r, checkInfo: false);
+    //   } catch (e) {
+    //     log("relay $relayAddr add to temp nostr for broadcasting of nip065 relay list: ${e.toString()}");
+    //   }
+    // });
+
+
     if (!box.isEmpty()) {
       var activeRelays = nostr!.activeRelays();
       var oldestCreatedAts = box.oldestCreatedAtByRelay(

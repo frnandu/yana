@@ -37,7 +37,6 @@ import '../content/markdown/markdown_nevent_inline_syntax.dart';
 import '../content/markdown/markdown_nprofile_inline_syntax.dart';
 import '../content/markdown/markdown_nrelay_element_builder.dart';
 import '../content/markdown/markdown_nrelay_inline_syntax copy.dart';
-import '../webview_router.dart';
 import 'event_poll_component.dart';
 import 'event_quote_component.dart';
 import 'event_reactions_component.dart';
