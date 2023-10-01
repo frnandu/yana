@@ -1,14 +1,20 @@
+import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:yana/models/relays_db.dart';
+import 'package:yana/nostr/relay_metadata.dart';
 
 import '../nostr/event.dart';
 import '../nostr/event_kind.dart' as kind;
+import '../nostr/filter.dart';
 import '../nostr/nostr.dart';
+
 import '../nostr/relay.dart';
 import '../utils/client_connected.dart';
 import '../models/relay_status.dart';
 import '../main.dart';
+import '../utils/string_util.dart';
 import 'data_util.dart';
 
 class RelayProvider extends ChangeNotifier {
@@ -16,7 +22,7 @@ class RelayProvider extends ChangeNotifier {
 
   List<String> relayAddrs = [];
 
-  static const List<String> STATIC_RELAY_ADDRS =  [
+  static const List<String> STATIC_RELAY_ADDRS = [
     "wss://relay.damus.io",
     "wss://nos.lol",
     "wss://nostr.wine",
@@ -36,6 +42,20 @@ class RelayProvider extends ChangeNotifier {
     return _relayProvider!;
   }
 
+  Future<void> getRelays(
+      String pubKey, Function(List<RelayMetadata>) onComplete) async {
+    List<RelayMetadata> relays = await RelaysDB.get(pubKey);
+    if (relays == null || relays.isEmpty) {
+      loadRelayList(
+        pubKey,
+        (relays) {
+          onComplete(relays);
+        },
+      );
+    } else {
+      onComplete(relays);
+    }
+  }
 
   List<String>? load() {
     relayAddrs.clear();
@@ -61,7 +81,7 @@ class RelayProvider extends ChangeNotifier {
     var it = relayAddrs;
     for (var url in it) {
       RelayStatus? status = relayStatusMap[url];
-      if (status !=null && status.connected == ClientConneccted.CONNECTED) {
+      if (status != null && status.connected == ClientConneccted.CONNECTED) {
         connectedNum++;
       }
     }
@@ -145,7 +165,9 @@ class RelayProvider extends ChangeNotifier {
     return sharedPreferences.getInt(DataKey.RELAY_UPDATED_TIME);
   }
 
-  void _updateRelayToData({bool upload = true, List<String> broadcastToRelays = STATIC_RELAY_ADDRS}) {
+  void _updateRelayToData(
+      {bool upload = true,
+      List<String> broadcastToRelays = STATIC_RELAY_ADDRS}) {
     sharedPreferences.setStringList(DataKey.RELAY_LIST, relayAddrs);
     sharedPreferences.setInt(DataKey.RELAY_UPDATED_TIME,
         DateTime.now().millisecondsSinceEpoch ~/ 1000);
@@ -159,7 +181,8 @@ class RelayProvider extends ChangeNotifier {
 
       Set<String> uniqueRelays = Set<String>.from(broadcastToRelays);
       uniqueRelays.addAll(relayAddrs);
-      var tempNostr = Nostr(privateKey: nostr!.privateKey, publicKey: nostr!.publicKey);
+      var tempNostr =
+          Nostr(privateKey: nostr!.privateKey, publicKey: nostr!.publicKey);
 
       uniqueRelays.forEach((relayAddr) {
         Relay r = Relay(
@@ -174,8 +197,8 @@ class RelayProvider extends ChangeNotifier {
         }
       });
 
-      var event =
-          Event(tempNostr!.publicKey, kind.EventKind.RELAY_LIST_METADATA, tags, "");
+      var event = Event(
+          tempNostr!.publicKey, kind.EventKind.RELAY_LIST_METADATA, tags, "");
       tempNostr!.sendEvent(event);
     }
   }
@@ -233,5 +256,85 @@ class RelayProvider extends ChangeNotifier {
     // sharedPreferences.remove(DataKey.RELAY_LIST);
     relayStatusMap.clear();
     load();
+  }
+
+  void loadRelayList(String pubKey, Function(List<RelayMetadata>) onComplete) {
+    Set<String> uniqueRelays =
+        Set<String>.from(RelayProvider.STATIC_RELAY_ADDRS);
+    uniqueRelays.addAll(relayProvider.relayAddrs);
+    var tempNostr =
+        Nostr(privateKey: nostr!.privateKey, publicKey: nostr!.publicKey);
+
+    uniqueRelays.forEach((relayAddr) {
+      Relay r = Relay(
+        relayAddr,
+        RelayStatus(relayAddr),
+        access: WriteAccess.readWrite,
+      );
+      try {
+        tempNostr.addRelay(r, checkInfo: false);
+      } catch (e) {
+        log("relay $relayAddr add to temp nostr for getting nip065 relay list: ${e.toString()}");
+      }
+    });
+
+    Event? relaysEvent;
+    var filter = Filter(
+        authors: [pubKey],
+        limit: 1,
+        kinds: [
+          kind.EventKind.RELAY_LIST_METADATA,
+          kind.EventKind.CONTACT_LIST
+        ]);
+    tempNostr!.query(id: StringUtil.rndNameStr(16), [filter.toJson()], (event) async {
+      if ((relaysEvent != null && event.createdAt > relaysEvent!.createdAt) ||
+          relaysEvent == null || event.kind == kind.EventKind.RELAY_LIST_METADATA) {
+        List<RelayMetadata>? relays = [];
+        if (event.kind == kind.EventKind.RELAY_LIST_METADATA) {
+          relaysEvent = event;
+          for (var tag in relaysEvent!.tags) {
+            if (tag is List<dynamic>) {
+              var length = tag.length;
+              bool write = true;
+              bool read = true;
+              if (length > 1) {
+                var name = tag[0];
+                var value = tag[1];
+                if (name == "r") {
+                  if (length > 2) {
+                    var operType = tag[2];
+                    if (operType == "read") {
+                      write = false;
+                    } else if (operType == "write") {
+                      read = false;
+                    }
+                  }
+                  relays!.add(RelayMetadata(value, read, write));
+                }
+              }
+            }
+          }
+        } else {
+          Map<String, dynamic> json = jsonDecode(event.content);
+          if (json.entries.isNotEmpty) {
+            relaysEvent = event;
+            for (var entry in json.entries) {
+              bool write = true;
+              bool read = true;
+              write = entry.value["write"];
+              read = entry.value["read"];
+              relays!.add(RelayMetadata(entry.key.toString(), read, write));
+            }
+          }
+        }
+
+        try {
+          await RelaysDB.insert(pubKey, relays, relaysEvent!.createdAt);
+        } catch (e) {
+          await RelaysDB.update(pubKey, relays, relaysEvent!.createdAt);
+        }
+        onComplete(relays);
+      }
+    });
   }
 }

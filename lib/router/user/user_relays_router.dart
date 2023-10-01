@@ -141,25 +141,25 @@ class RelayMetadataComponent extends StatelessWidget {
                     children: [
                       Container(
                         margin: EdgeInsets.only(right: Base.BASE_PADDING),
-                        child: Text(
+                        child: relayMetadata.read? Text(
                           s.Read,
                           style: TextStyle(
                             fontSize: bodySmallFontSize,
                             color:
-                                relayMetadata.read ? Colors.green : Colors.red,
+                            Colors.green,
                           ),
-                        ),
+                        ) : Container(),
                       ),
                       Container(
                         margin: EdgeInsets.only(right: Base.BASE_PADDING),
-                        child: Text(
+                        child: relayMetadata.write ? Text(
                           s.Write,
                           style: TextStyle(
                             fontSize: bodySmallFontSize,
                             color:
-                                relayMetadata.write ? Colors.green : Colors.red,
-                          ),
-                        ),
+                              Colors.red,
+                          ) ,
+                        ): Container(),
                       ),
                     ],
                   ),

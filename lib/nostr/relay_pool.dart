@@ -24,6 +24,8 @@ class RelayPool {
 
   final Map<String, Function> _queryCompleteCallbacks = {};
 
+  int minimumRelaysForComplete = 4;
+
   RelayPool(this.localNostr);
 
   Future<bool> add(Relay relay,
@@ -132,6 +134,7 @@ class RelayPool {
         // is Query find if need to callback
         var callback = _queryCompleteCallbacks[subId];
         if (callback != null) {
+          int completed = 0;
           // need to callback, check if all relay complete query
           var it = _relays.values;
           bool completeQuery = true;
@@ -140,8 +143,10 @@ class RelayPool {
               completeQuery = false;
               break;
             }
+            completed++;
           }
-          if (completeQuery) {
+          // activeRelays().length
+          if (completeQuery || completed >= minimumRelaysForComplete) {
             callback();
             _queryCompleteCallbacks.remove(subId);
           }

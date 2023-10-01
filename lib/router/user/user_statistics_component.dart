@@ -70,8 +70,10 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
 
   @override
   void initState() {
+    isLocal = widget.pubkey == nostr!.publicKey;
+
     if (!isLocal) {
-      doQuery();
+      loadContactList(nostr!);
     }
   }
 
@@ -82,7 +84,6 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
       // arg changed! reset
       contactListEvent = null;
       contactList = null;
-      relaysEvent = null;
       relays = null;
       zapEventBox = null;
       followedMap = null;
@@ -96,7 +97,6 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
     }
     pubkey = widget.pubkey;
 
-    isLocal = widget.pubkey == nostr!.publicKey;
 
     List<Widget> list = [];
 
@@ -253,92 +253,18 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
 
   @override
   Future<void> onReady(BuildContext context) async {
-    // if (!isLocal) {
-    //   doQuery();
-    // }
+    if (!isLocal) {
+      await relayProvider.getRelays(widget.pubkey, (relays) {
+        if (!_disposed) {
+          setState(() {
+            this.relays = relays;
+            relaysNum = relays.length;
+          });
+        }
+      });
+    }
     onFollowedTap();
     onZapTap();
-  }
-
-  void doQuery() {
-    // {
-    //   queryId = StringUtil.rndNameStr(16);
-    //   var filter = Filter(
-    //       authors: [widget.pubkey],
-    //       limit: 1,
-    //       kinds: [kind.EventKind.CONTACT_LIST]);
-    //   nostr!.query([filter.toJson()], (event) {
-    //     if (((contactListEvent != null &&
-    //                 event.createdAt > contactListEvent!.createdAt) ||
-    //             contactListEvent == null) &&
-    //         !_disposed) {
-    //       setState(() {
-    //         contactListEvent = event;
-    //         contactList = CustContactList.fromJson(event.tags);
-    //         if (widget.onContactListLoaded != null && contactList != null) {
-    //           widget.onContactListLoaded!(contactList!);
-    //         }
-    //       });
-    //     }
-    //   }, id: queryId, onComplete: () {
-    //
-    //   });
-    // }
-
-    {
-      queryId2 = StringUtil.rndNameStr(16);
-      var filter = Filter(
-          authors: [widget.pubkey],
-          limit: 1,
-          kinds: [kind.EventKind.RELAY_LIST_METADATA]);
-      nostr!.query(
-          [filter.toJson()],
-          (event) {
-            // BotToast.showText(text: "loaded relay list from "+event.sources.toString()+" with ${event.tags.length} relays");
-            if (((relaysEvent != null &&
-                        event.createdAt > relaysEvent!.createdAt) ||
-                    relaysEvent == null) &&
-                !_disposed) {
-              Nostr targetNostr = Nostr(publicKey: widget.pubkey);
-              List<RelayMetadata>? relays = [];
-              for (var tag in event.tags) {
-                if (tag is List<dynamic>) {
-                  var length = tag.length;
-                  bool write = true;
-                  bool read = true;
-                  if (length > 1) {
-                    var name = tag[0];
-                    var value = tag[1];
-                    if (name == "r") {
-                      if (length > 2) {
-                        var operType = tag[2];
-                        if (operType == "read") {
-                          write = false;
-                        } else if (operType == "write") {
-                          read = false;
-                        }
-                      }
-                      relays!.add(RelayMetadata(value, read, write));
-                      // RelayStatus status = RelayStatus(value);
-                      // status.connected = ClientConneccted.CONNECTED;
-                      // targetNostr.addRelay(Relay(value,status), checkInfo: false);
-                    }
-                  }
-                }
-              }
-              setState(() {
-                relaysEvent = event;
-                this.relays = relays;
-              });
-            }
-          },
-          id: queryId2,
-          // onComplete: () {
-          //   loadContactList(nostr!);
-          // }
-    );
-    }
-    loadContactList(nostr!);
   }
 
   void loadContactList(Nostr targetNostr) {
@@ -362,25 +288,6 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
               if (widget.onContactListLoaded != null && contactList != null) {
                 widget.onContactListLoaded!(contactList!);
               }
-            });
-          }
-          if (((relaysEvent != null &&
-              event.createdAt > relaysEvent!.createdAt) ||
-              relaysEvent == null) && StringUtil.isNotBlank(event.content) &&
-              !_disposed) {
-            Map<String,dynamic> json = jsonDecode(event.content);
-            relaysEvent = event;
-            List<RelayMetadata>? relays = [];
-            for (var entry in json.entries) {
-              bool write=true;
-              bool read=true;
-              write = entry.value["write"];
-              read = entry.value["read"];
-              relays!.add(RelayMetadata(entry.key.toString(), read, write));
-            }
-            setState(() {
-              relaysEvent = event;
-              this.relays = relays;
             });
           }
         },
@@ -444,7 +351,7 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
 
   onRelaysTap() {
     if (relays != null && relays!.isNotEmpty) {
-      RouterUtil.router(context, RouterPath.USER_RELAYS, relays);
+      RouterUtil.router(  context, RouterPath.USER_RELAYS, relays);
     } else if (isLocal) {
       RouterUtil.router(context, RouterPath.RELAYS);
     }

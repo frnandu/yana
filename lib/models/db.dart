@@ -3,7 +3,7 @@ import 'package:sqflite/sqflite.dart';
 import 'package:yana/utils/platform_util.dart';
 
 class DB {
-  static const _VERSION = 4;
+  static const _VERSION = 5;
 
   static const _dbName = "yana.db";
 
@@ -18,21 +18,43 @@ class DB {
       path = join(databasesPath, _dbName);
     }
 
+    const CREATE_RELAYS_SQL = "create table relay("
+        "pub_key TEXT not null primary key,"
+        "read       TEXT,"
+        "write       TEXT,"
+        "updated_at   datetime,"
+        " valid  INTEGER);";
+
     _database = await openDatabase(path, version: _VERSION,
         onOpen: (Database db) async {
-          // Database is open, print its version
-          print('Database version ${await db.getVersion()}');
-        },
-        onUpgrade: (Database db, int oldVersion, int newVersion) async {
-          print("Migration Database from $oldVersion to $newVersion");
+      // Database is open, print its version
+      print('Database version ${await db.getVersion()}');
+    }, onUpgrade: (Database db, int oldVersion, int newVersion) async {
+      print("Migration Database from $oldVersion to $newVersion");
       if (newVersion == _VERSION && oldVersion < 4) {
         String sql = "ALTER TABLE dm_session_info ADD known INTEGER";
         print("Migration SQL: $sql");
         await db.execute(sql);
       }
+      if (newVersion == _VERSION && oldVersion < 5) {
+        print("Migration SQL: $CREATE_RELAYS_SQL");
+        await db.execute(CREATE_RELAYS_SQL);
+      }
     }, onCreate: (Database db, int version) async {
-      db.execute(
-          "create table metadata(pub_key      TEXT not null primary key,banner       TEXT,website      TEXT,lud16        TEXT,lud06        TEXT,nip05        TEXT,picture      TEXT,display_name TEXT,about        TEXT,name         TEXT,updated_at   datetime, valid  INTEGER);");
+      db.execute("create table metadata("
+          "pub_key TEXT not null primary key,"
+          "banner       TEXT,"
+          "website      TEXT,"
+          "lud16        TEXT,"
+          "lud06        TEXT,"
+          "nip05        TEXT,"
+          "picture      TEXT,"
+          "display_name TEXT,"
+          "about        TEXT,"
+          "name         TEXT,"
+          "updated_at   datetime,"
+          " valid  INTEGER);");
+      db.execute(CREATE_RELAYS_SQL);
       db.execute(
           "create table event(key_index  INTEGER, id         text,pubkey     text,created_at integer,kind       integer,tags       text,content    text);");
       db.execute(

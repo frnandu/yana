@@ -29,7 +29,7 @@ class Nostr {
   }) {
     if (StringUtil.isNotBlank(privateKey)) {
       _privateKey = privateKey!;
-      _publicKey = getPublicKey(privateKey);
+      _publicKey = StringUtil.isNotBlank(publicKey)? publicKey! : getPublicKey(privateKey);
     } else {
       assert(publicKey != null);
 

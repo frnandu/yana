@@ -1,14 +1,20 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:yana/nostr/nip02/cust_contact_list.dart';
+import 'package:yana/nostr/relay_metadata.dart';
 
 import '../../main.dart';
 import '../../models/event_mem_box.dart';
 import '../../models/metadata.dart';
+import '../../models/relay_status.dart';
 import '../../nostr/event_kind.dart' as kind;
 import '../../nostr/filter.dart';
 import '../../nostr/nip02/contact.dart';
 import '../../nostr/nip19/nip19.dart';
+import '../../nostr/nostr.dart';
+import '../../nostr/relay.dart';
 import '../../provider/metadata_provider.dart';
 import '../../provider/setting_provider.dart';
 import '../../ui/appbar4stack.dart';
@@ -240,9 +246,14 @@ class _UserRouter extends CustState<UserRouter>
 
   String? subscribeId;
 
+  List<RelayMetadata> relays = [];
+
   @override
   Future<void> onReady(BuildContext context) async {
-    doQuery();
+    await relayProvider.getRelays(pubkey!, (relays) {
+      this.relays = relays;
+      doQuery();
+    });
 
     if (globalKey.currentState != null) {
       var controller = globalKey.currentState!.innerController;
@@ -301,23 +312,22 @@ class _UserRouter extends CustState<UserRouter>
     );
     subscribeId = StringUtil.rndNameStr(16);
 
-    // Set<String> uniqueRelays = Set<String>.from(broadcastToRelays);
-    // uniqueRelays.addAll(relayAddrs);
-    // var tempNostr = Nostr(privateKey: nostr!.privateKey, publicKey: nostr!.publicKey);
-    //
-    // uniqueRelays.forEach((relayAddr) {
-    //   Relay r = Relay(
-    //     relayAddr,
-    //     RelayStatus(relayAddr),
-    //     access: WriteAccess.readWrite,
-    //   );
-    //   try {
-    //     tempNostr.addRelay(r, checkInfo: false);
-    //   } catch (e) {
-    //     log("relay $relayAddr add to temp nostr for broadcasting of nip065 relay list: ${e.toString()}");
-    //   }
-    // });
+    // use relays for user where he/she writes
+    Set<String> uniqueRelays = Set<String>.from(relays.where((element) => element.write).map((e) => e.addr));
+    var tempNostr = Nostr(privateKey: nostr!.privateKey, publicKey: nostr!.publicKey);
 
+    uniqueRelays.forEach((relayAddr) {
+      Relay r = Relay(
+        relayAddr,
+        RelayStatus(relayAddr),
+        access: WriteAccess.readWrite,
+      );
+      try {
+        tempNostr.addRelay(r, checkInfo: false);
+      } catch (e) {
+        log("relay $relayAddr add to temp nostr for broadcasting of nip065 relay list: ${e.toString()}");
+      }
+    });
 
     if (!box.isEmpty()) {
       var activeRelays = nostr!.activeRelays();
@@ -330,9 +340,9 @@ class _UserRouter extends CustState<UserRouter>
         filter.until = oldestCreatedAt;
         filtersMap[relay.url] = [filter.toJson()];
       }
-      nostr!.queryByFilters(filtersMap, onEvent, id: subscribeId);
+      tempNostr!.queryByFilters(filtersMap, onEvent, id: subscribeId);
     } else {
-      nostr!.query([filter.toJson()], onEvent, id: subscribeId);
+      tempNostr!.query([filter.toJson()], onEvent, id: subscribeId);
     }
   }
 
