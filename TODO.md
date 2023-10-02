@@ -48,11 +48,11 @@
   ~~pay_invoice~~
 - ~~ZAP loading icon until response/confirmation of zap receipt~~
 - ~~mention livesearch editor without popup~~
+- ~~STOP followers/zaps events from blocking the relay, when navigate away from that profile~~
 
 
 - gossip 
 - broadcast NIP-65 kind=10002 to as many as possible
-- STOP followers/zaps events from blocking the relay, when navigate away from that profile
 - CORS on yana.do using imgproxy (darthsim/imgproxy)
 - wallet connect separated to each key/account
 - solve floating icon in tablet mode above buttons
