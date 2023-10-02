@@ -63,7 +63,7 @@ class SingleEventProvider extends ChangeNotifier with LaterFunction {
   }
 
   void _laterSearch() {
-    if (_needUpdateIds.isEmpty) {
+    if (_needUpdateIds.isEmpty || nostr==null) {
       return;
     }
 

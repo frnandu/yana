@@ -1,3 +1,4 @@
+import '../main.dart';
 import '../nostr/event.dart';
 
 mixin PenddingEventsLaterFunction {
@@ -17,7 +18,7 @@ mixin PenddingEventsLaterFunction {
 
     latering = true;
     Future.delayed(Duration(milliseconds: laterTimeMS), () {
-      if (!_running) {
+      if (!_running || nostr==null) {
         return;
       }
 

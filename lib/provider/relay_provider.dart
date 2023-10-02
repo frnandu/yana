@@ -20,6 +20,9 @@ import 'data_util.dart';
 class RelayProvider extends ChangeNotifier {
   static RelayProvider? _relayProvider;
 
+  // TODO make mechanism for reloading if cached/DB list is too old
+  static int RELOAD_RELAY_LIST_AFTER_THIS_SECONDS = 604800;
+
   List<String> relayAddrs = [];
 
   static const List<String> STATIC_RELAY_ADDRS = [
@@ -37,14 +40,13 @@ class RelayProvider extends ChangeNotifier {
   static RelayProvider getInstance() {
     if (_relayProvider == null) {
       _relayProvider = RelayProvider();
-      _relayProvider!.load();
     }
     return _relayProvider!;
   }
 
   Future<void> getRelays(
       String pubKey, Function(List<RelayMetadata>) onComplete) async {
-    List<RelayMetadata> relays = await RelaysDB.get(pubKey);
+    List<RelayMetadata>? relays = await RelaysDB.get(pubKey);
     if (relays == null || relays.isEmpty) {
       loadRelayList(
         pubKey,
@@ -57,17 +59,21 @@ class RelayProvider extends ChangeNotifier {
     }
   }
 
-  List<String>? load() {
-    relayAddrs.clear();
-    var list = sharedPreferences.getStringList(DataKey.RELAY_LIST);
-    if (list != null) {
-      relayAddrs.addAll(list);
-    }
+  Future<void> load(String? pubKey, Function onComplete) async {
+    if (pubKey!=null) {
+     relayProvider.getRelays(pubKey, (relays) {
+       relayAddrs.clear();
+       if (relays != null) {
+         relayAddrs.addAll(relays.map((e) => e.addr,));
+       }
 
-    if (relayAddrs.isEmpty) {
-      // init relays
-      relayAddrs = List<String>.from(STATIC_RELAY_ADDRS);
-    }
+       if (relayAddrs.isEmpty) {
+         // init relays
+         relayAddrs = List<String>.from(STATIC_RELAY_ADDRS);
+       }
+       onComplete();
+     });
+   }
   }
 
   RelayStatus? getRelayStatus(String addr) {
@@ -126,7 +132,7 @@ class RelayProvider extends ChangeNotifier {
     // .then((_) {
     //   dmProvider.query(targetNostr: _nostr, subscribe: true);
     // })
-    ;
+    // ;
     return _nostr;
   }
 
@@ -168,15 +174,16 @@ class RelayProvider extends ChangeNotifier {
   void _updateRelayToData(
       {bool upload = true,
       List<String> broadcastToRelays = STATIC_RELAY_ADDRS}) {
-    sharedPreferences.setStringList(DataKey.RELAY_LIST, relayAddrs);
     sharedPreferences.setInt(DataKey.RELAY_UPDATED_TIME,
         DateTime.now().millisecondsSinceEpoch ~/ 1000);
 
+    List<RelayMetadata> relays = [];
     // update to relay
     if (upload) {
       List<dynamic> tags = [];
       for (var addr in relayAddrs) {
         tags.add(["r", addr, ""]);
+        relays.add(RelayMetadata(addr, true, true));
       }
 
       Set<String> uniqueRelays = Set<String>.from(broadcastToRelays);
@@ -200,6 +207,12 @@ class RelayProvider extends ChangeNotifier {
       var event = Event(
           tempNostr!.publicKey, kind.EventKind.RELAY_LIST_METADATA, tags, "");
       tempNostr!.sendEvent(event);
+      int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+      try {
+        RelaysDB.insert(nostr!.publicKey, relays, now);
+      } catch (e) {
+        RelaysDB.update(nostr!.publicKey, relays, now);
+      }
     }
   }
 
@@ -217,25 +230,27 @@ class RelayProvider extends ChangeNotifier {
     )..relayStatusCallback = onRelayStatusChange;
   }
 
-  void setRelayListAndUpdate(List<String> addrs, String privKey) {
+  void setRelayListAndUpdate(List<String> addrs, String? privKey) {
     relayStatusMap.clear();
 
     relayAddrs.clear();
     relayAddrs.addAll(addrs);
     _updateRelayToData(upload: false);
 
-    if (nostr != null) {
-      nostr!.close();
-    }
-    nostr = Nostr(privateKey: privKey);
+    if (StringUtil.isNotBlank(privKey)) {
+      if (nostr != null) {
+        nostr!.close();
+      }
+      nostr = Nostr(privateKey: privKey);
 
-    // reconnect all client
-    for (var relayAddr in relayAddrs) {
-      var custRelay = genRelay(relayAddr);
-      try {
-        nostr!.addRelay(custRelay, autoSubscribe: true);
-      } catch (e) {
-        log("relay $relayAddr add to pool error ${e.toString()}");
+      // reconnect all client
+      for (var relayAddr in relayAddrs) {
+        var custRelay = genRelay(relayAddr);
+        try {
+          nostr!.addRelay(custRelay, autoSubscribe: true);
+        } catch (e) {
+          log("relay $relayAddr add to pool error ${e.toString()}");
+        }
       }
     }
   }
@@ -255,7 +270,7 @@ class RelayProvider extends ChangeNotifier {
   void clear() {
     // sharedPreferences.remove(DataKey.RELAY_LIST);
     relayStatusMap.clear();
-    load();
+    //load();
   }
 
   void loadRelayList(String pubKey, Function(List<RelayMetadata>) onComplete) {
@@ -263,7 +278,7 @@ class RelayProvider extends ChangeNotifier {
         Set<String>.from(RelayProvider.STATIC_RELAY_ADDRS);
     uniqueRelays.addAll(relayProvider.relayAddrs);
     var tempNostr =
-        Nostr(privateKey: nostr!.privateKey, publicKey: nostr!.publicKey);
+        Nostr(publicKey: pubKey);
 
     uniqueRelays.forEach((relayAddr) {
       Relay r = Relay(
@@ -315,25 +330,32 @@ class RelayProvider extends ChangeNotifier {
             }
           }
         } else {
-          Map<String, dynamic> json = jsonDecode(event.content);
-          if (json.entries.isNotEmpty) {
-            relaysEvent = event;
-            for (var entry in json.entries) {
-              bool write = true;
-              bool read = true;
-              write = entry.value["write"];
-              read = entry.value["read"];
-              relays!.add(RelayMetadata(entry.key.toString(), read, write));
+          if (StringUtil.isNotBlank(event.content)) {
+            try {
+              Map<String, dynamic> json = jsonDecode(event.content);
+              if (json.entries.isNotEmpty) {
+                relaysEvent = event;
+                for (var entry in json.entries) {
+                  bool write = true;
+                  bool read = true;
+                  write = entry.value["write"];
+                  read = entry.value["read"];
+                  relays!.add(RelayMetadata(entry.key.toString(), read, write));
+                }
+              }
+            } catch (e) {
+              print(e);
             }
           }
         }
-
-        try {
-          await RelaysDB.insert(pubKey, relays, relaysEvent!.createdAt);
-        } catch (e) {
-          await RelaysDB.update(pubKey, relays, relaysEvent!.createdAt);
+        if (relays!=null && relays.isNotEmpty) {
+          try {
+            await RelaysDB.insert(pubKey, relays, relaysEvent!.createdAt);
+          } catch (e) {
+            await RelaysDB.update(pubKey, relays, relaysEvent!.createdAt);
+          }
+          onComplete(relays);
         }
-        onComplete(relays);
       }
     });
   }

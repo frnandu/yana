@@ -147,16 +147,18 @@ class RelaysItemComponent extends StatelessWidget {
                 ),
                 GestureDetector(
                   onTap: () {
-                    removeRelay(addr);
+                    if (nostr!.privateKey!=null) {
+                      removeRelay(addr);
+                    }
                   },
-                  child: Container(
+                  child: nostr!.privateKey!=null ? Container(
                     padding: const EdgeInsets.only(
                       right: Base.BASE_PADDING,
                     ),
                     child: const Icon(
                       Icons.delete,
                     ),
-                  ),
+                  ) : Container(),
                 ),
               ],
             ),

@@ -93,34 +93,35 @@ class RelayPool {
       final subId = json[1] as String;
       var subscription = _subscriptions[subId];
       subscription ??= relay.getRequestSubscription(subId);
+      if (subscription!=null) {
+        try {
+          final event = Event.fromJson(json[2]);
+          // List<bool> bools =
+          if (event.isValid && await event.isSigned) {
+            // add some statistics
+            relay.relayStatus.noteReceived++;
 
-      try {
-        final event = Event.fromJson(json[2]);
-        // List<bool> bools =
-        if (event.isValid && await event.isSigned) {
-          // add some statistics
-          relay.relayStatus.noteReceived++;
+            if (filterProvider.checkBlock(event.pubKey)) {
+              return;
+            }
+            if (filterProvider.checkDirtyword(event.content)) {
+              return;
+            }
 
-          if (filterProvider.checkBlock(event.pubKey)) {
-            return;
-          }
-          if (filterProvider.checkDirtyword(event.content)) {
-            return;
-          }
-
-          event.sources.add(relay.url);
-          final subId = json[1] as String;
-          // var subscription = _subscriptions[subId];
-          //
-          // if (subscription != null) {
-          //   subscription.onEvent(event);
-          // } else {
-          //   subscription = relay.getRequestSubscription(subId);
+            event.sources.add(relay.url);
+            final subId = json[1] as String;
+            // var subscription = _subscriptions[subId];
+            //
+            // if (subscription != null) {
+            //   subscription.onEvent(event);
+            // } else {
+            //   subscription = relay.getRequestSubscription(subId);
             subscription?.onEvent(event);
-          // }
+            // }
+          }
+        } catch (err) {
+          log(err.toString());
         }
-      } catch (err) {
-        log(err.toString());
       }
     } else if (messageType == 'EOSE') {
       if (json.length < 2) {
@@ -146,7 +147,7 @@ class RelayPool {
             completed++;
           }
           // activeRelays().length
-          if (completeQuery || completed >= minimumRelaysForComplete) {
+          if (completeQuery || completed >= activeRelays().length) {
             callback();
             _queryCompleteCallbacks.remove(subId);
           }

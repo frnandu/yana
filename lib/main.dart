@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math';
 import 'dart:ui';
+import 'package:bip340/bip340.dart';
 import 'package:sizer/sizer.dart';
 import 'package:protocol_handler/protocol_handler.dart';
 
@@ -194,19 +195,20 @@ void initProvidersAndStuff() async {
   sharedPreferences = await DataUtil.getInstance();
   metadataProvider = await MetadataProvider.getInstance();
   relayProvider = RelayProvider.getInstance();
-  relayProvider!.load();
 
   settingProvider = await SettingProvider.getInstance();
   if (StringUtil.isNotBlank(settingProvider.key)) {
     try {
       nostr = Nostr(privateKey: settingProvider.key);
-      // log("nostr init over");
-      relayProvider.addRelays(nostr!).then((bla) {
-        filterProvider = FilterProvider.getInstance();
-        notificationsProvider = NotificationsProvider();
-        dmProvider = DMProvider();
-        newNotificationsProvider = NewNotificationsProvider();
+      await relayProvider!.load(nostr!.publicKey, () {
+        relayProvider.addRelays(nostr!).then((bla) {
+          filterProvider = FilterProvider.getInstance();
+          notificationsProvider = NotificationsProvider();
+          dmProvider = DMProvider();
+          newNotificationsProvider = NewNotificationsProvider();
+        });
       });
+      // log("nostr init over");
     } catch (e) {
       var index = settingProvider.privateKeyIndex;
       if (index != null) {
@@ -295,20 +297,6 @@ Future<void> main() async {
   communityApprovedProvider = CommunityApprovedProvider();
   communityInfoProvider = CommunityInfoProvider();
 
-  String? key = settingProvider.key;
-  if (StringUtil.isNotBlank(key)) {
-    bool isPrivate = settingProvider.isPrivateKey;
-    try {
-      nostr = await relayProvider.genNostr(privateKey: isPrivate ? key : null,
-          publicKey: isPrivate ? null : key);
-
-    } catch (e) {
-      var index = settingProvider.privateKeyIndex;
-      if (index != null) {
-        settingProvider.removeKey(index);
-      }
-    }
-  }
   nwcProvider = await NwcProvider.getInstance();
 
   // FlutterNativeSplash.remove();
@@ -317,7 +305,27 @@ Future<void> main() async {
       initBackgroundService(true);
     }
   } catch (e) {}
-  runApp(MyApp());
+
+  String? key = settingProvider.key;
+  if (StringUtil.isNotBlank(key)) {
+    bool isPrivate = settingProvider.isPrivateKey;
+    String publicKey = isPrivate ? getPublicKey(key!) : key!;
+    // nostr = Nostr(privateKey: isPrivate ? key : null,publicKey: publicKey);
+    await relayProvider.load(publicKey,() async {
+      try {
+        nostr = await relayProvider.genNostr(privateKey: isPrivate ? key : null,
+            publicKey: publicKey);
+        runApp(MyApp());
+      } catch (e) {
+        var index = settingProvider.privateKeyIndex;
+        if (index != null) {
+          settingProvider.removeKey(index);
+        }
+      }
+    });
+  } else {
+    runApp(MyApp());
+  }
 }
 
 void initBackgroundService(bool startOnBoot) async {

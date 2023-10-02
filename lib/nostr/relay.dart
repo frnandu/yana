@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/foundation.dart';
+import 'package:yana/main.dart';
 import 'package:yana/nostr/relay_info_util.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
@@ -41,7 +42,7 @@ class Relay {
         return connectSync();
       }
     } catch (e) {
-      _onError(e.toString(), reconnect: true);
+      _onError(e.toString(), reconnect: false);
     }
     return false;
   }
@@ -57,9 +58,9 @@ class Relay {
       }
     }, onError: (error) async {
       print(error);
-      _onError("Websocket error $url", reconnect: true);
+      _onError("Websocket error $url", reconnect: false);
     }, onDone: () {
-      _onError("Websocket stream closed by remote:  $url", reconnect: true);
+      _onError("Websocket stream closed by remote:  $url", reconnect: false);
     });
     relayStatus.connected = ClientConneccted.CONNECTED;
     if (relayStatusCallback != null) {
@@ -105,8 +106,8 @@ class Relay {
     }
     disconnect();
 
-    if (reconnect) {
-      Future.delayed(Duration(seconds: 30), () {
+    if (reconnect && nostr!=null) {
+      Future.delayed(const Duration(seconds: 30), () {
         connect(checkInfo: info!=null);
       });
     }

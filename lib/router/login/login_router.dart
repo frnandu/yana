@@ -324,29 +324,11 @@ class _LoginRouter extends State<LoginRouter>
       }
       await settingProvider.addAndChangeKey(key, !isPublic, updateUI: false);
       if (!newKey) {
-        var tempNostr = Nostr(privateKey: !isPublic?key:null, publicKey: isPublic?key:null);
-
-        var filter = Filter(
-            authors: [tempNostr!.publicKey],
-            limit: 1,
-            kinds: [kind.EventKind.RELAY_LIST_METADATA]);
-
-        relayProvider.relayAddrs.forEach((relayAddr) {
-          var custRelay = relayProvider.genRelay(relayAddr);
-          try {
-            tempNostr.addRelay(custRelay, init: true);
-          } catch (e) {
-            log("relay $relayAddr add to pool error ${e.toString()}");
-          }
-        });
         var alreadyClosed = false;
-
-        tempNostr!.addInitQuery([filter.toJson()], (event) {
-          if (tempNostr!=null) {
-            LoginRouter.handleRemoteRelays(event, tempNostr!.privateKey!);
-          }
-          getNostrAndClose(alreadyClosed, key, !isPublic);
+        relayProvider.getRelays(isPublic?key: getPublicKey(key), (relays) {
           alreadyClosed = true;
+          relayProvider.setRelayListAndUpdate(relays.map((e) => e.addr).toList(), null);
+          getNostrAndClose(false, key, !isPublic);
         });
         Future.delayed(Duration(seconds: 5), () {
           getNostrAndClose(alreadyClosed, key, !isPublic);

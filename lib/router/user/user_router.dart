@@ -2,7 +2,6 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:yana/nostr/nip02/cust_contact_list.dart';
 import 'package:yana/nostr/relay_metadata.dart';
 
 import '../../main.dart';
@@ -21,7 +20,6 @@ import '../../ui/appbar4stack.dart';
 import '../../ui/cust_state.dart';
 import '../../ui/event/event_list_component.dart';
 import '../../ui/user/metadata_component.dart';
-import '../../utils/base.dart';
 import '../../utils/base_consts.dart';
 import '../../utils/load_more_event.dart';
 import '../../utils/peddingevents_later_function.dart';
@@ -45,6 +43,8 @@ class _UserRouter extends CustState<UserRouter>
   ScrollController _controller = ScrollController();
 
   String? pubkey;
+
+  Nostr? userNostr;
 
   bool showTitle = false;
 
@@ -194,6 +194,7 @@ class _UserRouter extends CustState<UserRouter>
                   scrollDirection: Axis.horizontal,
                   child: UserStatisticsComponent(
                     pubkey: pubkey!,
+                    userNostr: userNostr,
                     onContactListLoaded: (contactList) {
                       Contact? c = contactList.get(nostr!.publicKey);
                       if (nostr!=null && contactList.get(nostr!.publicKey) != null) {
@@ -251,7 +252,33 @@ class _UserRouter extends CustState<UserRouter>
   @override
   Future<void> onReady(BuildContext context) async {
     await relayProvider.getRelays(pubkey!, (relays) {
-      this.relays = relays;
+
+      if (userNostr == null) {
+        // use relays for user where he/she writes
+        Set<String> uniqueRelays = Set<String>.from(
+            relays.where((element) => element.write).map((e) => e.addr));
+        userNostr =
+            Nostr(privateKey: nostr!.privateKey, publicKey: nostr!.publicKey);
+
+        uniqueRelays.forEach((relayAddr) {
+          Relay r = Relay(
+            relayAddr,
+            RelayStatus(relayAddr),
+            access: WriteAccess.readWrite,
+          );
+          try {
+            userNostr!.addRelay(r, checkInfo: false);
+          } catch (e) {
+            log(
+                "relay $relayAddr add to temp nostr for broadcasting of nip065 relay list: ${e
+                    .toString()}");
+          }
+        });
+      }
+      setState(() {
+        this.relays = relays;
+      });
+
       doQuery();
     });
 
@@ -277,9 +304,12 @@ class _UserRouter extends CustState<UserRouter>
     super.dispose();
     disposeLater();
 
-    if (StringUtil.isNotBlank(subscribeId)) {
+    if (StringUtil.isNotBlank(subscribeId) && userNostr!=null) {
       try {
-        nostr!.unsubscribe(subscribeId!);
+        userNostr!.unsubscribe(subscribeId!);
+      } catch (e) {}
+      try {
+        userNostr!.close();
       } catch (e) {}
     }
   }
@@ -312,23 +342,6 @@ class _UserRouter extends CustState<UserRouter>
     );
     subscribeId = StringUtil.rndNameStr(16);
 
-    // use relays for user where he/she writes
-    Set<String> uniqueRelays = Set<String>.from(relays.where((element) => element.write).map((e) => e.addr));
-    var tempNostr = Nostr(privateKey: nostr!.privateKey, publicKey: nostr!.publicKey);
-
-    uniqueRelays.forEach((relayAddr) {
-      Relay r = Relay(
-        relayAddr,
-        RelayStatus(relayAddr),
-        access: WriteAccess.readWrite,
-      );
-      try {
-        tempNostr.addRelay(r, checkInfo: false);
-      } catch (e) {
-        log("relay $relayAddr add to temp nostr for broadcasting of nip065 relay list: ${e.toString()}");
-      }
-    });
-
     if (!box.isEmpty()) {
       var activeRelays = nostr!.activeRelays();
       var oldestCreatedAts = box.oldestCreatedAtByRelay(
@@ -340,9 +353,9 @@ class _UserRouter extends CustState<UserRouter>
         filter.until = oldestCreatedAt;
         filtersMap[relay.url] = [filter.toJson()];
       }
-      tempNostr!.queryByFilters(filtersMap, onEvent, id: subscribeId);
+      userNostr!.queryByFilters(filtersMap, onEvent, id: subscribeId);
     } else {
-      tempNostr!.query([filter.toJson()], onEvent, id: subscribeId);
+      userNostr!.query([filter.toJson()], onEvent, id: subscribeId);
     }
   }
 

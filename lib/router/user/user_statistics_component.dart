@@ -1,15 +1,11 @@
-import 'dart:convert';
-
 import 'package:bot_toast/bot_toast.dart';
 import 'package:convert/convert.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:yana/models/relay_status.dart';
 import 'package:yana/provider/contact_list_provider.dart';
 import 'package:yana/provider/relay_provider.dart';
 import 'package:yana/ui/enum_selector_component.dart';
 import 'package:yana/utils/base_consts.dart';
-import 'package:yana/utils/client_connected.dart';
 
 import '../../i18n/i18n.dart';
 import '../../main.dart';
@@ -20,7 +16,6 @@ import '../../nostr/filter.dart';
 import '../../nostr/nip02/cust_contact_list.dart';
 import '../../nostr/nip57/zap_num_util.dart';
 import '../../nostr/nostr.dart';
-import '../../nostr/relay.dart';
 import '../../nostr/relay_metadata.dart';
 import '../../ui/cust_state.dart';
 import '../../utils/base.dart';
@@ -32,10 +27,12 @@ import '../../utils/string_util.dart';
 class UserStatisticsComponent extends StatefulWidget {
   String pubkey;
 
+  Nostr? userNostr;
+
   Function(CustContactList)? onContactListLoaded;
 
   UserStatisticsComponent(
-      {super.key, required this.pubkey, this.onContactListLoaded});
+      {super.key, required this.pubkey, this.userNostr, this.onContactListLoaded});
 
   @override
   State<StatefulWidget> createState() {
@@ -71,15 +68,20 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
   @override
   void initState() {
     isLocal = widget.pubkey == nostr!.publicKey;
-
-    if (!isLocal) {
-      loadContactList(nostr!);
+    if (isLocal && widget.userNostr==null) {
+      widget.userNostr = nostr;
+    }
+    if (!isLocal && widget.userNostr!=null) {
+      loadContactList(widget.userNostr!);
     }
   }
 
   @override
   Widget doBuild(BuildContext context) {
     var s = I18n.of(context);
+    if (widget.userNostr==null || relays==null) {
+      return Container();
+    }
     if (pubkey != null && pubkey != widget.pubkey) {
       // arg changed! reset
       contactListEvent = null;
@@ -97,6 +99,9 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
     }
     pubkey = widget.pubkey;
 
+    if (contactListEvent==null) {
+      loadContactList(widget.userNostr!);
+    }
 
     List<Widget> list = [];
 
@@ -124,14 +129,25 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
     list.add(UserStatisticsItemComponent(
       num: followedNum??0,
       name: s.Followers,
-      onTap: onFollowedTap,
+      onTap: () {
+        if (followedMap!=null) {
+          var pubkeys = followedMap!.keys.toList();
+          RouterUtil.router(context, RouterPath.FOLLOWED, pubkeys);
+        }
+      },
       formatNum: true,
     ));
 
     list.add(UserStatisticsItemComponent(
       num: zapNum??0,
       name: "Zap",
-      onTap: onZapTap,
+      onTap: () {
+        if (zapEventBox!=null) {
+          zapEventBox!.sort();
+          var list = zapEventBox!.all();
+          RouterUtil.router(context, RouterPath.USER_ZAP_LIST, list);
+        }
+      },
       formatNum: true,
     ));
 
@@ -212,7 +228,7 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
       localContactBox = EventMemBox(sortAfterAdd: false);
       var filter = Filter(
           authors: [widget.pubkey], kinds: [kind.EventKind.CONTACT_LIST]);
-      nostr!.query([filter.toJson()], (event) {
+      widget.userNostr!.query([filter.toJson()], (event) {
         localContactBox!.add(event);
       }, id: fetchLocalContactsId);
       BotToast.showText(text: I18n.of(context).Begin_to_load_Contact_History);
@@ -221,7 +237,7 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
 
   Future<void> onLongPressEnd(LongPressEndDetails d) async {
     if (fetchLocalContactsId != null) {
-      nostr!.unsubscribe(fetchLocalContactsId!);
+      widget.userNostr!.unsubscribe(fetchLocalContactsId!);
       fetchLocalContactsId = null;
 
       var format = FixedDateTimeFormatter("YYYY-MM-DD hh:mm:ss");
@@ -253,7 +269,7 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
 
   @override
   Future<void> onReady(BuildContext context) async {
-    if (!isLocal) {
+    // if (!isLocal) {
       await relayProvider.getRelays(widget.pubkey, (relays) {
         if (!_disposed) {
           setState(() {
@@ -262,9 +278,7 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
           });
         }
       });
-    }
-    onFollowedTap();
-    onZapTap();
+    // }
   }
 
   void loadContactList(Nostr targetNostr) {
@@ -289,6 +303,8 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
                 widget.onContactListLoaded!(contactList!);
               }
             });
+            onFollowedTap();
+            onZapTap();
           }
         },
         id: queryId,
@@ -329,7 +345,7 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
       filter["kinds"] = [kind.EventKind.CONTACT_LIST];
       filter["#p"] = [widget.pubkey];
       followedSubscribeId = StringUtil.rndNameStr(12);
-      nostr!.query([filter], (e) {
+      widget.userNostr!.query([filter], (e) {
         var oldEvent = followedMap![e.pubKey];
         if (oldEvent == null || e.createdAt > oldEvent.createdAt) {
           followedMap![e.pubKey] = e;
@@ -342,10 +358,6 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
       }, id: followedSubscribeId);
 
       followedNum = 0;
-    } else {
-      // jump to see
-      var pubkeys = followedMap!.keys.toList();
-      RouterUtil.router(context, RouterPath.FOLLOWED, pubkeys);
     }
   }
 
@@ -366,7 +378,7 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
       var filter = Filter(kinds: [kind.EventKind.ZAP], p: [widget.pubkey]);
       zapSubscribeId = StringUtil.rndNameStr(12);
       // print(filter);
-      nostr!.query([filter.toJson()], (event) {
+      widget.userNostr!.query([filter.toJson()], (event) {
         if (event.kind == kind.EventKind.ZAP && zapEventBox!.add(event)) {
           if (!_disposed) {
             setState(() {
@@ -379,9 +391,6 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
       zapNum = 0;
     } else {
       // Router to vist list
-      zapEventBox!.sort();
-      var list = zapEventBox!.all();
-      RouterUtil.router(context, RouterPath.USER_ZAP_LIST, list);
     }
   }
 
@@ -397,9 +406,9 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
   }
 
   void checkAndUnsubscribe(String queryId) {
-    if (StringUtil.isNotBlank(queryId)) {
+    if (StringUtil.isNotBlank(queryId) && widget.userNostr!=null) {
       try {
-        nostr!.unsubscribe(queryId);
+        widget.userNostr!.unsubscribe(queryId);
       } catch (e) {}
     }
   }

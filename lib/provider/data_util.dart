@@ -16,8 +16,6 @@ class DataKey {
 
   static final String CONTACT_LISTS = "contactLists";
 
-  static final String RELAY_LIST = "relayList";
-
   static final String RELAY_UPDATED_TIME = "relayUpdatedTime";
 
   static final String BLOCK_LIST = "blockList";
