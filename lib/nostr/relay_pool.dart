@@ -31,6 +31,7 @@ class RelayPool {
   Future<bool> add(Relay relay,
       {bool autoSubscribe = false,
       bool init = false,
+      bool connect = true,
       bool checkInfo = true}) async {
     if (_relays.containsKey(relay.url)) {
       return true;
@@ -39,23 +40,26 @@ class RelayPool {
     // add to pool first and will reconnect by pool
     _relays[relay.url] = relay;
 
-    if (await relay.connect(checkInfo: checkInfo)) {
-      if (autoSubscribe) {
-        for (Subscription subscription in _subscriptions.values) {
-          relay.send(subscription.toJson());
+    if (connect) {
+      if (await relay.connect(checkInfo: checkInfo)) {
+        if (autoSubscribe) {
+          for (Subscription subscription in _subscriptions.values) {
+            relay.send(subscription.toJson());
+          }
         }
-      }
-      if (init) {
-        for (Subscription subscription in _initQuery.values) {
-          relay.doQuery(subscription);
+        if (init) {
+          for (Subscription subscription in _initQuery.values) {
+            relay.doQuery(subscription);
+          }
         }
+
+        return true;
       }
 
-      return true;
+      relay.relayStatus.error++;
+      return false;
     }
-
-    relay.relayStatus.error++;
-    return false;
+    return true;
   }
 
   List<Relay> activeRelays() {
@@ -93,7 +97,7 @@ class RelayPool {
       final subId = json[1] as String;
       var subscription = _subscriptions[subId];
       subscription ??= relay.getRequestSubscription(subId);
-      if (subscription!=null) {
+      if (subscription != null) {
         try {
           final event = Event.fromJson(json[2]);
           // List<bool> bools =
@@ -269,7 +273,6 @@ class RelayPool {
     return subscription.id;
   }
 
-
   bool send(List<dynamic> message) {
     bool hadSubmitSend = false;
 
@@ -303,6 +306,22 @@ class RelayPool {
       try {
         if (relay.relayStatus.connected != ClientConneccted.CONNECTED) {
           await relay.connect();
+        }
+      } catch (err) {
+        log(err.toString());
+        relay.relayStatus.error++;
+      }
+    }
+  }
+
+  void checkAndReconnectRelaysSync() {
+    for (Relay relay in _relays.values) {
+      try {
+        if (relay.relayStatus.connected != ClientConneccted.CONNECTED) {
+          relay.connectSync(() {
+            print("Removing ${relay.url} from list of pool relays, remaining ${_relays.length} relay");
+            remove(relay.url);
+          });
         }
       } catch (err) {
         log(err.toString());

@@ -32,41 +32,19 @@ class Relay {
 
   WebSocketChannel? _wsChannel;
 
-  Future<bool> connect({bool checkInfo = true}) async {
+  Future<bool> connect({bool checkInfo = true, Function? onError}) async {
     try {
       relayStatus.connected = ClientConneccted.CONNECTING;
       info = checkInfo ? await RelayInfoUtil.get(url) : null;
 
       // Relay must support NIP-15 and NIP-20, but NIP-15 had merger into NIP-01
       if (info == null || info!.nips.contains(20)) {
-        return connectSync();
+        return connectSync(onError);
       }
     } catch (e) {
       _onError(e.toString(), reconnect: false);
     }
     return false;
-  }
-
-  bool connectSync() {
-    final wsUrl = Uri.parse(url);
-    _wsChannel = WebSocketChannel.connect(wsUrl);
-    log("Connected $url");
-    _wsChannel!.stream.listen((message) {
-      if (onMessage != null) {
-        final List<dynamic> json = jsonDecode(message);
-        onMessage!.call(this, json);
-      }
-    }, onError: (error) async {
-      print(error);
-      _onError("Websocket error $url", reconnect: false);
-    }, onDone: () {
-      _onError("Websocket stream closed by remote:  $url", reconnect: false);
-    });
-    relayStatus.connected = ClientConneccted.CONNECTED;
-    if (relayStatusCallback != null) {
-      relayStatusCallback!();
-    }
-    return true;
   }
 
   bool send(List<dynamic> message, { bool reconnect = true}) {
@@ -87,6 +65,31 @@ class Relay {
       }
     }
     return false;
+  }
+
+  bool connectSync(Function? onError) {
+    final wsUrl = Uri.parse(url);
+    _wsChannel = WebSocketChannel.connect(wsUrl);
+    log("Connected $url");
+    _wsChannel!.stream.listen((message) {
+      if (onMessage != null) {
+        final List<dynamic> json = jsonDecode(message);
+        onMessage!.call(this, json);
+      }
+    }, onError: (error) async {
+      print(error);
+      _onError("Websocket error $url", reconnect: false);
+      if (onError!=null) {
+        onError();
+      }
+    }, onDone: () {
+      _onError("Websocket stream closed by remote:  $url", reconnect: false);
+    });
+    relayStatus.connected = ClientConneccted.CONNECTED;
+    if (relayStatusCallback != null) {
+      relayStatusCallback!();
+    }
+    return true;
   }
 
   Future<void> disconnect() async {

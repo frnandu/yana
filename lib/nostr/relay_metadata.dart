@@ -13,6 +13,11 @@ class RelayMetadata {
     this.write,
   );
 
+  bool get isValidWss {
+    String a = addr.trim();
+    return a.startsWith("wss://") || a.startsWith("ws://");
+  }
+
   static List<RelayMetadata> fromJson(Map<String, Object?> e) {
     List<String> read = e["read"].toString().split(",");
     List<String> write = e["write"].toString().split(",");

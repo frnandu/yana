@@ -154,7 +154,7 @@ class ContactListProvider extends ChangeNotifier {
   }
 
   Contact? getContact(String pubKey) {
-    return _contactList!.get(pubKey);
+    return _contactList!=null ? _contactList!.get(pubKey) : null;
   }
 
   void clear() {

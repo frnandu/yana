@@ -1,11 +1,8 @@
 import 'dart:async';
-import 'dart:math';
 import 'dart:ui';
-import 'package:bip340/bip340.dart';
-import 'package:sizer/sizer.dart';
-import 'package:protocol_handler/protocol_handler.dart';
 
 import 'package:awesome_notifications/awesome_notifications.dart';
+import 'package:bip340/bip340.dart';
 import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -18,8 +15,10 @@ import 'package:get_time_ago/get_time_ago.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:protocol_handler/protocol_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:sizer/sizer.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
 import 'package:window_manager/window_manager.dart';
@@ -39,7 +38,6 @@ import 'package:yana/router/user/user_zap_list_router.dart';
 import 'package:yana/router/wallet/nwc_router.dart';
 import 'package:yana/router/wallet/wallet_router.dart';
 import 'package:yana/utils/platform_util.dart';
-import 'package:yana/utils/router_util.dart';
 
 import 'i18n/i18n.dart';
 import 'models/db.dart';
@@ -141,6 +139,10 @@ late NwcProvider nwcProvider;
 AppLifecycleState appState = AppLifecycleState.resumed;
 
 Nostr? nostr;
+
+Nostr? followsNostr;
+
+Nostr? staticForRelaysAndMetadataNostr;
 
 bool firstLogin = false;
 

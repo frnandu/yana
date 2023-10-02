@@ -1,3 +1,4 @@
+import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
 
 import '../nostr/event_kind.dart' as kind;
@@ -87,7 +88,11 @@ class FollowEventProvider extends ChangeNotifier
       until: until ?? _initTime,
       limit: 20,
     );
+    if (followsNostr!=null) {
+      targetNostr = followsNostr;
+    }
     targetNostr ??= nostr!;
+
     bool queriedTags = false;
 
     doUnscribe(targetNostr);
@@ -103,11 +108,14 @@ class FollowEventProvider extends ChangeNotifier
       maxQueryIdsNum = (contactListLength / times).ceil();
     }
     maxQueryIdsNum += 2;
+    targetNostr.checkAndReconnectRelaysSync();
+
     ids.add(targetNostr.publicKey);
     for (Contact contact in contactList) {
       ids.add(contact.publicKey);
       if (ids.length > maxQueryIdsNum) {
         filter.authors = ids;
+
         var subscribeId = _doQueryFunc(targetNostr, filter,
             initQuery: initQuery,
             forceUserLimit: forceUserLimit,

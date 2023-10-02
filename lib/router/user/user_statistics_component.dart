@@ -32,7 +32,10 @@ class UserStatisticsComponent extends StatefulWidget {
   Function(CustContactList)? onContactListLoaded;
 
   UserStatisticsComponent(
-      {super.key, required this.pubkey, this.userNostr, this.onContactListLoaded});
+      {super.key,
+      required this.pubkey,
+      this.userNostr,
+      this.onContactListLoaded});
 
   @override
   State<StatefulWidget> createState() {
@@ -68,18 +71,18 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
   @override
   void initState() {
     isLocal = widget.pubkey == nostr!.publicKey;
-    if (isLocal && widget.userNostr==null) {
+    if (isLocal && widget.userNostr == null) {
       widget.userNostr = nostr;
     }
-    if (!isLocal && widget.userNostr!=null) {
-      loadContactList(widget.userNostr!);
-    }
+    // if (!isLocal && widget.userNostr != null) {
+    //   loadContactList(widget.userNostr!);
+    // }
   }
 
   @override
   Widget doBuild(BuildContext context) {
     var s = I18n.of(context);
-    if (widget.userNostr==null || relays==null) {
+    if (widget.userNostr == null || relays == null) {
       return Container();
     }
     if (pubkey != null && pubkey != widget.pubkey) {
@@ -99,7 +102,7 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
     }
     pubkey = widget.pubkey;
 
-    if (contactListEvent==null) {
+    if (contactList==null) {
       loadContactList(widget.userNostr!);
     }
 
@@ -127,10 +130,10 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
     }
 
     list.add(UserStatisticsItemComponent(
-      num: followedNum??0,
+      num: followedNum ?? 0,
       name: s.Followers,
       onTap: () {
-        if (followedMap!=null) {
+        if (followedMap != null) {
           var pubkeys = followedMap!.keys.toList();
           RouterUtil.router(context, RouterPath.FOLLOWED, pubkeys);
         }
@@ -139,10 +142,10 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
     ));
 
     list.add(UserStatisticsItemComponent(
-      num: zapNum??0,
+      num: zapNum ?? 0,
       name: "Zap",
       onTap: () {
-        if (zapEventBox!=null) {
+        if (zapEventBox != null) {
           zapEventBox!.sort();
           var list = zapEventBox!.all();
           RouterUtil.router(context, RouterPath.USER_ZAP_LIST, list);
@@ -270,14 +273,22 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
   @override
   Future<void> onReady(BuildContext context) async {
     // if (!isLocal) {
-      await relayProvider.getRelays(widget.pubkey, (relays) {
-        if (!_disposed) {
-          setState(() {
-            this.relays = relays;
-            relaysNum = relays.length;
-          });
+    await relayProvider.getRelays(widget.pubkey, (relays) {
+      if (!_disposed) {
+        setState(() {
+          this.relays = relays;
+          relaysNum = relays.length;
+        });
+      }
+    }, (contactList) {
+      setState(() {
+        this.contactList = contactList; //CustContactList.fromJson(contactListEvent!.tags);
+        if (widget.onContactListLoaded != null && contactList != null) {
+          widget.onContactListLoaded!(contactList!);
         }
       });
+    });
+    // loadContactList(widget.userNostr ?? nostr!);
     // }
   }
 
@@ -287,29 +298,24 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
         authors: [widget.pubkey],
         limit: 1,
         kinds: [kind.EventKind.CONTACT_LIST]);
-    targetNostr.query(
-        [filter.toJson()],
-        (event) {
-          // BotToast.showText(text: "loaded contact list from "+event.sources.toString()+" with ${event.tags.length} contacts");
+    targetNostr.query([filter.toJson()], (event) {
+      // BotToast.showText(text: "loaded contact list from "+event.sources.toString()+" with ${event.tags.length} contacts");
 
-          if (((contactListEvent != null &&
-                      event.createdAt > contactListEvent!.createdAt) ||
-                  contactListEvent == null) &&
-              !_disposed) {
-            setState(() {
-              contactListEvent = event;
-              contactList = CustContactList.fromJson(contactListEvent!.tags);
-              if (widget.onContactListLoaded != null && contactList != null) {
-                widget.onContactListLoaded!(contactList!);
-              }
-            });
-            onFollowedTap();
-            onZapTap();
+      if (((contactListEvent != null &&
+                  event.createdAt > contactListEvent!.createdAt) ||
+              contactListEvent == null) &&
+          !_disposed) {
+        setState(() {
+          contactListEvent = event;
+          contactList = CustContactList.fromJson(contactListEvent!.tags);
+          if (widget.onContactListLoaded != null && contactList != null) {
+            widget.onContactListLoaded!(contactList!);
           }
-        },
-        id: queryId,
-        onComplete: () {
         });
+        onFollowedTap();
+        onZapTap();
+      }
+    }, id: queryId, onComplete: () {});
   }
 
   onFollowingTap() {
@@ -363,7 +369,7 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
 
   onRelaysTap() {
     if (relays != null && relays!.isNotEmpty) {
-      RouterUtil.router(  context, RouterPath.USER_RELAYS, relays);
+      RouterUtil.router(context, RouterPath.USER_RELAYS, relays);
     } else if (isLocal) {
       RouterUtil.router(context, RouterPath.RELAYS);
     }
@@ -406,7 +412,7 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
   }
 
   void checkAndUnsubscribe(String queryId) {
-    if (StringUtil.isNotBlank(queryId) && widget.userNostr!=null) {
+    if (StringUtil.isNotBlank(queryId) && widget.userNostr != null) {
       try {
         widget.userNostr!.unsubscribe(queryId);
       } catch (e) {}

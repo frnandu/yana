@@ -162,12 +162,12 @@ class Event {
     double avg = timeSum / count;
 
     if (kDebugMode) {
-      print("Execution time: ${duration
-          .inMilliseconds} milliseconds, total count:$count, avgTime:${avg}ms |  kind $kind count $kindMapCount.toString())");
+      // print("Execution time: ${duration
+      //     .inMilliseconds} milliseconds, total count:$count, avgTime:${avg}ms |  kind $kind count $kindMapCount.toString())");
       if (count % 100 == 0) {
-        BotToast.showText(
-            text: "total count:$count, avgTime:${avg}ms |  kind $kind count $kindMapCount)",
-            duration: Duration(seconds: 10));
+        // BotToast.showText(
+        //     text: "total count:$count, avgTime:${avg}ms |  kind $kind count $kindMapCount)",
+        //     duration: Duration(seconds: 10));
       }
     }
     return v;

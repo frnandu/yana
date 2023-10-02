@@ -29,7 +29,9 @@ class Nostr {
   }) {
     if (StringUtil.isNotBlank(privateKey)) {
       _privateKey = privateKey!;
-      _publicKey = StringUtil.isNotBlank(publicKey)? publicKey! : getPublicKey(privateKey);
+      _publicKey = StringUtil.isNotBlank(publicKey)
+          ? publicKey!
+          : getPublicKey(privateKey);
     } else {
       assert(publicKey != null);
 
@@ -121,7 +123,9 @@ class Nostr {
 
   FutureOr<bool> sendRelayEvent(Event event, String relay) async {
     Relay r = relayProvider.genRelay(relay);
-    r.connectSync();
+    r.connectSync(() {
+
+    });
     // r.onMessage = (Relay relay, List<dynamic> json) async {
     //   final messageType = json[0];
     //   if (messageType == 'EVENT') {
@@ -187,10 +191,13 @@ class Nostr {
     return _pool.query(filters, onEvent, id: id, onComplete: onComplete);
   }
 
-  String queryRelay(Map<String, dynamic> filter, String relay,
-      Function(Event) onEvent, {String? id}) {
+  String queryRelay(
+      Map<String, dynamic> filter, String relay, Function(Event) onEvent,
+      {String? id}) {
     Relay r = relayProvider.genRelay(relay);
-    r.connectSync();
+    r.connectSync(() {
+
+    });
     r.onMessage = (Relay relay, List<dynamic> json) async {
       final messageType = json[0];
       if (messageType == 'EVENT') {
@@ -211,9 +218,12 @@ class Nostr {
   }
 
   String queryRelay2(Map<String, dynamic> filter, String relay,
-      Function(Event, Function(bool)) onEvent, {String? id, required Function(bool) onZapped}) {
+      Function(Event, Function(bool)) onEvent,
+      {String? id, required Function(bool) onZapped}) {
     Relay r = relayProvider.genRelay(relay);
-    r.connectSync();
+    r.connectSync(() {
+
+    });
     r.onMessage = (Relay relay, List<dynamic> json) async {
       final messageType = json[0];
       if (messageType == 'EVENT') {
@@ -243,11 +253,12 @@ class Nostr {
   Future<bool> addRelay(
     Relay relay, {
     bool autoSubscribe = false,
+    bool connect = true,
     bool init = false,
     bool checkInfo = true,
   }) async {
     return await _pool.add(relay,
-        autoSubscribe: autoSubscribe, init: init, checkInfo: checkInfo);
+        autoSubscribe: autoSubscribe, connect: connect, init: init, checkInfo: checkInfo);
   }
 
   void removeRelay(String url) {
@@ -265,6 +276,10 @@ class Nostr {
   @pragma('vm:entry-point')
   Future<void> checkAndReconnectRelays() async {
     await _pool.checkAndReconnectRelays();
+  }
+
+  void checkAndReconnectRelaysSync() {
+    _pool.checkAndReconnectRelaysSync();
   }
 
   bool isEmpty() {

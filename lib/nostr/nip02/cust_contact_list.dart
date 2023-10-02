@@ -32,7 +32,7 @@ class CustContactList {
         if (length > 3) {
           petname = tag[3];
         }
-        final contact = Contact(publicKey: tag[1], url: url, petname: petname);
+        final contact = Contact(publicKey: tag[1], petname: petname);
         _contacts[contact.publicKey] = contact;
       } else if (t == "t" && length > 1) {
         var tagName = tag[1];

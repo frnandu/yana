@@ -267,7 +267,7 @@ class _UserRouter extends CustState<UserRouter>
             access: WriteAccess.readWrite,
           );
           try {
-            userNostr!.addRelay(r, checkInfo: false);
+            userNostr!.addRelay(r, checkInfo: false, connect: true);
           } catch (e) {
             log(
                 "relay $relayAddr add to temp nostr for broadcasting of nip065 relay list: ${e
@@ -280,7 +280,11 @@ class _UserRouter extends CustState<UserRouter>
       });
 
       doQuery();
-    });
+    },
+        (contactList) {
+          // TODO ??
+        }
+    );
 
     if (globalKey.currentState != null) {
       var controller = globalKey.currentState!.innerController;

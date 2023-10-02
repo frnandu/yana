@@ -1,22 +1,15 @@
-import 'package:flutter/foundation.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-
-import '/js/js_helper.dart' as js;
-import 'dart:developer';
-
 import 'package:bot_toast/bot_toast.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:yana/utils/platform_util.dart';
 
+import '/js/js_helper.dart' as js;
 import '../../i18n/i18n.dart';
 import '../../main.dart';
 import '../../nostr/client_utils/keys.dart';
 import '../../nostr/event.dart';
-import '../../nostr/event_kind.dart' as kind;
-import '../../nostr/filter.dart';
 import '../../nostr/nip19/nip19.dart';
-import '../../nostr/nostr.dart';
 import '../../utils/base.dart';
 import '../../utils/index_taps.dart';
 import '../../utils/string_util.dart';
@@ -329,8 +322,21 @@ class _LoginRouter extends State<LoginRouter>
           alreadyClosed = true;
           relayProvider.setRelayListAndUpdate(relays.map((e) => e.addr).toList(), null);
           getNostrAndClose(false, key, !isPublic);
-        });
-        Future.delayed(Duration(seconds: 5), () {
+        },
+            (contactList) {
+              int i = 0;
+              contactList.list().forEach((contact) async {
+                await relayProvider.getRelays(contact.publicKey, (relays) {
+                  BotToast.showText(text: "Loaded ${relays.length} relays for contact "+contact.petname+" $i/${contactList.list().length}");
+                  i++;
+                }, (contactList)  {
+
+                });
+              });
+              // TODO ??
+            }
+        );
+        Future.delayed(Duration(seconds: 20), () {
           getNostrAndClose(alreadyClosed, key, !isPublic);
         });
       } else {

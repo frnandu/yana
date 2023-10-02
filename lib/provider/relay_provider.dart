@@ -1,9 +1,12 @@
 import 'dart:convert';
 import 'dart:developer';
 
+import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:yana/models/relays_db.dart';
+import 'package:yana/nostr/nip02/cust_contact_list.dart';
 import 'package:yana/nostr/relay_metadata.dart';
+import 'package:yana/provider/contact_list_provider.dart';
 
 import '../nostr/event.dart';
 import '../nostr/event_kind.dart' as kind;
@@ -44,36 +47,63 @@ class RelayProvider extends ChangeNotifier {
     return _relayProvider!;
   }
 
-  Future<void> getRelays(
-      String pubKey, Function(List<RelayMetadata>) onComplete) async {
+  Future<void> getRelays(String pubKey, Function(List<RelayMetadata>) onRelays,
+      Function(CustContactList) onContacts) async {
     List<RelayMetadata>? relays = await RelaysDB.get(pubKey);
     if (relays == null || relays.isEmpty) {
-      loadRelayList(
-        pubKey,
-        (relays) {
-          onComplete(relays);
-        },
-      );
+      loadRelayList(pubKey, (relays) {
+        onRelays(relays);
+      }, (contactList) {
+        onContacts(contactList);
+      });
     } else {
-      onComplete(relays);
+      onRelays(relays);
     }
   }
 
   Future<void> load(String? pubKey, Function onComplete) async {
-    if (pubKey!=null) {
-     relayProvider.getRelays(pubKey, (relays) {
-       relayAddrs.clear();
-       if (relays != null) {
-         relayAddrs.addAll(relays.map((e) => e.addr,));
-       }
+    if (pubKey != null) {
+      relayProvider.getRelays(pubKey, (relays) {
+        relayAddrs.clear();
+        if (relays != null) {
+          relayAddrs.addAll(relays.map(
+            (e) => e.addr,
+          ));
+        }
 
-       if (relayAddrs.isEmpty) {
-         // init relays
-         relayAddrs = List<String>.from(STATIC_RELAY_ADDRS);
-       }
-       onComplete();
-     });
-   }
+        if (relayAddrs.isEmpty) {
+          // init relays
+          relayAddrs = List<String>.from(STATIC_RELAY_ADDRS);
+        }
+        onComplete();
+      }, (contactList) {
+        if (followsNostr == null) {
+          followsNostr = Nostr(privateKey: null, publicKey: pubKey);
+          Set<String> set = {};
+          int i = 0;
+          contactList.list().forEach((contact) async {
+            await relayProvider.getRelays(contact.publicKey, (relays) {
+              i++;
+              relays
+                  .where((element) => element.write && element.isValidWss)
+                  .map((e) => e.addr)
+                  .take(2)
+                  .forEach((adr) {
+                followsNostr!.addRelay(
+                    Relay(
+                      adr,
+                      RelayStatus(adr),
+                      access: WriteAccess.readWrite,
+                    ),
+                    connect: false);
+              });
+              print(
+                  "Loaded ${relays.length} relays for contact ${contact.publicKey} $i/${contactList.list().length} .....set.size:${set.length}");
+            }, (contactList) {});
+          });
+        }
+      });
+    }
   }
 
   RelayStatus? getRelayStatus(String addr) {
@@ -273,27 +303,30 @@ class RelayProvider extends ChangeNotifier {
     //load();
   }
 
-  void loadRelayList(String pubKey, Function(List<RelayMetadata>) onComplete) {
-    Set<String> uniqueRelays =
-        Set<String>.from(RelayProvider.STATIC_RELAY_ADDRS);
-    uniqueRelays.addAll(relayProvider.relayAddrs);
-    var tempNostr =
-        Nostr(publicKey: pubKey);
+  void loadRelayList(String pubKey, Function(List<RelayMetadata>) onRelays,
+      Function(CustContactList) onContacts) {
+    if (staticForRelaysAndMetadataNostr == null) {
+      Set<String> uniqueRelays =
+          Set<String>.from(RelayProvider.STATIC_RELAY_ADDRS);
+      uniqueRelays.addAll(relayProvider.relayAddrs);
+      staticForRelaysAndMetadataNostr = Nostr(publicKey: pubKey);
 
-    uniqueRelays.forEach((relayAddr) {
-      Relay r = Relay(
-        relayAddr,
-        RelayStatus(relayAddr),
-        access: WriteAccess.readWrite,
-      );
-      try {
-        tempNostr.addRelay(r, checkInfo: false);
-      } catch (e) {
-        log("relay $relayAddr add to temp nostr for getting nip065 relay list: ${e.toString()}");
-      }
-    });
+      uniqueRelays.forEach((relayAddr) {
+        Relay r = Relay(
+          relayAddr,
+          RelayStatus(relayAddr),
+          access: WriteAccess.readWrite,
+        );
+        try {
+          staticForRelaysAndMetadataNostr!.addRelay(r, checkInfo: false);
+        } catch (e) {
+          log("relay $relayAddr add to temp nostr for getting nip065 relay list: ${e.toString()}");
+        }
+      });
+    }
 
     Event? relaysEvent;
+    Event? contactsEvent;
     var filter = Filter(
         authors: [pubKey],
         limit: 1,
@@ -301,9 +334,10 @@ class RelayProvider extends ChangeNotifier {
           kind.EventKind.RELAY_LIST_METADATA,
           kind.EventKind.CONTACT_LIST
         ]);
-    tempNostr!.query(id: StringUtil.rndNameStr(16), [filter.toJson()], (event) async {
+    staticForRelaysAndMetadataNostr!
+        .query(id: StringUtil.rndNameStr(16), [filter.toJson()], (event) async {
       if ((relaysEvent != null && event.createdAt > relaysEvent!.createdAt) ||
-          relaysEvent == null || event.kind == kind.EventKind.RELAY_LIST_METADATA) {
+          relaysEvent == null) {
         List<RelayMetadata>? relays = [];
         if (event.kind == kind.EventKind.RELAY_LIST_METADATA) {
           relaysEvent = event;
@@ -348,14 +382,21 @@ class RelayProvider extends ChangeNotifier {
             }
           }
         }
-        if (relays!=null && relays.isNotEmpty) {
+        if (relays != null && relays.isNotEmpty) {
           try {
             await RelaysDB.insert(pubKey, relays, relaysEvent!.createdAt);
           } catch (e) {
             await RelaysDB.update(pubKey, relays, relaysEvent!.createdAt);
           }
-          onComplete(relays);
+          onRelays(relays);
         }
+      }
+      if (event.kind == kind.EventKind.CONTACT_LIST &&
+          ((contactsEvent != null &&
+                  event.createdAt > contactsEvent!.createdAt) ||
+              contactsEvent == null)) {
+        CustContactList contactList = CustContactList.fromJson(event.tags);
+        onContacts(contactList);
       }
     });
   }
