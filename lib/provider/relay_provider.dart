@@ -81,6 +81,9 @@ class RelayProvider extends ChangeNotifier {
           followsNostr = Nostr(privateKey: null, publicKey: pubKey);
           Set<String> set = {};
           int i = 0;
+          // add logged user's configured read relays
+          nostr!.activeRelays().where((relay) => relay.access != WriteAccess.writeOnly).forEach((relay) { followsNostr!.addRelay(relay, connect: false);});
+
           contactList.list().forEach((contact) async {
             await relayProvider.getRelays(contact.publicKey, (relays) {
               i++;
