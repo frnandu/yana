@@ -197,7 +197,8 @@ class _UserRouter extends CustState<UserRouter>
                     userNostr: userNostr,
                     onContactListLoaded: (contactList) {
                       Contact? c = contactList.get(nostr!.publicKey);
-                      if (nostr!=null && contactList.get(nostr!.publicKey) != null) {
+                      if (nostr != null &&
+                          contactList.get(nostr!.publicKey) != null) {
                         setState(() {
                           followsYou = true;
                         });
@@ -219,8 +220,7 @@ class _UserRouter extends CustState<UserRouter>
                 }
                 return EventListComponent(
                   event: event,
-                  showVideo:
-                      _settingProvider.videoPreview == OpenStatus.OPEN,
+                  showVideo: _settingProvider.videoPreview == OpenStatus.OPEN,
                 );
               },
               itemCount: box.length(),
@@ -252,7 +252,6 @@ class _UserRouter extends CustState<UserRouter>
   @override
   Future<void> onReady(BuildContext context) async {
     await relayProvider.getRelays(pubkey!, (relays) {
-
       if (userNostr == null) {
         // use relays for user where he/she writes
         Set<String> uniqueRelays = Set<String>.from(
@@ -269,9 +268,7 @@ class _UserRouter extends CustState<UserRouter>
           try {
             userNostr!.addRelay(r, checkInfo: false, connect: true);
           } catch (e) {
-            log(
-                "relay $relayAddr add to temp nostr for broadcasting of nip065 relay list: ${e
-                    .toString()}");
+            log("relay $relayAddr add to temp nostr for broadcasting of nip065 relay list: ${e.toString()}");
           }
         });
       }
@@ -280,11 +277,7 @@ class _UserRouter extends CustState<UserRouter>
       });
 
       doQuery();
-    },
-        (contactList) {
-          // TODO ??
-        }
-    );
+    });
 
     if (globalKey.currentState != null) {
       var controller = globalKey.currentState!.innerController;
@@ -308,7 +301,7 @@ class _UserRouter extends CustState<UserRouter>
     super.dispose();
     disposeLater();
 
-    if (StringUtil.isNotBlank(subscribeId) && userNostr!=null) {
+    if (StringUtil.isNotBlank(subscribeId) && userNostr != null) {
       try {
         userNostr!.unsubscribe(subscribeId!);
       } catch (e) {}

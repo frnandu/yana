@@ -202,7 +202,7 @@ void initProvidersAndStuff() async {
   if (StringUtil.isNotBlank(settingProvider.key)) {
     try {
       nostr = Nostr(privateKey: settingProvider.key);
-      await relayProvider!.load(nostr!.publicKey, () {
+      await relayProvider!.loadRelays(nostr!.publicKey, () {
         relayProvider.addRelays(nostr!).then((bla) {
           filterProvider = FilterProvider.getInstance();
           notificationsProvider = NotificationsProvider();
@@ -313,7 +313,7 @@ Future<void> main() async {
     bool isPrivate = settingProvider.isPrivateKey;
     String publicKey = isPrivate ? getPublicKey(key!) : key!;
     // nostr = Nostr(privateKey: isPrivate ? key : null,publicKey: publicKey);
-    await relayProvider.load(publicKey,() async {
+    await relayProvider.loadRelays(publicKey,() async {
       try {
         nostr = await relayProvider.genNostr(privateKey: isPrivate ? key : null,
             publicKey: publicKey);

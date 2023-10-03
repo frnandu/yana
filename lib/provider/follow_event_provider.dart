@@ -79,8 +79,7 @@ class FollowEventProvider extends ChangeNotifier
   }
 
   void doQuery(
-      {Nostr? targetNostr,
-      bool initQuery = false,
+      {bool initQuery = false,
       int? until,
       bool forceUserLimit = false}) {
     var filter = Filter(
@@ -88,17 +87,18 @@ class FollowEventProvider extends ChangeNotifier
       until: until ?? _initTime,
       limit: 20,
     );
-    if (followsNostr!=null) {
-      targetNostr = followsNostr;
+    if (followsNostr==null) {
+      return;
     }
-    targetNostr ??= nostr!;
+    Nostr? f = followsNostr;
 
     bool queriedTags = false;
 
-    doUnscribe(targetNostr);
+    doUnscribe(followsNostr!);
 
     List<String> subscribeIds = [];
     Iterable<Contact> contactList = contactListProvider.list();
+
     var contactListLength = contactList.length;
     List<String> ids = [];
     // timeline pull my events too.
@@ -108,15 +108,15 @@ class FollowEventProvider extends ChangeNotifier
       maxQueryIdsNum = (contactListLength / times).ceil();
     }
     maxQueryIdsNum += 2;
-    targetNostr.checkAndReconnectRelaysSync();
+    followsNostr!.checkAndReconnectRelaysSync();
 
-    ids.add(targetNostr.publicKey);
+    ids.add(followsNostr!.publicKey);
     for (Contact contact in contactList) {
       ids.add(contact.publicKey);
       if (ids.length > maxQueryIdsNum) {
         filter.authors = ids;
 
-        var subscribeId = _doQueryFunc(targetNostr, filter,
+        var subscribeId = _doQueryFunc(followsNostr!, filter,
             initQuery: initQuery,
             forceUserLimit: forceUserLimit,
             queriyTags: !queriedTags);
@@ -127,7 +127,7 @@ class FollowEventProvider extends ChangeNotifier
     }
     if (ids.isNotEmpty) {
       filter.authors = ids;
-      var subscribeId = _doQueryFunc(targetNostr, filter,
+      var subscribeId = _doQueryFunc(followsNostr!, filter,
           initQuery: initQuery,
           forceUserLimit: forceUserLimit,
           queriyTags: !queriedTags);

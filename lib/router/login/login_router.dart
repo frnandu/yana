@@ -322,19 +322,7 @@ class _LoginRouter extends State<LoginRouter>
           alreadyClosed = true;
           relayProvider.setRelayListAndUpdate(relays.map((e) => e.addr).toList(), null);
           getNostrAndClose(false, key, !isPublic);
-        },
-            (contactList) {
-              int i = 0;
-              contactList.list().forEach((contact) async {
-                await relayProvider.getRelays(contact.publicKey, (relays) {
-                  BotToast.showText(text: "Loaded ${relays.length} relays for contact "+contact.petname+" $i/${contactList.list().length}");
-                  i++;
-                }, (contactList)  {
-
-                });
-              });
-              // TODO ??
-            }
+        }
         );
         Future.delayed(Duration(seconds: 20), () {
           getNostrAndClose(alreadyClosed, key, !isPublic);

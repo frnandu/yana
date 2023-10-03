@@ -102,10 +102,10 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
     }
     pubkey = widget.pubkey;
 
-    if (contactList==null) {
-      loadContactList(widget.userNostr!);
-    }
-
+    // if (contactList==null) {
+    //   loadContactList(widget.userNostr!);
+    // }
+    //
     List<Widget> list = [];
 
     if (isLocal) {
@@ -273,20 +273,23 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
   @override
   Future<void> onReady(BuildContext context) async {
     // if (!isLocal) {
-    await relayProvider.getRelays(widget.pubkey, (relays) {
+    await relayProvider.getRelays(widget.pubkey, (relays) async {
       if (!_disposed) {
-        setState(() {
-          this.relays = relays;
-          relaysNum = relays.length;
+        await relayProvider.getContacts(widget.pubkey, (contacts) {
+          if (!_disposed) {
+            if (widget.onContactListLoaded != null && contacts != null) {
+              widget.onContactListLoaded!(contacts!);
+            }
+            setState(() {
+              contactList = contacts;
+              this.relays = relays;
+              relaysNum = relays.length;
+            });
+            onFollowedTap();
+            onZapTap();
+          }
         });
       }
-    }, (contactList) {
-      setState(() {
-        this.contactList = contactList; //CustContactList.fromJson(contactListEvent!.tags);
-        if (widget.onContactListLoaded != null && contactList != null) {
-          widget.onContactListLoaded!(contactList!);
-        }
-      });
     });
     // loadContactList(widget.userNostr ?? nostr!);
     // }

@@ -265,6 +265,29 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
         leading: const Icon(Icons.video_collection_outlined),
         title: Text(s.Video_preview)));
 
+    List<AbstractSettingsTile> networkTiles = [];
+
+    networkTiles.add(SettingsTile.switchTile(
+        activeSwitchColor: themeData.primaryColor,
+        onToggle: (value) {
+          settingProvider.gossip = value ? 1 : 0;
+        },
+        initialValue: settingProvider.gossip == OpenStatus.OPEN,
+        leading: const Icon(Icons.lan_outlined),
+        title: Text("Use your following's relays (Gossip)")));
+
+    if (settingProvider.gossip == 1) {
+      networkTiles.add(SettingsTile.navigation(
+          leading: const Icon(Icons.lan_outlined),
+          title: Text(
+              "Currently amount of relays from you followees:  ${followsNostr!.activeRelays()
+                  .length}")));
+      networkTiles.add(SettingsTile.navigation(
+          leading: const Icon(Icons.lan_outlined),
+          title: Text(
+              "Max amount of relays per followee ${settingProvider.followeesRelayMaxCount}")));
+    }
+
     List<AbstractSettingsTile> securityTiles = [];
 
     if (!PlatformUtil.isWeb() &&
@@ -331,6 +354,8 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
 
     sections
         .add(SettingsSection(title: Text('Interface'), tiles: interfaceTiles));
+    sections
+        .add(SettingsSection(title: Text('Network'), tiles: networkTiles));
     if (!PlatformUtil.isWeb() &&
         (PlatformUtil.isIOS() || PlatformUtil.isAndroid())) {
       sections.add(SettingsSection(

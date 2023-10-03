@@ -199,6 +199,10 @@ class SettingProvider extends ChangeNotifier {
 
   int? get imagePreview => _settingData!.imagePreview ?? OpenStatus.OPEN;
 
+  int? get gossip => _settingData!.gossip ?? OpenStatus.OPEN;
+
+  int? get followeesRelayMaxCount => _settingData!.followeesRelayMaxCount ?? OpenStatus.OPEN;
+
   /// i18n
   String? get i18n => _settingData!.i18n;
 
@@ -367,6 +371,16 @@ class SettingProvider extends ChangeNotifier {
     saveAndNotifyListeners();
   }
 
+  set gossip(int? o) {
+    _settingData!.gossip = o;
+    saveAndNotifyListeners();
+  }
+
+  set followeesRelayMaxCount(int? o) {
+    _settingData!.followeesRelayMaxCount = o;
+    saveAndNotifyListeners();
+  }
+
   set translateSourceArgs(String? o) {
     _settingData!.translateSourceArgs = o;
     saveAndNotifyListeners();
@@ -434,6 +448,11 @@ class SettingData {
 
   int? videoPreview;
 
+  int? gossip;
+
+  int? followeesRelayMaxCount;
+
+
   String? network;
 
   bool? backgroundService;
@@ -478,6 +497,8 @@ class SettingData {
   /// updated time
   late int updatedTime;
 
+  static const int DEFAULT_FOLLOWEES_RELAY_MAX_COUNT = 3;
+
   SettingData({
     this.privateKeyIndex,
     // this.privateKeyMap,
@@ -490,6 +511,8 @@ class SettingData {
     this.backgroundService,
     this.imageService,
     this.imagePreview,
+    this.gossip,
+    this.followeesRelayMaxCount = DEFAULT_FOLLOWEES_RELAY_MAX_COUNT,
     this.i18n,
     this.i18nCC,
     this.imgCompress = 50,
@@ -532,6 +555,16 @@ class SettingData {
     } else {
       imgCompress = 50;
     }
+    if (json['gossip'] != null) {
+      gossip = json['gossip'];
+    } else {
+      gossip = 1;
+    }
+    if (json['followeesRelayMaxCount']!=null) {
+      followeesRelayMaxCount = json['followeesRelayMaxCount'];
+    } else {
+      followeesRelayMaxCount = DEFAULT_FOLLOWEES_RELAY_MAX_COUNT;
+    }
     if (json['themeStyle'] != null) {
       themeStyle = json['themeStyle'];
     } else {
@@ -572,6 +605,8 @@ class SettingData {
     data['imagePreview'] = this.imagePreview;
     data['i18n'] = this.i18n;
     data['i18nCC'] = this.i18nCC;
+    data['gossip'] = this.gossip;
+    data['followeesRelayMaxCount'] = this.followeesRelayMaxCount;
     data['imgCompress'] = this.imgCompress;
     data['themeStyle'] = this.themeStyle;
     data['themeColor'] = this.themeColor;

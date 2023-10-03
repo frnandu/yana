@@ -3,7 +3,7 @@ import 'package:sqflite/sqflite.dart';
 import 'package:yana/utils/platform_util.dart';
 
 class DB {
-  static const _VERSION = 5;
+  static const _VERSION = 6;
 
   static const _dbName = "yana.db";
 
@@ -22,8 +22,16 @@ class DB {
         "pub_key TEXT not null primary key,"
         "read       TEXT,"
         "write       TEXT,"
-        "updated_at   datetime,"
-        " valid  INTEGER);";
+        "updated_at DATETIME,"
+        " valid INTEGER);";
+
+    const CREATE_CONTACTS_SQL = "create table contact("
+        "pub_key TEXT not null,"
+        "contact TEXT not null,"
+        "petname TEXT,"
+        "relay   TEXT,"
+        "PRIMARY KEY (pub_key,contact)"
+        ");";
 
     _database = await openDatabase(path, version: _VERSION,
         onOpen: (Database db) async {
@@ -40,6 +48,10 @@ class DB {
         print("Migration SQL: $CREATE_RELAYS_SQL");
         await db.execute(CREATE_RELAYS_SQL);
       }
+      if (newVersion == _VERSION && oldVersion < 6) {
+        print("Migration SQL: $CREATE_CONTACTS_SQL");
+        await db.execute(CREATE_CONTACTS_SQL);
+      }
     }, onCreate: (Database db, int version) async {
       db.execute("create table metadata("
           "pub_key TEXT not null primary key,"
@@ -55,6 +67,7 @@ class DB {
           "updated_at   datetime,"
           " valid  INTEGER);");
       db.execute(CREATE_RELAYS_SQL);
+      db.execute(CREATE_CONTACTS_SQL);
       db.execute(
           "create table event(key_index  INTEGER, id         text,pubkey     text,created_at integer,kind       integer,tags       text,content    text);");
       db.execute(

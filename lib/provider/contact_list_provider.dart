@@ -28,6 +28,10 @@ class ContactListProvider extends ChangeNotifier {
     return _contactListProvider!;
   }
 
+  void set(CustContactList list) {
+    _contactList = list;
+  }
+
   void reload({Nostr? targetNostr}) {
     targetNostr ??= nostr;
 

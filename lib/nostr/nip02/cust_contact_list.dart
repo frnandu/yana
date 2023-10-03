@@ -7,15 +7,19 @@ class CustContactList {
 
   final Map<String, int> _followedCommunitys;
 
+  final Map<String, int> _followedEvents;
+
   CustContactList()
       : _contacts = {},
         _followedTags = {},
-        _followedCommunitys = {};
+        _followedCommunitys = {},
+        _followedEvents = {};
 
   factory CustContactList.fromJson(List<dynamic> tags) {
     Map<String, Contact> _contacts = {};
     Map<String, int> _followedTags = {};
     Map<String, int> _followedCommunitys = {};
+    Map<String, int> _followedEvents = {};
     for (List<dynamic> tag in tags) {
       var length = tag.length;
       if (length == 0) {
@@ -40,13 +44,18 @@ class CustContactList {
       } else if (t == "a" && length > 1) {
         var id = tag[1];
         _followedCommunitys[id] = 1;
+      } else if (t == "e" && length > 1){
+        var id = tag[1];
+        _followedEvents[id] = 1;
+      } else {
+        print("unknown tag $t : ${tag[1]}");
       }
     }
-    return CustContactList._(_contacts, _followedTags, _followedCommunitys);
+    return CustContactList._(_contacts, _followedTags, _followedCommunitys, _followedEvents);
   }
 
   CustContactList._(
-      this._contacts, this._followedTags, this._followedCommunitys);
+      this._contacts, this._followedTags, this._followedCommunitys, this._followedEvents);
 
   List<dynamic> toJson() {
     List<dynamic> result = [];
@@ -58,6 +67,9 @@ class CustContactList {
     }
     for (var id in _followedCommunitys.keys) {
       result.add(["a", id]);
+    }
+    for (var id in _followedEvents.keys) {
+      result.add(["e", id]);
     }
     return result;
   }
@@ -128,5 +140,35 @@ class CustContactList {
 
   Iterable<String> followedCommunitiesList() {
     return _followedCommunitys.keys;
+  }
+
+  Iterable<String> followedEventsList() {
+    return _followedEvents.keys;
+  }
+
+  static CustContactList? fromDB(List<Map<String, Object?>> fromDB) {
+    Map<String, Contact> _contacts = {};
+    Map<String, int> _followedTags = {};
+    Map<String, int> _followedCommunitys = {};
+    Map<String, int> _followedEvents = {};
+    fromDB.forEach((map) {
+      Object? object = map['contact'];
+      if (object != null && object is String) {
+        String contact = object.toString();
+        if (map['petname'] == Contact.PETNAME_TAG) {
+          _followedTags[contact] = 1;
+        } else if (map['petname'] == Contact.PETNAME_COMMUNITY) {
+          _followedCommunitys[contact] = 1;
+        } else if (map['petname'] == Contact.PETNAME_EVENT) {
+          _followedEvents[contact] = 1;
+        } else {
+          _contacts[contact] = Contact(
+              publicKey: contact,
+              url: "${map['relay']}",
+              petname: "${map['petname']}");
+        }
+      }
+    });
+    return CustContactList._(_contacts, _followedTags, _followedCommunitys, _followedEvents);
   }
 }
