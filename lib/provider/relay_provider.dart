@@ -154,7 +154,7 @@ class RelayProvider extends ChangeNotifier {
     }
     String a =  "$connectedNum / $total";
     if (followsNostr!=null) {
-      a+= ", follow ${followsNostr!.activeRelays().length} / ${followsNostr!.allRelays().length}";
+      a+= " | follow ${followsNostr!.activeRelays().length} / ${followsNostr!.allRelays().length}";
     }
     return a;
   }
