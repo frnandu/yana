@@ -42,19 +42,19 @@ class ContactsDB {
         contactListProvider.getContact(pubKey) != null) {
       db = await DB.getDB(db);
       list.list().forEach((contact) async {
-        await db!.insert("contact", contact.toDB(pubKey));
+        await db!.insert("contact", contact.toDB(pubKey), conflictAlgorithm: ConflictAlgorithm.replace);
       });
       list.tagList().forEach((tag) async {
         await db!.insert(
-            "contact", Contact.toDBFromValues(pubKey, tag, Contact.PETNAME_TAG, null));
+            "contact", Contact.toDBFromValues(pubKey, tag, Contact.PETNAME_TAG, null), conflictAlgorithm: ConflictAlgorithm.replace);
       });
       list.followedCommunitiesList().forEach((community) async {
         await db!.insert("contact",
-            Contact.toDBFromValues(pubKey, community, Contact.PETNAME_COMMUNITY, null));
+            Contact.toDBFromValues(pubKey, community, Contact.PETNAME_COMMUNITY, null), conflictAlgorithm: ConflictAlgorithm.replace);
       });
       list.followedEventsList().forEach((event) async {
         await db!.insert("contact",
-            Contact.toDBFromValues(pubKey, event, Contact.PETNAME_EVENT, null));
+            Contact.toDBFromValues(pubKey, event, Contact.PETNAME_EVENT, null), conflictAlgorithm: ConflictAlgorithm.replace);
       });
       return list.total() +
           list.totalFollowedTags() +

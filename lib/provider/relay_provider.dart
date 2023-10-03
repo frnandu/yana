@@ -8,6 +8,7 @@ import 'package:yana/models/relays_db.dart';
 import 'package:yana/nostr/nip02/cust_contact_list.dart';
 import 'package:yana/nostr/relay_metadata.dart';
 import 'package:yana/provider/contact_list_provider.dart';
+import 'package:yana/provider/setting_provider.dart';
 
 import '../nostr/event.dart';
 import '../nostr/event_kind.dart' as kind;
@@ -124,7 +125,7 @@ class RelayProvider extends ChangeNotifier {
                 RelayStatus(adr),
                 access: WriteAccess.readWrite,
               ),
-              connect: false);
+              connect: true);
         });
         i++;
         print(
@@ -151,7 +152,11 @@ class RelayProvider extends ChangeNotifier {
         connectedNum++;
       }
     }
-    return "$connectedNum / $total";
+    String a =  "$connectedNum / $total";
+    if (followsNostr!=null) {
+      a+= ", follow ${followsNostr!.activeRelays().length} / ${followsNostr!.allRelays().length}";
+    }
+    return a;
   }
 
   int total() {
@@ -182,7 +187,7 @@ class RelayProvider extends ChangeNotifier {
       await buildNostrFromContactsRelays(
         loggedUserNostr.publicKey,
         contactList,
-        2,
+        settingProvider.followeesRelayMaxCount ?? SettingProvider.DEFAULT_FOLLOWEES_RELAY_MAX_COUNT,
         (builtNostr) {
           if (followsNostr==null) {
             followsNostr = builtNostr;
@@ -191,9 +196,9 @@ class RelayProvider extends ChangeNotifier {
                 .activeRelays()
                 .where((relay) => relay.access != WriteAccess.writeOnly)
                 .forEach((relay) {
-              followsNostr!.addRelay(relay, connect: false);
+              followsNostr!.addRelay(relay, connect: true);
             });
-            followEventProvider.doQuery(initQuery: true);
+            followEventProvider.doQuery();
           }
         },
       );

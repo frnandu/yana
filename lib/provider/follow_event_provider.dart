@@ -108,7 +108,7 @@ class FollowEventProvider extends ChangeNotifier
       maxQueryIdsNum = (contactListLength / times).ceil();
     }
     maxQueryIdsNum += 2;
-    followsNostr!.checkAndReconnectRelaysSync();
+//    followsNostr!.checkAndReconnectRelaysSync();
 
     ids.add(followsNostr!.publicKey);
     for (Contact contact in contactList) {

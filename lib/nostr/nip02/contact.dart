@@ -42,7 +42,7 @@ class Contact {
   }
   
   static Map<String, Object?> toDBFromValues(String pubKey, String contact, String? petname, String? url) {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
+    final Map<String, dynamic> data = Map<String, dynamic>();
     data['pub_key'] = pubKey;
     data['contact'] = contact;
     if (StringUtil.isNotBlank(petname)) {

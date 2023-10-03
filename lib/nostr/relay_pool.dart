@@ -62,6 +62,10 @@ class RelayPool {
     return true;
   }
 
+  List<Relay> allRelays() {
+    return _relays.values.toList();
+  }
+
   List<Relay> activeRelays() {
     List<Relay> list = [];
     var it = _relays.values;
@@ -319,8 +323,8 @@ class RelayPool {
       try {
         if (relay.relayStatus.connected != ClientConneccted.CONNECTED) {
           relay.connectSync(() {
-            print("Removing ${relay.url} from list of pool relays, remaining ${_relays.length} relay");
-            remove(relay.url);
+            // print("Removing ${relay.url} from list of pool relays, remaining ${_relays.length} relay");
+            // remove(relay.url);
           });
         }
       } catch (err) {

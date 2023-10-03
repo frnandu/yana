@@ -24,6 +24,8 @@ AndroidOptions _getAndroidOptions() => const AndroidOptions(
 
 class SettingProvider extends ChangeNotifier {
   static SettingProvider? _settingProvider;
+  static const int DEFAULT_FOLLOWEES_RELAY_MAX_COUNT = 3;
+
 
   SharedPreferences? _sharedPreferences;
 
@@ -497,8 +499,6 @@ class SettingData {
   /// updated time
   late int updatedTime;
 
-  static const int DEFAULT_FOLLOWEES_RELAY_MAX_COUNT = 3;
-
   SettingData({
     this.privateKeyIndex,
     // this.privateKeyMap,
@@ -512,7 +512,7 @@ class SettingData {
     this.imageService,
     this.imagePreview,
     this.gossip,
-    this.followeesRelayMaxCount = DEFAULT_FOLLOWEES_RELAY_MAX_COUNT,
+    this.followeesRelayMaxCount = SettingProvider.DEFAULT_FOLLOWEES_RELAY_MAX_COUNT,
     this.i18n,
     this.i18nCC,
     this.imgCompress = 50,
@@ -563,7 +563,7 @@ class SettingData {
     if (json['followeesRelayMaxCount']!=null) {
       followeesRelayMaxCount = json['followeesRelayMaxCount'];
     } else {
-      followeesRelayMaxCount = DEFAULT_FOLLOWEES_RELAY_MAX_COUNT;
+      followeesRelayMaxCount = SettingProvider.DEFAULT_FOLLOWEES_RELAY_MAX_COUNT;
     }
     if (json['themeStyle'] != null) {
       themeStyle = json['themeStyle'];

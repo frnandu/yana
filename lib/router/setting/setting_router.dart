@@ -60,7 +60,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
     var s = I18n.of(context);
 
     initOpenList(s);
-    initI18nList(s);
+    init(s);
     initCompressList(s);
     initDefaultTabListTimeline(s);
 
@@ -279,13 +279,12 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
     if (settingProvider.gossip == 1) {
       networkTiles.add(SettingsTile.navigation(
           leading: const Icon(Icons.lan_outlined),
-          title: Text(
-              "Currently amount of relays from you followees:  ${followsNostr!.activeRelays()
-                  .length}")));
-      networkTiles.add(SettingsTile.navigation(
-          leading: const Icon(Icons.lan_outlined),
-          title: Text(
-              "Max amount of relays per followee ${settingProvider.followeesRelayMaxCount}")));
+          trailing: Text('${settingProvider.followeesRelayMaxCount}'),
+          onPressed: (context) {
+            pickMaxRelays();
+            relayProvider.buildNostrFromContactsRelays(pubKey, contactList, takeCountForEachContact, (p0) => null)
+          },
+          title: const Text("Max amount of relays per followee")));
     }
 
     List<AbstractSettingsTile> securityTiles = [];
@@ -433,13 +432,21 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
 
   List<EnumObj>? i18nList;
 
-  void initI18nList(I18n s) {
+  List<EnumObj>? maxRelays;
+
+  void init(I18n s) {
     if (i18nList == null) {
       i18nList = [];
       i18nList!.add(EnumObj("", s.auto));
       for (var item in I18n.delegate.supportedLocales) {
         var key = LocaleUtil.getLocaleKey(item);
         i18nList!.add(EnumObj(key, key));
+      }
+    }
+    if (maxRelays == null) {
+      maxRelays = [];
+      for (var i = 1; i <= 10; i++) {
+        maxRelays!.add(EnumObj(i, "$i"));
       }
     }
   }
@@ -476,6 +483,22 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
           themeStyleList = null;
         });
       });
+    }
+  }
+
+  Future pickMaxRelays() async {
+    EnumObj? resultEnumObj =
+    await EnumSelectorComponent.show(context,maxRelays!);
+    if (resultEnumObj != null) {
+      settingProvider.followeesRelayMaxCount = resultEnumObj.value;
+      widget.indexReload();
+      // Future.delayed(Duration(seconds: 1), () {
+      //   setState(() {
+      //     // TODO others setting enumObjList
+      //     i18nList = null;
+      //     themeStyleList = null;
+      //   });
+      // });
     }
   }
 
