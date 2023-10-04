@@ -1,24 +1,21 @@
 import 'dart:convert';
 import 'dart:developer';
 
-import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:yana/models/contacts_db.dart';
 import 'package:yana/models/relays_db.dart';
 import 'package:yana/nostr/nip02/cust_contact_list.dart';
 import 'package:yana/nostr/relay_metadata.dart';
-import 'package:yana/provider/contact_list_provider.dart';
 import 'package:yana/provider/setting_provider.dart';
 
+import '../main.dart';
+import '../models/relay_status.dart';
 import '../nostr/event.dart';
 import '../nostr/event_kind.dart' as kind;
 import '../nostr/filter.dart';
 import '../nostr/nostr.dart';
-
 import '../nostr/relay.dart';
 import '../utils/client_connected.dart';
-import '../models/relay_status.dart';
-import '../main.dart';
 import '../utils/string_util.dart';
 import 'data_util.dart';
 
@@ -143,7 +140,9 @@ class RelayProvider extends ChangeNotifier {
                 RelayStatus(adr),
                 access: WriteAccess.readWrite,
               ),
-              connect: true);
+              connect: true,
+              checkInfo: false
+          );
         });
         i++;
         print(
@@ -170,6 +169,14 @@ class RelayProvider extends ChangeNotifier {
     return relayStatusMap[addr];
   }
 
+  RelayStatus? getFollowRelayStatus(String addr) {
+    if (followsNostr!=null) {
+      Relay? r = followsNostr!.getRelay(addr);
+      return r?.relayStatus;
+    }
+    return null;
+  }
+
   String relayNumStr() {
     var total = relayAddrs.length;
 
@@ -177,13 +184,13 @@ class RelayProvider extends ChangeNotifier {
     var it = relayAddrs;
     for (var url in it) {
       RelayStatus? status = relayStatusMap[url];
-      if (status != null && status.connected == ClientConneccted.CONNECTED) {
+      if (status != null && status.connected == ClientConnected.CONNECTED) {
         connectedNum++;
       }
     }
     String a = "$connectedNum/$total";
-    if (followsNostr != null) {
-      a += ", gossip ${followRelayNumStr()}";
+    if (settingProvider.gossip == 1 && followsNostr != null) {
+      a += ", follows ${followRelayNumStr()}";
     }
     return a;
   }
@@ -263,26 +270,27 @@ class RelayProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void addRelay(String relayAddr) {
+  Future<void> addRelay(String relayAddr) async {
     if (!relayAddrs.contains(relayAddr)) {
       relayAddrs.add(relayAddr);
-      _doAddRelay(relayAddr);
-      _updateRelayToData();
+      await _doAddRelay(relayAddr);
+      await _updateRelayToData();
     }
   }
 
-  void _doAddRelay(String relayAddr, {bool init = false}) {
+  Future<void> _doAddRelay(String relayAddr, {bool init = false}) async {
     var custRelay = genRelay(relayAddr);
     log("begin to init $relayAddr");
-    nostr!.addRelay(custRelay, autoSubscribe: true, init: init);
+    await nostr!.addRelay(custRelay, autoSubscribe: true, init: init);
   }
 
-  void removeRelay(String relayAddr) {
+  Future<void> removeRelay(String relayAddr) async {
     if (relayAddrs.contains(relayAddr)) {
       relayAddrs.remove(relayAddr);
+      relayStatusMap.remove(relayAddr);
       nostr!.removeRelay(relayAddr);
 
-      _updateRelayToData();
+      await _updateRelayToData();
     }
   }
 
@@ -294,9 +302,9 @@ class RelayProvider extends ChangeNotifier {
     return sharedPreferences.getInt(DataKey.RELAY_UPDATED_TIME);
   }
 
-  void _updateRelayToData(
+  Future<void> _updateRelayToData(
       {bool upload = true,
-      List<String> broadcastToRelays = STATIC_RELAY_ADDRS}) {
+      List<String> broadcastToRelays = STATIC_RELAY_ADDRS}) async {
     sharedPreferences.setInt(DataKey.RELAY_UPDATED_TIME,
         DateTime.now().millisecondsSinceEpoch ~/ 1000);
 
@@ -332,9 +340,9 @@ class RelayProvider extends ChangeNotifier {
       tempNostr!.sendEvent(event);
       int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
       try {
-        RelaysDB.insert(nostr!.publicKey, relays, now);
+        await RelaysDB.insert(nostr!.publicKey, relays, now);
       } catch (e) {
-        RelaysDB.update(nostr!.publicKey, relays, now);
+        await RelaysDB.update(nostr!.publicKey, relays, now);
       }
     }
   }
@@ -353,7 +361,7 @@ class RelayProvider extends ChangeNotifier {
     )..relayStatusCallback = onRelayStatusChange;
   }
 
-  void setRelayListAndUpdate(List<String> addrs, String? privKey) {
+  Future<void> setRelayListAndUpdate(List<String> addrs, String? privKey) async {
     relayStatusMap.clear();
 
     relayAddrs.clear();
@@ -370,7 +378,7 @@ class RelayProvider extends ChangeNotifier {
       for (var relayAddr in relayAddrs) {
         var custRelay = genRelay(relayAddr);
         try {
-          nostr!.addRelay(custRelay, autoSubscribe: true);
+          await nostr!.addRelay(custRelay, autoSubscribe: true);
         } catch (e) {
           log("relay $relayAddr add to pool error ${e.toString()}");
         }

@@ -1,16 +1,12 @@
-import 'dart:math';
-
 import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:yana/utils/index_taps.dart';
 
-import '../models/metadata.dart';
+import '../main.dart';
+import '../models/event_mem_box.dart';
 import '../nostr/event.dart';
 import '../nostr/filter.dart';
-import '../models/event_mem_box.dart';
-import '../main.dart';
 import '../utils/peddingevents_later_function.dart';
 import '../utils/string_util.dart';
 

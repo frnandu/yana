@@ -70,7 +70,7 @@ class RelayPool {
     List<Relay> list = [];
     var it = _relays.values;
     for (var relay in it) {
-      if (relay.relayStatus.connected == ClientConneccted.CONNECTED) {
+      if (relay.relayStatus.connected == ClientConnected.CONNECTED) {
         list.add(relay);
       }
     }
@@ -308,8 +308,10 @@ class RelayPool {
   Future<void> checkAndReconnectRelays() async {
     for (Relay relay in _relays.values) {
       try {
-        if (relay.relayStatus.connected != ClientConneccted.CONNECTED) {
-          await relay.connect();
+        if (relay.relayStatus.connected != ClientConnected.CONNECTED) {
+          print("[checkAndReconnect] Relay ${relay.url} IS NOT CONNECTED, connecting...");
+          await relay.connect(checkInfo: false);
+          print("[checkAndReconnect] Relay ${relay.url} IS NOW ${relay.relayStatus.connected}");
         }
       } catch (err) {
         log(err.toString());
@@ -321,7 +323,7 @@ class RelayPool {
   void checkAndReconnectRelaysSync() {
     for (Relay relay in _relays.values) {
       try {
-        if (relay.relayStatus.connected != ClientConneccted.CONNECTED) {
+        if (relay.relayStatus.connected != ClientConnected.CONNECTED) {
           relay.connectSync(() {
             // print("Removing ${relay.url} from list of pool relays, remaining ${_relays.length} relay");
             // remove(relay.url);

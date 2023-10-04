@@ -1,4 +1,4 @@
-class ClientConneccted {
+class ClientConnected {
   static int UN_CONNECT = -1;
 
   static int CONNECTING = 1;

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:yana/main.dart';
@@ -7,6 +8,7 @@ import 'package:yana/provider/relay_provider.dart';
 import '../../i18n/i18n.dart';
 import '../../nostr/relay_metadata.dart';
 import '../../utils/base.dart';
+import '../../utils/client_connected.dart';
 import '../../utils/router_util.dart';
 
 class UserRelayRouter extends StatefulWidget {
@@ -24,6 +26,8 @@ class _UserRelayRouter extends State<UserRelayRouter> {
   @override
   Widget build(BuildContext context) {
     var themeData = Theme.of(context);
+    var _relayProvider = Provider.of<RelayProvider>(context);
+
 
     var s = I18n.of(context);
     if (relays == null) {
@@ -51,21 +55,33 @@ class _UserRelayRouter extends State<UserRelayRouter> {
         margin: const EdgeInsets.only(
           top: Base.BASE_PADDING,
         ),
-        child: ListView.builder(
-          itemBuilder: (context, index) {
-            var relayMetadata = relays![index];
-            return Selector<RelayProvider, RelayStatus?>(
-                builder: (context, relayStatus, child) {
-              return RelayMetadataComponent(
-                relayMetadata: relayMetadata,
-                addAble: relayMetadata.count == null && relayStatus == null,
-              );
-            }, selector: (context, provider) {
-              return provider.getRelayStatus(relayMetadata.addr);
-            });
-          },
-          itemCount: relays!.length,
-        ),
+        child: RefreshIndicator(
+            onRefresh: () async {
+              if (relays!=null && relays!.isNotEmpty && relays![0].count!=null && followsNostr!=null) {
+                await followsNostr!.checkAndReconnectRelays();
+                relayProvider.notifyListeners();
+                setState(() {
+                  if (kDebugMode) {
+                    print("refreshed");
+                  }
+                });
+              }
+            },
+            child: ListView.builder(
+              itemBuilder: (context, index) {
+                var relayMetadata = relays![index];
+                return Selector<RelayProvider, RelayStatus?>(
+                    builder: (context, relayStatus, child) {
+                  return RelayMetadataComponent(
+                    relayMetadata: relayMetadata,
+                    addAble: relayMetadata.count == null && relayStatus == null,
+                  );
+                }, selector: (context, provider) {
+                  return provider.getRelayStatus(relayMetadata.addr);
+                });
+              },
+              itemCount: relays!.length,
+            )),
       ),
     );
   }
@@ -86,11 +102,13 @@ class RelayMetadataComponent extends StatelessWidget {
     var cardColor = themeData.cardColor;
     var bodySmallFontSize = themeData.textTheme.bodySmall!.fontSize;
 
+    Widget leftBtn = Container();
+
     Widget rightBtn = Container();
     if (addAble) {
       rightBtn = GestureDetector(
-        onTap: () {
-          relayProvider.addRelay(relayMetadata.addr);
+        onTap: () async {
+          await relayProvider.addRelay(relayMetadata.addr);
         },
         child: const Icon(
           Icons.add,
@@ -98,6 +116,32 @@ class RelayMetadataComponent extends StatelessWidget {
       );
     } else {
       if (relayMetadata.count != null) {
+        var fontSize = themeData.textTheme.bodyMedium!.fontSize;
+
+        leftBtn = Selector<RelayProvider, RelayStatus?>(
+            builder: (context, relayStatus, client) {
+          Color borderLeftColor = Colors.red;
+          if (relayStatus != null &&
+              relayStatus!.connected == ClientConnected.CONNECTED) {
+            borderLeftColor = Colors.green;
+          } else if (relayStatus!=null && relayStatus!.connected == ClientConnected.CONNECTING) {
+            borderLeftColor = Colors.yellow;
+          }
+          return Container(
+            padding: const EdgeInsets.only(
+              left: Base.BASE_PADDING_HALF / 2,
+              right: Base.BASE_PADDING_HALF / 2,
+            ),
+            height: 30,
+            child: Icon(
+              Icons.lan,
+              color: borderLeftColor,
+            ),
+          );
+          main;
+        }, selector: (context, _provider) {
+          return _provider.getFollowRelayStatus(relayMetadata.addr);
+        });
         rightBtn = Row(children: [
           Text("${relayMetadata.count} ",
               style: TextStyle(
@@ -143,6 +187,7 @@ class RelayMetadataComponent extends StatelessWidget {
         ),
         child: Row(
           children: [
+            leftBtn,
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,

@@ -87,6 +87,11 @@ class _RelaysRouter extends CustState<RelaysRouter> with WhenStopFunction {
                     return RelaysItemComponent(
                       addr: addr,
                       relayStatus: relayStatus,
+                      onRemove: () {
+                        setState(() {
+                          relayAddrs = _relayProvider.relayAddrs;
+                        });
+                      },
                     );
                   },
                   itemCount: relayAddrs.length,
@@ -110,7 +115,7 @@ class _RelaysRouter extends CustState<RelaysRouter> with WhenStopFunction {
     );
   }
 
-  void addRelay() {
+  Future<void> addRelay() async {
     var addr = controller.text;
     addr = addr.trim();
     if (StringUtil.isBlank(addr)) {
@@ -118,7 +123,7 @@ class _RelaysRouter extends CustState<RelaysRouter> with WhenStopFunction {
       return;
     }
 
-    relayProvider.addRelay(addr);
+    await relayProvider.addRelay(addr);
     controller.clear();
     FocusScope.of(context).unfocus();
   }

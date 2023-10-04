@@ -19,14 +19,16 @@ class RelaysItemComponent extends StatelessWidget {
 
   RelayStatus relayStatus;
 
-  RelaysItemComponent({required this.addr, required this.relayStatus});
+  Function onRemove;
+
+  RelaysItemComponent({required this.addr, required this.relayStatus, required this.onRemove});
 
   @override
   Widget build(BuildContext context) {
     var themeData = Theme.of(context);
     var cardColor = themeData.cardColor;
     Color borderLeftColor = Colors.green;
-    if (relayStatus.connected != ClientConneccted.CONNECTED) {
+    if (relayStatus.connected != ClientConnected.CONNECTED) {
       borderLeftColor = Colors.red;
     }
     var relay = nostr!.getRelay(addr);
@@ -72,102 +74,101 @@ class RelaysItemComponent extends StatelessWidget {
             color: cardColor,
             borderRadius: BorderRadius.circular(10),
           ),
-          child: Container(
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.only(
-                    left: Base.BASE_PADDING_HALF / 2,
-                    right: Base.BASE_PADDING_HALF / 2,
-                  ),
-                  color: borderLeftColor,
-                  height: 50,
-                  child: const Icon(
-                    Icons.lan,
-                  ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.only(
+                  left: Base.BASE_PADDING_HALF / 2,
+                  right: Base.BASE_PADDING_HALF / 2,
                 ),
-                Expanded(
-                    child: Row(
-                  children: [
-                    Container(
-                        padding: const EdgeInsets.only(
-                          left: Base.BASE_PADDING,
-                          top: Base.BASE_PADDING_HALF,
-                          bottom: Base.BASE_PADDING_HALF,
-                          right: Base.BASE_PADDING_HALF,
-                        ),
-                        child: imageWidget),
-                    Container(
-                        padding: const EdgeInsets.only(
-                          left: Base.BASE_PADDING_HALF,
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Container(
-                              margin: const EdgeInsets.only(bottom: 2),
-                              child: Text(addr),
-                            ),
-                            Row(
-                              children: [
-                                Container(
-                                  margin: const EdgeInsets.only(
-                                      right: Base.BASE_PADDING),
-                                  child: RelaysItemNumComponent(
-                                    iconData: Icons.mail,
-                                    num: relayStatus.noteReceived,
-                                  ),
+                color: borderLeftColor,
+                height: 50,
+                child: const Icon(
+                  Icons.lan,
+                ),
+              ),
+              Expanded(
+                  child: Row(
+                children: [
+                  Container(
+                      padding: const EdgeInsets.only(
+                        left: Base.BASE_PADDING,
+                        top: Base.BASE_PADDING_HALF,
+                        bottom: Base.BASE_PADDING_HALF,
+                        right: Base.BASE_PADDING_HALF,
+                      ),
+                      child: imageWidget),
+                  Container(
+                      padding: const EdgeInsets.only(
+                        left: Base.BASE_PADDING_HALF,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            margin: const EdgeInsets.only(bottom: 2),
+                            child: Text(addr),
+                          ),
+                          Row(
+                            children: [
+                              Container(
+                                margin: const EdgeInsets.only(
+                                    right: Base.BASE_PADDING),
+                                child: RelaysItemNumComponent(
+                                  iconData: Icons.mail,
+                                  num: relayStatus.noteReceived,
                                 ),
-                                relayStatus.error > 0
-                                    ? RelaysItemNumComponent(
-                                        iconColor: Colors.red,
-                                        iconData: Icons.error_outline,
-                                        num: relayStatus.error,
-                                      )
-                                    : Container(),
-                              ],
-                            ),
-                          ],
-                        ))
-                  ],
-                )),
-                GestureDetector(
-                  onTap: () {
-                    var text = NIP19Tlv.encodeNrelay(Nrelay(addr));
-                    Clipboard.setData(ClipboardData(text: text)).then((_) {
-                      BotToast.showText(text: I18n.of(context).Copy_success);
-                    });
-                  },
-                  child: Container(
-                    margin: const EdgeInsets.only(right: Base.BASE_PADDING),
-                    child: const Icon(
-                      Icons.copy,
-                    ),
+                              ),
+                              relayStatus.error > 0
+                                  ? RelaysItemNumComponent(
+                                      iconColor: Colors.red,
+                                      iconData: Icons.error_outline,
+                                      num: relayStatus.error,
+                                    )
+                                  : Container(),
+                            ],
+                          ),
+                        ],
+                      ))
+                ],
+              )),
+              GestureDetector(
+                onTap: () {
+                  var text = NIP19Tlv.encodeNrelay(Nrelay(addr));
+                  Clipboard.setData(ClipboardData(text: text)).then((_) {
+                    BotToast.showText(text: I18n.of(context).Copy_success);
+                  });
+                },
+                child: Container(
+                  margin: const EdgeInsets.only(right: Base.BASE_PADDING),
+                  child: const Icon(
+                    Icons.copy,
                   ),
                 ),
-                GestureDetector(
-                  onTap: () {
-                    if (nostr!.privateKey!=null) {
-                      removeRelay(addr);
-                    }
-                  },
-                  child: nostr!.privateKey!=null ? Container(
-                    padding: const EdgeInsets.only(
-                      right: Base.BASE_PADDING,
-                    ),
-                    child: const Icon(
-                      Icons.delete,
-                    ),
-                  ) : Container(),
-                ),
-              ],
-            ),
+              ),
+              GestureDetector(
+                onTap: () async {
+                  if (nostr!.privateKey!=null) {
+                    await removeRelay(addr);
+                  }
+                },
+                child: nostr!.privateKey!=null ? Container(
+                  padding: const EdgeInsets.only(
+                    right: Base.BASE_PADDING,
+                  ),
+                  child: const Icon(
+                    Icons.delete,
+                  ),
+                ) : Container(),
+              ),
+            ],
           ),
         ));
   }
 
-  void removeRelay(String addr) {
-    relayProvider.removeRelay(addr);
+  Future<void> removeRelay(String addr) async {
+    await relayProvider.removeRelay(addr);
+    onRemove();
   }
 }
 

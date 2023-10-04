@@ -67,7 +67,7 @@ class ContentRelayComponent extends StatelessWidget {
             var result = await ConfirmDialog.show(
                 context, I18n.of(context).Add_this_relay_to_local);
             if (result == true) {
-              relayProvider.addRelay(addr);
+              await relayProvider.addRelay(addr);
             }
           },
           child: main,

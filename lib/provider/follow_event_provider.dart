@@ -87,14 +87,19 @@ class FollowEventProvider extends ChangeNotifier
       until: until ?? _initTime,
       limit: 20,
     );
-    if (followsNostr==null) {
-      return;
+    Nostr? targetNostr;
+    if (settingProvider.gossip == 1) {
+      if (followsNostr==null) {
+        return;
+      }
+      targetNostr = followsNostr;
+    } else {
+      targetNostr = nostr;
     }
-    Nostr? f = followsNostr;
 
     bool queriedTags = false;
 
-    doUnscribe(followsNostr!);
+    doUnscribe(targetNostr!);
 
     List<String> subscribeIds = [];
     Iterable<Contact> contactList = contactListProvider.list();
@@ -108,15 +113,14 @@ class FollowEventProvider extends ChangeNotifier
       maxQueryIdsNum = (contactListLength / times).ceil();
     }
     maxQueryIdsNum += 2;
-//    followsNostr!.checkAndReconnectRelaysSync();
 
-    ids.add(followsNostr!.publicKey);
+    ids.add(targetNostr!.publicKey);
     for (Contact contact in contactList) {
       ids.add(contact.publicKey);
       if (ids.length > maxQueryIdsNum) {
         filter.authors = ids;
 
-        var subscribeId = _doQueryFunc(followsNostr!, filter,
+        var subscribeId = _doQueryFunc(targetNostr!, filter,
             initQuery: initQuery,
             forceUserLimit: forceUserLimit,
             queriyTags: !queriedTags);
@@ -127,7 +131,7 @@ class FollowEventProvider extends ChangeNotifier
     }
     if (ids.isNotEmpty) {
       filter.authors = ids;
-      var subscribeId = _doQueryFunc(followsNostr!, filter,
+      var subscribeId = _doQueryFunc(targetNostr!, filter,
           initQuery: initQuery,
           forceUserLimit: forceUserLimit,
           queriyTags: !queriedTags);
@@ -319,6 +323,10 @@ class FollowEventProvider extends ChangeNotifier
     postsBox.clear();
 
     doUnscribe(nostr!);
+
+    if (followsNostr!=null) {
+      doUnscribe(followsNostr!);
+    }
 
     notifyListeners();
   }

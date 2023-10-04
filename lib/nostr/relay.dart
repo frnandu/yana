@@ -32,14 +32,16 @@ class Relay {
 
   WebSocketChannel? _wsChannel;
 
-  Future<bool> connect({bool checkInfo = true, Function? onError}) async {
+  Future<bool> connect({bool checkInfo = true}) async {
     try {
-      relayStatus.connected = ClientConneccted.CONNECTING;
+      relayStatus.connected = ClientConnected.CONNECTING;
       info = checkInfo ? await RelayInfoUtil.get(url) : null;
 
       // Relay must support NIP-15 and NIP-20, but NIP-15 had merger into NIP-01
       if (info == null || info!.nips.contains(20)) {
-        return connectSync(onError);
+        return connectSync(() {
+
+        });
       }
     } catch (e) {
       _onError(e.toString(), reconnect: false);
@@ -49,7 +51,7 @@ class Relay {
 
   bool send(List<dynamic> message, { bool reconnect = true}) {
     if (_wsChannel != null &&
-        relayStatus.connected == ClientConneccted.CONNECTED) {
+        relayStatus.connected == ClientConnected.CONNECTED) {
       try {
         final encoded = jsonEncode(message);
         _wsChannel!.sink.add(encoded);
@@ -69,7 +71,13 @@ class Relay {
 
   bool connectSync(Function? onError) {
     final wsUrl = Uri.parse(url);
-    _wsChannel = WebSocketChannel.connect(wsUrl);
+    try {
+      _wsChannel = WebSocketChannel.connect(wsUrl);
+    } catch (e) {
+      print(e);
+      relayStatus.connected = ClientConnected.UN_CONNECT;
+      return false;
+    }
     //log("Connected $url");
     _wsChannel!.stream.listen((message) {
       if (onMessage != null) {
@@ -85,7 +93,11 @@ class Relay {
     }, onDone: () {
       _onError("Websocket stream closed by remote:  $url", reconnect: false);
     });
-    relayStatus.connected = ClientConneccted.CONNECTED;
+    Future.delayed(Duration(seconds: 5), () {
+      if (relayStatus.connected != ClientConnected.UN_CONNECT) {
+        relayStatus.connected = ClientConnected.CONNECTED;
+      }
+    });
     if (relayStatusCallback != null) {
       relayStatusCallback!();
     }
@@ -103,7 +115,8 @@ class Relay {
   void _onError(String errMsg, {bool reconnect = false}) {
     //log("relay error in $url : $errMsg");
     relayStatus.error++;
-    relayStatus.connected = ClientConneccted.UN_CONNECT;
+    relayStatus.connected = ClientConnected.UN_CONNECT;
+    relayProvider.notifyListeners();
     if (relayStatusCallback != null) {
       relayStatusCallback!();
     }

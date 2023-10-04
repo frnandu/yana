@@ -28,15 +28,12 @@ import '../../ui/confirm_dialog.dart';
 import '../../ui/enum_multi_selector_component.dart';
 import '../../ui/enum_selector_component.dart';
 import '../../utils/auth_util.dart';
-import '../../utils/base.dart';
 import '../../utils/base_consts.dart';
 import '../../utils/image_services.dart';
 import '../../utils/locale_util.dart';
 import '../../utils/router_path.dart';
 import '../../utils/string_util.dart';
 import '../../utils/theme_style.dart';
-import 'setting_group_item_component.dart';
-import 'setting_group_title_component.dart';
 
 class SettingRouter extends StatefulWidget {
   Function indexReload;
@@ -60,6 +57,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
     var themeData = Theme.of(context);
     var titleFontSize = themeData.textTheme.bodyLarge!.fontSize;
     var _settingProvider = Provider.of<SettingProvider>(context);
+    var _relayProvider = Provider.of<RelayProvider>(context);
 
     var mainColor = themeData.primaryColor;
     var hintColor = themeData.hintColor;
@@ -285,7 +283,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
         },
         initialValue: settingProvider.gossip == OpenStatus.OPEN,
         leading: const Icon(Icons.grain),
-        title: Text("Use your follow's relays (Gossip)")));
+        title: Text("Use your follow's relays (outbox)")));
 
     if (settingProvider.gossip == 1) {
       networkTiles.add(SettingsTile.navigation(

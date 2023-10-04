@@ -22,7 +22,7 @@ class FollowNewEventProvider extends ChangeNotifier
     if (_subscribeIds.isNotEmpty) {
       for (var subscribeId in _subscribeIds) {
         try {
-          nostr!.unsubscribe(subscribeId);
+          (settingProvider.gossip == 1 && followsNostr!=null ? followsNostr:nostr)!.unsubscribe(subscribeId);
         } catch (e) {}
       }
       _subscribeIds.clear();
@@ -64,7 +64,7 @@ class FollowNewEventProvider extends ChangeNotifier
 
   String _doQueryFunc(Filter filter, {bool queriyTags = false}) {
     var subscribeId = StringUtil.rndNameStr(12);
-    nostr!.query(
+    (settingProvider.gossip == 1 && followsNostr!=null ? followsNostr:nostr)!.query(
         FollowEventProvider.addTagCommunityFilter(
             [filter.toJson()], queriyTags), (event) {
       later(event, handleEvents, null);

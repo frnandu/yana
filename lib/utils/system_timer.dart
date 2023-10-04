@@ -35,18 +35,22 @@ class SystemTimer {
   static void runTask() {
     // log("SystemTimer runTask");
     if (nostr != null) {
-      AwesomeNotifications().getAppLifeCycle().then((value) {
+      AwesomeNotifications().getAppLifeCycle().then((value) async {
         if (value.toString() == "NotificationLifeCycle.Foreground") {
           if (kDebugMode) {
             print('!!!!!!!!!!!!!!! SystemTimer.runTask');
           }
-          nostr!.checkAndReconnectRelays().then((a) {
-            newNotificationsProvider.queryNew();
-            dmProvider.query(subscribe: false);
-            if (counter % 2 == 0) {
-              followNewEventProvider.queryNew();
+          await nostr!.checkAndReconnectRelays();
+          newNotificationsProvider.queryNew();
+          dmProvider.query(subscribe: false);
+          if (counter % 2 == 0) {
+            if (settingProvider.gossip == 1) {
+              if (followsNostr != null) {
+                await followsNostr!.checkAndReconnectRelays();
+              }
             }
-          });
+            followNewEventProvider.queryNew();
+          }
         }
       });
     }

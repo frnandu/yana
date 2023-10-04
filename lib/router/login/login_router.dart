@@ -22,6 +22,7 @@ class LoginRouter extends StatefulWidget {
     return _LoginRouter();
   }
 
+  @Deprecated("use new method")
   static Future<void> handleRemoteRelays(Event? remoteRelayEvent, String privKey) async {
     var relaysUpdatedTime = relayProvider.updatedTime();
     if (remoteRelayEvent != null &&
@@ -37,7 +38,7 @@ class LoginRouter extends StatefulWidget {
           }
         }
       }
-      relayProvider.setRelayListAndUpdate(list, privKey);
+      await relayProvider.setRelayListAndUpdate(list, privKey);
     }
   }
 }
@@ -318,13 +319,13 @@ class _LoginRouter extends State<LoginRouter>
       await settingProvider.addAndChangeKey(key, !isPublic, updateUI: false);
       if (!newKey) {
         var alreadyClosed = false;
-        relayProvider.getRelays(isPublic?key: getPublicKey(key), (relays) {
+        relayProvider.getRelays(isPublic?key: getPublicKey(key), (relays) async {
           alreadyClosed = true;
-          relayProvider.setRelayListAndUpdate(relays.map((e) => e.addr).toList(), null);
+          await relayProvider.setRelayListAndUpdate(relays.map((e) => e.addr).toList(), null);
           getNostrAndClose(false, key, !isPublic);
         }
         );
-        Future.delayed(Duration(seconds: 20), () {
+        Future.delayed(const Duration(seconds: 20), () {
           getNostrAndClose(alreadyClosed, key, !isPublic);
         });
       } else {
