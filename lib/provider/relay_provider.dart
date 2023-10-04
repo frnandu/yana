@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:developer';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:yana/models/contacts_db.dart';
@@ -56,7 +57,7 @@ class RelayProvider extends ChangeNotifier {
         onRelays(relays);
       });
       Future.delayed(
-        Duration(seconds: 5),
+        const Duration(seconds: 3),
         () {
           if (!loaded) {
             onRelays([]);
@@ -91,8 +92,9 @@ class RelayProvider extends ChangeNotifier {
   }
 
   Future<void> loadRelays(String? pubKey, Function onComplete) async {
+    // print("Loading relays for logged user...");
     if (pubKey != null) {
-      relayProvider.getRelays(pubKey, (relays) {
+      await relayProvider.getRelays(pubKey, (relays) {
         relayAddrs.clear();
         if (relays != null) {
           relayAddrs.addAll(relays.map(
@@ -104,6 +106,7 @@ class RelayProvider extends ChangeNotifier {
           // init relays
           relayAddrs = List<String>.from(STATIC_RELAY_ADDRS);
         }
+        // print("Loaded ${relays.length} relays for logged user...");
         onComplete();
       });
     }
@@ -116,17 +119,19 @@ class RelayProvider extends ChangeNotifier {
       Function(Nostr) onComplete) async {
     Nostr nostr = Nostr(privateKey: null, publicKey: pubKey);
     int i = 0;
-    Map<String,int> followRelaysMap = {};
+    Map<String, int> followRelaysMap = {};
     contactList.list().forEach((contact) async {
       await relayProvider.getRelays(contact.publicKey, (relays) {
         relays
-            .where((element) => (element.write==null || element.write!)  && element.isValidWss)
+            .where((element) =>
+                (element.write == null || element.write!) && element.isValidWss)
             .map((e) => e.addr)
             .take(takeCountForEachContact)
-            .forEach((adr) {
-              if (adr.endsWith("/")) {
-                adr = adr.substring(0, adr.length - 1);
-              }
+            .forEach((r) {
+          String? adr = Relay.clean(r);
+          if (adr==null) {
+            return;
+          }
           int? count = followRelaysMap![adr];
           if (count == null) {
             count = 1;
@@ -141,8 +146,7 @@ class RelayProvider extends ChangeNotifier {
                 access: WriteAccess.readWrite,
               ),
               connect: true,
-              checkInfo: false
-          );
+              checkInfo: false);
         });
         i++;
         print(
@@ -157,7 +161,7 @@ class RelayProvider extends ChangeNotifier {
           // Now, sortedEntries contains your Map entries sorted by values in descending order.
 
           for (var entry in sortedEntries) {
-            followRelays!.add(RelayMetadata(entry.key, count:entry.value));
+            followRelays!.add(RelayMetadata(entry.key, count: entry.value));
           }
           onComplete(nostr);
         }
@@ -169,30 +173,23 @@ class RelayProvider extends ChangeNotifier {
     return relayStatusMap[addr];
   }
 
-  RelayStatus? getFollowRelayStatus(String addr) {
-    if (followsNostr!=null) {
+  int? getFollowRelayState(String addr) {
+    if (followsNostr != null) {
       Relay? r = followsNostr!.getRelay(addr);
-      return r?.relayStatus;
+      if (r==null) {
+        return null;
+      }
+      return r!.webSocket != null? r!.webSocket!.readyState : (r.relayStatus.connecting ? WebSocket.connecting: WebSocket.closed) ;
     }
     return null;
   }
 
   String relayNumStr() {
-    var total = relayAddrs.length;
-
-    int connectedNum = 0;
-    var it = relayAddrs;
-    for (var url in it) {
-      RelayStatus? status = relayStatusMap[url];
-      if (status != null && status.connected == ClientConnected.CONNECTED) {
-        connectedNum++;
-      }
-    }
-    String a = "$connectedNum/$total";
+    String result = "${nostr!.activeRelays().length}/${nostr!.allRelays().length}";
     if (settingProvider.gossip == 1 && followsNostr != null) {
-      a += ", follows ${followRelayNumStr()}";
+      result += ", follows ${followRelayNumStr()}";
     }
-    return a;
+    return result;
   }
 
   String followRelayNumStr() {
@@ -252,13 +249,13 @@ class RelayProvider extends ChangeNotifier {
     // contactListProvider.reload(targetNostr: _nostr);
     notificationsProvider.doQuery(
         targetNostr: loggedUserNostr, initQuery: true);
-    Future.delayed(
-        const Duration(seconds: 3),
-        () => {
-              dmProvider.initDMSessions(loggedUserNostr.publicKey).then((_) {
-                // dmProvider.query(targetNostr: _nostr, subscribe: false);
-              })
-            });
+    // Future.delayed(
+    //     const Duration(seconds: 3),
+    //     () => {
+    //           dmProvider.initDMSessions(loggedUserNostr.publicKey).then((_) {
+    //             // dmProvider.query(targetNostr: _nostr, subscribe: false);
+    //           })
+    //         });
     // .then((_) {
     //   dmProvider.query(targetNostr: _nostr, subscribe: true);
     // })
@@ -314,7 +311,7 @@ class RelayProvider extends ChangeNotifier {
       List<dynamic> tags = [];
       for (var addr in relayAddrs) {
         tags.add(["r", addr, ""]);
-        relays.add(RelayMetadata(addr, read:true, write:true));
+        relays.add(RelayMetadata(addr, read: true, write: true));
       }
 
       Set<String> uniqueRelays = Set<String>.from(broadcastToRelays);
@@ -361,7 +358,8 @@ class RelayProvider extends ChangeNotifier {
     )..relayStatusCallback = onRelayStatusChange;
   }
 
-  Future<void> setRelayListAndUpdate(List<String> addrs, String? privKey) async {
+  Future<void> setRelayListAndUpdate(
+      List<String> addrs, String? privKey) async {
     relayStatusMap.clear();
 
     relayAddrs.clear();
@@ -401,7 +399,7 @@ class RelayProvider extends ChangeNotifier {
   void clear() {
     // sharedPreferences.remove(DataKey.RELAY_LIST);
     relayStatusMap.clear();
-    if (staticForRelaysAndMetadataNostr!=null) {
+    if (staticForRelaysAndMetadataNostr != null) {
       staticForRelaysAndMetadataNostr!.close();
       staticForRelaysAndMetadataNostr = null;
     }
@@ -417,14 +415,14 @@ class RelayProvider extends ChangeNotifier {
       uniqueRelays.addAll(relayProvider.relayAddrs);
       staticForRelaysAndMetadataNostr = Nostr(publicKey: pubKey);
 
-      uniqueRelays.forEach((relayAddr) {
+      uniqueRelays.forEach((relayAddr) async {
         Relay r = Relay(
           relayAddr,
           RelayStatus(relayAddr),
           access: WriteAccess.readWrite,
         );
         try {
-          staticForRelaysAndMetadataNostr!.addRelay(r, checkInfo: false);
+          await staticForRelaysAndMetadataNostr!.addRelay(r, checkInfo: false);
         } catch (e) {
           log("relay $relayAddr add to temp nostr for getting nip065 relay list: ${e.toString()}");
         }
@@ -442,7 +440,7 @@ class RelayProvider extends ChangeNotifier {
         ]);
     staticForRelaysAndMetadataNostr!
         .query(id: StringUtil.rndNameStr(16), [filter.toJson()], (event) async {
-      if (staticForRelaysAndMetadataNostr==null) {
+      if (staticForRelaysAndMetadataNostr == null) {
         return;
       }
       if ((relaysEvent != null && event.createdAt > relaysEvent!.createdAt) ||
@@ -467,7 +465,7 @@ class RelayProvider extends ChangeNotifier {
                       read = false;
                     }
                   }
-                  relays!.add(RelayMetadata(value, read:read, write:write));
+                  relays!.add(RelayMetadata(value, read: read, write: write));
                 }
               }
             }
@@ -483,7 +481,8 @@ class RelayProvider extends ChangeNotifier {
                   bool read = true;
                   write = entry.value["write"];
                   read = entry.value["read"];
-                  relays!.add(RelayMetadata(entry.key.toString(), read:read, write:write));
+                  relays!.add(RelayMetadata(entry.key.toString(),
+                      read: read, write: write));
                 }
               }
             } catch (e) {

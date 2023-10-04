@@ -70,7 +70,7 @@ class RelayPool {
     List<Relay> list = [];
     var it = _relays.values;
     for (var relay in it) {
-      if (relay.relayStatus.connected == ClientConnected.CONNECTED) {
+      if (relay.isActive()) {
         list.add(relay);
       }
     }
@@ -271,7 +271,7 @@ class RelayPool {
     if (onComplete != null) {
       _queryCompleteCallbacks[subscription.id] = onComplete;
     }
-    for (Relay relay in _relays.values) {
+    for (Relay relay in activeRelays()) {//_relays.values) {
       relay.doQuery(subscription);
     }
     return subscription.id;
@@ -308,26 +308,10 @@ class RelayPool {
   Future<void> checkAndReconnectRelays() async {
     for (Relay relay in _relays.values) {
       try {
-        if (relay.relayStatus.connected != ClientConnected.CONNECTED) {
-          print("[checkAndReconnect] Relay ${relay.url} IS NOT CONNECTED, connecting...");
+        if (!relay.isActive()) {
+          // print("[checkAndReconnect] Relay ${relay.url} IS NOT CONNECTED, connecting...");
           await relay.connect(checkInfo: false);
-          print("[checkAndReconnect] Relay ${relay.url} IS NOW ${relay.relayStatus.connected}");
-        }
-      } catch (err) {
-        log(err.toString());
-        relay.relayStatus.error++;
-      }
-    }
-  }
-
-  void checkAndReconnectRelaysSync() {
-    for (Relay relay in _relays.values) {
-      try {
-        if (relay.relayStatus.connected != ClientConnected.CONNECTED) {
-          relay.connectSync(() {
-            // print("Removing ${relay.url} from list of pool relays, remaining ${_relays.length} relay");
-            // remove(relay.url);
-          });
+          // print("[checkAndReconnect] Relay ${relay.url} IS NOW ${relay.webSocket!.readyState}");
         }
       } catch (err) {
         log(err.toString());

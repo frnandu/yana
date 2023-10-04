@@ -81,7 +81,7 @@ class _SearchRouter extends CustState<SearchRouter>
   Widget doBuild(BuildContext context) {
     var s = I18n.of(context);
     var _settingProvider = Provider.of<SettingProvider>(context);
-    var _relayProvider = Provider.of<RelayProvider>(context);
+    // var _relayProvider = Provider.of<RelayProvider>(context);
     preBuild();
 
     Widget? suffixWidget;

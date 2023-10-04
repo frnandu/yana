@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:bot_toast/bot_toast.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
@@ -10,28 +12,28 @@ import 'package:yana/utils/router_util.dart';
 import '../../i18n/i18n.dart';
 import '../../models/relay_status.dart';
 import '../../nostr/client_utils/keys.dart';
+import '../../nostr/relay.dart';
 import '../../utils/base.dart';
 import '../../utils/client_connected.dart';
 import '../../utils/string_util.dart';
 
 class RelaysItemComponent extends StatelessWidget {
-  String addr;
-
-  RelayStatus relayStatus;
+  Relay relay;
 
   Function onRemove;
 
-  RelaysItemComponent({required this.addr, required this.relayStatus, required this.onRemove});
+  RelaysItemComponent({required this.relay, required this.onRemove});
 
   @override
   Widget build(BuildContext context) {
     var themeData = Theme.of(context);
     var cardColor = themeData.cardColor;
-    Color borderLeftColor = Colors.green;
-    if (relayStatus.connected != ClientConnected.CONNECTED) {
-      borderLeftColor = Colors.red;
+    Color borderLeftColor = Colors.red;
+    if (relay.isActive()) {
+      borderLeftColor = Colors.green;
+    } else if (relay.isConnecting()) {
+      borderLeftColor = Colors.yellow;
     }
-    var relay = nostr!.getRelay(addr);
 
     Widget imageWidget;
     String? url = relay != null &&
@@ -107,7 +109,7 @@ class RelaysItemComponent extends StatelessWidget {
                         children: [
                           Container(
                             margin: const EdgeInsets.only(bottom: 2),
-                            child: Text(addr),
+                            child: Text(relay.url),
                           ),
                           Row(
                             children: [
@@ -116,14 +118,14 @@ class RelaysItemComponent extends StatelessWidget {
                                     right: Base.BASE_PADDING),
                                 child: RelaysItemNumComponent(
                                   iconData: Icons.mail,
-                                  num: relayStatus.noteReceived,
+                                  num: relay.relayStatus.noteReceived,
                                 ),
                               ),
-                              relayStatus.error > 0
+                              relay.relayStatus.error > 0
                                   ? RelaysItemNumComponent(
                                       iconColor: Colors.red,
                                       iconData: Icons.error_outline,
-                                      num: relayStatus.error,
+                                      num: relay.relayStatus.error,
                                     )
                                   : Container(),
                             ],
@@ -134,7 +136,7 @@ class RelaysItemComponent extends StatelessWidget {
               )),
               GestureDetector(
                 onTap: () {
-                  var text = NIP19Tlv.encodeNrelay(Nrelay(addr));
+                  var text = NIP19Tlv.encodeNrelay(Nrelay(relay.url));
                   Clipboard.setData(ClipboardData(text: text)).then((_) {
                     BotToast.showText(text: I18n.of(context).Copy_success);
                   });
@@ -149,7 +151,7 @@ class RelaysItemComponent extends StatelessWidget {
               GestureDetector(
                 onTap: () async {
                   if (nostr!.privateKey!=null) {
-                    await removeRelay(addr);
+                    await removeRelay(relay.url);
                   }
                 },
                 child: nostr!.privateKey!=null ? Container(

@@ -42,11 +42,11 @@ class SystemTimer {
           }
           await nostr!.checkAndReconnectRelays();
           newNotificationsProvider.queryNew();
-          dmProvider.query(subscribe: false);
+          // dmProvider.query(subscribe: false);
           if (counter % 2 == 0) {
             if (settingProvider.gossip == 1) {
-              if (followsNostr != null) {
-                await followsNostr!.checkAndReconnectRelays();
+              if (followsNostr != null && !reloadingFollowNostr) {
+                //await followsNostr!.checkAndReconnectRelays();
               }
             }
             followNewEventProvider.queryNew();

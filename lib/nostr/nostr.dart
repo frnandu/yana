@@ -123,7 +123,7 @@ class Nostr {
 
   FutureOr<bool> sendRelayEvent(Event event, String relay) async {
     Relay r = relayProvider.genRelay(relay);
-    r.connectSync(() {
+    await r.connectSync(() {
 
     });
     // r.onMessage = (Relay relay, List<dynamic> json) async {
@@ -280,10 +280,6 @@ class Nostr {
   @pragma('vm:entry-point')
   Future<void> checkAndReconnectRelays() async {
     await _pool.checkAndReconnectRelays();
-  }
-
-  void checkAndReconnectRelaysSync() {
-    _pool.checkAndReconnectRelaysSync();
   }
 
   bool isEmpty() {

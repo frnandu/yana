@@ -143,6 +143,8 @@ Nostr? nostr;
 
 Nostr? followsNostr;
 
+bool reloadingFollowNostr = false;
+
 List<RelayMetadata>? followRelays;
 
 Nostr? staticForRelaysAndMetadataNostr;

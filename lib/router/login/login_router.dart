@@ -319,7 +319,7 @@ class _LoginRouter extends State<LoginRouter>
       await settingProvider.addAndChangeKey(key, !isPublic, updateUI: false);
       if (!newKey) {
         var alreadyClosed = false;
-        relayProvider.getRelays(isPublic?key: getPublicKey(key), (relays) async {
+        await relayProvider.getRelays(isPublic?key: getPublicKey(key), (relays) async {
           alreadyClosed = true;
           await relayProvider.setRelayListAndUpdate(relays.map((e) => e.addr).toList(), null);
           getNostrAndClose(false, key, !isPublic);

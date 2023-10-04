@@ -303,6 +303,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
                   nostr!.publicKey,
                   contactListProvider.contactList!,
                   _settingProvider.followeesRelayMaxCount!, (builtNostr) {
+                reloadingFollowNostr = true;
                 followsNostr!.close();
                 followsNostr = builtNostr;
                 // add logged user's configured read relays
@@ -312,6 +313,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
                     .forEach((relay) {
                   followsNostr!.addRelay(relay, connect: true);
                 });
+                reloadingFollowNostr = false;
                 setState(() {
                   loadingGossipRelays = false;
                 });

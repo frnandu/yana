@@ -82,9 +82,9 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
   @override
   Widget doBuild(BuildContext context) {
     var s = I18n.of(context);
-    if (widget.userNostr == null || relays == null) {
-      return Container();
-    }
+    // if (widget.userNostr == null || relays == null) {
+    //   return Container();
+    // }
     if (pubkey != null && pubkey != widget.pubkey) {
       // arg changed! reset
       contactListEvent = null;
@@ -295,31 +295,31 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
     // }
   }
 
-  void loadContactList(Nostr targetNostr) {
-    queryId = StringUtil.rndNameStr(16);
-    var filter = Filter(
-        authors: [widget.pubkey],
-        limit: 1,
-        kinds: [kind.EventKind.CONTACT_LIST]);
-    targetNostr.query([filter.toJson()], (event) {
-      // BotToast.showText(text: "loaded contact list from "+event.sources.toString()+" with ${event.tags.length} contacts");
-
-      if (((contactListEvent != null &&
-                  event.createdAt > contactListEvent!.createdAt) ||
-              contactListEvent == null) &&
-          !_disposed) {
-        setState(() {
-          contactListEvent = event;
-          contactList = CustContactList.fromJson(contactListEvent!.tags);
-          if (widget.onContactListLoaded != null && contactList != null) {
-            widget.onContactListLoaded!(contactList!);
-          }
-        });
-        onFollowedTap();
-        onZapTap();
-      }
-    }, id: queryId, onComplete: () {});
-  }
+  // void loadContactList(Nostr targetNostr) {
+  //   queryId = StringUtil.rndNameStr(16);
+  //   var filter = Filter(
+  //       authors: [widget.pubkey],
+  //       limit: 1,
+  //       kinds: [kind.EventKind.CONTACT_LIST]);
+  //   targetNostr.query([filter.toJson()], (event) {
+  //     // BotToast.showText(text: "loaded contact list from "+event.sources.toString()+" with ${event.tags.length} contacts");
+  //
+  //     if (((contactListEvent != null &&
+  //                 event.createdAt > contactListEvent!.createdAt) ||
+  //             contactListEvent == null) &&
+  //         !_disposed) {
+  //       setState(() {
+  //         contactListEvent = event;
+  //         contactList = CustContactList.fromJson(contactListEvent!.tags);
+  //         if (widget.onContactListLoaded != null && contactList != null) {
+  //           widget.onContactListLoaded!(contactList!);
+  //         }
+  //       });
+  //       onFollowedTap();
+  //       onZapTap();
+  //     }
+  //   }, id: queryId, onComplete: () {});
+  // }
 
   onFollowingTap() {
     if (contactList != null) {
@@ -354,7 +354,7 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
       filter["kinds"] = [kind.EventKind.CONTACT_LIST];
       filter["#p"] = [widget.pubkey];
       followedSubscribeId = StringUtil.rndNameStr(12);
-      widget.userNostr!.query([filter], (e) {
+      staticForRelaysAndMetadataNostr!.query([filter], (e) {
         var oldEvent = followedMap![e.pubKey];
         if (oldEvent == null || e.createdAt > oldEvent.createdAt) {
           followedMap![e.pubKey] = e;
@@ -387,7 +387,7 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
       var filter = Filter(kinds: [kind.EventKind.ZAP], p: [widget.pubkey]);
       zapSubscribeId = StringUtil.rndNameStr(12);
       // print(filter);
-      widget.userNostr!.query([filter.toJson()], (event) {
+      staticForRelaysAndMetadataNostr!.query([filter.toJson()], (event) {
         if (event.kind == kind.EventKind.ZAP && zapEventBox!.add(event)) {
           if (!_disposed) {
             setState(() {

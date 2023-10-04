@@ -259,14 +259,19 @@ class _UserRouter extends CustState<UserRouter>
         userNostr =
             Nostr(privateKey: nostr!.privateKey, publicKey: nostr!.publicKey);
 
-        uniqueRelays.forEach((relayAddr) {
+        uniqueRelays.forEach((adr) async {
+          String? relayAddr = Relay.clean(adr);
+          if (relayAddr==null) {
+            return;
+          }
+
           Relay r = Relay(
             relayAddr,
             RelayStatus(relayAddr),
             access: WriteAccess.readWrite,
           );
           try {
-            userNostr!.addRelay(r, checkInfo: false, connect: true);
+            await userNostr!.addRelay(r, checkInfo: false, connect: true);
           } catch (e) {
             log("relay $relayAddr add to temp nostr for broadcasting of nip065 relay list: ${e.toString()}");
           }
@@ -301,10 +306,12 @@ class _UserRouter extends CustState<UserRouter>
     super.dispose();
     disposeLater();
 
-    if (StringUtil.isNotBlank(subscribeId) && userNostr != null) {
-      try {
-        userNostr!.unsubscribe(subscribeId!);
-      } catch (e) {}
+    if (userNostr != null)  {
+      if (StringUtil.isNotBlank(subscribeId)) {
+        try {
+          userNostr!.unsubscribe(subscribeId!);
+        } catch (e) {}
+      }
       try {
         userNostr!.close();
       } catch (e) {}
@@ -312,7 +319,9 @@ class _UserRouter extends CustState<UserRouter>
   }
 
   void unSubscribe() {
-    nostr!.unsubscribe(subscribeId!);
+    if (userNostr!=null) {
+      userNostr!.unsubscribe(subscribeId!);
+    }
     subscribeId = null;
   }
 
@@ -339,8 +348,8 @@ class _UserRouter extends CustState<UserRouter>
     );
     subscribeId = StringUtil.rndNameStr(16);
 
-    if (!box.isEmpty()) {
-      var activeRelays = nostr!.activeRelays();
+    var activeRelays = userNostr!.activeRelays();
+    if (!box.isEmpty() && activeRelays.isNotEmpty) {
       var oldestCreatedAts = box.oldestCreatedAtByRelay(
         activeRelays,
       );

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
+import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:yana/main.dart';
@@ -30,74 +31,72 @@ class Relay {
 
   Relay(this.url, this.relayStatus, {this.access = WriteAccess.readWrite}) {}
 
-  WebSocketChannel? _wsChannel;
+  // WebSocketChannel? _wsChannel;
+  WebSocket? webSocket;
 
   Future<bool> connect({bool checkInfo = true}) async {
     try {
-      relayStatus.connected = ClientConnected.CONNECTING;
       info = checkInfo ? await RelayInfoUtil.get(url) : null;
-
-      // Relay must support NIP-15 and NIP-20, but NIP-15 had merger into NIP-01
-      if (info == null || info!.nips.contains(20)) {
-        return connectSync(() {
-
-        });
-      }
+      return await connectSync(() {});
     } catch (e) {
       _onError(e.toString(), reconnect: false);
     }
     return false;
   }
 
-  bool send(List<dynamic> message, { bool reconnect = true}) {
-    if (_wsChannel != null &&
-        relayStatus.connected == ClientConnected.CONNECTED) {
+  bool isActive()  {
+    return webSocket != null && webSocket!.readyState == WebSocket.open;
+  }
+  bool isConnecting()  {
+    return webSocket != null && webSocket!.readyState == WebSocket.connecting || relayStatus.connecting;
+  }
+
+  bool send(List<dynamic> message, {bool reconnect = true}) {
+    if (isActive()) {
       try {
         final encoded = jsonEncode(message);
-        _wsChannel!.sink.add(encoded);
+        webSocket!.add(encoded);
         return true;
       } catch (e) {
         _onError(e.toString(), reconnect: reconnect);
       }
     } else {
       if (kDebugMode) {
-        print("Relay $url (status:+${relayStatus.connected} , _wsChannel " +
-            (_wsChannel == null ? "NULL!!" : "not null") +
+        print("Relay $url (status:+${webSocket!.readyState} , _wsChannel " +
+            (webSocket == null ? "NULL!!" : "not null") +
             ") is NOT CONNECTED!!! while trying to send message ");
       }
     }
     return false;
   }
 
-  bool connectSync(Function? onError) {
-    final wsUrl = Uri.parse(url);
+  Future<bool> connectSync(Function? onError) async {
     try {
-      _wsChannel = WebSocketChannel.connect(wsUrl);
+      relayStatus.connecting = true;
+      await WebSocket.connect(url).then((ws) {
+        relayProvider.notifyListeners();
+        webSocket = ws;
+        webSocket!.listen((message) {
+          if (onMessage != null) {
+            final List<dynamic> json = jsonDecode(message);
+            onMessage!.call(this, json);
+          }
+        }, onError: (error) async {
+          _onError("Websocket error $url", reconnect: false);
+          if (onError != null) {
+            onError();
+          }
+        }, onDone: () {
+          _onError("Websocket stream closed by remote:  $url", reconnect: false);
+        });
+      }).onError((error, stackTrace) {
+        print("Websocket error while connecting $url : $error  ");
+        // _onError("Websocket error while connecting $url : $error  ", reconnect: false);
+        relayStatus.connecting = false;
+      });
     } catch (e) {
-      print(e);
-      relayStatus.connected = ClientConnected.UN_CONNECT;
       return false;
     }
-    //log("Connected $url");
-    _wsChannel!.stream.listen((message) {
-      if (onMessage != null) {
-        final List<dynamic> json = jsonDecode(message);
-        onMessage!.call(this, json);
-      }
-    }, onError: (error) async {
-      print(error);
-      _onError("Websocket error $url", reconnect: false);
-      if (onError!=null) {
-        onError();
-      }
-    }, onDone: () {
-      _onError("Websocket stream closed by remote:  $url", reconnect: false);
-    });
-    Future.delayed(Duration(seconds: 5), () {
-      if (relayStatus.connected != ClientConnected.UN_CONNECT) {
-        relayStatus.connected = ClientConnected.CONNECTED;
-      }
-    });
     if (relayStatusCallback != null) {
       relayStatusCallback!();
     }
@@ -106,25 +105,24 @@ class Relay {
 
   Future<void> disconnect() async {
     try {
-      final oldWsChannel = _wsChannel;
-      _wsChannel = null;
-      await oldWsChannel!.sink.close();
+      final oldWsChannel = webSocket;
+      webSocket = null;
+      await oldWsChannel!.close();
     } catch (e) {}
   }
 
   void _onError(String errMsg, {bool reconnect = false}) {
-    //log("relay error in $url : $errMsg");
+    // log("relay error in $url : $errMsg");
     relayStatus.error++;
-    relayStatus.connected = ClientConnected.UN_CONNECT;
     relayProvider.notifyListeners();
     if (relayStatusCallback != null) {
       relayStatusCallback!();
     }
     disconnect();
 
-    if (reconnect && nostr!=null) {
+    if (reconnect && nostr != null) {
       Future.delayed(const Duration(seconds: 30), () {
-        connect(checkInfo: info!=null);
+        connect(checkInfo: info != null);
       });
     }
   }
@@ -137,8 +135,10 @@ class Relay {
     // all subscription should be close
     var sub = _queries.remove(id);
     if (sub != null) {
-      send(["CLOSE", id]);
-      return true;
+      if (isActive()) {
+        send(["CLOSE", id]);
+        return true;
+      }
     }
     return false;
   }
@@ -157,9 +157,10 @@ class Relay {
     if (access == WriteAccess.writeOnly) {
       return false;
     }
-    if (subscription.filters!=null) {
-      bool a = subscription.filters.any((element) => element.containsKey("search"));
-      if (a && info!=null && !info!.nips.contains(50)) {
+    if (subscription.filters != null) {
+      bool a =
+          subscription.filters.any((element) => element.containsKey("search"));
+      if (a && info != null && !info!.nips.contains(50)) {
         return false;
       }
     }
@@ -169,10 +170,27 @@ class Relay {
     try {
       return send(subscription.toJson());
     } catch (err) {
-      log(err.toString());
+      // log(err.toString());
       relayStatus.error++;
     }
 
     return false;
+  }
+
+  static RegExp RELAY_URL_REGEX = RegExp(
+      r'^(wss?:\/\/)([0-9]{1,3}(?:\.[0-9]{1,3}){3}|[^:]+):?([0-9]{1,5})?$');
+
+  static String? clean(String adr) {
+    if (adr.endsWith("/")) {
+      adr = adr.substring(0, adr.length - 1);
+    }
+    if (adr.contains("%")) {
+      adr = Uri.decodeComponent(adr);
+    }
+    adr = adr.trim();
+    if (!adr.contains(RELAY_URL_REGEX)) {
+      return null;
+    }
+    return adr;
   }
 }

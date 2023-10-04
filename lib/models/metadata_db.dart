@@ -28,13 +28,18 @@ class MetadataDB {
 
   static Future<int> insert(Metadata o, {DatabaseExecutor? db}) async {
     db = await DB.getDB(db);
-    return await db.insert("metadata", o.toFullJson());
+    return await db.database.transaction((txn) async {
+      return await txn.insert("metadata", o.toFullJson());
+    });
   }
 
   static Future update(Metadata o, {DatabaseExecutor? db}) async {
     db = await DB.getDB(db);
-    await db.update("metadata", o.toJson(),
-        where: "pub_key = ?", whereArgs: [o.pubKey]);
+    await db.database.transaction((txn) async {
+      await txn.update("metadata", o.toJson(),
+          where: "pub_key = ?", whereArgs: [o.pubKey]);
+
+    });
   }
 
   static Future<void> deleteAll({DatabaseExecutor? db}) async {

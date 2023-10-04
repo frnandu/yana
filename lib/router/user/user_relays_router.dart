@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -28,7 +30,6 @@ class _UserRelayRouter extends State<UserRelayRouter> {
     var themeData = Theme.of(context);
     var _relayProvider = Provider.of<RelayProvider>(context);
 
-
     var s = I18n.of(context);
     if (relays == null) {
       relays = [];
@@ -57,7 +58,10 @@ class _UserRelayRouter extends State<UserRelayRouter> {
         ),
         child: RefreshIndicator(
             onRefresh: () async {
-              if (relays!=null && relays!.isNotEmpty && relays![0].count!=null && followsNostr!=null) {
+              if (relays != null &&
+                  relays!.isNotEmpty &&
+                  relays![0].count != null &&
+                  followsNostr != null) {
                 await followsNostr!.checkAndReconnectRelays();
                 relayProvider.notifyListeners();
                 setState(() {
@@ -100,11 +104,34 @@ class RelayMetadataComponent extends StatelessWidget {
     var s = I18n.of(context);
     var themeData = Theme.of(context);
     var cardColor = themeData.cardColor;
-    var bodySmallFontSize = themeData.textTheme.bodySmall!.fontSize;
+    var bodySmallFontSize = themeData.textTheme.labelSmall!.fontSize;
 
     Widget leftBtn = Container();
 
     Widget rightBtn = Container();
+    leftBtn =
+        Selector<RelayProvider, int?>(builder: (context, state, client) {
+          Color borderLeftColor = Colors.red;
+          if (state != null && state == WebSocket.open) {
+            borderLeftColor = Colors.green;
+          } else if (state != null && state == WebSocket.connecting) {
+            borderLeftColor = Colors.yellow;
+          }
+          return Container(
+            padding: const EdgeInsets.only(
+              left: Base.BASE_PADDING_HALF / 2,
+              right: Base.BASE_PADDING_HALF,
+            ),
+            height: 30,
+            child: Icon(
+              Icons.lan,
+              color: borderLeftColor,
+            ),
+          );
+          main;
+        }, selector: (context, _provider) {
+          return _provider.getFollowRelayState(relayMetadata.addr);
+        });
     if (addAble) {
       rightBtn = GestureDetector(
         onTap: () async {
@@ -116,32 +143,6 @@ class RelayMetadataComponent extends StatelessWidget {
       );
     } else {
       if (relayMetadata.count != null) {
-        var fontSize = themeData.textTheme.bodyMedium!.fontSize;
-
-        leftBtn = Selector<RelayProvider, RelayStatus?>(
-            builder: (context, relayStatus, client) {
-          Color borderLeftColor = Colors.red;
-          if (relayStatus != null &&
-              relayStatus!.connected == ClientConnected.CONNECTED) {
-            borderLeftColor = Colors.green;
-          } else if (relayStatus!=null && relayStatus!.connected == ClientConnected.CONNECTING) {
-            borderLeftColor = Colors.yellow;
-          }
-          return Container(
-            padding: const EdgeInsets.only(
-              left: Base.BASE_PADDING_HALF / 2,
-              right: Base.BASE_PADDING_HALF / 2,
-            ),
-            height: 30,
-            child: Icon(
-              Icons.lan,
-              color: borderLeftColor,
-            ),
-          );
-          main;
-        }, selector: (context, _provider) {
-          return _provider.getFollowRelayStatus(relayMetadata.addr);
-        });
         rightBtn = Row(children: [
           Text("${relayMetadata.count} ",
               style: TextStyle(
@@ -206,7 +207,7 @@ class RelayMetadataComponent extends StatelessWidget {
                                 s.Read,
                                 style: TextStyle(
                                   fontSize: bodySmallFontSize,
-                                  color: Colors.green,
+                                  color: themeData.disabledColor,
                                 ),
                               ),
                             )
@@ -219,7 +220,7 @@ class RelayMetadataComponent extends StatelessWidget {
                                 s.Write,
                                 style: TextStyle(
                                   fontSize: bodySmallFontSize,
-                                  color: Colors.red,
+                                  color: themeData.disabledColor,
                                 ),
                               ),
                             )

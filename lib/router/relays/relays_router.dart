@@ -36,7 +36,7 @@ class _RelaysRouter extends CustState<RelaysRouter> with WhenStopFunction {
     var s = I18n.of(context);
     var _relayProvider = Provider.of<RelayProvider>(context);
     var relayAddrs = _relayProvider.relayAddrs;
-    var relayStatusMap = relayProvider.relayStatusMap;
+    // var relayStatusMap = relayProvider.relayStatusMap;
     var themeData = Theme.of(context);
     var titleFontSize = themeData.textTheme.bodyLarge!.fontSize;
 
@@ -81,12 +81,11 @@ class _RelaysRouter extends CustState<RelaysRouter> with WhenStopFunction {
                 child: ListView.builder(
                   itemBuilder: (context, index) {
                     var addr = relayAddrs[index];
-                    var relayStatus = relayStatusMap[addr];
-                    relayStatus ??= RelayStatus(addr);
+                    // var relayStatus = relayStatusMap[addr];
+                    // relayStatus ??= RelayStatus(addr);
 
                     return RelaysItemComponent(
-                      addr: addr,
-                      relayStatus: relayStatus,
+                      relay: nostr!.getRelay(addr)!,
                       onRemove: () {
                         setState(() {
                           relayAddrs = _relayProvider.relayAddrs;

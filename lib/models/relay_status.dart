@@ -5,7 +5,7 @@ class RelayStatus {
 
   RelayStatus(this.addr);
 
-  int connected = ClientConnected.UN_CONNECT;
+  bool connecting = false;
 
   int noteReceived = 0;
 
