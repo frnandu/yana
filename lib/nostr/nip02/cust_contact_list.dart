@@ -148,8 +148,8 @@ class CustContactList {
 
   static CustContactList? fromDB(List<Map<String, Object?>> fromDB) {
     Map<String, Contact> _contacts = {};
-    Map<String, int> _followedTags = {};
     Map<String, int> _followedCommunitys = {};
+    Map<String, int> _followedTags = {};
     Map<String, int> _followedEvents = {};
     fromDB.forEach((map) {
       Object? object = map['contact'];
@@ -162,10 +162,18 @@ class CustContactList {
         } else if (map['petname'] == Contact.PETNAME_EVENT) {
           _followedEvents[contact] = 1;
         } else {
-          _contacts[contact] = Contact(
-              publicKey: contact,
-              url: "${map['relay']}",
-              petname: "${map['petname']}");
+          String url = (map['relay'] ?? '').toString();
+          if (url=='null') {
+            url = '';
+          }
+          try {
+            _contacts[contact] = Contact(
+                publicKey: contact,
+                url: url,
+                petname: "${map['petname']}");
+          } catch (e) {
+            print(e);
+          }
         }
       }
     });

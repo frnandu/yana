@@ -148,7 +148,7 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
       )
     ];
 
-    if (widget.pubkey == nostr?.publicKey) {
+    if (widget.pubkey == nostr?.publicKey &&  nostr!.privateKey!=null) {
       topBtnList.add(wrapBtn(
         MetadataIconBtn(
           iconData: Icons.edit_square,
@@ -183,6 +183,7 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
                 "follows you",
                 style: TextStyle(
                     color: themeData.disabledColor,
+                    fontSize: themeData.textTheme.labelSmall!.fontSize,
                     backgroundColor: themeData.cardColor),
               )));
     }

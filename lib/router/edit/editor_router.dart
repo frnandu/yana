@@ -145,7 +145,7 @@ class _EditorRouter extends CustState<EditorRouter> with EditorMixin {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Container(
-                      margin: EdgeInsets.only(right: Base.BASE_PADDING),
+                      margin: const EdgeInsets.only(right: Base.BASE_PADDING),
                       child: Icon(
                         Icons.groups,
                         size: largeTextSize,
@@ -154,7 +154,7 @@ class _EditorRouter extends CustState<EditorRouter> with EditorMixin {
                     ),
                     Text(
                       aid.title,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -311,35 +311,31 @@ class _EditorRouter extends CustState<EditorRouter> with EditorMixin {
         // title: Text("Note"),
         backgroundColor: scaffoldBackgroundColor,
         leading: TextButton(
+          onPressed: () {
+            RouterUtil.back(context);
+          },
+          style: const ButtonStyle(),
           child: Icon(
             Icons.arrow_back_ios,
             color: textColor,
           ),
-          onPressed: () {
-            RouterUtil.back(context);
-          },
-          style: ButtonStyle(),
         ),
         actions: [
-          Container(
-            child: TextButton(
-              child: Text(
-                s.Send,
-                style: TextStyle(
-                  color: textColor,
-                  fontSize: fontSize,
-                ),
+          TextButton(
+            onPressed: documentSave,
+            style: const ButtonStyle(),
+            child: Text(
+              s.Broadcast,
+              style: TextStyle(
+                color: textColor,
+                fontSize: fontSize,
               ),
-              onPressed: documentSave,
-              style: ButtonStyle(),
             ),
           ),
         ],
       ),
-      body: Container(
-        child: Column(
-          children: list,
-        ),
+      body: Column(
+        children: list,
       ),
     );
   }

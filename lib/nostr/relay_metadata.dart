@@ -1,17 +1,17 @@
-import 'package:pointycastle/export.dart';
-
 class RelayMetadata {
   String addr;
 
-  bool read;
+  bool? read;
 
-  bool write;
+  bool? write;
 
-  RelayMetadata(
-    this.addr,
+  int? count;
+
+  RelayMetadata(this.addr, {
     this.read,
     this.write,
-  );
+    this.count
+  });
 
   bool get isValidWss {
     String a = addr.trim();
@@ -24,19 +24,21 @@ class RelayMetadata {
     Set<String> all = {};
     all.addAll(read);
     all.addAll(write);
-    return all.map((e) => RelayMetadata(e, read.contains(e), write.contains(e))).toList();
+    return all.map((e) => RelayMetadata(e, read: read.contains(e), write: write.contains(e)))
+        .toList();
   }
 
-  static Map<String, Object?> toFullJson(String pubKey, List<RelayMetadata> list, int updated_at) {
+  static Map<String, Object?> toFullJson(String pubKey,
+      List<RelayMetadata> list, int updated_at) {
     final Map<String, dynamic> data = new Map<String, dynamic>();
     data['pub_key'] = pubKey;
     List<String> read = [];
     List<String> write = [];
     for (var e in list) {
-      if (e.read) {
+      if (e.read != null && e.read!) {
         read.add(e.addr);
       }
-      if (e.write) {
+      if (e.write != null && e.write!) {
         write.add(e.addr);
       }
     }

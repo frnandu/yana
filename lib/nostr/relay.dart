@@ -70,7 +70,7 @@ class Relay {
   bool connectSync(Function? onError) {
     final wsUrl = Uri.parse(url);
     _wsChannel = WebSocketChannel.connect(wsUrl);
-    log("Connected $url");
+    //log("Connected $url");
     _wsChannel!.stream.listen((message) {
       if (onMessage != null) {
         final List<dynamic> json = jsonDecode(message);
@@ -101,7 +101,7 @@ class Relay {
   }
 
   void _onError(String errMsg, {bool reconnect = false}) {
-    log("relay error in $url : $errMsg");
+    //log("relay error in $url : $errMsg");
     relayStatus.error++;
     relayStatus.connected = ClientConneccted.UN_CONNECT;
     if (relayStatusCallback != null) {

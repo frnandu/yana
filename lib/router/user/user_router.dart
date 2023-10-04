@@ -255,7 +255,7 @@ class _UserRouter extends CustState<UserRouter>
       if (userNostr == null) {
         // use relays for user where he/she writes
         Set<String> uniqueRelays = Set<String>.from(
-            relays.where((element) => element.write).map((e) => e.addr));
+            relays.where((element) => element.write!=null && element.write!).map((e) => e.addr));
         userNostr =
             Nostr(privateKey: nostr!.privateKey, publicKey: nostr!.publicKey);
 

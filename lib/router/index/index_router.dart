@@ -432,7 +432,7 @@ class _IndexRouter extends CustState<IndexRouter>
       return Scaffold(
           body: mainIndex,
           extendBody: true,
-          floatingActionButton: AnimatedOpacity(
+          floatingActionButton:  nostr!.privateKey!=null ? AnimatedOpacity(
             opacity: _scrollingDown ? 0 : 1,
             curve: Curves.fastOutSlowIn,
             duration: const Duration(milliseconds: 400),
@@ -446,6 +446,7 @@ class _IndexRouter extends CustState<IndexRouter>
           //         child:
           //     addBtn
           // )
+          :Container()
           ,
           floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
           drawer: Drawer(

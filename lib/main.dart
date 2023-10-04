@@ -41,6 +41,7 @@ import 'package:yana/utils/platform_util.dart';
 
 import 'i18n/i18n.dart';
 import 'models/db.dart';
+import 'nostr/relay_metadata.dart';
 import 'provider/community_approved_provider.dart';
 import 'provider/contact_list_provider.dart';
 import 'provider/data_util.dart';
@@ -141,6 +142,8 @@ AppLifecycleState appState = AppLifecycleState.resumed;
 Nostr? nostr;
 
 Nostr? followsNostr;
+
+List<RelayMetadata>? followRelays;
 
 Nostr? staticForRelaysAndMetadataNostr;
 

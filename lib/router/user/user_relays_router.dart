@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:yana/models/relay_status.dart';
-import 'package:yana/main.dart';
-import 'package:yana/provider/relay_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:yana/main.dart';
+import 'package:yana/models/relay_status.dart';
+import 'package:yana/provider/relay_provider.dart';
 
+import '../../i18n/i18n.dart';
 import '../../nostr/relay_metadata.dart';
 import '../../utils/base.dart';
-import '../../i18n/i18n.dart';
 import '../../utils/router_util.dart';
 
 class UserRelayRouter extends StatefulWidget {
@@ -20,6 +20,7 @@ class UserRelayRouter extends StatefulWidget {
 
 class _UserRelayRouter extends State<UserRelayRouter> {
   List<RelayMetadata>? relays;
+
   @override
   Widget build(BuildContext context) {
     var themeData = Theme.of(context);
@@ -57,10 +58,10 @@ class _UserRelayRouter extends State<UserRelayRouter> {
                 builder: (context, relayStatus, child) {
               return RelayMetadataComponent(
                 relayMetadata: relayMetadata,
-                addAble: relayStatus == null,
+                addAble: relayMetadata.count == null && relayStatus == null,
               );
-            }, selector: (context, _provider) {
-              return _provider.getRelayStatus(relayMetadata.addr);
+            }, selector: (context, provider) {
+              return provider.getRelayStatus(relayMetadata.addr);
             });
           },
           itemCount: relays!.length,
@@ -75,14 +76,14 @@ class RelayMetadataComponent extends StatelessWidget {
 
   bool addAble;
 
-  RelayMetadataComponent({super.key, required this.relayMetadata, this.addAble = true});
+  RelayMetadataComponent(
+      {super.key, required this.relayMetadata, this.addAble = true});
 
   @override
   Widget build(BuildContext context) {
     var s = I18n.of(context);
     var themeData = Theme.of(context);
     var cardColor = themeData.cardColor;
-    var hintColor = themeData.hintColor;
     var bodySmallFontSize = themeData.textTheme.bodySmall!.fontSize;
 
     Widget rightBtn = Container();
@@ -91,12 +92,25 @@ class RelayMetadataComponent extends StatelessWidget {
         onTap: () {
           relayProvider.addRelay(relayMetadata.addr);
         },
-        child: Container(
-          child: const Icon(
-            Icons.add,
-          ),
+        child: const Icon(
+          Icons.add,
         ),
       );
+    } else {
+      if (relayMetadata.count != null) {
+        rightBtn = Row(children: [
+          Text("${relayMetadata.count} ",
+              style: TextStyle(
+                  color: themeData.dividerColor,
+                  fontSize: themeData.textTheme.labelLarge!.fontSize)),
+          Text(
+            "follows",
+            style: TextStyle(
+                color: themeData.disabledColor,
+                fontSize: themeData.textTheme.labelSmall!.fontSize),
+          )
+        ]);
+      }
     }
 
     return Container(
@@ -112,8 +126,8 @@ class RelayMetadataComponent extends StatelessWidget {
       ),
       child: Container(
         padding: const EdgeInsets.only(
-          top: Base.BASE_PADDING_HALF,
-          bottom: Base.BASE_PADDING_HALF,
+          top: Base.BASE_PADDING,
+          bottom: Base.BASE_PADDING,
           left: Base.BASE_PADDING,
           right: Base.BASE_PADDING,
         ),
@@ -134,33 +148,37 @@ class RelayMetadataComponent extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
-                    margin: EdgeInsets.only(bottom: 2),
+                    margin: const EdgeInsets.only(bottom: 2),
                     child: Text(relayMetadata.addr),
                   ),
                   Row(
                     children: [
-                      Container(
-                        margin: EdgeInsets.only(right: Base.BASE_PADDING),
-                        child: relayMetadata.read? Text(
-                          s.Read,
-                          style: TextStyle(
-                            fontSize: bodySmallFontSize,
-                            color:
-                            Colors.green,
-                          ),
-                        ) : Container(),
-                      ),
-                      Container(
-                        margin: EdgeInsets.only(right: Base.BASE_PADDING),
-                        child: relayMetadata.write ? Text(
-                          s.Write,
-                          style: TextStyle(
-                            fontSize: bodySmallFontSize,
-                            color:
-                              Colors.red,
-                          ) ,
-                        ): Container(),
-                      ),
+                      relayMetadata.read != null && relayMetadata.read!
+                          ? Container(
+                              margin: const EdgeInsets.only(
+                                  right: Base.BASE_PADDING),
+                              child: Text(
+                                s.Read,
+                                style: TextStyle(
+                                  fontSize: bodySmallFontSize,
+                                  color: Colors.green,
+                                ),
+                              ),
+                            )
+                          : Container(),
+                      relayMetadata.write != null && relayMetadata.write!
+                          ? Container(
+                              margin: const EdgeInsets.only(
+                                  right: Base.BASE_PADDING),
+                              child: Text(
+                                s.Write,
+                                style: TextStyle(
+                                  fontSize: bodySmallFontSize,
+                                  color: Colors.red,
+                                ),
+                              ),
+                            )
+                          : Container(),
                     ],
                   ),
                 ],

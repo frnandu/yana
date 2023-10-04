@@ -126,50 +126,53 @@ class _IndexDrawerContentComponnent extends State<IndexDrawerContentComponent> {
       },
     ));
 
-    list.add(IndexDrawerItem(
-        iconData: Icons.account_balance_wallet,
-        name: s.Wallet,
-        onTap: () {
-          RouterUtil.router(context, RouterPath.WALLET);
-        },
-        rightWidget:
-            Selector<NwcProvider, bool>(builder: (context, connected, child) {
-          if (connected) {
-            return Selector<NwcProvider, int?>(
-                builder: (context, balance, child) {
-              if (balance != null) {
-                return Row(children: [
-                  const Icon(
-                    Icons.currency_bitcoin,
-                    color: Colors.orange,
-                    size: 16,
-                  ),
-                  NumberFormatUtil.formatBitcoinAmount(
-                    balance / 100000000,
-                    TextStyle(color: themeData.focusColor),
-                    TextStyle(color: themeData.dividerColor),
-                  ),
-                  const Text(" sats",style: TextStyle(fontWeight: FontWeight.w100, fontSize: 12),
-                  )
-                ]);
-              } else {
-                return Text(
-                  "connected",
-                  style: TextStyle(color: themeData.disabledColor),
-                );
-              }
-            }, selector: (context, _provider) {
-              return _provider.isConnected ? _provider.getBalance : null;
-            });
-          } else {
-            return Text(
-              "not connected",
-              style: TextStyle(color: themeData.disabledColor),
-            );
-          }
-        }, selector: (context, _provider) {
-          return _provider.isConnected;
-        })));
+    if (nostr!.privateKey!=null) {
+      list.add(IndexDrawerItem(
+          iconData: Icons.account_balance_wallet,
+          name: s.Wallet,
+          onTap: () {
+            RouterUtil.router(context, RouterPath.WALLET);
+          },
+          rightWidget:
+          Selector<NwcProvider, bool>(builder: (context, connected, child) {
+            if (connected) {
+              return Selector<NwcProvider, int?>(
+                  builder: (context, balance, child) {
+                    if (balance != null) {
+                      return Row(children: [
+                        const Icon(
+                          Icons.currency_bitcoin,
+                          color: Colors.orange,
+                          size: 16,
+                        ),
+                        NumberFormatUtil.formatBitcoinAmount(
+                          balance / 100000000,
+                          TextStyle(color: themeData.focusColor),
+                          TextStyle(color: themeData.dividerColor),
+                        ),
+                        const Text(" sats", style: TextStyle(
+                            fontWeight: FontWeight.w100, fontSize: 12),
+                        )
+                      ]);
+                    } else {
+                      return Text(
+                        "connected",
+                        style: TextStyle(color: themeData.disabledColor),
+                      );
+                    }
+                  }, selector: (context, _provider) {
+                return _provider.isConnected ? _provider.getBalance : null;
+              });
+            } else {
+              return Text(
+                "not connected",
+                style: TextStyle(color: themeData.disabledColor),
+              );
+            }
+          }, selector: (context, _provider) {
+            return _provider.isConnected;
+          })));
+    }
     list.add(
       IndexDrawerItem(
           iconData: Icons.lan_outlined,
@@ -196,13 +199,15 @@ class _IndexDrawerContentComponnent extends State<IndexDrawerContentComponent> {
       },
     ));
 
-    list.add(IndexDrawerItem(
-      iconData: Icons.key,
-      name: s.Key_Backup,
-      onTap: () {
-        RouterUtil.router(context, RouterPath.KEY_BACKUP);
-      },
-    ));
+    if (nostr!.privateKey!=null) {
+      list.add(IndexDrawerItem(
+        iconData: Icons.key,
+        name: s.Key_Backup,
+        onTap: () {
+          RouterUtil.router(context, RouterPath.KEY_BACKUP);
+        },
+      ));
+    }
 
     list.add(IndexDrawerItem(
       iconData: Icons.settings,

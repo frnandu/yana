@@ -12,13 +12,6 @@ class RelaysDB {
   //   Database db = await DB.getCurrentDatabase();
   //   List<Map<String, dynamic>> list =
   //       await db.rawQuery("select * from relays");
-  //   for (var i = 0; i < list.length; i++) {
-  //     var json = list[i];
-  //     objs.add(Metadata.fromJson(json));
-  //   }
-  //   return objs;
-  // }
-
   static Future<List<RelayMetadata>?> get(String pubKey, {DatabaseExecutor? db}) async {
     List<RelayMetadata>? list = cached[pubKey];
     if (list==null) {
@@ -27,10 +20,20 @@ class RelaysDB {
       await db.query("relay", where: "pub_key = ?", whereArgs: [pubKey]);
       if (fromDB.isNotEmpty) {
         list = RelayMetadata.fromJson(fromDB[0]);
+        cached[pubKey] = list!;
+      } else {
+        cached[pubKey] = [];
       }
     }
     return list;
   }
+
+  //   for (var i = 0; i < list.length; i++) {
+  //     var json = list[i];
+  //     objs.add(Metadata.fromJson(json));
+  //   }
+  //   return objs;
+  // }
 
   static Future<int> insert(String pubKey, List<RelayMetadata> list, int updated_at, {DatabaseExecutor? db}) async {
     cached.putIfAbsent(pubKey,() => list);

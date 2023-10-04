@@ -4,6 +4,7 @@ import 'dart:developer';
 import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_font_picker/flutter_font_picker.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:provider/provider.dart';
 import 'package:settings_ui/settings_ui.dart';
@@ -20,14 +21,18 @@ import '../../main.dart';
 import '../../models/metadata.dart';
 import '../../nostr/event.dart';
 import '../../nostr/event_kind.dart' as kind;
+import '../../nostr/relay.dart';
+import '../../provider/relay_provider.dart';
 import '../../provider/setting_provider.dart';
 import '../../ui/confirm_dialog.dart';
 import '../../ui/enum_multi_selector_component.dart';
 import '../../ui/enum_selector_component.dart';
 import '../../utils/auth_util.dart';
+import '../../utils/base.dart';
 import '../../utils/base_consts.dart';
 import '../../utils/image_services.dart';
 import '../../utils/locale_util.dart';
+import '../../utils/router_path.dart';
 import '../../utils/string_util.dart';
 import '../../utils/theme_style.dart';
 import 'setting_group_item_component.dart';
@@ -48,6 +53,8 @@ class SettingRouter extends StatefulWidget {
 }
 
 class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
+  bool loadingGossipRelays = false;
+
   @override
   Widget build(BuildContext context) {
     var themeData = Theme.of(context);
@@ -226,19 +233,23 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
         leading: const Icon(Icons.lan),
         title: Text(s.Theme_Style)));
 
-    interfaceTiles.add(SettingsTile.switchTile(
-        activeSwitchColor: themeData.primaryColor,
-        enabled: settingProvider.themeStyle != ThemeStyle.AUTO,
-        onToggle: (value) {
-          settingProvider.themeStyle =
-              value ? ThemeStyle.DARK : ThemeStyle.LIGHT;
-          widget.indexReload();
-        },
-        initialValue: settingProvider.themeStyle == ThemeStyle.AUTO
-            ? MediaQuery.of(context).platformBrightness == Brightness.dark
-            : settingProvider.themeStyle == ThemeStyle.DARK,
-        leading: const Icon(Icons.dark_mode_outlined),
-        title: Text(s.Dark_mode)));
+    if (settingProvider.themeStyle != ThemeStyle.AUTO) {
+      interfaceTiles.add(SettingsTile.switchTile(
+          activeSwitchColor: themeData.primaryColor,
+          enabled: settingProvider.themeStyle != ThemeStyle.AUTO,
+          onToggle: (value) {
+            settingProvider.themeStyle =
+            value ? ThemeStyle.DARK : ThemeStyle.LIGHT;
+            widget.indexReload();
+          },
+          initialValue: settingProvider.themeStyle == ThemeStyle.AUTO
+              ? MediaQuery
+              .of(context)
+              .platformBrightness == Brightness.dark
+              : settingProvider.themeStyle == ThemeStyle.DARK,
+          leading: const Icon(Icons.dark_mode_outlined),
+          title: Text(s.Dark_mode)));
+    }
 
     interfaceTiles.add(SettingsTile.switchTile(
         activeSwitchColor: themeData.primaryColor,
@@ -273,18 +284,73 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
           settingProvider.gossip = value ? 1 : 0;
         },
         initialValue: settingProvider.gossip == OpenStatus.OPEN,
-        leading: const Icon(Icons.lan_outlined),
-        title: Text("Use your following's relays (Gossip)")));
+        leading: const Icon(Icons.grain),
+        title: Text("Use your follow's relays (Gossip)")));
 
     if (settingProvider.gossip == 1) {
       networkTiles.add(SettingsTile.navigation(
           leading: const Icon(Icons.lan_outlined),
           trailing: Text('${settingProvider.followeesRelayMaxCount}'),
-          onPressed: (context) {
-            pickMaxRelays();
-            relayProvider.buildNostrFromContactsRelays(pubKey, contactList, takeCountForEachContact, (p0) => null)
+          onPressed: (context) async {
+            int? old = _settingProvider.followeesRelayMaxCount;
+            await pickMaxRelays();
+            if (_settingProvider.followeesRelayMaxCount! != old) {
+              // if (followsNostr != null) {
+              //   followsNostr = null;
+              // }
+              setState(() {
+                loadingGossipRelays = true;
+              });
+              await relayProvider.buildNostrFromContactsRelays(
+                  nostr!.publicKey,
+                  contactListProvider.contactList!,
+                  _settingProvider.followeesRelayMaxCount!, (builtNostr) {
+                followsNostr!.close();
+                followsNostr = builtNostr;
+                // add logged user's configured read relays
+                nostr!
+                    .activeRelays()
+                    .where((relay) => relay.access != WriteAccess.writeOnly)
+                    .forEach((relay) {
+                  followsNostr!.addRelay(relay, connect: true);
+                });
+                setState(() {
+                  loadingGossipRelays = false;
+                });
+                followEventProvider.doQuery();
+              });
+            }
           },
-          title: const Text("Max amount of relays per followee")));
+          title: const Text("Max amount of relays per follow")));
+
+      networkTiles.add(
+        SettingsTile.navigation(
+            onPressed: (context) {
+              if (followRelays != null && followRelays!.isNotEmpty && !loadingGossipRelays) {
+                RouterUtil.router(context, RouterPath.USER_RELAYS, followRelays);
+              }
+            },
+            leading: Text(
+              "Connected / Total relays from follows",
+              style: TextStyle(color: themeData.disabledColor),
+            ),
+            trailing: loadingGossipRelays ? Container(): Icon(Icons.navigate_next, color: themeData.disabledColor),
+            title: Selector<RelayProvider, String>(
+                builder: (context, relayNum, child) {
+              if (loadingGossipRelays) {
+                return SpinKitFadingCircle(
+                  color: themeData.disabledColor,
+                  size: 20.0,
+                );
+              }
+              return Text(
+                relayNum,
+                style: TextStyle(color: themeData.disabledColor),
+              );
+            }, selector: (context, _provider) {
+              return _provider.followRelayNumStr();
+            })),
+      );
     }
 
     List<AbstractSettingsTile> securityTiles = [];
@@ -353,8 +419,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
 
     sections
         .add(SettingsSection(title: Text('Interface'), tiles: interfaceTiles));
-    sections
-        .add(SettingsSection(title: Text('Network'), tiles: networkTiles));
+    sections.add(SettingsSection(title: Text('Network'), tiles: networkTiles));
     if (!PlatformUtil.isWeb() &&
         (PlatformUtil.isIOS() || PlatformUtil.isAndroid())) {
       sections.add(SettingsSection(
@@ -365,7 +430,11 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
     sections.add(SettingsSection(title: Text('Account'), tiles: accountTiles));
 
     SettingsList settingsList = SettingsList(
-        applicationType: ApplicationType.material, sections: sections);
+        applicationType: ApplicationType.both,
+        // contentPadding: const EdgeInsets.only(top: Base.BASE_PADDING),
+        sections: sections
+
+    );
 
     return Scaffold(
       appBar: AppBar(
@@ -488,7 +557,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
 
   Future pickMaxRelays() async {
     EnumObj? resultEnumObj =
-    await EnumSelectorComponent.show(context,maxRelays!);
+        await EnumSelectorComponent.show(context, maxRelays!);
     if (resultEnumObj != null) {
       settingProvider.followeesRelayMaxCount = resultEnumObj.value;
       widget.indexReload();
