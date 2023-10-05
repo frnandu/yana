@@ -201,7 +201,7 @@ class SettingProvider extends ChangeNotifier {
 
   int? get imagePreview => _settingData!.imagePreview ?? OpenStatus.OPEN;
 
-  int? get gossip => _settingData!.gossip ?? OpenStatus.OPEN;
+  int? get gossip => _settingData!.gossip ?? OpenStatus.CLOSE;
 
   int? get followeesRelayMaxCount => _settingData!.followeesRelayMaxCount ?? OpenStatus.OPEN;
 
@@ -558,7 +558,7 @@ class SettingData {
     if (json['gossip'] != null) {
       gossip = json['gossip'];
     } else {
-      gossip = 1;
+      gossip = 0;
     }
     if (json['followeesRelayMaxCount']!=null) {
       followeesRelayMaxCount = json['followeesRelayMaxCount'];

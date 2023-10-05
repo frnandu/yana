@@ -251,7 +251,7 @@ class _UserRouter extends CustState<UserRouter>
 
   @override
   Future<void> onReady(BuildContext context) async {
-    await relayProvider.getRelays(pubkey!, (relays) {
+    await relayProvider.getRelays(pubkey!, (relays) async {
       if (userNostr == null) {
         if (pubkey != nostr!.publicKey) {
           // use relays for user where he/she writes
@@ -260,6 +260,8 @@ class _UserRouter extends CustState<UserRouter>
               .map((e) => e.addr));
           userNostr =
               Nostr(privateKey: nostr!.privateKey, publicKey: nostr!.publicKey);
+
+          List<Future<bool>> futures = [];
 
           uniqueRelays.forEach((adr) async {
             String? relayAddr = Relay.clean(adr);
@@ -273,13 +275,20 @@ class _UserRouter extends CustState<UserRouter>
               access: WriteAccess.readWrite,
             );
             try {
-              await userNostr!.addRelay(r, checkInfo: false, connect: true);
+              futures.add(userNostr!.addRelay(r, checkInfo: false));
+              // await userNostr!.addRelay(r, checkInfo: false, connect: true);
             } catch (e) {
               log(
                   "relay $relayAddr add to temp nostr for broadcasting of nip065 relay list: ${e
                       .toString()}");
             }
           });
+          final startTime = DateTime.now();
+          await Future.wait(futures).onError((error, stackTrace) => List.of([]));
+          final endTime = DateTime.now();
+          final duration = endTime.difference(startTime);
+          print("addRelays for ${uniqueRelays.length} parallel Future.wait(futures) took:${duration.inMilliseconds} ms");
+
         } else {
           userNostr = nostr;
         }

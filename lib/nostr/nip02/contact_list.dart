@@ -15,9 +15,7 @@ class ContactList {
   @Index(type: IndexType.hash)
   String? pub_key;
 
-  List<Contact>? contacts = [];
-
-  Map<String, Contact> _contacts = {};
+  List<Contact> contacts = [];
 
   final List<String> followedTags;
 
@@ -28,7 +26,7 @@ class ContactList {
   int? timestamp;
 
   ContactList()
-      : _contacts = {},
+      :
         contacts = [],
         followedTags = [],
         followedCommunitys = [],
@@ -46,7 +44,7 @@ class ContactList {
   }
 
   static Future writeToDB(ContactList list) async {
-    cached.putIfAbsent(list.pub_key!, () => list);
+    cached[list.pub_key!] = list;
     if (nostr != null && nostr!.publicKey == list.pub_key! ||
         contactListProvider.getContact(list.pub_key!) != null) {
       if (list.contacts!.isEmpty &&
@@ -56,7 +54,10 @@ class ContactList {
         return 0;
       }
       return await DB.getIsar().writeTxn(() async {
-        return await DB.getIsar().contactLists.putByIndex("pub_key", list);
+        return await DB
+            .getIsar()
+            .contactLists
+            .putByIndex("pub_key", list);
       });
 
       // db = await DB.getDB(db);
@@ -102,12 +103,12 @@ class ContactList {
     return list;
   }
 
-  ContactList._(this._contacts, this.followedTags, this.followedCommunitys,
+  ContactList._(this.contacts, this.followedTags, this.followedCommunitys,
       this.followedEvents);
 
   List<dynamic> toJson() {
     List<dynamic> result = [];
-    for (Contact contact in _contacts.values) {
+    for (Contact contact in contacts) {
       result.add(["p", contact.publicKey, contact.url, contact.petname]);
     }
     for (var followedTag in followedTags) {
@@ -123,43 +124,43 @@ class ContactList {
   }
 
   void add(Contact contact) {
-    _contacts[contact.publicKey!] = contact;
-    contacts!.add(contact);
+    contacts.add(contact);
   }
 
+  @ignore
+  Map<String, Contact> map = {};
+
   Contact? getContact(String publicKey) {
-    if (_contacts == null || _contacts.isEmpty) {
-      if (contacts != null && contacts!.isNotEmpty) {
-        for (Contact contact in contacts!) {
-          _contacts[contact.publicKey!] = contact;
-        }
+    if (map == null || map.isEmpty) {
+      for (Contact contact in contacts!) {
+        map[contact.publicKey!] = contact;
       }
     }
-    return _contacts[publicKey];
+    return map[publicKey];
   }
 
   Contact? remove(String publicKey) {
-    Contact? c = _contacts[publicKey];
-    if (c != null && contacts != null) {
+    Contact? c = getContact(publicKey);
+    if (c != null) {
       contacts!.remove(c);
     }
-    return _contacts.remove(publicKey);
+    return c;
   }
 
-  Iterable<Contact> list() {
-    return _contacts.values;
+  List<Contact> list() {
+    return contacts ?? [];
   }
 
   bool isEmpty() {
-    return _contacts.isEmpty;
+    return list().isEmpty;
   }
 
   int total() {
-    return _contacts.length;
+    return list().length;
   }
 
   void clear() {
-    _contacts.clear();
+    contacts.clear();
   }
 
   bool containsTag(String tagName) {

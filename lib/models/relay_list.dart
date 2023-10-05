@@ -73,7 +73,7 @@ class RelayList {
 
   static Future<int> put(
       String pubKey, List<RelayMetadata> list, int updated_at, {bool forceWrite = false}) async {
-    cached.putIfAbsent(pubKey, () => list);
+    cached[pubKey] = list;
     if (forceWrite || nostr != null && nostr!.publicKey == pubKey ||
         contactListProvider.getContact(pubKey) != null) {
       RelayList? relayList = await DB
@@ -100,21 +100,21 @@ class RelayList {
     }
     return 0;
   }
-
-  static Future update(String pubKey, List<RelayMetadata> list, int updated_at,
-      {DatabaseExecutor? db}) async {
-    cached.putIfAbsent(pubKey, () => list);
-    if (nostr != null && nostr!.publicKey == pubKey ||
-        contactListProvider.getContact(pubKey) != null) {
-      db = await DB.getDB(db);
-      await db.database.transaction((txn) async {
-        await txn.update(
-            "relay", RelayMetadata.toFullJson(pubKey, list, updated_at),
-            where: "pub_key = ?", whereArgs: [pubKey]);
-      });
-    }
-    return 0;
-  }
+  //
+  // static Future update(String pubKey, List<RelayMetadata> list, int updated_at,
+  //     {DatabaseExecutor? db}) async {
+  //   cached.putIfAbsent(pubKey, () => list);
+  //   if (nostr != null && nostr!.publicKey == pubKey ||
+  //       contactListProvider.getContact(pubKey) != null) {
+  //     db = await DB.getDB(db);
+  //     await db.database.transaction((txn) async {
+  //       await txn.update(
+  //           "relay", RelayMetadata.toFullJson(pubKey, list, updated_at),
+  //           where: "pub_key = ?", whereArgs: [pubKey]);
+  //     });
+  //   }
+  //   return 0;
+  // }
 
   static Future<void> deleteAll({DatabaseExecutor? db}) async {
     cached.clear();

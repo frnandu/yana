@@ -126,57 +126,57 @@ class RelayProvider extends ChangeNotifier {
       ContactList contactList,
       int takeCountForEachContact,
       Function(Nostr) onComplete) async {
-    Nostr nostr = Nostr(privateKey: null, publicKey: pubKey);
-    int i = 0;
-    Map<String, int> followRelaysMap = {};
-    contactList.list().forEach((contact) async {
-      await relayProvider.getRelays(contact.publicKey!, (relays) {
-        relays
-            .where((element) =>
-                (element.write == null || element.write!) && element.isValidWss)
-            .map((e) => e.addr)
-            .take(takeCountForEachContact)
-            .forEach((r) {
-          String? adr = Relay.clean(r!);
-          if (adr == null) {
-            return;
-          }
-          int? count = followRelaysMap![adr];
-          if (count == null) {
-            count = 1;
-          } else {
-            count++;
-          }
-          followRelaysMap![adr] = count;
-          nostr!.addRelay(
-              Relay(
-                adr,
-                RelayStatus(adr),
-                access: WriteAccess.readWrite,
-              ),
-              connect: true,
-              checkInfo: false);
-        });
-        i++;
-        print(
-            "Loaded ${relays.length} relays for contact ${contact.publicKey} $i/${contactList.list().length}");
-        if (i == contactList.total()) {
-          List<MapEntry<String, int>> sortedEntries =
-              followRelaysMap!.entries.toList();
-
-          sortedEntries.sort((a, b) => b.value.compareTo(a.value));
-
-          followRelays = [];
-          // Now, sortedEntries contains your Map entries sorted by values in descending order.
-
-          for (var entry in sortedEntries) {
-            followRelays!
-                .add(RelayMetadata.full(addr: entry.key, count: entry.value));
-          }
-          onComplete(nostr);
-        }
-      });
-    });
+    // Nostr nostr = Nostr(privateKey: null, publicKey: pubKey);
+    // int i = 0;
+    // Map<String, int> followRelaysMap = {};
+    // contactList.list().forEach((contact) async {
+    //   await relayProvider.getRelays(contact.publicKey!, (relays) {
+    //     relays
+    //         .where((element) =>
+    //             (element.write == null || element.write!) && element.isValidWss)
+    //         .map((e) => e.addr)
+    //         .take(takeCountForEachContact)
+    //         .forEach((r) {
+    //       String? adr = Relay.clean(r!);
+    //       if (adr == null) {
+    //         return;
+    //       }
+    //       int? count = followRelaysMap![adr];
+    //       if (count == null) {
+    //         count = 1;
+    //       } else {
+    //         count++;
+    //       }
+    //       followRelaysMap![adr] = count;
+    //       nostr!.addRelay(
+    //           Relay(
+    //             adr,
+    //             RelayStatus(adr),
+    //             access: WriteAccess.readWrite,
+    //           ),
+    //           connect: true,
+    //           checkInfo: false);
+    //     });
+    //     i++;
+    //     print(
+    //         "Loaded ${relays.length} relays for contact ${contact.publicKey} $i/${contactList.list().length}");
+    //     if (i == contactList.total()) {
+    //       List<MapEntry<String, int>> sortedEntries =
+    //           followRelaysMap!.entries.toList();
+    //
+    //       sortedEntries.sort((a, b) => b.value.compareTo(a.value));
+    //
+    //       followRelays = [];
+    //       // Now, sortedEntries contains your Map entries sorted by values in descending order.
+    //
+    //       for (var entry in sortedEntries) {
+    //         followRelays!
+    //             .add(RelayMetadata.full(addr: entry.key, count: entry.value));
+    //       }
+    //       onComplete(nostr);
+    //     }
+    //   });
+    // });
   }
 
   RelayStatus? getRelayStatus(String addr) {
@@ -221,7 +221,6 @@ class RelayProvider extends ChangeNotifier {
   Future<Object> addRelays(Nostr nostr) async {
     List<Future<bool>> futures = [];
     for (var relayAddr in relayAddrs) {
-      // log("begin to init $relayAddr");
       print("addRelays going for genRelay($relayAddr)....");
       var custRelay = genRelay(relayAddr);
       try {
@@ -440,7 +439,7 @@ class RelayProvider extends ChangeNotifier {
 
 
   Future<void> initStaticForRelaysAndMetadataNostr(String pubKey) async {
-    // if (staticForRelaysAndMetadataNostr == null) {
+    if (staticForRelaysAndMetadataNostr == null) {
       Set<String> uniqueRelays =
       Set<String>.from(RelayProvider.STATIC_RELAY_ADDRS);
       uniqueRelays.addAll(relayProvider.relayAddrs);
@@ -458,7 +457,7 @@ class RelayProvider extends ChangeNotifier {
           log("relay $relayAddr add to temp nostr for getting nip065 relay list: ${e.toString()}");
         }
       }
-    // }
+    }
   }
 
   Future<void> loadRelayAndContactList(String pubKey,

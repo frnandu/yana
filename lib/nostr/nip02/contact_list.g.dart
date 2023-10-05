@@ -83,17 +83,12 @@ int _contactListEstimateSize(
   Map<Type, List<int>> allOffsets,
 ) {
   var bytesCount = offsets.last;
+  bytesCount += 3 + object.contacts.length * 3;
   {
-    final list = object.contacts;
-    if (list != null) {
-      bytesCount += 3 + list.length * 3;
-      {
-        final offsets = allOffsets[Contact]!;
-        for (var i = 0; i < list.length; i++) {
-          final value = list[i];
-          bytesCount += ContactSchema.estimateSize(value, offsets, allOffsets);
-        }
-      }
+    final offsets = allOffsets[Contact]!;
+    for (var i = 0; i < object.contacts.length; i++) {
+      final value = object.contacts[i];
+      bytesCount += ContactSchema.estimateSize(value, offsets, allOffsets);
     }
   }
   bytesCount += 3 + object.followedCommunitys.length * 3;
@@ -153,11 +148,12 @@ ContactList _contactListDeserialize(
 ) {
   final object = ContactList();
   object.contacts = reader.readObjectList<Contact>(
-    offsets[0],
-    ContactSchema.deserialize,
-    allOffsets,
-    Contact(),
-  );
+        offsets[0],
+        ContactSchema.deserialize,
+        allOffsets,
+        Contact(),
+      ) ??
+      [];
   object.id = id;
   object.pub_key = reader.readStringOrNull(offsets[4]);
   object.timestamp = reader.readLongOrNull(offsets[5]);
@@ -173,11 +169,12 @@ P _contactListDeserializeProp<P>(
   switch (propertyId) {
     case 0:
       return (reader.readObjectList<Contact>(
-        offset,
-        ContactSchema.deserialize,
-        allOffsets,
-        Contact(),
-      )) as P;
+            offset,
+            ContactSchema.deserialize,
+            allOffsets,
+            Contact(),
+          ) ??
+          []) as P;
     case 1:
       return (reader.readStringList(offset) ?? []) as P;
     case 2:
@@ -351,24 +348,6 @@ extension ContactListQueryWhere
 
 extension ContactListQueryFilter
     on QueryBuilder<ContactList, ContactList, QFilterCondition> {
-  QueryBuilder<ContactList, ContactList, QAfterFilterCondition>
-      contactsIsNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'contacts',
-      ));
-    });
-  }
-
-  QueryBuilder<ContactList, ContactList, QAfterFilterCondition>
-      contactsIsNotNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'contacts',
-      ));
-    });
-  }
-
   QueryBuilder<ContactList, ContactList, QAfterFilterCondition>
       contactsLengthEqualTo(int length) {
     return QueryBuilder.apply(this, (query) {
@@ -1538,7 +1517,7 @@ extension ContactListQueryProperty
     });
   }
 
-  QueryBuilder<ContactList, List<Contact>?, QQueryOperations>
+  QueryBuilder<ContactList, List<Contact>, QQueryOperations>
       contactsProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'contacts');
