@@ -477,7 +477,7 @@ class RelayProvider extends ChangeNotifier {
     print("loading from staticForRelaysAndMetadataNostr: $staticForRelaysAndMetadataNostr, contacts and relays for $pubKey");
     List<Future> futures = staticForRelaysAndMetadataNostr!.allRelays().map((e) => e.future!,).toList();
 
-    await Future.wait(futures).then((sockets) {
+    await Future.wait(futures).onError((error, stackTrace) {return List.of([]);}).then((sockets) {
       staticForRelaysAndMetadataNostr!
           .query(id: StringUtil.rndNameStr(16), [filter.toJson()], (event) async {
         print("RECEIVED event kind ${event.kind} going to process, staticForRelaysAndMetadataNostr: $staticForRelaysAndMetadataNostr");
