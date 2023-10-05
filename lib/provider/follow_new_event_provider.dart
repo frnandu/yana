@@ -44,7 +44,7 @@ class FollowNewEventProvider extends ChangeNotifier
     Iterable<Contact> contactList = contactListProvider.list();
     List<String> ids = [];
     for (Contact contact in contactList) {
-      ids.add(contact.publicKey);
+      ids.add(contact.publicKey!);
       if (ids.length > 100) {
         filter.authors = ids;
         var subscribeId = _doQueryFunc(filter, queriyTags: queriedTags);

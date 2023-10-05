@@ -6,7 +6,7 @@ import 'package:yana/router/tag/topic_map.dart';
 import '../nostr/event_kind.dart' as kind;
 import '../nostr/event.dart';
 import '../nostr/nip02/contact.dart';
-import '../nostr/nip02/cust_contact_list.dart';
+import '../nostr/nip02/contact_list.dart';
 import '../nostr/filter.dart';
 import '../nostr/nostr.dart';
 import '../main.dart';
@@ -18,7 +18,7 @@ class ContactListProvider extends ChangeNotifier {
 
   Event? _event;
 
-  CustContactList? _contactList;
+  ContactList? _contactList;
 
   static ContactListProvider getInstance() {
     if (_contactListProvider == null) {
@@ -28,7 +28,7 @@ class ContactListProvider extends ChangeNotifier {
     return _contactListProvider!;
   }
 
-  void set(CustContactList list) {
+  void set(ContactList list) {
     _contactList = list;
   }
 
@@ -56,14 +56,14 @@ class ContactListProvider extends ChangeNotifier {
           var eventMap = jsonDecode(eventStr);
           _contactListProvider!._event = Event.fromJson(eventMap);
           _contactListProvider!._contactList =
-              CustContactList.fromJson(_contactListProvider!._event!.tags);
+              ContactList.fromJson(_contactListProvider!._event!.tags);
 
           return;
         }
       }
     }
 
-    _contactListProvider!._contactList = CustContactList();
+    _contactListProvider!._contactList = ContactList();
   }
 
   void clearCurrentContactList() {
@@ -96,7 +96,7 @@ class ContactListProvider extends ChangeNotifier {
     if (e.kind == kind.EventKind.CONTACT_LIST) {
       if (_event == null || e.createdAt > _event!.createdAt) {
         _event = e;
-        _contactList = CustContactList.fromJson(e.tags);
+        _contactList = ContactList.fromJson(e.tags);
         _saveAndNotify();
       }
     }
@@ -122,7 +122,7 @@ class ContactListProvider extends ChangeNotifier {
     notifyListeners();
 
 
-    _contactList!.list().forEach((contact) { metadataProvider.update(contact.publicKey);});
+    _contactList!.list().forEach((contact) { metadataProvider.update(contact.publicKey!);});
     followEventProvider.metadataUpdatedCallback(_contactList);
   }
 
@@ -144,21 +144,21 @@ class ContactListProvider extends ChangeNotifier {
     _saveAndNotify();
   }
 
-  Future<void> updateContacts(CustContactList contactList) async {
+  Future<void> updateContacts(ContactList contactList) async {
     _contactList = contactList;
     _event = await nostr!.sendContactList(contactList);
 
     _saveAndNotify();
   }
 
-  CustContactList? get contactList => _contactList;
+  ContactList? get contactList => _contactList;
 
   Iterable<Contact> list() {
     return _contactList!.list();
   }
 
   Contact? getContact(String pubKey) {
-    return _contactList!=null ? _contactList!.get(pubKey) : null;
+    return _contactList!=null ? _contactList!.getContact(pubKey) : null;
   }
 
   void clear() {

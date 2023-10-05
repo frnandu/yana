@@ -1,5 +1,11 @@
+import 'dart:isolate';
+
+import 'package:isar/isar.dart';
 import 'package:path/path.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:yana/models/relay_list.dart';
+import 'package:yana/nostr/nip02/contact_list.dart';
 import 'package:yana/utils/platform_util.dart';
 
 class DB {
@@ -9,7 +15,17 @@ class DB {
 
   static Database? _database;
 
+  late Future<Isar> dbFuture;
+
+  static late Isar _db;
+  late SendPort _dbWorkerSendPort;
+
   static init() async {
+    final dir = await getApplicationDocumentsDirectory();
+    _db = await Isar.open(
+      [RelayListSchema, ContactListSchema],
+      directory: dir.path,
+    );
     String path = _dbName;
 
     if (!PlatformUtil.isWeb()) {
@@ -95,6 +111,10 @@ class DB {
       return db;
     }
     return getCurrentDatabase();
+  }
+
+  static Isar getIsar() {
+    return _db;
   }
 
   static void close() {

@@ -1,20 +1,30 @@
+import 'package:isar/isar.dart';
+
+part 'relay_metadata.g.dart';
+
+@embedded
 class RelayMetadata {
-  String addr;
+  String? addr;
 
   bool? read;
 
   bool? write;
 
+  @ignore
   int? count;
 
-  RelayMetadata(this.addr, {
+  RelayMetadata();
+
+  RelayMetadata.full({
+    this.addr,
     this.read,
     this.write,
     this.count
   });
 
+  @ignore
   bool get isValidWss {
-    String a = addr.trim();
+    String a = addr!=null ? addr!.trim() : "";
     return a.startsWith("wss://") || a.startsWith("ws://");
   }
 
@@ -24,7 +34,7 @@ class RelayMetadata {
     Set<String> all = {};
     all.addAll(read);
     all.addAll(write);
-    return all.map((e) => RelayMetadata(e, read: read.contains(e), write: write.contains(e)))
+    return all.map((e) => RelayMetadata.full(addr: e, read: read.contains(e), write: write.contains(e)))
         .toList();
   }
 
@@ -36,10 +46,10 @@ class RelayMetadata {
     List<String> write = [];
     for (var e in list) {
       if (e.read != null && e.read!) {
-        read.add(e.addr);
+        read.add(e.addr!);
       }
       if (e.write != null && e.write!) {
-        write.add(e.addr);
+        write.add(e.addr!);
       }
     }
     data['read'] = read.join(',');

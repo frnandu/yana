@@ -31,7 +31,7 @@ class _FollowPostsRouter extends KeepAliveCustState<FollowPostsRouter>
   void initState() {
     super.initState();
     bindLoadMoreScroll(_controller);
-    doQuery();
+    // doQuery();
   }
 
   @override

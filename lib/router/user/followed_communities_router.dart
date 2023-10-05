@@ -4,7 +4,7 @@ import 'package:yana/utils/router_path.dart';
 import 'package:yana/provider/contact_list_provider.dart';
 import 'package:provider/provider.dart';
 
-import '../../nostr/nip02/cust_contact_list.dart';
+import '../../nostr/nip02/contact_list.dart';
 import '../../utils/base.dart';
 import '../../i18n/i18n.dart';
 import '../../main.dart';
@@ -20,14 +20,14 @@ class FollowedCommunitiesRouter extends StatefulWidget {
 }
 
 class _FollowedCommunitiesRouter extends State<FollowedCommunitiesRouter> {
-  CustContactList? contactList;
+  ContactList? contactList;
 
   @override
   Widget build(BuildContext context) {
     if (contactList == null) {
       var arg = RouterUtil.routerArgs(context);
       if (arg != null) {
-        contactList = arg as CustContactList;
+        contactList = arg as ContactList;
       }
     }
     if (contactList == null) {

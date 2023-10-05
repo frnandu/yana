@@ -11,7 +11,7 @@ import 'package:yana/utils/string_util.dart';
 import 'client_utils/keys.dart';
 import 'event.dart';
 import 'event_kind.dart';
-import 'nip02/cust_contact_list.dart';
+import 'nip02/contact_list.dart';
 import 'relay.dart';
 
 import '/js/js_helper.dart' as js;
@@ -102,7 +102,7 @@ class Nostr {
     return await sendEvent(event);
   }
 
-  Future<Event?> sendContactList(CustContactList contacts) async {
+  Future<Event?> sendContactList(ContactList contacts) async {
     final tags = contacts.toJson();
     final event = Event(_publicKey, EventKind.CONTACT_LIST, tags, "");
     return await sendEvent(event);

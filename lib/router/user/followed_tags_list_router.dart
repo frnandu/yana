@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:yana/ui/tag_info_component.dart';
 import 'package:yana/utils/base.dart';
 
-import '../../nostr/nip02/cust_contact_list.dart';
+import '../../nostr/nip02/contact_list.dart';
 import '../../i18n/i18n.dart';
 import '../../utils/router_util.dart';
 
@@ -16,14 +16,14 @@ class FollowedTagsListRouter extends StatefulWidget {
 }
 
 class _FollowedTagsListRouter extends State<FollowedTagsListRouter> {
-  CustContactList? contactList;
+  ContactList? contactList;
 
   @override
   Widget build(BuildContext context) {
     if (contactList == null) {
       var arg = RouterUtil.routerArgs(context);
       if (arg != null) {
-        contactList = arg as CustContactList;
+        contactList = arg as ContactList;
       }
     }
     if (contactList == null) {

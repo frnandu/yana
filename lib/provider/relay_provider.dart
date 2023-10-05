@@ -4,8 +4,8 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:yana/models/contacts_db.dart';
-import 'package:yana/models/relays_db.dart';
-import 'package:yana/nostr/nip02/cust_contact_list.dart';
+import 'package:yana/models/relay_list.dart';
+import 'package:yana/nostr/nip02/contact_list.dart';
 import 'package:yana/nostr/relay_metadata.dart';
 import 'package:yana/provider/setting_provider.dart';
 
@@ -49,29 +49,37 @@ class RelayProvider extends ChangeNotifier {
 
   Future<void> getRelays(
       String pubKey, Function(List<RelayMetadata>) onRelays) async {
-    List<RelayMetadata>? relays = await RelaysDB.get(pubKey);
+    final startTime = DateTime.now();
+    List<RelayMetadata>? relays = await RelayList.get(pubKey);
+    final endTime = DateTime.now();
+    final duration = endTime.difference(startTime);
+    print("LOADING RELAYS FROM DB for $pubKey took:${duration.inMilliseconds} ms");
     bool loaded = false;
     if (relays == null || relays.isEmpty) {
       loadRelayAndContactList(pubKey, onRelays: (relays) {
         loaded = true;
         onRelays(relays);
       });
-      Future.delayed(
-        const Duration(seconds: 3),
-        () {
-          if (!loaded) {
-            onRelays([]);
-          }
-        },
-      );
+      // Future.delayed(
+      //   const Duration(seconds: 3),
+      //   () {
+      //     if (!loaded) {
+      //       onRelays([]);
+      //     }
+      //   },
+      // );
     } else {
       onRelays(relays);
     }
   }
 
   Future<void> getContacts(
-      String pubKey, Function(CustContactList) onContacts) async {
-    CustContactList? contactList = await ContactsDB.get(pubKey);
+      String pubKey, Function(ContactList) onContacts) async {
+    final startTime = DateTime.now();
+    ContactList? contactList = await ContactList.loadFromDB(pubKey);
+    final endTime = DateTime.now();
+    final duration = endTime.difference(startTime);
+    print("LOADING CONTACTS FROM DB for $pubKey took:${duration.inMilliseconds} ms");
     bool loaded = false;
     if (contactList == null) {
       loadRelayAndContactList(pubKey, onContacts: (list) {
@@ -79,10 +87,10 @@ class RelayProvider extends ChangeNotifier {
         onContacts(list);
       });
       Future.delayed(
-        Duration(seconds: 5),
+        const Duration(seconds: 10),
         () {
           if (!loaded) {
-            onContacts(CustContactList());
+            onContacts(ContactList());
           }
         },
       );
@@ -92,13 +100,13 @@ class RelayProvider extends ChangeNotifier {
   }
 
   Future<void> loadRelays(String? pubKey, Function onComplete) async {
-    // print("Loading relays for logged user...");
+    print("Loading relays for logged user...");
     if (pubKey != null) {
       await relayProvider.getRelays(pubKey, (relays) {
         relayAddrs.clear();
         if (relays != null) {
           relayAddrs.addAll(relays.map(
-            (e) => e.addr,
+            (e) => e.addr!,
           ));
         }
 
@@ -106,7 +114,7 @@ class RelayProvider extends ChangeNotifier {
           // init relays
           relayAddrs = List<String>.from(STATIC_RELAY_ADDRS);
         }
-        // print("Loaded ${relays.length} relays for logged user...");
+        print("Loaded ${relays.length} relays for logged user...");
         onComplete();
       });
     }
@@ -114,22 +122,22 @@ class RelayProvider extends ChangeNotifier {
 
   Future<void> buildNostrFromContactsRelays(
       String pubKey,
-      CustContactList contactList,
+      ContactList contactList,
       int takeCountForEachContact,
       Function(Nostr) onComplete) async {
     Nostr nostr = Nostr(privateKey: null, publicKey: pubKey);
     int i = 0;
     Map<String, int> followRelaysMap = {};
     contactList.list().forEach((contact) async {
-      await relayProvider.getRelays(contact.publicKey, (relays) {
+      await relayProvider.getRelays(contact.publicKey!, (relays) {
         relays
             .where((element) =>
                 (element.write == null || element.write!) && element.isValidWss)
             .map((e) => e.addr)
             .take(takeCountForEachContact)
             .forEach((r) {
-          String? adr = Relay.clean(r);
-          if (adr==null) {
+          String? adr = Relay.clean(r!);
+          if (adr == null) {
             return;
           }
           int? count = followRelaysMap![adr];
@@ -161,7 +169,8 @@ class RelayProvider extends ChangeNotifier {
           // Now, sortedEntries contains your Map entries sorted by values in descending order.
 
           for (var entry in sortedEntries) {
-            followRelays!.add(RelayMetadata(entry.key, count: entry.value));
+            followRelays!
+                .add(RelayMetadata.full(addr: entry.key, count: entry.value));
           }
           onComplete(nostr);
         }
@@ -176,16 +185,21 @@ class RelayProvider extends ChangeNotifier {
   int? getFollowRelayState(String addr) {
     if (followsNostr != null) {
       Relay? r = followsNostr!.getRelay(addr);
-      if (r==null) {
+      if (r == null) {
         return null;
       }
-      return r!.webSocket != null? r!.webSocket!.readyState : (r.relayStatus.connecting ? WebSocket.connecting: WebSocket.closed) ;
+      return r!.webSocket != null
+          ? r!.webSocket!.readyState
+          : (r.relayStatus.connecting
+              ? WebSocket.connecting
+              : WebSocket.closed);
     }
     return null;
   }
 
   String relayNumStr() {
-    String result = "${nostr!.activeRelays().length}/${nostr!.allRelays().length}";
+    String result =
+        "${nostr!.activeRelays().length}/${nostr!.allRelays().length}";
     if (settingProvider.gossip == 1 && followsNostr != null) {
       result += ", follows ${followRelayNumStr()}";
     }
@@ -218,31 +232,32 @@ class RelayProvider extends ChangeNotifier {
 
   Future<Nostr> genNostr({String? privateKey, String? publicKey}) async {
     var loggedUserNostr = Nostr(privateKey: privateKey, publicKey: publicKey);
-    // log("nostr init over");
 
     await addRelays(loggedUserNostr);
 
     await getContacts(loggedUserNostr.publicKey, (contactList) async {
       contactListProvider.set(contactList);
-      await buildNostrFromContactsRelays(
-        loggedUserNostr.publicKey,
-        contactList,
-        settingProvider.followeesRelayMaxCount ??
-            SettingProvider.DEFAULT_FOLLOWEES_RELAY_MAX_COUNT,
-        (builtNostr) {
-          if (followsNostr == null) {
-            followsNostr = builtNostr;
-            // add logged user's configured read relays
-            loggedUserNostr!
-                .activeRelays()
-                .where((relay) => relay.access != WriteAccess.writeOnly)
-                .forEach((relay) {
-              followsNostr!.addRelay(relay, connect: true);
-            });
-            followEventProvider.doQuery();
-          }
-        },
-      );
+      if (settingProvider.gossip == 1) {
+        await buildNostrFromContactsRelays(
+          loggedUserNostr.publicKey,
+          contactList,
+          settingProvider.followeesRelayMaxCount ??
+              SettingProvider.DEFAULT_FOLLOWEES_RELAY_MAX_COUNT,
+          (builtNostr) {
+            if (followsNostr == null) {
+              followsNostr = builtNostr;
+              // add logged user's configured read relays
+              loggedUserNostr!
+                  .activeRelays()
+                  .where((relay) => relay.access != WriteAccess.writeOnly)
+                  .forEach((relay) {
+                followsNostr!.addRelay(relay, connect: true);
+              });
+              followEventProvider.doQuery();
+            }
+          },
+        );
+      }
     });
     // add initQuery
     // contactListProvider.query(targetNostr: _nostr);
@@ -311,7 +326,7 @@ class RelayProvider extends ChangeNotifier {
       List<dynamic> tags = [];
       for (var addr in relayAddrs) {
         tags.add(["r", addr, ""]);
-        relays.add(RelayMetadata(addr, read: true, write: true));
+        relays.add(RelayMetadata.full(addr: addr, read: true, write: true));
       }
 
       Set<String> uniqueRelays = Set<String>.from(broadcastToRelays);
@@ -337,9 +352,9 @@ class RelayProvider extends ChangeNotifier {
       tempNostr!.sendEvent(event);
       int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
       try {
-        await RelaysDB.insert(nostr!.publicKey, relays, now);
+        await RelayList.put(nostr!.publicKey, relays, now);
       } catch (e) {
-        await RelaysDB.update(nostr!.publicKey, relays, now);
+        print(e);
       }
     }
   }
@@ -408,7 +423,7 @@ class RelayProvider extends ChangeNotifier {
 
   void loadRelayAndContactList(String pubKey,
       {Function(List<RelayMetadata>)? onRelays,
-      Function(CustContactList)? onContacts}) {
+      Function(ContactList)? onContacts}) {
     if (staticForRelaysAndMetadataNostr == null) {
       Set<String> uniqueRelays =
           Set<String>.from(RelayProvider.STATIC_RELAY_ADDRS);
@@ -438,80 +453,90 @@ class RelayProvider extends ChangeNotifier {
           kind.EventKind.RELAY_LIST_METADATA,
           kind.EventKind.CONTACT_LIST
         ]);
-    staticForRelaysAndMetadataNostr!
-        .query(id: StringUtil.rndNameStr(16), [filter.toJson()], (event) async {
-      if (staticForRelaysAndMetadataNostr == null) {
-        return;
-      }
-      if ((relaysEvent != null && event.createdAt > relaysEvent!.createdAt) ||
-          relaysEvent == null) {
-        List<RelayMetadata>? relays = [];
-        if (event.kind == kind.EventKind.RELAY_LIST_METADATA) {
-          relaysEvent = event;
-          for (var tag in relaysEvent!.tags) {
-            if (tag is List<dynamic>) {
-              var length = tag.length;
-              bool write = true;
-              bool read = true;
-              if (length > 1) {
-                var name = tag[0];
-                var value = tag[1];
-                if (name == "r") {
-                  if (length > 2) {
-                    var operType = tag[2];
-                    if (operType == "read") {
-                      write = false;
-                    } else if (operType == "write") {
-                      read = false;
+    print("loading from staticForRelaysAndMetadataNostr: $staticForRelaysAndMetadataNostr, contacts and relays for $pubKey");
+    List<Future> futures = staticForRelaysAndMetadataNostr!.allRelays().map((e) => e.future!,).toList();
+
+    Future.wait(futures).then((sockets) {
+      staticForRelaysAndMetadataNostr!
+          .query(id: StringUtil.rndNameStr(16), [filter.toJson()], (event) async {
+        print("RECEIVED event kind ${event.kind} going to process, staticForRelaysAndMetadataNostr: $staticForRelaysAndMetadataNostr");
+
+        if (staticForRelaysAndMetadataNostr == null) {
+          return;
+        }
+        if ((relaysEvent != null && event.createdAt > relaysEvent!.createdAt) ||
+            relaysEvent == null) {
+          List<RelayMetadata>? relays = [];
+          if (event.kind == kind.EventKind.RELAY_LIST_METADATA) {
+            relaysEvent = event;
+            for (var tag in relaysEvent!.tags) {
+              if (tag is List<dynamic>) {
+                var length = tag.length;
+                bool write = true;
+                bool read = true;
+                if (length > 1) {
+                  var name = tag[0];
+                  var value = tag[1];
+                  if (name == "r") {
+                    if (length > 2) {
+                      var operType = tag[2];
+                      if (operType == "read") {
+                        write = false;
+                      } else if (operType == "write") {
+                        read = false;
+                      }
                     }
+                    relays!.add(RelayMetadata.full(
+                        addr: value, read: read, write: write));
                   }
-                  relays!.add(RelayMetadata(value, read: read, write: write));
                 }
               }
             }
-          }
-        } else {
-          if (StringUtil.isNotBlank(event.content)) {
-            try {
-              Map<String, dynamic> json = jsonDecode(event.content);
-              if (json.entries.isNotEmpty) {
-                relaysEvent = event;
-                for (var entry in json.entries) {
-                  bool write = true;
-                  bool read = true;
-                  write = entry.value["write"];
-                  read = entry.value["read"];
-                  relays!.add(RelayMetadata(entry.key.toString(),
-                      read: read, write: write));
+          } else {
+            if (StringUtil.isNotBlank(event.content)) {
+              try {
+                Map<String, dynamic> json = jsonDecode(event.content);
+                if (json.entries.isNotEmpty) {
+                  relaysEvent = event;
+                  for (var entry in json.entries) {
+                    bool write = true;
+                    bool read = true;
+                    write = entry.value["write"];
+                    read = entry.value["read"];
+                    relays!.add(RelayMetadata.full(
+                        addr: entry.key.toString(), read: read, write: write));
+                  }
                 }
+              } catch (e) {
+                print(e);
               }
+            }
+          }
+          if (relays != null && relays.isNotEmpty) {
+            try {
+              await RelayList.put(pubKey, relays, relaysEvent!.createdAt);
             } catch (e) {
               print(e);
             }
+            if (onRelays != null) {
+              onRelays(relays);
+            }
           }
         }
-        if (relays != null && relays.isNotEmpty) {
-          try {
-            await RelaysDB.insert(pubKey, relays, relaysEvent!.createdAt);
-          } catch (e) {
-            await RelaysDB.update(pubKey, relays, relaysEvent!.createdAt);
-          }
-          if (onRelays != null) {
-            onRelays(relays);
+        if (event.kind == kind.EventKind.CONTACT_LIST &&
+            ((contactsEvent != null &&
+                event.createdAt > contactsEvent!.createdAt) ||
+                contactsEvent == null)) {
+          contactsEvent = event;
+          ContactList contactList = ContactList.fromJson(event.tags);
+          contactList.pub_key = event.pubKey;
+          contactList.timestamp = event.createdAt;
+          await ContactList.writeToDB(contactList);
+          if (onContacts != null) {
+            onContacts(contactList);
           }
         }
-      }
-      if (event.kind == kind.EventKind.CONTACT_LIST &&
-          ((contactsEvent != null &&
-                  event.createdAt > contactsEvent!.createdAt) ||
-              contactsEvent == null)) {
-        CustContactList contactList = CustContactList.fromJson(event.tags);
-        contactsEvent = event;
-        await ContactsDB.update(pubKey, contactList, contactsEvent!.createdAt);
-        if (onContacts != null) {
-          onContacts(contactList);
-        }
-      }
+      });
     });
   }
 }

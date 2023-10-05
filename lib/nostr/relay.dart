@@ -4,6 +4,7 @@ import 'dart:developer';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
+import 'package:isar/isar.dart';
 import 'package:yana/main.dart';
 import 'package:yana/nostr/relay_info_util.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
@@ -44,11 +45,13 @@ class Relay {
     return false;
   }
 
-  bool isActive()  {
+  bool isActive() {
     return webSocket != null && webSocket!.readyState == WebSocket.open;
   }
-  bool isConnecting()  {
-    return webSocket != null && webSocket!.readyState == WebSocket.connecting || relayStatus.connecting;
+
+  bool isConnecting() {
+    return webSocket != null && webSocket!.readyState == WebSocket.connecting ||
+        relayStatus.connecting;
   }
 
   bool send(List<dynamic> message, {bool reconnect = true}) {
@@ -70,29 +73,31 @@ class Relay {
     return false;
   }
 
+  Future<WebSocket>? future;
+
   Future<bool> connectSync(Function? onError) async {
     try {
       relayStatus.connecting = true;
-      await WebSocket.connect(url).then((ws) {
-        relayProvider.notifyListeners();
-        webSocket = ws;
-        webSocket!.listen((message) {
-          if (onMessage != null) {
-            final List<dynamic> json = jsonDecode(message);
-            onMessage!.call(this, json);
-          }
-        }, onError: (error) async {
-          _onError("Websocket error $url", reconnect: false);
-          if (onError != null) {
-            onError();
-          }
-        }, onDone: () {
-          _onError("Websocket stream closed by remote:  $url", reconnect: false);
-        });
-      }).onError((error, stackTrace) {
-        print("Websocket error while connecting $url : $error  ");
-        // _onError("Websocket error while connecting $url : $error  ", reconnect: false);
-        relayStatus.connecting = false;
+      future = WebSocket.connect(url);
+      webSocket = await future;
+      // .onError((error, stackTrace) {
+      //   print("Websocket error while connecting $url : $error  ");
+      //   // _onError("Websocket error while connecting $url : $error  ", reconnect: false);
+      //   relayStatus.connecting = false;
+      // }));
+      relayProvider.notifyListeners();
+      webSocket!.listen((message) {
+        if (onMessage != null) {
+          final List<dynamic> json = jsonDecode(message);
+          onMessage!.call(this, json);
+        }
+      }, onError: (error) async {
+        _onError("Websocket error $url", reconnect: false);
+        if (onError != null) {
+          onError();
+        }
+      }, onDone: () {
+        _onError("Websocket stream closed by remote:  $url", reconnect: false);
       });
     } catch (e) {
       return false;

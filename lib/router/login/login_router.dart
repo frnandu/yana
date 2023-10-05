@@ -321,7 +321,7 @@ class _LoginRouter extends State<LoginRouter>
         var alreadyClosed = false;
         await relayProvider.getRelays(isPublic?key: getPublicKey(key), (relays) async {
           alreadyClosed = true;
-          await relayProvider.setRelayListAndUpdate(relays.map((e) => e.addr).toList(), null);
+          await relayProvider.setRelayListAndUpdate(relays.map((e) => e.addr!).toList(), null);
           getNostrAndClose(false, key, !isPublic);
         }
         );

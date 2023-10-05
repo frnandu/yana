@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:yana/main.dart';
 
-import '../../nostr/nip02/cust_contact_list.dart';
+import '../../nostr/nip02/contact_list.dart';
 import '../../i18n/i18n.dart';
 import '../../utils/router_util.dart';
 import 'user_contact_list_component.dart';
@@ -15,7 +15,7 @@ class UserHistoryContactListRouter extends StatefulWidget {
 
 class _UserHistoryContactListRouter
     extends State<UserHistoryContactListRouter> {
-  CustContactList? contactList;
+  ContactList? contactList;
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +24,7 @@ class _UserHistoryContactListRouter
     if (contactList == null) {
       var arg = RouterUtil.routerArgs(context);
       if (arg != null) {
-        contactList = arg as CustContactList;
+        contactList = arg as ContactList;
       }
     }
     if (contactList == null) {

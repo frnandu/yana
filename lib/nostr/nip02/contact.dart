@@ -1,13 +1,20 @@
+import 'package:isar/isar.dart';
 import 'package:yana/utils/string_util.dart';
 
 import '../client_utils/keys.dart';
 
+part "contact.g.dart";
+
 /// A single contact for use with [ContactList]
+@embedded
 class Contact {
 
   static const PETNAME_COMMUNITY = "_COMMUNITY";
   static const PETNAME_TAG = "_TAG";
   static const PETNAME_EVENT = "_EVENT";
+
+
+  Contact();
 
   /// Creates a new [Contact].
   ///
@@ -17,28 +24,28 @@ class Contact {
   ///
   /// An [ArgumentError] is thrown if [publicKey] is invalid or if [url] is not
   /// a valid relay URL.
-  Contact({required this.publicKey, this.url = '', this.petname = ''}) {
-    if (!keyIsValid(publicKey)) {
+  Contact.full({required this.publicKey, this.url = '', this.petname = ''}) {
+    if (!keyIsValid(publicKey!)) {
       throw ArgumentError.value(publicKey, 'publicKey', 'Invalid key');
     }
-    if (url.isNotEmpty &&
-        !url.contains(RegExp(
+    if (url!.isNotEmpty &&
+        !url!.contains(RegExp(
             r'^(wss?:\/\/)([0-9]{1,3}(?:\.[0-9]{1,3}){3}|[^:]+):?([0-9]{1,5})?$'))) {
       throw ArgumentError.value(url, 'url', 'Invalid relay address');
     }
   }
 
   /// The contact's public key.
-  final String publicKey;
+  String? publicKey;
 
   /// A known good relay URL for the contact.
-  final String url;
+  String? url;
 
   /// The contact's petname (nickname).
-  final String petname;
+  String? petname;
 
   Map<String, Object?> toDB(String pubKey) {
-    return toDBFromValues(pubKey, publicKey, petname, url);
+    return toDBFromValues(pubKey, publicKey!, petname, url);
   }
   
   static Map<String, Object?> toDBFromValues(String pubKey, String contact, String? petname, String? url) {

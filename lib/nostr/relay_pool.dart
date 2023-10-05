@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:developer';
+import 'dart:io';
 
 import 'package:yana/utils/string_util.dart';
 
@@ -271,6 +272,7 @@ class RelayPool {
     if (onComplete != null) {
       _queryCompleteCallbacks[subscription.id] = onComplete;
     }
+
     for (Relay relay in activeRelays()) {//_relays.values) {
       relay.doQuery(subscription);
     }

@@ -1,10 +1,27 @@
+import 'package:isar/isar.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:yana/main.dart';
 import 'package:yana/nostr/relay_metadata.dart';
 
 import 'db.dart';
 
-class RelaysDB {
+part 'relay_list.g.dart';
+
+@collection
+class RelayList {
+  Id id = Isar.autoIncrement;
+
+  @Index(type: IndexType.hash)
+  String? pub_key;
+
+  List<RelayMetadata>? relays;
+
+  // List<String>? read;
+  //
+  // List<String>? write;
+
+  int? timestamp;
+
   static Map<String, List<RelayMetadata>> cached = {};
 
   // static Future<List<RelayMetadata>> all({DatabaseExecutor? db}) async {
@@ -14,13 +31,31 @@ class RelaysDB {
   //       await db.rawQuery("select * from relays");
   static Future<List<RelayMetadata>?> get(String pubKey,
       {DatabaseExecutor? db, bool useCache = true}) async {
-    List<RelayMetadata>? list = useCache? cached[pubKey] : null;
+    List<RelayMetadata>? list = useCache ? cached[pubKey] : null;
     if (list == null) {
-      db = await DB.getDB(db);
-      var fromDB =
-          await db.query("relay", where: "pub_key = ?", whereArgs: [pubKey]);
-      if (fromDB.isNotEmpty) {
-        list = RelayMetadata.fromJson(fromDB[0]);
+      final relayList = await DB
+          .getIsar()
+          .relayLists
+          .filter()
+          .pub_keyEqualTo(pubKey)
+          .findFirst();
+      // db = await DB.getDB(db);
+      // var fromDB =
+      //     await db.query("relay", where: "pub_key = ?", whereArgs: [pubKey]);
+      if (relayList != null) {
+        // Set<String> all = {};
+        // if (relays.read != null) {
+        //   all.addAll(relays.read!);
+        // }
+        // if (relays.write != null) {
+        //   all.addAll(relays.write!);
+        // }
+        // List<RelayMetadata> list = all
+        //     .map((e) => RelayMetadata(e,
+        //         read: relays.read != null && relays.read!.contains(e),
+        //         write: relays.write != null && relays.write!.contains(e)))
+        //     .toList();
+        list = relayList.relays;
         cached[pubKey] = list!;
       } else {
         cached[pubKey] = [];
@@ -36,17 +71,33 @@ class RelaysDB {
   //   return objs;
   // }
 
-  static Future<int> insert(
+  static Future<int> put(
       String pubKey, List<RelayMetadata> list, int updated_at,
       {DatabaseExecutor? db}) async {
     cached.putIfAbsent(pubKey, () => list);
     if (nostr != null && nostr!.publicKey == pubKey ||
         contactListProvider.getContact(pubKey) != null) {
-      db = await DB.getDB(db);
-      return await db.database.transaction((txn) async {
-        return await txn.insert(
-            "relay", RelayMetadata.toFullJson(pubKey, list, updated_at));
+      RelayList? relayList = await DB
+          .getIsar()
+          .relayLists
+          .filter()
+          .pub_keyEqualTo(pubKey)
+          .findFirst();
+      if (relayList==null) {
+        relayList = RelayList();
+        relayList.pub_key = pubKey;
+      }
+      relayList.relays = list;
+      relayList.timestamp = updated_at;
+
+      await DB.getIsar().writeTxn(() async {
+        await DB.getIsar().relayLists.put(relayList!);
       });
+      // db = await DB.getDB(db);
+      // return await db.database.transaction((txn) async {
+      //   return await txn.insert(
+      //       "relay", RelayMetadata.toFullJson(pubKey, list, updated_at));
+      // });
     }
     return 0;
   }

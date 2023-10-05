@@ -55,6 +55,7 @@
   - blacklist for relays
   - 
 - try exchange sqflite with isar DB?
+
 - broadcast NIP-65 kind=10002 to as many as possible
 - CORS on yana.do using imgproxy (darthsim/imgproxy)
 - wallet connect separated to each key/account

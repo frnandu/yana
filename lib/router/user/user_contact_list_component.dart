@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../nostr/nip02/contact.dart';
-import '../../nostr/nip02/cust_contact_list.dart';
+import '../../nostr/nip02/contact_list.dart';
 import '../../ui/editor/search_mention_user_component.dart';
 import '../../ui/user/metadata_component.dart';
 import '../../utils/base.dart';
@@ -13,7 +13,7 @@ import '../../utils/platform_util.dart';
 import '../../utils/router_util.dart';
 
 class UserContactListComponent extends StatefulWidget {
-  CustContactList contactList;
+  ContactList contactList;
 
   UserContactListComponent({required this.contactList});
 
@@ -55,7 +55,7 @@ class _UserContactListComponent extends State<UserContactListComponent> {
                   // ),
             },
             selector: (context, _provider) {
-              return _provider.getMetadata(contact.publicKey);
+              return _provider.getMetadata(contact.publicKey!);
             },
           ),
         );

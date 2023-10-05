@@ -196,9 +196,9 @@ class _UserRouter extends CustState<UserRouter>
                     pubkey: pubkey!,
                     userNostr: userNostr,
                     onContactListLoaded: (contactList) {
-                      Contact? c = contactList.get(nostr!.publicKey);
+                      Contact? c = contactList.getContact(nostr!.publicKey);
                       if (nostr != null &&
-                          contactList.get(nostr!.publicKey) != null) {
+                          contactList.getContact(nostr!.publicKey) != null) {
                         setState(() {
                           followsYou = true;
                         });

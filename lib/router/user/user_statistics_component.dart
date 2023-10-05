@@ -13,7 +13,7 @@ import '../../models/event_mem_box.dart';
 import '../../nostr/event.dart';
 import '../../nostr/event_kind.dart' as kind;
 import '../../nostr/filter.dart';
-import '../../nostr/nip02/cust_contact_list.dart';
+import '../../nostr/nip02/contact_list.dart';
 import '../../nostr/nip57/zap_num_util.dart';
 import '../../nostr/nostr.dart';
 import '../../nostr/relay_metadata.dart';
@@ -29,7 +29,7 @@ class UserStatisticsComponent extends StatefulWidget {
 
   Nostr? userNostr;
 
-  Function(CustContactList)? onContactListLoaded;
+  Function(ContactList)? onContactListLoaded;
 
   UserStatisticsComponent(
       {super.key,
@@ -46,7 +46,7 @@ class UserStatisticsComponent extends StatefulWidget {
 class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
   Event? contactListEvent;
 
-  CustContactList? contactList;
+  ContactList? contactList;
 
   Event? relaysEvent;
 
@@ -250,7 +250,7 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
 
       List<EnumObj> enumList = [];
       for (var event in list) {
-        var _contactList = CustContactList.fromJson(event.tags);
+        var _contactList = ContactList.fromJson(event.tags);
         var dt = DateTime.fromMillisecondsSinceEpoch(event.createdAt * 1000);
         enumList.add(
             EnumObj(event, "${format.encode(dt)} (${_contactList.total()})"));
@@ -259,7 +259,7 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
       var result = await EnumSelectorComponent.show(context, enumList);
       if (result != null) {
         var event = result.value as Event;
-        var _contactList = CustContactList.fromJson(event.tags);
+        var _contactList = ContactList.fromJson(event.tags);
         RouterUtil.router(
             context, RouterPath.USER_HISTORY_CONTACT_LIST, _contactList);
       }

@@ -10,7 +10,7 @@ import 'package:provider/provider.dart';
 import 'package:settings_ui/settings_ui.dart';
 import 'package:yana/models/event_mem_box.dart';
 import 'package:yana/nostr/filter.dart';
-import 'package:yana/nostr/nip02/cust_contact_list.dart';
+import 'package:yana/nostr/nip02/contact_list.dart';
 import 'package:yana/router/index/account_manager_component.dart';
 import 'package:yana/utils/platform_util.dart';
 import 'package:yana/utils/router_util.dart';
@@ -304,7 +304,9 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
                   contactListProvider.contactList!,
                   _settingProvider.followeesRelayMaxCount!, (builtNostr) {
                 reloadingFollowNostr = true;
-                followsNostr!.close();
+                if (followsNostr!=null) {
+                  followsNostr!.close();
+                }
                 followsNostr = builtNostr;
                 // add logged user's configured read relays
                 nostr!
@@ -857,7 +859,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
         nostr!.sendEvent(updateEvent);
 
         // use a blank contact list to update it
-        var blankContactList = CustContactList();
+        var blankContactList = ContactList();
         nostr!.sendContactList(blankContactList);
 
         var filter = Filter(authors: [

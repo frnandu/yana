@@ -5,7 +5,7 @@ import '../nostr/event_kind.dart' as kind;
 import '../nostr/event.dart';
 import '../nostr/filter.dart';
 import '../nostr/nip02/contact.dart';
-import '../nostr/nip02/cust_contact_list.dart';
+import '../nostr/nip02/contact_list.dart';
 import '../nostr/nostr.dart';
 import '../models/event_mem_box.dart';
 import '../main.dart';
@@ -116,7 +116,7 @@ class FollowEventProvider extends ChangeNotifier
 
     ids.add(targetNostr!.publicKey);
     for (Contact contact in contactList) {
-      ids.add(contact.publicKey);
+      ids.add(contact.publicKey!);
       if (ids.length > maxQueryIdsNum) {
         filter.authors = ids;
 
@@ -331,7 +331,7 @@ class FollowEventProvider extends ChangeNotifier
     notifyListeners();
   }
 
-  void metadataUpdatedCallback(CustContactList? _contactList) {
+  void metadataUpdatedCallback(ContactList? _contactList) {
     if (firstLogin ||
         (postsAndRepliesBox.isEmpty() &&
             _contactList != null &&

@@ -81,7 +81,7 @@ class _UserRelayRouter extends State<UserRelayRouter> {
                     addAble: relayMetadata.count == null && relayStatus == null,
                   );
                 }, selector: (context, provider) {
-                  return provider.getRelayStatus(relayMetadata.addr);
+                  return provider.getRelayStatus(relayMetadata.addr!);
                 });
               },
               itemCount: relays!.length,
@@ -130,12 +130,12 @@ class RelayMetadataComponent extends StatelessWidget {
           );
           main;
         }, selector: (context, _provider) {
-          return _provider.getFollowRelayState(relayMetadata.addr);
+          return _provider.getFollowRelayState(relayMetadata.addr!);
         });
     if (addAble) {
       rightBtn = GestureDetector(
         onTap: () async {
-          await relayProvider.addRelay(relayMetadata.addr);
+          await relayProvider.addRelay(relayMetadata.addr!);
         },
         child: const Icon(
           Icons.add,
@@ -195,7 +195,7 @@ class RelayMetadataComponent extends StatelessWidget {
                 children: [
                   Container(
                     margin: const EdgeInsets.only(bottom: 2),
-                    child: Text(relayMetadata.addr),
+                    child: Text(relayMetadata.addr!),
                   ),
                   Row(
                     children: [

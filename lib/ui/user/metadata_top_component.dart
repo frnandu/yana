@@ -5,25 +5,22 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:yana/nostr/nip19/nip19_tlv.dart';
-import 'package:yana/ui/nip05_valid_component.dart';
-import 'package:yana/ui/qrcode_dialog.dart';
-import 'package:yana/ui/webview_router.dart';
-import 'package:yana/ui/zap_gen_dialog.dart';
-import 'package:yana/utils/router_path.dart';
 import 'package:yana/i18n/i18n.dart';
 import 'package:yana/main.dart';
 import 'package:yana/provider/contact_list_provider.dart';
+import 'package:yana/ui/nip05_valid_component.dart';
+import 'package:yana/ui/qrcode_dialog.dart';
+import 'package:yana/ui/zap_gen_dialog.dart';
 import 'package:yana/utils/platform_util.dart';
+import 'package:yana/utils/router_path.dart';
 import 'package:yana/utils/router_util.dart';
 
+import '../../models/metadata.dart';
 import '../../nostr/nip02/contact.dart';
 import '../../nostr/nip19/nip19.dart';
 import '../../nostr/nip57/zap_action.dart';
 import '../../utils/base.dart';
-import '../../models/metadata.dart';
 import '../../utils/string_util.dart';
-import '../confirm_dialog.dart';
 import '../image_preview_dialog.dart';
 
 class MetadataTopComponent extends StatefulWidget {
@@ -289,7 +286,7 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
                 borderColor: mainColor,
                 onTap: () {
                   contactListProvider
-                      .addContact(Contact(publicKey: widget.pubkey));
+                      .addContact(Contact.full(publicKey: widget.pubkey));
                 },
               ));
             } else {
