@@ -1,15 +1,11 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:developer';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
-import 'package:isar/isar.dart';
 import 'package:yana/main.dart';
 import 'package:yana/nostr/relay_info_util.dart';
-import 'package:web_socket_channel/web_socket_channel.dart';
 
-import '../utils/client_connected.dart';
 import '../models/relay_status.dart';
 import 'relay_info.dart';
 import 'subscription.dart';
@@ -78,8 +74,13 @@ class Relay {
   Future<bool> connectSync(Function? onError) async {
     try {
       relayStatus.connecting = true;
-      future = WebSocket.connect(url);
+      future = WebSocket.connect(url).timeout(const Duration(seconds: 3)).onError((error, stackTrace) {
+        relayStatus.connecting = false;
+        print("could not connect to relay $url error:$error");
+        throw Exception();
+      });
       webSocket = await future;
+
       // .onError((error, stackTrace) {
       //   print("Websocket error while connecting $url : $error  ");
       //   // _onError("Websocket error while connecting $url : $error  ", reconnect: false);

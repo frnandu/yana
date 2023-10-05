@@ -153,8 +153,8 @@ class ContactListProvider extends ChangeNotifier {
 
   ContactList? get contactList => _contactList;
 
-  Iterable<Contact> list() {
-    return _contactList!.list();
+  List<Contact>? list() {
+    return _contactList!.contacts;
   }
 
   Contact? getContact(String pubKey) {

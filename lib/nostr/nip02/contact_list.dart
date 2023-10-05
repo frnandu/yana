@@ -34,7 +34,6 @@ class ContactList {
         followedCommunitys = [],
         followedEvents = [];
 
-
   static Future<ContactList?> loadFromDB(String pubKey) async {
     ContactList? list = cached[pubKey];
     list ??= await DB
@@ -50,11 +49,14 @@ class ContactList {
     cached.putIfAbsent(list.pub_key!, () => list);
     if (nostr != null && nostr!.publicKey == list.pub_key! ||
         contactListProvider.getContact(list.pub_key!) != null) {
-      if (list.contacts!.isEmpty && list.followedCommunitys.isEmpty && list.followedTags.isEmpty && list.followedEvents.isEmpty) {
+      if (list.contacts!.isEmpty &&
+          list.followedCommunitys.isEmpty &&
+          list.followedTags.isEmpty &&
+          list.followedEvents.isEmpty) {
         return 0;
       }
       return await DB.getIsar().writeTxn(() async {
-        return await DB.getIsar().contactLists.putByIndex("pub_key",list);
+        return await DB.getIsar().contactLists.putByIndex("pub_key", list);
       });
 
       // db = await DB.getDB(db);
@@ -63,7 +65,6 @@ class ContactList {
     }
     return 0;
   }
-
 
   static ContactList fromJson(List<dynamic> tags) {
     ContactList list = ContactList();
@@ -101,8 +102,8 @@ class ContactList {
     return list;
   }
 
-  ContactList._(this._contacts, this.followedTags,
-      this.followedCommunitys, this.followedEvents);
+  ContactList._(this._contacts, this.followedTags, this.followedCommunitys,
+      this.followedEvents);
 
   List<dynamic> toJson() {
     List<dynamic> result = [];
@@ -127,18 +128,19 @@ class ContactList {
   }
 
   Contact? getContact(String publicKey) {
-    if (_contacts==null || _contacts.isEmpty) {
-      if (contacts!=null && contacts!.isNotEmpty) {
+    if (_contacts == null || _contacts.isEmpty) {
+      if (contacts != null && contacts!.isNotEmpty) {
         for (Contact contact in contacts!) {
           _contacts[contact.publicKey!] = contact;
-        }}
+        }
+      }
     }
     return _contacts[publicKey];
   }
 
   Contact? remove(String publicKey) {
     Contact? c = _contacts[publicKey];
-    if (c!=null && contacts!=null) {
+    if (c != null && contacts != null) {
       contacts!.remove(c);
     }
     return _contacts.remove(publicKey);
@@ -208,36 +210,36 @@ class ContactList {
     return followedEvents;
   }
 
-  // static CustContactList? fromDB(List<Map<String, Object?>> fromDB) {
-  //   Map<String, Contact> _contacts = {};
-  //   Map<String, int> _followedCommunitys = {};
-  //   Map<String, int> _followedTags = {};
-  //   Map<String, int> _followedEvents = {};
-  //   fromDB.forEach((map) {
-  //     Object? object = map['contact'];
-  //     if (object != null && object is String) {
-  //       String contact = object.toString();
-  //       if (map['petname'] == Contact.PETNAME_TAG) {
-  //         _followedTags[contact] = 1;
-  //       } else if (map['petname'] == Contact.PETNAME_COMMUNITY) {
-  //         _followedCommunitys[contact] = 1;
-  //       } else if (map['petname'] == Contact.PETNAME_EVENT) {
-  //         _followedEvents[contact] = 1;
-  //       } else {
-  //         String url = (map['relay'] ?? '').toString();
-  //         if (url == 'null') {
-  //           url = '';
-  //         }
-  //         try {
-  //           _contacts[contact] = Contact.full(
-  //               publicKey: contact, url: url, petname: "${map['petname']}");
-  //         } catch (e) {
-  //           print(e);
-  //         }
-  //       }
-  //     }
-  //   });
-  //   return CustContactList._(
-  //       _contacts, _followedTags, _followedCommunitys, _followedEvents);
-  // }
+// static CustContactList? fromDB(List<Map<String, Object?>> fromDB) {
+//   Map<String, Contact> _contacts = {};
+//   Map<String, int> _followedCommunitys = {};
+//   Map<String, int> _followedTags = {};
+//   Map<String, int> _followedEvents = {};
+//   fromDB.forEach((map) {
+//     Object? object = map['contact'];
+//     if (object != null && object is String) {
+//       String contact = object.toString();
+//       if (map['petname'] == Contact.PETNAME_TAG) {
+//         _followedTags[contact] = 1;
+//       } else if (map['petname'] == Contact.PETNAME_COMMUNITY) {
+//         _followedCommunitys[contact] = 1;
+//       } else if (map['petname'] == Contact.PETNAME_EVENT) {
+//         _followedEvents[contact] = 1;
+//       } else {
+//         String url = (map['relay'] ?? '').toString();
+//         if (url == 'null') {
+//           url = '';
+//         }
+//         try {
+//           _contacts[contact] = Contact.full(
+//               publicKey: contact, url: url, petname: "${map['petname']}");
+//         } catch (e) {
+//           print(e);
+//         }
+//       }
+//     }
+//   });
+//   return CustContactList._(
+//       _contacts, _followedTags, _followedCommunitys, _followedEvents);
+// }
 }

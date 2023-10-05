@@ -72,10 +72,9 @@ class RelayList {
   // }
 
   static Future<int> put(
-      String pubKey, List<RelayMetadata> list, int updated_at,
-      {DatabaseExecutor? db}) async {
+      String pubKey, List<RelayMetadata> list, int updated_at, {bool forceWrite = false}) async {
     cached.putIfAbsent(pubKey, () => list);
-    if (nostr != null && nostr!.publicKey == pubKey ||
+    if (forceWrite || nostr != null && nostr!.publicKey == pubKey ||
         contactListProvider.getContact(pubKey) != null) {
       RelayList? relayList = await DB
           .getIsar()

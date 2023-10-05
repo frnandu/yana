@@ -285,6 +285,7 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
               this.relays = relays;
               relaysNum = relays.length;
             });
+            relayProvider.initStaticForRelaysAndMetadataNostr(widget.pubkey);
             onFollowedTap();
             onZapTap();
           }

@@ -1,14 +1,13 @@
-import 'package:bot_toast/bot_toast.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 
-import '../nostr/event_kind.dart' as kind;
+import '../main.dart';
+import '../models/event_mem_box.dart';
 import '../nostr/event.dart';
+import '../nostr/event_kind.dart' as kind;
 import '../nostr/filter.dart';
 import '../nostr/nip02/contact.dart';
 import '../nostr/nip02/contact_list.dart';
 import '../nostr/nostr.dart';
-import '../models/event_mem_box.dart';
-import '../main.dart';
 import '../router/tag/topic_map.dart';
 import '../utils/find_event_interface.dart';
 import '../utils/peddingevents_later_function.dart';
@@ -102,9 +101,15 @@ class FollowEventProvider extends ChangeNotifier
     doUnscribe(targetNostr!);
 
     List<String> subscribeIds = [];
-    Iterable<Contact> contactList = contactListProvider.list();
+    List<Contact>? contactList = contactListProvider.list();
 
-    var contactListLength = contactList.length;
+    if (contactList==null) {
+      if (kDebugMode) {
+        print("CONTACT LIST empty, can not get follow content");
+      }
+      return;
+    }
+    var contactListLength = contactList!.length;
     List<String> ids = [];
     // timeline pull my events too.
     int maxQueryIdsNum = 400;

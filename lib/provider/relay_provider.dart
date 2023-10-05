@@ -3,7 +3,6 @@ import 'dart:developer';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:yana/models/contacts_db.dart';
 import 'package:yana/models/relay_list.dart';
 import 'package:yana/nostr/nip02/contact_list.dart';
 import 'package:yana/nostr/relay_metadata.dart';
@@ -16,7 +15,6 @@ import '../nostr/event_kind.dart' as kind;
 import '../nostr/filter.dart';
 import '../nostr/nostr.dart';
 import '../nostr/relay.dart';
-import '../utils/client_connected.dart';
 import '../utils/string_util.dart';
 import 'data_util.dart';
 
@@ -41,14 +39,12 @@ class RelayProvider extends ChangeNotifier {
   Map<String, RelayStatus> relayStatusMap = {};
 
   static RelayProvider getInstance() {
-    if (_relayProvider == null) {
-      _relayProvider = RelayProvider();
-    }
+    _relayProvider ??= RelayProvider();
     return _relayProvider!;
   }
 
   Future<void> getRelays(
-      String pubKey, Function(List<RelayMetadata>) onRelays) async {
+      String pubKey, Function(List<RelayMetadata>) onRelays, {bool forceWriteToDB = false}) async {
     final startTime = DateTime.now();
     List<RelayMetadata>? relays = await RelayList.get(pubKey);
     final endTime = DateTime.now();
@@ -56,7 +52,7 @@ class RelayProvider extends ChangeNotifier {
     print("LOADING RELAYS FROM DB for $pubKey took:${duration.inMilliseconds} ms");
     bool loaded = false;
     if (relays == null || relays.isEmpty) {
-      loadRelayAndContactList(pubKey, onRelays: (relays) {
+      await loadRelayAndContactList(pubKey, forceWriteToDB: forceWriteToDB, onRelays: (relays) {
         loaded = true;
         onRelays(relays);
       });
@@ -82,7 +78,7 @@ class RelayProvider extends ChangeNotifier {
     print("LOADING CONTACTS FROM DB for $pubKey took:${duration.inMilliseconds} ms");
     bool loaded = false;
     if (contactList == null) {
-      loadRelayAndContactList(pubKey, onContacts: (list) {
+      await loadRelayAndContactList(pubKey, onContacts: (list) {
         loaded = true;
         onContacts(list);
       });
@@ -90,7 +86,8 @@ class RelayProvider extends ChangeNotifier {
         const Duration(seconds: 10),
         () {
           if (!loaded) {
-            onContacts(ContactList());
+            print("DID NOT LOAD CONTACTS in 10 seconds!!!!!!!!!!!!!!!!!!!!");
+            // onContacts(ContactList());
           }
         },
       );
@@ -101,21 +98,25 @@ class RelayProvider extends ChangeNotifier {
 
   Future<void> loadRelays(String? pubKey, Function onComplete) async {
     print("Loading relays for logged user...");
+    bool loading = false;
     if (pubKey != null) {
-      await relayProvider.getRelays(pubKey, (relays) {
-        relayAddrs.clear();
-        if (relays != null) {
-          relayAddrs.addAll(relays.map(
-            (e) => e.addr!,
-          ));
-        }
+      await relayProvider.getRelays(pubKey, forceWriteToDB: true, (relays) async {
+        if (!loading) {
+          loading=true;
+          relayAddrs.clear();
+          if (relays != null) {
+            relayAddrs.addAll(relays.map(
+                  (e) => e.addr!,
+            ));
+          }
 
-        if (relayAddrs.isEmpty) {
-          // init relays
-          relayAddrs = List<String>.from(STATIC_RELAY_ADDRS);
+          if (relayAddrs.isEmpty) {
+            // init relays
+            relayAddrs = List<String>.from(STATIC_RELAY_ADDRS);
+          }
+          print("Loaded ${relays.length} relays for logged user...");
+          onComplete();
         }
-        print("Loaded ${relays.length} relays for logged user...");
-        onComplete();
       });
     }
   }
@@ -218,26 +219,37 @@ class RelayProvider extends ChangeNotifier {
   }
 
   Future<Object> addRelays(Nostr nostr) async {
+    List<Future<bool>> futures = [];
     for (var relayAddr in relayAddrs) {
       // log("begin to init $relayAddr");
+      print("addRelays going for genRelay($relayAddr)....");
       var custRelay = genRelay(relayAddr);
       try {
-        await nostr.addRelay(custRelay, init: true);
+        print("addRelays going for addRelay($relayAddr)....");
+        futures.add(nostr.addRelay(custRelay, init: false, checkInfo: false));
       } catch (e) {
         log("relay $relayAddr add to pool error ${e.toString()}");
       }
     }
+    final startTime = DateTime.now();
+    await Future.wait(futures).onError((error, stackTrace) => List.of([]));
+    final endTime = DateTime.now();
+    final duration = endTime.difference(startTime);
+    print("addRelays for ${relayAddrs.length} parallel Future.wait(futures) took:${duration.inMilliseconds} ms");
     return Object();
   }
 
   Future<Nostr> genNostr({String? privateKey, String? publicKey}) async {
     var loggedUserNostr = Nostr(privateKey: privateKey, publicKey: publicKey);
-
+    print("getNostr going for addRelays....");
     await addRelays(loggedUserNostr);
 
+    print("getNostr going for getContacts....");
     await getContacts(loggedUserNostr.publicKey, (contactList) async {
+      print("getNostr GOT ${contactList.contacts!.length} contacts....");
       contactListProvider.set(contactList);
       if (settingProvider.gossip == 1) {
+        print("getNostr going for buildNostrFromContactsRelays....");
         await buildNostrFromContactsRelays(
           loggedUserNostr.publicKey,
           contactList,
@@ -253,10 +265,15 @@ class RelayProvider extends ChangeNotifier {
                   .forEach((relay) {
                 followsNostr!.addRelay(relay, connect: true);
               });
+              print("getNostr going for followEventProvider.doQuery() with followNostr SET....");
               followEventProvider.doQuery();
             }
           },
         );
+      } else {
+        print("getNostr going for followEventProvider.doQuery() with nostr....");
+        nostr = loggedUserNostr;
+        followEventProvider.doQuery();
       }
     });
     // add initQuery
@@ -399,18 +416,18 @@ class RelayProvider extends ChangeNotifier {
     }
   }
 
-  void checkAndReconnect() {
-    // reconnect all client
-    for (var relayAddr in relayAddrs) {
-      var custRelay = genRelay(relayAddr);
-      try {
-        nostr!.addRelay(custRelay, autoSubscribe: true);
-      } catch (e) {
-        log("relay $relayAddr add to pool error ${e.toString()}");
-      }
-    }
-  }
-
+  // void checkAndReconnect() {
+  //   // reconnect all client
+  //   for (var relayAddr in relayAddrs) {
+  //     var custRelay = genRelay(relayAddr);
+  //     try {
+  //       nostr!.addRelay(custRelay, autoSubscribe: true);
+  //     } catch (e) {
+  //       log("relay $relayAddr add to pool error ${e.toString()}");
+  //     }
+  //   }
+  // }
+  //
   void clear() {
     // sharedPreferences.remove(DataKey.RELAY_LIST);
     relayStatusMap.clear();
@@ -421,16 +438,15 @@ class RelayProvider extends ChangeNotifier {
     //load();
   }
 
-  void loadRelayAndContactList(String pubKey,
-      {Function(List<RelayMetadata>)? onRelays,
-      Function(ContactList)? onContacts}) {
-    if (staticForRelaysAndMetadataNostr == null) {
+
+  Future<void> initStaticForRelaysAndMetadataNostr(String pubKey) async {
+    // if (staticForRelaysAndMetadataNostr == null) {
       Set<String> uniqueRelays =
-          Set<String>.from(RelayProvider.STATIC_RELAY_ADDRS);
+      Set<String>.from(RelayProvider.STATIC_RELAY_ADDRS);
       uniqueRelays.addAll(relayProvider.relayAddrs);
       staticForRelaysAndMetadataNostr = Nostr(publicKey: pubKey);
 
-      uniqueRelays.forEach((relayAddr) async {
+      for(String relayAddr in uniqueRelays) {
         Relay r = Relay(
           relayAddr,
           RelayStatus(relayAddr),
@@ -441,9 +457,14 @@ class RelayProvider extends ChangeNotifier {
         } catch (e) {
           log("relay $relayAddr add to temp nostr for getting nip065 relay list: ${e.toString()}");
         }
-      });
-    }
+      }
+    // }
+  }
 
+  Future<void> loadRelayAndContactList(String pubKey,
+      {Function(List<RelayMetadata>)? onRelays,
+      Function(ContactList)? onContacts, bool forceWriteToDB = false}) async {
+    await initStaticForRelaysAndMetadataNostr(pubKey);
     Event? relaysEvent;
     Event? contactsEvent;
     var filter = Filter(
@@ -456,7 +477,7 @@ class RelayProvider extends ChangeNotifier {
     print("loading from staticForRelaysAndMetadataNostr: $staticForRelaysAndMetadataNostr, contacts and relays for $pubKey");
     List<Future> futures = staticForRelaysAndMetadataNostr!.allRelays().map((e) => e.future!,).toList();
 
-    Future.wait(futures).then((sockets) {
+    await Future.wait(futures).then((sockets) {
       staticForRelaysAndMetadataNostr!
           .query(id: StringUtil.rndNameStr(16), [filter.toJson()], (event) async {
         print("RECEIVED event kind ${event.kind} going to process, staticForRelaysAndMetadataNostr: $staticForRelaysAndMetadataNostr");
@@ -514,7 +535,7 @@ class RelayProvider extends ChangeNotifier {
           }
           if (relays != null && relays.isNotEmpty) {
             try {
-              await RelayList.put(pubKey, relays, relaysEvent!.createdAt);
+              await RelayList.put(pubKey, relays, relaysEvent!.createdAt, forceWrite: forceWriteToDB);
             } catch (e) {
               print(e);
             }

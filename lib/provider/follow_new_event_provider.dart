@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../nostr/event.dart';
@@ -41,7 +42,14 @@ class FollowNewEventProvider extends ChangeNotifier
         since: _localSince! + 1, kinds: followEventProvider.queryEventKinds());
 
     List<String> subscribeIds = [];
-    Iterable<Contact> contactList = contactListProvider.list();
+    List<Contact>? contactList = contactListProvider.list();
+    if (contactList==null) {
+      if (kDebugMode) {
+        print("CONTACT LIST empty, can not get follow content");
+      }
+      return;
+    }
+
     List<String> ids = [];
     for (Contact contact in contactList) {
       ids.add(contact.publicKey!);

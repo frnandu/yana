@@ -192,7 +192,7 @@ class _UserRouter extends CustState<UserRouter>
               SliverToBoxAdapter(
                 child: SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
-                  child: UserStatisticsComponent(
+                  child: userNostr!=null ? UserStatisticsComponent(
                     pubkey: pubkey!,
                     userNostr: userNostr,
                     onContactListLoaded: (contactList) {
@@ -204,7 +204,7 @@ class _UserRouter extends CustState<UserRouter>
                         });
                       }
                     },
-                  ),
+                  ) : Container(),
                 ),
               ),
             ];
@@ -253,29 +253,36 @@ class _UserRouter extends CustState<UserRouter>
   Future<void> onReady(BuildContext context) async {
     await relayProvider.getRelays(pubkey!, (relays) {
       if (userNostr == null) {
-        // use relays for user where he/she writes
-        Set<String> uniqueRelays = Set<String>.from(
-            relays.where((element) => element.write!=null && element.write!).map((e) => e.addr));
-        userNostr =
-            Nostr(privateKey: nostr!.privateKey, publicKey: nostr!.publicKey);
+        if (pubkey != nostr!.publicKey) {
+          // use relays for user where he/she writes
+          Set<String> uniqueRelays = Set<String>.from(relays
+              .where((element) => element.write != null && element.write!)
+              .map((e) => e.addr));
+          userNostr =
+              Nostr(privateKey: nostr!.privateKey, publicKey: nostr!.publicKey);
 
-        uniqueRelays.forEach((adr) async {
-          String? relayAddr = Relay.clean(adr);
-          if (relayAddr==null) {
-            return;
-          }
+          uniqueRelays.forEach((adr) async {
+            String? relayAddr = Relay.clean(adr);
+            if (relayAddr == null) {
+              return;
+            }
 
-          Relay r = Relay(
-            relayAddr,
-            RelayStatus(relayAddr),
-            access: WriteAccess.readWrite,
-          );
-          try {
-            await userNostr!.addRelay(r, checkInfo: false, connect: true);
-          } catch (e) {
-            log("relay $relayAddr add to temp nostr for broadcasting of nip065 relay list: ${e.toString()}");
-          }
-        });
+            Relay r = Relay(
+              relayAddr,
+              RelayStatus(relayAddr),
+              access: WriteAccess.readWrite,
+            );
+            try {
+              await userNostr!.addRelay(r, checkInfo: false, connect: true);
+            } catch (e) {
+              log(
+                  "relay $relayAddr add to temp nostr for broadcasting of nip065 relay list: ${e
+                      .toString()}");
+            }
+          });
+        } else {
+          userNostr = nostr;
+        }
       }
       setState(() {
         this.relays = relays;
@@ -306,7 +313,7 @@ class _UserRouter extends CustState<UserRouter>
     super.dispose();
     disposeLater();
 
-    if (userNostr != null)  {
+    if (userNostr != null) {
       if (StringUtil.isNotBlank(subscribeId)) {
         try {
           userNostr!.unsubscribe(subscribeId!);
@@ -319,7 +326,7 @@ class _UserRouter extends CustState<UserRouter>
   }
 
   void unSubscribe() {
-    if (userNostr!=null) {
+    if (userNostr != null) {
       userNostr!.unsubscribe(subscribeId!);
     }
     subscribeId = null;
