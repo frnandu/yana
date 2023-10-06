@@ -80,6 +80,7 @@ class Relay {
         throw Exception();
       });
       webSocket = await future;
+      relayStatus.connecting = false;
 
       // .onError((error, stackTrace) {
       //   print("Websocket error while connecting $url : $error  ");
@@ -93,6 +94,7 @@ class Relay {
           onMessage!.call(this, json);
         }
       }, onError: (error) async {
+        relayStatus.connecting = false;
         _onError("Websocket error $url", reconnect: false);
         if (onError != null) {
           onError();

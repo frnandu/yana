@@ -1,6 +1,7 @@
 import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:yana/utils/platform_util.dart';
 
@@ -23,7 +24,8 @@ class LoginRouter extends StatefulWidget {
   }
 
   @Deprecated("use new method")
-  static Future<void> handleRemoteRelays(Event? remoteRelayEvent, String privKey) async {
+  static Future<void> handleRemoteRelays(
+      Event? remoteRelayEvent, String privKey) async {
     var relaysUpdatedTime = relayProvider.updatedTime();
     if (remoteRelayEvent != null &&
         (relaysUpdatedTime == null ||
@@ -77,8 +79,12 @@ class _LoginRouter extends State<LoginRouter>
     );
 
     // var logoWidget = SvgPicture.asset(
-    //     "assets/imgs/logo/logo-name.svg",
-    //   colorFilter: ColorFilter.mode(Colors.red, BlendMode.srcIn),
+    //   width: 200,
+    //   height: 200,
+    //   "assets/imgs/logo/logo-name.svg",
+    //  color: Color.fromARGB(255, 75, 75, 75),
+    //   //
+    //   // colorFilter: ColorFilter.mode(Colors.red, BlendMode.srcIn),
     // );
 
     // var logoWidget =  Stack(children: [
@@ -229,8 +235,7 @@ class _LoginRouter extends State<LoginRouter>
           cursor: SystemMouseCursors.click,
           child: GestureDetector(
               onTap: () {
-                var url = Uri.parse(
-                    "https://github.com/frnandu/yana/releases");
+                var url = Uri.parse("https://github.com/frnandu/yana/releases");
                 launchUrl(url, mode: LaunchMode.externalApplication);
               },
               child: github)));
@@ -258,7 +263,7 @@ class _LoginRouter extends State<LoginRouter>
       // }, child: f_droid)));
     }
     return Scaffold(
-      backgroundColor: const Color(0xff281237) ,
+      backgroundColor: const Color(0xff281237),
       body: SizedBox(
         width: double.maxFinite,
         height: double.maxFinite,
@@ -304,7 +309,7 @@ class _LoginRouter extends State<LoginRouter>
     );
   }
 
-  Future<void> doLogin(String key,bool pubOnly, bool newKey) async {
+  Future<void> doLogin(String key, bool pubOnly, bool newKey) async {
     if (StringUtil.isBlank(key)) {
       BotToast.showText(text: I18n.of(context).Private_key_is_null);
       return;
@@ -319,12 +324,13 @@ class _LoginRouter extends State<LoginRouter>
       await settingProvider.addAndChangeKey(key, !isPublic, updateUI: false);
       if (!newKey) {
         var alreadyClosed = false;
-        await relayProvider.getRelays(isPublic?key: getPublicKey(key), (relays) async {
+        await relayProvider.getRelays(isPublic ? key : getPublicKey(key),
+            (relays) async {
           alreadyClosed = true;
-          await relayProvider.setRelayListAndUpdate(relays.map((e) => e.addr!).toList(), null);
+          await relayProvider.setRelayListAndUpdate(
+              relays.map((e) => e.addr!).toList(), null);
           getNostrAndClose(false, key, !isPublic);
-        }
-        );
+        });
         Future.delayed(const Duration(seconds: 20), () {
           getNostrAndClose(alreadyClosed, key, !isPublic);
         });
@@ -339,7 +345,9 @@ class _LoginRouter extends State<LoginRouter>
 
   void getNostrAndClose(bool alreadyClosed, String key, bool isPrivate) async {
     if (!alreadyClosed) {
-      nostr = await relayProvider.genNostr(privateKey: isPrivate? key: null, publicKey: isPrivate?null:key);
+      nostr = await relayProvider.genNostr(
+          privateKey: isPrivate ? key : null,
+          publicKey: isPrivate ? null : key);
       Navigator.of(context, rootNavigator: true).pop();
       settingProvider.notifyListeners();
 

@@ -20,7 +20,7 @@ class ContentStrLinkComponent extends StatelessWidget {
         this.onTap();
       },
       child: Container(
-        margin: const EdgeInsets.only(top: 3, right:3),
+        margin: const EdgeInsets.only(top: 3, right:3, left:3),
         child: Text(
           StringUtil.breakWord(str),
           style: TextStyle(

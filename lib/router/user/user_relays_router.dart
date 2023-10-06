@@ -46,9 +46,10 @@ class _UserRelayRouter extends State<UserRelayRouter>
         relays = arg;
       }
     }
-    relays!.sort(
-      (r1, r2) => compareRelays(r1,r2));
-
+    if (followsNostr!=null) {
+      relays!.sort(
+              (r1, r2) => compareRelays(r1, r2));
+    }
     return Scaffold(
       appBar: AppBar(
         leading: GestureDetector(
@@ -137,28 +138,6 @@ class RelayMetadataComponent extends StatelessWidget {
     Widget leftBtn = Container();
 
     Widget rightBtn = Container();
-    leftBtn = Selector<RelayProvider, int?>(builder: (context, state, client) {
-      Color borderLeftColor = Colors.red;
-      if (state != null && state == WebSocket.open) {
-        borderLeftColor = Colors.green;
-      } else if (state != null && state == WebSocket.connecting) {
-        borderLeftColor = Colors.yellow;
-      }
-      return Container(
-        padding: const EdgeInsets.only(
-          left: Base.BASE_PADDING_HALF / 2,
-          right: Base.BASE_PADDING_HALF,
-        ),
-        height: 30,
-        child: Icon(
-          Icons.lan,
-          color: borderLeftColor,
-        ),
-      );
-      main;
-    }, selector: (context, _provider) {
-      return _provider.getFollowRelayState(relayMetadata.addr!);
-    });
     if (addAble) {
       rightBtn = GestureDetector(
         onTap: () async {
@@ -170,6 +149,28 @@ class RelayMetadataComponent extends StatelessWidget {
       );
     } else {
       if (relayMetadata.count != null) {
+        leftBtn = Selector<RelayProvider, int?>(builder: (context, state, client) {
+          Color borderLeftColor = Colors.red;
+          if (state != null && state == WebSocket.open) {
+            borderLeftColor = Colors.green;
+          } else if (state != null && state == WebSocket.connecting) {
+            borderLeftColor = Colors.yellow;
+          }
+          return Container(
+            padding: const EdgeInsets.only(
+              left: Base.BASE_PADDING_HALF / 2,
+              right: Base.BASE_PADDING_HALF,
+            ),
+            height: 30,
+            child: Icon(
+              Icons.lan,
+              color: borderLeftColor,
+            ),
+          );
+          main;
+        }, selector: (context, _provider) {
+          return _provider.getFollowRelayState(relayMetadata.addr!);
+        });
         rightBtn = Row(children: [
           Text("${relayMetadata.count} ",
               style: TextStyle(
