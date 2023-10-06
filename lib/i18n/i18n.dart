@@ -1141,8 +1141,8 @@ class I18n {
   /// `Posts`
   String get Posts {
     return Intl.message(
-      'Posts',
-      name: 'Posts',
+      'Feed',
+      name: 'Feed',
       desc: '',
       args: [],
     );

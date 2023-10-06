@@ -285,7 +285,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
         },
         initialValue: settingProvider.gossip == OpenStatus.OPEN,
         leading: const Icon(Icons.grain),
-        title: Text("Use your follow's relays (outbox)")));
+        title: Text("Use following outbox relays for Feed")));
 
     if (settingProvider.gossip == 1) {
       networkTiles.add(SettingsTile.navigation(
@@ -298,7 +298,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
               rebuildFollowsNostr();
             }
           },
-          title: const Text("Minimal amount of relays per follow")));
+          title: const Text("Minimal amount of relays per following")));
 
       networkTiles.add(
         SettingsTile.navigation(
@@ -315,7 +315,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
               }
             },
             leading: Text(
-              "Connected / Total relays from follows",
+              "Connected / Total relays from following",
               style: TextStyle(color: themeData.disabledColor),
             ),
             trailing: loadingGossipRelays

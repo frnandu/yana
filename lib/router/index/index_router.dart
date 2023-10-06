@@ -157,7 +157,7 @@ class _IndexRouter extends CustState<IndexRouter>
             child: Selector<FollowNewEventProvider, EventMemBox>(
               builder: (context, eventMemBox, child) {
                 Text text = Text(
-                  s.Posts,
+                  s.Feed,
                   style: titleTextStyle,
                 );
                 if (eventMemBox.length() <= 0) {
