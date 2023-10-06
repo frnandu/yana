@@ -43,25 +43,50 @@ class RelayProvider extends ChangeNotifier {
     return _relayProvider!;
   }
 
-  Future<void> getRelays(
-      String pubKey, Function(List<RelayMetadata>) onRelays, {bool forceWriteToDB = false}) async {
+  Future<void> getRelays(String pubKey, Function(List<RelayMetadata>) onRelays,
+      {bool forceWriteToDB = false, int? timeoutSeconds}) async {
     List<RelayMetadata>? relays = await RelayList.loadFromDB(pubKey);
+    bool loaded = false;
     if (relays == null || relays.isEmpty) {
-      await loadRelayAndContactList(pubKey, forceWriteToDB: forceWriteToDB, onRelays: (relays) {
-        onRelays(relays);
+      await loadRelayAndContactList(pubKey, forceWriteToDB: forceWriteToDB,
+          onRelays: (relays) {
+        if (!loaded) {
+          loaded = true;
+          onRelays(relays);
+        }
       });
+      if (timeoutSeconds != null) {
+        Future.delayed(Duration(seconds: timeoutSeconds), () {
+          if (!loaded) {
+            loaded = true;
+            onRelays([]);
+          }
+        });
+      }
     } else {
       onRelays(relays);
     }
   }
 
-  Future<void> getContacts(
-      String pubKey, Function(ContactList) onContacts) async {
+  Future<void> getContacts(String pubKey, Function(ContactList) onContacts,
+      {int? timeoutSeconds}) async {
     ContactList? contactList = await ContactList.loadFromDB(pubKey);
+    bool loaded = false;
     if (contactList == null) {
       await loadRelayAndContactList(pubKey, onContacts: (list) {
-        onContacts(list);
+        if (!loaded) {
+          loaded = true;
+          onContacts(list);
+        }
       });
+      if (timeoutSeconds != null) {
+        Future.delayed(Duration(seconds: timeoutSeconds), () {
+          if (!loaded) {
+            loaded = true;
+            onContacts(ContactList());
+          }
+        });
+      }
     } else {
       onContacts(contactList);
     }
@@ -71,13 +96,14 @@ class RelayProvider extends ChangeNotifier {
     print("Loading relays for logged user...");
     bool loading = false;
     if (pubKey != null) {
-      await relayProvider.getRelays(pubKey, forceWriteToDB: true, (relays) async {
+      await relayProvider.getRelays(pubKey, forceWriteToDB: true,
+          (relays) async {
         if (!loading) {
-          loading=true;
+          loading = true;
           relayAddrs.clear();
           if (relays != null) {
             relayAddrs.addAll(relays.map(
-                  (e) => e.addr!,
+              (e) => e.addr!,
             ));
           }
 
@@ -92,62 +118,79 @@ class RelayProvider extends ChangeNotifier {
     }
   }
 
+  bool loadingGossipRelays = false;
+
   Future<void> buildNostrFromContactsRelays(
       String pubKey,
       ContactList contactList,
       int takeCountForEachContact,
       Function(Nostr) onComplete) async {
-    // Nostr nostr = Nostr(privateKey: null, publicKey: pubKey);
-    // int i = 0;
-    // Map<String, int> followRelaysMap = {};
-    // contactList.list().forEach((contact) async {
-    //   await relayProvider.getRelays(contact.publicKey!, (relays) {
-    //     relays
-    //         .where((element) =>
-    //             (element.write == null || element.write!) && element.isValidWss)
-    //         .map((e) => e.addr)
-    //         .take(takeCountForEachContact)
-    //         .forEach((r) {
-    //       String? adr = Relay.clean(r!);
-    //       if (adr == null) {
-    //         return;
-    //       }
-    //       int? count = followRelaysMap![adr];
-    //       if (count == null) {
-    //         count = 1;
-    //       } else {
-    //         count++;
-    //       }
-    //       followRelaysMap![adr] = count;
-    //       nostr!.addRelay(
-    //           Relay(
-    //             adr,
-    //             RelayStatus(adr),
-    //             access: WriteAccess.readWrite,
-    //           ),
-    //           connect: true,
-    //           checkInfo: false);
-    //     });
-    //     i++;
-    //     print(
-    //         "Loaded ${relays.length} relays for contact ${contact.publicKey} $i/${contactList.list().length}");
-    //     if (i == contactList.total()) {
-    //       List<MapEntry<String, int>> sortedEntries =
-    //           followRelaysMap!.entries.toList();
-    //
-    //       sortedEntries.sort((a, b) => b.value.compareTo(a.value));
-    //
-    //       followRelays = [];
-    //       // Now, sortedEntries contains your Map entries sorted by values in descending order.
-    //
-    //       for (var entry in sortedEntries) {
-    //         followRelays!
-    //             .add(RelayMetadata.full(addr: entry.key, count: entry.value));
-    //       }
-    //       onComplete(nostr);
-    //     }
-    //   });
-    // });
+    int i = 0;
+    Map<String, Set<String>> followRelaysMap = {};
+    contactList.list().forEach((contact) async {
+      await relayProvider
+          .getRelays(timeoutSeconds: 3, contact.publicKey!, (relays) {
+            relays
+                .where((element) =>
+                    (element.write == null || element.write!) &&
+                    element.isValidWss)
+                .map((e) => e.addr)
+                // .take(takeCountForEachContact)
+                .forEach((r) {
+              String? adr = Relay.clean(r!);
+              if (adr == null) {
+                return;
+              }
+              ;
+              if (followRelaysMap[adr] == null) {
+                followRelaysMap[adr] = {};
+              }
+              followRelaysMap[adr]!.add(contact.publicKey!);
+            });
+            i++;
+            print(
+                "Loaded ${relays.length} relays for contact ${contact.publicKey} $i/${contactList.list().length}");
+            if (i == contactList.total()) {
+              onComplete(createNostrFromFollowRelaysMap(pubKey, followRelaysMap));
+            }
+          })
+          .timeout(const Duration(seconds: 10))
+          .onError((error, stackTrace) {
+            i++;
+            print(
+                "Couldn't get relays for ${contact.publicKey!} in 3 seconds....");
+            if (i == contactList.total()) {
+              onComplete(createNostrFromFollowRelaysMap(pubKey, followRelaysMap));
+            }
+          });
+    });
+  }
+
+  Nostr createNostrFromFollowRelaysMap(String pubKey, Map<String, Set<String>> followRelaysMap) {
+    Nostr nostr = Nostr(privateKey: null, publicKey: pubKey);
+    // TODO
+    // nostr!.addRelay(
+    //     Relay(
+    //       adr,
+    //       RelayStatus(adr),
+    //       access: WriteAccess.readWrite,
+    //     ),
+    //     connect: true,
+    //     checkInfo: false);
+
+    List<MapEntry<String, Set<String>>> sortedEntries =
+        followRelaysMap!.entries.toList();
+
+    sortedEntries.sort((a, b) => b.value.length.compareTo(a.value.length));
+
+    followRelays = [];
+    // Now, sortedEntries contains your Map entries sorted by values in descending order.
+
+    for (var entry in sortedEntries) {
+      followRelays!
+          .add(RelayMetadata.full(addr: entry.key, count: entry.value.length));
+    }
+    return nostr;
   }
 
   RelayStatus? getRelayStatus(String addr) {
@@ -196,7 +239,7 @@ class RelayProvider extends ChangeNotifier {
       var custRelay = genRelay(relayAddr);
       try {
         print("addRelays going for addRelay($relayAddr)....");
-        futures.add(nostr.addRelay(custRelay, init: false, checkInfo: false));
+        futures.add(nostr.addRelay(custRelay, init: false, checkInfo: true));
       } catch (e) {
         log("relay $relayAddr add to pool error ${e.toString()}");
       }
@@ -205,7 +248,8 @@ class RelayProvider extends ChangeNotifier {
     await Future.wait(futures).onError((error, stackTrace) => List.of([]));
     final endTime = DateTime.now();
     final duration = endTime.difference(startTime);
-    print("addRelays for ${relayAddrs.length} parallel Future.wait(futures) took:${duration.inMilliseconds} ms");
+    print(
+        "addRelays for ${relayAddrs.length} parallel Future.wait(futures) took:${duration.inMilliseconds} ms");
     return Object();
   }
 
@@ -229,19 +273,21 @@ class RelayProvider extends ChangeNotifier {
             if (followsNostr == null) {
               followsNostr = builtNostr;
               // add logged user's configured read relays
-              loggedUserNostr!
-                  .activeRelays()
-                  .where((relay) => relay.access != WriteAccess.writeOnly)
-                  .forEach((relay) {
-                followsNostr!.addRelay(relay, connect: true);
-              });
-              print("getNostr going for followEventProvider.doQuery() with followNostr SET....");
+              // loggedUserNostr!
+              //     .activeRelays()
+              //     .where((relay) => relay.access != WriteAccess.writeOnly)
+              //     .forEach((relay) {
+              //   followsNostr!.addRelay(relay, connect: true);
+              // });
+              print(
+                  "getNostr going for followEventProvider.doQuery() with followNostr SET....");
               followEventProvider.doQuery();
             }
           },
         );
       } else {
-        print("getNostr going for followEventProvider.doQuery() with nostr....");
+        print(
+            "getNostr going for followEventProvider.doQuery() with nostr....");
         nostr = loggedUserNostr;
         followEventProvider.doQuery();
       }
@@ -386,45 +432,31 @@ class RelayProvider extends ChangeNotifier {
     }
   }
 
-  // void checkAndReconnect() {
-  //   // reconnect all client
-  //   for (var relayAddr in relayAddrs) {
-  //     var custRelay = genRelay(relayAddr);
-  //     try {
-  //       nostr!.addRelay(custRelay, autoSubscribe: true);
-  //     } catch (e) {
-  //       log("relay $relayAddr add to pool error ${e.toString()}");
-  //     }
-  //   }
-  // }
-  //
   void clear() {
-    // sharedPreferences.remove(DataKey.RELAY_LIST);
     relayStatusMap.clear();
     if (staticForRelaysAndMetadataNostr != null) {
       staticForRelaysAndMetadataNostr!.close();
       staticForRelaysAndMetadataNostr = null;
     }
-    //load();
   }
-
 
   Future<void> initStaticForRelaysAndMetadataNostr(String pubKey) async {
     if (staticForRelaysAndMetadataNostr == null) {
       List<Future<bool>> futures = [];
       Set<String> uniqueRelays =
-      Set<String>.from(RelayProvider.STATIC_RELAY_ADDRS);
+          Set<String>.from(RelayProvider.STATIC_RELAY_ADDRS);
       uniqueRelays.addAll(relayProvider.relayAddrs);
       staticForRelaysAndMetadataNostr = Nostr(publicKey: pubKey);
 
-      for(String relayAddr in uniqueRelays) {
+      for (String relayAddr in uniqueRelays) {
         Relay r = Relay(
           relayAddr,
           RelayStatus(relayAddr),
           access: WriteAccess.readWrite,
         );
         try {
-          futures.add(staticForRelaysAndMetadataNostr!.addRelay(r, checkInfo: false));
+          futures.add(
+              staticForRelaysAndMetadataNostr!.addRelay(r, checkInfo: false));
         } catch (e) {
           log("relay $relayAddr add to temp nostr for getting nip065 relay list: ${e.toString()}");
         }
@@ -433,17 +465,16 @@ class RelayProvider extends ChangeNotifier {
       await Future.wait(futures).onError((error, stackTrace) => List.of([]));
       final endTime = DateTime.now();
       final duration = endTime.difference(startTime);
-      print("initStaticForRelaysAndMetadataNostr addRelays for ${relayAddrs.length} parallel Future.wait(futures) took:${duration.inMilliseconds} ms");
+      print(
+          "initStaticForRelaysAndMetadataNostr addRelays for ${relayAddrs.length} parallel Future.wait(futures) took:${duration.inMilliseconds} ms");
     }
-    // staticForRelaysAndMetadataNostr!.checkAndReconnectRelays();
   }
 
   Future<void> loadRelayAndContactList(String pubKey,
       {Function(List<RelayMetadata>)? onRelays,
-      Function(ContactList)? onContacts, bool forceWriteToDB = false}) async {
+      Function(ContactList)? onContacts,
+      bool forceWriteToDB = false}) async {
     await initStaticForRelaysAndMetadataNostr(pubKey);
-    Event? relaysEvent;
-    Event? contactsEvent;
     var filter = Filter(
         authors: [pubKey],
         limit: 2,
@@ -451,13 +482,24 @@ class RelayProvider extends ChangeNotifier {
           kind.EventKind.RELAY_LIST_METADATA,
           kind.EventKind.CONTACT_LIST
         ]);
-    print("loading from staticForRelaysAndMetadataNostr: $staticForRelaysAndMetadataNostr, contacts and relays for $pubKey");
-    List<Future> futures = staticForRelaysAndMetadataNostr!.allRelays().map((e) => e.future!,).toList();
+    List<Future> futures = staticForRelaysAndMetadataNostr!
+        .allRelays()
+        .map(
+          (e) => e.future!,
+        )
+        .toList();
 
-    await Future.wait(futures).onError((error, stackTrace) {return List.of([]);}).then((sockets) {
-      staticForRelaysAndMetadataNostr!
-          .query(id: StringUtil.rndNameStr(16), [filter.toJson()], (event) async {
-        print("RECEIVED event kind ${event.kind} going to process, staticForRelaysAndMetadataNostr: $staticForRelaysAndMetadataNostr");
+    await Future.wait(futures).onError((error, stackTrace) {
+      return List.of([]);
+    }).then((sockets) {
+      Event? relaysEvent;
+      Event? contactsEvent;
+      print(
+          "loading from staticForRelaysAndMetadataNostr: $staticForRelaysAndMetadataNostr, contacts and relays for $pubKey");
+      staticForRelaysAndMetadataNostr!.query(
+          id: StringUtil.rndNameStr(16), [filter.toJson()], (event) async {
+        print(
+            "RECEIVED event kind ${event.kind} going to process, staticForRelaysAndMetadataNostr: $staticForRelaysAndMetadataNostr");
 
         if (staticForRelaysAndMetadataNostr == null) {
           return;
@@ -512,7 +554,8 @@ class RelayProvider extends ChangeNotifier {
           }
           if (relays != null && relays.isNotEmpty) {
             try {
-              await RelayList.writeToDB(pubKey, relays, relaysEvent!.createdAt, forceWrite: forceWriteToDB);
+              await RelayList.writeToDB(pubKey, relays, relaysEvent!.createdAt,
+                  forceWrite: forceWriteToDB);
             } catch (e) {
               print(e);
             }
@@ -523,7 +566,7 @@ class RelayProvider extends ChangeNotifier {
         }
         if (event.kind == kind.EventKind.CONTACT_LIST &&
             ((contactsEvent != null &&
-                event.createdAt > contactsEvent!.createdAt) ||
+                    event.createdAt > contactsEvent!.createdAt) ||
                 contactsEvent == null)) {
           contactsEvent = event;
           ContactList contactList = ContactList.fromJson(event.tags);

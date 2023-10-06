@@ -74,19 +74,19 @@ class ContentDecoder {
           list.add(inlines[0]);
         }
       } else {
-        // List<InlineSpan> spans = [];
-        // for (var inline in inlines) {
-        //   if (inline is String) {
+        List<InlineSpan> spans = [];
+        for (var inline in inlines) {
+          if (inline is String) {
         //     spans.add(WidgetSpan(
         //         child: TextTranslateComponent(
         //       inline + " ",
         //       textOnTap: textOnTap,
         //     )));
-        //   } else {
-        //     spans.add(WidgetSpan(child: inline));
-        //   }
-        // }
-        // list.add(Text.rich(TextSpan(children: spans)));
+          } else {
+            spans.add(WidgetSpan(child: inline));
+          }
+        }
+        list.add(Text.rich(TextSpan(children: spans)));
 
         // list.add(LineTranslateComponent(
         //   []..addAll(inlines),

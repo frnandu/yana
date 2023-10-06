@@ -237,13 +237,11 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
           enabled: settingProvider.themeStyle != ThemeStyle.AUTO,
           onToggle: (value) {
             settingProvider.themeStyle =
-            value ? ThemeStyle.DARK : ThemeStyle.LIGHT;
+                value ? ThemeStyle.DARK : ThemeStyle.LIGHT;
             widget.indexReload();
           },
           initialValue: settingProvider.themeStyle == ThemeStyle.AUTO
-              ? MediaQuery
-              .of(context)
-              .platformBrightness == Brightness.dark
+              ? MediaQuery.of(context).platformBrightness == Brightness.dark
               : settingProvider.themeStyle == ThemeStyle.DARK,
           leading: const Icon(Icons.dark_mode_outlined),
           title: Text(s.Dark_mode)));
@@ -280,6 +278,9 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
         activeSwitchColor: themeData.primaryColor,
         onToggle: (value) {
           settingProvider.gossip = value ? 1 : 0;
+          if (value && followsNostr == null) {
+            rebuildFollowsNostr();
+          }
         },
         initialValue: settingProvider.gossip == OpenStatus.OPEN,
         leading: const Icon(Icons.grain),
@@ -293,34 +294,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
             int? old = _settingProvider.followeesRelayMaxCount;
             await pickMaxRelays();
             if (_settingProvider.followeesRelayMaxCount! != old) {
-              // if (followsNostr != null) {
-              //   followsNostr = null;
-              // }
-              setState(() {
-                loadingGossipRelays = true;
-              });
-              await relayProvider.buildNostrFromContactsRelays(
-                  nostr!.publicKey,
-                  contactListProvider.contactList!,
-                  _settingProvider.followeesRelayMaxCount!, (builtNostr) {
-                reloadingFollowNostr = true;
-                if (followsNostr!=null) {
-                  followsNostr!.close();
-                }
-                followsNostr = builtNostr;
-                // add logged user's configured read relays
-                nostr!
-                    .activeRelays()
-                    .where((relay) => relay.access != WriteAccess.writeOnly)
-                    .forEach((relay) {
-                  followsNostr!.addRelay(relay, connect: true);
-                });
-                reloadingFollowNostr = false;
-                setState(() {
-                  loadingGossipRelays = false;
-                });
-                followEventProvider.doQuery();
-              });
+              rebuildFollowsNostr();
             }
           },
           title: const Text("Max amount of relays per follow")));
@@ -328,15 +302,20 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
       networkTiles.add(
         SettingsTile.navigation(
             onPressed: (context) {
-              if (followRelays != null && followRelays!.isNotEmpty && !loadingGossipRelays) {
-                RouterUtil.router(context, RouterPath.USER_RELAYS, followRelays);
+              if (followRelays != null &&
+                  followRelays!.isNotEmpty &&
+                  !loadingGossipRelays) {
+                RouterUtil.router(
+                    context, RouterPath.USER_RELAYS, followRelays);
               }
             },
             leading: Text(
               "Connected / Total relays from follows",
               style: TextStyle(color: themeData.disabledColor),
             ),
-            trailing: loadingGossipRelays ? Container(): Icon(Icons.navigate_next, color: themeData.disabledColor),
+            trailing: loadingGossipRelays
+                ? Container()
+                : Icon(Icons.navigate_next, color: themeData.disabledColor),
             title: Selector<RelayProvider, String>(
                 builder: (context, relayNum, child) {
               if (loadingGossipRelays) {
@@ -434,9 +413,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
     SettingsList settingsList = SettingsList(
         applicationType: ApplicationType.both,
         // contentPadding: const EdgeInsets.only(top: Base.BASE_PADDING),
-        sections: sections
-
-    );
+        sections: sections);
 
     return Scaffold(
       appBar: AppBar(
@@ -1060,5 +1037,33 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
     if (await AuthUtil.authenticate(context, text)) {
       settingProvider.lockOpen = value ? 1 : 0;
     }
+  }
+
+  Future<void> rebuildFollowsNostr() async {
+    setState(() {
+      loadingGossipRelays = true;
+    });
+    await relayProvider.buildNostrFromContactsRelays(
+        nostr!.publicKey,
+        contactListProvider.contactList!,
+        settingProvider.followeesRelayMaxCount!, (builtNostr) {
+      reloadingFollowNostr = true;
+      if (followsNostr != null) {
+        followsNostr!.close();
+      }
+      followsNostr = builtNostr;
+      // add logged user's configured read relays
+      nostr!
+          .activeRelays()
+          .where((relay) => relay.access != WriteAccess.writeOnly)
+          .forEach((relay) {
+        followsNostr!.addRelay(relay, connect: true);
+      });
+      reloadingFollowNostr = false;
+      setState(() {
+        loadingGossipRelays = false;
+      });
+      followEventProvider.doQuery();
+    });
   }
 }

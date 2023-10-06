@@ -10,7 +10,6 @@ import 'package:yana/provider/relay_provider.dart';
 import '../../i18n/i18n.dart';
 import '../../nostr/relay_metadata.dart';
 import '../../utils/base.dart';
-import '../../utils/client_connected.dart';
 import '../../utils/router_util.dart';
 
 class UserRelayRouter extends StatefulWidget {
@@ -22,8 +21,15 @@ class UserRelayRouter extends StatefulWidget {
   }
 }
 
-class _UserRelayRouter extends State<UserRelayRouter> {
+class _UserRelayRouter extends State<UserRelayRouter> with SingleTickerProviderStateMixin {
   List<RelayMetadata>? relays;
+  late TabController tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    tabController = TabController(length: 2, vsync: this);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -157,6 +163,15 @@ class RelayMetadataComponent extends StatelessWidget {
         ]);
       }
     }
+
+    // body: TabBarView(
+    //   controller: tabController,
+    //   children: [
+    //     BlockedWordsComponent(),
+    //     BlockedProfilesComponent(),
+    //   ],
+    // ),
+    //
 
     return Container(
       margin: const EdgeInsets.only(

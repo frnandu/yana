@@ -320,10 +320,8 @@ Future<void> main() async {
     // nostr = Nostr(privateKey: isPrivate ? key : null,publicKey: publicKey);
     await relayProvider.loadRelays(publicKey,() async {
       try {
-        print("main going for relayProvider.genNostr....");
         nostr = await relayProvider.genNostr(privateKey: isPrivate ? key : null,
             publicKey: publicKey);
-        print("main going for runApp....");
 
         runApp(MyApp());
       } catch (e) {
