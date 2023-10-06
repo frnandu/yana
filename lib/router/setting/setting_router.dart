@@ -11,6 +11,7 @@ import 'package:settings_ui/settings_ui.dart';
 import 'package:yana/models/event_mem_box.dart';
 import 'package:yana/nostr/filter.dart';
 import 'package:yana/nostr/nip02/contact_list.dart';
+import 'package:yana/nostr/relay_metadata.dart';
 import 'package:yana/router/index/account_manager_component.dart';
 import 'package:yana/utils/platform_util.dart';
 import 'package:yana/utils/router_util.dart';
@@ -289,15 +290,15 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
     if (settingProvider.gossip == 1) {
       networkTiles.add(SettingsTile.navigation(
           leading: const Icon(Icons.lan_outlined),
-          trailing: Text('${settingProvider.followeesRelayMaxCount}'),
+          trailing: Text('${settingProvider.followeesRelayMinCount}'),
           onPressed: (context) async {
-            int? old = _settingProvider.followeesRelayMaxCount;
+            int? old = _settingProvider.followeesRelayMinCount;
             await pickMaxRelays();
-            if (_settingProvider.followeesRelayMaxCount! != old) {
+            if (_settingProvider.followeesRelayMinCount! != old) {
               rebuildFollowsNostr();
             }
           },
-          title: const Text("Max amount of relays per follow")));
+          title: const Text("Minimal amount of relays per follow")));
 
       networkTiles.add(
         SettingsTile.navigation(
@@ -305,8 +306,12 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
               if (followRelays != null &&
                   followRelays!.isNotEmpty &&
                   !loadingGossipRelays) {
+                List<RelayMetadata> filteredRelays = followRelays!.where((relay) {
+                  Relay? r = followsNostr!.getRelay(relay.addr!);
+                  return r!=null;
+                }).toList();
                 RouterUtil.router(
-                    context, RouterPath.USER_RELAYS, followRelays);
+                    context, RouterPath.USER_RELAYS, filteredRelays );
               }
             },
             leading: Text(
@@ -538,7 +543,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
     EnumObj? resultEnumObj =
         await EnumSelectorComponent.show(context, maxRelays!);
     if (resultEnumObj != null) {
-      settingProvider.followeesRelayMaxCount = resultEnumObj.value;
+      settingProvider.followeesRelayMinCount = resultEnumObj.value;
       widget.indexReload();
       // Future.delayed(Duration(seconds: 1), () {
       //   setState(() {
@@ -1046,19 +1051,19 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
     await relayProvider.buildNostrFromContactsRelays(
         nostr!.publicKey,
         contactListProvider.contactList!,
-        settingProvider.followeesRelayMaxCount!, (builtNostr) {
+        settingProvider.followeesRelayMinCount!, (builtNostr) {
       reloadingFollowNostr = true;
       if (followsNostr != null) {
         followsNostr!.close();
       }
       followsNostr = builtNostr;
       // add logged user's configured read relays
-      nostr!
-          .activeRelays()
-          .where((relay) => relay.access != WriteAccess.writeOnly)
-          .forEach((relay) {
-        followsNostr!.addRelay(relay, connect: true);
-      });
+      // nostr!
+      //     .activeRelays()
+      //     .where((relay) => relay.access != WriteAccess.writeOnly)
+      //     .forEach((relay) {
+      //   followsNostr!.addRelay(relay, connect: true);
+      // });
       reloadingFollowNostr = false;
       setState(() {
         loadingGossipRelays = false;

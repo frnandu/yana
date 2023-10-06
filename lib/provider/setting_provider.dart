@@ -24,7 +24,7 @@ AndroidOptions _getAndroidOptions() => const AndroidOptions(
 
 class SettingProvider extends ChangeNotifier {
   static SettingProvider? _settingProvider;
-  static const int DEFAULT_FOLLOWEES_RELAY_MAX_COUNT = 3;
+  static const int DEFAULT_FOLLOWEES_RELAY_MIN_COUNT = 2;
 
 
   SharedPreferences? _sharedPreferences;
@@ -203,7 +203,7 @@ class SettingProvider extends ChangeNotifier {
 
   int? get gossip => _settingData!.gossip ?? OpenStatus.CLOSE;
 
-  int? get followeesRelayMaxCount => _settingData!.followeesRelayMaxCount ?? OpenStatus.OPEN;
+  int get followeesRelayMinCount => _settingData!.followeesRelayMinCount ?? DEFAULT_FOLLOWEES_RELAY_MIN_COUNT;
 
   /// i18n
   String? get i18n => _settingData!.i18n;
@@ -378,8 +378,8 @@ class SettingProvider extends ChangeNotifier {
     saveAndNotifyListeners();
   }
 
-  set followeesRelayMaxCount(int? o) {
-    _settingData!.followeesRelayMaxCount = o;
+  set followeesRelayMinCount(int? o) {
+    _settingData!.followeesRelayMinCount = o;
     saveAndNotifyListeners();
   }
 
@@ -452,8 +452,7 @@ class SettingData {
 
   int? gossip;
 
-  int? followeesRelayMaxCount;
-
+  int? followeesRelayMinCount;
 
   String? network;
 
@@ -512,7 +511,7 @@ class SettingData {
     this.imageService,
     this.imagePreview,
     this.gossip,
-    this.followeesRelayMaxCount = SettingProvider.DEFAULT_FOLLOWEES_RELAY_MAX_COUNT,
+    this.followeesRelayMinCount = SettingProvider.DEFAULT_FOLLOWEES_RELAY_MIN_COUNT,
     this.i18n,
     this.i18nCC,
     this.imgCompress = 50,
@@ -561,9 +560,9 @@ class SettingData {
       gossip = 0;
     }
     if (json['followeesRelayMaxCount']!=null) {
-      followeesRelayMaxCount = json['followeesRelayMaxCount'];
+      followeesRelayMinCount = json['followeesRelayMinCount'];
     } else {
-      followeesRelayMaxCount = SettingProvider.DEFAULT_FOLLOWEES_RELAY_MAX_COUNT;
+      followeesRelayMinCount = SettingProvider.DEFAULT_FOLLOWEES_RELAY_MIN_COUNT;
     }
     if (json['themeStyle'] != null) {
       themeStyle = json['themeStyle'];
@@ -606,7 +605,7 @@ class SettingData {
     data['i18n'] = this.i18n;
     data['i18nCC'] = this.i18nCC;
     data['gossip'] = this.gossip;
-    data['followeesRelayMaxCount'] = this.followeesRelayMaxCount;
+    data['followeesRelayMinCount'] = this.followeesRelayMinCount;
     data['imgCompress'] = this.imgCompress;
     data['themeStyle'] = this.themeStyle;
     data['themeColor'] = this.themeColor;

@@ -13,6 +13,7 @@ import '../models/relay_status.dart';
 import '../nostr/event.dart';
 import '../nostr/event_kind.dart' as kind;
 import '../nostr/filter.dart';
+import '../nostr/nip02/contact.dart';
 import '../nostr/nostr.dart';
 import '../nostr/relay.dart';
 import '../utils/string_util.dart';
@@ -127,9 +128,10 @@ class RelayProvider extends ChangeNotifier {
       Function(Nostr) onComplete) async {
     int i = 0;
     Map<String, Set<String>> followRelaysMap = {};
+    Map<String, List<RelayMetadata>> relaysMetadata = {};
     contactList.list().forEach((contact) async {
       await relayProvider
-          .getRelays(timeoutSeconds: 3, contact.publicKey!, (relays) {
+          .getRelays(timeoutSeconds: 3, contact.publicKey!, (relays) async {
             relays
                 .where((element) =>
                     (element.write == null || element.write!) &&
@@ -146,37 +148,81 @@ class RelayProvider extends ChangeNotifier {
                 followRelaysMap[adr] = {};
               }
               followRelaysMap[adr]!.add(contact.publicKey!);
+              relaysMetadata[contact.publicKey!] = relays;
             });
             i++;
             print(
                 "Loaded ${relays.length} relays for contact ${contact.publicKey} $i/${contactList.list().length}");
             if (i == contactList.total()) {
-              onComplete(createNostrFromFollowRelaysMap(pubKey, followRelaysMap));
+              onComplete(
+                  await createNostrFromFollowRelaysMap(contactList, pubKey, followRelaysMap, relaysMetadata));
             }
           })
           .timeout(const Duration(seconds: 10))
-          .onError((error, stackTrace) {
+          .onError((error, stackTrace) async {
             i++;
             print(
                 "Couldn't get relays for ${contact.publicKey!} in 3 seconds....");
             if (i == contactList.total()) {
-              onComplete(createNostrFromFollowRelaysMap(pubKey, followRelaysMap));
+              onComplete(
+                  await createNostrFromFollowRelaysMap(contactList, pubKey, followRelaysMap, relaysMetadata));
             }
           });
     });
   }
 
-  Nostr createNostrFromFollowRelaysMap(String pubKey, Map<String, Set<String>> followRelaysMap) {
-    Nostr nostr = Nostr(privateKey: null, publicKey: pubKey);
-    // TODO
-    // nostr!.addRelay(
-    //     Relay(
-    //       adr,
-    //       RelayStatus(adr),
-    //       access: WriteAccess.readWrite,
-    //     ),
-    //     connect: true,
-    //     checkInfo: false);
+  Future<Nostr> createNostrFromFollowRelaysMap(ContactList contactList,
+      String pubKey, Map<String, Set<String>> followRelaysMap, Map<String, List<RelayMetadata>> relaysMetadata) async {
+    Nostr buildingNostr = Nostr(privateKey: null, publicKey: pubKey);
+    Map<String, Set<String>> pubKeyRelaysMap = {};
+    int i = 0;
+    int min = settingProvider.followeesRelayMinCount;
+    for (String url in followRelaysMap.keys) {
+      i++;
+      if (!followRelaysMap[url]!.any((pub_key) => pubKeyRelaysMap[pub_key] == null || pubKeyRelaysMap[pub_key]!.length < min)) {
+        // print('~~~~ all pub_keys from relay $url already have at least $min');
+        continue;
+      }
+      print(" Relay ${i} / ${followRelaysMap.length}");
+      Relay relay = Relay(
+        url,
+        RelayStatus(url),
+        access: WriteAccess.readWrite,
+      );
+      bool connected = await buildingNostr!
+          .addRelay(relay, connect: true, checkInfo: false)
+          .onError((error, stackTrace) => false);
+      if (connected && relay.isActive()) {
+        print(
+            "+++++ Relay ${url} with ${followRelaysMap[url]!.length} pubKeys is connected...");
+        for (String pubKey in followRelaysMap[url]!) {
+          Set<String>? relays = pubKeyRelaysMap[pubKey];
+          if (relays == null) {
+            relays = {};
+            pubKeyRelaysMap[pubKey] = relays;
+          }
+          relays.add(url);
+        }
+        print("Contacts filled ${pubKeyRelaysMap.length}/ ${contactList.list().length}");
+      } else {
+        buildingNostr.removeRelay(url);
+        print(
+            "----- Relay ${url} with ${followRelaysMap[url]!.length} pubKeys is NOT connected...");
+      }
+    }
+
+    for(Contact contact in contactList.list()) {
+      int relays = pubKeyRelaysMap[contact.publicKey] != null ? pubKeyRelaysMap[contact.publicKey]!.length : 0;
+      if (relays==0) {
+        print("contact ${contact.publicKey} has $relays connected relays !!!");
+        if (relaysMetadata[contact.publicKey]!=null) {
+          relaysMetadata[contact.publicKey]!.forEach((metadata) {
+            print("    relay ${metadata.addr} active = ${buildingNostr.getRelay(
+                metadata.addr!)!.isActive()}");
+          });
+        }
+      }
+    }
 
     List<MapEntry<String, Set<String>>> sortedEntries =
         followRelaysMap!.entries.toList();
@@ -190,7 +236,7 @@ class RelayProvider extends ChangeNotifier {
       followRelays!
           .add(RelayMetadata.full(addr: entry.key, count: entry.value.length));
     }
-    return nostr;
+    return buildingNostr;
   }
 
   RelayStatus? getRelayStatus(String addr) {
@@ -267,8 +313,8 @@ class RelayProvider extends ChangeNotifier {
         await buildNostrFromContactsRelays(
           loggedUserNostr.publicKey,
           contactList,
-          settingProvider.followeesRelayMaxCount ??
-              SettingProvider.DEFAULT_FOLLOWEES_RELAY_MAX_COUNT,
+          settingProvider.followeesRelayMinCount ??
+              SettingProvider.DEFAULT_FOLLOWEES_RELAY_MIN_COUNT,
           (builtNostr) {
             if (followsNostr == null) {
               followsNostr = builtNostr;

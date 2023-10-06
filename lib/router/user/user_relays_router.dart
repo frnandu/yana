@@ -8,6 +8,7 @@ import 'package:yana/models/relay_status.dart';
 import 'package:yana/provider/relay_provider.dart';
 
 import '../../i18n/i18n.dart';
+import '../../nostr/relay.dart';
 import '../../nostr/relay_metadata.dart';
 import '../../utils/base.dart';
 import '../../utils/router_util.dart';
@@ -21,7 +22,8 @@ class UserRelayRouter extends StatefulWidget {
   }
 }
 
-class _UserRelayRouter extends State<UserRelayRouter> with SingleTickerProviderStateMixin {
+class _UserRelayRouter extends State<UserRelayRouter>
+    with SingleTickerProviderStateMixin {
   List<RelayMetadata>? relays;
   late TabController tabController;
 
@@ -44,6 +46,8 @@ class _UserRelayRouter extends State<UserRelayRouter> with SingleTickerProviderS
         relays = arg;
       }
     }
+    relays!.sort(
+      (r1, r2) => compareRelays(r1,r2));
 
     return Scaffold(
       appBar: AppBar(
@@ -95,6 +99,24 @@ class _UserRelayRouter extends State<UserRelayRouter> with SingleTickerProviderS
       ),
     );
   }
+
+  int compareRelays(RelayMetadata r1, RelayMetadata r2) {
+    Relay? relay1 = followsNostr!.getRelay(r1.addr!);
+    Relay? relay2 = followsNostr!.getRelay(r2.addr!);
+    if (relay1 == null) {
+      return 1;
+    }
+    if (relay2 == null) {
+      return -1;
+    }
+    bool a1 = relay1!.isActive();
+    bool a2 = relay2!.isActive();
+    if (a1) {
+      return a2 ? r2.count!.compareTo(r1.count!) : -1;
+    }
+    return a2 ? 1 : r2.count!.compareTo(r1.count!);
+  }
+
 }
 
 class RelayMetadataComponent extends StatelessWidget {
@@ -115,29 +137,28 @@ class RelayMetadataComponent extends StatelessWidget {
     Widget leftBtn = Container();
 
     Widget rightBtn = Container();
-    leftBtn =
-        Selector<RelayProvider, int?>(builder: (context, state, client) {
-          Color borderLeftColor = Colors.red;
-          if (state != null && state == WebSocket.open) {
-            borderLeftColor = Colors.green;
-          } else if (state != null && state == WebSocket.connecting) {
-            borderLeftColor = Colors.yellow;
-          }
-          return Container(
-            padding: const EdgeInsets.only(
-              left: Base.BASE_PADDING_HALF / 2,
-              right: Base.BASE_PADDING_HALF,
-            ),
-            height: 30,
-            child: Icon(
-              Icons.lan,
-              color: borderLeftColor,
-            ),
-          );
-          main;
-        }, selector: (context, _provider) {
-          return _provider.getFollowRelayState(relayMetadata.addr!);
-        });
+    leftBtn = Selector<RelayProvider, int?>(builder: (context, state, client) {
+      Color borderLeftColor = Colors.red;
+      if (state != null && state == WebSocket.open) {
+        borderLeftColor = Colors.green;
+      } else if (state != null && state == WebSocket.connecting) {
+        borderLeftColor = Colors.yellow;
+      }
+      return Container(
+        padding: const EdgeInsets.only(
+          left: Base.BASE_PADDING_HALF / 2,
+          right: Base.BASE_PADDING_HALF,
+        ),
+        height: 30,
+        child: Icon(
+          Icons.lan,
+          color: borderLeftColor,
+        ),
+      );
+      main;
+    }, selector: (context, _provider) {
+      return _provider.getFollowRelayState(relayMetadata.addr!);
+    });
     if (addAble) {
       rightBtn = GestureDetector(
         onTap: () async {
