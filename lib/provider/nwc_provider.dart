@@ -129,7 +129,7 @@ class NwcProvider extends ChangeNotifier {
 
       var agreement = NIP04.getAgreement(secret!);
       var encrypted =
-      NIP04.encrypt('{"method":"get_balance"}', agreement, walletPubKey!);
+      NIP04.encrypt('{"method":"${NwcCommand.GET_BALANCE}"', agreement, walletPubKey!);
       var tags = [
         ["p", walletPubKey]
       ];
@@ -155,7 +155,7 @@ class NwcProvider extends ChangeNotifier {
       data = json.decode(decrypted);
       if (data != null &&
           data.containsKey("result") &&
-          data['result_type'] == 'get_balance') {
+          data['result_type'] == NwcCommand.GET_BALANCE) {
         balance = data['result']['balance'];
         if (balance != null) {
           balance = balance! ~/ 1000;
@@ -185,7 +185,7 @@ class NwcProvider extends ChangeNotifier {
 
       var agreement = NIP04.getAgreement(secret!);
       var encrypted =
-          NIP04.encrypt('{"method":"pay_invoice", "params": { "invoice":"${invoice}"}}', agreement, walletPubKey!);
+          NIP04.encrypt('{"method":"${NwcCommand.PAY_INVOICE}", "params": { "invoice":"${invoice}"}}', agreement, walletPubKey!);
       var tags = [
         ["p", walletPubKey]
       ];
@@ -211,7 +211,7 @@ class NwcProvider extends ChangeNotifier {
       data = json.decode(decrypted);
       if (data != null &&
           data.containsKey("result") &&
-          data['result_type'] == 'pay_invoice') {
+          data['result_type'] == NwcCommand.PAY_INVOICE) {
         var preImage = data['result']['preimage'];
         BotToast.showText(text: "Zap payed");
         if (payInvoiceEventId!=null) {
