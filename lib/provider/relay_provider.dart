@@ -129,7 +129,8 @@ class RelayProvider extends ChangeNotifier {
     int i = 0;
     Map<String, Set<String>> followRelaysMap = {};
     Map<String, List<RelayMetadata>> relaysMetadata = {};
-    contactList.list().forEach((contact) async {
+    // List<Future> futures = [];
+    for (Contact contact in contactList.list()) {
       await relayProvider
           .getRelays(timeoutSeconds: 3, contact.publicKey!, (relays) async {
             relays
@@ -150,36 +151,39 @@ class RelayProvider extends ChangeNotifier {
               followRelaysMap[adr]!.add(contact.publicKey!);
               relaysMetadata[contact.publicKey!] = relays;
             });
-            i++;
             print(
                 "Loaded ${relays.length} relays for contact ${contact.publicKey} $i/${contactList.list().length}");
-            if (i == contactList.total()) {
-              onComplete(
-                  await createNostrFromFollowRelaysMap(contactList, pubKey, followRelaysMap, relaysMetadata));
-            }
           })
           .timeout(const Duration(seconds: 10))
           .onError((error, stackTrace) async {
-            i++;
             print(
                 "Couldn't get relays for ${contact.publicKey!} in 3 seconds....");
-            if (i == contactList.total()) {
-              onComplete(
-                  await createNostrFromFollowRelaysMap(contactList, pubKey, followRelaysMap, relaysMetadata));
-            }
           });
-    });
+    }
+    // final startTime = DateTime.now();
+    // await Future.wait(futures).onError((error, stackTrace) => List.of([]));
+    // final endTime = DateTime.now();
+    // final duration = endTime.difference(startTime);
+    // print(
+    //     "addRelays for ${relayAddrs.length} parallel Future.wait(futures) took:${duration.inMilliseconds} ms");
+    onComplete(await createNostrFromFollowRelaysMap(
+        contactList, pubKey, followRelaysMap, relaysMetadata));
   }
 
-  Future<Nostr> createNostrFromFollowRelaysMap(ContactList contactList,
-      String pubKey, Map<String, Set<String>> followRelaysMap, Map<String, List<RelayMetadata>> relaysMetadata) async {
+  Future<Nostr> createNostrFromFollowRelaysMap(
+      ContactList contactList,
+      String pubKey,
+      Map<String, Set<String>> followRelaysMap,
+      Map<String, List<RelayMetadata>> relaysMetadata) async {
     Nostr buildingNostr = Nostr(privateKey: null, publicKey: pubKey);
     Map<String, Set<String>> pubKeyRelaysMap = {};
     int i = 0;
     int min = settingProvider.followeesRelayMinCount;
     for (String url in followRelaysMap.keys) {
       i++;
-      if (!followRelaysMap[url]!.any((pub_key) => pubKeyRelaysMap[pub_key] == null || pubKeyRelaysMap[pub_key]!.length < min)) {
+      if (!followRelaysMap[url]!.any((pub_key) =>
+          pubKeyRelaysMap[pub_key] == null ||
+          pubKeyRelaysMap[pub_key]!.length < min)) {
         // print('~~~~ all pub_keys from relay $url already have at least $min');
         continue;
       }
@@ -203,7 +207,8 @@ class RelayProvider extends ChangeNotifier {
           }
           relays.add(url);
         }
-        print("Contacts filled ${pubKeyRelaysMap.length}/ ${contactList.list().length}");
+        print(
+            "Contacts filled ${pubKeyRelaysMap.length}/ ${contactList.list().length}");
       } else {
         buildingNostr.removeRelay(url);
         print(
@@ -211,14 +216,17 @@ class RelayProvider extends ChangeNotifier {
       }
     }
 
-    for(Contact contact in contactList.list()) {
-      int relays = pubKeyRelaysMap[contact.publicKey] != null ? pubKeyRelaysMap[contact.publicKey]!.length : 0;
-      if (relays==0) {
+    for (Contact contact in contactList.list()) {
+      int relays = pubKeyRelaysMap[contact.publicKey] != null
+          ? pubKeyRelaysMap[contact.publicKey]!.length
+          : 0;
+      if (relays == 0) {
         print("contact ${contact.publicKey} has $relays connected relays !!!");
-        if (relaysMetadata[contact.publicKey]!=null) {
+        if (relaysMetadata[contact.publicKey] != null) {
           relaysMetadata[contact.publicKey]!.forEach((metadata) {
-            print("    relay ${metadata.addr} active = ${buildingNostr.getRelay(
-                metadata.addr!)!.isActive()}");
+            Relay? r = buildingNostr.getRelay(metadata.addr!);
+            print(
+                "    relay ${metadata.addr} active = ${r!=null? r.isActive(): false}");
           });
         }
       }
@@ -544,8 +552,8 @@ class RelayProvider extends ChangeNotifier {
           "loading from staticForRelaysAndMetadataNostr: $staticForRelaysAndMetadataNostr, contacts and relays for $pubKey");
       staticForRelaysAndMetadataNostr!.query(
           id: StringUtil.rndNameStr(16), [filter.toJson()], (event) async {
-        print(
-            "RECEIVED event kind ${event.kind} going to process, staticForRelaysAndMetadataNostr: $staticForRelaysAndMetadataNostr");
+        // print(
+        //     "RECEIVED event kind ${event.kind} going to process, staticForRelaysAndMetadataNostr: $staticForRelaysAndMetadataNostr");
 
         if (staticForRelaysAndMetadataNostr == null) {
           return;

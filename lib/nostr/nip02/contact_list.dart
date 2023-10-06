@@ -44,7 +44,11 @@ class ContactList {
           .findFirst();
       final endTime = DateTime.now();
       final duration = endTime.difference(startTime);
-      print("LOADED ${list!.contacts.length} contacts from DATABASE for $pubKey took:${duration.inMilliseconds} ms");
+      if (list!=null && list.contacts!=null) {
+        print("LOADED ${list!.contacts
+            .length} contacts from DATABASE for $pubKey took:${duration
+            .inMilliseconds} ms");
+      }
     } else {
       print("LOADED ${list!.contacts.length} contacts from MEMORY for $pubKey");
     }
