@@ -392,14 +392,14 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
       title: const Text("Logout"),
     ));
 
-    accountTiles.add(SettingsTile.navigation(
-      trailing: const Text(""),
-      onPressed: (context) {
-        askToDeleteAccount();
-      },
-      leading: const Icon(Icons.delete_outline),
-      title: Text(s.Delete_Account, style: const TextStyle(color: Colors.red)),
-    ));
+    // accountTiles.add(SettingsTile.navigation(
+    //   trailing: const Text(""),
+    //   onPressed: (context) {
+    //     askToDeleteAccount();
+    //   },
+    //   leading: const Icon(Icons.delete_outline),
+    //   title: Text(s.Delete_Account, style: const TextStyle(color: Colors.red)),
+    // ));
 
     List<SettingsSection> sections = [];
 
