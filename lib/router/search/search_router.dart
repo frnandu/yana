@@ -7,7 +7,6 @@ import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:yana/models/event_find_util.dart';
 import 'package:yana/models/metadata.dart';
-import 'package:yana/provider/relay_provider.dart';
 import 'package:yana/router/search/search_action_item_component.dart';
 import 'package:yana/router/search/search_actions.dart';
 import 'package:yana/utils/when_stop_function.dart';
@@ -21,6 +20,7 @@ import '../../nostr/event_kind.dart' as kind;
 import '../../nostr/filter.dart';
 import '../../nostr/nip19/nip19.dart';
 import '../../nostr/nip19/nip19_tlv.dart';
+import '../../provider/relay_provider.dart';
 import '../../provider/setting_provider.dart';
 import '../../ui/confirm_dialog.dart';
 import '../../ui/cust_state.dart';
@@ -81,7 +81,7 @@ class _SearchRouter extends CustState<SearchRouter>
   Widget doBuild(BuildContext context) {
     var s = I18n.of(context);
     var _settingProvider = Provider.of<SettingProvider>(context);
-    // var _relayProvider = Provider.of<RelayProvider>(context);
+    var _relayProvider = Provider.of<RelayProvider>(context);
     preBuild();
 
     Widget? suffixWidget;
@@ -107,7 +107,7 @@ class _SearchRouter extends CustState<SearchRouter>
 
     bool? loadable = true;
     var events = eventMemBox.all();
-    print("contacts: ${metadatasFromCache.length} profile: ${metadatasFromSearch.length} events: ${events.length}");
+    // print("contacts: ${metadatasFromCache.length} profile: ${metadatasFromSearch.length} events: ${events.length}");
     Widget body = ListView.builder(
         controller: scrollController,
         itemBuilder: (BuildContext context, int index) {

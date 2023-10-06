@@ -33,12 +33,15 @@ class RelayList {
       {DatabaseExecutor? db, bool useCache = true}) async {
     List<RelayMetadata>? list = useCache ? cached[pubKey] : null;
     if (list == null) {
+      final startTime = DateTime.now();
       final relayList = await DB
           .getIsar()
           .relayLists
           .filter()
           .pub_keyEqualTo(pubKey)
           .findFirst();
+      final endTime = DateTime.now();
+      final duration = endTime.difference(startTime);
       // db = await DB.getDB(db);
       // var fromDB =
       //     await db.query("relay", where: "pub_key = ?", whereArgs: [pubKey]);
@@ -56,10 +59,13 @@ class RelayList {
         //         write: relays.write != null && relays.write!.contains(e)))
         //     .toList();
         list = relayList.relays;
+        print("LOADED ${relayList.relays!.length} relays from DATABASE for $pubKey took ${duration.inMilliseconds} ms");
         cached[pubKey] = list!;
       } else {
         cached[pubKey] = [];
       }
+    } else {
+      print("LOADED ${list!.length} relays from MEMORY for $pubKey");
     }
     return list;
   }
@@ -76,51 +82,22 @@ class RelayList {
     cached[pubKey] = list;
     if (forceWrite || nostr != null && nostr!.publicKey == pubKey ||
         contactListProvider.getContact(pubKey) != null) {
-      RelayList? relayList = await DB
-          .getIsar()
-          .relayLists
-          .filter()
-          .pub_keyEqualTo(pubKey)
-          .findFirst();
-      if (relayList==null) {
-        relayList = RelayList();
-        relayList.pub_key = pubKey;
-      }
+      RelayList relayList = RelayList();
+      relayList.pub_key = pubKey;
       relayList.relays = list;
       relayList.timestamp = updated_at;
 
       await DB.getIsar().writeTxn(() async {
-        await DB.getIsar().relayLists.put(relayList!);
+        await DB.getIsar().relayLists.putByIndex("pub_key", relayList!);
       });
-      // db = await DB.getDB(db);
-      // return await db.database.transaction((txn) async {
-      //   return await txn.insert(
-      //       "relay", RelayMetadata.toFullJson(pubKey, list, updated_at));
-      // });
     }
     return 0;
   }
-  //
-  // static Future update(String pubKey, List<RelayMetadata> list, int updated_at,
-  //     {DatabaseExecutor? db}) async {
-  //   cached.putIfAbsent(pubKey, () => list);
-  //   if (nostr != null && nostr!.publicKey == pubKey ||
-  //       contactListProvider.getContact(pubKey) != null) {
-  //     db = await DB.getDB(db);
-  //     await db.database.transaction((txn) async {
-  //       await txn.update(
-  //           "relay", RelayMetadata.toFullJson(pubKey, list, updated_at),
-  //           where: "pub_key = ?", whereArgs: [pubKey]);
-  //     });
-  //   }
-  //   return 0;
+  // static Future<void> deleteAll({DatabaseExecutor? db}) async {
+  //   cached.clear();
+  //   db = await DB.getDB(db);
+  //   await db.database.transaction((txn) async {
+  //     txn.execute("delete from relay");
+  //   });
   // }
-
-  static Future<void> deleteAll({DatabaseExecutor? db}) async {
-    cached.clear();
-    db = await DB.getDB(db);
-    await db.database.transaction((txn) async {
-      txn.execute("delete from relay");
-    });
-  }
 }

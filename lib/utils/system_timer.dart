@@ -37,9 +37,9 @@ class SystemTimer {
     if (nostr != null) {
       AwesomeNotifications().getAppLifeCycle().then((value) async {
         if (value.toString() == "NotificationLifeCycle.Foreground") {
-          if (kDebugMode) {
-            print('!!!!!!!!!!!!!!! SystemTimer.runTask');
-          }
+          // if (kDebugMode) {
+          //   print('!!!!!!!!!!!!!!! SystemTimer.runTask');
+          // }
           await nostr!.checkAndReconnectRelays();
           newNotificationsProvider.queryNew();
           // dmProvider.query(subscribe: false);

@@ -275,6 +275,7 @@ class _UserRouter extends CustState<UserRouter>
               access: WriteAccess.readWrite,
             );
             try {
+
               futures.add(userNostr!.addRelay(r, checkInfo: false));
               // await userNostr!.addRelay(r, checkInfo: false, connect: true);
             } catch (e) {
@@ -293,9 +294,9 @@ class _UserRouter extends CustState<UserRouter>
           userNostr = nostr;
         }
       }
-      setState(() {
-        this.relays = relays;
-      });
+      // setState(() {
+      //   this.relays = relays;
+      // });
 
       doQuery();
     });
@@ -322,7 +323,7 @@ class _UserRouter extends CustState<UserRouter>
     super.dispose();
     disposeLater();
 
-    if (userNostr != null) {
+    if (userNostr != null && userNostr!.publicKey != nostr!.publicKey) {
       if (StringUtil.isNotBlank(subscribeId)) {
         try {
           userNostr!.unsubscribe(subscribeId!);

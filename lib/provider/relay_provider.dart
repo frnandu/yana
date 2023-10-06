@@ -45,11 +45,7 @@ class RelayProvider extends ChangeNotifier {
 
   Future<void> getRelays(
       String pubKey, Function(List<RelayMetadata>) onRelays, {bool forceWriteToDB = false}) async {
-    final startTime = DateTime.now();
     List<RelayMetadata>? relays = await RelayList.get(pubKey);
-    final endTime = DateTime.now();
-    final duration = endTime.difference(startTime);
-    print("LOADING RELAYS FROM DB for $pubKey took:${duration.inMilliseconds} ms");
     bool loaded = false;
     if (relays == null || relays.isEmpty) {
       await loadRelayAndContactList(pubKey, forceWriteToDB: forceWriteToDB, onRelays: (relays) {
@@ -71,26 +67,22 @@ class RelayProvider extends ChangeNotifier {
 
   Future<void> getContacts(
       String pubKey, Function(ContactList) onContacts) async {
-    final startTime = DateTime.now();
     ContactList? contactList = await ContactList.loadFromDB(pubKey);
-    final endTime = DateTime.now();
-    final duration = endTime.difference(startTime);
-    print("LOADING CONTACTS FROM DB for $pubKey took:${duration.inMilliseconds} ms");
     bool loaded = false;
     if (contactList == null) {
       await loadRelayAndContactList(pubKey, onContacts: (list) {
         loaded = true;
         onContacts(list);
       });
-      Future.delayed(
-        const Duration(seconds: 10),
-        () {
-          if (!loaded) {
-            print("DID NOT LOAD CONTACTS in 10 seconds!!!!!!!!!!!!!!!!!!!!");
-            // onContacts(ContactList());
-          }
-        },
-      );
+      // Future.delayed(
+      //   const Duration(seconds: 10),
+      //   () {
+      //     if (!loaded) {
+      //       print("DID NOT LOAD CONTACTS in 10 seconds!!!!!!!!!!!!!!!!!!!!");
+      //       // onContacts(ContactList());
+      //     }
+      //   },
+      // );
     } else {
       onContacts(contactList);
     }
@@ -440,6 +432,7 @@ class RelayProvider extends ChangeNotifier {
 
   Future<void> initStaticForRelaysAndMetadataNostr(String pubKey) async {
     if (staticForRelaysAndMetadataNostr == null) {
+      List<Future<bool>> futures = [];
       Set<String> uniqueRelays =
       Set<String>.from(RelayProvider.STATIC_RELAY_ADDRS);
       uniqueRelays.addAll(relayProvider.relayAddrs);
@@ -452,12 +445,18 @@ class RelayProvider extends ChangeNotifier {
           access: WriteAccess.readWrite,
         );
         try {
-          await staticForRelaysAndMetadataNostr!.addRelay(r, checkInfo: false);
+          futures.add(staticForRelaysAndMetadataNostr!.addRelay(r, checkInfo: false));
         } catch (e) {
           log("relay $relayAddr add to temp nostr for getting nip065 relay list: ${e.toString()}");
         }
       }
+      final startTime = DateTime.now();
+      await Future.wait(futures).onError((error, stackTrace) => List.of([]));
+      final endTime = DateTime.now();
+      final duration = endTime.difference(startTime);
+      print("initStaticForRelaysAndMetadataNostr addRelays for ${relayAddrs.length} parallel Future.wait(futures) took:${duration.inMilliseconds} ms");
     }
+    // staticForRelaysAndMetadataNostr!.checkAndReconnectRelays();
   }
 
   Future<void> loadRelayAndContactList(String pubKey,

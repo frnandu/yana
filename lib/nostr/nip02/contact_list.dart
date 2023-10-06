@@ -34,12 +34,20 @@ class ContactList {
 
   static Future<ContactList?> loadFromDB(String pubKey) async {
     ContactList? list = cached[pubKey];
-    list ??= await DB
-        .getIsar()
-        .contactLists
-        .filter()
-        .pub_keyEqualTo(pubKey)
-        .findFirst();
+    if (list == null) {
+      final startTime = DateTime.now();
+      list = await DB
+          .getIsar()
+          .contactLists
+          .filter()
+          .pub_keyEqualTo(pubKey)
+          .findFirst();
+      final endTime = DateTime.now();
+      final duration = endTime.difference(startTime);
+      print("LOADED ${list!.contacts.length} contacts from DATABASE for $pubKey took:${duration.inMilliseconds} ms");
+    } else {
+      print("LOADED ${list!.contacts.length} contacts from MEMORY for $pubKey");
+    }
     return list;
   }
 

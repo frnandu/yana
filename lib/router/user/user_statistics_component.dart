@@ -102,10 +102,6 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
     }
     pubkey = widget.pubkey;
 
-    // if (contactList==null) {
-    //   loadContactList(widget.userNostr!);
-    // }
-    //
     List<Widget> list = [];
 
     if (isLocal) {
@@ -273,24 +269,28 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
   @override
   Future<void> onReady(BuildContext context) async {
     // if (!isLocal) {
-    await relayProvider.getRelays(widget.pubkey, (relays) async {
-      if (!_disposed) {
-        await relayProvider.getContacts(widget.pubkey, (contacts) {
-          if (!_disposed) {
-            if (widget.onContactListLoaded != null && contacts != null) {
-              widget.onContactListLoaded!(contacts!);
+    relayProvider.initStaticForRelaysAndMetadataNostr(widget.pubkey);
+    List<Future> futures = staticForRelaysAndMetadataNostr!.allRelays().map((e) => e.future!,).toList();
+
+    await Future.wait(futures).onError((error, stackTrace) {return List.of([]);}).then((sockets) async {
+      await relayProvider.getRelays(widget.pubkey, (relays) async {
+        if (!_disposed) {
+          await relayProvider.getContacts(widget.pubkey, (contacts) {
+            if (!_disposed) {
+              if (widget.onContactListLoaded != null && contacts != null) {
+                widget.onContactListLoaded!(contacts!);
+              }
+              setState(() {
+                contactList = contacts;
+                this.relays = relays;
+                relaysNum = relays.length;
+              });
+              onFollowedTap();
+              onZapTap();
             }
-            setState(() {
-              contactList = contacts;
-              this.relays = relays;
-              relaysNum = relays.length;
-            });
-            relayProvider.initStaticForRelaysAndMetadataNostr(widget.pubkey);
-            onFollowedTap();
-            onZapTap();
-          }
-        });
-      }
+          });
+        }
+      });
     });
     // loadContactList(widget.userNostr ?? nostr!);
     // }
