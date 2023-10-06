@@ -4,6 +4,7 @@ import 'package:isar/isar.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:yana/models/metadata.dart';
 import 'package:yana/models/relay_list.dart';
 import 'package:yana/nostr/nip02/contact_list.dart';
 import 'package:yana/utils/platform_util.dart';
@@ -23,7 +24,7 @@ class DB {
   static init() async {
     final dir = await getApplicationDocumentsDirectory();
     _db = await Isar.open(
-      [RelayListSchema, ContactListSchema],
+      [RelayListSchema, ContactListSchema, MetadataSchema],
       directory: dir.path,
     );
     String path = _dbName;
@@ -34,24 +35,8 @@ class DB {
       path = join(databasesPath, _dbName);
     }
 
-    const CREATE_RELAYS_SQL = "create table relay("
-        "pub_key TEXT not null primary key,"
-        "read       TEXT,"
-        "write       TEXT,"
-        "updated_at DATETIME,"
-        " valid INTEGER);";
-
-    const CREATE_CONTACTS_SQL = "create table contact("
-        "pub_key TEXT not null,"
-        "contact TEXT not null,"
-        "petname TEXT,"
-        "relay   TEXT,"
-        "PRIMARY KEY (pub_key,contact)"
-        ");";
-
     _database = await openDatabase(path, version: _VERSION,
         onOpen: (Database db) async {
-      // Database is open, print its version
       print('Database version ${await db.getVersion()}');
     }, onUpgrade: (Database db, int oldVersion, int newVersion) async {
       print("Migration Database from $oldVersion to $newVersion");
@@ -60,30 +45,7 @@ class DB {
         print("Migration SQL: $sql");
         await db.execute(sql);
       }
-      if (newVersion == _VERSION && oldVersion < 5) {
-        print("Migration SQL: $CREATE_RELAYS_SQL");
-        await db.execute(CREATE_RELAYS_SQL);
-      }
-      if (newVersion == _VERSION && oldVersion < 6) {
-        print("Migration SQL: $CREATE_CONTACTS_SQL");
-        await db.execute(CREATE_CONTACTS_SQL);
-      }
     }, onCreate: (Database db, int version) async {
-      db.execute("create table metadata("
-          "pub_key TEXT not null primary key,"
-          "banner       TEXT,"
-          "website      TEXT,"
-          "lud16        TEXT,"
-          "lud06        TEXT,"
-          "nip05        TEXT,"
-          "picture      TEXT,"
-          "display_name TEXT,"
-          "about        TEXT,"
-          "name         TEXT,"
-          "updated_at   datetime,"
-          " valid  INTEGER);");
-      db.execute(CREATE_RELAYS_SQL);
-      db.execute(CREATE_CONTACTS_SQL);
       db.execute(
           "create table event(key_index  INTEGER, id         text,pubkey     text,created_at integer,kind       integer,tags       text,content    text);");
       db.execute(

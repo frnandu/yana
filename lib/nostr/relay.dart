@@ -103,6 +103,7 @@ class Relay {
         _onError("Websocket stream closed by remote:  $url", reconnect: false);
       });
     } catch (e) {
+      relayStatus.connecting = false;
       return false;
     }
     if (relayStatusCallback != null) {

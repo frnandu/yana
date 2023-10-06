@@ -285,7 +285,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
         },
         initialValue: settingProvider.gossip == OpenStatus.OPEN,
         leading: const Icon(Icons.grain),
-        title: Text("Use following outbox relays for Feed")));
+        title: const Text("Use following outbox relays for feed")));
 
     if (settingProvider.gossip == 1) {
       networkTiles.add(SettingsTile.navigation(
@@ -820,79 +820,79 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
     }
   }
 
-  EventMemBox waitingDeleteEventBox = EventMemBox(sortAfterAdd: false);
-
-  CancelFunc? deleteAccountLoadingCancel;
-
-  askToDeleteAccount() async {
-    var result =
-        await ConfirmDialog.show(context, I18n.of(context).Delete_Account_Tips);
-    if (result == true) {
-      deleteAccountLoadingCancel = BotToast.showLoading();
-      try {
-        whenStopMS = 2000;
-
-        waitingDeleteEventBox.clear();
-
-        // use a blank metadata to update it
-        var blankMetadata = Metadata();
-        var updateEvent = Event(nostr!.publicKey, kind.EventKind.METADATA, [],
-            jsonEncode(blankMetadata));
-        nostr!.sendEvent(updateEvent);
-
-        // use a blank contact list to update it
-        var blankContactList = ContactList();
-        nostr!.sendContactList(blankContactList);
-
-        var filter = Filter(authors: [
-          nostr!.publicKey
-        ], kinds: [
-          kind.EventKind.TEXT_NOTE,
-          kind.EventKind.REPOST,
-          kind.EventKind.GENERIC_REPOST,
-        ]);
-        nostr!.query([filter.toJson()], onDeletedEventReceive);
-      } catch (e) {
-        log("delete account error ${e.toString()}");
-      }
-    }
-  }
-
-  onDeletedEventReceive(Event event) {
-    print(event.toJson());
-    waitingDeleteEventBox.add(event);
-    whenStop(handleDeleteEvent);
-  }
-
-  void handleDeleteEvent() {
-    try {
-      List<Event> all = waitingDeleteEventBox.all();
-      List<String> ids = [];
-      for (var event in all) {
-        ids.add(event.id);
-
-        if (ids.length > 20) {
-          nostr!.deleteEvents(ids);
-          ids.clear();
-        }
-      }
-
-      if (ids.isNotEmpty) {
-        nostr!.deleteEvents(ids);
-      }
-    } finally {
-      var index = settingProvider.privateKeyIndex;
-      if (index != null) {
-        AccountsState.onLogoutTap(index, routerBack: true, context: context);
-        metadataProvider.clear();
-      } else {
-        nostr = null;
-      }
-      if (deleteAccountLoadingCancel != null) {
-        deleteAccountLoadingCancel!.call();
-      }
-    }
-  }
+  // EventMemBox waitingDeleteEventBox = EventMemBox(sortAfterAdd: false);
+  //
+  // CancelFunc? deleteAccountLoadingCancel;
+  //
+  // askToDeleteAccount() async {
+  //   var result =
+  //       await ConfirmDialog.show(context, I18n.of(context).Delete_Account_Tips);
+  //   if (result == true) {
+  //     deleteAccountLoadingCancel = BotToast.showLoading();
+  //     try {
+  //       whenStopMS = 2000;
+  //
+  //       waitingDeleteEventBox.clear();
+  //
+  //       // use a blank metadata to update it
+  //       var blankMetadata = Metadata();
+  //       var updateEvent = Event(nostr!.publicKey, kind.EventKind.METADATA, [],
+  //           jsonEncode(blankMetadata));
+  //       nostr!.sendEvent(updateEvent);
+  //
+  //       // use a blank contact list to update it
+  //       var blankContactList = ContactList();
+  //       nostr!.sendContactList(blankContactList);
+  //
+  //       var filter = Filter(authors: [
+  //         nostr!.publicKey
+  //       ], kinds: [
+  //         kind.EventKind.TEXT_NOTE,
+  //         kind.EventKind.REPOST,
+  //         kind.EventKind.GENERIC_REPOST,
+  //       ]);
+  //       nostr!.query([filter.toJson()], onDeletedEventReceive);
+  //     } catch (e) {
+  //       log("delete account error ${e.toString()}");
+  //     }
+  //   }
+  // }
+  //
+  // onDeletedEventReceive(Event event) {
+  //   print(event.toJson());
+  //   waitingDeleteEventBox.add(event);
+  //   whenStop(handleDeleteEvent);
+  // }
+  //
+  // void handleDeleteEvent() {
+  //   try {
+  //     List<Event> all = waitingDeleteEventBox.all();
+  //     List<String> ids = [];
+  //     for (var event in all) {
+  //       ids.add(event.id);
+  //
+  //       if (ids.length > 20) {
+  //         nostr!.deleteEvents(ids);
+  //         ids.clear();
+  //       }
+  //     }
+  //
+  //     if (ids.isNotEmpty) {
+  //       nostr!.deleteEvents(ids);
+  //     }
+  //   } finally {
+  //     var index = settingProvider.privateKeyIndex;
+  //     if (index != null) {
+  //       AccountsState.onLogoutTap(index, routerBack: true, context: context);
+  //       metadataProvider.clear();
+  //     } else {
+  //       nostr = null;
+  //     }
+  //     if (deleteAccountLoadingCancel != null) {
+  //       deleteAccountLoadingCancel!.call();
+  //     }
+  //   }
+  // }
 
   List<EnumObj>? translateLanguages;
 

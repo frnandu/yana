@@ -21,7 +21,7 @@ class RelayList {
   static Map<String, List<RelayMetadata>> cached = {};
 
   static Future<List<RelayMetadata>?> loadFromDB(String pubKey,
-      {DatabaseExecutor? db, bool useCache = true}) async {
+      {bool useCache = true}) async {
     List<RelayMetadata>? list = useCache ? cached[pubKey] : null;
     if (list == null) {
       final startTime = DateTime.now();

@@ -268,7 +268,7 @@ class RelayProvider extends ChangeNotifier {
     String result =
         "${nostr!.activeRelays().length}/${nostr!.allRelays().length}";
     if (settingProvider.gossip == 1 && followsNostr != null) {
-      result += ", follows ${followRelayNumStr()}";
+      result += " (feed ${followRelayNumStr()})";
     }
     return result;
   }

@@ -1,7 +1,18 @@
-import '../utils/string_util.dart';
+import 'package:isar/isar.dart';
 
+import '../main.dart';
+import '../utils/string_util.dart';
+import 'db.dart';
+
+part 'metadata.g.dart';
+
+@collection
 class Metadata {
+  Id id = Isar.autoIncrement;
+
+  @Index(type: IndexType.hash)
   String? pubKey;
+
   String? name;
   String? displayName;
   String? picture;
@@ -91,5 +102,50 @@ class Metadata {
         d.contains(str2) ||
         n.startsWith(str) ||
         n.contains(str2);
+  }
+
+  static Map<String, Metadata> cached = {};
+
+  static Future<Metadata?> loadFromDB(String pubKey,
+      {bool useCache = true}) async {
+    Metadata? metadata = useCache ? cached[pubKey] : null;
+    if (metadata == null) {
+      final metadata = await DB
+          .getIsar()
+          .metadatas
+          .filter()
+          .pubKeyEqualTo(pubKey)
+          .findFirst();
+      if (metadata != null) {
+        print("LOADED metadata from DATABASE for $pubKey");
+        cached[pubKey] = metadata!;
+      }
+    } else {
+      print("LOADED metadata from MEMORY for $pubKey");
+    }
+    return metadata;
+  }
+
+  static Future<int> writeToDB(Metadata metadata) async {
+    if (metadata.pubKey!=null) {
+      cached[metadata.pubKey!] = metadata;
+      return await DB.getIsar().writeTxn(() async {
+        return await DB
+            .getIsar()
+            .metadatas
+            .putByIndex("pubKey", metadata);
+      });
+    }
+    return 0;
+  }
+
+  static Future<void> deleteAllFromDB() async {
+    await DB.getIsar().writeTxn(() async {
+      await DB.getIsar().metadatas.clear();
+    });
+  }
+
+  static Future<List<Metadata>> loadAllFromDB() {
+    return DB.getIsar().metadatas.where().findAll();
   }
 }

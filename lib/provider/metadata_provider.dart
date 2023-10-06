@@ -6,7 +6,6 @@ import 'package:yana/utils/nip05status.dart';
 
 import '../main.dart';
 import '../models/metadata.dart';
-import '../models/metadata_db.dart';
 import '../nostr/event.dart';
 import '../nostr/event_kind.dart' as kind;
 import '../nostr/filter.dart';
@@ -24,7 +23,7 @@ class MetadataProvider extends ChangeNotifier with LaterFunction {
     if (_metadataProvider == null) {
       _metadataProvider = MetadataProvider();
 
-      var list = await MetadataDB.all();
+      var list = await Metadata.loadAllFromDB();
       for (var md in list) {
         if (md.valid == Nip05Status.NIP05_NOT_VALIDED) {
           md.valid = null;
@@ -123,7 +122,7 @@ class MetadataProvider extends ChangeNotifier with LaterFunction {
         if (valid != null) {
           if (valid) {
             metadata.valid = Nip05Status.NIP05_VALIDED;
-            await MetadataDB.update(metadata);
+            await Metadata.writeToDB(metadata);
           } else {
             // only update cache, next open app vill valid again
             metadata.valid = Nip05Status.NIP05_NOT_VALIDED;
@@ -136,7 +135,6 @@ class MetadataProvider extends ChangeNotifier with LaterFunction {
     } else if (metadata.valid! == Nip05Status.NIP05_VALIDED) {
       return Nip05Status.NIP05_VALIDED;
     }
-
     return Nip05Status.NIP05_NOT_FOUND;
   }
 
@@ -154,21 +152,8 @@ class MetadataProvider extends ChangeNotifier with LaterFunction {
       md.pubKey = event.pubKey;
       md.updated_at = event.createdAt;
 
-      // check cache
-      var oldMetadata = _metadataCache[md.pubKey];
-      if (oldMetadata == null) {
-        // db
-        MetadataDB.insert(md);
-        // cache
-        _metadataCache[md.pubKey!] = md;
-        // refresh
-      } else if (oldMetadata.updated_at! < md.updated_at!) {
-        // db
-        MetadataDB.update(md);
-        // cache
-        _metadataCache[md.pubKey!] = md;
-        // refresh
-      }
+      Metadata.writeToDB(md);
+      _metadataCache[md.pubKey!] = md;
     }
     _penddingEvents.clear();
 
@@ -207,7 +192,7 @@ class MetadataProvider extends ChangeNotifier with LaterFunction {
 
   void clear() {
     _metadataCache.clear();
-    MetadataDB.deleteAll();
+    Metadata.deleteAllFromDB();
   }
 
   Metadata handleEvent(Event event) {
@@ -218,21 +203,8 @@ class MetadataProvider extends ChangeNotifier with LaterFunction {
     md.pubKey = event.pubKey;
     md.updated_at = event.createdAt;
 
-    // check cache
-    var oldMetadata = _metadataCache[md.pubKey];
-    if (oldMetadata == null) {
-      // db
-      MetadataDB.insert(md);
-      // cache
-      _metadataCache[md.pubKey!] = md;
-      // refresh
-    } else if (oldMetadata.updated_at! < md.updated_at!) {
-      // db
-      MetadataDB.update(md);
-      // cache
-      _metadataCache[md.pubKey!] = md;
-      // refresh
-    }
+    Metadata.writeToDB(md);
+    _metadataCache[md.pubKey!] = md;
     return md;
   }
 }

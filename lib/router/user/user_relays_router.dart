@@ -46,7 +46,7 @@ class _UserRelayRouter extends State<UserRelayRouter>
         relays = arg;
       }
     }
-    if (followsNostr!=null) {
+    if (followsNostr!=null && relays!.any((element) => element.count!=null)) {
       relays!.sort(
               (r1, r2) => compareRelays(r1, r2));
     }
@@ -113,9 +113,9 @@ class _UserRelayRouter extends State<UserRelayRouter>
     bool a1 = relay1!.isActive();
     bool a2 = relay2!.isActive();
     if (a1) {
-      return a2 ? r2.count!.compareTo(r1.count!) : -1;
+      return a2 ? (r2.count!=null?r2.count!.compareTo(r1.count!):0) : -1;
     }
-    return a2 ? 1 : r2.count!.compareTo(r1.count!);
+    return a2 ? 1 : (r2.count!=null?r2.count!.compareTo(r1.count!):0);
   }
 
 }
