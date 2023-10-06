@@ -45,21 +45,11 @@ class RelayProvider extends ChangeNotifier {
 
   Future<void> getRelays(
       String pubKey, Function(List<RelayMetadata>) onRelays, {bool forceWriteToDB = false}) async {
-    List<RelayMetadata>? relays = await RelayList.get(pubKey);
-    bool loaded = false;
+    List<RelayMetadata>? relays = await RelayList.loadFromDB(pubKey);
     if (relays == null || relays.isEmpty) {
       await loadRelayAndContactList(pubKey, forceWriteToDB: forceWriteToDB, onRelays: (relays) {
-        loaded = true;
         onRelays(relays);
       });
-      // Future.delayed(
-      //   const Duration(seconds: 3),
-      //   () {
-      //     if (!loaded) {
-      //       onRelays([]);
-      //     }
-      //   },
-      // );
     } else {
       onRelays(relays);
     }
@@ -68,21 +58,10 @@ class RelayProvider extends ChangeNotifier {
   Future<void> getContacts(
       String pubKey, Function(ContactList) onContacts) async {
     ContactList? contactList = await ContactList.loadFromDB(pubKey);
-    bool loaded = false;
     if (contactList == null) {
       await loadRelayAndContactList(pubKey, onContacts: (list) {
-        loaded = true;
         onContacts(list);
       });
-      // Future.delayed(
-      //   const Duration(seconds: 10),
-      //   () {
-      //     if (!loaded) {
-      //       print("DID NOT LOAD CONTACTS in 10 seconds!!!!!!!!!!!!!!!!!!!!");
-      //       // onContacts(ContactList());
-      //     }
-      //   },
-      // );
     } else {
       onContacts(contactList);
     }
@@ -360,7 +339,7 @@ class RelayProvider extends ChangeNotifier {
       tempNostr!.sendEvent(event);
       int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
       try {
-        await RelayList.put(nostr!.publicKey, relays, now);
+        await RelayList.writeToDB(nostr!.publicKey, relays, now);
       } catch (e) {
         print(e);
       }
@@ -533,7 +512,7 @@ class RelayProvider extends ChangeNotifier {
           }
           if (relays != null && relays.isNotEmpty) {
             try {
-              await RelayList.put(pubKey, relays, relaysEvent!.createdAt, forceWrite: forceWriteToDB);
+              await RelayList.writeToDB(pubKey, relays, relaysEvent!.createdAt, forceWrite: forceWriteToDB);
             } catch (e) {
               print(e);
             }
