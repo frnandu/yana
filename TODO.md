@@ -53,8 +53,13 @@
 
 - gossip
   - blacklist for relays
-  - 
-- try exchange sqflite with isar DB?
+  - lib 
+- ~~try exchange sqflite with isar DB?~~
+- isar v4 for web
+
+- user Follow feed relays write to DB to improve startup time in outbox model
+
+- login by searching some user by name/displayName
 
 - broadcast NIP-65 kind=10002 to as many as possible
 - CORS on yana.do using imgproxy (darthsim/imgproxy)

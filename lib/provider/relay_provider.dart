@@ -129,30 +129,34 @@ class RelayProvider extends ChangeNotifier {
     int i = 0;
     Map<String, Set<String>> followRelaysMap = {};
     Map<String, List<RelayMetadata>> relaysMetadata = {};
-    // List<Future> futures = [];
+    bool canLoadRelays = true;
     for (Contact contact in contactList.list()) {
       await relayProvider
           .getRelays(timeoutSeconds: 3, contact.publicKey!, (relays) async {
-            relays
-                .where((element) =>
-                    (element.write == null || element.write!) &&
-                    element.isValidWss)
-                .map((e) => e.addr)
-                // .take(takeCountForEachContact)
-                .forEach((r) {
-              String? adr = Relay.clean(r!);
-              if (adr == null) {
-                return;
-              }
-              ;
-              if (followRelaysMap[adr] == null) {
-                followRelaysMap[adr] = {};
-              }
-              followRelaysMap[adr]!.add(contact.publicKey!);
-              relaysMetadata[contact.publicKey!] = relays;
-            });
-            print(
-                "Loaded ${relays.length} relays for contact ${contact.publicKey} $i/${contactList.list().length}");
+            if (canLoadRelays) {
+              relays
+                  .where((element) =>
+              (element.write == null || element.write!) &&
+                  element.isValidWss)
+                  .map((e) => e.addr)
+                  .forEach((r) {
+                String? adr = Relay.clean(r!);
+                if (adr == null) {
+                  return;
+                }
+                ;
+                if (followRelaysMap[adr] == null) {
+                  followRelaysMap[adr] = {};
+                }
+                followRelaysMap[adr]!.add(contact.publicKey!);
+                relaysMetadata[contact.publicKey!] = relays;
+              });
+              print(
+                  "Loaded ${relays.length} relays for contact ${contact
+                      .publicKey} $i/${contactList
+                      .list()
+                      .length}");
+            }
           })
           .timeout(const Duration(seconds: 10))
           .onError((error, stackTrace) async {
@@ -160,12 +164,8 @@ class RelayProvider extends ChangeNotifier {
                 "Couldn't get relays for ${contact.publicKey!} in 3 seconds....");
           });
     }
-    // final startTime = DateTime.now();
-    // await Future.wait(futures).onError((error, stackTrace) => List.of([]));
-    // final endTime = DateTime.now();
-    // final duration = endTime.difference(startTime);
-    // print(
-    //     "addRelays for ${relayAddrs.length} parallel Future.wait(futures) took:${duration.inMilliseconds} ms");
+    canLoadRelays = false;
+
     onComplete(await createNostrFromFollowRelaysMap(
         contactList, pubKey, followRelaysMap, relaysMetadata));
   }
@@ -184,7 +184,6 @@ class RelayProvider extends ChangeNotifier {
       if (!followRelaysMap[url]!.any((pub_key) =>
           pubKeyRelaysMap[pub_key] == null ||
           pubKeyRelaysMap[pub_key]!.length < min)) {
-        // print('~~~~ all pub_keys from relay $url already have at least $min');
         continue;
       }
       print(" Relay ${i} / ${followRelaysMap.length}");
@@ -238,7 +237,6 @@ class RelayProvider extends ChangeNotifier {
     sortedEntries.sort((a, b) => b.value.length.compareTo(a.value.length));
 
     followRelays = [];
-    // Now, sortedEntries contains your Map entries sorted by values in descending order.
 
     for (var entry in sortedEntries) {
       followRelays!
