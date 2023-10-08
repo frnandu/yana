@@ -44,7 +44,7 @@ dependencies:
   flutter_quill: ^7.4.0
   bip340: ^0.2.0
   string_validator: ^1.0.0
-  http: ^1.0.0
+  http: ^1.1.0
   sqflite: ^2.3.0
   sqflite_common_ffi: ^2.3.0+2
   sqflite_common: ^2.5.0

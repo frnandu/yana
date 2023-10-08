@@ -1,8 +1,10 @@
 import 'dart:isolate';
 
+import 'package:flutter/foundation.dart';
 import 'package:isar/isar.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:yana/models/metadata.dart';
 import 'package:yana/models/relay_list.dart';
@@ -18,15 +20,38 @@ class DB {
 
   late Future<Isar> dbFuture;
 
-  static late Isar _db;
+  static late Isar isar;
   late SendPort _dbWorkerSendPort;
+
+  static Future<void> performMigrationIfNeeded(Isar isar) async {
+    const currentDbVersion = 1;
+
+    final prefs = await SharedPreferences.getInstance();
+    final currentVersion = prefs.getInt('db_version') ?? currentDbVersion;
+    switch (currentVersion) {
+      case 1:
+      //   await migrateV1ToV2(isar);
+      //   break;
+      // case 2:
+      // current db version no migration needed
+        return;
+      default:
+        throw Exception('Unknown version: $currentVersion');
+    }
+
+    // Version aktualisieren
+    await prefs.setInt('version', currentDbVersion);
+  }
 
   static init() async {
     final dir = await getApplicationDocumentsDirectory();
-    _db = await Isar.open(
+    isar = await Isar.open(
       [RelayListSchema, ContactListSchema, MetadataSchema],
+      inspector: kDebugMode,
       directory: dir.path,
     );
+    await performMigrationIfNeeded(isar);
+
     String path = _dbName;
 
     if (!PlatformUtil.isWeb()) {
@@ -76,7 +101,7 @@ class DB {
   }
 
   static Isar getIsar() {
-    return _db;
+    return isar;
   }
 
   static void close() {
