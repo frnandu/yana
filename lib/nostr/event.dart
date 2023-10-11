@@ -1,10 +1,8 @@
-// Need to decide header
 import 'dart:async';
 import 'dart:convert';
 import 'dart:ui';
 
 import 'package:bip340/bip340.dart' as schnorr;
-import 'package:bot_toast/bot_toast.dart';
 import 'package:clock/clock.dart';
 import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart';
