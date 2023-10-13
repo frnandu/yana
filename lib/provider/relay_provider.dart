@@ -127,8 +127,8 @@ class RelayProvider extends ChangeNotifier {
       int takeCountForEachContact,
       Function(Nostr) onComplete) async {
     int i = 0;
-    Map<String, Set<String>> followRelaysMap = {};
-    Map<String, List<RelayMetadata>> relaysMetadata = {};
+    Map<String, Set<String>> pubKeysByRelayUrl = {};
+    Map<String, List<RelayMetadata>> nip65s = {};
     bool canLoadRelays = true;
     for (Contact contact in contactList.list()) {
       await relayProvider
@@ -145,11 +145,11 @@ class RelayProvider extends ChangeNotifier {
                   return;
                 }
                 ;
-                if (followRelaysMap[adr] == null) {
-                  followRelaysMap[adr] = {};
+                if (pubKeysByRelayUrl[adr] == null) {
+                  pubKeysByRelayUrl[adr] = {};
                 }
-                followRelaysMap[adr]!.add(contact.publicKey!);
-                relaysMetadata[contact.publicKey!] = relays;
+                pubKeysByRelayUrl[adr]!.add(contact.publicKey!);
+                nip65s[contact.publicKey!] = relays;
               });
               print(
                   "Loaded ${relays.length} relays for contact ${contact
@@ -167,26 +167,26 @@ class RelayProvider extends ChangeNotifier {
     canLoadRelays = false;
 
     onComplete(await createNostrFromFollowRelaysMap(
-        contactList, pubKey, followRelaysMap, relaysMetadata));
+        contactList, pubKey, pubKeysByRelayUrl, nip65s));
   }
 
   Future<Nostr> createNostrFromFollowRelaysMap(
       ContactList contactList,
       String pubKey,
-      Map<String, Set<String>> followRelaysMap,
-      Map<String, List<RelayMetadata>> relaysMetadata) async {
+      Map<String, Set<String>> pubKeysByRelayUrl,
+      Map<String, List<RelayMetadata>> nip65s) async {
     Nostr buildingNostr = Nostr(privateKey: null, publicKey: pubKey);
     Map<String, Set<String>> pubKeyRelaysMap = {};
     int i = 0;
     int min = settingProvider.followeesRelayMinCount;
-    for (String url in followRelaysMap.keys) {
+    for (String url in pubKeysByRelayUrl.keys) {
       i++;
-      if (!followRelaysMap[url]!.any((pub_key) =>
+      if (!pubKeysByRelayUrl[url]!.any((pub_key) =>
           pubKeyRelaysMap[pub_key] == null ||
           pubKeyRelaysMap[pub_key]!.length < min)) {
         continue;
       }
-      print(" Relay ${i} / ${followRelaysMap.length}");
+      print(" Relay ${i} / ${pubKeysByRelayUrl.length}");
       Relay relay = Relay(
         url,
         RelayStatus(url),
@@ -197,8 +197,8 @@ class RelayProvider extends ChangeNotifier {
           .onError((error, stackTrace) => false);
       if (connected && relay.isActive()) {
         print(
-            "+++++ Relay ${url} with ${followRelaysMap[url]!.length} pubKeys is connected...");
-        for (String pubKey in followRelaysMap[url]!) {
+            "+++++ Relay ${url} with ${pubKeysByRelayUrl[url]!.length} pubKeys is connected...");
+        for (String pubKey in pubKeysByRelayUrl[url]!) {
           Set<String>? relays = pubKeyRelaysMap[pubKey];
           if (relays == null) {
             relays = {};
@@ -211,7 +211,7 @@ class RelayProvider extends ChangeNotifier {
       } else {
         buildingNostr.removeRelay(url);
         print(
-            "----- Relay ${url} with ${followRelaysMap[url]!.length} pubKeys is NOT connected...");
+            "----- Relay ${url} with ${pubKeysByRelayUrl[url]!.length} pubKeys is NOT connected...");
       }
     }
 
@@ -221,8 +221,8 @@ class RelayProvider extends ChangeNotifier {
           : 0;
       if (relays == 0) {
         print("contact ${contact.publicKey} has $relays connected relays !!!");
-        if (relaysMetadata[contact.publicKey] != null) {
-          relaysMetadata[contact.publicKey]!.forEach((metadata) {
+        if (nip65s[contact.publicKey] != null) {
+          nip65s[contact.publicKey]!.forEach((metadata) {
             Relay? r = buildingNostr.getRelay(metadata.addr!);
             print(
                 "    relay ${metadata.addr} active = ${r!=null? r.isActive(): false}");
@@ -232,7 +232,7 @@ class RelayProvider extends ChangeNotifier {
     }
 
     List<MapEntry<String, Set<String>>> sortedEntries =
-        followRelaysMap!.entries.toList();
+        pubKeysByRelayUrl!.entries.toList();
 
     sortedEntries.sort((a, b) => b.value.length.compareTo(a.value.length));
 

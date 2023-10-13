@@ -4,6 +4,7 @@ import 'dart:ui';
 import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:bip340/bip340.dart';
 import 'package:bot_toast/bot_toast.dart';
+import 'package:dart_ndk/relay_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
@@ -146,6 +147,8 @@ Nostr? followsNostr;
 bool reloadingFollowNostr = false;
 
 List<RelayMetadata>? followRelays;
+
+late RelayManager relayManager;
 
 Nostr? staticForRelaysAndMetadataNostr;
 
