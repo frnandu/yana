@@ -60,7 +60,8 @@ v0.12
 
 - user Follow feed relays write to DB to improve startup time in outbox model
 - register nostr: in android so that nostr links give yana option as an app to open
-- persist notes from feed for faster startup 
+- persist notes from feed for faster startup
+- better android/ios/linux badges on web version login screen (anchor links to readme.md for IOS/linux)
 
 v0.13
 
