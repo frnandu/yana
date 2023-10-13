@@ -51,6 +51,7 @@
 - ~~STOP followers/zaps events from blocking the relay, when navigate away from that profile~~
 
 
+v0.12
 - gossip
   - blacklist for relays
   - lib 
@@ -58,6 +59,9 @@
 - isar v4 for web
 
 - user Follow feed relays write to DB to improve startup time in outbox model
+- register nostr: in android so that nostr links give yana option as an app to open
+
+v0.13
 
 - login by searching some user by name/displayName
 
