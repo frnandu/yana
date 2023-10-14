@@ -1,5 +1,9 @@
 <img align="right" src="./assets/imgs/logo/logo-new.png" width="100px" />
 
+[![GitHub version](https://img.shields.io/github/release/frnandu/yana.svg)](http://github.com/frnandu/yana/releases/latest)
+[![GitHub download](https://img.shields.io/github/downloads/frnandu/yana/total.svg)](http://github.com/frnandu/yana/releases/latest)
+[![License](https://img.shields.io/github/license/frnandu/yana.svg)](LICENSE.txt)
+
 # yana - Yet Another Nostr Application
 
 ## Motivation
