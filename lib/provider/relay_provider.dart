@@ -29,6 +29,7 @@ class RelayProvider extends ChangeNotifier {
 
   static const List<String> STATIC_RELAY_ADDRS = [
     "wss://relay.damus.io",
+    "wss://purplepag.es",
     "wss://nos.lol",
     "wss://nostr.wine",
     "wss://atlas.nostr.land",
