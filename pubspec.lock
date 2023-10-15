@@ -301,8 +301,8 @@ packages:
     dependency: "direct main"
     description:
       path: "."
-      ref: HEAD
-      resolved-ref: "325cdad94a55619ff2bfd4472fb7bcb4c95ad2af"
+      ref: master
+      resolved-ref: aeb50d78eaf7f95b65348a2bc5d1ec007045f8ac
       url: "https://github.com/relaystr/dart_ndk.git"
     source: git
     version: "0.0.1"

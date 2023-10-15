@@ -1,5 +1,6 @@
 import 'package:bot_toast/bot_toast.dart';
 import 'package:convert/convert.dart';
+import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -19,7 +20,7 @@ import '../content/content_decoder.dart';
 import '../editor/text_input_dialog.dart';
 
 class EventPollComponent extends StatefulWidget {
-  Event event;
+  Nip01Event event;
 
   EventPollComponent({required this.event});
 

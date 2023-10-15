@@ -1,3 +1,4 @@
+import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:flutter/material.dart';
 import 'package:yana/nostr/event_kind.dart';
 
@@ -127,7 +128,7 @@ class ContentDecoder {
   static List<Widget> decode(
     BuildContext context,
     String? content,
-    Event? event, {
+    Nip01Event? event, {
     Function? textOnTap,
     bool showImage = true,
     bool showVideo = false,

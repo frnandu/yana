@@ -1,3 +1,4 @@
+import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:flutter/material.dart';
 import 'package:get_time_ago/get_time_ago.dart';
 import 'package:pointycastle/export.dart' as pointycastle;
@@ -16,7 +17,7 @@ import '../../utils/base_consts.dart';
 class DMDetailItemComponent extends StatefulWidget {
   String sessionPubkey;
 
-  Event event;
+  Nip01Event event;
 
   bool isLocal;
 

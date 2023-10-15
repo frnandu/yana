@@ -1,3 +1,4 @@
+import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
@@ -31,6 +32,7 @@ class FollowNewEventProvider extends ChangeNotifier
   }
 
   void queryNew() {
+    return;
     doUnscribe();
 
     bool queriedTags = false;
@@ -72,11 +74,12 @@ class FollowNewEventProvider extends ChangeNotifier
 
   String _doQueryFunc(Filter filter, {bool queriyTags = false}) {
     var subscribeId = StringUtil.rndNameStr(12);
-    (settingProvider.gossip == 1 && followsNostr!=null ? followsNostr:nostr)!.query(
-        FollowEventProvider.addTagCommunityFilter(
-            [filter.toJson()], queriyTags), (event) {
-      later(event, handleEvents, null);
-    }, id: subscribeId);
+    // TODO use dart_ndk
+    // (settingProvider.gossip == 1 && followsNostr!=null ? followsNostr:nostr)!.query(
+    //     FollowEventProvider.addTagCommunityFilter(
+    //         [filter.toJson()], queriyTags), (event) {
+    //   later(event, handleEvents, null);
+    // }, id: subscribeId);
     return subscribeId;
   }
 
@@ -97,7 +100,7 @@ class FollowNewEventProvider extends ChangeNotifier
     notifyListeners();
   }
 
-  handleEvents(List<Event> events) {
+  handleEvents(List<Nip01Event> events) {
     if (eventPostsAndRepliesMemBox.newestEvent != null) {
       _localSince = eventPostsAndRepliesMemBox.newestEvent!.createdAt;
     }

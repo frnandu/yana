@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:flutter/material.dart';
 import 'package:yana/main.dart';
 import 'package:yana/provider/community_approved_provider.dart';
@@ -19,7 +20,7 @@ import 'event_bitcoin_icon_component.dart';
 import 'event_main_component.dart';
 
 class EventListComponent extends StatefulWidget {
-  Event event;
+  Nip01Event event;
 
   String? pagePubkey;
 

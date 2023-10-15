@@ -1,3 +1,4 @@
+import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
@@ -33,7 +34,7 @@ class ThreadDetailRouter extends StatefulWidget {
     return _ThreadDetailRouter();
   }
 
-  static Widget detailAppBarTitle(Event event, ThemeData themeData) {
+  static Widget detailAppBarTitle(Nip01Event event, ThemeData themeData) {
     var bodyLargeFontSize = themeData.textTheme.bodyLarge!.fontSize;
 
     List<Widget> appBarTitleList = [];
@@ -67,7 +68,7 @@ class _ThreadDetailRouter extends CustState<ThreadDetailRouter>
     with PenddingEventsLaterFunction, WhenStopFunction {
   EventMemBox box = EventMemBox();
 
-  Event? sourceEvent;
+  Nip01Event? sourceEvent;
   int? sourceIdx;
 
   bool showTitle = false;
@@ -122,7 +123,7 @@ class _ThreadDetailRouter extends CustState<ThreadDetailRouter>
   Widget doBuild(BuildContext context) {
     if (sourceEvent == null) {
       var obj = RouterUtil.routerArgs(context);
-      if (obj != null && obj is Event) {
+      if (obj != null && obj is Nip01Event) {
         sourceEvent = obj;
       }
       if (sourceEvent == null) {
@@ -133,7 +134,7 @@ class _ThreadDetailRouter extends CustState<ThreadDetailRouter>
       initFromArgs();
     } else {
       var obj = RouterUtil.routerArgs(context);
-      if (obj != null && obj is Event) {
+      if (obj != null && obj is Nip01Event) {
         if (obj.id != sourceEvent!.id) {
           // arg change! reset.
           sourceEvent = null;
@@ -161,7 +162,7 @@ class _ThreadDetailRouter extends CustState<ThreadDetailRouter>
 
     Widget? rootEventWidget;
     if (rootEvent == null) {
-      rootEventWidget = Selector<SingleEventProvider, Event?>(
+      rootEventWidget = Selector<SingleEventProvider, Nip01Event?>(
           builder: (context, event, child) {
         if (event == null) {
           return EventLoadListComponent();
@@ -306,13 +307,14 @@ class _ThreadDetailRouter extends CustState<ThreadDetailRouter>
         kind.EventKind.POLL,
         kind.EventKind.ZAP,
       ]);
-      nostr!.query([filter.toJson()], onEvent);
+      // TODO use dart_ndk
+//      nostr!.query([filter.toJson()], onEvent);
     }
   }
 
   String? rootId;
 
-  Event? rootEvent;
+  Nip01Event? rootEvent;
 
   List<ThreadDetailEvent>? rootSubList = [];
 
@@ -322,7 +324,7 @@ class _ThreadDetailRouter extends CustState<ThreadDetailRouter>
   //   });
   // }
 
-  void onEvent(Event event) {
+  void onEvent(Nip01Event event) {
     if (event.kind == kind.EventKind.ZAP && StringUtil.isBlank(event.content)) {
       return;
     }
@@ -392,7 +394,7 @@ class _ThreadDetailRouter extends CustState<ThreadDetailRouter>
     }
   }
 
-  onReplyCallback(Event event) {
+  onReplyCallback(Nip01Event event) {
     onEvent(event);
   }
 }

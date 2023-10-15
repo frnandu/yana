@@ -1,3 +1,4 @@
+import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:flutter/material.dart';
 
 import '../nostr/event_kind.dart' as kind;
@@ -74,8 +75,8 @@ class NotificationsProvider extends ChangeNotifier
       {bool initQuery = false}) {
     var subscribeId = StringUtil.rndNameStr(12);
     if (initQuery) {
-      // targetNostr.pool.subscribe([filter.toJson()], onEvent, subscribeId);
-      targetNostr.addInitQuery([filter.toJson()], onEvent, id: subscribeId);
+      // TODO use dart_ndk
+      // targetNostr.addInitQuery([filter.toJson()], onEvent, id: subscribeId);
     } else {
       if (!eventBox.isEmpty()) {
         var activeRelays = targetNostr.activeRelays();
@@ -89,15 +90,17 @@ class NotificationsProvider extends ChangeNotifier
             filtersMap[relay.url] = [filter.toJson()];
           }
         }
-        targetNostr.queryByFilters(filtersMap, onEvent, id: subscribeId);
+        // TODO use dart_ndk
+        // targetNostr.queryByFilters(filtersMap, onEvent, id: subscribeId);
       } else {
-        targetNostr.query([filter.toJson()], onEvent, id: subscribeId);
+        // TODO use dart_ndk
+        // targetNostr.query([filter.toJson()], onEvent, id: subscribeId);
       }
     }
     return subscribeId;
   }
 
-  void onEvent(Event event) {
+  void onEvent(Nip01Event event) {
     later(event, (list) {
       list = list.where((element) => element.pubKey != nostr?.publicKey).toList();
       var result = eventBox.addList(list);

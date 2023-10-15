@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:bot_toast/bot_toast.dart';
+import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:flutter/material.dart';
 import 'package:yana/nostr/event_kind.dart';
 
@@ -134,7 +135,7 @@ class NwcProvider extends ChangeNotifier {
         ["p", walletPubKey]
       ];
       final event =
-      Event(nwcNostr!.publicKey, NwcKind.REQUEST, tags, encrypted);
+      Nip01Event(pubKey: nwcNostr!.publicKey, kind: NwcKind.REQUEST, tags: tags, content: encrypted);
       await nwcNostr!.sendRelayEvent(event, relay!);
       var filter = Filter(
           kinds: [NwcKind.RESPONSE], authors: [walletPubKey!], e: [event.id]);
@@ -190,7 +191,7 @@ class NwcProvider extends ChangeNotifier {
         ["p", walletPubKey]
       ];
       final event =
-          Event(nwcNostr!.publicKey, NwcKind.REQUEST, tags, encrypted);
+      Nip01Event(pubKey: nwcNostr!.publicKey, kind: NwcKind.REQUEST, tags: tags, content: encrypted);
       var filter = Filter(
           kinds: [NwcKind.RESPONSE], authors: [walletPubKey!], e: [event.id]);
       nwcNostr!.queryRelay2(filter.toJson(), relay!, onPayInvoiceResponse, onZapped: onZapped);

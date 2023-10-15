@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:dart_ndk/nips/nip01/event.dart';
+import 'package:dart_ndk/nips/nip02/metadata.dart';
 import 'package:flutter/material.dart';
 import 'package:yana/router/tag/topic_map.dart';
 
@@ -16,7 +18,9 @@ import 'data_util.dart';
 class ContactListProvider extends ChangeNotifier {
   static ContactListProvider? _contactListProvider;
 
-  Event? _event;
+  Nip01Event? _event;
+
+  Nip02ContactList? nip02ContactList;
 
   ContactList? _contactList;
 
@@ -28,8 +32,8 @@ class ContactListProvider extends ChangeNotifier {
     return _contactListProvider!;
   }
 
-  void set(ContactList list) {
-    _contactList = list;
+  void set(Nip02ContactList list) {
+    nip02ContactList = list;
   }
 
   void reload({Nostr? targetNostr}) {
@@ -54,7 +58,7 @@ class ContactListProvider extends ChangeNotifier {
 
         if (eventStr != null) {
           var eventMap = jsonDecode(eventStr);
-          _contactListProvider!._event = Event.fromJson(eventMap);
+          _contactListProvider!._event = Nip01Event.fromJson(eventMap);
           _contactListProvider!._contactList =
               ContactList.fromJson(_contactListProvider!._event!.tags);
 
@@ -82,17 +86,7 @@ class ContactListProvider extends ChangeNotifier {
 
   var subscriptId = StringUtil.rndNameStr(16);
 
-  void query({Nostr? targetNostr}) {
-    targetNostr ??= nostr;
-    subscriptId = StringUtil.rndNameStr(16);
-    var filter = Filter(
-        kinds: [kind.EventKind.CONTACT_LIST],
-        limit: 1,
-        authors: [targetNostr!.publicKey]);
-    targetNostr.query([filter.toJson()], _onEvent, id: subscriptId);
-  }
-
-  void _onEvent(Event e) {
+  void _onEvent(Nip01Event e) {
     if (e.kind == kind.EventKind.CONTACT_LIST) {
       if (_event == null || e.createdAt > _event!.createdAt) {
         _event = e;
@@ -151,10 +145,14 @@ class ContactListProvider extends ChangeNotifier {
     _saveAndNotify();
   }
 
-  ContactList? get contactList => _contactList;
+  Nip02ContactList? get contactList => nip02ContactList;
 
   List<Contact>? list() {
     return _contactList!.contacts;
+  }
+
+  List<String> contacts() {
+    return nip02ContactList!=null ? nip02ContactList!.contacts : [];
   }
 
   Contact? getContact(String pubKey) {

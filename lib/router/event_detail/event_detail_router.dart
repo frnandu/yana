@@ -1,3 +1,4 @@
+import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:widget_size/widget_size.dart';
@@ -28,7 +29,7 @@ class EventDetailRouter extends StatefulWidget {
 class _EventDetailRouter extends State<EventDetailRouter> {
   String? eventId;
 
-  Event? event;
+  Nip01Event? event;
 
   bool showTitle = false;
 
@@ -58,7 +59,7 @@ class _EventDetailRouter extends State<EventDetailRouter> {
 
     var arg = RouterUtil.routerArgs(context);
     if (arg != null) {
-      if (arg is Event) {
+      if (arg is Nip01Event) {
         event = arg;
         eventId = event!.id;
       } else if (arg is String) {
@@ -85,7 +86,7 @@ class _EventDetailRouter extends State<EventDetailRouter> {
         showDetailBtn: false,
       );
     } else if (eventId != null) {
-      mainEventWidget = Selector<SingleEventProvider, Event?>(
+      mainEventWidget = Selector<SingleEventProvider, Nip01Event?>(
         builder: (context, _event, child) {
           if (_event == null) {
             return EventLoadListComponent();
@@ -110,7 +111,7 @@ class _EventDetailRouter extends State<EventDetailRouter> {
           return mainEventWidget!;
         }
 
-        List<Event> allEvent = [];
+        List<Nip01Event> allEvent = [];
         allEvent.addAll(eventReactions.replies);
         allEvent.addAll(eventReactions.reposts);
         allEvent.addAll(eventReactions.likes);

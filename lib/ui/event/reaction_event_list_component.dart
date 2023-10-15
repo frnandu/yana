@@ -1,3 +1,4 @@
+import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:flutter/material.dart';
 
 import '../../nostr/event.dart';
@@ -7,7 +8,7 @@ import '../../utils/router_util.dart';
 import 'reaction_event_item_component.dart';
 
 class ReactionEventListComponent extends StatefulWidget {
-  Event event;
+  Nip01Event event;
 
   bool jumpable;
 

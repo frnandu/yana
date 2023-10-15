@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:developer';
 
 import 'package:bot_toast/bot_toast.dart';
+import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:flutter/foundation.dart';
 import 'package:yana/main.dart';
 import 'package:yana/nostr/relay_pool.dart';
@@ -16,6 +17,7 @@ import 'relay.dart';
 
 import '/js/js_helper.dart' as js;
 
+@deprecated
 class Nostr {
   String? _privateKey;
 
@@ -45,75 +47,67 @@ class Nostr {
 
   String get publicKey => _publicKey;
 
-  Future<Event?> sendLike(String id) async {
-    Event event = Event(
-        _publicKey,
+  Future<Nip01Event?> sendLike(String id) async {
+    Nip01Event event = Nip01Event(pubKey: _publicKey,
+        kind:
         EventKind.REACTION,
+        tags:
         [
           ["e", id]
         ],
+        content:
         "+");
     return await sendEvent(event);
   }
 
-  Future<Event?> deleteEvent(String eventId) async {
-    Event event = Event(
-        _publicKey,
-        EventKind.EVENT_DELETION,
-        [
+  Future<Nip01Event?> deleteEvent(String eventId) async {
+    Nip01Event event = Nip01Event(
+        pubKey: _publicKey,
+        kind: EventKind.EVENT_DELETION,
+        tags: [
           ["e", eventId]
         ],
-        "delete");
+        content: "delete");
     return await sendEvent(event);
   }
 
-  Future<Event?> deleteEvents(List<String> eventIds) async {
-    List<List<dynamic>> tags = [];
-    for (var eventId in eventIds) {
-      tags.add(["e", eventId]);
-    }
-
-    Event event = Event(_publicKey, EventKind.EVENT_DELETION, tags, "delete");
-    return await sendEvent(event);
-  }
-
-  Future<Event?> sendRepost(String id,
+  Future<Nip01Event?> sendRepost(String id,
       {String? relayAddr, String content = ""}) async {
     List<dynamic> tag = ["e", id];
     if (StringUtil.isNotBlank(relayAddr)) {
       tag.add(relayAddr);
     }
-    Event event = Event(_publicKey, EventKind.REPOST, [tag], content);
+    Nip01Event event = Nip01Event(pubKey: _publicKey, kind: EventKind.REPOST, tags: [tag], content: content);
     return await sendEvent(event);
   }
 
-  Future<Event?> sendTextNote(String text,
+  Future<Nip01Event?> sendTextNote(String text,
       [List<dynamic> tags = const []]) async {
-    Event event = Event(_publicKey, EventKind.TEXT_NOTE, tags, text);
+    Nip01Event event = Nip01Event(pubKey: _publicKey, kind: EventKind.TEXT_NOTE, tags: tags, content: text);
     return await sendEvent(event);
   }
 
-  Future<Event?> recommendServer(String url) async {
+  Future<Nip01Event?> recommendServer(String url) async {
     if (!url.contains(RegExp(
         r'^(wss?:\/\/)([0-9]{1,3}(?:\.[0-9]{1,3}){3}|[^:]+):?([0-9]{1,5})?$'))) {
       throw ArgumentError.value(url, 'url', 'Not a valid relay URL');
     }
-    final event = Event(_publicKey, EventKind.RECOMMEND_SERVER, [], url);
+    final event = Nip01Event(pubKey: _publicKey, kind: EventKind.RECOMMEND_SERVER, tags: [], content:url);
     return await sendEvent(event);
   }
 
-  Future<Event?> sendContactList(ContactList contacts) async {
+  Future<Nip01Event?> sendContactList(ContactList contacts) async {
     final tags = contacts.toJson();
-    final event = Event(_publicKey, EventKind.CONTACT_LIST, tags, "");
+    final event = Nip01Event(pubKey: _publicKey, kind: EventKind.CONTACT_LIST, tags: tags, content: "");
     return await sendEvent(event);
   }
 
-  FutureOr<Event> sendEvent(Event event) async {
+  FutureOr<Nip01Event> sendEvent(Nip01Event event) async {
     // if (StringUtil.isBlank(_privateKey)) {
     //   // TODO to show Notice
     //   throw StateError("Private key is missing. Message can't be signed.");
     // }
-    Event signedEvent = await signEvent(event);
+    Nip01Event signedEvent = await signEvent(event);
     var result = _pool.send(["EVENT", signedEvent.toJson()]);
     if (result) {
       return signedEvent;
@@ -121,7 +115,7 @@ class Nostr {
     return event;
   }
 
-  FutureOr<bool> sendRelayEvent(Event event, String relay) async {
+  FutureOr<bool> sendRelayEvent(Nip01Event event, String relay) async {
     Relay r = relayProvider.genRelay(relay);
     await r.connectSync(() {
 
@@ -142,11 +136,11 @@ class Nostr {
     //   }
     // };
 
-    Event signedEvent = await signEvent(event);
+    Nip01Event signedEvent = await signEvent(event);
     return r.send(["EVENT", signedEvent.toJson()], reconnect: false);
   }
 
-  Future<Event> signEvent(Event event) async {
+  Future<Nip01Event> signEvent(Nip01Event event) async {
     if (StringUtil.isNotBlank(_privateKey)) {
       event.sign(_privateKey!);
       return event;
@@ -154,7 +148,7 @@ class Nostr {
       // Event signedEvent = await js.signEventAsync(event);
       String sig = await js.signSchnorrAsync(event.id);
       event.sig = sig;
-      Event signedEvent = event;
+      Nip01Event signedEvent = event;
       if (kDebugMode) {
         BotToast.showText(text: signedEvent.toString());
         print("SIGNED EVENT: " + signedEvent.toString());
@@ -163,7 +157,7 @@ class Nostr {
     }
   }
 
-  Event broadcase(Event event) {
+  Nip01Event broadcase(Nip01Event event) {
     _pool.send(["EVENT", event.toJson()]);
     return event;
   }

@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:bot_toast/bot_toast.dart';
+import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
@@ -33,7 +34,7 @@ import '../event_reply_callback.dart';
 class EventReactionsComponent extends StatefulWidget {
   ScreenshotController screenshotController;
 
-  Event event;
+  Nip01Event event;
 
   EventRelation eventRelation;
 

@@ -1,7 +1,9 @@
+import 'package:dart_ndk/nips/nip01/event.dart';
+
 import '../../nostr/event.dart';
 
 class ThreadDetailEvent {
-  Event event;
+  Nip01Event event;
 
   int totalLevelNum = 1;
 

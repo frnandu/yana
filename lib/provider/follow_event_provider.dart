@@ -1,10 +1,11 @@
+import 'package:dart_ndk/nips/nip01/event.dart';
+import 'package:dart_ndk/nips/nip01/filter.dart';
 import 'package:flutter/foundation.dart';
 
 import '../main.dart';
 import '../models/event_mem_box.dart';
 import '../nostr/event.dart';
 import '../nostr/event_kind.dart' as kind;
-import '../nostr/filter.dart';
 import '../nostr/nip02/contact.dart';
 import '../nostr/nip02/contact_list.dart';
 import '../nostr/nostr.dart';
@@ -23,16 +24,17 @@ class FollowEventProvider extends ChangeNotifier
 
   FollowEventProvider() {
     _initTime = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-    postsAndRepliesBox = EventMemBox(sortAfterAdd: false); // sortAfterAdd by call
+    postsAndRepliesBox =
+        EventMemBox(sortAfterAdd: false); // sortAfterAdd by call
     postsBox = EventMemBox(sortAfterAdd: false);
   }
 
   @override
-  List<Event> findEvent(String str, {int? limit = 5}) {
+  List<Nip01Event> findEvent(String str, {int? limit = 5}) {
     return postsAndRepliesBox.findEvent(str, limit: limit);
   }
 
-  List<Event> eventsByPubkey(String pubkey) {
+  List<Nip01Event> eventsByPubkey(String pubkey) {
     return postsAndRepliesBox.listByPubkey(pubkey);
   }
 
@@ -40,6 +42,7 @@ class FollowEventProvider extends ChangeNotifier
     _initTime = DateTime.now().millisecondsSinceEpoch ~/ 1000;
     postsBox.clear();
     doQuery();
+
 
     followNewEventProvider.clearPosts();
   }
@@ -77,10 +80,8 @@ class FollowEventProvider extends ChangeNotifier
     ];
   }
 
-  void doQuery(
-      {bool initQuery = false,
-      int? until,
-      bool forceUserLimit = false}) {
+  void doQuery (
+      {bool initQuery = false, int? until, bool forceUserLimit = false}) {
     var filter = Filter(
       kinds: queryEventKinds(),
       until: until ?? _initTime,
@@ -88,7 +89,7 @@ class FollowEventProvider extends ChangeNotifier
     );
     Nostr? targetNostr;
     if (settingProvider.gossip == 1) {
-      if (followsNostr==null) {
+      if (followsNostr == null) {
         return;
       }
       targetNostr = followsNostr;
@@ -101,9 +102,9 @@ class FollowEventProvider extends ChangeNotifier
     doUnscribe(targetNostr!);
 
     List<String> subscribeIds = [];
-    List<Contact>? contactList = contactListProvider.list();
+    List<String>? contactList = contactListProvider.contacts();
 
-    if (contactList==null) {
+    if (contactList == null) {
       if (kDebugMode) {
         print("CONTACT LIST empty, can not get follow content");
       }
@@ -120,8 +121,8 @@ class FollowEventProvider extends ChangeNotifier
     maxQueryIdsNum += 2;
 
     ids.add(targetNostr!.publicKey);
-    for (Contact contact in contactList) {
-      ids.add(contact.publicKey!);
+    for (String contact in contactList) {
+      ids.add(contact);
       if (ids.length > maxQueryIdsNum) {
         filter.authors = ids;
 
@@ -164,89 +165,94 @@ class FollowEventProvider extends ChangeNotifier
       bool forceUserLimit = false,
       bool queriyTags = false}) {
     var subscribeId = StringUtil.rndNameStr(12);
-    if (initQuery) {
-      // tags query can't query by size! if will make timeline xxxx
-      // targetNostr.addInitQuery(
-      //     addTagFilter([filter.toJson()], queriyTags), onEvent,
-      //     id: subscribeId);
-      targetNostr.addInitQuery([filter.toJson()], onEvent, id: subscribeId);
-    } else {
-      if (!postsAndRepliesBox.isEmpty()) {
-        var activeRelays = targetNostr.activeRelays();
-        var oldestCreatedAts =
-            postsAndRepliesBox.oldestCreatedAtByRelay(activeRelays, _initTime);
-        Map<String, List<Map<String, dynamic>>> filtersMap = {};
-        for (var relay in activeRelays) {
-          var oldestCreatedAt = oldestCreatedAts.createdAtMap[relay.url];
-          if (oldestCreatedAt != null) {
-            filter.until = oldestCreatedAt;
-            if (!forceUserLimit) {
-              filter.limit = null;
-              if (filter.until! < oldestCreatedAts.avCreatedAt - 60 * 60 * 18) {
-                filter.since = oldestCreatedAt - 60 * 60 * 12;
-              } else if (filter.until! >
-                  oldestCreatedAts.avCreatedAt - 60 * 60 * 6) {
-                filter.since = oldestCreatedAt - 60 * 60 * 36;
-              } else {
-                filter.since = oldestCreatedAt - 60 * 60 * 24;
-              }
+    // if (initQuery) {
+    //   // tags query can't query by size! if will make timeline xxxx
+    //   // targetNostr.addInitQuery(
+    //   //     addTagFilter([filter.toJson()], queriyTags), onEvent,
+    //   //     id: subscribeId);
+    //   targetNostr.addInitQuery([filter.toJson()], onEvent, id: subscribeId);
+    // } else {
+    if (!postsAndRepliesBox.isEmpty()) {
+      var activeRelays = targetNostr.activeRelays();
+      var oldestCreatedAts =
+          postsAndRepliesBox.oldestCreatedAtByRelay(activeRelays, _initTime);
+      Map<String, List<Map<String, dynamic>>> filtersMap = {};
+      for (var relay in activeRelays) {
+        var oldestCreatedAt = oldestCreatedAts.createdAtMap[relay.url];
+        if (oldestCreatedAt != null) {
+          filter.until = oldestCreatedAt;
+          if (!forceUserLimit) {
+            filter.limit = null;
+            if (filter.until! < oldestCreatedAts.avCreatedAt - 60 * 60 * 18) {
+              filter.since = oldestCreatedAt - 60 * 60 * 12;
+            } else if (filter.until! >
+                oldestCreatedAts.avCreatedAt - 60 * 60 * 6) {
+              filter.since = oldestCreatedAt - 60 * 60 * 36;
+            } else {
+              filter.since = oldestCreatedAt - 60 * 60 * 24;
             }
-            filtersMap[relay.url] =
-                addTagCommunityFilter([filter.toJson()], queriyTags);
           }
+          // filtersMap[relay.url] =
+          //     addTagCommunityFilter([filter.toJson()], queriyTags);
         }
-        targetNostr.queryByFilters(filtersMap, onEvent, id: subscribeId);
-      } else {
-        // this maybe refresh
-        targetNostr.query(
-            addTagCommunityFilter([filter.toJson()], queriyTags), onEvent,
-            id: subscribeId);
       }
+      // TODO use dart_ndk
+      //targetNostr.queryByFilters(filtersMap, onEvent, id: subscribeId);
+    } else {
+      () async {
+        await for (final event in await relayManager.query(filter)) {
+          print(event);
+        }
+      }; // this maybe refresh
+      // targetNostr.query(
+      //     addTagCommunityFilter([filter.toJson()], queriyTags), onEvent,
+      //     id: subscribeId);
     }
+    // }
     return subscribeId;
   }
 
   static List<Map<String, dynamic>> addTagCommunityFilter(
       List<Map<String, dynamic>> filters, bool queriyTags) {
-    if (queriyTags && filters.isNotEmpty) {
-      var filter = filters[0];
-      // tags filter
-      {
-        var tagFilter = Map<String, dynamic>.from(filter);
-        tagFilter.remove("authors");
-        // handle tag with TopicMap
-        var tagList = contactListProvider.tagList().toList();
-        List<String> queryTagList = [];
-        for (var tag in tagList) {
-          var list = TopicMap.getList(tag);
-          if (list != null) {
-            queryTagList.addAll(list);
-          } else {
-            queryTagList.add(tag);
-          }
-        }
-        if (queryTagList.isNotEmpty) {
-          tagFilter["#t"] = queryTagList;
-          filters.add(tagFilter);
-        }
-      }
-      // community filter
-      {
-        var communityFilter = Map<String, dynamic>.from(filter);
-        communityFilter.remove("authors");
-        var communityList =
-            contactListProvider.followedCommunitiesList().toList();
-        if (communityList.isNotEmpty) {
-          communityFilter["#a"] = communityList;
-          filters.add(communityFilter);
-        }
-      }
-    }
+    // if (queriyTags && filters.isNotEmpty) {
+    //   var filter = filters[0];
+    //   // tags filter
+    //   {
+    //     var tagFilter = Map<String, dynamic>.from(filter);
+    //     tagFilter.remove("authors");
+    //     // handle tag with TopicMap
+    //     var tagList = contactListProvider.tagList().toList();
+    //     List<String> queryTagList = [];
+    //     for (var tag in tagList) {
+    //       var list = TopicMap.getList(tag);
+    //       if (list != null) {
+    //         queryTagList.addAll(list);
+    //       } else {
+    //         queryTagList.add(tag);
+    //       }
+    //     }
+    //     if (queryTagList.isNotEmpty) {
+    //       tagFilter["#t"] = queryTagList;
+    //       filters.add(tagFilter);
+    //     }
+    //   }
+    //   // community filter
+    //   {
+    //     var communityFilter = Map<String, dynamic>.from(filter);
+    //     communityFilter.remove("authors");
+    //     var communityList =
+    //         contactListProvider.followedCommunitiesList().toList();
+    //     if (communityList.isNotEmpty) {
+    //       communityFilter["#a"] = communityList;
+    //       filters.add(communityFilter);
+    //     }
+    //   }
+    // }
     return filters;
   }
 
   // check if is posts (no tag e and not Mentions, TODO handle NIP27)
-  static bool eventIsPost(Event event) {
+  static bool eventIsPost(Nip01Event event) {
     bool isPosts = true;
     var tagLength = event.tags.length;
     for (var i = 0; i < tagLength; i++) {
@@ -265,7 +271,8 @@ class FollowEventProvider extends ChangeNotifier
   }
 
   void mergeNewPostAndReplyEvents() {
-    var postAndRepliesEvents = followNewEventProvider.eventPostsAndRepliesMemBox.all();
+    var postAndRepliesEvents =
+        followNewEventProvider.eventPostsAndRepliesMemBox.all();
 
     postsAndRepliesBox.addList(postAndRepliesEvents);
 
@@ -292,14 +299,14 @@ class FollowEventProvider extends ChangeNotifier
     notifyListeners();
   }
 
-  void onEvent(Event event) {
+  void onEvent(Nip01Event event) {
     if (postsAndRepliesBox.isEmpty()) {
       laterTimeMS = 200;
     } else {
       laterTimeMS = 500;
     }
     later(event, (list) {
-    // var e = event;
+      // var e = event;
       bool addedPosts = false;
       bool addedReplies = false;
       for (var e in list) {
@@ -329,7 +336,7 @@ class FollowEventProvider extends ChangeNotifier
 
     doUnscribe(nostr!);
 
-    if (followsNostr!=null) {
+    if (followsNostr != null) {
       doUnscribe(followsNostr!);
     }
 

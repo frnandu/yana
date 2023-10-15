@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:dart_ndk/nips/nip01/event.dart';
+
 import '../main.dart';
 import '../nostr/event.dart';
 import '../nostr/event_kind.dart' as kind;
@@ -11,17 +13,17 @@ class EventReactions implements FindEventInterface {
 
   int replyNum = 0;
 
-  List<Event> replies = [];
+  List<Nip01Event> replies = [];
 
   int repostNum = 0;
 
-  List<Event> reposts = [];
+  List<Nip01Event> reposts = [];
 
   int likeNum = 0;
 
-  List<Event> likes = [];
+  List<Nip01Event> likes = [];
 
-  List<Event>? myLikeEvents;
+  List<Nip01Event>? myLikeEvents;
 
   bool hasMyReply = false;
   bool hasMyRepost = false;
@@ -29,7 +31,7 @@ class EventReactions implements FindEventInterface {
 
   int zapNum = 0;
 
-  List<Event> zaps = [];
+  List<Nip01Event> zaps = [];
 
   Map<String, int> eventIdMap = {};
 
@@ -59,8 +61,8 @@ class EventReactions implements FindEventInterface {
   }
 
   @override
-  List<Event> findEvent(String str, {int? limit = 5}) {
-    List<Event> list = [];
+  List<Nip01Event> findEvent(String str, {int? limit = 5}) {
+    List<Nip01Event> list = [];
     for (var event in replies) {
       if (event.content.contains(str)) {
         list.add(event);
@@ -77,7 +79,7 @@ class EventReactions implements FindEventInterface {
     accessTime = t;
   }
 
-  bool onEvent(Event event) {
+  bool onEvent(Nip01Event event) {
     dataTime = DateTime.now();
 
     var id = event.id;

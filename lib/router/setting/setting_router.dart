@@ -1048,27 +1048,27 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
     setState(() {
       loadingGossipRelays = true;
     });
-    await relayProvider.buildNostrFromContactsRelays(
-        nostr!.publicKey,
-        contactListProvider.contactList!,
-        settingProvider.followeesRelayMinCount!, (builtNostr) {
-      reloadingFollowNostr = true;
-      if (followsNostr != null) {
-        followsNostr!.close();
-      }
-      followsNostr = builtNostr;
-      // add logged user's configured read relays
-      // nostr!
-      //     .activeRelays()
-      //     .where((relay) => relay.access != WriteAccess.writeOnly)
-      //     .forEach((relay) {
-      //   followsNostr!.addRelay(relay, connect: true);
-      // });
-      reloadingFollowNostr = false;
-      setState(() {
-        loadingGossipRelays = false;
-      });
-      followEventProvider.doQuery();
-    });
+    // await relayProvider.buildNostrFromContactsRelays(
+    //     nostr!.publicKey,
+    //     contactListProvider.nip02ContactList!,
+    //     settingProvider.followeesRelayMinCount!, (builtNostr) {
+    //   reloadingFollowNostr = true;
+    //   if (followsNostr != null) {
+    //     followsNostr!.close();
+    //   }
+    //   followsNostr = builtNostr;
+    //   // add logged user's configured read relays
+    //   // nostr!
+    //   //     .activeRelays()
+    //   //     .where((relay) => relay.access != WriteAccess.writeOnly)
+    //   //     .forEach((relay) {
+    //   //   followsNostr!.addRelay(relay, connect: true);
+    //   // });
+    //   reloadingFollowNostr = false;
+    //   setState(() {
+    //     loadingGossipRelays = false;
+    //   });
+    //   followEventProvider.doQuery();
+    // });
   }
 }

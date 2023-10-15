@@ -1,3 +1,4 @@
+import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:flutter/material.dart';
 import 'package:yana/ui/community_info_component.dart';
 import 'package:yana/utils/base.dart';
@@ -197,10 +198,11 @@ class _CommunityDetailRouter extends CustState<CommunityDetailRouter>
     ], limit: 100);
     var queryArg = filter.toJson();
     queryArg["#a"] = [communityId!.toAString()];
-    nostr!.query([queryArg], onEvent, id: subscribeId);
+    // TODO use dart_ndk
+    //nostr!.query([queryArg], onEvent, id: subscribeId);
   }
 
-  void onEvent(Event event) {
+  void onEvent(Nip01Event event) {
     later(event, (list) {
       box.addList(list);
       setState(() {});
@@ -217,7 +219,7 @@ class _CommunityDetailRouter extends CustState<CommunityDetailRouter>
     } catch (e) {}
   }
 
-  onDeleteCallback(Event event) {
+  onDeleteCallback(Nip01Event event) {
     box.delete(event.id);
     setState(() {});
   }

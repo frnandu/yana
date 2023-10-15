@@ -1,4 +1,5 @@
 import 'package:bot_toast/bot_toast.dart';
+import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
@@ -80,7 +81,7 @@ class DMProvider extends ChangeNotifier with PenddingEventsLaterFunction {
     }
   }
 
-  void addEventAndUpdateReadedTime(DMSessionDetail detail, Event event) {
+  void addEventAndUpdateReadedTime(DMSessionDetail detail, Nip01Event event) {
     penddingEvents.add(event);
     eventLaterHandle(penddingEvents, updateUI: true);
     updateReadedTime(detail);
@@ -129,7 +130,7 @@ class DMProvider extends ChangeNotifier with PenddingEventsLaterFunction {
       BotToast.showText(
           text: "Loaded ${events.length} DM events from DB");
     }
-    Map<String, List<Event>> eventListMap = {};
+    Map<String, List<Nip01Event>> eventListMap = {};
     for (var event in events) {
       // print("dmEvent");
       // print(event.toJson());
@@ -206,7 +207,7 @@ class DMProvider extends ChangeNotifier with PenddingEventsLaterFunction {
     // return newlist;
   }
 
-  String? _getPubkey(String? localPubkey, Event event) {
+  String? _getPubkey(String? localPubkey, Nip01Event event) {
     if (event.pubKey != localPubkey) {
       return event.pubKey;
     }
@@ -220,7 +221,7 @@ class DMProvider extends ChangeNotifier with PenddingEventsLaterFunction {
     return null;
   }
 
-  bool _addEvent(String localPubkey, Event event) {
+  bool _addEvent(String localPubkey, Nip01Event  event) {
     var pubkey = _getPubkey(localPubkey, event);
     if (StringUtil.isBlank(pubkey)) {
       return false;
@@ -265,12 +266,8 @@ class DMProvider extends ChangeNotifier with PenddingEventsLaterFunction {
       since: _initSince + 1,
     );
 
-    // if (!subscribe) {
-    //   targetNostr.addInitQuery([filter0.toJson(), filter1.toJson()], onEvent);
-    // } else {
-      targetNostr.query([filter0.toJson(), filter1.toJson()], onEvent);
-      // targetNostr.subscribe([filter0.toJson(), filter1.toJson()], onEvent);
-    // }
+    // TODO use dart_ndk
+//      targetNostr.query([filter0.toJson(), filter1.toJson()], onEvent);
   }
 
   // void handleEventImmediately(Event event) {
@@ -278,11 +275,11 @@ class DMProvider extends ChangeNotifier with PenddingEventsLaterFunction {
   //   eventLaterHandle(penddingEvents);
   // }
 
-  void onEvent(Event event) {
+  void onEvent(Nip01Event event) {
     later(event, eventLaterHandle, null);
   }
 
-  void eventLaterHandle(List<Event> events, {bool updateUI = true}) {
+  void eventLaterHandle(List<Nip01Event> events, {bool updateUI = true}) {
     bool updated = false;
     var keyIndex = settingProvider.privateKeyIndex!;
     if (kDebugMode) {

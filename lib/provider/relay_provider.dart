@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 
+import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:flutter/material.dart';
 import 'package:yana/models/relay_list.dart';
 import 'package:yana/nostr/nip02/contact_list.dart';
@@ -122,54 +123,54 @@ class RelayProvider extends ChangeNotifier {
 
   bool loadingGossipRelays = false;
 
-  Future<void> buildNostrFromContactsRelays(
-      String pubKey,
-      ContactList contactList,
-      int takeCountForEachContact,
-      Function(Nostr) onComplete) async {
-    int i = 0;
-    Map<String, Set<String>> pubKeysByRelayUrl = {};
-    Map<String, List<RelayMetadata>> nip65s = {};
-    bool canLoadRelays = true;
-    for (Contact contact in contactList.list()) {
-      await relayProvider
-          .getRelays(timeoutSeconds: 3, contact.publicKey!, (relays) async {
-            if (canLoadRelays) {
-              relays
-                  .where((element) =>
-              (element.write == null || element.write!) &&
-                  element.isValidWss)
-                  .map((e) => e.addr)
-                  .forEach((r) {
-                String? adr = Relay.clean(r!);
-                if (adr == null) {
-                  return;
-                }
-                ;
-                if (pubKeysByRelayUrl[adr] == null) {
-                  pubKeysByRelayUrl[adr] = {};
-                }
-                pubKeysByRelayUrl[adr]!.add(contact.publicKey!);
-                nip65s[contact.publicKey!] = relays;
-              });
-              print(
-                  "Loaded ${relays.length} relays for contact ${contact
-                      .publicKey} $i/${contactList
-                      .list()
-                      .length}");
-            }
-          })
-          .timeout(const Duration(seconds: 10))
-          .onError((error, stackTrace) async {
-            print(
-                "Couldn't get relays for ${contact.publicKey!} in 3 seconds....");
-          });
-    }
-    canLoadRelays = false;
-
-    onComplete(await createNostrFromFollowRelaysMap(
-        contactList, pubKey, pubKeysByRelayUrl, nip65s));
-  }
+  // Future<void> buildNostrFromContactsRelays(
+  //     String pubKey,
+  //     ContactList contactList,
+  //     int takeCountForEachContact,
+  //     Function(Nostr) onComplete) async {
+  //   int i = 0;
+  //   Map<String, Set<String>> pubKeysByRelayUrl = {};
+  //   Map<String, List<RelayMetadata>> nip65s = {};
+  //   bool canLoadRelays = true;
+  //   for (Contact contact in contactList.list()) {
+  //     await relayProvider
+  //         .getRelays(timeoutSeconds: 3, contact.publicKey!, (relays) async {
+  //           if (canLoadRelays) {
+  //             relays
+  //                 .where((element) =>
+  //             (element.write == null || element.write!) &&
+  //                 element.isValidWss)
+  //                 .map((e) => e.addr)
+  //                 .forEach((r) {
+  //               String? adr = Relay.clean(r!);
+  //               if (adr == null) {
+  //                 return;
+  //               }
+  //               ;
+  //               if (pubKeysByRelayUrl[adr] == null) {
+  //                 pubKeysByRelayUrl[adr] = {};
+  //               }
+  //               pubKeysByRelayUrl[adr]!.add(contact.publicKey!);
+  //               nip65s[contact.publicKey!] = relays;
+  //             });
+  //             print(
+  //                 "Loaded ${relays.length} relays for contact ${contact
+  //                     .publicKey} $i/${contactList
+  //                     .list()
+  //                     .length}");
+  //           }
+  //         })
+  //         .timeout(const Duration(seconds: 10))
+  //         .onError((error, stackTrace) async {
+  //           print(
+  //               "Couldn't get relays for ${contact.publicKey!} in 3 seconds....");
+  //         });
+  //   }
+  //   canLoadRelays = false;
+  //
+  //   onComplete(await createNostrFromFollowRelaysMap(
+  //       contactList, pubKey, pubKeysByRelayUrl, nip65s));
+  // }
 
   Future<Nostr> createNostrFromFollowRelaysMap(
       ContactList contactList,
@@ -311,40 +312,40 @@ class RelayProvider extends ChangeNotifier {
     print("getNostr going for addRelays....");
     await addRelays(loggedUserNostr);
 
-    print("getNostr going for getContacts....");
-    await getContacts(loggedUserNostr.publicKey, (contactList) async {
-      print("getNostr GOT ${contactList.contacts!.length} contacts....");
-      contactListProvider.set(contactList);
-      if (settingProvider.gossip == 1) {
-        print("getNostr going for buildNostrFromContactsRelays....");
-        await buildNostrFromContactsRelays(
-          loggedUserNostr.publicKey,
-          contactList,
-          settingProvider.followeesRelayMinCount ??
-              SettingProvider.DEFAULT_FOLLOWEES_RELAY_MIN_COUNT,
-          (builtNostr) {
-            if (followsNostr == null) {
-              followsNostr = builtNostr;
-              // add logged user's configured read relays
-              // loggedUserNostr!
-              //     .activeRelays()
-              //     .where((relay) => relay.access != WriteAccess.writeOnly)
-              //     .forEach((relay) {
-              //   followsNostr!.addRelay(relay, connect: true);
-              // });
-              print(
-                  "getNostr going for followEventProvider.doQuery() with followNostr SET....");
-              followEventProvider.doQuery();
-            }
-          },
-        );
-      } else {
-        print(
-            "getNostr going for followEventProvider.doQuery() with nostr....");
-        nostr = loggedUserNostr;
-        followEventProvider.doQuery();
-      }
-    });
+    // print("getNostr going for getContacts....");
+    // await getContacts(loggedUserNostr.publicKey, (contactList) async {
+    //   print("getNostr GOT ${contactList.contacts!.length} contacts....");
+    //   contactListProvider.set(contactList);
+    //   if (settingProvider.gossip == 1) {
+    //     print("getNostr going for buildNostrFromContactsRelays....");
+    //     await buildNostrFromContactsRelays(
+    //       loggedUserNostr.publicKey,
+    //       contactList,
+    //       settingProvider.followeesRelayMinCount ??
+    //           SettingProvider.DEFAULT_FOLLOWEES_RELAY_MIN_COUNT,
+    //       (builtNostr) {
+    //         if (followsNostr == null) {
+    //           followsNostr = builtNostr;
+    //           // add logged user's configured read relays
+    //           // loggedUserNostr!
+    //           //     .activeRelays()
+    //           //     .where((relay) => relay.access != WriteAccess.writeOnly)
+    //           //     .forEach((relay) {
+    //           //   followsNostr!.addRelay(relay, connect: true);
+    //           // });
+    //           print(
+    //               "getNostr going for followEventProvider.doQuery() with followNostr SET....");
+    //           followEventProvider.doQuery();
+    //         }
+    //       },
+    //     );
+    //   } else {
+    //     print(
+    //         "getNostr going for followEventProvider.doQuery() with nostr....");
+    //     nostr = loggedUserNostr;
+    //     followEventProvider.doQuery();
+    //   }
+    // });
     // add initQuery
     // contactListProvider.query(targetNostr: _nostr);
     // contactListProvider.reload(targetNostr: _nostr);
@@ -433,8 +434,8 @@ class RelayProvider extends ChangeNotifier {
         }
       });
 
-      var event = Event(
-          tempNostr!.publicKey, kind.EventKind.RELAY_LIST_METADATA, tags, "");
+      var event = Nip01Event(pubKey:
+          tempNostr!.publicKey, kind: kind.EventKind.RELAY_LIST_METADATA, tags: tags, content: "");
       tempNostr!.sendEvent(event);
       int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
       try {

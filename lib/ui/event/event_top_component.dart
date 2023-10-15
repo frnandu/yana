@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:flutter/material.dart';
 import 'package:get_time_ago/get_time_ago.dart';
 import 'package:provider/provider.dart';
@@ -18,7 +19,7 @@ import '../../utils/base.dart';
 import '../user_pic_component.dart';
 
 class EventTopComponent extends StatefulWidget {
-  Event event;
+  Nip01Event event;
   String? pagePubkey;
 
   EventTopComponent({

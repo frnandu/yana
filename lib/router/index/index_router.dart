@@ -98,7 +98,7 @@ class _IndexRouter extends CustState<IndexRouter>
     var _followEventNewProvider = Provider.of<FollowNewEventProvider>(context);
     var _indexProvider = Provider.of<IndexProvider>(context);
 
-    if (nostr == null) {
+    if (nostr == null && relayManager==null) {
       return LoginRouter();
     }
 

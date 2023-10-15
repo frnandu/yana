@@ -1,3 +1,4 @@
+import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:yana/main.dart';
 
 import '../nostr/event.dart';
@@ -7,17 +8,17 @@ import '../utils/find_event_interface.dart';
 /// a memory event box
 /// use to hold event received from relay and offer event List to ui
 class EventMemBox implements FindEventInterface {
-  List<Event> _eventList = [];
+  List<Nip01Event> _eventList = [];
 
-  Map<String, Event> _idMap = {};
+  Map<String, Nip01Event> _idMap = {};
 
   bool sortAfterAdd;
 
   EventMemBox({this.sortAfterAdd = true}) {}
 
   @override
-  List<Event> findEvent(String str, {int? limit = 5}) {
-    List<Event> list = [];
+  List<Nip01Event> findEvent(String str, {int? limit = 5}) {
+    List<Nip01Event> list = [];
     for (var event in _eventList) {
       if (event.content.contains(str)) {
         list.add(event);
@@ -30,14 +31,14 @@ class EventMemBox implements FindEventInterface {
     return list;
   }
 
-  Event? get newestEvent {
+  Nip01Event? get newestEvent {
     if (_eventList.isEmpty) {
       return null;
     }
     return _eventList.first;
   }
 
-  Event? get oldestEvent {
+  Nip01Event? get oldestEvent {
     if (_eventList.isEmpty) {
       return null;
     }
@@ -104,7 +105,7 @@ class EventMemBox implements FindEventInterface {
     return true;
   }
 
-  bool add(Event event) {
+  bool add(Nip01Event event) {
     var oldEvent = _idMap[event.id];
 
     if (oldEvent != null) {
@@ -123,7 +124,7 @@ class EventMemBox implements FindEventInterface {
     return true;
   }
 
-  bool addList(List<Event> list) {
+  bool addList(List<Nip01Event> list) {
     bool added = false;
     for (var event in list) {
       var oldEvent = _idMap[event.id];
@@ -159,7 +160,7 @@ class EventMemBox implements FindEventInterface {
     return _eventList.length;
   }
 
-  List<Event> all() {
+  List<Nip01Event> all() {
     return _eventList;
   }
 
@@ -167,8 +168,8 @@ class EventMemBox implements FindEventInterface {
     return _idMap.containsKey(id);
   }
 
-  List<Event> listByPubkey(String pubkey) {
-    List<Event> list = [];
+  List<Nip01Event> listByPubkey(String pubkey) {
+    List<Nip01Event> list = [];
     for (var event in _eventList) {
       if (event.pubKey == pubkey) {
         list.add(event);
@@ -177,7 +178,7 @@ class EventMemBox implements FindEventInterface {
     return list;
   }
 
-  List<Event> suList(int start, int limit) {
+  List<Nip01Event> suList(int start, int limit) {
     var length = _eventList.length;
     if (start > length) {
       return [];
@@ -188,7 +189,7 @@ class EventMemBox implements FindEventInterface {
     return _eventList.sublist(start, limit);
   }
 
-  Event? get(int index) {
+  Nip01Event? get(int index) {
     if (_eventList.length < index) {
       return null;
     }

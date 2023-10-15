@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:developer';
 
+import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:flutter/material.dart';
 
 import '../../nostr/event.dart';
@@ -13,7 +14,7 @@ import 'event_quote_component.dart';
 import 'reaction_event_item_component.dart';
 
 class ZapEventMainComponent extends StatefulWidget {
-  Event event;
+  Nip01Event event;
 
   ZapEventMainComponent({super.key, required this.event});
 

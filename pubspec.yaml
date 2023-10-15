@@ -123,7 +123,9 @@ dependencies:
   isar_flutter_libs: ^3.1.0+1
   path_provider: ^2.1.1
   dart_ndk:
-    git: https://github.com/relaystr/dart_ndk.git
+    git:
+      url: https://github.com/relaystr/dart_ndk.git
+      ref: master
 
 dev_dependencies:
   flutter_launcher_icons: ^0.13.1

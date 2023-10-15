@@ -1,4 +1,5 @@
 import 'package:assorted_layout_widgets/assorted_layout_widgets.dart';
+import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:flutter/material.dart';
 import 'package:yana/ui/user_pic_component.dart';
 import 'package:yana/utils/base.dart';
@@ -10,7 +11,7 @@ class NewNotesUpdatedComponent extends StatelessWidget {
   Function? onTap;
   String text;
 
-  List<Event> newEvents;
+  List<Nip01Event> newEvents;
 
   NewNotesUpdatedComponent({super.key, required this.newEvents, required this.text, this.onTap});
 

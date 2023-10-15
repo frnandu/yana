@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:bot_toast/bot_toast.dart';
+import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -285,16 +286,18 @@ class _SearchRouter extends CustState<SearchRouter>
         }
         filtersMap[relay.url] = [fm];
       }
-      nostr!.queryByFilters(filtersMap, onQueryEvent, id: subscribeId);
+      // TODO use dart_ndk
+      // nostr!.queryByFilters(filtersMap, onQueryEvent, id: subscribeId);
     } else {
       if (until != null) {
         filterMap!["until"] = until;
       }
-      nostr!.query([filterMap!], onQueryEvent, id: subscribeId);
+      // TODO use dart_ndk
+      // nostr!.query([filterMap!], onQueryEvent, id: subscribeId);
     }
   }
 
-  void onQueryEvent(Event event) {
+  void onQueryEvent(Nip01Event event) {
     if (event.kind == kind.EventKind.METADATA) {
       var jsonObj = jsonDecode(event.content);
       Metadata metadata = Metadata.fromJson(jsonObj);
@@ -372,7 +375,7 @@ class _SearchRouter extends CustState<SearchRouter>
 
   static const int searchMemLimit = 20;
 
-  onDeletedCallback(Event event) {
+  onDeletedCallback(Nip01Event event) {
     eventMemBox.delete(event.id);
     setState(() {});
   }
@@ -423,7 +426,7 @@ class _SearchRouter extends CustState<SearchRouter>
     }
   }
 
-  List<Event> events = [];
+  List<Nip01Event> events = [];
 
   searchEventFromCache() {
     hideKeyBoard();

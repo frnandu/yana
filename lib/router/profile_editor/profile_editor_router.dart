@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:developer';
 
+import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:flutter/material.dart';
 import 'package:yana/models/metadata.dart';
 import 'package:yana/nostr/upload/uploader.dart';
@@ -311,8 +312,8 @@ class _ProfileEditorRouter extends CustState<ProfileEditorRouter> {
       }
     });
 
-    var updateEvent = Event(
-        tempNostr!.publicKey, kind.EventKind.METADATA, [], jsonEncode(metadataMap));
+    var updateEvent = Nip01Event(pubKey:
+        tempNostr!.publicKey, kind: kind.EventKind.METADATA, tags: [], content: jsonEncode(metadataMap));
     tempNostr!.sendEvent(updateEvent);
 
     RouterUtil.back(context);

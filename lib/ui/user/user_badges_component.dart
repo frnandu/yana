@@ -95,14 +95,15 @@ class _UserBadgesComponent extends CustState<UserBadgesComponent>
   Future<void> onReady(BuildContext context) async {
     var filter =
         Filter(authors: [widget.pubkey], kinds: [kind.EventKind.BADGE_ACCEPT]);
-    nostr!.query([filter.toJson()], (event) {
-      var result = eventMemBox.add(event);
-      if (result) {
-        later(() {
-          setState(() {});
-        }, null);
-      }
-    });
+    // TODO use dart_ndk
+    // nostr!.query([filter.toJson()], (event) {
+    //   var result = eventMemBox.add(event);
+    //   if (result) {
+    //     later(() {
+    //       setState(() {});
+    //     }, null);
+    //   }
+    // });
   }
 
   @override

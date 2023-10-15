@@ -1,3 +1,4 @@
+import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:yana/router/tag/topic_map.dart';
@@ -171,10 +172,11 @@ class _TagDetailRouter extends CustState<TagDetailRouter>
     } else {
       queryArg["#t"] = [plainTag];
     }
-    nostr!.query([queryArg], onEvent, id: subscribeId);
+    // TODO use dart_ndk
+//    nostr!.query([queryArg], onEvent, id: subscribeId);
   }
 
-  void onEvent(Event event) {
+  void onEvent(Nip01Event event) {
     later(event, (list) {
       box.addList(list);
       setState(() {});
@@ -191,7 +193,7 @@ class _TagDetailRouter extends CustState<TagDetailRouter>
     } catch (e) {}
   }
 
-  onDeleteCallback(Event event) {
+  onDeleteCallback(Nip01Event event) {
     box.delete(event.id);
     setState(() {});
   }

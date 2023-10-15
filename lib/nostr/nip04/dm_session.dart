@@ -1,3 +1,5 @@
+import 'package:dart_ndk/nips/nip01/event.dart';
+
 import '../../models/event_mem_box.dart';
 import '../event.dart';
 
@@ -12,15 +14,15 @@ class DMSession {
     return DMSession(pubkey: this.pubkey).._box = this._box;
   }
 
-  bool addEvent(Event event) {
+  bool addEvent(Nip01Event event) {
     return _box.add(event);
   }
 
-  void addEvents(List<Event> events) {
+  void addEvents(List<Nip01Event> events) {
     _box.addList(events);
   }
 
-  Event? get newestEvent {
+  Nip01Event? get newestEvent {
     return _box.newestEvent;
   }
 
@@ -28,7 +30,7 @@ class DMSession {
     return _box.length();
   }
 
-  Event? get(int index) {
+  Nip01Event? get(int index) {
     if (_box.length() <= index) {
       return null;
     }

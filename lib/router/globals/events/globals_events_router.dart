@@ -1,3 +1,4 @@
+import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:provider/provider.dart';
@@ -120,22 +121,23 @@ class _GlobalsEventsRouter extends KeepAliveCustState<GlobalsEventsRouter>
     // }
     //
     var filter = Filter(kinds: [kind.EventKind.TEXT_NOTE], since: _initTime);
-    nostr!.subscribe([filter.toJson()], (event) {
-      if (widget.eventBox.isEmpty()) {
-        laterTimeMS = 200;
-      } else {
-        laterTimeMS = 1000;
-      }
-
-      later(event, (list) {
-        setState(() {
-          widget.eventBox.addList(list);
-          if (widget.eventBox.newestEvent != null) {
-            _initTime = widget.eventBox.newestEvent!.createdAt;
-          }
-        });
-      }, null);
-    }, id: subscribeId);
+    // TODO use dart_ndk
+    // nostr!.subscribe([filter.toJson()], (event) {
+    //   if (widget.eventBox.isEmpty()) {
+    //     laterTimeMS = 200;
+    //   } else {
+    //     laterTimeMS = 1000;
+    //   }
+    //
+    //   later(event, (list) {
+    //     setState(() {
+    //       widget.eventBox.addList(list);
+    //       if (widget.eventBox.newestEvent != null) {
+    //         _initTime = widget.eventBox.newestEvent!.createdAt;
+    //       }
+    //     });
+    //   }, null);
+    // }, id: subscribeId);
   }
 
   void unsubscribe() {
@@ -152,7 +154,7 @@ class _GlobalsEventsRouter extends KeepAliveCustState<GlobalsEventsRouter>
     disposeLater();
   }
 
-  onDeleteCallback(Event event) {
+  onDeleteCallback(Nip01Event event) {
     widget.eventBox.delete(event.id);
     setState(() {});
   }

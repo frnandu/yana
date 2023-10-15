@@ -227,9 +227,10 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
       localContactBox = EventMemBox(sortAfterAdd: false);
       var filter = Filter(
           authors: [widget.pubkey], kinds: [kind.EventKind.CONTACT_LIST]);
-      widget.userNostr!.query([filter.toJson()], (event) {
-        localContactBox!.add(event);
-      }, id: fetchLocalContactsId);
+      // TODO use dart_ndk
+      // widget.userNostr!.query([filter.toJson()], (event) {
+      //   localContactBox!.add(event);
+      // }, id: fetchLocalContactsId);
       BotToast.showText(text: I18n.of(context).Begin_to_load_Contact_History);
     }
   }
@@ -326,7 +327,7 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
     if (contactList != null) {
       RouterUtil.router(context, RouterPath.USER_CONTACT_LIST, contactList);
     } else if (isLocal) {
-      var cl = contactListProvider.contactList;
+      var cl = contactListProvider.nip02ContactList;
       if (cl != null) {
         RouterUtil.router(context, RouterPath.USER_CONTACT_LIST, cl);
       }
@@ -337,7 +338,7 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
     if (contactList != null) {
       RouterUtil.router(context, RouterPath.FOLLOWED_TAGS_LIST, contactList);
     } else if (isLocal) {
-      var cl = contactListProvider.contactList;
+      var cl = contactListProvider.nip02ContactList;
       if (cl != null) {
         RouterUtil.router(context, RouterPath.FOLLOWED_TAGS_LIST, cl);
       }
@@ -388,15 +389,16 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
       var filter = Filter(kinds: [kind.EventKind.ZAP], p: [widget.pubkey]);
       zapSubscribeId = StringUtil.rndNameStr(12);
       // print(filter);
-      staticForRelaysAndMetadataNostr!.query([filter.toJson()], (event) {
-        if (event.kind == kind.EventKind.ZAP && zapEventBox!.add(event)) {
-          if (!_disposed) {
-            setState(() {
-              zapNum = zapNum! + ZapNumUtil.getNumFromZapEvent(event);
-            });
-          }
-        }
-      }, id: zapSubscribeId);
+      // TODO use dart_ndk
+      // staticForRelaysAndMetadataNostr!.query([filter.toJson()], (event) {
+      //   if (event.kind == kind.EventKind.ZAP && zapEventBox!.add(event)) {
+      //     if (!_disposed) {
+      //       setState(() {
+      //         zapNum = zapNum! + ZapNumUtil.getNumFromZapEvent(event);
+      //       });
+      //     }
+      //   }
+      // }, id: zapSubscribeId);
 
       zapNum = 0;
     } else {
@@ -429,7 +431,7 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
     if (contactList != null) {
       RouterUtil.router(context, RouterPath.FOLLOWED_COMMUNITIES, contactList);
     } else if (isLocal) {
-      var cl = contactListProvider.contactList;
+      var cl = contactListProvider.nip02ContactList;
       if (cl != null) {
         RouterUtil.router(context, RouterPath.FOLLOWED_COMMUNITIES, cl);
       }

@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:provider/provider.dart';
@@ -45,7 +46,7 @@ import 'event_top_component.dart';
 class EventMainComponent extends StatefulWidget {
   ScreenshotController screenshotController;
 
-  Event event;
+  Nip01Event event;
 
   String? pagePubkey;
 
@@ -134,13 +135,13 @@ class _EventMainComponent extends State<EventMainComponent> {
       contentCardColor = Colors.grey[300];
     }
 
-    Event? repostEvent;
+    Nip01Event? repostEvent;
     if ((widget.event.kind == kind.EventKind.REPOST ||
             widget.event.kind == kind.EventKind.GENERIC_REPOST) &&
         widget.event.content.contains("\"pubkey\"")) {
       try {
         var jsonMap = jsonDecode(widget.event.content);
-        repostEvent = Event.fromJson(jsonMap);
+        repostEvent = Nip01Event.fromJson(jsonMap);
 
         // set source to repost event
         if (repostEvent.id == eventRelation.rootId &&

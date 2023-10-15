@@ -1,5 +1,6 @@
 import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:bot_toast/bot_toast.dart';
+import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:flutter/foundation.dart';
 import 'package:yana/utils/index_taps.dart';
 
@@ -67,12 +68,13 @@ class NewNotificationsProvider extends ChangeNotifier
       kinds: notificationsProvider.queryEventKinds(),
       p: [nostr!.publicKey],
     );
-    nostr!.query([filter.toJson()], (event) {
-      later(event, handleEvents, null);
-    }, id: subscribeId);
+    // TODO use dart_ndk
+    // nostr!.query([filter.toJson()], (event) {
+    //   later(event, handleEvents, null);
+    // }, id: subscribeId);
   }
 
-  handleEvents(List<Event> events) {
+  handleEvents(List<Nip01Event> events) {
     int previousCount = eventMemBox.length();
     // BotToast.showText(
     //     text: "Received ${events.length} notification events");

@@ -1,3 +1,4 @@
+import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:yana/main.dart';
 
 import '../nostr/event.dart';
@@ -5,7 +6,7 @@ import '../utils/find_event_interface.dart';
 import 'event_mem_box.dart';
 
 class EventFindUtil {
-  static List<Event> findEvent(String str, {int? limit = 5}) {
+  static List<Nip01Event> findEvent(String str, {int? limit = 5}) {
     List<FindEventInterface> finders = [followEventProvider];
     finders.addAll(eventReactionsProvider.allReactions());
 

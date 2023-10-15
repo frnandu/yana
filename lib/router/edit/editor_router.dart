@@ -1,4 +1,5 @@
 import 'package:bot_toast/bot_toast.dart';
+import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:intl/intl.dart';
@@ -56,7 +57,7 @@ class EditorRouter extends StatefulWidget {
     this.initEmbeds,
   });
 
-  static Future<Event?> open(
+  static Future<Nip01Event?> open(
     BuildContext context, {
     List<dynamic>? tags,
     List<dynamic>? tagsAddedWhenSend,

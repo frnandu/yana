@@ -1,3 +1,4 @@
+import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:flutter/material.dart';
 
 import '../main.dart';
@@ -7,15 +8,15 @@ import '../utils/later_function.dart';
 import '../utils/string_util.dart';
 
 class SingleEventProvider extends ChangeNotifier with LaterFunction {
-  Map<String, Event> _eventsMap = {};
+  Map<String, Nip01Event> _eventsMap = {};
 
   List<String> _needUpdateIds = [];
 
   Map<String, int> _handingIds = {};
 
-  List<Event> _penddingEvents = [];
+  List<Nip01Event> _penddingEvents = [];
 
-  Event? getEvent(String id) {
+  Nip01Event? getEvent(String id) {
     var event = _eventsMap[id];
     if (event != null) {
       return event;
@@ -57,7 +58,7 @@ class SingleEventProvider extends ChangeNotifier with LaterFunction {
     notifyListeners();
   }
 
-  void _onEvent(Event event) {
+  void _onEvent(Nip01Event event) {
     _penddingEvents.add(event);
     later(_laterCallback, null);
   }
@@ -71,12 +72,13 @@ class SingleEventProvider extends ChangeNotifier with LaterFunction {
     var subscriptId = StringUtil.rndNameStr(16);
     List<String> tempIds = [];
     tempIds.addAll(_needUpdateIds);
-    nostr!.query([filter.toJson()], _onEvent, id: subscriptId, onComplete: () {
-      // log("singleEventProvider onComplete $tempIds");
-      for (var id in tempIds) {
-        _handingIds.remove(id);
-      }
-    });
+    // todo use dart_ndk
+    // nostr!.query([filter.toJson()], _onEvent, id: subscriptId, onComplete: () {
+    //   // log("singleEventProvider onComplete $tempIds");
+    //   for (var id in tempIds) {
+    //     _handingIds.remove(id);
+    //   }
+    // });
 
     for (var id in _needUpdateIds) {
       _handingIds[id] = 1;

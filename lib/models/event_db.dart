@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:sqflite/sqflite.dart';
 
 import '../nostr/event.dart';
@@ -7,10 +8,10 @@ import '../utils/string_util.dart';
 import 'db.dart';
 
 class EventDB {
-  static Future<List<Event>> list(int keyIndex, int kind, int skip, limit,
+  static Future<List<Nip01Event>> list(int keyIndex, int kind, int skip, limit,
       {DatabaseExecutor? db, String? pubkey}) async {
     db = await DB.getDB(db);
-    List<Event> l = [];
+    List<Nip01Event> l = [];
     List<dynamic> args = [];
 
     var sql = "select * from event where key_index = ? and kind = ? ";
@@ -31,7 +32,7 @@ class EventDB {
     return l;
   }
 
-  static Future<int> insert(int keyIndex, Event o,
+  static Future<int> insert(int keyIndex, Nip01Event o,
       {DatabaseExecutor? db}) async {
     db = await DB.getDB(db);
     var jsonObj = o.toJson();
@@ -58,7 +59,7 @@ class EventDB {
     db.execute("delete from event where key_index = ?", [keyIndex]);
   }
 
-  static Event loadFromJson(Map<String, dynamic> data) {
+  static Nip01Event loadFromJson(Map<String, dynamic> data) {
     Map<String, dynamic> m = {};
     m.addAll(data);
 
@@ -66,6 +67,6 @@ class EventDB {
     var tagsObj = jsonDecode(tagsStr);
     m["tags"] = tagsObj;
     m["sig"] = "";
-    return Event.fromJson(m);
+    return Nip01Event.fromJson(m);
   }
 }

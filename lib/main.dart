@@ -4,6 +4,8 @@ import 'dart:ui';
 import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:bip340/bip340.dart';
 import 'package:bot_toast/bot_toast.dart';
+import 'package:dart_ndk/nips/nip02/metadata.dart';
+import 'package:dart_ndk/nips/nip65/nip65.dart';
 import 'package:dart_ndk/relay_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -320,20 +322,31 @@ Future<void> main() async {
   if (StringUtil.isNotBlank(key)) {
     bool isPrivate = settingProvider.isPrivateKey;
     String publicKey = isPrivate ? getPublicKey(key!) : key!;
-    // nostr = Nostr(privateKey: isPrivate ? key : null,publicKey: publicKey);
-    await relayProvider.loadRelays(publicKey,() async {
-      try {
-        nostr = await relayProvider.genNostr(privateKey: isPrivate ? key : null,
-            publicKey: publicKey);
+    relayManager = RelayManager();
+    await relayManager.connect();
+    Nip65? nip65 = await relayManager.getSingleNip65(publicKey);
+    await relayManager.connect(bootstrapRelays: nip65!=null? nip65.relays.keys.toList() : RelayManager.DEFAULT_BOOTSTRAP_RELAYS);
+    nostr = Nostr(privateKey: isPrivate ? key : null,publicKey: publicKey);
 
+    Nip02ContactList? contactList = await relayManager.loadContactList(publicKey);
+    if (contactList!=null) {
+      contactListProvider.set(contactList);
+    }
+    // followEventProvider.doQuery();
+
+    // await relayProvider.loadRelays(publicKey,() async {
+    //   try {
+    //     nostr = await relayProvider.genNostr(privateKey: isPrivate ? key : null,
+    //         publicKey: publicKey);
+    //
         runApp(MyApp());
-      } catch (e) {
-        var index = settingProvider.privateKeyIndex;
-        if (index != null) {
-          settingProvider.removeKey(index);
-        }
-      }
-    });
+      // } catch (e) {
+      //   var index = settingProvider.privateKeyIndex;
+      //   if (index != null) {
+      //     settingProvider.removeKey(index);
+      //   }
+      // }
+    // });
   } else {
     runApp(MyApp());
   }

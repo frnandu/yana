@@ -4,6 +4,7 @@ import 'dart:developer';
 import 'package:auto_size_text_field/auto_size_text_field.dart';
 import 'package:bot_toast/bot_toast.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
@@ -415,7 +416,7 @@ mixin EditorMixin {
     }
   }
 
-  Future<Event?> doDocumentSave() async {
+  Future<Nip01Event?> doDocumentSave() async {
     var context = getContext();
     // dm agreement
     var agreement = getAgreement();
@@ -560,24 +561,24 @@ mixin EditorMixin {
       allTags.add(["content-warning", ""]);
     }
 
-    Event? event;
+    Nip01Event? event;
     if (agreement != null && StringUtil.isNotBlank(pubkey)) {
       // dm message
       result = NIP04.encrypt(result, agreement, pubkey!);
-      event = Event(
-          nostr!.publicKey, kind.EventKind.DIRECT_MESSAGE, allTags, result,
-          publishAt: publishAt);
+      event = Nip01Event(
+          pubKey: nostr!.publicKey, kind: kind.EventKind.DIRECT_MESSAGE, tags: allTags, content: result,
+          publishAt: publishAt!.millisecondsSinceEpoch ~/ 1000);
     } else if (inputPoll) {
       // poll event
       // get poll tag from PollInputComponentn
       var pollTags = pollInputController.getTags();
       allTags.addAll(pollTags);
-      event = Event(nostr!.publicKey, kind.EventKind.POLL, allTags, result,
-          publishAt: publishAt);
+      event = Nip01Event(pubKey: nostr!.publicKey, kind: kind.EventKind.POLL, tags: allTags, content: result,
+          publishAt: publishAt!.millisecondsSinceEpoch ~/ 1000);
     } else {
       // text note
-      event = Event(nostr!.publicKey, kind.EventKind.TEXT_NOTE, allTags, result,
-          publishAt: publishAt);
+      event = Nip01Event(pubKey: nostr!.publicKey, kind: kind.EventKind.TEXT_NOTE, tags: allTags, content:result,
+          publishAt: publishAt!.millisecondsSinceEpoch ~/ 1000);
     }
 
     // if (publishAt != null) {

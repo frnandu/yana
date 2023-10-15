@@ -1,3 +1,4 @@
+import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:screenshot/screenshot.dart';
@@ -12,7 +13,7 @@ import '../cust_state.dart';
 import 'event_main_component.dart';
 
 class EventQuoteComponent extends StatefulWidget {
-  Event? event;
+  Nip01Event? event;
 
   String? id;
 
@@ -56,7 +57,7 @@ class _EventQuoteComponent extends CustState<EventQuoteComponent> {
       return buildEventWidget(widget.event!, cardColor, boxDecoration);
     }
 
-    return Selector<SingleEventProvider, Event?>(
+    return Selector<SingleEventProvider, Nip01Event?>(
       builder: (context, event, child) {
         if (event == null) {
           return buildBlankWidget(boxDecoration);
@@ -71,7 +72,7 @@ class _EventQuoteComponent extends CustState<EventQuoteComponent> {
   }
 
   Widget buildEventWidget(
-      Event event, Color cardColor, BoxDecoration boxDecoration) {
+      Nip01Event event, Color cardColor, BoxDecoration boxDecoration) {
     return
       // Screenshot(
       // controller: screenshotController,
@@ -110,7 +111,7 @@ class _EventQuoteComponent extends CustState<EventQuoteComponent> {
     );
   }
 
-  void jumpToThread(Event event) {
+  void jumpToThread(Nip01Event event) {
     RouterUtil.router(context, RouterPath.THREAD_DETAIL, event);
   }
 

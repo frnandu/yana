@@ -1,3 +1,4 @@
+import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:flutter/material.dart';
 
 import '../nostr/event.dart';
@@ -32,7 +33,7 @@ class EventReactionsProvider extends ChangeNotifier
     }
   }
 
-  void addLike(String id, Event likeEvent) {
+  void addLike(String id, Nip01Event likeEvent) {
     var er = _eventReactionsMap[id];
     if (er != null) {
       er = er.clone();
@@ -60,9 +61,11 @@ class EventReactionsProvider extends ChangeNotifier
 
   void update(String id, int? kind) {
     var filter = kind!=null ? Filter(e: [id], kinds: [kind]) : Filter(e: [id]);
-    nostr!.query([filter.toJson()], _handleSingleEvent2, onComplete: () {
-      notifyListeners();
-    });
+
+    // TODO use dart_ndk
+    //nostr!.query([filter.toJson()], _handleSingleEvent2, onComplete: () {
+    //  notifyListeners();
+    //});
   }
 
   EventReactions? get(String id) {
@@ -109,23 +112,24 @@ class EventReactionsProvider extends ChangeNotifier
 
     var filter = Filter(e: _penddingIds.keys.toList());
     _penddingIds.clear();
-    nostr!.query([filter.toJson()], onEvent);
+// TODO use dart_ndk
+//    nostr!.query([filter.toJson()], onEvent);
   }
 
-  void addEventAndHandle(Event event) {
+  void addEventAndHandle(Nip01Event event) {
     onEvent(event);
     laterFunc();
   }
 
-  void onEvent(Event event) {
+  void onEvent(Nip01Event event) {
     _penddingEvents.add(event);
   }
 
-  void onEvents(List<Event> events) {
+  void onEvents(List<Nip01Event> events) {
     _penddingEvents.addAll(events);
   }
 
-  List<Event> _penddingEvents = [];
+  List<Nip01Event> _penddingEvents = [];
 
   void _handleEvent() {
     bool updated = false;
@@ -140,7 +144,7 @@ class EventReactionsProvider extends ChangeNotifier
     }
   }
 
-  bool _handleSingleEvent(Event event) {
+  bool _handleSingleEvent(Nip01Event event) {
     bool updated = false;
     for (var tag in event.tags) {
       if (tag.length > 1) {
@@ -165,7 +169,7 @@ class EventReactionsProvider extends ChangeNotifier
     return updated;
   }
 
-  bool _handleSingleEvent2(Event event) {
+  bool _handleSingleEvent2(Nip01Event event) {
     bool updated = false;
     for (var tag in event.tags) {
       if (tag.length > 1) {

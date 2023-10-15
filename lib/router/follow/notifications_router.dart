@@ -1,3 +1,4 @@
+import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:yana/main.dart';
@@ -61,7 +62,7 @@ class _NotificationsRouter extends KeepAliveCustState<NotificationsRouter>
         var event = events[index];
         Map<String, dynamic> map = event.toJson();
         map['content'] = map['content'].replaceAll('+', '❤');
-        event = Event.fromJson(map);
+        event = Nip01Event.fromJson(map);
         if (event.kind == kind.EventKind.ZAP &&
             StringUtil.isBlank(event.content)) {
           return ZapEventListComponent(event: event);

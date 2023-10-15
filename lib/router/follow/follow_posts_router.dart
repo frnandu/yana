@@ -1,3 +1,8 @@
+import 'dart:async';
+
+import 'package:dart_ndk/nips/nip01/event.dart';
+import 'package:dart_ndk/nips/nip01/event.dart';
+import 'package:dart_ndk/nips/nip01/filter.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:yana/main.dart';
@@ -10,6 +15,7 @@ import 'package:yana/utils/base.dart';
 import 'package:yana/utils/base_consts.dart';
 
 import '../../i18n/i18n.dart';
+import '../../nostr/event.dart';
 import '../../provider/setting_provider.dart';
 import '../../ui/event/event_list_component.dart';
 import '../../ui/placeholder/event_list_placeholder.dart';
@@ -26,13 +32,41 @@ class FollowPostsRouter extends StatefulWidget {
 class _FollowPostsRouter extends KeepAliveCustState<FollowPostsRouter>
     with LoadMoreEvent {
   ScrollController _controller = ScrollController();
+  StreamController<Nip01Event>? _streamController;
+  List<Nip01Event> list = [];
+
+  int _initTime = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+
 
   @override
   void initState() {
     super.initState();
-    bindLoadMoreScroll(_controller);
+//    bindLoadMoreScroll(_controller);
     // doQuery();
+    load();
   }
+
+  void load() async {
+    if (_streamController!=null) {
+      await _streamController!.close();
+    }
+    _streamController = StreamController.broadcast();
+
+    _streamController!.stream.listen((p) => setState(() => list.add(p)));
+
+    List<String>? contactList = contactListProvider.contacts();
+    Filter filter = Filter(
+      kinds: [
+        Nip01Event.textNoteKind,
+      ],
+      authors: contactList,
+      until: until ?? _initTime,
+      limit: 20,
+    );
+    Stream stream = await relayManager.subscription(filter);
+    stream.pipe(_streamController!);
+  }
+
 
   @override
   Widget doBuild(BuildContext context) {
@@ -54,13 +88,13 @@ class _FollowPostsRouter extends KeepAliveCustState<FollowPostsRouter>
     var main = ListView.builder(
       controller: _controller,
       itemBuilder: (BuildContext context, int index) {
-        var event = events[index];
+        Nip01Event event = list[index];
         return EventListComponent(
           event: event,
           showVideo: _settingProvider.videoPreview == OpenStatus.OPEN,
         );
       },
-      itemCount: events.length,
+      itemCount: list.length,
     );
 
     // var main = SingleChildScrollView(
@@ -86,7 +120,8 @@ class _FollowPostsRouter extends KeepAliveCustState<FollowPostsRouter>
 
     Widget ri = RefreshIndicator(
       onRefresh: () async {
-        followEventProvider.refreshReplies();
+        load();
+        // followEventProvider.refreshReplies();
       },
       child: main,
     );
@@ -151,4 +186,5 @@ class _FollowPostsRouter extends KeepAliveCustState<FollowPostsRouter>
 
   @override
   Future<void> onReady(BuildContext context) async {}
+
 }
