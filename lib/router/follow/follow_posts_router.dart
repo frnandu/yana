@@ -33,7 +33,6 @@ class _FollowPostsRouter extends KeepAliveCustState<FollowPostsRouter>
     with LoadMoreEvent {
   ScrollController _controller = ScrollController();
   StreamController<Nip01Event>? _streamController;
-  List<Nip01Event> list = [];
 
   int _initTime = DateTime.now().millisecondsSinceEpoch ~/ 1000;
 
@@ -52,7 +51,7 @@ class _FollowPostsRouter extends KeepAliveCustState<FollowPostsRouter>
     }
     _streamController = StreamController.broadcast();
 
-    _streamController!.stream.listen((p) => setState(() => list.add(p)));
+    _streamController!.stream.listen((p) => setState(() => followEventProvider.onEvent(p)));
 
     List<String>? contactList = contactListProvider.contacts();
     Filter filter = Filter(
@@ -88,13 +87,13 @@ class _FollowPostsRouter extends KeepAliveCustState<FollowPostsRouter>
     var main = ListView.builder(
       controller: _controller,
       itemBuilder: (BuildContext context, int index) {
-        Nip01Event event = list[index];
+        var event = events[index];
         return EventListComponent(
           event: event,
           showVideo: _settingProvider.videoPreview == OpenStatus.OPEN,
         );
       },
-      itemCount: list.length,
+      itemCount: events.length,
     );
 
     // var main = SingleChildScrollView(
