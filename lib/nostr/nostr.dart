@@ -3,6 +3,7 @@ import 'dart:developer';
 
 import 'package:bot_toast/bot_toast.dart';
 import 'package:dart_ndk/nips/nip01/event.dart';
+import 'package:dart_ndk/nips/nip01/filter.dart';
 import 'package:flutter/foundation.dart';
 import 'package:yana/main.dart';
 import 'package:yana/nostr/relay_pool.dart';

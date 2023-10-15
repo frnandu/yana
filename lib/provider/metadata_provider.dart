@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:dart_ndk/nips/nip01/event.dart';
+import 'package:dart_ndk/nips/nip01/filter.dart';
 import 'package:flutter/material.dart';
 import 'package:yana/nostr/nip05/nip05_validor.dart';
 import 'package:yana/utils/nip05status.dart';
@@ -8,7 +10,7 @@ import '../main.dart';
 import '../models/metadata.dart';
 import '../nostr/event.dart';
 import '../nostr/event_kind.dart' as kind;
-import '../nostr/filter.dart';
+// import '../nostr/filter.dart';
 import '../utils/later_function.dart';
 import '../utils/string_util.dart';
 
@@ -94,7 +96,7 @@ class MetadataProvider extends ChangeNotifier with LaterFunction {
     } else {
       nostr!.query([
         Filter(kinds: [kind.EventKind.METADATA], authors: [pubkey], limit: 1)
-            .toJson()
+            .toMap()
       ], (event) {
         var existing = _metadataCache[event.pubKey];
         if (existing == null ||
@@ -138,7 +140,7 @@ class MetadataProvider extends ChangeNotifier with LaterFunction {
     return Nip05Status.NIP05_NOT_FOUND;
   }
 
-  List<Event> _penddingEvents = [];
+  List<Nip01Event> _penddingEvents = [];
 
   void _handlePenddingEvents() {
     for (var event in _penddingEvents) {
@@ -160,29 +162,33 @@ class MetadataProvider extends ChangeNotifier with LaterFunction {
     notifyListeners();
   }
 
-  void _onEvent(Event event) {
+  void _onEvent(Nip01Event event) {
     _penddingEvents.add(event);
     later(_laterCallback, null);
   }
 
-  void _laterSearch() {
+  void _laterSearch() async {
     if (_needUpdatePubKeys.isEmpty) {
       return;
     }
 
-    List<Map<String, dynamic>> filters = [];
-    for (var pubkey in _needUpdatePubKeys) {
-      var filter =
-          Filter(kinds: [kind.EventKind.METADATA], authors: [pubkey], limit: 1);
-      filters.add(filter.toJson());
-      if (filters.length > 11) {
-        nostr!.query(filters, _onEvent);
-        filters.clear();
-      }
-    }
-    if (filters.isNotEmpty) {
-      nostr!.query(filters, _onEvent);
-    }
+    // List<Map<String, dynamic>> filters = [];
+    // for (var pubkey in _needUpdatePubKeys) {
+    //   var filter =
+    //       Filter(kinds: [kind.EventKind.METADATA], authors: [pubkey], limit: 1);
+    //   filters.add(filter.toMap());
+    //   if (filters.length > 11) {
+    //     nostr!.query(filters, _onEvent);
+    //     filters.clear();
+    //   }
+    // }
+    // if (filters.isNotEmpty) {
+    //   nostr!.query(filters, _onEvent);
+    // }
+    Stream stream = await relayManager.query(Filter(kinds: [kind.EventKind.METADATA], authors: _needUpdatePubKeys));
+    stream.listen((event) {
+      _onEvent(event);
+    });
 
     for (var pubkey in _needUpdatePubKeys) {
       _handingPubkeys[pubkey] = 1;
