@@ -83,6 +83,16 @@ v0.13
 - WebLN for web: https://github.com/aniketambore/flutter_webln
 
 
+- make promo video:
+  - music https://soundcloud.com/ben-murray-smith/spectrum
+  - “It's very attractive to the libertarian viewpoint if we can explain it properly. I'm better with code than with words though.” ― Satoshi Nakamoto
+  - free Ross
+  - "We the Cypherpunks are dedicated to building anonymous systems"
+  - free Assange
+  - "...but now I work for the public" - Snowden
+  - "Is this the official nostr channel? No, nothing is official - Fiatjaf"
+  - "WikiLeaks has kicked the hornet’s nest, and the swarm is headed towards us." ― Satoshi Nakamoto
+
 - nip19 nprofile
 - custom zap amounts
 =======================
