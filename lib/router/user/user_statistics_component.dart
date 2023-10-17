@@ -2,6 +2,8 @@ import 'dart:io';
 
 import 'package:bot_toast/bot_toast.dart';
 import 'package:convert/convert.dart';
+import 'package:dart_ndk/nips/nip01/event.dart';
+import 'package:dart_ndk/nips/nip01/filter.dart';
 import 'package:dart_ndk/nips/nip02/contact_list.dart';
 import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
 import 'package:flutter/material.dart';
@@ -16,7 +18,6 @@ import '../../main.dart';
 import '../../models/event_mem_box.dart';
 import '../../nostr/event.dart';
 import '../../nostr/event_kind.dart' as kind;
-import '../../nostr/filter.dart';
 import '../../nostr/nip02/contact_list.dart';
 import '../../nostr/nip57/zap_num_util.dart';
 import '../../nostr/nostr.dart';
@@ -48,7 +49,7 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
   Nip02ContactList? contactList;
 
   // followedMap
-  Map<String, Event>? followedMap;
+  Map<String, Nip01Event>? followedMap;
 
   int length = 0;
   int relaysNum = 0;
@@ -70,26 +71,19 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
   }
 
   void load() async {
-    // relayManager.loadContactList(widget.pubkey).then((contactList) {
-    //   setState(() {
-    //     this.contactList = contactList;
-    //   });
-    // });
-    // if (isLocal) {
-    //   relaysNum = myRelaysMap.keys.length;
-    // } else {
-      relayManager.loadMissingRelayListsFromNip65OrNip02([widget.pubkey]).then(
-        (value) {
-          setState(() {
-            relayMap = relayManager.getRelayMarkerMap(widget.pubkey) ?? {};
-            contactList = relayManager.getContactList(widget.pubkey);
-            if (widget.onContactListLoaded != null && contactList != null) {
-              widget.onContactListLoaded!(contactList!);
-            }
-          });
-        },
-      );
-    // }
+    relayManager.loadMissingRelayListsFromNip65OrNip02([widget.pubkey]).then(
+      (value) {
+        setState(() {
+          relayMap = relayManager.getRelayMarkerMap(widget.pubkey) ?? {};
+          contactList = relayManager.getContactList(widget.pubkey);
+          if (widget.onContactListLoaded != null && contactList != null) {
+            widget.onContactListLoaded!(contactList!);
+          }
+        });
+      },
+    );
+    onFollowedTap();
+    onZapTap();
   }
 
   @override
@@ -129,11 +123,11 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
     //     return relayMap.length;
     //   }));
     // } else {
-      if (contactList != null) {
-        length = contactList!.contacts.length;
-      }
-      list.add(UserStatisticsItemComponent(
-          num: length, name: s.Following, onTap: onFollowingTap));
+    if (contactList != null) {
+      length = contactList!.contacts.length;
+    }
+    list.add(UserStatisticsItemComponent(
+        num: length, name: s.Following, onTap: onFollowingTap));
     // }
 
     list.add(UserStatisticsItemComponent(
@@ -169,8 +163,8 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
     //     return _provider.total();
     //   }));
     // } else {
-      list.add(UserStatisticsItemComponent(
-          num: relayMap.length, name: s.Relays, onTap: onRelaysTap));
+    list.add(UserStatisticsItemComponent(
+        num: relayMap.length, name: s.Relays, onTap: onRelaysTap));
     // }
 
     // if (isLocal) {
@@ -185,10 +179,10 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
     //     return _provider.totalFollowedTags();
     //   }));
     // } else {
-      list.add(UserStatisticsItemComponent(
-          num: contactList != null ? contactList!.followedTags.length : 0,
-          name: s.Followed_Tags,
-          onTap: onFollowedTagsTap));
+    list.add(UserStatisticsItemComponent(
+        num: contactList != null ? contactList!.followedTags.length : 0,
+        name: s.Followed_Tags,
+        onTap: onFollowedTagsTap));
     // }
 
     // if (isLocal) {
@@ -203,11 +197,10 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
     //     return contactList!=null? contactList!.followedCommunities.length : 0;
     //   }));
     // } else {
-      list.add(UserStatisticsItemComponent(
-          num:
-              contactList != null ? contactList!.followedCommunities.length : 0,
-          name: s.Followed_Communities,
-          onTap: onFollowedCommunitiesTap));
+    list.add(UserStatisticsItemComponent(
+        num: contactList != null ? contactList!.followedCommunities.length : 0,
+        name: s.Followed_Communities,
+        onTap: onFollowedCommunitiesTap));
     // }
 
     return Container(
@@ -227,8 +220,8 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
     if (fetchLocalContactsId == null) {
       fetchLocalContactsId = StringUtil.rndNameStr(16);
       localContactBox = EventMemBox(sortAfterAdd: false);
-      var filter = Filter(
-          authors: [widget.pubkey], kinds: [kind.EventKind.CONTACT_LIST]);
+      // var filter = Filter(
+      //     authors: [widget.pubkey], kinds: [kind.EventKind.CONTACT_LIST]);
       // TODO use dart_ndk
       // widget.userNostr!.query([filter.toJson()], (event) {
       //   localContactBox!.add(event);
@@ -349,26 +342,39 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
 
   String followedSubscribeId = "";
 
-  onFollowedTap() {
+  onFollowedTap() async {
     if (followedMap == null) {
       // load data
       followedMap = {};
       // pull zap event
-      Map<String, dynamic> filter = {};
-      filter["kinds"] = [kind.EventKind.CONTACT_LIST];
-      filter["#p"] = [widget.pubkey];
-      followedSubscribeId = StringUtil.rndNameStr(12);
-      staticForRelaysAndMetadataNostr!.query([filter], (e) {
-        var oldEvent = followedMap![e.pubKey];
-        if (oldEvent == null || e.createdAt > oldEvent.createdAt) {
-          followedMap![e.pubKey] = e;
+      // Map<String, dynamic> filter = {};
+      // filter["kinds"] = [kind.EventKind.CONTACT_LIST];
+      // filter["#p"] = [widget.pubkey];
+      // followedSubscribeId = StringUtil.rndNameStr(12);
+
+      await relayManager.reconnectRelays(["wss://purplepag.es"]);
+      Stream<Nip01Event> stream = await relayManager.requestRelays(
+        ["wss://purplepag.es"],
+          // feedRelayMap.keys.toList()..addAll(myRelaysMap.keys.toList()),
+          Filter(kinds: [Nip02ContactList.kind], pTags: [widget.pubkey]),
+        idleTimeout: 10
+      );
+      stream.listen((event) {
+        //
+        // });
+        // staticForRelaysAndMetadataNostr!.query([filter], (e) {
+        var oldEvent = followedMap![event.pubKey];
+        if (oldEvent == null || event.createdAt > oldEvent.createdAt) {
+          followedMap![event.pubKey] = event;
           if (!_disposed) {
             setState(() {
               followedNum = followedMap!.length;
             });
           }
         }
-      }, id: followedSubscribeId);
+      }
+          // , id: followedSubscribeId
+          );
 
       followedNum = 0;
     }
@@ -381,7 +387,7 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
               url: entry.key,
               read: entry.value.isRead,
               write: entry.value.isWrite,
-              count:0))
+              count: 0))
           .toList();
       RouterUtil.router(context, RouterPath.USER_RELAYS, relays);
     } else if (isLocal) {
@@ -391,28 +397,35 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
 
   String zapSubscribeId = "";
 
-  onZapTap() {
-    if (zapEventBox == null) {
-      zapEventBox = EventMemBox(sortAfterAdd: false);
-      // pull zap event
-      var filter = Filter(kinds: [kind.EventKind.ZAP], p: [widget.pubkey]);
-      zapSubscribeId = StringUtil.rndNameStr(12);
-      // print(filter);
-      // TODO use dart_ndk
-      // staticForRelaysAndMetadataNostr!.query([filter.toJson()], (event) {
-      //   if (event.kind == kind.EventKind.ZAP && zapEventBox!.add(event)) {
-      //     if (!_disposed) {
-      //       setState(() {
-      //         zapNum = zapNum! + ZapNumUtil.getNumFromZapEvent(event);
-      //       });
-      //     }
-      //   }
-      // }, id: zapSubscribeId);
-
-      zapNum = 0;
-    } else {
-      // Router to vist list
-    }
+  onZapTap() async {
+    // if (zapEventBox == null) {
+    //   zapEventBox = EventMemBox(sortAfterAdd: false);
+    //   // pull zap event
+    //   // var filter = Filter(kinds: [kind.EventKind.ZAP], p: [widget.pubkey]);
+    //   zapSubscribeId = StringUtil.rndNameStr(12);
+    //   Stream<Nip01Event> stream = await relayManager.requestRelays(
+    //       feedRelayMap.keys.toList(),
+    //       Filter(kinds: [kind.EventKind.ZAP], pTags: [widget.pubkey]));
+    //   stream.listen(
+    //     (event) {
+    //       // print(filter);
+    //       // TODO use dart_ndk
+    //       // staticForRelaysAndMetadataNostr!.query([filter.toJson()], (event) {
+    //       if (event.kind == kind.EventKind.ZAP && zapEventBox!.add(event)) {
+    //         if (!_disposed) {
+    //           setState(() {
+    //             zapNum = zapNum! + ZapNumUtil.getNumFromZapEvent(event);
+    //           });
+    //         }
+    //       }
+    //     },
+    //     // id: zapSubscribeId
+    //   );
+    //
+    //   zapNum = 0;
+    // } else {
+    //   // Router to vist list
+    // }
   }
 
   @override
