@@ -1,10 +1,13 @@
 import 'package:bot_toast/bot_toast.dart';
+import 'package:dart_ndk/nips/nip65/nip65.dart';
+import 'package:dart_ndk/relay_manager.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:yana/utils/platform_util.dart';
 
+import '../../nostr/nostr.dart';
 import '/js/js_helper.dart' as js;
 import '../../i18n/i18n.dart';
 import '../../main.dart';
@@ -323,19 +326,17 @@ class _LoginRouter extends State<LoginRouter>
       }
       await settingProvider.addAndChangeKey(key, !isPublic, updateUI: false);
       if (!newKey) {
-        var alreadyClosed = false;
-        await relayProvider.getRelays(isPublic ? key : getPublicKey(key),
-            (relays) async {
-          alreadyClosed = true;
-          await relayProvider.setRelayListAndUpdate(
-              relays.map((e) => e.addr!).toList(), null);
-          getNostrAndClose(false, key, !isPublic);
-        });
-        Future.delayed(const Duration(seconds: 20), () {
-          getNostrAndClose(alreadyClosed, key, !isPublic);
+        nostr = Nostr(
+            privateKey: !isPublic ? key : null,
+            publicKey: !isPublic ? null : key);
+
+        initRelayManager(false, isPublic ? key : getPublicKey(key));
+        var alreadyClosed = true;
+        Future.delayed(const Duration(seconds: 10), () {
+          initRelayManager(alreadyClosed, isPublic ? key : getPublicKey(key));
         });
       } else {
-        getNostrAndClose(false, key, !isPublic);
+        initRelayManager(false, isPublic ? key : getPublicKey(key));
       }
     } catch (e) {
       BotToast.showText(text: e.toString());
@@ -343,11 +344,16 @@ class _LoginRouter extends State<LoginRouter>
     }
   }
 
-  void getNostrAndClose(bool alreadyClosed, String key, bool isPrivate) async {
+  void initRelayManager(bool alreadyClosed, String publicKey) async {
     if (!alreadyClosed) {
-      nostr = await relayProvider.genNostr(
-          privateKey: isPrivate ? key : null,
-          publicKey: isPrivate ? null : key);
+      relayManager = RelayManager();
+      await relayManager.connect();
+      Nip65? nip65 = await relayManager.getSingleNip65(publicKey);
+      await relayManager.connect(bootstrapRelays: nip65!=null? nip65!.relays.keys.toList() : RelayManager.DEFAULT_BOOTSTRAP_RELAYS);
+
+      // nostr = await relayProvider.genNostr(
+      //     privateKey: isPrivate ? key : null,
+      //     publicKey: isPrivate ? null : key);
       Navigator.of(context, rootNavigator: true).pop();
       settingProvider.notifyListeners();
 

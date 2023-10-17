@@ -276,7 +276,7 @@ class _UserRouter extends CustState<UserRouter>
     if (!relays.isEmpty) {
       Set<String> uniqueRelays = Set<String>.from(relays
           .where((element) => element.write != null && element.write!)
-          .map((e) => e.addr));
+          .map((e) => e.url));
       userNostr =
           Nostr(
               privateKey: nostr!.privateKey, publicKey: nostr!.publicKey);

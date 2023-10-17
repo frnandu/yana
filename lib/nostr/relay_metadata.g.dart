@@ -42,7 +42,7 @@ int _relayMetadataEstimateSize(
 ) {
   var bytesCount = offsets.last;
   {
-    final value = object.addr;
+    final value = object.url;
     if (value != null) {
       bytesCount += 3 + value.length * 3;
     }
@@ -56,7 +56,7 @@ void _relayMetadataSerialize(
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
-  writer.writeString(offsets[0], object.addr);
+  writer.writeString(offsets[0], object.url);
   writer.writeBool(offsets[1], object.read);
   writer.writeBool(offsets[2], object.write);
 }
@@ -68,7 +68,7 @@ RelayMetadata _relayMetadataDeserialize(
   Map<Type, List<int>> allOffsets,
 ) {
   final object = RelayMetadata();
-  object.addr = reader.readStringOrNull(offsets[0]);
+  object.url = reader.readStringOrNull(offsets[0]);
   object.read = reader.readBoolOrNull(offsets[1]);
   object.write = reader.readBoolOrNull(offsets[2]);
   return object;

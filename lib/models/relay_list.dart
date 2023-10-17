@@ -1,5 +1,4 @@
 import 'package:isar/isar.dart';
-import 'package:sqflite/sqflite.dart';
 import 'package:yana/main.dart';
 import 'package:yana/nostr/relay_metadata.dart';
 

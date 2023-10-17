@@ -6,6 +6,8 @@ import 'package:bip340/bip340.dart';
 import 'package:bot_toast/bot_toast.dart';
 import 'package:dart_ndk/nips/nip02/metadata.dart';
 import 'package:dart_ndk/nips/nip65/nip65.dart';
+import 'package:dart_ndk/pubkey_mapping.dart';
+import 'package:dart_ndk/read_write.dart';
 import 'package:dart_ndk/relay_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -142,6 +144,7 @@ late NwcProvider nwcProvider;
 
 AppLifecycleState appState = AppLifecycleState.resumed;
 
+@deprecated
 Nostr? nostr;
 
 Nostr? followsNostr;
@@ -150,7 +153,11 @@ bool reloadingFollowNostr = false;
 
 List<RelayMetadata>? followRelays;
 
-late RelayManager relayManager;
+Nip65? nip65;
+
+RelayManager relayManager = RelayManager();
+
+Map<String,List<PubkeyMapping>> feedRelayMap = {};
 
 Nostr? staticForRelaysAndMetadataNostr;
 
@@ -324,13 +331,16 @@ Future<void> main() async {
     String publicKey = isPrivate ? getPublicKey(key!) : key!;
     relayManager = RelayManager();
     await relayManager.connect();
-    Nip65? nip65 = await relayManager.getSingleNip65(publicKey);
-    await relayManager.connect(bootstrapRelays: nip65!=null? nip65.relays.keys.toList() : RelayManager.DEFAULT_BOOTSTRAP_RELAYS);
+    nip65 = await relayManager.getSingleNip65(publicKey);
+    await relayManager.connect(bootstrapRelays: nip65!=null? nip65!.relays.keys.toList() : RelayManager.DEFAULT_BOOTSTRAP_RELAYS);
     nostr = Nostr(privateKey: isPrivate ? key : null,publicKey: publicKey);
-
+    print("Loading contact list...");
     Nip02ContactList? contactList = await relayManager.loadContactList(publicKey);
     if (contactList!=null) {
+      print("Loaded ${contactList.contacts.length} contacts...");
       contactListProvider.set(contactList);
+      feedRelayMap = await relayManager.calculateBestRelaysForPubKeyMappings(
+          contactList.contacts, RelayDirection.write, relayMinCountPerPubKey: settingProvider.followeesRelayMinCount);
     }
     // followEventProvider.doQuery();
 

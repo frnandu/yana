@@ -106,7 +106,7 @@ class RelayProvider extends ChangeNotifier {
           relayAddrs.clear();
           if (relays != null) {
             relayAddrs.addAll(relays.map(
-              (e) => e.addr!,
+              (e) => e.url!,
             ));
           }
 
@@ -225,9 +225,9 @@ class RelayProvider extends ChangeNotifier {
         print("contact ${contact.publicKey} has $relays connected relays !!!");
         if (nip65s[contact.publicKey] != null) {
           nip65s[contact.publicKey]!.forEach((metadata) {
-            Relay? r = buildingNostr.getRelay(metadata.addr!);
+            Relay? r = buildingNostr.getRelay(metadata.url!);
             print(
-                "    relay ${metadata.addr} active = ${r!=null? r.isActive(): false}");
+                "    relay ${metadata.url} active = ${r!=null? r.isActive(): false}");
           });
         }
       }
@@ -242,7 +242,7 @@ class RelayProvider extends ChangeNotifier {
 
     for (var entry in sortedEntries) {
       followRelays!
-          .add(RelayMetadata.full(addr: entry.key, count: entry.value.length));
+          .add(RelayMetadata.full(url: entry.key, count: entry.value.length));
     }
     return buildingNostr;
   }
@@ -267,12 +267,16 @@ class RelayProvider extends ChangeNotifier {
   }
 
   String relayNumStr() {
-    String result =
-        "${nostr!.activeRelays().length}/${nostr!.allRelays().length}";
-    if (settingProvider.gossip == 1 && followsNostr != null) {
-      result += " (feed ${followRelayNumStr()})";
+    if (nip65!=null) {
+      return "${relayManager.getConnectedRelaysFromNip65(nip65!).length}/${nip65!.relays.length}";
     }
-    return result;
+    return "?/?";
+    // String result =
+    //     "${nostr!.activeRelays().length}/${nostr!.allRelays().length}";
+    // if (settingProvider.gossip == 1 && followsNostr != null) {
+    //   result += " (feed ${followRelayNumStr()})";
+    // }
+    // return result;
   }
 
   String followRelayNumStr() {
@@ -307,63 +311,63 @@ class RelayProvider extends ChangeNotifier {
     return Object();
   }
 
-  Future<Nostr> genNostr({String? privateKey, String? publicKey}) async {
-    var loggedUserNostr = Nostr(privateKey: privateKey, publicKey: publicKey);
-    print("getNostr going for addRelays....");
-    await addRelays(loggedUserNostr);
-
-    // print("getNostr going for getContacts....");
-    // await getContacts(loggedUserNostr.publicKey, (contactList) async {
-    //   print("getNostr GOT ${contactList.contacts!.length} contacts....");
-    //   contactListProvider.set(contactList);
-    //   if (settingProvider.gossip == 1) {
-    //     print("getNostr going for buildNostrFromContactsRelays....");
-    //     await buildNostrFromContactsRelays(
-    //       loggedUserNostr.publicKey,
-    //       contactList,
-    //       settingProvider.followeesRelayMinCount ??
-    //           SettingProvider.DEFAULT_FOLLOWEES_RELAY_MIN_COUNT,
-    //       (builtNostr) {
-    //         if (followsNostr == null) {
-    //           followsNostr = builtNostr;
-    //           // add logged user's configured read relays
-    //           // loggedUserNostr!
-    //           //     .activeRelays()
-    //           //     .where((relay) => relay.access != WriteAccess.writeOnly)
-    //           //     .forEach((relay) {
-    //           //   followsNostr!.addRelay(relay, connect: true);
-    //           // });
-    //           print(
-    //               "getNostr going for followEventProvider.doQuery() with followNostr SET....");
-    //           followEventProvider.doQuery();
-    //         }
-    //       },
-    //     );
-    //   } else {
-    //     print(
-    //         "getNostr going for followEventProvider.doQuery() with nostr....");
-    //     nostr = loggedUserNostr;
-    //     followEventProvider.doQuery();
-    //   }
-    // });
-    // add initQuery
-    // contactListProvider.query(targetNostr: _nostr);
-    // contactListProvider.reload(targetNostr: _nostr);
-    notificationsProvider.doQuery(
-        targetNostr: loggedUserNostr, initQuery: true);
-    // Future.delayed(
-    //     const Duration(seconds: 3),
-    //     () => {
-    //           dmProvider.initDMSessions(loggedUserNostr.publicKey).then((_) {
-    //             // dmProvider.query(targetNostr: _nostr, subscribe: false);
-    //           })
-    //         });
-    // .then((_) {
-    //   dmProvider.query(targetNostr: _nostr, subscribe: true);
-    // })
-    // ;
-    return loggedUserNostr;
-  }
+  // Future<Nostr> genNostr({String? privateKey, String? publicKey}) async {
+  //   var loggedUserNostr = Nostr(privateKey: privateKey, publicKey: publicKey);
+  //   print("getNostr going for addRelays....");
+  //   await addRelays(loggedUserNostr);
+  //
+  //   // print("getNostr going for getContacts....");
+  //   // await getContacts(loggedUserNostr.publicKey, (contactList) async {
+  //   //   print("getNostr GOT ${contactList.contacts!.length} contacts....");
+  //   //   contactListProvider.set(contactList);
+  //   //   if (settingProvider.gossip == 1) {
+  //   //     print("getNostr going for buildNostrFromContactsRelays....");
+  //   //     await buildNostrFromContactsRelays(
+  //   //       loggedUserNostr.publicKey,
+  //   //       contactList,
+  //   //       settingProvider.followeesRelayMinCount ??
+  //   //           SettingProvider.DEFAULT_FOLLOWEES_RELAY_MIN_COUNT,
+  //   //       (builtNostr) {
+  //   //         if (followsNostr == null) {
+  //   //           followsNostr = builtNostr;
+  //   //           // add logged user's configured read relays
+  //   //           // loggedUserNostr!
+  //   //           //     .activeRelays()
+  //   //           //     .where((relay) => relay.access != WriteAccess.writeOnly)
+  //   //           //     .forEach((relay) {
+  //   //           //   followsNostr!.addRelay(relay, connect: true);
+  //   //           // });
+  //   //           print(
+  //   //               "getNostr going for followEventProvider.doQuery() with followNostr SET....");
+  //   //           followEventProvider.doQuery();
+  //   //         }
+  //   //       },
+  //   //     );
+  //   //   } else {
+  //   //     print(
+  //   //         "getNostr going for followEventProvider.doQuery() with nostr....");
+  //   //     nostr = loggedUserNostr;
+  //   //     followEventProvider.doQuery();
+  //   //   }
+  //   // });
+  //   // add initQuery
+  //   // contactListProvider.query(targetNostr: _nostr);
+  //   // contactListProvider.reload(targetNostr: _nostr);
+  //   notificationsProvider.doQuery(
+  //       targetNostr: loggedUserNostr, initQuery: true);
+  //   // Future.delayed(
+  //   //     const Duration(seconds: 3),
+  //   //     () => {
+  //   //           dmProvider.initDMSessions(loggedUserNostr.publicKey).then((_) {
+  //   //             // dmProvider.query(targetNostr: _nostr, subscribe: false);
+  //   //           })
+  //   //         });
+  //   // .then((_) {
+  //   //   dmProvider.query(targetNostr: _nostr, subscribe: true);
+  //   // })
+  //   // ;
+  //   return loggedUserNostr;
+  // }
 
   void onRelayStatusChange() {
     notifyListeners();
@@ -413,7 +417,7 @@ class RelayProvider extends ChangeNotifier {
       List<dynamic> tags = [];
       for (var addr in relayAddrs) {
         tags.add(["r", addr, ""]);
-        relays.add(RelayMetadata.full(addr: addr, read: true, write: true));
+        relays.add(RelayMetadata.full(url: addr, read: true, write: true));
       }
 
       Set<String> uniqueRelays = Set<String>.from(broadcastToRelays);
@@ -581,7 +585,7 @@ class RelayProvider extends ChangeNotifier {
                       }
                     }
                     relays!.add(RelayMetadata.full(
-                        addr: value, read: read, write: write));
+                        url: value, read: read, write: write));
                   }
                 }
               }
@@ -598,7 +602,7 @@ class RelayProvider extends ChangeNotifier {
                     write = entry.value["write"];
                     read = entry.value["read"];
                     relays!.add(RelayMetadata.full(
-                        addr: entry.key.toString(), read: read, write: write));
+                        url: entry.key.toString(), read: read, write: write));
                   }
                 }
               } catch (e) {

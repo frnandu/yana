@@ -98,7 +98,7 @@ class _IndexRouter extends CustState<IndexRouter>
     var _followEventNewProvider = Provider.of<FollowNewEventProvider>(context);
     var _indexProvider = Provider.of<IndexProvider>(context);
 
-    if (nostr == null && relayManager==null) {
+    if (nostr == null) {
       return LoginRouter();
     }
 
@@ -432,7 +432,7 @@ class _IndexRouter extends CustState<IndexRouter>
       return Scaffold(
           body: mainIndex,
           extendBody: true,
-          floatingActionButton:  nostr!.privateKey!=null ? AnimatedOpacity(
+          floatingActionButton:  nostr!=null && nostr!.privateKey!=null ? AnimatedOpacity(
             opacity: _scrollingDown ? 0 : 1,
             curve: Curves.fastOutSlowIn,
             duration: const Duration(milliseconds: 400),

@@ -1,7 +1,6 @@
-import 'dart:io';
-
 import 'package:bot_toast/bot_toast.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:dart_ndk/relay.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:yana/main.dart';
@@ -10,11 +9,8 @@ import 'package:yana/utils/router_path.dart';
 import 'package:yana/utils/router_util.dart';
 
 import '../../i18n/i18n.dart';
-import '../../models/relay_status.dart';
 import '../../nostr/client_utils/keys.dart';
-import '../../nostr/relay.dart';
 import '../../utils/base.dart';
-import '../../utils/client_connected.dart';
 import '../../utils/string_util.dart';
 
 class RelaysItemComponent extends StatelessWidget {
@@ -29,18 +25,27 @@ class RelaysItemComponent extends StatelessWidget {
     var themeData = Theme.of(context);
     var cardColor = themeData.cardColor;
     Color borderLeftColor = Colors.red;
-    if (relay.isActive()) {
+    if (relayManager.isRelayConnected(relay.url)) {
       borderLeftColor = Colors.green;
-    } else if (relay.isConnecting()) {
+    } else if (relay.connecting) {
       borderLeftColor = Colors.yellow;
     }
 
     Widget imageWidget;
-    String? url = relay != null &&
-            relay.info != null &&
-            StringUtil.isNotBlank(relay.info!.icon)
-        ? relay.info!.icon
-        : StringUtil.robohash(getRandomHexString());
+
+    String? url;
+
+    if (relay.url.startsWith("wss://relay.damus.io")) {
+      url = "https://damus.io/img/logo.png";
+    } else if (relay.url.startsWith("wss://relay.snort.social")) {
+      url = "https://snort.social/favicon.ico";
+    } else {
+      url = relay != null &&
+          relay.info != null &&
+          StringUtil.isNotBlank(relay.info!.icon)
+          ? relay.info!.icon
+          : StringUtil.robohash(getRandomHexString());
+    }
 
     imageWidget = Container(
         clipBehavior: Clip.hardEdge,
@@ -118,16 +123,16 @@ class RelaysItemComponent extends StatelessWidget {
                                     right: Base.BASE_PADDING),
                                 child: RelaysItemNumComponent(
                                   iconData: Icons.mail,
-                                  num: relay.relayStatus.noteReceived,
+                                  num: 0 // todo relay.relayStatus.noteReceived,
                                 ),
                               ),
-                              relay.relayStatus.error > 0
-                                  ? RelaysItemNumComponent(
-                                      iconColor: Colors.red,
-                                      iconData: Icons.error_outline,
-                                      num: relay.relayStatus.error,
-                                    )
-                                  : Container(),
+                              // relay.relayStatus.error > 0
+                              //     ? RelaysItemNumComponent(
+                              //         iconColor: Colors.red,
+                              //         iconData: Icons.error_outline,
+                              //         num: relay.relayStatus.error,
+                              //       )
+                              //     : Container(),
                             ],
                           ),
                         ],

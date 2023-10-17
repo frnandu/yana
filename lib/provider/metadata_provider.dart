@@ -10,7 +10,6 @@ import '../main.dart';
 import '../models/metadata.dart';
 import '../nostr/event.dart';
 import '../nostr/event_kind.dart' as kind;
-// import '../nostr/filter.dart';
 import '../utils/later_function.dart';
 import '../utils/string_util.dart';
 
@@ -185,7 +184,7 @@ class MetadataProvider extends ChangeNotifier with LaterFunction {
     // if (filters.isNotEmpty) {
     //   nostr!.query(filters, _onEvent);
     // }
-    Stream stream = await relayManager.query(Filter(kinds: [kind.EventKind.METADATA], authors: _needUpdatePubKeys));
+    Stream stream = await relayManager!.query(Filter(kinds: [kind.EventKind.METADATA], authors: _needUpdatePubKeys), feedRelayMap);
     stream.listen((event) {
       _onEvent(event);
     });

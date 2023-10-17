@@ -20,22 +20,37 @@ import '../../utils/string_util.dart';
 import 'relays_item_component.dart';
 
 class RelaysRouter extends StatefulWidget {
+
   const RelaysRouter({super.key});
 
   @override
   State<StatefulWidget> createState() {
     return _RelaysRouter();
   }
+
 }
 
 class _RelaysRouter extends CustState<RelaysRouter> with WhenStopFunction {
   TextEditingController controller = TextEditingController();
+  List<String> urls = [];
+
+  @override
+  void initState() {
+    loadRelayInfos();
+  }
+
+  loadRelayInfos() async {
+    urls = nip65!=null? nip65!.relays.keys.toList() : [];
+    await Future.wait(urls.map((url) => relayManager.getRelayInfo(url)));
+    setState(() {
+      print("loaded relay infos");
+    });
+  }
 
   @override
   Widget doBuild(BuildContext context) {
     var s = I18n.of(context);
     var _relayProvider = Provider.of<RelayProvider>(context);
-    var relayAddrs = _relayProvider.relayAddrs;
     // var relayStatusMap = relayProvider.relayStatusMap;
     var themeData = Theme.of(context);
     var titleFontSize = themeData.textTheme.bodyLarge!.fontSize;
@@ -67,33 +82,38 @@ class _RelaysRouter extends CustState<RelaysRouter> with WhenStopFunction {
               ),
               child: RefreshIndicator(
                 onRefresh: () async {
-                  var filter = Filter(
-                      authors: [nostr!.publicKey],
-                      limit: 1,
-                      kinds: [EventKind.RELAY_LIST_METADATA]);
-
-                  nostr!.query([filter.toJson()], (event) {
-                    LoginRouter.handleRemoteRelays(event, nostr!.privateKey!);
-                    nostr!.checkAndReconnectRelays();
-                  });
-                  nostr!.checkAndReconnectRelays();
+                  if (nip65!=null) {
+                    await relayManager.reconnectRelays(nip65!.relays.keys.toList());
+                    setState(() {
+                    });
+                  }
+                  // var filter = Filter(
+                  //     authors: [nostr!.publicKey],
+                  //     limit: 1,
+                  //     kinds: [EventKind.RELAY_LIST_METADATA]);
+                  //
+                  // nostr!.query([filter.toJson()], (event) {
+                  //   LoginRouter.handleRemoteRelays(event, nostr!.privateKey!);
+                  //   nostr!.checkAndReconnectRelays();
+                  // });
+                  // nostr!.checkAndReconnectRelays();
                 },
                 child: ListView.builder(
                   itemBuilder: (context, index) {
-                    var addr = relayAddrs[index];
+                    var url = urls[index];
                     // var relayStatus = relayStatusMap[addr];
                     // relayStatus ??= RelayStatus(addr);
 
                     return RelaysItemComponent(
-                      relay: nostr!.getRelay(addr)!,
+                      relay: relayManager.relays[url]!, //nostr!.getRelay(addr)!,
                       onRemove: () {
                         setState(() {
-                          relayAddrs = _relayProvider.relayAddrs;
+                          urls = _relayProvider.relayAddrs;
                         });
                       },
                     );
                   },
-                  itemCount: relayAddrs.length,
+                  itemCount: urls.length,
                 ),
               )
           ),

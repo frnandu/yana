@@ -200,7 +200,7 @@ class FollowEventProvider extends ChangeNotifier
       //targetNostr.queryByFilters(filtersMap, onEvent, id: subscribeId);
     } else {
       () async {
-        await for (final event in await relayManager.query(filter)) {
+        await for (final event in await relayManager.query(filter, feedRelayMap)) {
           print(event);
         }
       }; // this maybe refresh
@@ -318,9 +318,11 @@ class FollowEventProvider extends ChangeNotifier
         }
       }
       if (addedReplies) {
+        print("Received ${list.length} events, some new replies");
         postsAndRepliesBox.sort();
       }
       if (addedPosts) {
+        print("Received ${list.length} events, some new posts");
         postsBox.sort();
       }
 

@@ -2,6 +2,8 @@ import 'dart:developer';
 
 import 'package:bot_toast/bot_toast.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:dart_ndk/nips/nip65/nip65.dart';
+import 'package:dart_ndk/relay_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:yana/ui/editor/text_input_dialog.dart';
 import 'package:yana/ui/name_component.dart';
@@ -164,8 +166,11 @@ class AccountsState extends State<AccountsComponent> {
   void doLogin() async {
     String? key = settingProvider.key;
     bool isPrivate = settingProvider.isPrivateKey;
-    nostr = await relayProvider.genNostr(
-        privateKey: isPrivate ? key : null, publicKey: isPrivate ? null : key);
+    Nip65? nip65 = await relayManager!.getSingleNip65(isPrivate ? getPublicKey(key!): key!);
+    await relayManager!.connect(bootstrapRelays: nip65!=null? nip65.relays.keys.toList() : RelayManager.DEFAULT_BOOTSTRAP_RELAYS);
+
+    // nostr = await relayProvider.genNostr(
+    //     privateKey: isPrivate ? key : null, publicKey: isPrivate ? null : key);
   }
 
   void onLoginTap(int index) {
@@ -201,9 +206,12 @@ class AccountsState extends State<AccountsComponent> {
       if (settingProvider.key != null) {
         // use next privateKey to login
         bool isPrivate = settingProvider.isPrivateKey;
-        nostr = await relayProvider.genNostr(
-            privateKey: isPrivate ? key : null,
-            publicKey: isPrivate ? null : key);
+        Nip65? nip65 = await relayManager!.getSingleNip65(isPrivate ? getPublicKey(key!): key!);
+        await relayManager!.connect(bootstrapRelays: nip65!=null? nip65.relays.keys.toList() : RelayManager.DEFAULT_BOOTSTRAP_RELAYS);
+        //
+        // nostr = await relayProvider.genNostr(
+        //     privateKey: isPrivate ? key : null,
+        //     publicKey: isPrivate ? null : key);
       }
     }
 

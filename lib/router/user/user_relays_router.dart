@@ -92,7 +92,7 @@ class _UserRelayRouter extends State<UserRelayRouter>
                     addAble: relayMetadata.count == null && relayStatus == null,
                   );
                 }, selector: (context, provider) {
-                  return provider.getRelayStatus(relayMetadata.addr!);
+                  return provider.getRelayStatus(relayMetadata.url!);
                 });
               },
               itemCount: relays!.length,
@@ -102,8 +102,8 @@ class _UserRelayRouter extends State<UserRelayRouter>
   }
 
   int compareRelays(RelayMetadata r1, RelayMetadata r2) {
-    Relay? relay1 = followsNostr!.getRelay(r1.addr!);
-    Relay? relay2 = followsNostr!.getRelay(r2.addr!);
+    Relay? relay1 = followsNostr!.getRelay(r1.url!);
+    Relay? relay2 = followsNostr!.getRelay(r2.url!);
     if (relay1 == null) {
       return 1;
     }
@@ -141,7 +141,7 @@ class RelayMetadataComponent extends StatelessWidget {
     if (addAble) {
       rightBtn = GestureDetector(
         onTap: () async {
-          await relayProvider.addRelay(relayMetadata.addr!);
+          await relayProvider.addRelay(relayMetadata.url!);
         },
         child: const Icon(
           Icons.add,
@@ -169,7 +169,7 @@ class RelayMetadataComponent extends StatelessWidget {
           );
           main;
         }, selector: (context, _provider) {
-          return _provider.getFollowRelayState(relayMetadata.addr!);
+          return _provider.getFollowRelayState(relayMetadata.url!);
         });
         rightBtn = Row(children: [
           Text("${relayMetadata.count} ",
@@ -232,7 +232,7 @@ class RelayMetadataComponent extends StatelessWidget {
                 children: [
                   Container(
                     margin: const EdgeInsets.only(bottom: 2),
-                    child: Text(relayMetadata.addr!),
+                    child: Text(relayMetadata.url!),
                   ),
                   Row(
                     children: [

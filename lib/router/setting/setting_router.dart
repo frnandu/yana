@@ -307,7 +307,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
                   followRelays!.isNotEmpty &&
                   !loadingGossipRelays) {
                 List<RelayMetadata> filteredRelays = followRelays!.where((relay) {
-                  Relay? r = followsNostr!.getRelay(relay.addr!);
+                  Relay? r = followsNostr!.getRelay(relay.url!);
                   return r!=null;
                 }).toList();
                 RouterUtil.router(

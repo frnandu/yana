@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:dart_ndk/nips/nip01/event.dart';
-import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip01/filter.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -15,7 +14,6 @@ import 'package:yana/utils/base.dart';
 import 'package:yana/utils/base_consts.dart';
 
 import '../../i18n/i18n.dart';
-import '../../nostr/event.dart';
 import '../../provider/setting_provider.dart';
 import '../../ui/event/event_list_component.dart';
 import '../../ui/placeholder/event_list_placeholder.dart';
@@ -33,6 +31,7 @@ class _FollowPostsRouter extends KeepAliveCustState<FollowPostsRouter>
     with LoadMoreEvent {
   ScrollController _controller = ScrollController();
   StreamController<Nip01Event>? _streamController;
+  StreamSubscription<Nip01Event>? _streamSubscription;
 
   int _initTime = DateTime.now().millisecondsSinceEpoch ~/ 1000;
 
@@ -46,24 +45,26 @@ class _FollowPostsRouter extends KeepAliveCustState<FollowPostsRouter>
   }
 
   void load() async {
-    if (_streamController!=null) {
-      await _streamController!.close();
+    if (_streamSubscription!=null) {
+      await _streamSubscription!.cancel();
     }
-    _streamController = StreamController.broadcast();
-
-    _streamController!.stream.listen((p) => setState(() => followEventProvider.onEvent(p)));
-
     List<String>? contactList = contactListProvider.contacts();
     Filter filter = Filter(
       kinds: [
         Nip01Event.textNoteKind,
       ],
       authors: contactList,
-      until: until ?? _initTime,
-      limit: 20,
+      // since: TODO
+      // until: until ?? _initTime,
     );
-    Stream stream = await relayManager.subscription(filter);
-    stream.pipe(_streamController!);
+    Stream<Nip01Event> stream = await relayManager!.subscription(filter, feedRelayMap);
+    _streamSubscription = stream.listen((event) {
+      if(event.sources.contains("wss://nostr.fmar.link")) {
+        print(event);
+      }
+      setState(() => followEventProvider.onEvent(event));
+    });
+    // stream.pipe(_streamController!);
   }
 
 
@@ -83,6 +84,15 @@ class _FollowPostsRouter extends KeepAliveCustState<FollowPostsRouter>
     }
     indexProvider.setFollowPostsScrollController(_controller);
     preBuild();
+    // RelayManager rm = relayManager;
+    // relayManager.relays.values.forEach((e) {
+    //   WebSocket? webSocket = relayManager.webSockets[e.url];
+    //   if (webSocket!=null) {
+    //     print("${e.url} : ${relayManager.webSockets[e.url]!.readyState}");
+    //   } else {
+    //     print("${e.url} : MISSING SOCKET");
+    //   }
+    // });
 
     var main = ListView.builder(
       controller: _controller,
