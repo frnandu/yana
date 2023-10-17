@@ -20,8 +20,6 @@ class ContactListProvider extends ChangeNotifier {
 
   Nip02ContactList? nip02ContactList;
 
-  ContactList? _contactList;
-
   static ContactListProvider getInstance() {
     if (_contactListProvider == null) {
       _contactListProvider = ContactListProvider();
@@ -34,39 +32,39 @@ class ContactListProvider extends ChangeNotifier {
     nip02ContactList = list;
   }
 
-  void reload({Nostr? targetNostr}) {
-    targetNostr ??= nostr;
-
-    String? pubkey;
-    if (targetNostr != null) {
-      pubkey = targetNostr.publicKey;
-    }
-
-    var str = sharedPreferences.getString(DataKey.CONTACT_LISTS);
-    if (StringUtil.isNotBlank(str)) {
-      var jsonMap = jsonDecode(str!);
-
-      if (jsonMap is Map<String, dynamic>) {
-        String? eventStr;
-        if (StringUtil.isNotBlank(pubkey)) {
-          eventStr = jsonMap[pubkey];
-        } else if (jsonMap.length == 1) {
-          eventStr = jsonMap.entries.first.value as String;
-        }
-
-        if (eventStr != null) {
-          var eventMap = jsonDecode(eventStr);
-          _contactListProvider!._event = Nip01Event.fromJson(eventMap);
-          _contactListProvider!._contactList =
-              ContactList.fromJson(_contactListProvider!._event!.tags);
-
-          return;
-        }
-      }
-    }
-
-    _contactListProvider!._contactList = ContactList();
-  }
+  // void reload({Nostr? targetNostr}) {
+  //   targetNostr ??= nostr;
+  //
+  //   String? pubkey;
+  //   if (targetNostr != null) {
+  //     pubkey = targetNostr.publicKey;
+  //   }
+  //
+  //   var str = sharedPreferences.getString(DataKey.CONTACT_LISTS);
+  //   if (StringUtil.isNotBlank(str)) {
+  //     var jsonMap = jsonDecode(str!);
+  //
+  //     if (jsonMap is Map<String, dynamic>) {
+  //       String? eventStr;
+  //       if (StringUtil.isNotBlank(pubkey)) {
+  //         eventStr = jsonMap[pubkey];
+  //       } else if (jsonMap.length == 1) {
+  //         eventStr = jsonMap.entries.first.value as String;
+  //       }
+  //
+  //       if (eventStr != null) {
+  //         var eventMap = jsonDecode(eventStr);
+  //         _contactListProvider!._event = Nip01Event.fromJson(eventMap);
+  //         _contactListProvider!._contactList =
+  //             ContactList.fromJson(_contactListProvider!._event!.tags);
+  //
+  //         return;
+  //       }
+  //     }
+  //   }
+  //
+  //   _contactListProvider!._contactList = ContactList();
+  // }
 
   void clearCurrentContactList() {
     var pubkey = nostr!.publicKey;
@@ -84,15 +82,15 @@ class ContactListProvider extends ChangeNotifier {
 
   var subscriptId = StringUtil.rndNameStr(16);
 
-  void _onEvent(Nip01Event e) {
-    if (e.kind == kind.EventKind.CONTACT_LIST) {
-      if (_event == null || e.createdAt > _event!.createdAt) {
-        _event = e;
-        _contactList = ContactList.fromJson(e.tags);
-        _saveAndNotify();
-      }
-    }
-  }
+  // void _onEvent(Nip01Event e) {
+  //   if (e.kind == kind.EventKind.CONTACT_LIST) {
+  //     if (_event == null || e.createdAt > _event!.createdAt) {
+  //       _event = e;
+  //       _contactList = ContactList.fromJson(e.tags);
+  //       _saveAndNotify();
+  //     }
+  //   }
+  // }
 
   void _saveAndNotify() {
     var eventJsonMap = _event!.toJson();
@@ -114,52 +112,56 @@ class ContactListProvider extends ChangeNotifier {
     notifyListeners();
 
 
-    _contactList!.list().forEach((contact) { metadataProvider.update(contact.publicKey!);});
-    followEventProvider.metadataUpdatedCallback(_contactList);
+    contactList!.contacts.forEach((contact) { metadataProvider.update(contact!);});
+    //followEventProvider.metadataUpdatedCallback(_contactList);
   }
 
   int total() {
-    return _contactList!.total();
+    return contactList!.contacts.length;
+  }
+
+  Future<Nip02ContactList?> getContactList(String pubKey) async {
+    return await relayManager.loadContactList(pubKey);
   }
 
   Future<void> addContact(Contact contact) async {
-    _contactList!.add(contact);
-    _event = await nostr!.sendContactList(_contactList!);
+    contactList!.contacts.add(contact.publicKey!);
+    // _event = await nostr!.sendContactList(_contactList!);
 
     _saveAndNotify();
   }
 
   Future<void> removeContact(String pubKey) async{
-    _contactList!.remove(pubKey);
-    _event = await nostr!.sendContactList(_contactList!);
+    contactList!.contacts.remove(pubKey);
+    // _event = await nostr!.sendContactList(_contactList!);
 
     _saveAndNotify();
   }
 
-  Future<void> updateContacts(ContactList contactList) async {
-    _contactList = contactList;
-    _event = await nostr!.sendContactList(contactList);
-
-    _saveAndNotify();
-  }
-
+  // Future<void> updateContacts(ContactList contactList) async {
+  //   _contactList = contactList;
+  //   _event = await nostr!.sendContactList(contactList);
+  //
+  //   _saveAndNotify();
+  // }
+  //
   Nip02ContactList? get contactList => nip02ContactList;
 
-  List<Contact>? list() {
-    return _contactList!.contacts;
-  }
+  // List<Contact>? list() {
+  //   return _contactList!.contacts;
+  // }
 
   List<String> contacts() {
     return nip02ContactList!=null ? nip02ContactList!.contacts : [];
   }
 
   Contact? getContact(String pubKey) {
-    return _contactList!=null ? _contactList!.getContact(pubKey) : null;
+    return null;//_contactList!=null ? _contactList!.getContact(pubKey) : null;
   }
 
   void clear() {
     _event = null;
-    _contactList!.clear();
+    nip02ContactList = null;
     clearCurrentContactList();
 
     notifyListeners();
@@ -169,62 +171,58 @@ class ContactListProvider extends ChangeNotifier {
     var list = TopicMap.getList(tag);
     if (list != null) {
       for (var t in list) {
-        var exist = _contactList!.containsTag(t);
+        var exist = contactList!.followedTags.contains(t);
         if (exist) {
           return true;
         }
       }
       return false;
     } else {
-      return _contactList!.containsTag(tag);
+      return contactList!.followedTags.contains(tag);
     }
   }
 
   Future<void> addTag(String tag) async {
-    _contactList!.addTag(tag);
-    _event = await nostr!.sendContactList(_contactList!);
+    // _contactList!.addTag(tag);
+    // _event = await nostr!.sendContactList(_contactList!);
 
     _saveAndNotify();
   }
 
   Future<void> removeTag(String tag) async {
-    _contactList!.removeTag(tag);
-    _event = await nostr!.sendContactList(_contactList!);
+    // _contactList!.removeTag(tag);
+    // _event = await nostr!.sendContactList(_contactList!);
 
     _saveAndNotify();
   }
 
-  int totalFollowedTags() {
-    return _contactList!.totalFollowedTags();
-  }
-
-  Iterable<String> tagList() {
-    return _contactList!.tagList();
-  }
+  // Iterable<String> tagList() {
+  //   return _contactList!.tagList();
+  // }
 
   bool containCommunity(String id) {
-    return _contactList!.containsCommunity(id);
+    return contactList!.followedCommunities.contains(id);
   }
 
   void addCommunity(String tag) async {
-    _contactList!.addCommunity(tag);
-    _event = await nostr!.sendContactList(_contactList!);
+    // _contactList!.addCommunity(tag);
+    // _event = await nostr!.sendContactList(_contactList!);
 
     _saveAndNotify();
   }
 
   void removeCommunity(String tag) async {
-    _contactList!.removeCommunity(tag);
-    _event = await nostr!.sendContactList(_contactList!);
+    // _contactList!.removeCommunity(tag);
+    // _event = await nostr!.sendContactList(_contactList!);
 
     _saveAndNotify();
   }
 
-  int totalfollowedCommunities() {
-    return _contactList!.totalFollowedCommunities();
-  }
+  // int totalfollowedCommunities() {
+  //   return _contactList!.totalFollowedCommunities();
+  // }
 
-  Iterable<String> followedCommunitiesList() {
-    return _contactList!.followedCommunitiesList();
-  }
+  // Iterable<String> followedCommunitiesList() {
+  //   return _contactList!.followedCommunitiesList();
+  // }
 }

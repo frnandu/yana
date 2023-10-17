@@ -40,8 +40,8 @@ class SystemTimer {
           // if (kDebugMode) {
           //   print('!!!!!!!!!!!!!!! SystemTimer.runTask');
           // }
-          await nostr!.checkAndReconnectRelays();
-          newNotificationsProvider.queryNew();
+          // await nostr!.checkAndReconnectRelays();
+          // newNotificationsProvider.queryNew();
           // dmProvider.query(subscribe: false);
           if (counter % 2 == 0) {
             if (settingProvider.gossip == 1) {
@@ -49,7 +49,7 @@ class SystemTimer {
                 //await followsNostr!.checkAndReconnectRelays();
               }
             }
-            followNewEventProvider.queryNew();
+            // followNewEventProvider.queryNew();
           }
         }
       });

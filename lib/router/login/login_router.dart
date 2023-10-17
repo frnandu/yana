@@ -25,27 +25,6 @@ class LoginRouter extends StatefulWidget {
   State<StatefulWidget> createState() {
     return _LoginRouter();
   }
-
-  @Deprecated("use new method")
-  static Future<void> handleRemoteRelays(
-      Event? remoteRelayEvent, String privKey) async {
-    var relaysUpdatedTime = relayProvider.updatedTime();
-    if (remoteRelayEvent != null &&
-        (relaysUpdatedTime == null ||
-            remoteRelayEvent!.createdAt - relaysUpdatedTime > 60 * 5)) {
-      List<String> list = [];
-      for (var tag in remoteRelayEvent!.tags) {
-        if (tag.length > 1) {
-          var key = tag[0];
-          var value = tag[1];
-          if (key == "r") {
-            list.add(value);
-          }
-        }
-      }
-      await relayProvider.setRelayListAndUpdate(list, privKey);
-    }
-  }
 }
 
 class _LoginRouter extends State<LoginRouter>

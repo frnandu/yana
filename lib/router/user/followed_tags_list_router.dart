@@ -1,3 +1,4 @@
+import 'package:dart_ndk/nips/nip02/contact_list.dart';
 import 'package:flutter/material.dart';
 import 'package:yana/ui/tag_info_component.dart';
 import 'package:yana/utils/base.dart';
@@ -16,14 +17,14 @@ class FollowedTagsListRouter extends StatefulWidget {
 }
 
 class _FollowedTagsListRouter extends State<FollowedTagsListRouter> {
-  ContactList? contactList;
+  Nip02ContactList? contactList;
 
   @override
   Widget build(BuildContext context) {
     if (contactList == null) {
       var arg = RouterUtil.routerArgs(context);
       if (arg != null) {
-        contactList = arg as ContactList;
+        contactList = arg as Nip02ContactList;
       }
     }
     if (contactList == null) {
@@ -35,7 +36,7 @@ class _FollowedTagsListRouter extends State<FollowedTagsListRouter> {
     var themeData = Theme.of(context);
     var titleFontSize = themeData.textTheme.bodyLarge!.fontSize;
 
-    var tagList = contactList!.tagList().toList();
+    var tagList = contactList!.followedTags;
 
     return Scaffold(
       appBar: AppBar(

@@ -13,6 +13,7 @@ import 'package:yana/utils/platform_util.dart';
 import '../main.dart';
 import 'client_utils/keys.dart';
 
+@deprecated
 class Event {
   /// Creates a new Nostr event.
   ///

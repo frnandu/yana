@@ -267,9 +267,7 @@ class RelayProvider extends ChangeNotifier {
   }
 
   String relayNumStr() {
-    if (nip65!=null) {
-      return "${relayManager.getConnectedRelaysFromNip65(nip65!).length}/${nip65!.relays.length}";
-    }
+    return "${relayManager.getConnectedRelays(myRelaysMap.keys.toList()).length}/${myRelaysMap.keys.length}";
     return "?/?";
     // String result =
     //     "${nostr!.activeRelays().length}/${nostr!.allRelays().length}";

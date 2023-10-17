@@ -1,3 +1,4 @@
+import 'package:dart_ndk/nips/nip02/contact_list.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -13,7 +14,7 @@ import '../../utils/platform_util.dart';
 import '../../utils/router_util.dart';
 
 class UserContactListComponent extends StatefulWidget {
-  ContactList contactList;
+  Nip02ContactList contactList;
 
   UserContactListComponent({required this.contactList});
 
@@ -26,11 +27,11 @@ class UserContactListComponent extends StatefulWidget {
 class _UserContactListComponent extends State<UserContactListComponent> {
   ScrollController _controller = ScrollController();
 
-  List<Contact>? list;
+  List<String>? list;
 
   @override
   Widget build(BuildContext context) {
-    list ??= widget.contactList.list().toList();
+    list ??= widget.contactList.contacts;
 
     Widget main = ListView.builder(
       controller: _controller,
@@ -55,7 +56,7 @@ class _UserContactListComponent extends State<UserContactListComponent> {
                   // ),
             },
             selector: (context, _provider) {
-              return _provider.getMetadata(contact.publicKey!);
+              return _provider.getMetadata(contact);
             },
           ),
         );

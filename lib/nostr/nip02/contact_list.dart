@@ -160,7 +160,7 @@ class ContactList {
   }
 
   List<Contact> list() {
-    return contacts ?? [];
+    return contacts;
   }
 
   bool isEmpty() {

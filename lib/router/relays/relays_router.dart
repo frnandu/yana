@@ -20,14 +20,12 @@ import '../../utils/string_util.dart';
 import 'relays_item_component.dart';
 
 class RelaysRouter extends StatefulWidget {
-
   const RelaysRouter({super.key});
 
   @override
   State<StatefulWidget> createState() {
     return _RelaysRouter();
   }
-
 }
 
 class _RelaysRouter extends CustState<RelaysRouter> with WhenStopFunction {
@@ -40,8 +38,9 @@ class _RelaysRouter extends CustState<RelaysRouter> with WhenStopFunction {
   }
 
   loadRelayInfos() async {
-    urls = nip65!=null? nip65!.relays.keys.toList() : [];
+    urls = myRelaysMap.keys.toList();
     await Future.wait(urls.map((url) => relayManager.getRelayInfo(url)));
+    /// TODO check if widget is not disposed already...
     setState(() {
       print("loaded relay infos");
     });
@@ -82,11 +81,9 @@ class _RelaysRouter extends CustState<RelaysRouter> with WhenStopFunction {
               ),
               child: RefreshIndicator(
                 onRefresh: () async {
-                  if (nip65!=null) {
-                    await relayManager.reconnectRelays(nip65!.relays.keys.toList());
-                    setState(() {
-                    });
-                  }
+                  await relayManager
+                      .reconnectRelays(myRelaysMap.keys.toList());
+                  setState(() {});
                   // var filter = Filter(
                   //     authors: [nostr!.publicKey],
                   //     limit: 1,
@@ -105,7 +102,8 @@ class _RelaysRouter extends CustState<RelaysRouter> with WhenStopFunction {
                     // relayStatus ??= RelayStatus(addr);
 
                     return RelaysItemComponent(
-                      relay: relayManager.relays[url]!, //nostr!.getRelay(addr)!,
+                      relay: relayManager.relays[url]!,
+                      //nostr!.getRelay(addr)!,
                       onRemove: () {
                         setState(() {
                           urls = _relayProvider.relayAddrs;
@@ -115,21 +113,21 @@ class _RelaysRouter extends CustState<RelaysRouter> with WhenStopFunction {
                   },
                   itemCount: urls.length,
                 ),
-              )
-          ),
+              )),
         ),
-        nostr!.privateKey!=null ?
-        TextField(
-          controller: controller,
-          decoration: InputDecoration(
-            prefixIcon: const Icon(Icons.lan),
-            hintText: s.Input_relay_address,
-            suffixIcon: IconButton(
-              icon: const Icon(Icons.add),
-              onPressed: addRelay,
-            ),
-          ),
-        ): Container(),
+        nostr!.privateKey != null
+            ? TextField(
+                controller: controller,
+                decoration: InputDecoration(
+                  prefixIcon: const Icon(Icons.lan),
+                  hintText: s.Input_relay_address,
+                  suffixIcon: IconButton(
+                    icon: const Icon(Icons.add),
+                    onPressed: addRelay,
+                  ),
+                ),
+              )
+            : Container(),
       ]),
     );
   }
@@ -147,7 +145,6 @@ class _RelaysRouter extends CustState<RelaysRouter> with WhenStopFunction {
     FocusScope.of(context).unfocus();
   }
 
-  static Event? remoteRelayEvent;
 
   @override
   Future<void> onReady(BuildContext context) async {

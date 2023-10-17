@@ -153,11 +153,10 @@ bool reloadingFollowNostr = false;
 
 List<RelayMetadata>? followRelays;
 
-Nip65? nip65;
-
 RelayManager relayManager = RelayManager();
 
 Map<String,List<PubkeyMapping>> feedRelayMap = {};
+Map<String,List<PubkeyMapping>> myRelaysMap = {};
 
 Nostr? staticForRelaysAndMetadataNostr;
 
@@ -331,7 +330,12 @@ Future<void> main() async {
     String publicKey = isPrivate ? getPublicKey(key!) : key!;
     relayManager = RelayManager();
     await relayManager.connect();
-    nip65 = await relayManager.getSingleNip65(publicKey);
+    Nip65? nip65 = await relayManager.getSingleNip65(publicKey);
+    if (nip65!=null) {
+      for(MapEntry entry in nip65.relays.entries) {
+        myRelaysMap[entry.key] = [PubkeyMapping(pubKey: publicKey, rwMarker: entry.value)];
+      }
+    }
     await relayManager.connect(bootstrapRelays: nip65!=null? nip65!.relays.keys.toList() : RelayManager.DEFAULT_BOOTSTRAP_RELAYS);
     nostr = Nostr(privateKey: isPrivate ? key : null,publicKey: publicKey);
     print("Loading contact list...");

@@ -44,8 +44,6 @@ class _UserRouter extends CustState<UserRouter>
 
   String? pubkey;
 
-  Nostr? userNostr;
-
   bool showTitle = false;
 
   bool followsYou = false;
@@ -90,6 +88,8 @@ class _UserRouter extends CustState<UserRouter>
   @override
   Widget doBuild(BuildContext context) {
     var _settingProvider = Provider.of<SettingProvider>(context);
+    var _metadataProvider = Provider.of<MetadataProvider>(context);
+
     if (StringUtil.isBlank(pubkey)) {
       pubkey = RouterUtil.routerArgs(context) as String?;
       if (StringUtil.isBlank(pubkey)) {
@@ -192,19 +192,18 @@ class _UserRouter extends CustState<UserRouter>
               SliverToBoxAdapter(
                 child: SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
-                  child: userNostr!=null ? UserStatisticsComponent(
+                  child: UserStatisticsComponent(
                     pubkey: pubkey!,
-                    userNostr: userNostr,
+                    // userNostr: userNostr,
                     onContactListLoaded: (contactList) {
-                      Contact? c = contactList.getContact(nostr!.publicKey);
                       if (nostr != null &&
-                          contactList.getContact(nostr!.publicKey) != null) {
+                          contactList.contacts.contains(nostr!.publicKey)) {
                         setState(() {
                           followsYou = true;
                         });
                       }
                     },
-                  ) : Container(),
+                  ),
                 ),
               ),
             ];
@@ -251,16 +250,16 @@ class _UserRouter extends CustState<UserRouter>
 
   @override
   Future<void> onReady(BuildContext context) async {
-    await relayProvider.getRelays(timeoutSeconds: 3, pubkey!, (relays) async {
-      if (userNostr == null) {
-        if (pubkey != nostr!.publicKey) {
-          // use relays for user where he/she writes
-          await buildUserNostrFromRelays(relays);
-        }
-        userNostr ??= nostr;
-      }
-      doQuery();
-    });
+    // await relayProvider.getRelays(timeoutSeconds: 3, pubkey!, (relays) async {
+    //   if (userNostr == null) {
+    //     if (pubkey != nostr!.publicKey) {
+    //       // use relays for user where he/she writes
+    //       await buildUserNostrFromRelays(relays);
+    //     }
+    //     userNostr ??= nostr;
+    //   }
+    //   doQuery();
+    // });
 
     if (globalKey.currentState != null) {
       var controller = globalKey.currentState!.innerController;
@@ -269,50 +268,50 @@ class _UserRouter extends CustState<UserRouter>
       });
     }
 
-    metadataProvider.update(pubkey!);
+    // metadataProvider.update(pubkey!);
   }
 
-  Future<void> buildUserNostrFromRelays(List<RelayMetadata> relays) async {
-    if (!relays.isEmpty) {
-      Set<String> uniqueRelays = Set<String>.from(relays
-          .where((element) => element.write != null && element.write!)
-          .map((e) => e.url));
-      userNostr =
-          Nostr(
-              privateKey: nostr!.privateKey, publicKey: nostr!.publicKey);
-
-      List<Future<bool>> futures = [];
-
-      uniqueRelays.forEach((adr) async {
-        String? relayAddr = Relay.clean(adr);
-        if (relayAddr == null) {
-          return;
-        }
-
-        Relay r = Relay(
-          relayAddr,
-          RelayStatus(relayAddr),
-          access: WriteAccess.readWrite,
-        );
-        try {
-          futures.add(userNostr!.addRelay(r, checkInfo: false));
-          // await userNostr!.addRelay(r, checkInfo: false, connect: true);
-        } catch (e) {
-          log(
-              "relay $relayAddr add to temp nostr for broadcasting of nip065 relay list: ${e
-                  .toString()}");
-        }
-      });
-      final startTime = DateTime.now();
-      await Future.wait(futures).onError((error, stackTrace) =>
-          List.of([]));
-      final endTime = DateTime.now();
-      final duration = endTime.difference(startTime);
-      print("addRelays for ${uniqueRelays
-          .length} parallel Future.wait(futures) took:${duration
-          .inMilliseconds} ms");
-    }
-  }
+  // Future<void> buildUserNostrFromRelays(List<RelayMetadata> relays) async {
+  //   if (!relays.isEmpty) {
+  //     Set<String> uniqueRelays = Set<String>.from(relays
+  //         .where((element) => element.write != null && element.write!)
+  //         .map((e) => e.url));
+  //     userNostr =
+  //         Nostr(
+  //             privateKey: nostr!.privateKey, publicKey: nostr!.publicKey);
+  //
+  //     List<Future<bool>> futures = [];
+  //
+  //     uniqueRelays.forEach((adr) async {
+  //       String? relayAddr = Relay.clean(adr);
+  //       if (relayAddr == null) {
+  //         return;
+  //       }
+  //
+  //       Relay r = Relay(
+  //         relayAddr,
+  //         RelayStatus(relayAddr),
+  //         access: WriteAccess.readWrite,
+  //       );
+  //       try {
+  //         futures.add(userNostr!.addRelay(r, checkInfo: false));
+  //         // await userNostr!.addRelay(r, checkInfo: false, connect: true);
+  //       } catch (e) {
+  //         log(
+  //             "relay $relayAddr add to temp nostr for broadcasting of nip065 relay list: ${e
+  //                 .toString()}");
+  //       }
+  //     });
+  //     final startTime = DateTime.now();
+  //     await Future.wait(futures).onError((error, stackTrace) =>
+  //         List.of([]));
+  //     final endTime = DateTime.now();
+  //     final duration = endTime.difference(startTime);
+  //     print("addRelays for ${uniqueRelays
+  //         .length} parallel Future.wait(futures) took:${duration
+  //         .inMilliseconds} ms");
+  //   }
+  // }
 
   void onEvent(event) {
     later(event, (list) {
@@ -326,23 +325,23 @@ class _UserRouter extends CustState<UserRouter>
     super.dispose();
     disposeLater();
 
-    if (userNostr != null && userNostr!.publicKey != nostr!.publicKey) {
-      if (StringUtil.isNotBlank(subscribeId)) {
-        try {
-          userNostr!.unsubscribe(subscribeId!);
-        } catch (e) {}
-      }
-      try {
-        userNostr!.close();
-      } catch (e) {}
-    }
+  //   if (userNostr != null && userNostr!.publicKey != nostr!.publicKey) {
+  //     if (StringUtil.isNotBlank(subscribeId)) {
+  //       try {
+  //         userNostr!.unsubscribe(subscribeId!);
+  //       } catch (e) {}
+  //     }
+  //     try {
+  //       userNostr!.close();
+  //     } catch (e) {}
+  //   }
   }
 
   void unSubscribe() {
-    if (userNostr != null) {
-      userNostr!.unsubscribe(subscribeId!);
-    }
-    subscribeId = null;
+    // if (userNostr != null) {
+    //   userNostr!.unsubscribe(subscribeId!);
+    // }
+    // subscribeId = null;
   }
 
   @override
@@ -368,21 +367,21 @@ class _UserRouter extends CustState<UserRouter>
     );
     subscribeId = StringUtil.rndNameStr(16);
 
-    var activeRelays = userNostr!.activeRelays();
-    if (!box.isEmpty() && activeRelays.isNotEmpty) {
-      var oldestCreatedAts = box.oldestCreatedAtByRelay(
-        activeRelays,
-      );
-      Map<String, List<Map<String, dynamic>>> filtersMap = {};
-      for (var relay in activeRelays) {
-        var oldestCreatedAt = oldestCreatedAts.createdAtMap[relay.url];
-        filter.until = oldestCreatedAt;
-        filtersMap[relay.url] = [filter.toJson()];
-      }
-      userNostr!.queryByFilters(filtersMap, onEvent, id: subscribeId);
-    } else {
-      userNostr!.query([filter.toJson()], onEvent, id: subscribeId);
-    }
+  //   var activeRelays = userNostr!.activeRelays();
+  //   if (!box.isEmpty() && activeRelays.isNotEmpty) {
+  //     var oldestCreatedAts = box.oldestCreatedAtByRelay(
+  //       activeRelays,
+  //     );
+  //     Map<String, List<Map<String, dynamic>>> filtersMap = {};
+  //     for (var relay in activeRelays) {
+  //       var oldestCreatedAt = oldestCreatedAts.createdAtMap[relay.url];
+  //       filter.until = oldestCreatedAt;
+  //       filtersMap[relay.url] = [filter.toJson()];
+  //     }
+  //     userNostr!.queryByFilters(filtersMap, onEvent, id: subscribeId);
+  //   } else {
+  //     userNostr!.query([filter.toJson()], onEvent, id: subscribeId);
+  //   }
   }
 
   @override

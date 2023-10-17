@@ -1,3 +1,4 @@
+import 'package:dart_ndk/nips/nip02/contact_list.dart';
 import 'package:flutter/material.dart';
 import 'package:yana/nostr/nip172/community_id.dart';
 import 'package:yana/utils/router_path.dart';
@@ -20,14 +21,14 @@ class FollowedCommunitiesRouter extends StatefulWidget {
 }
 
 class _FollowedCommunitiesRouter extends State<FollowedCommunitiesRouter> {
-  ContactList? contactList;
+  Nip02ContactList? contactList;
 
   @override
   Widget build(BuildContext context) {
     if (contactList == null) {
       var arg = RouterUtil.routerArgs(context);
       if (arg != null) {
-        contactList = arg as ContactList;
+        contactList = arg as Nip02ContactList;
       }
     }
     if (contactList == null) {
@@ -40,7 +41,7 @@ class _FollowedCommunitiesRouter extends State<FollowedCommunitiesRouter> {
     var titleFontSize = themeData.textTheme.bodyLarge!.fontSize;
     var hintColor = themeData.hintColor;
 
-    var communitiesList = contactList!.followedCommunitiesList().toList();
+    var communitiesList = contactList!.followedCommunities;
 
     var main = ListView.builder(
       itemBuilder: (context, index) {
