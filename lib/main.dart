@@ -4,7 +4,7 @@ import 'dart:ui';
 import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:bip340/bip340.dart';
 import 'package:bot_toast/bot_toast.dart';
-import 'package:dart_ndk/nips/nip02/metadata.dart';
+import 'package:dart_ndk/nips/nip02/contact_list.dart';
 import 'package:dart_ndk/nips/nip65/nip65.dart';
 import 'package:dart_ndk/pubkey_mapping.dart';
 import 'package:dart_ndk/read_write.dart';
@@ -340,7 +340,7 @@ Future<void> main() async {
       print("Loaded ${contactList.contacts.length} contacts...");
       contactListProvider.set(contactList);
       feedRelayMap = await relayManager.calculateBestRelaysForPubKeyMappings(
-          contactList.contacts, RelayDirection.write, relayMinCountPerPubKey: settingProvider.followeesRelayMinCount);
+          contactList.contacts, RelayDirection.outbox, relayMinCountPerPubKey: settingProvider.followeesRelayMinCount);
     }
     // followEventProvider.doQuery();
 

@@ -1,17 +1,15 @@
 import 'dart:convert';
 
 import 'package:dart_ndk/nips/nip01/event.dart';
-import 'package:dart_ndk/nips/nip02/metadata.dart';
+import 'package:dart_ndk/nips/nip02/contact_list.dart';
 import 'package:flutter/material.dart';
 import 'package:yana/router/tag/topic_map.dart';
 
+import '../main.dart';
 import '../nostr/event_kind.dart' as kind;
-import '../nostr/event.dart';
 import '../nostr/nip02/contact.dart';
 import '../nostr/nip02/contact_list.dart';
-import '../nostr/filter.dart';
 import '../nostr/nostr.dart';
-import '../main.dart';
 import '../utils/string_util.dart';
 import 'data_util.dart';
 
