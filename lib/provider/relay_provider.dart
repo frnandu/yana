@@ -251,35 +251,29 @@ class RelayProvider extends ChangeNotifier {
     return relayStatusMap[addr];
   }
 
-  int? getFollowRelayState(String addr) {
-    if (followsNostr != null) {
-      Relay? r = followsNostr!.getRelay(addr);
-      if (r == null) {
-        return null;
-      }
-      return r!.webSocket != null
-          ? r!.webSocket!.readyState
-          : (r.relayStatus.connecting
-              ? WebSocket.connecting
-              : WebSocket.closed);
+  int? getFeedRelayState(String url) {
+    String? cleanedUrl = Relay.clean(url);
+    if (cleanedUrl==null) {
+      return WebSocket.closed;
     }
-    return null;
+    return relayManager.isRelayConnecting(cleanedUrl) ?
+      WebSocket.connecting :
+        relayManager.isRelayConnected(cleanedUrl) ? WebSocket.open : WebSocket.closed;
   }
 
   String relayNumStr() {
-    return "${relayManager.getConnectedRelays(myRelaysMap.keys.toList()).length}/${myRelaysMap.keys.length}";
-    return "?/?";
+    String result = "${relayManager.getConnectedRelays(myRelaysMap.keys.toList()).length}/${myRelaysMap.keys.length}";
     // String result =
     //     "${nostr!.activeRelays().length}/${nostr!.allRelays().length}";
-    // if (settingProvider.gossip == 1 && followsNostr != null) {
-    //   result += " (feed ${followRelayNumStr()})";
-    // }
-    // return result;
+    if (settingProvider.gossip == 1 && feedRelayMap != null && feedRelayMap.isNotEmpty) {
+      result += " (feed ${feedRelaysNumStr()})";
+    }
+    return result;
   }
 
-  String followRelayNumStr() {
-    if (followsNostr != null) {
-      return "${followsNostr!.activeRelays().length}/${followsNostr!.allRelays().length}";
+  String feedRelaysNumStr() {
+    if (myRelaysMap != null) {
+      return "${relayManager.getConnectedRelays(feedRelayMap.keys.toList()).length}/${feedRelayMap.keys.length}";
     }
     return "";
   }

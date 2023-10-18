@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:bot_toast/bot_toast.dart';
+import 'package:dart_ndk/pubkey_mapping.dart';
+import 'package:dart_ndk/read_write.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_font_picker/flutter_font_picker.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
@@ -285,7 +287,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
         },
         initialValue: settingProvider.gossip == OpenStatus.OPEN,
         leading: const Icon(Icons.grain),
-        title: const Text("Use following outbox relays for feed")));
+        title: const Text("Use contacts outbox relays for feed")));
 
     if (settingProvider.gossip == 1) {
       networkTiles.add(SettingsTile.navigation(
@@ -298,24 +300,33 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
               rebuildFollowsNostr();
             }
           },
-          title: const Text("Minimal amount of relays per following")));
+          title: const Text("Minimal amount of relays per contact")));
 
       networkTiles.add(
         SettingsTile.navigation(
             onPressed: (context) {
-              if (followRelays != null &&
-                  followRelays!.isNotEmpty &&
+              if (myRelaysMap != null &&
+                  myRelaysMap!.isNotEmpty &&
                   !loadingGossipRelays) {
-                List<RelayMetadata> filteredRelays = followRelays!.where((relay) {
-                  Relay? r = followsNostr!.getRelay(relay.url!);
-                  return r!=null;
-                }).toList();
+                List<RelayMetadata> filteredRelays = feedRelayMap.entries
+                    .map((entry) => RelayMetadata.full(
+                    url: entry.key,
+                    read: false,
+                    write: true,
+                    count: entry.value.length))
+                    .toList();
+
+                // List<RelayMetadata> filteredRelays =
+                //     followRelays!.where((relay) {
+                //   Relay? r = followsNostr!.getRelay(relay.url!);
+                //   return r != null;
+                // }).toList();
                 RouterUtil.router(
-                    context, RouterPath.USER_RELAYS, filteredRelays );
+                    context, RouterPath.USER_RELAYS, filteredRelays);
               }
             },
             leading: Text(
-              "Connected / Total relays from following",
+              "Feed Connected / Total relays ",
               style: TextStyle(color: themeData.disabledColor),
             ),
             trailing: loadingGossipRelays
@@ -334,7 +345,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
                 style: TextStyle(color: themeData.disabledColor),
               );
             }, selector: (context, _provider) {
-              return _provider.followRelayNumStr();
+              return _provider.feedRelaysNumStr();
             })),
       );
     }
@@ -1048,6 +1059,18 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
     setState(() {
       loadingGossipRelays = true;
     });
+    Map<String, List<PubkeyMapping>> newMap =
+        await relayManager.calculateBestRelaysForPubKeyMappings(
+            contactListProvider.contactList!.contacts, RelayDirection.outbox,
+            relayMinCountPerPubKey: settingProvider.followeesRelayMinCount);
+    if (newMap!=null && newMap.isNotEmpty) {
+      feedRelayMap = newMap;
+    }
+    reloadingFollowNostr = false;
+    setState(() {
+      loadingGossipRelays = false;
+    });
+
     // await relayProvider.buildNostrFromContactsRelays(
     //     nostr!.publicKey,
     //     contactListProvider.nip02ContactList!,

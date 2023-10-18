@@ -169,7 +169,7 @@ class RelayMetadataComponent extends StatelessWidget {
           );
           main;
         }, selector: (context, _provider) {
-          return _provider.getFollowRelayState(relayMetadata.url!);
+          return _provider.getFeedRelayState(relayMetadata.url!);
         });
         rightBtn = Row(children: [
           Text("${relayMetadata.count} ",
@@ -177,7 +177,7 @@ class RelayMetadataComponent extends StatelessWidget {
                   color: themeData.dividerColor,
                   fontSize: themeData.textTheme.labelLarge!.fontSize)),
           Text(
-            "follows",
+            "contact"+((relayMetadata.count!>1)?"s":""),
             style: TextStyle(
                 color: themeData.disabledColor,
                 fontSize: themeData.textTheme.labelSmall!.fontSize),

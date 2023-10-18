@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:bot_toast/bot_toast.dart';
 import 'package:convert/convert.dart';
@@ -352,12 +354,25 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
       // filter["#p"] = [widget.pubkey];
       // followedSubscribeId = StringUtil.rndNameStr(12);
 
-      await relayManager.reconnectRelays(["wss://purplepag.es"]);
+      Filter filter = Filter(kinds: [Nip02ContactList.kind], pTags: [widget.pubkey]);
+
+      // WebSocket webSocket = await WebSocket.connect("wss://relay.damus.io");
+      // webSocket.listen((event) {
+      //   print(event);
+      // });
+      // String id = Random().nextInt(4294967296).toString();
+      // List<dynamic> request = ["REQ", id, filter.toMap()];
+      // final encoded = jsonEncode(request);
+      //
+      // webSocket.add(encoded);
+
+
+      // await relayManager.reconnectRelays(["wss://relay.damus.io"]);
       Stream<Nip01Event> stream = await relayManager.requestRelays(
-        ["wss://purplepag.es"],
-          // feedRelayMap.keys.toList()..addAll(myRelaysMap.keys.toList()),
-          Filter(kinds: [Nip02ContactList.kind], pTags: [widget.pubkey]),
-        idleTimeout: 10
+        // ["wss://relay.damus.io"],
+          feedRelayMap.keys.toList()..addAll(myRelaysMap.keys.toList()),
+          filter,
+        idleTimeout: 30
       );
       stream.listen((event) {
         //
