@@ -35,7 +35,6 @@ class _FollowPostsRouter extends KeepAliveCustState<FollowPostsRouter>
 
   int _initTime = DateTime.now().millisecondsSinceEpoch ~/ 1000;
 
-
   @override
   void initState() {
     super.initState();
@@ -48,13 +47,15 @@ class _FollowPostsRouter extends KeepAliveCustState<FollowPostsRouter>
     if (_streamSubscription!=null) {
       await _streamSubscription!.cancel();
     }
+    DateTime queryTime = DateTime.now();
+
     List<String>? contactList = contactListProvider.contacts();
     Filter filter = Filter(
       kinds: [
         Nip01Event.textNoteKind,
       ],
       authors: contactList,
-      // since: TODO
+      since: queryTime.subtract(Duration(hours: 1)).millisecondsSinceEpoch ~/ 1000,
       // until: until ?? _initTime,
     );
     Stream<Nip01Event> stream = await relayManager!.subscription(filter, feedRelayMap);
@@ -78,7 +79,8 @@ class _FollowPostsRouter extends KeepAliveCustState<FollowPostsRouter>
     if (events.isEmpty) {
       return EventListPlaceholder(
         onRefresh: () {
-          followEventProvider.refreshPosts();
+          load();
+          // followEventProvider.refreshPosts();
         },
       );
     }
@@ -98,6 +100,10 @@ class _FollowPostsRouter extends KeepAliveCustState<FollowPostsRouter>
       controller: _controller,
       itemBuilder: (BuildContext context, int index) {
         var event = events[index];
+        // Map<String, dynamic> map = event.toJson();
+        // map['content']=event.content+event.sources.toString();
+        // var e = Nip01Event.fromJson(map);
+        // e.sources = event.sources;
         return EventListComponent(
           event: event,
           showVideo: _settingProvider.videoPreview == OpenStatus.OPEN,

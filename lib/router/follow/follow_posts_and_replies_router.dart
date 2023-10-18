@@ -1,3 +1,4 @@
+import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:yana/ui/keep_alive_cust_state.dart';
@@ -61,6 +62,11 @@ class _FollowPostsAndRepliesRouter
         //   ),
         // );
         var event = events[index];
+        Map<String, dynamic> map = event.toJson();
+        map['content']=event.content+event.sources.toString();
+        var e = Nip01Event.fromJson(map);
+        e.sources = event.sources;
+        event = e;
         return EventListComponent(
           event: event,
           showVideo: _settingProvider.videoPreview == OpenStatus.OPEN,

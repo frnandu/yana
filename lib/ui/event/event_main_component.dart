@@ -1,11 +1,14 @@
 import 'dart:convert';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dart_ndk/nips/nip01/event.dart';
+import 'package:dart_ndk/relay.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:provider/provider.dart';
 import 'package:screenshot/screenshot.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:yana/nostr/client_utils/keys.dart';
 import 'package:yana/ui/content/content_video_component.dart';
 import 'package:yana/ui/content/markdown/markdown_mention_event_element_builder.dart';
 import 'package:yana/utils/platform_util.dart';
@@ -106,7 +109,16 @@ class _EventMainComponent extends State<EventMainComponent> {
     } else {
       eventRelation = widget.eventRelation!;
     }
+    loadRelayInfos();
   }
+
+  loadRelayInfos() async {
+    await Future.wait(widget.event.sources.map((url) => relayManager.getRelayInfo(url)));
+    setState(() {
+      print("loaded relay infos");
+    });
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -238,7 +250,6 @@ class _EventMainComponent extends State<EventMainComponent> {
             child: RepaintBoundary(child: markdownWidget),
           ));
         }
-
         if (widget.showReactions) {
           list.add(EventReactionsComponent(
             screenshotController: widget.screenshotController,
@@ -388,6 +399,46 @@ class _EventMainComponent extends State<EventMainComponent> {
             }
           }
         }
+        List<Container> relayIcons = [];
+        widget.event.sources.forEach((source) {
+          Relay? relay = relayManager.relays[Relay.clean(source)];
+          if (relay!=null) {
+            String? icon;
+            if (relay.url.startsWith("wss://relay.damus.io")) {
+              icon = "https://damus.io/img/logo.png";
+            } else if (relay.url.startsWith("wss://relay.snort.social")) {
+              icon = "https://snort.social/favicon.ico";
+            } else {
+              icon = relay != null &&
+                  relay.info != null &&
+                  StringUtil.isNotBlank(relay.info!.icon)
+                  ? relay.info!.icon
+                  : StringUtil.robohash(getRandomHexString());
+            }
+
+            Container imageWidget = Container(
+                clipBehavior: Clip.hardEdge,
+                decoration: BoxDecoration(
+                  // color: themeData.cardColor,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: CachedNetworkImage(
+                  imageUrl: icon,
+                  width: 15,
+                  height: 15,
+                  fit: BoxFit.cover,
+                  placeholder: (context,
+                      url) => const CircularProgressIndicator(),
+                  errorWidget: (context, url, error) =>
+                      CachedNetworkImage(
+                          imageUrl: StringUtil.robohash(relay!.info!.name)),
+                  cacheManager: localCacheManager,
+                ));
+
+            relayIcons.add(imageWidget);
+          }
+        });
+        list.add(Row(children: relayIcons,));
 
         if (widget.event.kind != kind.EventKind.ZAP && widget.showReactions) {
           list.add(EventReactionsComponent(
