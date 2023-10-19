@@ -262,18 +262,21 @@ class RelayProvider extends ChangeNotifier {
   }
 
   String relayNumStr() {
-    String result = "${relayManager.getConnectedRelays(myRelaysMap.keys.toList()).length}/${myRelaysMap.keys.length}";
+    Set<String> set = {};
+    set.addAll(myInboxRelays!.map.keys);
+    set.addAll(myOutboxRelays!.map.keys);
+    String result = "${relayManager.getConnectedRelays(set).length}/${set.length}";
     // String result =
     //     "${nostr!.activeRelays().length}/${nostr!.allRelays().length}";
-    if (settingProvider.gossip == 1 && feedRelayMap != null && feedRelayMap.isNotEmpty) {
+    if (settingProvider.gossip == 1 && feedRelaySet != null && feedRelaySet!.map.isNotEmpty) {
       result += " (feed ${feedRelaysNumStr()})";
     }
     return result;
   }
 
   String feedRelaysNumStr() {
-    if (myRelaysMap != null) {
-      return "${relayManager.getConnectedRelays(feedRelayMap.keys.toList()).length}/${feedRelayMap.keys.length}";
+    if (feedRelaySet != null) {
+      return "${relayManager.getConnectedRelays(feedRelaySet!.map.keys.toList()).length}/${feedRelaySet!.map.keys.length}";
     }
     return "";
   }

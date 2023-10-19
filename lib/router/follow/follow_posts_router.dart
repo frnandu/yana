@@ -47,6 +47,7 @@ class _FollowPostsRouter extends KeepAliveCustState<FollowPostsRouter>
     if (_streamSubscription!=null) {
       await _streamSubscription!.cancel();
     }
+    getEventBox().clear();
     DateTime queryTime = DateTime.now();
 
     List<String>? contactList = contactListProvider.contacts();
@@ -58,9 +59,10 @@ class _FollowPostsRouter extends KeepAliveCustState<FollowPostsRouter>
       since: queryTime.subtract(Duration(hours: 1)).millisecondsSinceEpoch ~/ 1000,
       // until: until ?? _initTime,
     );
-    Stream<Nip01Event> stream = await relayManager!.subscription(filter, feedRelayMap);
+    Stream<Nip01Event> stream = await relayManager!.subscription(
+        filter, (feedRelaySet!=null && settingProvider.gossip==1)? feedRelaySet! : myInboxRelays!);
     _streamSubscription = stream.listen((event) {
-      if(event.sources.contains("wss://nostr.fmar.link")) {
+      if (event.sources.contains("wss://nostr.fmar.link")) {
         print(event);
       }
       setState(() => followEventProvider.onEvent(event));

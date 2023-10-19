@@ -112,8 +112,8 @@ class EventMemBox implements FindEventInterface {
       if (event.sources.isNotEmpty &&
           !oldEvent.sources.contains(event.sources[0])) {
         oldEvent.sources.add(event.sources[0]);
+        return true;
       }
-      return true;
     }
 
     _idMap[event.id] = event;

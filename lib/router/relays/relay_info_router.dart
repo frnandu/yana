@@ -1,9 +1,9 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:dart_ndk/relay.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:yana/main.dart';
 import 'package:yana/models/metadata.dart';
-import 'package:yana/nostr/relay.dart';
 import 'package:yana/provider/metadata_provider.dart';
 import 'package:yana/ui/name_component.dart';
 import 'package:yana/utils/base.dart';
@@ -11,6 +11,7 @@ import 'package:yana/utils/router_path.dart';
 
 import '../../nostr/client_utils/keys.dart';
 import '../../ui/webview_router.dart';
+import '../../utils/hash_util.dart';
 import '../../utils/router_util.dart';
 import '../../utils/string_util.dart';
 
@@ -42,20 +43,26 @@ class _RelayInfoRouter extends State<RelayInfoRouter> {
 
     List<Widget> list = [];
     Widget imageWidget;
-    String? url = relay != null &&
-            relay.info != null &&
-            StringUtil.isNotBlank(relay.info!.icon)
-        ? relay.info!.icon
-        : StringUtil.robohash(getRandomHexString());
-
+    String? icon;
+    if (relay.url.startsWith("wss://relay.damus.io")) {
+      icon = "https://damus.io/img/logo.png";
+    } else if (relay.url.startsWith("wss://relay.snort.social")) {
+      icon = "https://snort.social/favicon.ico";
+    } else {
+      icon = relay != null &&
+          relay.info != null &&
+          StringUtil.isNotBlank(relay.info!.icon)
+          ? relay.info!.icon
+          : StringUtil.robohash(HashUtil.md5(relay!.url));
+    }
     imageWidget = CachedNetworkImage(
-      imageUrl: url,
+      imageUrl: icon,
       width: 50,
       height: 50,
       fit: BoxFit.cover,
       placeholder: (context, url) => const CircularProgressIndicator(),
       errorWidget: (context, url, error) =>
-          CachedNetworkImage(imageUrl: StringUtil.robohash(relay.info!.name)),
+          CachedNetworkImage(imageUrl: StringUtil.robohash(HashUtil.md5(relay!.url))),
       cacheManager: localCacheManager,
     );
 

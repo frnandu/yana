@@ -4,6 +4,7 @@ import 'dart:developer';
 import 'package:bot_toast/bot_toast.dart';
 import 'package:dart_ndk/pubkey_mapping.dart';
 import 'package:dart_ndk/read_write.dart';
+import 'package:dart_ndk/relay_set.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_font_picker/flutter_font_picker.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
@@ -305,10 +306,10 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
       networkTiles.add(
         SettingsTile.navigation(
             onPressed: (context) {
-              if (myRelaysMap != null &&
-                  myRelaysMap!.isNotEmpty &&
+              if (feedRelaySet != null &&
+                  feedRelaySet!.map.isNotEmpty &&
                   !loadingGossipRelays) {
-                List<RelayMetadata> filteredRelays = feedRelayMap.entries
+                List<RelayMetadata> filteredRelays = feedRelaySet!.map.entries
                     .map((entry) => RelayMetadata.full(
                     url: entry.key,
                     read: false,
@@ -1059,12 +1060,12 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
     setState(() {
       loadingGossipRelays = true;
     });
-    Map<String, List<PubkeyMapping>> newMap =
-        await relayManager.calculateBestRelaysForPubKeyMappings(
+    RelaySet newRelaySet =
+        await relayManager.calculateRelaySet(
             contactListProvider.contactList!.contacts, RelayDirection.outbox,
             relayMinCountPerPubKey: settingProvider.followeesRelayMinCount);
-    if (newMap!=null && newMap.isNotEmpty) {
-      feedRelayMap = newMap;
+    if (newRelaySet!=null && newRelaySet!.map.isNotEmpty) {
+      feedRelaySet = newRelaySet;
     }
     reloadingFollowNostr = false;
     setState(() {

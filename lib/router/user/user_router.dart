@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:dart_ndk/nips/nip02/contact_list.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:yana/nostr/relay_metadata.dart';
@@ -325,16 +326,16 @@ class _UserRouter extends CustState<UserRouter>
     super.dispose();
     disposeLater();
 
-  //   if (userNostr != null && userNostr!.publicKey != nostr!.publicKey) {
-  //     if (StringUtil.isNotBlank(subscribeId)) {
-  //       try {
-  //         userNostr!.unsubscribe(subscribeId!);
-  //       } catch (e) {}
-  //     }
-  //     try {
-  //       userNostr!.close();
-  //     } catch (e) {}
-  //   }
+    //   if (userNostr != null && userNostr!.publicKey != nostr!.publicKey) {
+    //     if (StringUtil.isNotBlank(subscribeId)) {
+    //       try {
+    //         userNostr!.unsubscribe(subscribeId!);
+    //       } catch (e) {}
+    //     }
+    //     try {
+    //       userNostr!.close();
+    //     } catch (e) {}
+    //   }
   }
 
   void unSubscribe() {
@@ -367,21 +368,21 @@ class _UserRouter extends CustState<UserRouter>
     );
     subscribeId = StringUtil.rndNameStr(16);
 
-  //   var activeRelays = userNostr!.activeRelays();
-  //   if (!box.isEmpty() && activeRelays.isNotEmpty) {
-  //     var oldestCreatedAts = box.oldestCreatedAtByRelay(
-  //       activeRelays,
-  //     );
-  //     Map<String, List<Map<String, dynamic>>> filtersMap = {};
-  //     for (var relay in activeRelays) {
-  //       var oldestCreatedAt = oldestCreatedAts.createdAtMap[relay.url];
-  //       filter.until = oldestCreatedAt;
-  //       filtersMap[relay.url] = [filter.toJson()];
-  //     }
-  //     userNostr!.queryByFilters(filtersMap, onEvent, id: subscribeId);
-  //   } else {
-  //     userNostr!.query([filter.toJson()], onEvent, id: subscribeId);
-  //   }
+    //   var activeRelays = userNostr!.activeRelays();
+    //   if (!box.isEmpty() && activeRelays.isNotEmpty) {
+    //     var oldestCreatedAts = box.oldestCreatedAtByRelay(
+    //       activeRelays,
+    //     );
+    //     Map<String, List<Map<String, dynamic>>> filtersMap = {};
+    //     for (var relay in activeRelays) {
+    //       var oldestCreatedAt = oldestCreatedAts.createdAtMap[relay.url];
+    //       filter.until = oldestCreatedAt;
+    //       filtersMap[relay.url] = [filter.toJson()];
+    //     }
+    //     userNostr!.queryByFilters(filtersMap, onEvent, id: subscribeId);
+    //   } else {
+    //     userNostr!.query([filter.toJson()], onEvent, id: subscribeId);
+    //   }
   }
 
   @override

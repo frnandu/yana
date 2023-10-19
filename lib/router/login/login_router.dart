@@ -1,19 +1,21 @@
 import 'package:bot_toast/bot_toast.dart';
 import 'package:dart_ndk/nips/nip65/nip65.dart';
+import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
+import 'package:dart_ndk/pubkey_mapping.dart';
+import 'package:dart_ndk/read_write.dart';
 import 'package:dart_ndk/relay_manager.dart';
+import 'package:dart_ndk/relay_set.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:yana/utils/platform_util.dart';
 
-import '../../nostr/nostr.dart';
 import '/js/js_helper.dart' as js;
 import '../../i18n/i18n.dart';
 import '../../main.dart';
 import '../../nostr/client_utils/keys.dart';
-import '../../nostr/event.dart';
 import '../../nostr/nip19/nip19.dart';
+import '../../nostr/nostr.dart';
 import '../../utils/base.dart';
 import '../../utils/index_taps.dart';
 import '../../utils/string_util.dart';
@@ -328,6 +330,9 @@ class _LoginRouter extends State<LoginRouter>
       relayManager = RelayManager();
       await relayManager.connect();
       Nip65? nip65 = await relayManager.getSingleNip65(publicKey);
+      if (nip65!=null) {
+        createMyRelaySets(nip65);
+      }
       await relayManager.connect(bootstrapRelays: nip65!=null? nip65!.relays.keys.toList() : RelayManager.DEFAULT_BOOTSTRAP_RELAYS);
 
       // nostr = await relayProvider.genNostr(

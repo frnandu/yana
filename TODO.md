@@ -58,13 +58,16 @@ v0.12
 - ~~try exchange sqflite with isar DB?~~
 - isar v4 for web
 
+- loading screen ASAP after splash
+- persist notes from feed for faster startup
+
 - user Follow feed relays write to DB to improve startup time in outbox model
 - register nostr: in android so that nostr links give yana option as an app to open
-- persist notes from feed for faster startup
 - better android/ios/linux badges on web version login screen (anchor links to readme.md for IOS/linux)
 
 v0.13
 
+- detect new followers by comparing in background previous followers list and generating new notification
 - login by searching some user by name/displayName
 
 - broadcast NIP-65 kind=10002 to as many as possible

@@ -10,7 +10,9 @@ import 'package:yana/utils/router_util.dart';
 
 import '../../i18n/i18n.dart';
 import '../../nostr/client_utils/keys.dart';
+import '../../ui/confirm_dialog.dart';
 import '../../utils/base.dart';
+import '../../utils/store_util.dart';
 import '../../utils/string_util.dart';
 
 class RelaysItemComponent extends StatelessWidget {
@@ -41,8 +43,8 @@ class RelaysItemComponent extends StatelessWidget {
       url = "https://snort.social/favicon.ico";
     } else {
       url = relay != null &&
-          relay.info != null &&
-          StringUtil.isNotBlank(relay.info!.icon)
+              relay.info != null &&
+              StringUtil.isNotBlank(relay.info!.icon)
           ? relay.info!.icon
           : StringUtil.robohash(getRandomHexString());
     }
@@ -122,51 +124,78 @@ class RelaysItemComponent extends StatelessWidget {
                                 margin: const EdgeInsets.only(
                                     right: Base.BASE_PADDING),
                                 child: RelaysItemNumComponent(
-                                  iconData: Icons.mail,
-                                  num: 0 // todo relay.relayStatus.noteReceived,
-                                ),
+                                    iconData: Icons.mail,
+                                    textColor: Colors.grey,
+                                    iconColor: Colors.grey,
+                                    num: "${relay.stats.getTotalEventsRead()}"),
                               ),
-                              // relay.relayStatus.error > 0
-                              //     ? RelaysItemNumComponent(
-                              //         iconColor: Colors.red,
-                              //         iconData: Icons.error_outline,
-                              //         num: relay.relayStatus.error,
-                              //       )
-                              //     : Container(),
+                              Container(
+                                  margin: const EdgeInsets.only(
+                                      right: Base.BASE_PADDING),
+                                  child: RelaysItemNumComponent(
+                                    iconColor: Colors.lightGreen,
+                                    textColor: Colors.lightGreen,
+                                    iconData: Icons.lan_outlined,
+                                    num: "${relay.stats.connections}",
+                                  )),
+                              Container(
+                                  margin: const EdgeInsets.only(
+                                      right: Base.BASE_PADDING),
+                                  child: RelaysItemNumComponent(
+                                    iconColor: relay.stats.connectionErrors >0 ? Colors.red : themeData.disabledColor,
+                                    textColor: relay.stats.connectionErrors >0 ? Colors.red : themeData.disabledColor,
+                                    iconData: Icons.error_outline,
+                                    num: "${relay.stats.connectionErrors}",
+                                  )),
+                              Container(
+                                  margin: const EdgeInsets.only(
+                                      right: Base.BASE_PADDING),
+                                  child: RelaysItemNumComponent(
+                                    iconColor: Colors.grey,
+                                    textColor: Colors.grey,
+                                    iconData: Icons.network_check,
+                                    num: StoreUtil.bytesToShowStr(
+                                        relay.stats.getTotalBytesRead()),
+                                  ))
                             ],
                           ),
                         ],
                       ))
                 ],
               )),
-              GestureDetector(
-                onTap: () {
-                  var text = NIP19Tlv.encodeNrelay(Nrelay(relay.url));
-                  Clipboard.setData(ClipboardData(text: text)).then((_) {
-                    BotToast.showText(text: I18n.of(context).Copy_success);
-                  });
-                },
-                child: Container(
-                  margin: const EdgeInsets.only(right: Base.BASE_PADDING),
-                  child: const Icon(
-                    Icons.copy,
-                  ),
-                ),
-              ),
+              // GestureDetector(
+              //   onTap: () {
+              //     var text = NIP19Tlv.encodeNrelay(Nrelay(relay.url));
+              //     Clipboard.setData(ClipboardData(text: text)).then((_) {
+              //       BotToast.showText(text: I18n.of(context).Copy_success);
+              //     });
+              //   },
+              //   child: Container(
+              //     margin: const EdgeInsets.only(right: Base.BASE_PADDING),
+              //     child: const Icon(
+              //       Icons.copy,
+              //     ),
+              //   ),
+              // ),
               GestureDetector(
                 onTap: () async {
-                  if (nostr!.privateKey!=null) {
+                  bool? result = await ConfirmDialog.show(
+                      context, I18n.of(context).Confirm);
+
+                  if (result!=null && result && nostr!.privateKey != null) {
                     await removeRelay(relay.url);
                   }
                 },
-                child: nostr!.privateKey!=null ? Container(
-                  padding: const EdgeInsets.only(
-                    right: Base.BASE_PADDING,
-                  ),
-                  child: const Icon(
-                    Icons.delete,
-                  ),
-                ) : Container(),
+                child: nostr!.privateKey != null
+                    ? Container(
+                        padding: const EdgeInsets.only(
+                          right: Base.BASE_PADDING,
+                        ),
+                        child: const Icon(
+                          Icons.delete,
+                        ),
+                      )
+                    : Container(),
               ),
             ],
           ),
@@ -181,14 +210,16 @@ class RelaysItemComponent extends StatelessWidget {
 
 class RelaysItemNumComponent extends StatelessWidget {
   Color? iconColor;
+  Color? textColor;
 
   IconData iconData;
 
-  int num;
+  String num;
 
   RelaysItemNumComponent({
     super.key,
     this.iconColor,
+    this.textColor,
     required this.iconData,
     required this.num,
   });
@@ -210,10 +241,8 @@ class RelaysItemNumComponent extends StatelessWidget {
           ),
         ),
         Text(
-          num.toString(),
-          style: TextStyle(
-            fontSize: smallFontSize,
-          ),
+          num,
+          style: TextStyle(fontSize: smallFontSize, color: textColor),
         ),
       ],
     );

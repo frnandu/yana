@@ -113,12 +113,12 @@ class _EventMainComponent extends State<EventMainComponent> {
   }
 
   loadRelayInfos() async {
-    await Future.wait(widget.event.sources.map((url) => relayManager.getRelayInfo(url)));
+    await Future.wait(
+        widget.event.sources.map((url) => relayManager.getRelayInfo(url)));
     setState(() {
       print("loaded relay infos");
     });
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -267,13 +267,13 @@ class _EventMainComponent extends State<EventMainComponent> {
         if (repostEvent != null) {
           list.add(EventQuoteComponent(
             event: repostEvent,
-            showReactions:  widget.showReactions,
+            showReactions: widget.showReactions,
             showVideo: widget.showVideo,
           ));
         } else if (StringUtil.isNotBlank(eventRelation.rootId)) {
           list.add(EventQuoteComponent(
             id: eventRelation.rootId,
-            showReactions:  widget.showReactions,
+            showReactions: widget.showReactions,
             showVideo: widget.showVideo,
           ));
         } else {
@@ -314,10 +314,10 @@ class _EventMainComponent extends State<EventMainComponent> {
               children: replyingList,
             ),
           ));
-          if (eventRelation.replyId!=null) {
+          if (eventRelation.replyId != null) {
             list.add(EventQuoteComponent(
               id: eventRelation.replyId,
-              showReactions:  widget.showReactions,
+              showReactions: widget.showReactions,
               showVideo: widget.showVideo,
             ));
           }
@@ -341,7 +341,6 @@ class _EventMainComponent extends State<EventMainComponent> {
             }
           }
         }
-
 
         if (widget.event.kind != kind.EventKind.METADATA) {
           list.add(
@@ -399,47 +398,6 @@ class _EventMainComponent extends State<EventMainComponent> {
             }
           }
         }
-        List<Container> relayIcons = [];
-        widget.event.sources.forEach((source) {
-          Relay? relay = relayManager.relays[Relay.clean(source)];
-          if (relay!=null) {
-            String? icon;
-            if (relay.url.startsWith("wss://relay.damus.io")) {
-              icon = "https://damus.io/img/logo.png";
-            } else if (relay.url.startsWith("wss://relay.snort.social")) {
-              icon = "https://snort.social/favicon.ico";
-            } else {
-              icon = relay != null &&
-                  relay.info != null &&
-                  StringUtil.isNotBlank(relay.info!.icon)
-                  ? relay.info!.icon
-                  : StringUtil.robohash(getRandomHexString());
-            }
-
-            Container imageWidget = Container(
-                clipBehavior: Clip.hardEdge,
-                decoration: BoxDecoration(
-                  // color: themeData.cardColor,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: CachedNetworkImage(
-                  imageUrl: icon,
-                  width: 15,
-                  height: 15,
-                  fit: BoxFit.cover,
-                  placeholder: (context,
-                      url) => const CircularProgressIndicator(),
-                  errorWidget: (context, url, error) =>
-                      CachedNetworkImage(
-                          imageUrl: StringUtil.robohash(relay!.info!.name)),
-                  cacheManager: localCacheManager,
-                ));
-
-            relayIcons.add(imageWidget);
-          }
-        });
-        list.add(Row(children: relayIcons,));
-
         if (widget.event.kind != kind.EventKind.ZAP && widget.showReactions) {
           list.add(EventReactionsComponent(
             screenshotController: widget.screenshotController,

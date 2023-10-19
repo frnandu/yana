@@ -200,9 +200,9 @@ class FollowEventProvider extends ChangeNotifier
       //targetNostr.queryByFilters(filtersMap, onEvent, id: subscribeId);
     } else {
       () async {
-        await for (final event in await relayManager.query(filter, feedRelayMap)) {
-          print(event);
-        }
+        // await for (final event in await relayManager.query(filter, feedRelayMap)) {
+        //   print(event);
+        // }
       }; // this maybe refresh
       // targetNostr.query(
       //     addTagCommunityFilter([filter.toJson()], queriyTags), onEvent,

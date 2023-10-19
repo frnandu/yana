@@ -46,6 +46,8 @@ class UserStatisticsComponent extends StatefulWidget {
 }
 
 class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
+  static const Duration REFRESH_METADATA_DURATION = Duration(minutes: 10);
+
   EventMemBox? zapEventBox;
   Map<String, ReadWriteMarker> relayMap = {};
   Nip02ContactList? contactList;
@@ -84,8 +86,31 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
         });
       },
     );
+    refreshContactListIfNeededAsync(widget.pubkey);
     onFollowedTap();
     onZapTap();
+  }
+
+  void refreshContactListIfNeededAsync(String pubkey) {
+    Nip02ContactList? nip02 = relayManager.getContactList(pubkey);
+    int sometimeAgo = DateTime.now().subtract(REFRESH_METADATA_DURATION).millisecondsSinceEpoch ~/ 1000;
+    if (nip02 == null || nip02.loadedTimestamp==null || nip02.loadedTimestamp! < sometimeAgo) {
+      relayManager.loadContactList(pubkey!, forceRefresh: true).then(
+            (newContactList) {
+          if (newContactList != null &&
+              (nip02 == null ||
+                  (nip02!.createdAt <
+                      newContactList.createdAt))) {
+            if (widget.onContactListLoaded != null && newContactList != null) {
+              widget.onContactListLoaded!(contactList!);
+            }
+            setState(() {
+              contactList = newContactList;
+            });
+          }
+        },
+      );
+    }
   }
 
   @override
@@ -366,11 +391,8 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
       //
       // webSocket.add(encoded);
 
-
-      // await relayManager.reconnectRelays(["wss://relay.damus.io"]);
       Stream<Nip01Event> stream = await relayManager.requestRelays(
-        // ["wss://relay.damus.io"],
-          feedRelayMap.keys.toList()..addAll(myRelaysMap.keys.toList()),
+          feedRelaySet!.map.keys.toList()..addAll(myInboxRelays!.map.keys.toList()),
           filter,
         idleTimeout: 30
       );

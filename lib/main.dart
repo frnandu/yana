@@ -6,9 +6,11 @@ import 'package:bip340/bip340.dart';
 import 'package:bot_toast/bot_toast.dart';
 import 'package:dart_ndk/nips/nip02/contact_list.dart';
 import 'package:dart_ndk/nips/nip65/nip65.dart';
+import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
 import 'package:dart_ndk/pubkey_mapping.dart';
 import 'package:dart_ndk/read_write.dart';
 import 'package:dart_ndk/relay_manager.dart';
+import 'package:dart_ndk/relay_set.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
@@ -155,8 +157,9 @@ List<RelayMetadata>? followRelays;
 
 RelayManager relayManager = RelayManager();
 
-Map<String,List<PubkeyMapping>> feedRelayMap = {};
-Map<String,List<PubkeyMapping>> myRelaysMap = {};
+RelaySet? feedRelaySet;
+RelaySet? myInboxRelays;
+RelaySet? myOutboxRelays;
 
 Nostr? staticForRelaysAndMetadataNostr;
 
@@ -234,6 +237,27 @@ void initProvidersAndStuff() async {
       }
     }
   }
+}
+
+void createMyRelaySets(Nip65 nip65) {
+  Map<String, List<PubkeyMapping>> inboxMap ={};
+  Map<String, List<PubkeyMapping>> outboxMap ={};
+  for(MapEntry<String,ReadWriteMarker> entry in nip65.relays.entries) {
+    if (entry.value.isRead) {
+      inboxMap[entry.key] = [];
+    }
+    if (entry.value.isWrite) {
+      outboxMap[entry.key] = [];
+    }
+  }
+  myInboxRelays = RelaySet(
+      relayMinCountPerPubkey: inboxMap.length,
+      direction: RelayDirection.inbox,
+      map: inboxMap, notCoveredPubkeys: {});
+  myOutboxRelays = RelaySet(
+      relayMinCountPerPubkey: outboxMap.length,
+      direction: RelayDirection.outbox,
+      map: inboxMap);
 }
 
 Future<void> main() async {
@@ -332,18 +356,16 @@ Future<void> main() async {
     await relayManager.connect();
     Nip65? nip65 = await relayManager.getSingleNip65(publicKey);
     if (nip65!=null) {
-      for(MapEntry entry in nip65.relays.entries) {
-        myRelaysMap[entry.key] = [PubkeyMapping(pubKey: publicKey, rwMarker: entry.value)];
-      }
+      createMyRelaySets(nip65);
     }
     await relayManager.connect(bootstrapRelays: nip65!=null? nip65!.relays.keys.toList() : RelayManager.DEFAULT_BOOTSTRAP_RELAYS);
     nostr = Nostr(privateKey: isPrivate ? key : null,publicKey: publicKey);
     print("Loading contact list...");
     Nip02ContactList? contactList = await relayManager.loadContactList(publicKey);
-    if (contactList!=null) {
+    if (contactList!=null && settingProvider.gossip == 1) {
       print("Loaded ${contactList.contacts.length} contacts...");
       contactListProvider.set(contactList);
-      feedRelayMap = await relayManager.calculateBestRelaysForPubKeyMappings(
+      feedRelaySet = await relayManager.calculateRelaySet(
           contactList.contacts, RelayDirection.outbox, relayMinCountPerPubKey: settingProvider.followeesRelayMinCount);
     }
     // followEventProvider.doQuery();

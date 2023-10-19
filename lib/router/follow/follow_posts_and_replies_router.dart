@@ -44,7 +44,7 @@ class _FollowPostsAndRepliesRouter
     if (events.isEmpty) {
       return EventListPlaceholder(
         onRefresh: () {
-          followEventProvider.refreshReplies();
+          // followEventProvider.refreshReplies();
         },
       );
     }
@@ -62,11 +62,11 @@ class _FollowPostsAndRepliesRouter
         //   ),
         // );
         var event = events[index];
-        Map<String, dynamic> map = event.toJson();
-        map['content']=event.content+event.sources.toString();
-        var e = Nip01Event.fromJson(map);
-        e.sources = event.sources;
-        event = e;
+        // Map<String, dynamic> map = event.toJson();
+        // map['content']=event.content+event.sources.toString();
+        // var e = Nip01Event.fromJson(map);
+        // e.sources = event.sources;
+        // event = e;
         return EventListComponent(
           event: event,
           showVideo: _settingProvider.videoPreview == OpenStatus.OPEN,
@@ -77,7 +77,8 @@ class _FollowPostsAndRepliesRouter
 
     Widget ri = RefreshIndicator(
       onRefresh: () async {
-        followEventProvider.refreshReplies();
+        // TODO
+        // followEventProvider.refreshReplies();
       },
       child: main,
     );

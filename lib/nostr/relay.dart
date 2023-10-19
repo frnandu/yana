@@ -4,10 +4,8 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:yana/main.dart';
-import 'package:yana/nostr/relay_info_util.dart';
 
 import '../models/relay_status.dart';
-import 'relay_info.dart';
 import 'subscription.dart';
 
 enum WriteAccess { readOnly, writeOnly, readWrite }
@@ -18,8 +16,6 @@ class Relay {
   RelayStatus relayStatus;
 
   WriteAccess access;
-
-  RelayInfo? info;
 
   FutureOr<void> Function(Relay, List<dynamic>)? onMessage;
 
@@ -33,7 +29,6 @@ class Relay {
 
   Future<bool> connect({bool checkInfo = true}) async {
     try {
-      info = checkInfo ? await RelayInfoUtil.get(url) : null;
       return await connectSync(() {});
     } catch (e) {
       _onError(e.toString(), reconnect: false);
@@ -131,7 +126,7 @@ class Relay {
 
     if (reconnect && nostr != null) {
       Future.delayed(const Duration(seconds: 30), () {
-        connect(checkInfo: info != null);
+        connect(checkInfo: false);
       });
     }
   }
@@ -169,7 +164,7 @@ class Relay {
     if (subscription.filters != null) {
       bool a =
           subscription.filters.any((element) => element.containsKey("search"));
-      if (a && info != null && !info!.nips.contains(50)) {
+      if (a) {
         return false;
       }
     }

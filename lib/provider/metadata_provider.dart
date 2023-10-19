@@ -184,15 +184,19 @@ class MetadataProvider extends ChangeNotifier with LaterFunction {
     // if (filters.isNotEmpty) {
     //   nostr!.query(filters, _onEvent);
     // }
-    Stream<Nip01Event> stream = await relayManager.requestRelays(myRelaysMap.keys.toList(), Filter(kinds: [kind.EventKind.METADATA], authors: _needUpdatePubKeys));
-    stream.listen((event) {
-      _onEvent(event);
-    });
+    if (myInboxRelays!=null) {
+      Stream<Nip01Event> stream = await relayManager.requestRelays(
+          myInboxRelays!.map.keys.toList(), Filter(
+          kinds: [kind.EventKind.METADATA], authors: _needUpdatePubKeys));
+      stream.listen((event) {
+        _onEvent(event);
+      });
 
-    for (var pubkey in _needUpdatePubKeys) {
-      _handingPubkeys[pubkey] = 1;
+      for (var pubkey in _needUpdatePubKeys) {
+        _handingPubkeys[pubkey] = 1;
+      }
+      _needUpdatePubKeys.clear();
     }
-    _needUpdatePubKeys.clear();
   }
 
   void clear() {

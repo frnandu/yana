@@ -38,7 +38,11 @@ class _RelaysRouter extends CustState<RelaysRouter> with WhenStopFunction {
   }
 
   loadRelayInfos() async {
-    urls = myRelaysMap.keys.toList();
+    Set<String> set = {};
+    set.addAll(myInboxRelays!.map.keys);
+    set.addAll(myOutboxRelays!.map.keys);
+
+    urls = List.of(set);
     await Future.wait(urls.map((url) => relayManager.getRelayInfo(url)));
     /// TODO check if widget is not disposed already...
     setState(() {
@@ -82,7 +86,9 @@ class _RelaysRouter extends CustState<RelaysRouter> with WhenStopFunction {
               child: RefreshIndicator(
                 onRefresh: () async {
                   await relayManager
-                      .reconnectRelays(myRelaysMap.keys.toList());
+                      .reconnectRelays(myOutboxRelays!.map.keys.toList());
+                  await relayManager
+                      .reconnectRelays(myInboxRelays!.map.keys.toList());
                   setState(() {});
                   // var filter = Filter(
                   //     authors: [nostr!.publicKey],
