@@ -2,6 +2,7 @@ import 'dart:developer';
 import 'dart:io';
 
 import 'package:dart_ndk/nips/nip01/event.dart';
+import 'package:dart_ndk/relay.dart';
 import 'package:flutter/material.dart';
 import 'package:yana/models/relay_list.dart';
 import 'package:yana/nostr/relay_metadata.dart';
@@ -10,7 +11,6 @@ import '../main.dart';
 import '../models/relay_status.dart';
 import '../nostr/event_kind.dart' as kind;
 import '../nostr/nostr.dart';
-import '../nostr/relay.dart';
 import '../utils/string_util.dart';
 import 'data_util.dart';
 
@@ -85,15 +85,9 @@ class RelayProvider extends ChangeNotifier {
   Future<void> addRelay(String relayAddr) async {
     if (!relayAddrs.contains(relayAddr)) {
       relayAddrs.add(relayAddr);
-      await _doAddRelay(relayAddr);
+      // await _doAddRelay(relayAddr);
       await _updateRelayToData();
     }
-  }
-
-  Future<void> _doAddRelay(String relayAddr, {bool init = false}) async {
-    var custRelay = genRelay(relayAddr);
-    log("begin to init $relayAddr");
-    await nostr!.addRelay(custRelay, autoSubscribe: true, init: init);
   }
 
   Future<void> removeRelay(String relayAddr) async {
@@ -117,87 +111,87 @@ class RelayProvider extends ChangeNotifier {
   Future<void> _updateRelayToData(
       {bool upload = true,
       List<String> broadcastToRelays = STATIC_RELAY_ADDRS}) async {
-    sharedPreferences.setInt(DataKey.RELAY_UPDATED_TIME,
-        DateTime.now().millisecondsSinceEpoch ~/ 1000);
-
-    List<RelayMetadata> relays = [];
-    // update to relay
-    if (upload) {
-      List<dynamic> tags = [];
-      for (var addr in relayAddrs) {
-        tags.add(["r", addr, ""]);
-        relays.add(RelayMetadata.full(url: addr, read: true, write: true));
-      }
-
-      Set<String> uniqueRelays = Set<String>.from(broadcastToRelays);
-      uniqueRelays.addAll(relayAddrs);
-      var tempNostr =
-          Nostr(privateKey: nostr!.privateKey, publicKey: nostr!.publicKey);
-
-      uniqueRelays.forEach((relayAddr) {
-        Relay r = Relay(
-          relayAddr,
-          RelayStatus(relayAddr),
-          access: WriteAccess.readWrite,
-        );
-        try {
-          tempNostr.addRelay(r, checkInfo: false);
-        } catch (e) {
-          log("relay $relayAddr add to temp nostr for broadcasting of nip065 relay list: ${e.toString()}");
-        }
-      });
-
-      var event = Nip01Event(pubKey:
-          tempNostr!.publicKey, kind: kind.EventKind.RELAY_LIST_METADATA, tags: tags, content: "");
-      tempNostr!.sendEvent(event);
-      int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-      try {
-        await RelayList.writeToDB(nostr!.publicKey, relays, now);
-      } catch (e) {
-        print(e);
-      }
-    }
+    // sharedPreferences.setInt(DataKey.RELAY_UPDATED_TIME,
+    //     DateTime.now().millisecondsSinceEpoch ~/ 1000);
+    //
+    // List<RelayMetadata> relays = [];
+    // // update to relay
+    // if (upload) {
+    //   List<dynamic> tags = [];
+    //   for (var addr in relayAddrs) {
+    //     tags.add(["r", addr, ""]);
+    //     relays.add(RelayMetadata.full(url: addr, read: true, write: true));
+    //   }
+    //
+    //   Set<String> uniqueRelays = Set<String>.from(broadcastToRelays);
+    //   uniqueRelays.addAll(relayAddrs);
+    //   var tempNostr =
+    //       Nostr(privateKey: nostr!.privateKey, publicKey: nostr!.publicKey);
+    //
+    //   uniqueRelays.forEach((relayAddr) {
+    //     Relay r = Relay(
+    //       relayAddr,
+    //       RelayStatus(relayAddr),
+    //       access: WriteAccess.readWrite,
+    //     );
+    //     try {
+    //       tempNostr.addRelay(r, checkInfo: false);
+    //     } catch (e) {
+    //       log("relay $relayAddr add to temp nostr for broadcasting of nip065 relay list: ${e.toString()}");
+    //     }
+    //   });
+    //
+    //   var event = Nip01Event(pubKey:
+    //       tempNostr!.publicKey, kind: kind.EventKind.RELAY_LIST_METADATA, tags: tags, content: "");
+    //   tempNostr!.sendEvent(event);
+    //   int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+    //   try {
+    //     await RelayList.writeToDB(nostr!.publicKey, relays, now);
+    //   } catch (e) {
+    //     print(e);
+    //   }
+    // }
   }
 
-  Relay genRelay(String relayAddr) {
-    var relayStatus = relayStatusMap[relayAddr];
-    if (relayStatus == null) {
-      relayStatus = RelayStatus(relayAddr);
-      relayStatusMap[relayAddr] = relayStatus;
-    }
+  // Relay genRelay(String relayAddr) {
+  //   var relayStatus = relayStatusMap[relayAddr];
+  //   if (relayStatus == null) {
+  //     relayStatus = RelayStatus(relayAddr);
+  //     relayStatusMap[relayAddr] = relayStatus;
+  //   }
+  //
+  //   return Relay(
+  //     relayAddr,
+  //     relayStatus,
+  //     access: WriteAccess.readWrite,
+  //   )..relayStatusCallback = onRelayStatusChange;
+  // }
 
-    return Relay(
-      relayAddr,
-      relayStatus,
-      access: WriteAccess.readWrite,
-    )..relayStatusCallback = onRelayStatusChange;
-  }
-
-  Future<void> setRelayListAndUpdate(
-      List<String> addrs, String? privKey) async {
-    relayStatusMap.clear();
-
-    relayAddrs.clear();
-    relayAddrs.addAll(addrs);
-    _updateRelayToData(upload: false);
-
-    if (StringUtil.isNotBlank(privKey)) {
-      if (nostr != null) {
-        nostr!.close();
-      }
-      nostr = Nostr(privateKey: privKey);
-
-      // reconnect all client
-      for (var relayAddr in relayAddrs) {
-        var custRelay = genRelay(relayAddr);
-        try {
-          await nostr!.addRelay(custRelay, autoSubscribe: true);
-        } catch (e) {
-          log("relay $relayAddr add to pool error ${e.toString()}");
-        }
-      }
-    }
-  }
+  // Future<void> setRelayListAndUpdate(
+  //     List<String> addrs, String? privKey) async {
+  //   relayStatusMap.clear();
+  //
+  //   relayAddrs.clear();
+  //   relayAddrs.addAll(addrs);
+  //   _updateRelayToData(upload: false);
+  //
+  //   if (StringUtil.isNotBlank(privKey)) {
+  //     if (nostr != null) {
+  //       nostr!.close();
+  //     }
+  //     nostr = Nostr(privateKey: privKey);
+  //
+  //     // reconnect all client
+  //     for (var relayAddr in relayAddrs) {
+  //       var custRelay = genRelay(relayAddr);
+  //       try {
+  //         await nostr!.addRelay(custRelay, autoSubscribe: true);
+  //       } catch (e) {
+  //         log("relay $relayAddr add to pool error ${e.toString()}");
+  //       }
+  //     }
+  //   }
+  // }
 
   void clear() {
     relayStatusMap.clear();

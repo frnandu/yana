@@ -295,26 +295,30 @@ class _ProfileEditorRouter extends CustState<ProfileEditorRouter> {
     metadataMap["lud16"] = lud16Controller.text;
     metadataMap["lud06"] = lud06Controller.text;
 
-    Set<String> uniqueRelays = Set<String>.from(RelayProvider.STATIC_RELAY_ADDRS);
-    uniqueRelays.addAll(relayProvider.relayAddrs);
-    var tempNostr = Nostr(privateKey: nostr!.privateKey, publicKey: nostr!.publicKey);
+    // Set<String> uniqueRelays = Set<String>.from(RelayProvider.STATIC_RELAY_ADDRS);
+    // uniqueRelays.addAll(relayProvider.relayAddrs);
+    // var tempNostr = Nostr(privateKey: nostr!.privateKey, publicKey: nostr!.publicKey);
 
-    uniqueRelays.forEach((relayAddr) {
-      Relay r = Relay(
-        relayAddr,
-        RelayStatus(relayAddr),
-        access: WriteAccess.readWrite,
-      );
-      try {
-        tempNostr.addRelay(r, checkInfo: false);
-      } catch (e) {
-        log("relay $relayAddr add to temp nostr for broadcasting of nip065 relay list: ${e.toString()}");
-      }
-    });
+    // TODO use dart_ndk
 
-    var updateEvent = Nip01Event(pubKey:
-        tempNostr!.publicKey, kind: kind.EventKind.METADATA, tags: [], content: jsonEncode(metadataMap));
-    tempNostr!.sendEvent(updateEvent);
+    // uniqueRelays.forEach((relayAddr) {
+    //   Relay r = Relay(
+    //     relayAddr,
+    //     RelayStatus(relayAddr),
+    //     access: WriteAccess.readWrite,
+    //   );
+    //   try {
+    //     tempNostr.addRelay(r, checkInfo: false);
+    //   } catch (e) {
+    //     log("relay $relayAddr add to temp nostr for broadcasting of nip065 relay list: ${e.toString()}");
+    //   }
+    // });
+
+    // TODO use dart_ndk
+
+    // var updateEvent = Nip01Event(pubKey:
+    //     tempNostr!.publicKey, kind: kind.EventKind.METADATA, tags: [], content: jsonEncode(metadataMap));
+    // tempNostr!.sendEvent(updateEvent);
 
     RouterUtil.back(context);
   }

@@ -116,30 +116,30 @@ class Nostr {
     return event;
   }
 
-  FutureOr<bool> sendRelayEvent(Nip01Event event, String relay) async {
-    Relay r = relayProvider.genRelay(relay);
-    await r.connectSync(() {
-
-    });
-    // r.onMessage = (Relay relay, List<dynamic> json) async {
-    //   final messageType = json[0];
-    //   if (messageType == 'EVENT') {
-    //     final subId = json[1] as String;
-    //     try {
-    //       final event = Event.fromJson(json[2]);
-    //       // List<bool> bools =
-    //       if (event.isValid && await event.isSigned) {
-    //         onEvent(event);
-    //       }
-    //     } catch (err) {
-    //       log(err.toString());
-    //     }
-    //   }
-    // };
-
-    Nip01Event signedEvent = await signEvent(event);
-    return r.send(["EVENT", signedEvent.toJson()], reconnect: false);
-  }
+  // FutureOr<bool> sendRelayEvent(Nip01Event event, String relay) async {
+  //   Relay r = relayProvider.genRelay(relay);
+  //   await r.connectSync(() {
+  //
+  //   });
+  //   // r.onMessage = (Relay relay, List<dynamic> json) async {
+  //   //   final messageType = json[0];
+  //   //   if (messageType == 'EVENT') {
+  //   //     final subId = json[1] as String;
+  //   //     try {
+  //   //       final event = Event.fromJson(json[2]);
+  //   //       // List<bool> bools =
+  //   //       if (event.isValid && await event.isSigned) {
+  //   //         onEvent(event);
+  //   //       }
+  //   //     } catch (err) {
+  //   //       log(err.toString());
+  //   //     }
+  //   //   }
+  //   // };
+  //
+  //   Nip01Event signedEvent = await signEvent(event);
+  //   return r.send(["EVENT", signedEvent.toJson()], reconnect: false);
+  // }
 
   Future<Nip01Event> signEvent(Nip01Event event) async {
     if (StringUtil.isNotBlank(_privateKey)) {
@@ -176,68 +176,68 @@ class Nostr {
     return _pool.query(filters, onEvent, id: id, onComplete: onComplete);
   }
 
-  String queryRelay(
-      Map<String, dynamic> filter, String relay, Function(Event) onEvent,
-      {String? id}) {
-    Relay r = relayProvider.genRelay(relay);
-    r.connectSync(() {
-
-    });
-    r.onMessage = (Relay relay, List<dynamic> json) async {
-      final messageType = json[0];
-      if (messageType == 'EVENT') {
-        try {
-          final event = Event.fromJson(json[2]);
-          if (event.isValid && await event.isSigned) {
-            event.sources = [relay.url];
-            onEvent(event);
-          }
-        } catch (err) {
-          log(err.toString());
-        }
-      }
-    };
-    Subscription subscription = Subscription([filter], onEvent, id);
-    r.doQuery(subscription);
-    return subscription.id;
-  }
-
-  String queryRelay2(Map<String, dynamic> filter, String relay,
-      Function(Event, Function(bool)) onEvent,
-      {String? id, required Function(bool) onZapped}) {
-    Relay r = relayProvider.genRelay(relay);
-    r.connectSync(() {
-
-    });
-    r.onMessage = (Relay relay, List<dynamic> json) async {
-      final messageType = json[0];
-      if (messageType == 'EVENT') {
-        try {
-          final event = Event.fromJson(json[2]);
-          if (event.isValid && await event.isSigned) {
-            event.sources = [relay.url];
-            onEvent(event, onZapped);
-          }
-        } catch (err) {
-          log(err.toString());
-        }
-      }
-    };
-    Subscription subscription = Subscription([filter], onEvent, id);
-    r.doQuery(subscription);
-    return subscription.id;
-  }
-
-  Future<bool> addRelay(
-    Relay relay, {
-    bool autoSubscribe = false,
-    bool connect = true,
-    bool init = false,
-    bool checkInfo = true,
-  }) async {
-    return await _pool.add(relay,
-        autoSubscribe: autoSubscribe, connect: connect, init: init, checkInfo: checkInfo);
-  }
+  // String queryRelay(
+  //     Map<String, dynamic> filter, String relay, Function(Event) onEvent,
+  //     {String? id}) {
+  //   Relay r = relayProvider.genRelay(relay);
+  //   r.connectSync(() {
+  //
+  //   });
+  //   r.onMessage = (Relay relay, List<dynamic> json) async {
+  //     final messageType = json[0];
+  //     if (messageType == 'EVENT') {
+  //       try {
+  //         final event = Event.fromJson(json[2]);
+  //         if (event.isValid && await event.isSigned) {
+  //           event.sources = [relay.url];
+  //           onEvent(event);
+  //         }
+  //       } catch (err) {
+  //         log(err.toString());
+  //       }
+  //     }
+  //   };
+  //   Subscription subscription = Subscription([filter], onEvent, id);
+  //   r.doQuery(subscription);
+  //   return subscription.id;
+  // }
+  //
+  // String queryRelay2(Map<String, dynamic> filter, String relay,
+  //     Function(Event, Function(bool)) onEvent,
+  //     {String? id, required Function(bool) onZapped}) {
+  //   Relay r = relayProvider.genRelay(relay);
+  //   r.connectSync(() {
+  //
+  //   });
+  //   r.onMessage = (Relay relay, List<dynamic> json) async {
+  //     final messageType = json[0];
+  //     if (messageType == 'EVENT') {
+  //       try {
+  //         final event = Event.fromJson(json[2]);
+  //         if (event.isValid && await event.isSigned) {
+  //           event.sources = [relay.url];
+  //           onEvent(event, onZapped);
+  //         }
+  //       } catch (err) {
+  //         log(err.toString());
+  //       }
+  //     }
+  //   };
+  //   Subscription subscription = Subscription([filter], onEvent, id);
+  //   r.doQuery(subscription);
+  //   return subscription.id;
+  // }
+  //
+  // Future<bool> addRelay(
+  //   Relay relay, {
+  //   bool autoSubscribe = false,
+  //   bool connect = true,
+  //   bool init = false,
+  //   bool checkInfo = true,
+  // }) async {
+  //   return await _pool.add(relay,
+  //       autoSubscribe: autoSubscribe, connect: connect, init: init, checkInfo: checkInfo);
+  // }
 
   void removeRelay(String url) {
     _pool.remove(url);

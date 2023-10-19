@@ -86,7 +86,8 @@ class NwcProvider extends ChangeNotifier {
     await settingProvider.setNwc(nwc);
     await settingProvider.setNwcSecret(secret!);
     var filter = Filter(kinds: [NwcKind.INFO_REQUEST], authors: [walletPubKey!]);
-    nostr!.queryRelay(filter.toJson(), relay!, onEventInfo);
+    // TODO use dart_ndk
+    // nostr!.queryRelay(filter.toJson(), relay!, onEventInfo);
     // walletPubKey = pubKey;
     // this.relay = relay;
     // permissions = ["get_balance","pay_invoice"];
@@ -136,10 +137,12 @@ class NwcProvider extends ChangeNotifier {
       ];
       final event =
       Nip01Event(pubKey: nwcNostr!.publicKey, kind: NwcKind.REQUEST, tags: tags, content: encrypted);
-      await nwcNostr!.sendRelayEvent(event, relay!);
+      // TODO use dart_ndk
+      // await nwcNostr!.sendRelayEvent(event, relay!);
       var filter = Filter(
           kinds: [NwcKind.RESPONSE], authors: [walletPubKey!], e: [event.id]);
-      nwcNostr!.queryRelay(filter.toJson(), relay!, onGetBalanceResponse);
+      // TODO use dart_ndk
+      // nwcNostr!.queryRelay(filter.toJson(), relay!, onGetBalanceResponse);
     } else {
       BotToast.showText(text: "missing pubKey and/or relay for connecting");
     }
@@ -194,8 +197,10 @@ class NwcProvider extends ChangeNotifier {
       Nip01Event(pubKey: nwcNostr!.publicKey, kind: NwcKind.REQUEST, tags: tags, content: encrypted);
       var filter = Filter(
           kinds: [NwcKind.RESPONSE], authors: [walletPubKey!], e: [event.id]);
-      nwcNostr!.queryRelay2(filter.toJson(), relay!, onPayInvoiceResponse, onZapped: onZapped);
-      await nwcNostr!.sendRelayEvent(event, relay!);
+      // TODO use dart_ndk
+      // nwcNostr!.queryRelay2(filter.toJson(), relay!, onPayInvoiceResponse, onZapped: onZapped);
+      // TODO use dart_ndk
+      // await nwcNostr!.sendRelayEvent(event, relay!);
     } else {
       BotToast.showText(text: "missing pubKey and/or relay for connecting");
     }
