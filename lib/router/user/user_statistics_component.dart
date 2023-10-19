@@ -1,6 +1,4 @@
-import 'dart:convert';
-import 'dart:io';
-import 'dart:math';
+import 'dart:async';
 
 import 'package:bot_toast/bot_toast.dart';
 import 'package:convert/convert.dart';
@@ -9,9 +7,6 @@ import 'package:dart_ndk/nips/nip01/filter.dart';
 import 'package:dart_ndk/nips/nip02/contact_list.dart';
 import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:yana/provider/contact_list_provider.dart';
-import 'package:yana/provider/relay_provider.dart';
 import 'package:yana/ui/enum_selector_component.dart';
 import 'package:yana/utils/base_consts.dart';
 
@@ -19,10 +14,7 @@ import '../../i18n/i18n.dart';
 import '../../main.dart';
 import '../../models/event_mem_box.dart';
 import '../../nostr/event.dart';
-import '../../nostr/event_kind.dart' as kind;
 import '../../nostr/nip02/contact_list.dart';
-import '../../nostr/nip57/zap_num_util.dart';
-import '../../nostr/nostr.dart';
 import '../../nostr/relay_metadata.dart';
 import '../../ui/cust_state.dart';
 import '../../utils/base.dart';
@@ -93,14 +85,18 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
 
   void refreshContactListIfNeededAsync(String pubkey) {
     Nip02ContactList? nip02 = relayManager.getContactList(pubkey);
-    int sometimeAgo = DateTime.now().subtract(REFRESH_METADATA_DURATION).millisecondsSinceEpoch ~/ 1000;
-    if (nip02 == null || nip02.loadedTimestamp==null || nip02.loadedTimestamp! < sometimeAgo) {
+    int sometimeAgo = DateTime.now()
+            .subtract(REFRESH_METADATA_DURATION)
+            .millisecondsSinceEpoch ~/
+        1000;
+    if (nip02 == null ||
+        nip02.loadedTimestamp == null ||
+        nip02.loadedTimestamp! < sometimeAgo) {
       relayManager.loadContactList(pubkey!, forceRefresh: true).then(
-            (newContactList) {
+        (newContactList) {
           if (newContactList != null &&
               (nip02 == null ||
-                  (nip02!.createdAt <
-                      newContactList.createdAt))) {
+                  (nip02!.createdAt < newContactList.createdAt))) {
             if (widget.onContactListLoaded != null && newContactList != null) {
               widget.onContactListLoaded!(contactList!);
             }
@@ -369,37 +365,21 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
 
   String followedSubscribeId = "";
 
+  StreamSubscription<Nip01Event>? _followersSubscription;
+
   onFollowedTap() async {
     if (followedMap == null) {
-      // load data
       followedMap = {};
-      // pull zap event
-      // Map<String, dynamic> filter = {};
-      // filter["kinds"] = [kind.EventKind.CONTACT_LIST];
-      // filter["#p"] = [widget.pubkey];
-      // followedSubscribeId = StringUtil.rndNameStr(12);
 
-      Filter filter = Filter(kinds: [Nip02ContactList.kind], pTags: [widget.pubkey]);
-
-      // WebSocket webSocket = await WebSocket.connect("wss://relay.damus.io");
-      // webSocket.listen((event) {
-      //   print(event);
-      // });
-      // String id = Random().nextInt(4294967296).toString();
-      // List<dynamic> request = ["REQ", id, filter.toMap()];
-      // final encoded = jsonEncode(request);
-      //
-      // webSocket.add(encoded);
+      Filter filter =
+          Filter(kinds: [Nip02ContactList.kind], pTags: [widget.pubkey]);
 
       Stream<Nip01Event> stream = await relayManager.requestRelays(
-          feedRelaySet!.map.keys.toList()..addAll(myInboxRelays!.map.keys.toList()),
+          feedRelaySet!.map.keys.toList()
+            ..addAll(myInboxRelays!.map.keys.toList()),
           filter,
-        idleTimeout: 30
-      );
-      stream.listen((event) {
-        //
-        // });
-        // staticForRelaysAndMetadataNostr!.query([filter], (e) {
+          idleTimeout: 10);
+      _followersSubscription = stream.listen((event) {
         var oldEvent = followedMap![event.pubKey];
         if (oldEvent == null || event.createdAt > oldEvent.createdAt) {
           followedMap![event.pubKey] = event;
@@ -409,9 +389,7 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
             });
           }
         }
-      }
-          // , id: followedSubscribeId
-          );
+      });
 
       followedNum = 0;
     }
@@ -468,12 +446,13 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
   @override
   void dispose() {
     super.dispose();
-
+    if (_followersSubscription != null) {
+      _followersSubscription!.cancel();
+    }
     _disposed = true;
     // checkAndUnsubscribe(queryId);
     // checkAndUnsubscribe(queryId2);
     // checkAndUnsubscribe(zapSubscribeId);
-    // checkAndUnsubscribe(followedSubscribeId);
   }
 
   void checkAndUnsubscribe(String queryId) {

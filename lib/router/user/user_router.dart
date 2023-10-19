@@ -268,6 +268,9 @@ class _UserRouter extends CustState<UserRouter>
   @override
   void dispose() {
     super.dispose();
+    if (_streamSubscription!=null) {
+      _streamSubscription!.cancel();
+    }
     disposeLater();
   }
 
