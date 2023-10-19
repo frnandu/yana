@@ -162,8 +162,6 @@ RelaySet? feedRelaySet;
 RelaySet? myInboxRelays;
 RelaySet? myOutboxRelays;
 
-Nostr? staticForRelaysAndMetadataNostr;
-
 bool firstLogin = false;
 
 late PackageInfo packageInfo;
@@ -222,14 +220,20 @@ void initProvidersAndStuff() async {
   if (StringUtil.isNotBlank(settingProvider.key)) {
     try {
       nostr = Nostr(privateKey: settingProvider.key);
-      await relayProvider!.loadRelays(nostr!.publicKey, () {
-        relayProvider.addRelays(nostr!).then((bla) {
+      await relayManager.connect();
+      Nip65? nip65 = await relayManager.getSingleNip65(nostr!.publicKey);
+      if (nip65!=null) {
+        createMyRelaySets(nip65);
+      }
+      await relayManager.connect(bootstrapRelays: nip65!=null? nip65!.relays.keys.toList() : RelayManager.DEFAULT_BOOTSTRAP_RELAYS);
+      // await relayProvider!.loadRelays(nostr!.publicKey, () {
+      //   relayProvider.addRelays(nostr!).then((bla) {
           filterProvider = FilterProvider.getInstance();
           notificationsProvider = NotificationsProvider();
           dmProvider = DMProvider();
           newNotificationsProvider = NewNotificationsProvider();
-        });
-      });
+      //   });
+      // });
       // log("nostr init over");
     } catch (e) {
       var index = settingProvider.privateKeyIndex;
@@ -353,7 +357,6 @@ Future<void> main() async {
   if (StringUtil.isNotBlank(key)) {
     bool isPrivate = settingProvider.isPrivateKey;
     String publicKey = isPrivate ? getPublicKey(key!) : key!;
-    relayManager = RelayManager();
     await relayManager.connect();
     Nip65? nip65 = await relayManager.getSingleNip65(publicKey);
     if (nip65!=null) {

@@ -151,19 +151,5 @@ class _RelaysRouter extends CustState<RelaysRouter> with WhenStopFunction {
 
   @override
   Future<void> onReady(BuildContext context) async {
-    // var filter = Filter(
-    //     authors: [nostr!.publicKey],
-    //     limit: 1,
-    //     kinds: [kind.EventKind.RELAY_LIST_METADATA]);
-    // nostr!.query([filter.toJson()], (event) {
-    //   if ((remoteRelayEvent != null &&
-    //           event.createdAt > remoteRelayEvent!.createdAt) ||
-    //       remoteRelayEvent == null) {
-    //     setState(() {
-    //       remoteRelayEvent = event;
-    //     });
-    //     whenStop(handleRemoteRelays);
-    //   }
-    // });
   }
 }

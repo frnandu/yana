@@ -167,16 +167,6 @@ class Nostr {
     _pool.removeAll();
   }
 
-  void addInitQuery(List<Map<String, dynamic>> filters, Function(Event) onEvent,
-      {String? id, Function? onComplete}) {
-    _pool.addInitQuery(filters, onEvent, id: id, onComplete: onComplete);
-  }
-
-  String subscribe(List<Map<String, dynamic>> filters, Function(Event) onEvent,
-      {String? id}) {
-    return _pool.subscribe(filters, onEvent, id: id);
-  }
-
   void unsubscribe(String id) {
     _pool.unsubscribe(id);
   }
@@ -236,13 +226,6 @@ class Nostr {
     Subscription subscription = Subscription([filter], onEvent, id);
     r.doQuery(subscription);
     return subscription.id;
-  }
-
-  String queryByFilters(Map<String, List<Map<String, dynamic>>> filtersMap,
-      Function(Event) onEvent,
-      {String? id, Function? onComplete}) {
-    return _pool.queryByFilters(filtersMap, onEvent,
-        id: id, onComplete: onComplete);
   }
 
   Future<bool> addRelay(
