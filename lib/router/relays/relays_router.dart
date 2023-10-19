@@ -104,12 +104,9 @@ class _RelaysRouter extends CustState<RelaysRouter> with WhenStopFunction {
                 child: ListView.builder(
                   itemBuilder: (context, index) {
                     var url = urls[index];
-                    // var relayStatus = relayStatusMap[addr];
-                    // relayStatus ??= RelayStatus(addr);
 
                     return RelaysItemComponent(
                       relay: relayManager.relays[url]!,
-                      //nostr!.getRelay(addr)!,
                       onRemove: () {
                         setState(() {
                           urls = _relayProvider.relayAddrs;

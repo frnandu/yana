@@ -116,7 +116,6 @@ class _EventMainComponent extends State<EventMainComponent> {
     await Future.wait(
         widget.event.sources.map((url) => relayManager.getRelayInfo(url)));
     setState(() {
-      print("loaded relay infos");
     });
   }
 
@@ -483,7 +482,7 @@ class _EventMainComponent extends State<EventMainComponent> {
 
     return Column(
       mainAxisSize: MainAxisSize.min,
-      children: eventAllList,
+      children: eventAllList..add(Container(color: themeData.disabledColor, margin: EdgeInsets.only(top:3), padding: EdgeInsets.only(bottom: 1),)),
     );
   }
 

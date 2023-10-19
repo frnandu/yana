@@ -190,8 +190,7 @@ class _DMDetailRouter extends CustState<DMDetailRouter> with EditorMixin {
     );
 
     if (detail!.info == null && detail!.dmSession.newestEvent != null) {
-      Contact? contact = contactListProvider.getContact(detail!.dmSession.pubkey);
-      if (contact==null) {
+      if (!contactListProvider.contacts().contains(detail!.dmSession.pubkey)) {
         main = SizedBox(
           width: double.maxFinite,
           height: double.maxFinite,

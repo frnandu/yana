@@ -30,10 +30,9 @@ class FollowPostsRouter extends StatefulWidget {
 class _FollowPostsRouter extends KeepAliveCustState<FollowPostsRouter>
     with LoadMoreEvent {
   ScrollController _controller = ScrollController();
-  StreamController<Nip01Event>? _streamController;
   StreamSubscription<Nip01Event>? _streamSubscription;
 
-  int _initTime = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+  //int _initTime = DateTime.now().millisecondsSinceEpoch ~/ 1000;
 
   @override
   void initState() {
@@ -65,9 +64,8 @@ class _FollowPostsRouter extends KeepAliveCustState<FollowPostsRouter>
       if (event.sources.contains("wss://nostr.fmar.link")) {
         print(event);
       }
-      setState(() => followEventProvider.onEvent(event));
+      followEventProvider.onEvent(event);
     });
-    // stream.pipe(_streamController!);
   }
 
 

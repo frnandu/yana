@@ -1,20 +1,15 @@
-import 'dart:developer';
+import 'dart:async';
 
-import 'package:dart_ndk/nips/nip02/contact_list.dart';
+import 'package:dart_ndk/nips/nip01/event.dart';
+import 'package:dart_ndk/nips/nip01/filter.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:yana/nostr/relay_metadata.dart';
 
 import '../../main.dart';
 import '../../models/event_mem_box.dart';
 import '../../models/metadata.dart';
-import '../../models/relay_status.dart';
 import '../../nostr/event_kind.dart' as kind;
-import '../../nostr/filter.dart';
-import '../../nostr/nip02/contact.dart';
 import '../../nostr/nip19/nip19.dart';
-import '../../nostr/nostr.dart';
-import '../../nostr/relay.dart';
 import '../../provider/metadata_provider.dart';
 import '../../provider/setting_provider.dart';
 import '../../ui/appbar4stack.dart';
@@ -42,6 +37,7 @@ class _UserRouter extends CustState<UserRouter>
   final GlobalKey<NestedScrollViewState> globalKey = GlobalKey();
 
   ScrollController _controller = ScrollController();
+  StreamSubscription<Nip01Event>? _streamSubscription;
 
   String? pubkey;
 
@@ -97,10 +93,11 @@ class _UserRouter extends CustState<UserRouter>
         RouterUtil.back(context);
         return Container();
       }
-      var events = followEventProvider.eventsByPubkey(pubkey!);
-      if (events != null && events.isNotEmpty) {
-        box.addList(events);
-      }
+      doQuery();
+      // var events = followEventProvider.eventsByPubkey(pubkey!);
+      // if (events != null && events.isNotEmpty) {
+      //   box.addList(events);
+      // }
     } else {
       var arg = RouterUtil.routerArgs(context);
       if (arg != null && arg is String) {
@@ -150,7 +147,7 @@ class _UserRouter extends CustState<UserRouter>
               alignment: Alignment.center,
               child: Text(
                 displayName,
-                style: TextStyle(
+                style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 16,
                 ),
@@ -229,6 +226,7 @@ class _UserRouter extends CustState<UserRouter>
         );
 
         return Scaffold(
+            // backgroundColor: themeData.cardColor,
             body: Stack(
           children: [
             main,
@@ -247,74 +245,20 @@ class _UserRouter extends CustState<UserRouter>
 
   String? subscribeId;
 
-  List<RelayMetadata> relays = [];
-
   @override
   Future<void> onReady(BuildContext context) async {
-    // await relayProvider.getRelays(timeoutSeconds: 3, pubkey!, (relays) async {
-    //   if (userNostr == null) {
-    //     if (pubkey != nostr!.publicKey) {
-    //       // use relays for user where he/she writes
-    //       await buildUserNostrFromRelays(relays);
-    //     }
-    //     userNostr ??= nostr;
-    //   }
-    //   doQuery();
-    // });
-
     if (globalKey.currentState != null) {
       var controller = globalKey.currentState!.innerController;
       controller.addListener(() {
         loadMoreScrollCallback(controller);
       });
     }
-
-    // metadataProvider.update(pubkey!);
   }
 
-  // Future<void> buildUserNostrFromRelays(List<RelayMetadata> relays) async {
-  //   if (!relays.isEmpty) {
-  //     Set<String> uniqueRelays = Set<String>.from(relays
-  //         .where((element) => element.write != null && element.write!)
-  //         .map((e) => e.url));
-  //     userNostr =
-  //         Nostr(
-  //             privateKey: nostr!.privateKey, publicKey: nostr!.publicKey);
-  //
-  //     List<Future<bool>> futures = [];
-  //
-  //     uniqueRelays.forEach((adr) async {
-  //       String? relayAddr = Relay.clean(adr);
-  //       if (relayAddr == null) {
-  //         return;
-  //       }
-  //
-  //       Relay r = Relay(
-  //         relayAddr,
-  //         RelayStatus(relayAddr),
-  //         access: WriteAccess.readWrite,
-  //       );
-  //       try {
-  //         futures.add(userNostr!.addRelay(r, checkInfo: false));
-  //         // await userNostr!.addRelay(r, checkInfo: false, connect: true);
-  //       } catch (e) {
-  //         log(
-  //             "relay $relayAddr add to temp nostr for broadcasting of nip065 relay list: ${e
-  //                 .toString()}");
-  //       }
-  //     });
-  //     final startTime = DateTime.now();
-  //     await Future.wait(futures).onError((error, stackTrace) =>
-  //         List.of([]));
-  //     final endTime = DateTime.now();
-  //     final duration = endTime.difference(startTime);
-  //     print("addRelays for ${uniqueRelays
-  //         .length} parallel Future.wait(futures) took:${duration
-  //         .inMilliseconds} ms");
-  //   }
-  // }
-
-  void onEvent(event) {
+  void onEvent(Nip01Event event) {
+    if (event.pubKey!=pubkey) {
+      print("WTF $event");
+    }
     later(event, (list) {
       box.addList(list);
       setState(() {});
@@ -325,17 +269,6 @@ class _UserRouter extends CustState<UserRouter>
   void dispose() {
     super.dispose();
     disposeLater();
-
-    //   if (userNostr != null && userNostr!.publicKey != nostr!.publicKey) {
-    //     if (StringUtil.isNotBlank(subscribeId)) {
-    //       try {
-    //         userNostr!.unsubscribe(subscribeId!);
-    //       } catch (e) {}
-    //     }
-    //     try {
-    //       userNostr!.close();
-    //     } catch (e) {}
-    //   }
   }
 
   void unSubscribe() {
@@ -366,7 +299,8 @@ class _UserRouter extends CustState<UserRouter>
       authors: [pubkey!],
       limit: queryLimit,
     );
-    subscribeId = StringUtil.rndNameStr(16);
+    // subscribeId = StringUtil.rndNameStr(16);
+
 
     //   var activeRelays = userNostr!.activeRelays();
     //   if (!box.isEmpty() && activeRelays.isNotEmpty) {
@@ -383,6 +317,22 @@ class _UserRouter extends CustState<UserRouter>
     //   } else {
     //     userNostr!.query([filter.toJson()], onEvent, id: subscribeId);
     //   }
+    // Stream<Nip01Event> stream =
+    // Map<String,ReadWriteMarker>? relayList = relayManager.getRelayMarkerMap(pubkey!);
+    // RelaySet? relaySet;
+    // if (relayList!=null) {
+    //   relaySet = RelaySet(relayMinCountPerPubkey: relayMinCountPerPubkey, direction: direction, map: relayList.map())
+      // we have already relay list for user, so use it
+    // } else {
+
+    // }
+    relayManager!.subscription(
+        filter, (feedRelaySet!=null && settingProvider.gossip==1)? feedRelaySet! : myInboxRelays!).then((stream) {
+      _streamSubscription = stream.listen((event) {
+        onEvent(event);
+      });
+    },);
+
   }
 
   @override

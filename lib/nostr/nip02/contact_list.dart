@@ -57,8 +57,7 @@ class ContactList {
 
   static Future writeToDB(ContactList list) async {
     cached[list.pub_key!] = list;
-    if (nostr != null && nostr!.publicKey == list.pub_key! ||
-        contactListProvider.getContact(list.pub_key!) != null) {
+    if (nostr != null && nostr!.publicKey == list.pub_key!) {
       if (list.contacts!.isEmpty &&
           list.followedCommunitys.isEmpty &&
           list.followedTags.isEmpty &&

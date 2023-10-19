@@ -47,6 +47,7 @@ class _UserPicComponent extends State<UserPicComponent> {
           height: widget.width,
           clipBehavior: Clip.hardEdge,
           decoration: BoxDecoration(
+
             borderRadius: BorderRadius.circular(widget.width / 2),
             color: Colors.grey,
           ),

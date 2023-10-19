@@ -17,7 +17,7 @@ class CommunityApprovedProvider extends ChangeNotifier with LaterFunction {
       return true;
     }
 
-    if (contactListProvider.getContact(pubkey) != null ||
+    if (contactListProvider.contacts().contains(pubkey) ||
         pubkey == nostr!.publicKey) {
       return true;
     }

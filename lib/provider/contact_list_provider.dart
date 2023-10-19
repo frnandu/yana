@@ -147,16 +147,8 @@ class ContactListProvider extends ChangeNotifier {
   //
   Nip02ContactList? get contactList => nip02ContactList;
 
-  // List<Contact>? list() {
-  //   return _contactList!.contacts;
-  // }
-
   List<String> contacts() {
     return nip02ContactList!=null ? nip02ContactList!.contacts : [];
-  }
-
-  Contact? getContact(String pubKey) {
-    return null;//_contactList!=null ? _contactList!.getContact(pubKey) : null;
   }
 
   void clear() {

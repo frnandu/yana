@@ -81,7 +81,7 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
     var themeData = Theme.of(context);
     var mainColor = themeData.primaryColor;
     var hintColor = themeData.hintColor;
-    var scaffoldBackgroundColor = themeData.scaffoldBackgroundColor;
+    var scaffoldBackgroundColor = themeData.cardColor; //themeData.scaffoldBackgroundColor;
     var maxWidth = mediaDataCache.size.width;
     var largeFontSize = themeData.textTheme.bodyLarge!.fontSize;
     var fontSize = themeData.textTheme.bodyMedium!.fontSize;
@@ -278,9 +278,9 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
           iconData: Icons.mail,
           onTap: openDMSession,
         )));
-        topBtnList.add(Selector<ContactListProvider, Contact?>(
-          builder: (context, contact, child) {
-            if (contact == null) {
+        topBtnList.add(Selector<ContactListProvider, bool>(
+          builder: (context, followed, child) {
+            if (followed == null) {
               return wrapBtn(MetadataTextBtn(
                 text: "Follow",
                 borderColor: mainColor,
@@ -300,7 +300,7 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
             }
           },
           selector: (context, _provider) {
-            return _provider.getContact(widget.pubkey);
+            return _provider.contacts().contains(widget.pubkey);
           },
         ));
       }
@@ -356,7 +356,7 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
     topList.add(Container(
         width: maxWidth,
         height: bannerHeight,
-        color: Colors.grey.withOpacity(0.5),
+        color: themeData.cardColor, //Colors.grey.withOpacity(0.5),
         child: widget.jumpable
             ? GestureDetector(onTap: jumpToUserRouter, child: bannerImage)
             : bannerImage));

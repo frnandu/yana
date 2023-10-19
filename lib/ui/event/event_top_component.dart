@@ -38,9 +38,7 @@ class EventTopComponent extends StatefulWidget {
 }
 
 class _EventTopComponent extends State<EventTopComponent> {
-  static const double IMAGE_WIDTH = 34;
-
-  static const double HALF_IMAGE_WIDTH = 17;
+  static const double IMAGE_WIDTH = 50;
 
   @override
   Widget build(BuildContext context) {
@@ -77,34 +75,38 @@ class _EventTopComponent extends State<EventTopComponent> {
               ? relay.info!.icon
               : StringUtil.robohash(HashUtil.md5(relay!.url));
         }
+        try {
+          GestureDetector icon = GestureDetector(
+              onTap: () {
+                if (relay != null && relay.info != null) {
+                  RouterUtil.router(context, RouterPath.RELAY_INFO, relay);
+                }
+              },
+              child: Container(
+                  padding: const EdgeInsets.all(2),
+                  clipBehavior: Clip.hardEdge,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: CachedNetworkImage(
 
-        GestureDetector icon = GestureDetector(
-            onTap: () {
-              if (relay != null && relay.info != null) {
-                RouterUtil.router(context, RouterPath.RELAY_INFO, relay);
-              }
-            },
-            child: Container(
-                padding: const EdgeInsets.all(3),
-                clipBehavior: Clip.hardEdge,
-                decoration: BoxDecoration(
-                  // color: themeData.cardColor,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: CachedNetworkImage(
+                    imageUrl: iconUrl,
+                    width: 15,
+                    height: 15,
+                    fit: BoxFit.cover,
+                    placeholder: (context, url) =>
+                    const CircularProgressIndicator(),
+                    errorWidget: (context, url, error) =>
+                        CachedNetworkImage(
+                            imageUrl: StringUtil.robohash(
+                                HashUtil.md5(relay!.url))),
+                    cacheManager: localCacheManager,
+                  )));
 
-                  imageUrl: iconUrl,
-                  width: 15,
-                  height: 15,
-                  fit: BoxFit.cover,
-                  placeholder: (context, url) =>
-                  const CircularProgressIndicator(),
-                  errorWidget: (context, url, error) => CachedNetworkImage(
-                      imageUrl: StringUtil.robohash(HashUtil.md5(relay!.url))),
-                  cacheManager: localCacheManager,
-                )));
-
-        relayIcons.add(icon);
+          relayIcons.add(icon);
+        } catch(e) {
+          print(e);
+        }
       }
     });
 
@@ -133,11 +135,6 @@ class _EventTopComponent extends State<EventTopComponent> {
               jumpWrap(Container(
                 width: IMAGE_WIDTH,
                 height: IMAGE_WIDTH,
-                clipBehavior: Clip.hardEdge,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(HALF_IMAGE_WIDTH),
-                  color: Colors.grey,
-                ),
                 child: imageWidget,
               )),
               Expanded(

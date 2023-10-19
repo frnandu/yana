@@ -44,6 +44,7 @@ import 'package:yana/router/user/user_history_contact_list_router.dart';
 import 'package:yana/router/user/user_zap_list_router.dart';
 import 'package:yana/router/wallet/nwc_router.dart';
 import 'package:yana/router/wallet/wallet_router.dart';
+import 'package:yana/utils/base.dart';
 import 'package:yana/utils/platform_util.dart';
 
 import 'i18n/i18n.dart';
@@ -877,7 +878,6 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver{
       brightness: Brightness.dark,
       platform: TargetPlatform.iOS,
       primarySwatch: themeColor,
-      // scaffoldBackgroundColor: Base.SCAFFOLD_BACKGROUND_COLOR,
       scaffoldBackgroundColor: Colors.black,
       primaryColor: themeColor[500],
       appBarTheme: AppBarTheme(
@@ -887,7 +887,8 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver{
         elevation: 0,
       ),
       dividerColor: Colors.grey[200],
-      cardColor: Colors.grey[900],
+      cardColor: Colors.black,
+
       // indicatorColor: ColorsUtil.hexToColor("#818181"),
       textTheme: textTheme,
       hintColor: hintColor,

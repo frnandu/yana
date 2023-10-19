@@ -116,7 +116,7 @@ class RelaysItemComponent extends StatelessWidget {
                         children: [
                           Container(
                             margin: const EdgeInsets.only(bottom: 2),
-                            child: Text(relay.url),
+                            child: Text(relay.url.replaceAll("wss://",""), style: themeData.textTheme.titleLarge,),
                           ),
                           Row(
                             children: [
@@ -125,8 +125,8 @@ class RelaysItemComponent extends StatelessWidget {
                                     right: Base.BASE_PADDING),
                                 child: RelaysItemNumComponent(
                                     iconData: Icons.mail,
-                                    textColor: Colors.grey,
-                                    iconColor: Colors.grey,
+                                    textColor: themeData.disabledColor,
+                                    iconColor: themeData.disabledColor,
                                     num: "${relay.stats.getTotalEventsRead()}"),
                               ),
                               Container(
@@ -151,8 +151,8 @@ class RelaysItemComponent extends StatelessWidget {
                                   margin: const EdgeInsets.only(
                                       right: Base.BASE_PADDING),
                                   child: RelaysItemNumComponent(
-                                    iconColor: Colors.grey,
-                                    textColor: Colors.grey,
+                                    iconColor: themeData.disabledColor,
+                                    textColor: themeData.disabledColor,
                                     iconData: Icons.network_check,
                                     num: StoreUtil.bytesToShowStr(
                                         relay.stats.getTotalBytesRead()),

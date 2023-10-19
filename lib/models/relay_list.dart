@@ -48,8 +48,8 @@ class RelayList {
   static Future<int> writeToDB(
       String pubKey, List<RelayMetadata> list, int updated_at, {bool forceWrite = false}) async {
     cached[pubKey] = list;
-    if (forceWrite || nostr != null && nostr!.publicKey == pubKey ||
-        contactListProvider.getContact(pubKey) != null) {
+    if (forceWrite || nostr != null && nostr!.publicKey == pubKey || 
+        contactListProvider.contacts().contains(pubKey)) {
       RelayList relayList = RelayList();
       relayList.pub_key = pubKey;
       relayList.relays = list;

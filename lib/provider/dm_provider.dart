@@ -162,8 +162,7 @@ class DMProvider extends ChangeNotifier with PenddingEventsLaterFunction {
 
       var info = infoMap[pubkey];
       var detail = DMSessionDetail(session, info: info);
-      Contact? contact = contactListProvider.getContact(pubkey);
-      if (contact!=null) {
+      if (contactListProvider.contacts().contains(pubkey)) {
        _followingList.add(detail);
       } else {
         if (info != null && info.known == 1) {
@@ -234,8 +233,7 @@ class DMProvider extends ChangeNotifier with PenddingEventsLaterFunction {
       if (this.localPubkey!=null) {
         var detail = DMSessionDetail(session);
         var pubkey = _getPubkey(localPubkey, event);
-        Contact? contact = contactListProvider.getContact(pubkey!);
-        if (contact != null) {
+        if (contactListProvider.contacts().contains(pubkey)) {
           _followingList.add(detail);
         } else {
           _unknownList.add(detail);

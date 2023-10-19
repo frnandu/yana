@@ -42,7 +42,7 @@ class _EventQuoteComponent extends CustState<EventQuoteComponent> {
     var themeData = Theme.of(context);
     var cardColor = themeData.cardColor;
     var boxDecoration = BoxDecoration(
-      color: cardColor,
+      color: themeData.focusColor,
       boxShadow: [
         BoxShadow(
           color: Colors.black.withOpacity(0.2),
