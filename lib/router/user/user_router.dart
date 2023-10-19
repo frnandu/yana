@@ -335,7 +335,6 @@ class _UserRouter extends CustState<UserRouter>
         onEvent(event);
       });
     },);
-
   }
 
   @override

@@ -218,7 +218,7 @@ class _EventPollComponent extends State<EventPollComponent> {
         );
       },
       selector: (context, _provider) {
-        return _provider.get(widget.event.id);
+        return _provider.get(widget.event);
       },
     );
   }

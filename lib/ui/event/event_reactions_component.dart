@@ -15,7 +15,6 @@ import 'package:yana/ui/zap_gen_dialog.dart';
 import '../../i18n/i18n.dart';
 import '../../main.dart';
 import '../../models/event_reactions.dart';
-import '../../nostr/event.dart';
 import '../../nostr/event_relation.dart';
 import '../../nostr/nip19/nip19.dart';
 import '../../nostr/nip57/zap_action.dart';
@@ -323,7 +322,7 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
         );
       },
       selector: (context, _provider) {
-        return _provider.get(widget.event.id);
+        return _provider.get(widget.event);
       },
       shouldRebuild: (previous, next) {
         if ((previous == null && next != null) ||
@@ -390,6 +389,21 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
     super.dispose();
     var id = widget.event.id;
     eventReactionsProvider.removePendding(id);
+  }
+
+  @override
+  void deactivate() {
+    super.deactivate();
+    var id = widget.event.id;
+    eventReactionsProvider.removePendding(id);
+  }
+
+
+  @override
+  void activate() {
+    super.activate();
+    var id = widget.event.id;
+    // eventReactionsProvider.removePendding(id);
   }
 
   Future<void> onCommmentTap() async {

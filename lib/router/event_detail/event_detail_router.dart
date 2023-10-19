@@ -162,7 +162,7 @@ class _EventDetailRouter extends State<EventDetailRouter> {
         return main;
       },
       selector: (context, _provider) {
-        return _provider.get(eventId!);
+        return event!=null? _provider.get(event!) : null;
       },
       shouldRebuild: (previous, next) {
         if ((previous == null && next != null) ||

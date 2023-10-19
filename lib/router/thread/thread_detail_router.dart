@@ -110,7 +110,7 @@ class _ThreadDetailRouter extends CustState<ThreadDetailRouter>
     }
 
     // load sourceEvent replies and avoid blank page
-    var eventReactions = eventReactionsProvider.get(sourceEvent!.id);
+    var eventReactions = eventReactionsProvider.get(sourceEvent!);
     if (eventReactions != null && eventReactions.replies.isNotEmpty) {
       box.addList(eventReactions.replies);
     } else if (rootEvent == null) {

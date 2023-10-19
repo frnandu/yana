@@ -1,8 +1,9 @@
+import 'dart:async';
+
 import 'package:dart_ndk/nips/nip01/event.dart';
+import 'package:dart_ndk/nips/nip01/filter.dart';
 import 'package:flutter/material.dart';
 
-import '../nostr/event.dart';
-import '../nostr/filter.dart';
 import '../models/event_reactions.dart';
 import '../main.dart';
 import '../utils/later_function.dart';
@@ -13,6 +14,7 @@ class EventReactionsProvider extends ChangeNotifier
   int update_time = 1000 * 60 * 10;
 
   Map<String, EventReactions> _eventReactionsMap = {};
+  Map<String, StreamSubscription<Nip01Event>> subscriptions = {};
 
   EventReactionsProvider() {
     laterTimeMS = 2000;
@@ -59,26 +61,29 @@ class EventReactionsProvider extends ChangeNotifier
     }
   }
 
-  void update(String id, int? kind) {
-    var filter = kind!=null ? Filter(e: [id], kinds: [kind]) : Filter(e: [id]);
+  void update(String id, String? pubKey, int? kind) {
+    var filter = kind!=null ? Filter(eTags: [id], kinds: [kind]) : Filter(eTags: [id]);
 
-    // TODO use dart_ndk
-    //nostr!.query([filter.toJson()], _handleSingleEvent2, onComplete: () {
-    //  notifyListeners();
-    //});
+    // TODO should use other relays inbox for pubKey....
+    relayManager!.subscription(
+        filter, (feedRelaySet!=null && settingProvider.gossip==1)? feedRelaySet! : myInboxRelays!).then((stream) {
+          subscriptions[id] = stream.listen((event) {
+        _handleSingleEvent2(event);
+      });
+    },);
   }
 
-  EventReactions? get(String id) {
-    var er = _eventReactionsMap[id];
+  EventReactions? get(Nip01Event event) {
+    var er = _eventReactionsMap[event.id];
     if (er == null) {
       // plan to pull
-      update(id, null);
+      update(event.id, event.pubKey, null);
       // _penddingIds[id] = 1;
       // // later(laterFunc, null);
       // whenStop(laterFunc);
       // // set a empty er to avoid pull many times
-      er = EventReactions(id);
-      _eventReactionsMap[id] = er;
+      er = EventReactions(event.id);
+      _eventReactionsMap[event.id] = er;
     } else {
       var now = DateTime.now();
       // check dataTime if need to update
@@ -110,7 +115,7 @@ class EventReactionsProvider extends ChangeNotifier
       return;
     }
 
-    var filter = Filter(e: _penddingIds.keys.toList());
+    var filter = Filter(eTags: _penddingIds.keys.toList());
     _penddingIds.clear();
 // TODO use dart_ndk
 //    nostr!.query([filter.toJson()], onEvent);
@@ -197,8 +202,12 @@ class EventReactionsProvider extends ChangeNotifier
     return updated;
   }
 
-  void removePendding(String id) {
+  void removePendding(String id) async {
     _penddingIds.remove(id);
+    if (subscriptions[id]!=null) {
+      await subscriptions[id]!.cancel();
+      subscriptions.remove(id);
+    }
   }
 
   void clear() {
