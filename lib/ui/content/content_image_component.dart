@@ -19,7 +19,7 @@ class ContentImageComponent extends StatelessWidget {
 
   BoxFit imageBoxFix;
 
-  ContentImageComponent({
+  ContentImageComponent({super.key,
     required this.imageUrl,
     this.imageList,
     this.imageIndex = 0,
@@ -33,9 +33,17 @@ class ContentImageComponent extends StatelessWidget {
     return Container(
       width: width,
       height: height,
+      clipBehavior: Clip.hardEdge,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(10),
+      ),
+      // decoration: BoxDecoration(
+      //   borderRadius: BorderRadius.circular(),
+      //   color: Colors.green
+      // ),
       margin: const EdgeInsets.only(
-        top: Base.BASE_PADDING_HALF / 2,
-        bottom: Base.BASE_PADDING_HALF / 2,
+        top: Base.BASE_PADDING_HALF,
+        bottom: Base.BASE_PADDING_HALF,
       ),
       child: GestureDetector(
         onTap: () {

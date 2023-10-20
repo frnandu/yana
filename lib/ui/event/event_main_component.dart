@@ -67,6 +67,8 @@ class EventMainComponent extends StatefulWidget {
 
   bool showCommunity;
 
+  bool addDivider;
+
   EventRelation? eventRelation;
 
   EventMainComponent({
@@ -84,6 +86,7 @@ class EventMainComponent extends StatefulWidget {
     this.showSubject = true,
     this.showCommunity = true,
     this.eventRelation,
+    this.addDivider = true,
   });
 
   @override
@@ -97,6 +100,7 @@ class _EventMainComponent extends State<EventMainComponent> {
 
   late EventRelation eventRelation;
 
+
   @override
   void initState() {
     super.initState();
@@ -105,14 +109,6 @@ class _EventMainComponent extends State<EventMainComponent> {
     } else {
       eventRelation = widget.eventRelation!;
     }
-    loadRelayInfos();
-  }
-
-  loadRelayInfos() async {
-    await Future.wait(
-        widget.event.sources.map((url) => relayManager.getRelayInfo(url)));
-    setState(() {
-    });
   }
 
   @override
@@ -312,7 +308,7 @@ class _EventMainComponent extends State<EventMainComponent> {
           if (eventRelation.replyId != null) {
             list.add(EventQuoteComponent(
               id: eventRelation.replyId,
-              showReactions: widget.showReactions,
+              showReactions: false,//widget.showReactions,
               showVideo: widget.showVideo,
             ));
           }
@@ -476,9 +472,13 @@ class _EventMainComponent extends State<EventMainComponent> {
       ),
     ));
 
+    if (widget.addDivider) {
+      eventAllList.add(Container(color: themeData.disabledColor, margin: EdgeInsets.only(top:3), padding: EdgeInsets.only(bottom: 1),));
+    }
+
     return Column(
       mainAxisSize: MainAxisSize.min,
-      children: eventAllList..add(Container(color: themeData.disabledColor, margin: EdgeInsets.only(top:3), padding: EdgeInsets.only(bottom: 1),)),
+      children: eventAllList,
     );
   }
 

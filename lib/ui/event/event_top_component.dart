@@ -204,8 +204,18 @@ class _EventTopComponent extends State<EventTopComponent> {
     return null;
   }
 
+  loadRelayInfos() async {
+    await Future.wait(
+        widget.event.sources.map((url) => relayManager.getRelayInfo(url)));
+    setState(() {
+    });
+  }
+
+
   void showRelaysPopup() async {
     if (widget.event.sources.isNotEmpty) {
+      await loadRelayInfos();
+
       List<EnumObj>? relays = widget.event.sources.map((source) {
         Relay? relay = relayManager.relays[Relay.clean(source)];
         return EnumObj(source, null,

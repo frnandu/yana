@@ -13,8 +13,6 @@ class SingleEventProvider extends ChangeNotifier with LaterFunction {
 
   List<String> _needUpdateIds = [];
 
-  Map<String, int> _handingIds = {};
-
   List<Nip01Event> _penddingEvents = [];
 
   Nip01Event? getEvent(String id) {
@@ -23,7 +21,7 @@ class SingleEventProvider extends ChangeNotifier with LaterFunction {
       return event;
     }
 
-    if (!_needUpdateIds.contains(id) && _handingIds[id] == null) {
+    if (!_needUpdateIds.contains(id)) {
       _needUpdateIds.add(id);
     }
     later(_laterCallback, null);
@@ -53,9 +51,8 @@ class SingleEventProvider extends ChangeNotifier with LaterFunction {
         _eventsMap[event.id] = event;
       }
 
-      _handingIds.remove(event.id);
     }
-    _penddingEvents.clear;
+    _penddingEvents.clear();
     notifyListeners();
   }
 
@@ -74,7 +71,7 @@ class SingleEventProvider extends ChangeNotifier with LaterFunction {
     tempIds.addAll(_needUpdateIds);
     if (myInboxRelays!=null) {
       Stream<Nip01Event> stream = await relayManager.requestRelays(
-          myInboxRelays!.map.keys.toList(), filter);
+          myInboxRelays!.map.keys.toList(), filter, idleTimeout: 30);
       stream.listen((event) {
         _onEvent(event);
       });
@@ -87,9 +84,9 @@ class SingleEventProvider extends ChangeNotifier with LaterFunction {
     //   }
     // });
 
-    for (var id in _needUpdateIds) {
-      _handingIds[id] = 1;
-    }
+    // for (var id in _needUpdateIds) {
+    //   _handingIds[id] = 1;
+    // }
     _needUpdateIds.clear();
   }
 }

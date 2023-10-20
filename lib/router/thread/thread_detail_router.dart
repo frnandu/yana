@@ -119,6 +119,7 @@ class _ThreadDetailRouter extends CustState<ThreadDetailRouter>
 
   @override
   Widget doBuild(BuildContext context) {
+    var _singleEventProvider = Provider.of<SingleEventProvider>(context);
     if (sourceEvent == null) {
       var obj = RouterUtil.routerArgs(context);
       if (obj != null && obj is Nip01Event) {
@@ -290,11 +291,7 @@ class _ThreadDetailRouter extends CustState<ThreadDetailRouter>
 
   void doQuery() {
     if (StringUtil.isNotBlank(rootId)) {
-      // if (rootEvent == null) {
-      //   // source event isn't root event，query root event
-      //   var filter = Filter(ids: [rootId!]);
-      //   nostr!.query([filter.toMap()], onRootEvent);
-      // }
+      rootEvent ??= singleEventProvider.getEvent(rootId!);
 
       // query sub events
       var filter = Filter(eTags: [

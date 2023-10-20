@@ -81,7 +81,7 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
     var themeData = Theme.of(context);
     var mainColor = themeData.primaryColor;
     var hintColor = themeData.hintColor;
-    var scaffoldBackgroundColor = themeData.cardColor; //themeData.scaffoldBackgroundColor;
+    var scaffoldBackgroundColor = themeData.scaffoldBackgroundColor;
     var maxWidth = mediaDataCache.size.width;
     var largeFontSize = themeData.textTheme.bodyLarge!.fontSize;
     var fontSize = themeData.textTheme.bodyMedium!.fontSize;

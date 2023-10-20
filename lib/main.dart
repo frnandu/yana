@@ -805,6 +805,7 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver{
       // dividerColor: Colors.grey,
       cardColor: Colors.white,
       dividerColor: Colors.black,
+
       // indicatorColor: ColorsUtil.hexToColor("#818181"),
       textTheme: textTheme,
       hintColor: hintColor,
@@ -882,7 +883,7 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver{
       brightness: Brightness.dark,
       platform: TargetPlatform.iOS,
       primarySwatch: themeColor,
-      scaffoldBackgroundColor: Colors.black,
+      scaffoldBackgroundColor: Colors.grey[900],
       primaryColor: themeColor[500],
       appBarTheme: AppBarTheme(
         // color: Base.APPBAR_COLOR,
@@ -892,7 +893,7 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver{
       ),
       dividerColor: Colors.grey[200],
       cardColor: Colors.black,
-
+      canvasColor: Colors.grey[900],
       // indicatorColor: ColorsUtil.hexToColor("#818181"),
       textTheme: textTheme,
       hintColor: hintColor,

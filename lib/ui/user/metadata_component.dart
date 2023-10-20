@@ -53,6 +53,7 @@ class _MetadataComponent extends State<MetadataComponent> {
         pubkey: widget.pubKey,
       ));
     }
+    var themeData = Theme.of(context);
 
     if (widget.metadata != null &&
         StringUtil.isNotBlank(widget.metadata!.about)) {
@@ -66,7 +67,7 @@ class _MetadataComponent extends State<MetadataComponent> {
             bottom: Base.BASE_PADDING,
           ),
           // child: Text(widget.metadata!.about!),
-          child: Container(
+          child: SizedBox(
             width: double.maxFinite,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

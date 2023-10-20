@@ -102,6 +102,7 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
         }
 
         return Container(
+          margin: const EdgeInsets.only(top:10),
           height: 40,
           child: Row(
             children: [
@@ -538,7 +539,7 @@ class EventReactionNumComponent extends StatelessWidget {
 
   double fontSize;
 
-  EventReactionNumComponent({
+  EventReactionNumComponent({super.key,
     required this.iconData,
     required this.num,
     this.onTap,

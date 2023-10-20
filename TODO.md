@@ -63,7 +63,9 @@ v0.12
 - loading screen ASAP after splash
 - persist notes from feed for faster startup
 
+- load more on big posts
 - proper formating of text / newlines ??
+- fix bad fonting after some @ mentions
 
 - user Follow feed relays write to DB to improve startup time in outbox model
 - register nostr: in android so that nostr links give yana option as an app to open

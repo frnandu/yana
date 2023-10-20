@@ -226,7 +226,7 @@ class _UserRouter extends CustState<UserRouter>
         );
 
         return Scaffold(
-            // backgroundColor: themeData.cardColor,
+            backgroundColor: themeData.scaffoldBackgroundColor,
             body: Stack(
           children: [
             main,

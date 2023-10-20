@@ -3,11 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:screenshot/screenshot.dart';
 
-import '../../nostr/event.dart';
-import '../../utils/base.dart';
-import '../../utils/router_path.dart';
 import '../../i18n/i18n.dart';
 import '../../provider/single_event_provider.dart';
+import '../../utils/base.dart';
+import '../../utils/router_path.dart';
 import '../../utils/router_util.dart';
 import '../cust_state.dart';
 import 'event_main_component.dart';
@@ -21,7 +20,7 @@ class EventQuoteComponent extends StatefulWidget {
 
   bool showReactions;
 
-  EventQuoteComponent({
+  EventQuoteComponent({super.key,
     this.event,
     this.id,
     this.showReactions = false,
@@ -39,9 +38,12 @@ class _EventQuoteComponent extends CustState<EventQuoteComponent> {
 
   @override
   Widget doBuild(BuildContext context) {
+    var _singleEventProvider = Provider.of<SingleEventProvider>(context);
+
     var themeData = Theme.of(context);
     var cardColor = themeData.cardColor;
     var boxDecoration = BoxDecoration(
+      borderRadius: BorderRadius.circular(10),
       color: themeData.focusColor,
       boxShadow: [
         BoxShadow(
@@ -89,6 +91,7 @@ class _EventQuoteComponent extends CustState<EventQuoteComponent> {
           child: EventMainComponent(
             screenshotController: screenshotController,
             event: event,
+            addDivider: false,
             showReactions: widget.showReactions,
             showReplying: false,
             textOnTap: () {
