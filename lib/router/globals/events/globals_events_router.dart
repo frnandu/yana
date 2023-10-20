@@ -1,4 +1,5 @@
 import 'package:dart_ndk/nips/nip01/event.dart';
+import 'package:dart_ndk/nips/nip01/filter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:provider/provider.dart';
@@ -7,9 +8,6 @@ import 'package:yana/ui/keep_alive_cust_state.dart';
 
 import '../../../main.dart';
 import '../../../models/event_mem_box.dart';
-import '../../../nostr/event.dart';
-import '../../../nostr/event_kind.dart' as kind;
-import '../../../nostr/filter.dart';
 import '../../../provider/setting_provider.dart';
 import '../../../ui/event/event_list_component.dart';
 import '../../../ui/placeholder/event_list_placeholder.dart';
@@ -120,9 +118,9 @@ class _GlobalsEventsRouter extends KeepAliveCustState<GlobalsEventsRouter>
     //   }
     // }
     //
-    var filter = Filter(kinds: [kind.EventKind.TEXT_NOTE], since: _initTime);
+    var filter = Filter(kinds: [Nip01Event.textNoteKind], since: _initTime);
     // TODO use dart_ndk
-    // nostr!.subscribe([filter.toJson()], (event) {
+    // nostr!.subscribe([filter.toMap()], (event) {
     //   if (widget.eventBox.isEmpty()) {
     //     laterTimeMS = 200;
     //   } else {

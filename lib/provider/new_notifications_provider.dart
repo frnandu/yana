@@ -7,7 +7,7 @@ import 'package:yana/utils/index_taps.dart';
 import '../main.dart';
 import '../models/event_mem_box.dart';
 import '../nostr/event.dart';
-import '../nostr/filter.dart';
+import 'package:dart_ndk/nips/nip01/filter.dart';
 import '../utils/peddingevents_later_function.dart';
 import '../utils/string_util.dart';
 
@@ -66,10 +66,10 @@ class NewNotificationsProvider extends ChangeNotifier
     var filter = Filter(
       since: _localSince!,
       kinds: notificationsProvider.queryEventKinds(),
-      p: [nostr!.publicKey],
+      pTags: [nostr!.publicKey],
     );
     // TODO use dart_ndk
-    // nostr!.query([filter.toJson()], (event) {
+    // nostr!.query([filter.toMap()], (event) {
     //   later(event, handleEvents, null);
     // }, id: subscribeId);
   }

@@ -1,9 +1,8 @@
+import 'package:dart_ndk/nips/nip01/metadata.dart';
 import 'package:flutter/material.dart';
 import 'package:get_time_ago/get_time_ago.dart';
 import 'package:pointycastle/export.dart' as pointycastle;
 import 'package:provider/provider.dart';
-import 'package:sizer/sizer.dart';
-import 'package:yana/models/metadata.dart';
 import 'package:yana/nostr/nip04/nip04.dart';
 import 'package:yana/provider/dm_provider.dart';
 import 'package:yana/provider/metadata_provider.dart';

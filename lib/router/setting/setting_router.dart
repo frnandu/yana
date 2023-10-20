@@ -1,8 +1,3 @@
-import 'dart:convert';
-import 'dart:developer';
-
-import 'package:bot_toast/bot_toast.dart';
-import 'package:dart_ndk/pubkey_mapping.dart';
 import 'package:dart_ndk/read_write.dart';
 import 'package:dart_ndk/relay_set.dart';
 import 'package:flutter/material.dart';
@@ -11,9 +6,6 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:provider/provider.dart';
 import 'package:settings_ui/settings_ui.dart';
-import 'package:yana/models/event_mem_box.dart';
-import 'package:yana/nostr/filter.dart';
-import 'package:yana/nostr/nip02/contact_list.dart';
 import 'package:yana/nostr/relay_metadata.dart';
 import 'package:yana/router/index/account_manager_component.dart';
 import 'package:yana/utils/platform_util.dart';
@@ -22,13 +14,8 @@ import 'package:yana/utils/when_stop_function.dart';
 
 import '../../i18n/i18n.dart';
 import '../../main.dart';
-import '../../models/metadata.dart';
-import '../../nostr/event.dart';
-import '../../nostr/event_kind.dart' as kind;
-import '../../nostr/relay.dart';
 import '../../provider/relay_provider.dart';
 import '../../provider/setting_provider.dart';
-import '../../ui/confirm_dialog.dart';
 import '../../ui/enum_multi_selector_component.dart';
 import '../../ui/enum_selector_component.dart';
 import '../../utils/auth_util.dart';
@@ -70,7 +57,6 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
 
     initOpenList(s);
     init(s);
-    initCompressList(s);
     initDefaultTabListTimeline(s);
 
     initThemeStyleList(s);
@@ -567,38 +553,6 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
     }
   }
 
-  List<EnumObj>? compressList;
-
-  void initCompressList(I18n s) {
-    if (compressList == null) {
-      compressList = [];
-      compressList!.add(EnumObj(100, s.Dont_Compress));
-      compressList!.add(EnumObj(90, "90%"));
-      compressList!.add(EnumObj(80, "80%"));
-      compressList!.add(EnumObj(70, "70%"));
-      compressList!.add(EnumObj(60, "60%"));
-      compressList!.add(EnumObj(50, "50%"));
-      compressList!.add(EnumObj(40, "40%"));
-    }
-  }
-
-  Future<void> pickImageCompressList() async {
-    EnumObj? resultEnumObj =
-        await EnumSelectorComponent.show(context, compressList!);
-    if (resultEnumObj != null) {
-      settingProvider.imgCompress = resultEnumObj.value;
-    }
-  }
-
-  EnumObj getCompressList(int compress) {
-    for (var eo in compressList!) {
-      if (eo.value == compress) {
-        return eo;
-      }
-    }
-    return compressList![0];
-  }
-
   List<EnumObj>? lockOpenList;
 
   EnumObj getLockOpenList(int lockOpen) {
@@ -706,13 +660,6 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
       fontEnumList!.add(EnumObj(false, s.Default_Font_Family));
       fontEnumList!.add(EnumObj(true, s.Custom_Font_Family));
     }
-  }
-
-  String getFontEnumResult(String? fontFamily) {
-    if (StringUtil.isNotBlank(fontFamily)) {
-      return fontFamily!;
-    }
-    return fontEnumList![0].name;
   }
 
   Future pickFontEnum() async {
@@ -859,11 +806,11 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
   //       var filter = Filter(authors: [
   //         nostr!.publicKey
   //       ], kinds: [
-  //         kind.EventKind.TEXT_NOTE,
+  //         Nip01Event.textNoteKind,
   //         kind.EventKind.REPOST,
   //         kind.EventKind.GENERIC_REPOST,
   //       ]);
-  //       nostr!.query([filter.toJson()], onDeletedEventReceive);
+  //       nostr!.query([filter.toMap()], onDeletedEventReceive);
   //     } catch (e) {
   //       log("delete account error ${e.toString()}");
   //     }

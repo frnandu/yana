@@ -1,11 +1,9 @@
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:dart_ndk/nips/nip01/metadata.dart';
 import 'package:flutter/material.dart';
 
 import '../../main.dart';
-import '../../models/metadata.dart';
 import '../../nostr/nip19/nip19.dart';
 import '../../utils/base.dart';
-import '../../utils/router_util.dart';
 import '../../utils/string_util.dart';
 import '../../utils/when_stop_function.dart';
 import '../name_component.dart';

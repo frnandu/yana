@@ -86,7 +86,7 @@ class EventReactions implements FindEventInterface {
     if (eventIdMap[id] == null) {
       eventIdMap[id] = 1;
 
-      if (event.kind == kind.EventKind.TEXT_NOTE) {
+      if (event.kind == Nip01Event.textNoteKind) {
         if (event.pubKey == nostr!.publicKey) {
           hasMyReply = true;
         }

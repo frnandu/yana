@@ -30,44 +30,15 @@ class FollowPostsRouter extends StatefulWidget {
 class _FollowPostsRouter extends KeepAliveCustState<FollowPostsRouter>
     with LoadMoreEvent {
   ScrollController _controller = ScrollController();
-  StreamSubscription<Nip01Event>? _streamSubscription;
 
   //int _initTime = DateTime.now().millisecondsSinceEpoch ~/ 1000;
 
   @override
   void initState() {
     super.initState();
-//    bindLoadMoreScroll(_controller);
+    bindLoadMoreScroll(_controller);
     // doQuery();
-    load();
   }
-
-  void load() async {
-    if (_streamSubscription!=null) {
-      await _streamSubscription!.cancel();
-    }
-    getEventBox().clear();
-    DateTime queryTime = DateTime.now();
-
-    List<String>? contactList = contactListProvider.contacts();
-    Filter filter = Filter(
-      kinds: [
-        Nip01Event.textNoteKind,
-      ],
-      authors: contactList,
-      since: queryTime.subtract(Duration(hours: 1)).millisecondsSinceEpoch ~/ 1000,
-      // until: until ?? _initTime,
-    );
-    Stream<Nip01Event> stream = await relayManager!.subscription(
-        filter, (feedRelaySet!=null && settingProvider.gossip==1)? feedRelaySet! : myInboxRelays!);
-    _streamSubscription = stream.listen((event) {
-      if (event.sources.contains("wss://nostr.fmar.link")) {
-        print(event);
-      }
-      followEventProvider.onEvent(event);
-    });
-  }
-
 
   @override
   Widget doBuild(BuildContext context) {
@@ -79,22 +50,12 @@ class _FollowPostsRouter extends KeepAliveCustState<FollowPostsRouter>
     if (events.isEmpty) {
       return EventListPlaceholder(
         onRefresh: () {
-          load();
-          // followEventProvider.refreshPosts();
+          followEventProvider.refreshPosts();
         },
       );
     }
     indexProvider.setFollowPostsScrollController(_controller);
     preBuild();
-    // RelayManager rm = relayManager;
-    // relayManager.relays.values.forEach((e) {
-    //   WebSocket? webSocket = relayManager.webSockets[e.url];
-    //   if (webSocket!=null) {
-    //     print("${e.url} : ${relayManager.webSockets[e.url]!.readyState}");
-    //   } else {
-    //     print("${e.url} : MISSING SOCKET");
-    //   }
-    // });
 
     var main = ListView.builder(
       controller: _controller,
@@ -135,8 +96,7 @@ class _FollowPostsRouter extends KeepAliveCustState<FollowPostsRouter>
 
     Widget ri = RefreshIndicator(
       onRefresh: () async {
-        load();
-        // followEventProvider.refreshReplies();
+        followEventProvider.refreshReplies();
       },
       child: main,
     );

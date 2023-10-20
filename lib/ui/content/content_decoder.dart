@@ -1,8 +1,8 @@
 import 'package:dart_ndk/nips/nip01/event.dart';
+import 'package:dart_ndk/nips/nip01/metadata.dart';
 import 'package:flutter/material.dart';
 import 'package:yana/nostr/event_kind.dart';
 
-import '../../nostr/event.dart';
 import '../../nostr/nip19/nip19.dart';
 import '../../nostr/nip19/nip19_tlv.dart';
 import '../../utils/base.dart';
@@ -333,7 +333,7 @@ class ContentDecoder {
               var naddr = NIP19Tlv.decodeNaddr(key);
               if (naddr != null) {
                 if (StringUtil.isNotBlank(naddr.id) &&
-                    naddr.kind == EventKind.TEXT_NOTE) {
+                    naddr.kind == Nip01Event.textNoteKind) {
                   // block
                   handledStr = _closeHandledStr(handledStr, inlines);
                   _closeInlines(inlines, list, textOnTap: textOnTap);
@@ -343,7 +343,7 @@ class ContentDecoder {
                   );
                   list.add(widget);
                 } else if (StringUtil.isNotBlank(naddr.author) &&
-                    naddr.kind == EventKind.METADATA) {
+                    naddr.kind == Metadata.kind) {
                   // inline
                   handledStr = _closeHandledStr(handledStr, inlines);
                   inlines.add(

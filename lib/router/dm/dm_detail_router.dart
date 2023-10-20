@@ -1,4 +1,5 @@
 import 'package:bot_toast/bot_toast.dart';
+import 'package:dart_ndk/nips/nip01/metadata.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
@@ -10,8 +11,6 @@ import 'package:yana/ui/editor/editor_mixin.dart';
 
 import '../../i18n/i18n.dart';
 import '../../main.dart';
-import '../../models/metadata.dart';
-import '../../nostr/nip02/contact.dart';
 import '../../nostr/nip04/nip04.dart';
 import '../../provider/dm_provider.dart';
 import '../../provider/metadata_provider.dart';

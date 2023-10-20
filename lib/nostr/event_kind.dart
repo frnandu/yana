@@ -1,11 +1,6 @@
 class EventKind {
-  static const int METADATA = 0;
-
-  static const int TEXT_NOTE = 1;
 
   static const int RECOMMEND_SERVER = 2;
-
-  static const int CONTACT_LIST = 3;
 
   static const int DIRECT_MESSAGE = 4;
 
@@ -28,8 +23,6 @@ class EventKind {
   static const int ZAP_REQUEST = 9734;
 
   static const int ZAP = 9735;
-
-  static const int RELAY_LIST_METADATA = 10002;
 
   static const int AUTHENTICATION = 22242;
 

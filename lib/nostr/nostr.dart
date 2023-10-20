@@ -4,6 +4,7 @@ import 'dart:developer';
 import 'package:bot_toast/bot_toast.dart';
 import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip01/filter.dart';
+import 'package:dart_ndk/nips/nip02/contact_list.dart';
 import 'package:flutter/foundation.dart';
 import 'package:yana/main.dart';
 import 'package:yana/nostr/relay_pool.dart';
@@ -84,7 +85,7 @@ class Nostr {
 
   Future<Nip01Event?> sendTextNote(String text,
       [List<dynamic> tags = const []]) async {
-    Nip01Event event = Nip01Event(pubKey: _publicKey, kind: EventKind.TEXT_NOTE, tags: tags, content: text);
+    Nip01Event event = Nip01Event(pubKey: _publicKey, kind: Nip01Event.textNoteKind, tags: tags, content: text);
     return await sendEvent(event);
   }
 
@@ -99,7 +100,7 @@ class Nostr {
 
   Future<Nip01Event?> sendContactList(ContactList contacts) async {
     final tags = contacts.toJson();
-    final event = Nip01Event(pubKey: _publicKey, kind: EventKind.CONTACT_LIST, tags: tags, content: "");
+    final event = Nip01Event(pubKey: _publicKey, kind: Nip02ContactList.kind, tags: tags, content: "");
     return await sendEvent(event);
   }
 

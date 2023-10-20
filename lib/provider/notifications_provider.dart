@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../nostr/event_kind.dart' as kind;
 import '../nostr/event.dart';
-import '../nostr/filter.dart';
+import 'package:dart_ndk/nips/nip01/filter.dart';
 import '../nostr/nostr.dart';
 import '../models/event_mem_box.dart';
 import '../main.dart';
@@ -42,7 +42,7 @@ class NotificationsProvider extends ChangeNotifier
 
   List<int> queryEventKinds() {
     return [
-      kind.EventKind.TEXT_NOTE,
+      Nip01Event.textNoteKind,
       kind.EventKind.REACTION,
       kind.EventKind.REPOST,
       kind.EventKind.GENERIC_REPOST,
@@ -59,7 +59,7 @@ class NotificationsProvider extends ChangeNotifier
       kinds: queryEventKinds(),
       until: until ?? _initTime,
       limit: 50,
-      p: [targetNostr.publicKey],
+      pTags: [targetNostr.publicKey],
     );
 
     if (subscribeId != null) {
@@ -76,7 +76,7 @@ class NotificationsProvider extends ChangeNotifier
     var subscribeId = StringUtil.rndNameStr(12);
     if (initQuery) {
       // TODO use dart_ndk
-      // targetNostr.addInitQuery([filter.toJson()], onEvent, id: subscribeId);
+      // targetNostr.addInitQuery([filter.toMap()], onEvent, id: subscribeId);
     } else {
       if (!eventBox.isEmpty()) {
         var activeRelays = targetNostr.activeRelays();
@@ -87,14 +87,14 @@ class NotificationsProvider extends ChangeNotifier
           var oldestCreatedAt = oldestCreatedAts.createdAtMap[relay.url];
           if (oldestCreatedAt != null) {
             filter.until = oldestCreatedAt;
-            filtersMap[relay.url] = [filter.toJson()];
+            filtersMap[relay.url] = [filter.toMap()];
           }
         }
         // TODO use dart_ndk
         // targetNostr.queryByFilters(filtersMap, onEvent, id: subscribeId);
       } else {
         // TODO use dart_ndk
-        // targetNostr.query([filter.toJson()], onEvent, id: subscribeId);
+        // targetNostr.query([filter.toMap()], onEvent, id: subscribeId);
       }
     }
     return subscribeId;

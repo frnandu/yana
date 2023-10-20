@@ -1,16 +1,14 @@
 import 'package:dart_ndk/nips/nip01/event.dart';
+import 'package:dart_ndk/nips/nip01/filter.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:widget_size/widget_size.dart';
 import 'package:yana/provider/single_event_provider.dart';
 
 import '../../main.dart';
 import '../../models/event_mem_box.dart';
-import '../../nostr/event.dart';
 import '../../nostr/event_kind.dart' as kind;
 import '../../nostr/event_relation.dart';
-import '../../nostr/filter.dart';
 import '../../ui/cust_state.dart';
 import '../../ui/event/event_list_component.dart';
 import '../../ui/event/event_load_list_component.dart';
@@ -295,20 +293,20 @@ class _ThreadDetailRouter extends CustState<ThreadDetailRouter>
       // if (rootEvent == null) {
       //   // source event isn't root event，query root event
       //   var filter = Filter(ids: [rootId!]);
-      //   nostr!.query([filter.toJson()], onRootEvent);
+      //   nostr!.query([filter.toMap()], onRootEvent);
       // }
 
       // query sub events
-      var filter = Filter(e: [
+      var filter = Filter(eTags: [
         rootId!
       ], kinds: [
-        kind.EventKind.TEXT_NOTE,
+        Nip01Event.textNoteKind,
         kind.EventKind.FILE_HEADER,
         kind.EventKind.POLL,
         kind.EventKind.ZAP,
       ]);
       // TODO use dart_ndk
-//      nostr!.query([filter.toJson()], onEvent);
+//      nostr!.query([filter.toMap()], onEvent);
     }
   }
 

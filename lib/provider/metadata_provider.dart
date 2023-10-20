@@ -1,13 +1,13 @@
 import 'dart:convert';
 
 import 'package:dart_ndk/nips/nip01/event.dart';
+import 'package:dart_ndk/nips/nip01/metadata.dart';
 import 'package:dart_ndk/nips/nip01/filter.dart';
 import 'package:flutter/material.dart';
 import 'package:yana/nostr/nip05/nip05_validor.dart';
 import 'package:yana/utils/nip05status.dart';
 
 import '../main.dart';
-import '../models/metadata.dart';
 import '../nostr/event.dart';
 import '../nostr/event_kind.dart' as kind;
 import '../utils/later_function.dart';
@@ -24,13 +24,13 @@ class MetadataProvider extends ChangeNotifier with LaterFunction {
     if (_metadataProvider == null) {
       _metadataProvider = MetadataProvider();
 
-      var list = await Metadata.loadAllFromDB();
-      for (var md in list) {
-        if (md.valid == Nip05Status.NIP05_NOT_VALIDED) {
-          md.valid = null;
-        }
-        _metadataProvider!._metadataCache[md.pubKey!] = md;
-      }
+      // var list = await Metadata.loadAllFromDB();
+      // for (var md in list) {
+      //   if (md.valid == Nip05Status.NIP05_NOT_VALIDED) {
+      //     md.valid = null;
+      //   }
+      //   _metadataProvider!._metadataCache[md.pubKey!] = md;
+      // }
       // lazyTimeMS begin bigger and request less
       _metadataProvider!.laterTimeMS = 500;
     }
@@ -94,13 +94,13 @@ class MetadataProvider extends ChangeNotifier with LaterFunction {
       onEvent(metadata);
     } else {
       nostr!.query([
-        Filter(kinds: [kind.EventKind.METADATA], authors: [pubkey], limit: 1)
+        Filter(kinds: [Metadata.kind], authors: [pubkey], limit: 1)
             .toMap()
       ], (event) {
         var existing = _metadataCache[event.pubKey];
         if (existing == null ||
-            existing.updated_at == null ||
-            existing.updated_at! < event.createdAt) {
+            existing.updatedAt == null ||
+            existing.updatedAt! < event.createdAt) {
           handleEvent(event);
         }
       }, onComplete: () {
@@ -113,29 +113,29 @@ class MetadataProvider extends ChangeNotifier with LaterFunction {
   }
 
   int getNip05Status(String pubkey) {
-    var metadata = getMetadata(pubkey);
-    if (metadata == null) {
-      return Nip05Status.METADATA_NOT_FOUND;
-    } else if (StringUtil.isBlank(metadata.nip05)) {
-      return Nip05Status.NIP05_NOT_FOUND;
-    } else if (metadata.valid == null) {
-      Nip05Validor.valid(metadata.nip05!, pubkey).then((valid) async {
-        if (valid != null) {
-          if (valid) {
-            metadata.valid = Nip05Status.NIP05_VALIDED;
-            await Metadata.writeToDB(metadata);
-          } else {
-            // only update cache, next open app vill valid again
-            metadata.valid = Nip05Status.NIP05_NOT_VALIDED;
-          }
-          notifyListeners();
-        }
-      });
-
-      return Nip05Status.NIP05_NOT_VALIDED;
-    } else if (metadata.valid! == Nip05Status.NIP05_VALIDED) {
-      return Nip05Status.NIP05_VALIDED;
-    }
+    // var metadata = getMetadata(pubkey);
+    // if (metadata == null) {
+    //   return Nip05Status.METADATA_NOT_FOUND;
+    // } else if (StringUtil.isBlank(metadata.nip05)) {
+    //   return Nip05Status.NIP05_NOT_FOUND;
+    // } else if (metadata.valid == null) {
+    //   Nip05Validor.valid(metadata.nip05!, pubkey).then((valid) async {
+    //     if (valid != null) {
+    //       if (valid) {
+    //         metadata.valid = Nip05Status.NIP05_VALIDED;
+    //         await Metadata.writeToDB(metadata);
+    //       } else {
+    //         // only update cache, next open app vill valid again
+    //         metadata.valid = Nip05Status.NIP05_NOT_VALIDED;
+    //       }
+    //       notifyListeners();
+    //     }
+    //   });
+    //
+    //   return Nip05Status.NIP05_NOT_VALIDED;
+    // } else if (metadata.valid! == Nip05Status.NIP05_VALIDED) {
+    //   return Nip05Status.NIP05_VALIDED;
+    // }
     return Nip05Status.NIP05_NOT_FOUND;
   }
 
@@ -151,9 +151,10 @@ class MetadataProvider extends ChangeNotifier with LaterFunction {
       var jsonObj = jsonDecode(event.content);
       var md = Metadata.fromJson(jsonObj);
       md.pubKey = event.pubKey;
-      md.updated_at = event.createdAt;
+      md.updatedAt = event.createdAt;
 
-      Metadata.writeToDB(md);
+      // TODO
+      //Metadata.writeToDB(md);
       _metadataCache[md.pubKey!] = md;
     }
     _penddingEvents.clear();
@@ -187,7 +188,7 @@ class MetadataProvider extends ChangeNotifier with LaterFunction {
     if (myInboxRelays!=null) {
       Stream<Nip01Event> stream = await relayManager.requestRelays(
           myInboxRelays!.map.keys.toList(), Filter(
-          kinds: [kind.EventKind.METADATA], authors: _needUpdatePubKeys));
+          kinds: [Metadata.kind], authors: _needUpdatePubKeys));
       stream.listen((event) {
         _onEvent(event);
       });
@@ -201,7 +202,8 @@ class MetadataProvider extends ChangeNotifier with LaterFunction {
 
   void clear() {
     _metadataCache.clear();
-    Metadata.deleteAllFromDB();
+    // TODO
+    //Metadata.deleteAllFromDB();
   }
 
   Metadata handleEvent(Event event) {
@@ -210,9 +212,10 @@ class MetadataProvider extends ChangeNotifier with LaterFunction {
     var jsonObj = jsonDecode(event.content);
     var md = Metadata.fromJson(jsonObj);
     md.pubKey = event.pubKey;
-    md.updated_at = event.createdAt;
+    md.updatedAt = event.createdAt;
 
-    Metadata.writeToDB(md);
+    // TODO
+    //Metadata.writeToDB(md);
     _metadataCache[md.pubKey!] = md;
     return md;
   }

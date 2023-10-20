@@ -1,4 +1,5 @@
 import 'package:dart_ndk/nips/nip01/event.dart';
+import 'package:dart_ndk/nips/nip01/filter.dart';
 import 'package:flutter/material.dart';
 import 'package:yana/ui/community_info_component.dart';
 import 'package:yana/utils/base.dart';
@@ -7,7 +8,6 @@ import 'package:provider/provider.dart';
 import 'package:widget_size/widget_size.dart';
 
 import '../../nostr/event.dart';
-import '../../nostr/filter.dart';
 import '../../nostr/nip172/community_id.dart';
 import '../../nostr/nip172/community_info.dart';
 import '../../ui/cust_state.dart';
@@ -172,7 +172,7 @@ class _CommunityDetailRouter extends CustState<CommunityDetailRouter>
       //   ], authors: [
       //     communityId!.pubkey
       //   ], limit: 1);
-      //   var queryArg = filter.toJson();
+      //   var queryArg = filter.toMap();
       //   queryArg["#d"] = [communityId!.title];
       //   nostr!.query([queryArg], (e) {
       //     if (communityInfo == null || communityInfo!.createdAt < e.createdAt) {
@@ -191,12 +191,12 @@ class _CommunityDetailRouter extends CustState<CommunityDetailRouter>
 
   void queryEvents() {
     var filter = Filter(kinds: [
-      kind.EventKind.TEXT_NOTE,
+      Nip01Event.textNoteKind,
       kind.EventKind.LONG_FORM,
       kind.EventKind.FILE_HEADER,
       kind.EventKind.POLL,
     ], limit: 100);
-    var queryArg = filter.toJson();
+    var queryArg = filter.toMap();
     queryArg["#a"] = [communityId!.toAString()];
     // TODO use dart_ndk
     //nostr!.query([queryArg], onEvent, id: subscribeId);

@@ -5,6 +5,7 @@ import 'package:auto_size_text_field/auto_size_text_field.dart';
 import 'package:bot_toast/bot_toast.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dart_ndk/nips/nip01/event.dart';
+import 'package:dart_ndk/nips/nip01/metadata.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
@@ -12,11 +13,9 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:pointycastle/ecc/api.dart';
 import 'package:provider/provider.dart';
-import 'package:yana/models/metadata.dart';
 import 'package:yana/ui/datetime_picker_component.dart';
 import 'package:yana/provider/custom_emoji_provider.dart';
 
-import '../../nostr/event.dart';
 import '../../nostr/event_kind.dart' as kind;
 import '../../nostr/nip04/nip04.dart';
 import '../../nostr/nip19/nip19.dart';
@@ -577,7 +576,7 @@ mixin EditorMixin {
           publishAt: publishAt!.millisecondsSinceEpoch ~/ 1000);
     } else {
       // text note
-      event = Nip01Event(pubKey: nostr!.publicKey, kind: kind.EventKind.TEXT_NOTE, tags: allTags, content:result,
+      event = Nip01Event(pubKey: nostr!.publicKey, kind: Nip01Event.textNoteKind, tags: allTags, content:result,
           publishAt: publishAt!.millisecondsSinceEpoch ~/ 1000);
     }
 

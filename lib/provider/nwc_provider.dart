@@ -7,7 +7,7 @@ import 'package:yana/nostr/event_kind.dart';
 
 import '../main.dart';
 import '../nostr/event.dart';
-import '../nostr/filter.dart';
+import 'package:dart_ndk/nips/nip01/filter.dart';
 import '../nostr/nip04/nip04.dart';
 import '../nostr/nip47/nwc_commands.dart';
 import '../nostr/nip47/nwc_kind.dart';
@@ -87,7 +87,7 @@ class NwcProvider extends ChangeNotifier {
     await settingProvider.setNwcSecret(secret!);
     var filter = Filter(kinds: [NwcKind.INFO_REQUEST], authors: [walletPubKey!]);
     // TODO use dart_ndk
-    // nostr!.queryRelay(filter.toJson(), relay!, onEventInfo);
+    // nostr!.queryRelay(filter.toMap(), relay!, onEventInfo);
     // walletPubKey = pubKey;
     // this.relay = relay;
     // permissions = ["get_balance","pay_invoice"];
@@ -140,9 +140,9 @@ class NwcProvider extends ChangeNotifier {
       // TODO use dart_ndk
       // await nwcNostr!.sendRelayEvent(event, relay!);
       var filter = Filter(
-          kinds: [NwcKind.RESPONSE], authors: [walletPubKey!], e: [event.id]);
+          kinds: [NwcKind.RESPONSE], authors: [walletPubKey!], eTags: [event.id]);
       // TODO use dart_ndk
-      // nwcNostr!.queryRelay(filter.toJson(), relay!, onGetBalanceResponse);
+      // nwcNostr!.queryRelay(filter.toMap(), relay!, onGetBalanceResponse);
     } else {
       BotToast.showText(text: "missing pubKey and/or relay for connecting");
     }
@@ -196,9 +196,9 @@ class NwcProvider extends ChangeNotifier {
       final event =
       Nip01Event(pubKey: nwcNostr!.publicKey, kind: NwcKind.REQUEST, tags: tags, content: encrypted);
       var filter = Filter(
-          kinds: [NwcKind.RESPONSE], authors: [walletPubKey!], e: [event.id]);
+          kinds: [NwcKind.RESPONSE], authors: [walletPubKey!], eTags: [event.id]);
       // TODO use dart_ndk
-      // nwcNostr!.queryRelay2(filter.toJson(), relay!, onPayInvoiceResponse, onZapped: onZapped);
+      // nwcNostr!.queryRelay2(filter.toMap(), relay!, onPayInvoiceResponse, onZapped: onZapped);
       // TODO use dart_ndk
       // await nwcNostr!.sendRelayEvent(event, relay!);
     } else {

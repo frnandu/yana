@@ -1,8 +1,8 @@
+import 'package:dart_ndk/nips/nip01/filter.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../nostr/event_kind.dart' as kind;
-import '../../nostr/filter.dart';
 import '../../nostr/nip58/badge_definition.dart';
 import '../../utils/base.dart';
 import '../../models/event_mem_box.dart';
@@ -96,7 +96,7 @@ class _UserBadgesComponent extends CustState<UserBadgesComponent>
     var filter =
         Filter(authors: [widget.pubkey], kinds: [kind.EventKind.BADGE_ACCEPT]);
     // TODO use dart_ndk
-    // nostr!.query([filter.toJson()], (event) {
+    // nostr!.query([filter.toMap()], (event) {
     //   var result = eventMemBox.add(event);
     //   if (result) {
     //     later(() {

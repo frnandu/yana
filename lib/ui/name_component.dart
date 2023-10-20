@@ -1,6 +1,6 @@
+import 'package:dart_ndk/nips/nip01/metadata.dart';
 import 'package:flutter/material.dart';
 import 'package:yana/ui/nip05_valid_component.dart';
-import 'package:yana/models/metadata.dart';
 
 import '../nostr/nip19/nip19.dart';
 import '../utils/string_util.dart';
@@ -59,9 +59,10 @@ class _NameComponnet extends State<NameComponent> {
       if (StringUtil.isNotBlank(metadata.nip05)) {
         nip05Status = 1;
       }
-      if (metadata.valid != null && metadata.valid! > 0) {
-        nip05Status = 2;
-      }
+      // TODO
+      // if (metadata.valid != null && metadata.valid! > 0) {
+      //   nip05Status = 2;
+      // }
     }
 
     List<InlineSpan> nameList = [];

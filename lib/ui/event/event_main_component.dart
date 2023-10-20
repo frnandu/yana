@@ -1,22 +1,18 @@
 import 'dart:convert';
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dart_ndk/nips/nip01/event.dart';
-import 'package:dart_ndk/relay.dart';
+import 'package:dart_ndk/nips/nip01/metadata.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:provider/provider.dart';
 import 'package:screenshot/screenshot.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:yana/nostr/client_utils/keys.dart';
 import 'package:yana/ui/content/content_video_component.dart';
 import 'package:yana/ui/content/markdown/markdown_mention_event_element_builder.dart';
 import 'package:yana/utils/platform_util.dart';
 
 import '../../i18n/i18n.dart';
 import '../../main.dart';
-import '../../models/metadata.dart';
-import '../../nostr/event.dart';
 import '../../nostr/event_kind.dart' as kind;
 import '../../nostr/event_relation.dart';
 import '../../nostr/nip19/nip19.dart';
@@ -341,7 +337,7 @@ class _EventMainComponent extends State<EventMainComponent> {
           }
         }
 
-        if (widget.event.kind != kind.EventKind.METADATA) {
+        if (widget.event.kind != Metadata.kind) {
           list.add(
             buildContentWidget(_settingProvider, imagePreview, videoPreview),
           );

@@ -1,9 +1,10 @@
 import 'package:dart_ndk/nips/nip01/event.dart';
+import 'package:dart_ndk/nips/nip01/filter.dart';
 import 'package:flutter/material.dart';
 
 import '../main.dart';
 import '../nostr/event.dart';
-import '../nostr/filter.dart';
+import 'package:dart_ndk/nips/nip01/filter.dart';
 import '../utils/later_function.dart';
 import '../utils/string_util.dart';
 
@@ -63,17 +64,23 @@ class SingleEventProvider extends ChangeNotifier with LaterFunction {
     later(_laterCallback, null);
   }
 
-  void _laterSearch() {
+  void _laterSearch() async {
     if (_needUpdateIds.isEmpty || nostr==null) {
       return;
     }
 
     var filter = Filter(ids: _needUpdateIds);
-    var subscriptId = StringUtil.rndNameStr(16);
     List<String> tempIds = [];
     tempIds.addAll(_needUpdateIds);
+    if (myInboxRelays!=null) {
+      Stream<Nip01Event> stream = await relayManager.requestRelays(
+          myInboxRelays!.map.keys.toList(), filter);
+      stream.listen((event) {
+        _onEvent(event);
+      });
+    }
     // todo use dart_ndk
-    // nostr!.query([filter.toJson()], _onEvent, id: subscriptId, onComplete: () {
+    // nostr!.query([filter.toMap()], _onEvent, id: subscriptId, onComplete: () {
     //   // log("singleEventProvider onComplete $tempIds");
     //   for (var id in tempIds) {
     //     _handingIds.remove(id);

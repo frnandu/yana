@@ -2,12 +2,13 @@ import 'dart:convert';
 
 import 'package:bot_toast/bot_toast.dart';
 import 'package:dart_ndk/nips/nip01/event.dart';
+import 'package:dart_ndk/nips/nip01/filter.dart';
+import 'package:dart_ndk/nips/nip01/metadata.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:yana/models/event_find_util.dart';
-import 'package:yana/models/metadata.dart';
 import 'package:yana/router/search/search_action_item_component.dart';
 import 'package:yana/router/search/search_actions.dart';
 import 'package:yana/utils/when_stop_function.dart';
@@ -16,9 +17,7 @@ import '../../i18n/i18n.dart';
 import '../../main.dart';
 import '../../models/event_mem_box.dart';
 import '../../nostr/client_utils/keys.dart';
-import '../../nostr/event.dart';
 import '../../nostr/event_kind.dart' as kind;
-import '../../nostr/filter.dart';
 import '../../nostr/nip19/nip19.dart';
 import '../../nostr/nip19/nip19_tlv.dart';
 import '../../provider/relay_provider.dart';
@@ -121,7 +120,7 @@ class _SearchRouter extends CustState<SearchRouter>
             metadata = metadatasFromSearch[index - metadatasFromCache.length];
           } else {
             var event = events[index - metadatasFromCache.length - metadatasFromSearch.length];
-            if (event.kind == kind.EventKind.METADATA) {
+            if (event.kind == Metadata.kind) {
               var jsonObj = jsonDecode(event.content);
               metadata = Metadata.fromJson(jsonObj);
               metadata.pubKey = event.pubKey;
@@ -246,13 +245,13 @@ class _SearchRouter extends CustState<SearchRouter>
   }
 
   List<int> searchEventKinds = [
-    kind.EventKind.TEXT_NOTE,
+    Nip01Event.textNoteKind,
     kind.EventKind.REPOST,
     kind.EventKind.GENERIC_REPOST,
     kind.EventKind.LONG_FORM,
     kind.EventKind.FILE_HEADER,
     kind.EventKind.POLL,
-    kind.EventKind.METADATA
+    Metadata.kind
   ];
 
   String? subscribeId;
@@ -298,7 +297,7 @@ class _SearchRouter extends CustState<SearchRouter>
   }
 
   void onQueryEvent(Nip01Event event) {
-    if (event.kind == kind.EventKind.METADATA) {
+    if (event.kind == Metadata.kind) {
       var jsonObj = jsonDecode(event.content);
       Metadata metadata = Metadata.fromJson(jsonObj);
       metadata.pubKey = event.pubKey;
@@ -346,9 +345,7 @@ class _SearchRouter extends CustState<SearchRouter>
 
     eventMemBox = EventMemBox();
     until = null;
-    filterMap =
-        Filter(kinds: searchEventKinds, authors: authors, limit: queryLimit)
-            .toJson();
+    filterMap = Filter(kinds: searchEventKinds, authors: authors, limit: queryLimit).toMap();
     filterMap!.remove("search");
     penddingEvents.clear;
     doQuery();
@@ -532,7 +529,7 @@ class _SearchRouter extends CustState<SearchRouter>
 
     eventMemBox = EventMemBox();
     until = null;
-    filterMap = Filter(kinds: searchEventKinds, limit: queryLimit).toJson();
+    filterMap = Filter(kinds: searchEventKinds, limit: queryLimit).toMap();
     filterMap!.remove("authors");
     filterMap!["search"] = value;
     penddingEvents.clear;

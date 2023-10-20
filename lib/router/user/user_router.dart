@@ -2,12 +2,12 @@ import 'dart:async';
 
 import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip01/filter.dart';
+import 'package:dart_ndk/nips/nip01/metadata.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../main.dart';
 import '../../models/event_mem_box.dart';
-import '../../models/metadata.dart';
 import '../../nostr/event_kind.dart' as kind;
 import '../../nostr/nip19/nip19.dart';
 import '../../provider/metadata_provider.dart';
@@ -291,7 +291,7 @@ class _UserRouter extends CustState<UserRouter>
     // load event from relay
     var filter = Filter(
       kinds: [
-        kind.EventKind.TEXT_NOTE,
+        Nip01Event.textNoteKind,
         kind.EventKind.REPOST,
         kind.EventKind.GENERIC_REPOST,
         kind.EventKind.LONG_FORM,
@@ -314,11 +314,11 @@ class _UserRouter extends CustState<UserRouter>
     //     for (var relay in activeRelays) {
     //       var oldestCreatedAt = oldestCreatedAts.createdAtMap[relay.url];
     //       filter.until = oldestCreatedAt;
-    //       filtersMap[relay.url] = [filter.toJson()];
+    //       filtersMap[relay.url] = [filter.toMap()];
     //     }
     //     userNostr!.queryByFilters(filtersMap, onEvent, id: subscribeId);
     //   } else {
-    //     userNostr!.query([filter.toJson()], onEvent, id: subscribeId);
+    //     userNostr!.query([filter.toMap()], onEvent, id: subscribeId);
     //   }
     // Stream<Nip01Event> stream =
     // Map<String,ReadWriteMarker>? relayList = relayManager.getRelayMarkerMap(pubkey!);

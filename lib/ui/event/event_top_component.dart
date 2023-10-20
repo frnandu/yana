@@ -1,13 +1,12 @@
 import 'dart:convert';
 
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:crypto/crypto.dart';
 import 'package:dart_ndk/nips/nip01/event.dart';
+import 'package:dart_ndk/nips/nip01/metadata.dart';
 import 'package:dart_ndk/relay.dart';
 import 'package:flutter/material.dart';
 import 'package:get_time_ago/get_time_ago.dart';
 import 'package:provider/provider.dart';
-import 'package:yana/nostr/client_utils/keys.dart';
 import 'package:yana/nostr/event_kind.dart';
 import 'package:yana/ui/name_component.dart';
 import 'package:yana/utils/router_path.dart';
@@ -15,11 +14,11 @@ import 'package:yana/utils/router_util.dart';
 import 'package:yana/utils/string_util.dart';
 
 import '../../main.dart';
-import '../../models/metadata.dart';
-import '../../nostr/event.dart';
 import '../../provider/metadata_provider.dart';
 import '../../utils/base.dart';
+import '../../utils/base_consts.dart';
 import '../../utils/hash_util.dart';
+import '../enum_selector_component.dart';
 import '../user_pic_component.dart';
 
 class EventTopComponent extends StatefulWidget {
@@ -52,63 +51,27 @@ class _EventTopComponent extends State<EventTopComponent> {
         if (tag[0] == "description" && widget.event.tags.length > 1) {
           var description = tag[1];
           var jsonMap = jsonDecode(description);
-          var sourceEvent = Event.fromJson(jsonMap);
+          var sourceEvent = Nip01Event.fromJson(jsonMap);
           if (StringUtil.isNotBlank(sourceEvent.pubKey)) {
             pubkey = sourceEvent.pubKey;
           }
         }
       }
     }
-    List<GestureDetector> relayIcons = [];
-    widget.event.sources.forEach((source) {
-      Relay? relay = relayManager.relays[Relay.clean(source)];
-      if (relay != null) {
-        String? iconUrl;
-        if (relay.url.startsWith("wss://relay.damus.io")) {
-          iconUrl = "https://damus.io/img/logo.png";
-        } else if (relay.url.startsWith("wss://relay.snort.social")) {
-          iconUrl = "https://snort.social/favicon.ico";
-        } else {
-          iconUrl = relay != null &&
-              relay.info != null &&
-              StringUtil.isNotBlank(relay.info!.icon)
-              ? relay.info!.icon
-              : StringUtil.robohash(HashUtil.md5(relay!.url));
-        }
-        try {
-          GestureDetector icon = GestureDetector(
-              onTap: () {
-                if (relay != null && relay.info != null) {
-                  RouterUtil.router(context, RouterPath.RELAY_INFO, relay);
-                }
-              },
-              child: Container(
-                  padding: const EdgeInsets.all(2),
-                  clipBehavior: Clip.hardEdge,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: CachedNetworkImage(
-
-                    imageUrl: iconUrl,
-                    width: 15,
-                    height: 15,
-                    fit: BoxFit.cover,
-                    placeholder: (context, url) =>
-                    const CircularProgressIndicator(),
-                    errorWidget: (context, url, error) =>
-                        CachedNetworkImage(
-                            imageUrl: StringUtil.robohash(
-                                HashUtil.md5(relay!.url))),
-                    cacheManager: localCacheManager,
-                  )));
-
-          relayIcons.add(icon);
-        } catch(e) {
-          print(e);
-        }
-      }
-    });
+    // List<GestureDetector> relayIcons = [];
+    // widget.event.sources.forEach((source) {
+    //   Relay? relay = relayManager.relays[Relay.clean(source)];
+    //   Container? relayIcon = relay!=null ? getRelayIcon(relay) : null;
+    //   if (relayIcon!=null) {
+    //     relayIcons.add(GestureDetector(
+    //         onTap: () {
+    //           if (relay != null && relay.info != null) {
+    //             RouterUtil.router(context, RouterPath.RELAY_INFO, relay);
+    //           }
+    //         },
+    //         child:     relayIcon));
+    //   }
+    // });
 
     return Selector<MetadataProvider, Metadata?>(
       shouldRebuild: (previous, next) {
@@ -153,17 +116,26 @@ class _EventTopComponent extends State<EventTopComponent> {
                           ),
                         ),
                       ),
-                      Row(children: [
-                        Text(
-                          (GetTimeAgo.parse(DateTime.fromMillisecondsSinceEpoch(
-                              widget.event.createdAt * 1000)) + " in "),
-                          style: TextStyle(
-                            fontSize: smallTextSize,
-                            color: themeData.hintColor,
-                          ),
-                        ),
-
-                      ]..addAll(relayIcons))
+                      Row(
+                          children: [
+                            Text(
+                              (GetTimeAgo.parse(DateTime.fromMillisecondsSinceEpoch(
+                                  widget.event.createdAt * 1000)) +
+                                  " in "),
+                              style: TextStyle(
+                                fontSize: smallTextSize,
+                                color: themeData.hintColor,
+                              ),
+                            ),
+                          ]..add(GestureDetector(onTap: () { showRelaysPopup();}, child: Text(
+                            "${widget.event.sources.length}",
+                            style: TextStyle(
+                              fontSize: smallTextSize,
+                              color: themeData.hintColor,
+                            )),
+                          ))..add(GestureDetector(onTap: () { showRelaysPopup();}, child: Icon(Icons.lan_outlined, color: themeData.hintColor, size: 15,)))
+                        //..addAll(relayIcons)
+                      )
                     ],
                   ),
                 ),
@@ -178,14 +150,75 @@ class _EventTopComponent extends State<EventTopComponent> {
   Widget jumpWrap(Widget c) {
     return GestureDetector(
       onTap: () {
-        // disable jump when in same user page.
-        if (widget.pagePubkey == widget.event.pubKey) {
-          return;
-        }
+        if (widget.event.pubKey != 'unset') {
+          // disable jump when in same user page.
+          if (widget.pagePubkey == widget.event.pubKey) {
+            return;
+          }
 
-        RouterUtil.router(context, RouterPath.USER, widget.event.pubKey);
+          RouterUtil.router(context, RouterPath.USER, widget.event.pubKey);
+        }
       },
       child: c,
     );
+  }
+
+  Container? getRelayIcon(Relay relay) {
+    if (relay != null) {
+      String? iconUrl;
+      if (relay.url.startsWith("wss://relay.damus.io")) {
+        iconUrl = "https://damus.io/img/logo.png";
+      } else if (relay.url.startsWith("wss://relay.snort.social")) {
+        iconUrl = "https://snort.social/favicon.ico";
+      } else {
+        iconUrl = relay != null &&
+            relay.info != null &&
+            StringUtil.isNotBlank(relay.info!.icon)
+            ? relay.info!.icon
+            : StringUtil.robohash(HashUtil.md5(relay!.url));
+      }
+      try {
+        return Container(
+            padding: const EdgeInsets.all(5),
+            clipBehavior: Clip.hardEdge,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: CachedNetworkImage(
+              imageUrl: iconUrl,
+              width: 20,
+              height: 20,
+              fit: BoxFit.cover,
+              placeholder: (context, url) =>
+              const CircularProgressIndicator(),
+              errorWidget: (context, url, error) =>
+                  CachedNetworkImage(
+                      imageUrl:
+                      StringUtil.robohash(HashUtil.md5(relay!.url))),
+              cacheManager: localCacheManager,
+            ));
+      } catch (e) {
+        print(e);
+      }
+    }
+    return null;
+  }
+
+  void showRelaysPopup() async {
+    if (widget.event.sources.isNotEmpty) {
+      List<EnumObj>? relays = widget.event.sources.map((source) {
+        Relay? relay = relayManager.relays[Relay.clean(source)];
+        return EnumObj(source, null,
+          widget: Row(children: [
+            relay != null ? getRelayIcon(relay)! : Container(),
+            Text(source.replaceAll("wss://", ""))
+          ]),);
+      }).toList();
+      EnumObj? resultEnumObj =
+      await EnumSelectorComponent.show(context, relays!);
+      if (resultEnumObj != null) {
+        RouterUtil.router(context, RouterPath.RELAY_INFO, relayManager.relays[resultEnumObj.value]);
+      }
+    }
   }
 }

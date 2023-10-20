@@ -135,7 +135,7 @@ class _EventDetailRouter extends State<EventDetailRouter> {
             var event = allEvent[index - 1];
             if (event.kind == kind.EventKind.ZAP) {
               return ZapEventListComponent(event: event);
-            } else if (event.kind == kind.EventKind.TEXT_NOTE) {
+            } else if (event.kind == Nip01Event.textNoteKind) {
               return ReactionEventListComponent(event: event, text: i18n.replied);
             } else if (event.kind == kind.EventKind.REPOST ||
                 event.kind == kind.EventKind.GENERIC_REPOST) {

@@ -4,7 +4,7 @@ import '../nostr/event.dart';
 import '../nostr/event_kind.dart' as kind;
 import 'package:yana/nostr/nip172/community_info.dart';
 
-import '../nostr/filter.dart';
+import 'package:dart_ndk/nips/nip01/filter.dart';
 import '../main.dart';
 import '../utils/later_function.dart';
 import '../utils/string_util.dart';
@@ -54,7 +54,7 @@ class CommunityInfoProvider extends ChangeNotifier with LaterFunction {
       var filter = Filter(
           kinds: [kind.EventKind.COMMUNITY_DEFINITION],
           authors: [communityId.pubkey]);
-      var queryArg = filter.toJson();
+      var queryArg = filter.toMap();
       queryArg["#d"] = [communityId.title];
       filters.add(queryArg);
     }

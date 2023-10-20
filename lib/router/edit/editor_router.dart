@@ -1,5 +1,6 @@
 import 'package:bot_toast/bot_toast.dart';
 import 'package:dart_ndk/nips/nip01/event.dart';
+import 'package:dart_ndk/nips/nip01/metadata.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:intl/intl.dart';
@@ -18,8 +19,6 @@ import 'package:yana/utils/base.dart';
 import 'package:yana/utils/router_util.dart';
 
 import '../../i18n/i18n.dart';
-import '../../models/metadata.dart';
-import '../../nostr/event.dart';
 import '../../ui/cust_state.dart';
 import '../../ui/editor/cust_embed_types.dart';
 import '../../ui/editor/custom_emoji_embed_builder.dart';

@@ -1,13 +1,13 @@
 import 'dart:developer';
 
 import 'package:bot_toast/bot_toast.dart';
+import 'package:dart_ndk/nips/nip01/metadata.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../nostr/nip57/zap_action.dart';
 import '../../utils/base.dart';
 import '../../utils/router_path.dart';
-import '../../models/metadata.dart';
 import '../../i18n/i18n.dart';
 import '../../main.dart';
 import '../../provider/metadata_provider.dart';

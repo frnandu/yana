@@ -6,7 +6,6 @@ import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
-import 'package:yana/models/metadata.dart';
 import 'package:yana/models/relay_list.dart';
 import 'package:yana/nostr/nip02/contact_list.dart';
 import 'package:yana/utils/platform_util.dart';
@@ -46,7 +45,7 @@ class DB {
   static init() async {
     final dir = await getApplicationDocumentsDirectory();
     isar = await Isar.open(
-      [RelayListSchema, ContactListSchema, MetadataSchema],
+      [RelayListSchema, ContactListSchema],
       inspector: kDebugMode,
       directory: dir.path,
     );

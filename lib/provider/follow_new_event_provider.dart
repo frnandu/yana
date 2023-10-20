@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../nostr/event.dart';
-import '../nostr/filter.dart';
+import 'package:dart_ndk/nips/nip01/filter.dart';
 import '../nostr/nip02/contact.dart';
 import '../models/event_mem_box.dart';
 import '../main.dart';
@@ -77,7 +77,7 @@ class FollowNewEventProvider extends ChangeNotifier
     // TODO use dart_ndk
     // (settingProvider.gossip == 1 && followsNostr!=null ? followsNostr:nostr)!.query(
     //     FollowEventProvider.addTagCommunityFilter(
-    //         [filter.toJson()], queriyTags), (event) {
+    //         [filter.toMap()], queriyTags), (event) {
     //   later(event, handleEvents, null);
     // }, id: subscribeId);
     return subscribeId;

@@ -2,13 +2,13 @@ import 'dart:developer';
 
 import 'package:bot_toast/bot_toast.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:dart_ndk/nips/nip01/metadata.dart';
 import 'package:dart_ndk/nips/nip65/nip65.dart';
 import 'package:dart_ndk/relay_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:yana/ui/editor/text_input_dialog.dart';
 import 'package:yana/ui/name_component.dart';
 import 'package:yana/ui/point_component.dart';
-import 'package:yana/models/metadata.dart';
 import 'package:yana/provider/metadata_provider.dart';
 import 'package:yana/provider/setting_provider.dart';
 import 'package:yana/utils/router_util.dart';

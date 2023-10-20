@@ -1,23 +1,22 @@
+import 'dart:async';
+
 import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip01/filter.dart';
 import 'package:flutter/foundation.dart';
 
 import '../main.dart';
 import '../models/event_mem_box.dart';
-import '../nostr/event.dart';
 import '../nostr/event_kind.dart' as kind;
-import '../nostr/nip02/contact.dart';
 import '../nostr/nip02/contact_list.dart';
-import '../nostr/nostr.dart';
-import '../router/tag/topic_map.dart';
 import '../utils/find_event_interface.dart';
 import '../utils/peddingevents_later_function.dart';
-import '../utils/string_util.dart';
 
 class FollowEventProvider extends ChangeNotifier
     with PenddingEventsLaterFunction
     implements FindEventInterface {
   late int _initTime;
+  StreamSubscription<Nip01Event>? _streamSubscription;
+
 
   late EventMemBox postsAndRepliesBox; // posts and replies
   late EventMemBox postsBox;
@@ -43,7 +42,6 @@ class FollowEventProvider extends ChangeNotifier
     postsBox.clear();
     doQuery();
 
-
     followNewEventProvider.clearPosts();
   }
 
@@ -59,8 +57,6 @@ class FollowEventProvider extends ChangeNotifier
     return _initTime;
   }
 
-  List<String> _subscribeIds = [];
-
   void deleteEvent(String id) {
     postsBox.delete(id);
     var result = postsAndRepliesBox.delete(id);
@@ -71,7 +67,7 @@ class FollowEventProvider extends ChangeNotifier
 
   List<int> queryEventKinds() {
     return [
-      kind.EventKind.TEXT_NOTE,
+      Nip01Event.textNoteKind,
       kind.EventKind.REPOST,
       kind.EventKind.GENERIC_REPOST,
       kind.EventKind.LONG_FORM,
@@ -81,135 +77,88 @@ class FollowEventProvider extends ChangeNotifier
   }
 
   void doQuery (
-      {bool initQuery = false, int? until, bool forceUserLimit = false}) {
-    var filter = Filter(
-      kinds: queryEventKinds(),
-      until: until ?? _initTime,
-      limit: 20,
-    );
-    Nostr? targetNostr;
-    if (settingProvider.gossip == 1) {
-      if (followsNostr == null) {
-        return;
-      }
-      targetNostr = followsNostr;
-    } else {
-      targetNostr = nostr;
-    }
-
-    bool queriedTags = false;
-
-    doUnscribe(targetNostr!);
-
+      {int? until, bool forceUserLimit = false}) {
+    load(until: until);
     List<String> subscribeIds = [];
+    // var contactListLength = contactList!.length;
+    // List<String> ids = [];
+    // timeline pull my events too.
+    //
+    // for (String contact in contactList) {
+    //   ids.add(contact);
+    //   if (ids.length > maxQueryIdsNum) {
+    //     filter.authors = ids;
+    //
+    //     var subscribeId = _doQueryFunc(targetNostr!, filter,
+    //         initQuery: initQuery,
+    //         forceUserLimit: forceUserLimit,
+    //         queriyTags: !queriedTags);
+    //     subscribeIds.add(subscribeId);
+    //     ids = [];
+    //     queriedTags = true;
+    //   }
+    // }
+    // if (ids.isNotEmpty) {
+    //   filter.authors = ids;
+    //   var subscribeId = _doQueryFunc(targetNostr!, filter,
+    //       initQuery: initQuery,
+    //       forceUserLimit: forceUserLimit,
+    //       queriyTags: !queriedTags);
+    //   subscribeIds.add(subscribeId);
+    // }
+
+    // if (!initQuery) {
+    //   _subscribeIds = subscribeIds;
+    // }
+  }
+
+  void load({int? until}) async {
+    if (_streamSubscription!=null) {
+      await _streamSubscription!.cancel();
+    }
+    // int maxQueryIdsNum = 400;
+    // if (contactListLength > maxQueryIdsNum) {
+    //   var times = (contactListLength / maxQueryIdsNum).ceil();
+    //   maxQueryIdsNum = (contactListLength / times).ceil();
+    // }
+    // maxQueryIdsNum += 2;
+
     List<String>? contactList = contactListProvider.contacts();
 
-    if (contactList == null) {
+    if (contactList == null || contactList.isEmpty) {
       if (kDebugMode) {
         print("CONTACT LIST empty, can not get follow content");
       }
       return;
     }
-    var contactListLength = contactList!.length;
-    List<String> ids = [];
-    // timeline pull my events too.
-    int maxQueryIdsNum = 400;
-    if (contactListLength > maxQueryIdsNum) {
-      var times = (contactListLength / maxQueryIdsNum).ceil();
-      maxQueryIdsNum = (contactListLength / times).ceil();
-    }
-    maxQueryIdsNum += 2;
+    var filter = Filter(
+      kinds: queryEventKinds(),
+      authors: contactList..add(nostr!.publicKey),
+      until: until ?? _initTime,
+      limit: 20,
+    );
 
-    ids.add(targetNostr!.publicKey);
-    for (String contact in contactList) {
-      ids.add(contact);
-      if (ids.length > maxQueryIdsNum) {
-        filter.authors = ids;
-
-        var subscribeId = _doQueryFunc(targetNostr!, filter,
-            initQuery: initQuery,
-            forceUserLimit: forceUserLimit,
-            queriyTags: !queriedTags);
-        subscribeIds.add(subscribeId);
-        ids = [];
-        queriedTags = true;
-      }
-    }
-    if (ids.isNotEmpty) {
-      filter.authors = ids;
-      var subscribeId = _doQueryFunc(targetNostr!, filter,
-          initQuery: initQuery,
-          forceUserLimit: forceUserLimit,
-          queriyTags: !queriedTags);
-      subscribeIds.add(subscribeId);
-    }
-
-    if (!initQuery) {
-      _subscribeIds = subscribeIds;
-    }
-  }
-
-  void doUnscribe(Nostr targetNostr) {
-    if (_subscribeIds.isNotEmpty) {
-      for (var subscribeId in _subscribeIds) {
-        try {
-          targetNostr.unsubscribe(subscribeId);
-        } catch (e) {}
-      }
-      _subscribeIds.clear();
-    }
-  }
-
-  String _doQueryFunc(Nostr targetNostr, Filter filter,
-      {bool initQuery = false,
-      bool forceUserLimit = false,
-      bool queriyTags = false}) {
-    var subscribeId = StringUtil.rndNameStr(12);
-    // if (initQuery) {
-    //   // tags query can't query by size! if will make timeline xxxx
-    //   // targetNostr.addInitQuery(
-    //   //     addTagFilter([filter.toJson()], queriyTags), onEvent,
-    //   //     id: subscribeId);
-    //   targetNostr.addInitQuery([filter.toJson()], onEvent, id: subscribeId);
-    // } else {
     if (!postsAndRepliesBox.isEmpty()) {
-      var activeRelays = targetNostr.activeRelays();
-      var oldestCreatedAts =
-          postsAndRepliesBox.oldestCreatedAtByRelay(activeRelays, _initTime);
-      Map<String, List<Map<String, dynamic>>> filtersMap = {};
-      for (var relay in activeRelays) {
-        var oldestCreatedAt = oldestCreatedAts.createdAtMap[relay.url];
-        if (oldestCreatedAt != null) {
-          filter.until = oldestCreatedAt;
-          if (!forceUserLimit) {
-            filter.limit = null;
-            if (filter.until! < oldestCreatedAts.avCreatedAt - 60 * 60 * 18) {
-              filter.since = oldestCreatedAt - 60 * 60 * 12;
-            } else if (filter.until! >
-                oldestCreatedAts.avCreatedAt - 60 * 60 * 6) {
-              filter.since = oldestCreatedAt - 60 * 60 * 36;
-            } else {
-              filter.since = oldestCreatedAt - 60 * 60 * 24;
-            }
-          }
-          // filtersMap[relay.url] =
-          //     addTagCommunityFilter([filter.toJson()], queriyTags);
-        }
+      Nip01Event? event = postsAndRepliesBox.oldestEvent;
+      if (event!=null) {
+        filter.until = event.createdAt;
+        filter.since = event.createdAt - 60 * 60 * 24;
       }
-      // TODO use dart_ndk
-      //targetNostr.queryByFilters(filtersMap, onEvent, id: subscribeId);
-    } else {
-      () async {
-        // await for (final event in await relayManager.query(filter, feedRelayMap)) {
-        //   print(event);
-        // }
-      }; // this maybe refresh
-      // targetNostr.query(
-      //     addTagCommunityFilter([filter.toJson()], queriyTags), onEvent,
-      //     id: subscribeId);
     }
-    // }
-    return subscribeId;
+    //addTagCommunityFilter([filter.toMap()], queriyTags);
+
+    Stream<Nip01Event> stream = await relayManager!.subscription(
+        filter, (feedRelaySet!=null && settingProvider.gossip==1)? feedRelaySet! : myInboxRelays!);
+    _streamSubscription = stream.listen((event) {
+      onEvent(event);
+    });
+  }
+
+  void doUnscribe() {
+    if (_streamSubscription!=null) {
+      _streamSubscription!.cancel().then((value) {
+      },);
+    }
   }
 
   static List<Map<String, dynamic>> addTagCommunityFilter(
@@ -335,26 +284,20 @@ class FollowEventProvider extends ChangeNotifier
   void clear() {
     postsAndRepliesBox.clear();
     postsBox.clear();
-
-    doUnscribe(nostr!);
-
-    if (followsNostr != null) {
-      doUnscribe(followsNostr!);
-    }
-
+    doUnscribe();
     notifyListeners();
   }
 
-  void metadataUpdatedCallback(ContactList? _contactList) {
-    if (firstLogin ||
-        (postsAndRepliesBox.isEmpty() &&
-            _contactList != null &&
-            !_contactList.isEmpty())) {
-      doQuery();
-    }
-
-    if (firstLogin && _contactList != null && _contactList.list().length > 10) {
-      firstLogin = false;
-    }
-  }
+  // void metadataUpdatedCallback(ContactList? _contactList) {
+  //   if (firstLogin ||
+  //       (postsAndRepliesBox.isEmpty() &&
+  //           _contactList != null &&
+  //           !_contactList.isEmpty())) {
+  //     doQuery();
+  //   }
+  //
+  //   if (firstLogin && _contactList != null && _contactList.list().length > 10) {
+  //     firstLogin = false;
+  //   }
+  // }
 }

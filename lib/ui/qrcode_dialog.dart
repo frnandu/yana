@@ -1,11 +1,11 @@
 import 'package:bot_toast/bot_toast.dart';
+import 'package:dart_ndk/nips/nip01/metadata.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:pretty_qr_code/pretty_qr_code.dart';
 import 'package:provider/provider.dart';
 import 'package:screenshot/screenshot.dart';
 import 'package:yana/nostr/nip19/nip19.dart';
-import 'package:yana/models/metadata.dart';
 
 import '../utils/base.dart';
 import '../i18n/i18n.dart';

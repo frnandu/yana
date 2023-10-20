@@ -26,8 +26,6 @@ import 'package:protocol_handler/protocol_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sizer/sizer.dart';
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
-import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
 import 'package:window_manager/window_manager.dart';
 import 'package:yana/nostr/nostr.dart';
 import 'package:yana/provider/badge_definition_provider.dart';
@@ -292,15 +290,15 @@ Future<void> main() async {
     });
   }
 
-  if (PlatformUtil.isWeb()) {
-    databaseFactory = databaseFactoryFfiWeb;
-  } else if (PlatformUtil.isWindowsOrLinux()) {
-    // Initialize FFI
-    sqfliteFfiInit();
-    // Change the default factory
-    databaseFactory = databaseFactoryFfi;
-  }
-
+  // if (PlatformUtil.isWeb()) {
+  //   databaseFactory = databaseFactoryFfiWeb;
+  // } else if (PlatformUtil.isWindowsOrLinux()) {
+  //   // Initialize FFI
+  //   sqfliteFfiInit();
+  //   // Change the default factory
+  //   databaseFactory = databaseFactoryFfi;
+  // }
+  //
   try {
     // SystemChrome.setEnabledSystemUIOverlays([SystemUiOverlay.top]);
     await SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
@@ -366,11 +364,14 @@ Future<void> main() async {
     nostr = Nostr(privateKey: isPrivate ? key : null,publicKey: publicKey);
     print("Loading contact list...");
     Nip02ContactList? contactList = await relayManager.loadContactList(publicKey);
-    if (contactList!=null && settingProvider.gossip == 1) {
-      print("Loaded ${contactList.contacts.length} contacts...");
-      contactListProvider.set(contactList);
-      feedRelaySet = await relayManager.calculateRelaySet(
-          contactList.contacts, RelayDirection.outbox, relayMinCountPerPubKey: settingProvider.followeesRelayMinCount);
+    if (contactList!=null) {
+      if (settingProvider.gossip == 1) {
+        print("Loaded ${contactList.contacts.length} contacts...");
+        contactListProvider.set(contactList);
+        feedRelaySet = await relayManager.calculateRelaySet(
+            contactList.contacts, RelayDirection.outbox, relayMinCountPerPubKey: settingProvider.followeesRelayMinCount);
+      }
+      followEventProvider.doQuery();
     }
     // followEventProvider.doQuery();
 

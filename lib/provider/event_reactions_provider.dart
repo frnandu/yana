@@ -118,7 +118,7 @@ class EventReactionsProvider extends ChangeNotifier
     var filter = Filter(eTags: _penddingIds.keys.toList());
     _penddingIds.clear();
 // TODO use dart_ndk
-//    nostr!.query([filter.toJson()], onEvent);
+//    nostr!.query([filter.toMap()], onEvent);
   }
 
   void addEventAndHandle(Nip01Event event) {

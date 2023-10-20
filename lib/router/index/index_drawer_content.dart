@@ -1,3 +1,4 @@
+import 'package:dart_ndk/nips/nip01/metadata.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -13,7 +14,6 @@ import 'package:yana/utils/theme_style.dart';
 
 import '../../i18n/i18n.dart';
 import '../../main.dart';
-import '../../models/metadata.dart';
 import '../../provider/metadata_provider.dart';
 import '../../provider/relay_provider.dart';
 import '../../utils/index_taps.dart';

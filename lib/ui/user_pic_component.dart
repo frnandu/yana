@@ -1,8 +1,8 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:dart_ndk/nips/nip01/metadata.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../models/metadata.dart';
 import '../main.dart';
 import '../provider/metadata_provider.dart';
 import '../utils/string_util.dart';

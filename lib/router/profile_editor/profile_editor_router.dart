@@ -1,23 +1,17 @@
 import 'dart:convert';
 import 'dart:developer';
 
-import 'package:dart_ndk/nips/nip01/event.dart';
+import 'package:dart_ndk/nips/nip01/filter.dart';
+import 'package:dart_ndk/nips/nip01/metadata.dart';
 import 'package:flutter/material.dart';
-import 'package:yana/models/metadata.dart';
 import 'package:yana/nostr/upload/uploader.dart';
-import 'package:yana/provider/relay_provider.dart';
 import 'package:yana/utils/platform_util.dart';
 import 'package:yana/utils/router_util.dart';
 import 'package:yana/utils/string_util.dart';
 
 import '../../i18n/i18n.dart';
 import '../../main.dart';
-import '../../models/relay_status.dart';
 import '../../nostr/event.dart';
-import '../../nostr/event_kind.dart' as kind;
-import '../../nostr/filter.dart';
-import '../../nostr/nostr.dart';
-import '../../nostr/relay.dart';
 import '../../ui/appbar4stack.dart';
 import '../../ui/cust_state.dart';
 import '../../utils/base.dart';
@@ -328,10 +322,10 @@ class _ProfileEditorRouter extends CustState<ProfileEditorRouter> {
   @override
   Future<void> onReady(BuildContext context) async {
     var filter = Filter(
-        kinds: [kind.EventKind.METADATA],
+        kinds: [],
         authors: [nostr!.publicKey],
         limit: 1);
-    nostr!.query([filter.toJson()], (event) {
+    nostr!.query([filter.toMap()], (event) {
       if (profileEvent == null) {
         profileEvent = event;
       } else if (event.createdAt > profileEvent!.createdAt) {

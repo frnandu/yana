@@ -1,18 +1,15 @@
 import 'package:bot_toast/bot_toast.dart';
 import 'package:dart_ndk/nips/nip01/event.dart';
+import 'package:dart_ndk/nips/nip01/filter.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 
-import '../nostr/event_kind.dart' as kind;
-import '../nostr/event.dart';
-import '../nostr/filter.dart';
-import '../nostr/nip02/contact.dart';
-import '../nostr/nip04/dm_session.dart';
-import '../nostr/nostr.dart';
+import '../main.dart';
 import '../models/dm_session_info.dart';
 import '../models/dm_session_info_db.dart';
 import '../models/event_db.dart';
-import '../main.dart';
+import '../nostr/event_kind.dart' as kind;
+import '../nostr/nip04/dm_session.dart';
+import '../nostr/nostr.dart';
 import '../utils/peddingevents_later_function.dart';
 import '../utils/string_util.dart';
 
@@ -260,7 +257,7 @@ class DMProvider extends ChangeNotifier with PenddingEventsLaterFunction {
     );
     var filter1 = Filter(
       kinds: [kind.EventKind.DIRECT_MESSAGE],
-      p: [targetNostr.publicKey],
+      pTags: [targetNostr.publicKey],
       since: _initSince + 1,
     );
 

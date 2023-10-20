@@ -1,6 +1,6 @@
+import 'package:dart_ndk/nips/nip01/metadata.dart';
 import 'package:flutter/material.dart';
 
-import '../../models/metadata.dart';
 import '../../utils/base.dart';
 import '../../utils/string_util.dart';
 import '../content/content_decoder.dart';

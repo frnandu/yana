@@ -1,3 +1,5 @@
+import 'package:flutter/cupertino.dart';
+
 class OpenStatus {
   static const OPEN = 1;
   static const CLOSE = -1;
@@ -5,10 +7,16 @@ class OpenStatus {
 
 class EnumObj {
   final dynamic value;
-  final String name;
+  late Widget widget;
 
   EnumObj(
     this.value,
-    this.name,
-  );
+    String? name, {Widget? widget}
+  ) {
+    if (widget!=null) {
+      this.widget = widget!;
+    } else {
+      widget = Text(name??"");
+    }
+  }
 }

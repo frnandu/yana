@@ -1,4 +1,5 @@
 import 'package:dart_ndk/nips/nip01/event.dart';
+import 'package:dart_ndk/nips/nip01/filter.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:yana/router/tag/topic_map.dart';
@@ -6,9 +7,7 @@ import 'package:yana/ui/event_delete_callback.dart';
 
 import '../../main.dart';
 import '../../models/event_mem_box.dart';
-import '../../nostr/event.dart';
 import '../../nostr/event_kind.dart' as kind;
-import '../../nostr/filter.dart';
 import '../../provider/setting_provider.dart';
 import '../../ui/cust_state.dart';
 import '../../ui/event/event_list_component.dart';
@@ -158,12 +157,12 @@ class _TagDetailRouter extends CustState<TagDetailRouter>
     // tag query
     // https://github.com/nostr-protocol/nips/blob/master/12.md
     var filter = Filter(kinds: [
-      kind.EventKind.TEXT_NOTE,
+      Nip01Event.textNoteKind,
       kind.EventKind.LONG_FORM,
       kind.EventKind.FILE_HEADER,
       kind.EventKind.POLL,
     ], limit: 100);
-    var queryArg = filter.toJson();
+    var queryArg = filter.toMap();
     var plainTag = tag!.replaceFirst("#", "");
     // this place set #t not #r ???
     var list = TopicMap.getList(plainTag);

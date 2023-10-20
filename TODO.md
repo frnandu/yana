@@ -57,6 +57,8 @@ v0.12
   - lib 
 - ~~try exchange sqflite with isar DB?~~
 - isar v4 for web
+- nip05
+- sign verify
 
 - loading screen ASAP after splash
 - persist notes from feed for faster startup

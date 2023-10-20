@@ -1,15 +1,14 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:dart_ndk/nips/nip01/metadata.dart';
 import 'package:dart_ndk/relay.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:yana/main.dart';
-import 'package:yana/models/metadata.dart';
 import 'package:yana/provider/metadata_provider.dart';
 import 'package:yana/ui/name_component.dart';
 import 'package:yana/utils/base.dart';
 import 'package:yana/utils/router_path.dart';
 
-import '../../nostr/client_utils/keys.dart';
 import '../../ui/webview_router.dart';
 import '../../utils/hash_util.dart';
 import '../../utils/router_util.dart';

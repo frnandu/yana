@@ -45,11 +45,11 @@ dependencies:
   bip340: ^0.2.0
   string_validator: ^1.0.0
   http: ^1.1.0
-  sqflite: ^2.3.0
-  sqflite_common_ffi: ^2.3.0+2
-  sqflite_common: ^2.5.0
-  sqflite_common_ffi_web: ^0.4.0
-  sqlite3_flutter_libs: ^0.5.15
+#  sqflite: ^2.3.0
+#  sqflite_common_ffi: ^2.3.0+2
+#  sqflite_common: ^2.5.0
+#  sqflite_common_ffi_web: ^0.4.0
+#  sqlite3_flutter_libs: ^0.5.15
   get_time_ago: ^1.2.2
   cached_network_image: ^3.2.3
   # flutter_launcher_icons: ^0.12.0

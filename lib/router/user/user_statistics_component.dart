@@ -14,7 +14,9 @@ import '../../i18n/i18n.dart';
 import '../../main.dart';
 import '../../models/event_mem_box.dart';
 import '../../nostr/event.dart';
+import '../../nostr/event_kind.dart';
 import '../../nostr/nip02/contact_list.dart';
+import '../../nostr/nip57/zap_num_util.dart';
 import '../../nostr/relay_metadata.dart';
 import '../../ui/cust_state.dart';
 import '../../utils/base.dart';
@@ -78,9 +80,9 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
         });
       },
     );
+    queryFollowers();
     refreshContactListIfNeededAsync(widget.pubkey);
-    onFollowedTap();
-    onZapTap();
+    queryZaps();
   }
 
   void refreshContactListIfNeededAsync(String pubkey) {
@@ -246,7 +248,7 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
       // var filter = Filter(
       //     authors: [widget.pubkey], kinds: [kind.EventKind.CONTACT_LIST]);
       // TODO use dart_ndk
-      // widget.userNostr!.query([filter.toJson()], (event) {
+      // widget.userNostr!.query([filter.toMap()], (event) {
       //   localContactBox!.add(event);
       // }, id: fetchLocalContactsId);
       BotToast.showText(text: I18n.of(context).Begin_to_load_Contact_History);
@@ -321,7 +323,7 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
   //       authors: [widget.pubkey],
   //       limit: 1,
   //       kinds: [kind.EventKind.CONTACT_LIST]);
-  //   targetNostr.query([filter.toJson()], (event) {
+  //   targetNostr.query([filter.toMap()], (event) {
   //     // BotToast.showText(text: "loaded contact list from "+event.sources.toString()+" with ${event.tags.length} contacts");
   //
   //     if (((contactListEvent != null &&
@@ -367,7 +369,7 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
 
   StreamSubscription<Nip01Event>? _followersSubscription;
 
-  onFollowedTap() async {
+  queryFollowers() async {
     if (followedMap == null) {
       followedMap = {};
 
@@ -378,7 +380,7 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
           feedRelaySet!.map.keys.toList()
             ..addAll(myInboxRelays!.map.keys.toList()),
           filter,
-          idleTimeout: 10);
+          idleTimeout: 30);
       _followersSubscription = stream.listen((event) {
         var oldEvent = followedMap![event.pubKey];
         if (oldEvent == null || event.createdAt > oldEvent.createdAt) {
@@ -412,35 +414,33 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
 
   String zapSubscribeId = "";
 
-  onZapTap() async {
-    // if (zapEventBox == null) {
-    //   zapEventBox = EventMemBox(sortAfterAdd: false);
-    //   // pull zap event
-    //   // var filter = Filter(kinds: [kind.EventKind.ZAP], p: [widget.pubkey]);
-    //   zapSubscribeId = StringUtil.rndNameStr(12);
-    //   Stream<Nip01Event> stream = await relayManager.requestRelays(
-    //       feedRelayMap.keys.toList(),
-    //       Filter(kinds: [kind.EventKind.ZAP], pTags: [widget.pubkey]));
-    //   stream.listen(
-    //     (event) {
-    //       // print(filter);
-    //       // TODO use dart_ndk
-    //       // staticForRelaysAndMetadataNostr!.query([filter.toJson()], (event) {
-    //       if (event.kind == kind.EventKind.ZAP && zapEventBox!.add(event)) {
-    //         if (!_disposed) {
-    //           setState(() {
-    //             zapNum = zapNum! + ZapNumUtil.getNumFromZapEvent(event);
-    //           });
-    //         }
-    //       }
-    //     },
-    //     // id: zapSubscribeId
-    //   );
-    //
-    //   zapNum = 0;
-    // } else {
-    //   // Router to vist list
-    // }
+  queryZaps() async {
+    if (zapEventBox == null) {
+      zapEventBox = EventMemBox(sortAfterAdd: false);
+      // pull zap event
+      zapSubscribeId = StringUtil.rndNameStr(12);
+      Stream<Nip01Event> stream = await relayManager.requestRelays(
+          feedRelaySet!.map.keys.toList()
+            ..addAll(myInboxRelays!.map.keys.toList()),
+          Filter(kinds: [EventKind.ZAP], pTags: [widget.pubkey]),
+          idleTimeout: 30
+      );
+      stream.listen(
+        (event) {
+          if (event.kind == EventKind.ZAP && zapEventBox!.add(event)) {
+            if (!_disposed) {
+              setState(() {
+                zapNum = zapNum! + ZapNumUtil.getNumFromZapEvent(event);
+              });
+            }
+          }
+        },
+      );
+
+      zapNum = 0;
+    } else {
+      // Router to vist list
+    }
   }
 
   @override
