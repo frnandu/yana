@@ -1,7 +1,5 @@
 import 'package:dart_ndk/nips/nip01/event.dart';
-import 'package:yana/main.dart';
 
-import '../nostr/event.dart';
 import '../nostr/relay.dart';
 import '../utils/find_event_interface.dart';
 

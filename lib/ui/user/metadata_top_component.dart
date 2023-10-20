@@ -171,17 +171,17 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
           // )
           Container(
               decoration: BoxDecoration(
-                color: themeData.cardColor,
+                color: themeData.dividerColor,
                 borderRadius: BorderRadius.circular(20),
               ),
-              padding: const EdgeInsets.all(8),
-              margin: const EdgeInsets.only(right: 16, top:5),
+              padding: const EdgeInsets.only(top: 4, bottom: 4, left:8 , right: 8),
+              margin: const EdgeInsets.only(right: 5),
               child: Text(
                 "follows you",
                 style: TextStyle(
-                    color: themeData.disabledColor,
-                    fontSize: themeData.textTheme.labelSmall!.fontSize,
-                    backgroundColor: themeData.cardColor),
+                    color: themeData.hintColor,
+                    fontSize: themeData.textTheme.labelSmall!.fontSize! - 2,
+                ),
               )));
     }
 
@@ -320,7 +320,7 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
     ));
     if (StringUtil.isNotBlank(name)) {
       nameList.add(Container(
-        margin: EdgeInsets.only(left: Base.BASE_PADDING_HALF),
+        margin: const EdgeInsets.only(left: Base.BASE_PADDING_HALF),
         child: Text(
           name != null ? "@$name" : "",
           style: TextStyle(
@@ -588,12 +588,12 @@ class MetadataTextBtn extends StatelessWidget {
         onTap: onTap,
         child: Container(
           height: 28,
-          padding: EdgeInsets.only(left: 4, right: 4),
+          padding: const EdgeInsets.only(left: 6, right: 6),
           alignment: Alignment.center,
           child: Text(
             text,
             style: TextStyle(
-              fontSize: Base.BASE_FONT_SIZE + 6,
+              fontSize: Base.BASE_FONT_SIZE + 4,
               // fontWeight: FontWeight.bold,
               color: borderColor,
             ),

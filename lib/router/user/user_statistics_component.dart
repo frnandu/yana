@@ -114,40 +114,9 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
   @override
   Widget doBuild(BuildContext context) {
     var s = I18n.of(context);
-    // if (widget.userNostr == null || relays == null) {
-    //   return Container();
-    // }
-    // if (pubkey != null && pubkey != widget.pubkey) {
-    //   // arg changed! reset
-    //   contactList = null;
-    //   zapEventBox = null;
-    //   followedMap = null;
-    //
-    //   length = 0;
-    //   relaysNum = 0;
-    //   followedTagsLength = 0;
-    //   followedCommunitiesLength = 0;
-    //   zapNum = null;
-    //   followedNum = null;
-    // }
-    // pubkey = widget.pubkey;
 
     List<Widget> list = [];
 
-    // if (isLocal) {
-    //   list.add(
-    //       Selector<ContactListProvider, int>(builder: (context, num, child) {
-    //     return UserStatisticsItemComponent(
-    //       num: num,
-    //       name: s.Following,
-    //       onTap: onFollowingTap,
-    //       onLongPressStart: onLongPressStart,
-    //       onLongPressEnd: onLongPressEnd,
-    //     );
-    //   }, selector: (context, _provider) {
-    //     return relayMap.length;
-    //   }));
-    // } else {
     if (contactList != null) {
       length = contactList!.contacts.length;
     }
@@ -180,53 +149,18 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
       formatNum: true,
     ));
 
-    // if (isLocal) {
-    //   list.add(Selector<RelayProvider, int>(builder: (context, num, child) {
-    //     return UserStatisticsItemComponent(
-    //         num: num, name: s.Relays, onTap: onRelaysTap);
-    //   }, selector: (context, _provider) {
-    //     return _provider.total();
-    //   }));
-    // } else {
     list.add(UserStatisticsItemComponent(
         num: relayMap.length, name: s.Relays, onTap: onRelaysTap));
-    // }
 
-    // if (isLocal) {
-    //   list.add(
-    //       Selector<ContactListProvider, int>(builder: (context, num, child) {
-    //     return UserStatisticsItemComponent(
-    //       num: num,
-    //       name: s.Followed_Tags,
-    //       onTap: onFollowedTagsTap,
-    //     );
-    //   }, selector: (context, _provider) {
-    //     return _provider.totalFollowedTags();
-    //   }));
-    // } else {
     list.add(UserStatisticsItemComponent(
         num: contactList != null ? contactList!.followedTags.length : 0,
         name: s.Followed_Tags,
         onTap: onFollowedTagsTap));
-    // }
 
-    // if (isLocal) {
-    //   list.add(
-    //       Selector<ContactListProvider, int>(builder: (context, num, child) {
-    //     return UserStatisticsItemComponent(
-    //       num: num,
-    //       name: s.Followed_Communities,
-    //       onTap: onFollowedCommunitiesTap,
-    //     );
-    //   }, selector: (context, _provider) {
-    //     return contactList!=null? contactList!.followedCommunities.length : 0;
-    //   }));
-    // } else {
     list.add(UserStatisticsItemComponent(
         num: contactList != null ? contactList!.followedCommunities.length : 0,
         name: s.Followed_Communities,
         onTap: onFollowedCommunitiesTap));
-    // }
 
     return Container(
       margin: const EdgeInsets.only(bottom: Base.BASE_PADDING),
@@ -289,59 +223,7 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
 
   @override
   Future<void> onReady(BuildContext context) async {
-    // if (!isLocal) {
-    // relayProvider.initStaticForRelaysAndMetadataNostr(widget.pubkey);
-    // List<Future> futures = staticForRelaysAndMetadataNostr!.allRelays().map((e) => e.future!,).toList();
-    //
-    // await Future.wait(futures).onError((error, stackTrace) {return List.of([]);}).then((sockets) async {
-    //   await relayProvider.getRelays(widget.pubkey, (relays) async {
-    //     if (!_disposed) {
-    //       await relayProvider.getContacts(widget.pubkey, (contacts) {
-    //         if (!_disposed) {
-    //           if (widget.onContactListLoaded != null && contacts != null) {
-    //             widget.onContactListLoaded!(contacts!);
-    //           }
-    //           setState(() {
-    //             contactList = contacts;
-    //             this.relays = relays;
-    //             relaysNum = relays.length;
-    //           });
-    //           onFollowedTap();
-    //           onZapTap();
-    //         }
-    //       });
-    //     }
-    //   });
-    // });
-    // loadContactList(widget.userNostr ?? nostr!);
-    // }
   }
-
-  // void loadContactList(Nostr targetNostr) {
-  //   queryId = StringUtil.rndNameStr(16);
-  //   var filter = Filter(
-  //       authors: [widget.pubkey],
-  //       limit: 1,
-  //       kinds: [kind.EventKind.CONTACT_LIST]);
-  //   targetNostr.query([filter.toMap()], (event) {
-  //     // BotToast.showText(text: "loaded contact list from "+event.sources.toString()+" with ${event.tags.length} contacts");
-  //
-  //     if (((contactListEvent != null &&
-  //                 event.createdAt > contactListEvent!.createdAt) ||
-  //             contactListEvent == null) &&
-  //         !_disposed) {
-  //       setState(() {
-  //         contactListEvent = event;
-  //         contactList = CustContactList.fromJson(contactListEvent!.tags);
-  //         if (widget.onContactListLoaded != null && contactList != null) {
-  //           widget.onContactListLoaded!(contactList!);
-  //         }
-  //       });
-  //       onFollowedTap();
-  //       onZapTap();
-  //     }
-  //   }, id: queryId, onComplete: () {});
-  // }
 
   onFollowingTap() {
     if (contactList != null) {
@@ -450,17 +332,6 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
       _followersSubscription!.cancel();
     }
     _disposed = true;
-    // checkAndUnsubscribe(queryId);
-    // checkAndUnsubscribe(queryId2);
-    // checkAndUnsubscribe(zapSubscribeId);
-  }
-
-  void checkAndUnsubscribe(String queryId) {
-    // if (StringUtil.isNotBlank(queryId) && widget.userNostr != null) {
-    //   try {
-    //     widget.userNostr!.unsubscribe(queryId);
-    //   } catch (e) {}
-    // }
   }
 
   bool _disposed = false;

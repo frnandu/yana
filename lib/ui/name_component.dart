@@ -34,7 +34,8 @@ class _NameComponnet extends State<NameComponent> {
   @override
   Widget build(BuildContext context) {
     var themeData = Theme.of(context);
-    var textSize = themeData.textTheme.bodyMedium!.fontSize;
+    // var textSize = themeData.textTheme.bodyMedium!.fontSize;
+    var textSize = themeData.textTheme.bodyLarge!.fontSize;
     var smallTextSize = themeData.textTheme.bodySmall!.fontSize;
     Color hintColor = themeData.hintColor;
     var metadata = widget.metadata;
