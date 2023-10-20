@@ -87,7 +87,7 @@ class DB {
 
   static Future<Database> getCurrentDatabase() async {
     if (_database == null) {
-      await init();
+      // await init();
     }
     return _database!;
   }

@@ -2,9 +2,7 @@ import 'dart:async';
 import 'dart:ui';
 
 import 'package:awesome_notifications/awesome_notifications.dart';
-import 'package:bip340/bip340.dart';
 import 'package:bot_toast/bot_toast.dart';
-import 'package:dart_ndk/nips/nip02/contact_list.dart';
 import 'package:dart_ndk/nips/nip65/nip65.dart';
 import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
 import 'package:dart_ndk/pubkey_mapping.dart';
@@ -42,11 +40,12 @@ import 'package:yana/router/user/user_history_contact_list_router.dart';
 import 'package:yana/router/user/user_zap_list_router.dart';
 import 'package:yana/router/wallet/nwc_router.dart';
 import 'package:yana/router/wallet/wallet_router.dart';
-import 'package:yana/utils/base.dart';
+import 'package:yana/utils/image/cache_manager_builder.dart';
 import 'package:yana/utils/platform_util.dart';
 
 import 'i18n/i18n.dart';
 import 'models/db.dart';
+import 'nostr/client_utils/keys.dart';
 import 'nostr/relay_metadata.dart';
 import 'provider/community_approved_provider.dart';
 import 'provider/contact_list_provider.dart';
@@ -83,7 +82,6 @@ import 'router/user/user_contact_list_router.dart';
 import 'router/user/user_relays_router.dart';
 import 'router/user/user_router.dart';
 import 'ui/home_component.dart';
-import 'utils/image/cache_manager_builder.dart';
 import 'utils/locale_util.dart';
 import 'utils/media_data_cache.dart';
 import 'utils/router_path.dart';
@@ -196,8 +194,7 @@ void onStart(ServiceInstance service) async {
     Timer.periodic(const Duration(seconds: 60), (timer) async {
       if (service is AndroidServiceInstance) {
         AwesomeNotifications().getAppLifeCycle().then((value) {
-          if (value.toString() != "NotificationLifeCycle.Foreground" &&
-              nostr != null) {
+          if (value.toString() != "NotificationLifeCycle.Foreground" && nostr != null) {
             appState = AppLifecycleState.inactive;
             nostr!.checkAndReconnectRelays().then((a) {
               newNotificationsProvider.queryNew();
@@ -220,16 +217,16 @@ void initProvidersAndStuff() async {
       nostr = Nostr(privateKey: settingProvider.key);
       await relayManager.connect();
       Nip65? nip65 = await relayManager.getSingleNip65(nostr!.publicKey);
-      if (nip65!=null) {
+      if (nip65 != null) {
         createMyRelaySets(nip65);
       }
-      await relayManager.connect(bootstrapRelays: nip65!=null? nip65!.relays.keys.toList() : RelayManager.DEFAULT_BOOTSTRAP_RELAYS);
+      await relayManager.connect(bootstrapRelays: nip65 != null ? nip65!.relays.keys.toList() : RelayManager.DEFAULT_BOOTSTRAP_RELAYS);
       // await relayProvider!.loadRelays(nostr!.publicKey, () {
       //   relayProvider.addRelays(nostr!).then((bla) {
-          filterProvider = FilterProvider.getInstance();
-          notificationsProvider = NotificationsProvider();
-          dmProvider = DMProvider();
-          newNotificationsProvider = NewNotificationsProvider();
+      filterProvider = FilterProvider.getInstance();
+      notificationsProvider = NotificationsProvider();
+      dmProvider = DMProvider();
+      newNotificationsProvider = NewNotificationsProvider();
       //   });
       // });
       // log("nostr init over");
@@ -243,9 +240,9 @@ void initProvidersAndStuff() async {
 }
 
 void createMyRelaySets(Nip65 nip65) {
-  Map<String, List<PubkeyMapping>> inboxMap ={};
-  Map<String, List<PubkeyMapping>> outboxMap ={};
-  for(MapEntry<String,ReadWriteMarker> entry in nip65.relays.entries) {
+  Map<String, List<PubkeyMapping>> inboxMap = {};
+  Map<String, List<PubkeyMapping>> outboxMap = {};
+  for (MapEntry<String, ReadWriteMarker> entry in nip65.relays.entries) {
     if (entry.value.isRead) {
       inboxMap[entry.key] = [];
     }
@@ -253,14 +250,8 @@ void createMyRelaySets(Nip65 nip65) {
       outboxMap[entry.key] = [];
     }
   }
-  myInboxRelays = RelaySet(
-      relayMinCountPerPubkey: inboxMap.length,
-      direction: RelayDirection.inbox,
-      map: inboxMap, notCoveredPubkeys: {});
-  myOutboxRelays = RelaySet(
-      relayMinCountPerPubkey: outboxMap.length,
-      direction: RelayDirection.outbox,
-      map: inboxMap);
+  myInboxRelays = RelaySet(relayMinCountPerPubkey: inboxMap.length, direction: RelayDirection.inbox, map: inboxMap, notCoveredPubkeys: {});
+  myOutboxRelays = RelaySet(relayMinCountPerPubkey: outboxMap.length, direction: RelayDirection.outbox, map: inboxMap);
 }
 
 Future<void> main() async {
@@ -269,7 +260,7 @@ Future<void> main() async {
   try {
     await protocolHandler.register('nostr+walletconnect');
     await protocolHandler.register('yana');
-  }  catch(err) {
+  } catch (err) {
     print(err);
   }
 
@@ -301,16 +292,15 @@ Future<void> main() async {
   //
   try {
     // SystemChrome.setEnabledSystemUIOverlays([SystemUiOverlay.top]);
-    await SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
-        overlays: [SystemUiOverlay.top, SystemUiOverlay.bottom]);
+    await SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.top, SystemUiOverlay.bottom]);
   } catch (e) {
     print(e);
   }
 
-  var dbInitTask = DB.getCurrentDatabase();
+  // var dbInitTask = DB.getCurrentDatabase();
   var dataUtilTask = DataUtil.getInstance();
-  var dataFutureResultList = await Future.wait([dbInitTask, dataUtilTask]);
-  sharedPreferences = dataFutureResultList[1] as SharedPreferences;
+  var dataFutureResultList = await Future.wait([dataUtilTask]);
+  sharedPreferences = dataFutureResultList[0] as SharedPreferences;
 
   var settingTask = SettingProvider.getInstance();
   var metadataTask = MetadataProvider.getInstance();
@@ -320,7 +310,6 @@ Future<void> main() async {
   contactListProvider = ContactListProvider.getInstance();
   followEventProvider = FollowEventProvider();
   followNewEventProvider = FollowNewEventProvider();
-  notificationsProvider = NotificationsProvider();
   notificationsProvider = NotificationsProvider();
   newNotificationsProvider = NewNotificationsProvider();
   dmProvider = DMProvider();
@@ -344,53 +333,37 @@ Future<void> main() async {
 
   nwcProvider = await NwcProvider.getInstance();
 
-  // FlutterNativeSplash.remove();
-  try {
-    if (PlatformUtil.isAndroid() || PlatformUtil.isIOS()) {
-      initBackgroundService(true);
-    }
-  } catch (e) {}
+  // try {
+  //   if (PlatformUtil.isAndroid() || PlatformUtil.isIOS()) {
+  //     initBackgroundService(true);
+  //   }
+  // } catch (e) {}
 
   String? key = settingProvider.key;
   if (StringUtil.isNotBlank(key)) {
     bool isPrivate = settingProvider.isPrivateKey;
     String publicKey = isPrivate ? getPublicKey(key!) : key!;
-    await relayManager.connect();
-    Nip65? nip65 = await relayManager.getSingleNip65(publicKey);
-    if (nip65!=null) {
-      createMyRelaySets(nip65);
-    }
-    await relayManager.connect(bootstrapRelays: nip65!=null? nip65!.relays.keys.toList() : RelayManager.DEFAULT_BOOTSTRAP_RELAYS);
-    nostr = Nostr(privateKey: isPrivate ? key : null,publicKey: publicKey);
-    print("Loading contact list...");
-    Nip02ContactList? contactList = await relayManager.loadContactList(publicKey);
-    if (contactList!=null) {
-      if (settingProvider.gossip == 1) {
-        print("Loaded ${contactList.contacts.length} contacts...");
-        contactListProvider.set(contactList);
-        feedRelaySet = await relayManager.calculateRelaySet(
-            contactList.contacts, RelayDirection.outbox, relayMinCountPerPubKey: settingProvider.followeesRelayMinCount);
-      }
-      followEventProvider.doQuery();
-    }
-    // followEventProvider.doQuery();
-
-    // await relayProvider.loadRelays(publicKey,() async {
-    //   try {
-    //     nostr = await relayProvider.genNostr(privateKey: isPrivate ? key : null,
-    //         publicKey: publicKey);
-    //
-        runApp(MyApp());
-      // } catch (e) {
-      //   var index = settingProvider.privateKeyIndex;
-      //   if (index != null) {
-      //     settingProvider.removeKey(index);
-      //   }
-      // }
-    // });
-  } else {
-    runApp(MyApp());
+  //   await relayManager.connect();
+  //   Nip65? nip65 = await relayManager.getSingleNip65(publicKey);
+  //   if (nip65 != null) {
+  //     createMyRelaySets(nip65);
+  //   }
+  //   await relayManager.connect(bootstrapRelays: nip65 != null ? nip65!.relays.keys.toList() : RelayManager.DEFAULT_BOOTSTRAP_RELAYS);
+    nostr = Nostr(privateKey: isPrivate ? key : null, publicKey: publicKey);
+  //   print("Loading contact list...");
+  //   Nip02ContactList? contactList = await relayManager.loadContactList(publicKey);
+  //   if (contactList != null) {
+  //     if (settingProvider.gossip == 1) {
+  //       print("Loaded ${contactList.contacts.length} contacts...");
+  //       contactListProvider.set(contactList);
+  //       feedRelaySet =
+  //           await relayManager.calculateRelaySet(contactList.contacts, RelayDirection.outbox, relayMinCountPerPubKey: settingProvider.followeesRelayMinCount);
+  //     }
+  //     followEventProvider.doQuery();
+  //   }
+  //   runApp(MyApp());
   }
+  runApp(MyApp());
 }
 
 void initBackgroundService(bool startOnBoot) async {
@@ -400,8 +373,7 @@ void initBackgroundService(bool startOnBoot) async {
 
   AwesomeNotifications().isNotificationAllowed().then((isAllowed) async {
     if (!isAllowed) {
-      await AwesomeNotifications()
-          .requestPermissionToSendNotifications(permissions: [
+      await AwesomeNotifications().requestPermissionToSendNotifications(permissions: [
         NotificationPermission.Vibration,
         NotificationPermission.Badge,
         NotificationPermission.Light,
@@ -422,8 +394,7 @@ void initBackgroundService(bool startOnBoot) async {
   ]);
   AwesomeNotifications().setListeners(
     onActionReceivedMethod: NewNotificationsProvider.onActionReceivedMethod,
-    onNotificationCreatedMethod:
-    NewNotificationsProvider.onNotificationCreatedMethod,
+    onNotificationCreatedMethod: NewNotificationsProvider.onNotificationCreatedMethod,
   );
 
   /// OPTIONAL, using custom notification channel id
@@ -431,38 +402,34 @@ void initBackgroundService(bool startOnBoot) async {
     'yana-service', // id
     'Background service (can be hidden)', // title
     showBadge: false,
-    description:
-    'This channel is needed to be running in order for the system not to kill all used for important notifications.',
+    description: 'This channel is needed to be running in order for the system not to kill all used for important notifications.',
     // description
     importance: Importance.low, // importance must be at low or higher level
   );
 
   flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
   // if (startOnBoot) {
-    backgroundService = FlutterBackgroundService();
-    await flutterLocalNotificationsPlugin
-        .resolvePlatformSpecificImplementation<
-        AndroidFlutterLocalNotificationsPlugin>()
-        ?.createNotificationChannel(channel);
+  backgroundService = FlutterBackgroundService();
+  await flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()?.createNotificationChannel(channel);
 
-    await backgroundService!.configure(
-      androidConfiguration: AndroidConfiguration(
-        onStart: onStart,
-        autoStart: false,
-        autoStartOnBoot: startOnBoot,
-        isForegroundMode: true,
-        notificationChannelId: 'yana-service',
-        initialNotificationTitle: 'Yana notifications service',
-        initialNotificationContent: 'this notification can be hidden',
-        foregroundServiceNotificationId: 888,
-      ),
-      iosConfiguration: IosConfiguration(
-        autoStart: false,
-        onForeground: onStart,
-        // you have to enable background fetch capability on xcode project
-        // onBackground: onIosBackground,
-      ),
-    );
+  await backgroundService!.configure(
+    androidConfiguration: AndroidConfiguration(
+      onStart: onStart,
+      autoStart: false,
+      autoStartOnBoot: startOnBoot,
+      isForegroundMode: true,
+      notificationChannelId: 'yana-service',
+      initialNotificationTitle: 'Yana notifications service',
+      initialNotificationContent: 'this notification can be hidden',
+      foregroundServiceNotificationId: 888,
+    ),
+    iosConfiguration: IosConfiguration(
+      autoStart: false,
+      onForeground: onStart,
+      // you have to enable background fetch capability on xcode project
+      // onBackground: onIosBackground,
+    ),
+  );
   // } else {
   //   if (backgroundService!=null) {
   //     backgroundService!.invoke('stopService');
@@ -507,15 +474,13 @@ void initBackgroundService(bool startOnBoot) async {
 // }
 
 class MyApp extends StatefulWidget {
-
   @override
   State<StatefulWidget> createState() {
     return _MyApp();
   }
 }
 
-class _MyApp extends State<MyApp> with WidgetsBindingObserver{
-
+class _MyApp extends State<MyApp> with WidgetsBindingObserver {
   reload() {
     setState(() {});
   }
@@ -525,8 +490,7 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver{
     Locale? _locale;
     if (StringUtil.isNotBlank(settingProvider.i18n)) {
       for (var item in I18n.delegate.supportedLocales) {
-        if (item.languageCode == settingProvider.i18n &&
-            item.countryCode == settingProvider.i18nCC) {
+        if (item.languageCode == settingProvider.i18n && item.countryCode == settingProvider.i18nCC) {
           _locale = Locale(settingProvider.i18n!, settingProvider.i18nCC);
           break;
         }
@@ -551,8 +515,7 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver{
       RouterPath.INDEX: (context) => IndexRouter(reload: reload),
       RouterPath.USER: (context) => const UserRouter(),
       RouterPath.USER_CONTACT_LIST: (context) => const UserContactListRouter(),
-      RouterPath.USER_HISTORY_CONTACT_LIST: (context) =>
-          UserHistoryContactListRouter(),
+      RouterPath.USER_HISTORY_CONTACT_LIST: (context) => UserHistoryContactListRouter(),
       RouterPath.USER_ZAP_LIST: (context) => const UserZapListRouter(),
       RouterPath.USER_RELAYS: (context) => const UserRelayRouter(),
       RouterPath.DM_DETAIL: (context) => const DMDetailRouter(),
@@ -570,11 +533,9 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver{
       RouterPath.SETTING: (context) => SettingRouter(indexReload: reload),
       RouterPath.QRSCANNER: (context) => const QRScannerRouter(),
       RouterPath.RELAY_INFO: (context) => const RelayInfoRouter(),
-      RouterPath.FOLLOWED_TAGS_LIST: (context) =>
-      const FollowedTagsListRouter(),
+      RouterPath.FOLLOWED_TAGS_LIST: (context) => const FollowedTagsListRouter(),
       RouterPath.COMMUNITY_DETAIL: (context) => const CommunityDetailRouter(),
-      RouterPath.FOLLOWED_COMMUNITIES: (context) =>
-      const FollowedCommunitiesRouter(),
+      RouterPath.FOLLOWED_COMMUNITIES: (context) => const FollowedCommunitiesRouter(),
       RouterPath.FOLLOWED: (context) => const FollowedRouter(),
     };
 
@@ -671,8 +632,7 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver{
               );
             },
           ),
-        )
-    );
+        ));
   }
 
   @override
@@ -694,9 +654,7 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver{
     super.didChangeAppLifecycleState(newState);
 
     if (newState == AppLifecycleState.resumed &&
-        (appState == AppLifecycleState.paused ||
-            appState == AppLifecycleState.hidden ||
-            appState == AppLifecycleState.inactive)) {
+        (appState == AppLifecycleState.paused || appState == AppLifecycleState.hidden || appState == AppLifecycleState.inactive)) {
       //now you know that your app went to the background and is back to the foreground
       if (nostr != null) {
         if (backgroundService != null && settingProvider.backgroundService) {
@@ -709,12 +667,11 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver{
       }
     }
     if (newState != AppLifecycleState.paused &&
-        (appState == AppLifecycleState.resumed ||
-            appState == AppLifecycleState.hidden ||
-            appState == AppLifecycleState.inactive) &&
-        backgroundService != null && nostr != null && !nostr!.isEmpty()! &&
-        settingProvider.backgroundService
-    ) {
+        (appState == AppLifecycleState.resumed || appState == AppLifecycleState.hidden || appState == AppLifecycleState.inactive) &&
+        backgroundService != null &&
+        nostr != null &&
+        !nostr!.isEmpty()! &&
+        settingProvider.backgroundService) {
       backgroundService!.startService();
     }
     appState = newState;
@@ -747,29 +704,18 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver{
     double baseFontSize = settingProvider.fontSize;
 
     var textTheme = TextTheme(
-      displaySmall: TextStyle(
-          fontSize: baseFontSize - 2, fontFamily: 'Montserrat'),
-      displayMedium: TextStyle(
-          fontSize: baseFontSize, fontFamily: 'Montserrat'),
-      displayLarge: TextStyle(
-          fontSize: baseFontSize + 2, fontFamily: 'Montserrat'),
-      headlineSmall: TextStyle(
-          fontSize: baseFontSize - 2, fontFamily: 'Montserrat'),
-      headlineMedium: TextStyle(
-          fontSize: baseFontSize, fontFamily: 'Montserrat'),
-      headlineLarge: TextStyle(
-          fontSize: baseFontSize + 2, fontFamily: 'Montserrat'),
-      titleSmall: TextStyle(
-          fontSize: baseFontSize - 2, fontFamily: 'Montserrat'),
+      displaySmall: TextStyle(fontSize: baseFontSize - 2, fontFamily: 'Montserrat'),
+      displayMedium: TextStyle(fontSize: baseFontSize, fontFamily: 'Montserrat'),
+      displayLarge: TextStyle(fontSize: baseFontSize + 2, fontFamily: 'Montserrat'),
+      headlineSmall: TextStyle(fontSize: baseFontSize - 2, fontFamily: 'Montserrat'),
+      headlineMedium: TextStyle(fontSize: baseFontSize, fontFamily: 'Montserrat'),
+      headlineLarge: TextStyle(fontSize: baseFontSize + 2, fontFamily: 'Montserrat'),
+      titleSmall: TextStyle(fontSize: baseFontSize - 2, fontFamily: 'Montserrat'),
       titleMedium: TextStyle(fontSize: baseFontSize, fontFamily: 'Montserrat'),
-      titleLarge: TextStyle(
-          fontSize: baseFontSize + 2, fontFamily: 'Montserrat'),
-      labelSmall: TextStyle(
-          fontSize: baseFontSize - 2, fontFamily: 'Montserrat'),
+      titleLarge: TextStyle(fontSize: baseFontSize + 2, fontFamily: 'Montserrat'),
+      labelSmall: TextStyle(fontSize: baseFontSize - 2, fontFamily: 'Montserrat'),
       labelMedium: TextStyle(fontSize: baseFontSize, fontFamily: 'Montserrat'),
-      labelLarge: TextStyle(
-          fontSize: baseFontSize + 2, fontFamily: 'Montserrat'),
-
+      labelLarge: TextStyle(fontSize: baseFontSize + 2, fontFamily: 'Montserrat'),
       bodyLarge: TextStyle(fontSize: baseFontSize + 2, height: 1.4),
       bodyMedium: TextStyle(fontSize: baseFontSize, height: 1.4),
       bodySmall: TextStyle(fontSize: baseFontSize - 2, height: 1.4),
@@ -779,10 +725,8 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver{
     );
 
     if (settingProvider.fontFamily != null) {
-      textTheme =
-          GoogleFonts.getTextTheme(settingProvider.fontFamily!, textTheme);
-      titleTextStyle = GoogleFonts.getFont(settingProvider.fontFamily!,
-          textStyle: titleTextStyle);
+      textTheme = GoogleFonts.getTextTheme(settingProvider.fontFamily!, textTheme);
+      titleTextStyle = GoogleFonts.getFont(settingProvider.fontFamily!, textStyle: titleTextStyle);
     }
 
     return ThemeData(
@@ -840,28 +784,18 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver{
     double baseFontSize = settingProvider.fontSize;
 
     var textTheme = TextTheme(
-      displaySmall: TextStyle(
-          fontSize: baseFontSize - 2, fontFamily: 'Montserrat'),
-      displayMedium: TextStyle(
-          fontSize: baseFontSize, fontFamily: 'Montserrat'),
-      displayLarge: TextStyle(
-          fontSize: baseFontSize + 2, fontFamily: 'Montserrat'),
-      headlineSmall: TextStyle(
-          fontSize: baseFontSize - 2, fontFamily: 'Montserrat'),
-      headlineMedium: TextStyle(
-          fontSize: baseFontSize, fontFamily: 'Montserrat'),
-      headlineLarge: TextStyle(
-          fontSize: baseFontSize + 2, fontFamily: 'Montserrat'),
-      titleSmall: TextStyle(
-          fontSize: baseFontSize - 2, fontFamily: 'Montserrat'),
+      displaySmall: TextStyle(fontSize: baseFontSize - 2, fontFamily: 'Montserrat'),
+      displayMedium: TextStyle(fontSize: baseFontSize, fontFamily: 'Montserrat'),
+      displayLarge: TextStyle(fontSize: baseFontSize + 2, fontFamily: 'Montserrat'),
+      headlineSmall: TextStyle(fontSize: baseFontSize - 2, fontFamily: 'Montserrat'),
+      headlineMedium: TextStyle(fontSize: baseFontSize, fontFamily: 'Montserrat'),
+      headlineLarge: TextStyle(fontSize: baseFontSize + 2, fontFamily: 'Montserrat'),
+      titleSmall: TextStyle(fontSize: baseFontSize - 2, fontFamily: 'Montserrat'),
       titleMedium: TextStyle(fontSize: baseFontSize, fontFamily: 'Montserrat'),
-      titleLarge: TextStyle(
-          fontSize: baseFontSize + 2, fontFamily: 'Montserrat'),
-      labelSmall: TextStyle(
-          fontSize: baseFontSize - 2, fontFamily: 'Montserrat'),
+      titleLarge: TextStyle(fontSize: baseFontSize + 2, fontFamily: 'Montserrat'),
+      labelSmall: TextStyle(fontSize: baseFontSize - 2, fontFamily: 'Montserrat'),
       labelMedium: TextStyle(fontSize: baseFontSize, fontFamily: 'Montserrat'),
-      labelLarge: TextStyle(
-          fontSize: baseFontSize + 2, fontFamily: 'Montserrat'),
+      labelLarge: TextStyle(fontSize: baseFontSize + 2, fontFamily: 'Montserrat'),
       bodyLarge: TextStyle(fontSize: baseFontSize + 2, height: 1.4),
       bodyMedium: TextStyle(fontSize: baseFontSize, height: 1.4),
       bodySmall: TextStyle(fontSize: baseFontSize - 2, height: 1.4),
@@ -872,10 +806,8 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver{
     );
 
     if (settingProvider.fontFamily != null) {
-      textTheme =
-          GoogleFonts.getTextTheme(settingProvider.fontFamily!, textTheme);
-      titleTextStyle = GoogleFonts.getFont(settingProvider.fontFamily!,
-          textStyle: titleTextStyle);
+      textTheme = GoogleFonts.getTextTheme(settingProvider.fontFamily!, textTheme);
+      titleTextStyle = GoogleFonts.getFont(settingProvider.fontFamily!, textStyle: titleTextStyle);
     }
 
     return ThemeData(

@@ -1,5 +1,9 @@
 import 'dart:async';
 
+import 'package:dart_ndk/nips/nip02/contact_list.dart';
+import 'package:dart_ndk/nips/nip65/nip65.dart';
+import 'package:dart_ndk/read_write.dart';
+import 'package:dart_ndk/relay_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:provider/provider.dart';
@@ -72,8 +76,28 @@ class _IndexRouter extends CustState<IndexRouter>
     followTabController =
         TabController(initialIndex: followInitTab, length: 3, vsync: this);
     dmTabController = TabController(length: 3, vsync: this);
+    init();
   }
 
+  void init() async {
+    await relayManager.connect();
+    Nip65? nip65 = await relayManager.getSingleNip65(nostr!.publicKey);
+    if (nip65 != null) {
+      createMyRelaySets(nip65);
+    }
+    await relayManager.connect(bootstrapRelays: nip65 != null ? nip65!.relays.keys.toList() : RelayManager.DEFAULT_BOOTSTRAP_RELAYS);
+    print("Loading contact list...");
+    Nip02ContactList? contactList = await relayManager.loadContactList(nostr!.publicKey);
+    if (contactList != null) {
+      print("Loaded ${contactList.contacts.length} contacts...");
+      contactListProvider.set(contactList);
+      if (settingProvider.gossip == 1) {
+        feedRelaySet =
+        await relayManager.calculateRelaySet(contactList.contacts, RelayDirection.outbox, relayMinCountPerPubKey: settingProvider.followeesRelayMinCount);
+      }
+      followEventProvider.doQuery();
+    }
+  }
   @override
   Future<void> onReady(BuildContext context) async {
     if (settingProvider.lockOpen == OpenStatus.OPEN && !unlock) {
@@ -93,17 +117,17 @@ class _IndexRouter extends CustState<IndexRouter>
     mediaDataCache.update(context);
     var s = I18n.of(context);
 
+    if (nostr == null) {
+      return LoginRouter();
+    }
     var _settingProvider = Provider.of<SettingProvider>(context);
     var _followEventProvider = Provider.of<FollowEventProvider>(context);
     var _followEventNewProvider = Provider.of<FollowNewEventProvider>(context);
     var _indexProvider = Provider.of<IndexProvider>(context);
 
-    if (nostr == null) {
-      return LoginRouter();
-    }
 
     if (!unlock) {
-      return Scaffold();
+      return const Scaffold();
     }
 
     _indexProvider.setFollowTabController(followTabController);
@@ -307,10 +331,10 @@ class _IndexRouter extends CustState<IndexRouter>
     }
 
     var addBtn = FloatingActionButton(
-      shape: CircleBorder(
+      shape: const CircleBorder(
       ),
       backgroundColor: themeData.primaryColor,
-      child: Icon(Icons.add),
+      child: const Icon(Icons.add),
       onPressed: () {
         EditorRouter.open(context);
       },
@@ -478,4 +502,5 @@ class _IndexRouter extends CustState<IndexRouter>
       }
     });
   }
+
 }

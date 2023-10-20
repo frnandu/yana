@@ -139,8 +139,8 @@ class _UserRouter extends CustState<UserRouter>
           String nip19Name = Nip19.encodeSimplePubKey(pubkey!);
           String displayName = nip19Name;
           if (metadata != null) {
-            if (StringUtil.isNotBlank(metadata.displayName)) {
-              displayName = metadata.displayName!;
+            if (StringUtil.isNotBlank(metadata.getName())) {
+              displayName = metadata.getName()!;
             }
 
             appbarTitle = Container(

@@ -249,7 +249,7 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
                         ),
                 ),
               ),
-              Expanded(
+              Container(
                 child: PopupMenuButton<String>(
                   tooltip: s.More,
                   itemBuilder: (context) {
@@ -312,9 +312,9 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
                   },
                   onSelected: onPopupSelected,
                   child: Icon(
-                    Icons.more_vert,
+                    Icons.more_horiz,
                     size: 16,
-                    color: themeData.disabledColor,
+                    color: themeData.scaffoldBackgroundColor,
                   ),
                 ),
               ),

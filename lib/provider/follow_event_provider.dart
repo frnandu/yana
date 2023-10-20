@@ -79,49 +79,12 @@ class FollowEventProvider extends ChangeNotifier
   void doQuery (
       {int? until, bool forceUserLimit = false}) {
     load(until: until);
-    List<String> subscribeIds = [];
-    // var contactListLength = contactList!.length;
-    // List<String> ids = [];
-    // timeline pull my events too.
-    //
-    // for (String contact in contactList) {
-    //   ids.add(contact);
-    //   if (ids.length > maxQueryIdsNum) {
-    //     filter.authors = ids;
-    //
-    //     var subscribeId = _doQueryFunc(targetNostr!, filter,
-    //         initQuery: initQuery,
-    //         forceUserLimit: forceUserLimit,
-    //         queriyTags: !queriedTags);
-    //     subscribeIds.add(subscribeId);
-    //     ids = [];
-    //     queriedTags = true;
-    //   }
-    // }
-    // if (ids.isNotEmpty) {
-    //   filter.authors = ids;
-    //   var subscribeId = _doQueryFunc(targetNostr!, filter,
-    //       initQuery: initQuery,
-    //       forceUserLimit: forceUserLimit,
-    //       queriyTags: !queriedTags);
-    //   subscribeIds.add(subscribeId);
-    // }
-
-    // if (!initQuery) {
-    //   _subscribeIds = subscribeIds;
-    // }
   }
 
   void load({int? until}) async {
     if (_streamSubscription!=null) {
       await _streamSubscription!.cancel();
     }
-    // int maxQueryIdsNum = 400;
-    // if (contactListLength > maxQueryIdsNum) {
-    //   var times = (contactListLength / maxQueryIdsNum).ceil();
-    //   maxQueryIdsNum = (contactListLength / times).ceil();
-    // }
-    // maxQueryIdsNum += 2;
 
     List<String>? contactList = contactListProvider.contacts();
 
@@ -145,12 +108,15 @@ class FollowEventProvider extends ChangeNotifier
         filter.since = event.createdAt - 60 * 60 * 24;
       }
     }
+    // TODO
     //addTagCommunityFilter([filter.toMap()], queriyTags);
 
     Stream<Nip01Event> stream = await relayManager!.subscription(
         filter, (feedRelaySet!=null && settingProvider.gossip==1)? feedRelaySet! : myInboxRelays!);
     _streamSubscription = stream.listen((event) {
-      onEvent(event);
+      // if (event.pubKey == nostr!.publicKey) {
+        onEvent(event);
+      // }
     });
   }
 
