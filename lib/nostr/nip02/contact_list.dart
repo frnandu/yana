@@ -10,10 +10,12 @@ part 'contact_list.g.dart';
 class ContactList {
   static Map<String, ContactList> cached = {};
 
-  Id id = Isar.autoIncrement;
+  // Id id = Isar.autoIncrement;
 
-  @Index(type: IndexType.hash)
+  @Index(hash: true)
   String? pub_key;
+
+  String get id => pub_key!;
 
   List<Contact> contacts = [];
 
@@ -32,51 +34,51 @@ class ContactList {
         followedCommunitys = [],
         followedEvents = [];
 
-  static Future<ContactList?> loadFromDB(String pubKey) async {
-    ContactList? list = cached[pubKey];
-    if (list == null) {
-      final startTime = DateTime.now();
-      list = await DB
-          .getIsar()
-          .contactLists
-          .filter()
-          .pub_keyEqualTo(pubKey)
-          .findFirst();
-      final endTime = DateTime.now();
-      final duration = endTime.difference(startTime);
-      if (list!=null && list.contacts!=null) {
-        print("LOADED ${list!.contacts
-            .length} contacts from DATABASE for $pubKey took:${duration
-            .inMilliseconds} ms");
-      }
-    } else {
-      print("LOADED ${list!.contacts.length} contacts from MEMORY for $pubKey");
-    }
-    return list;
-  }
+  // static Future<ContactList?> loadFromDB(String pubKey) async {
+  //   ContactList? list = cached[pubKey];
+  //   if (list == null) {
+  //     final startTime = DateTime.now();
+  //     list = await DB
+  //         .getIsar()
+  //         .contactLists
+  //         .filter()
+  //         .pub_keyEqualTo(pubKey)
+  //         .findFirst();
+  //     final endTime = DateTime.now();
+  //     final duration = endTime.difference(startTime);
+  //     if (list!=null && list.contacts!=null) {
+  //       print("LOADED ${list!.contacts
+  //           .length} contacts from DATABASE for $pubKey took:${duration
+  //           .inMilliseconds} ms");
+  //     }
+  //   } else {
+  //     print("LOADED ${list!.contacts.length} contacts from MEMORY for $pubKey");
+  //   }
+  //   return list;
+  // }
 
-  static Future writeToDB(ContactList list) async {
-    cached[list.pub_key!] = list;
-    if (nostr != null && nostr!.publicKey == list.pub_key!) {
-      if (list.contacts!.isEmpty &&
-          list.followedCommunitys.isEmpty &&
-          list.followedTags.isEmpty &&
-          list.followedEvents.isEmpty) {
-        return 0;
-      }
-      return await DB.getIsar().writeTxn(() async {
-        return await DB
-            .getIsar()
-            .contactLists
-            .putByIndex("pub_key", list);
-      });
-
-      // db = await DB.getDB(db);
-      // await db!.delete("contact",where: "pub_key = ?", whereArgs: [pubKey]);
-      // return await insert(pubKey, list, updated_at);
-    }
-    return 0;
-  }
+  // static Future writeToDB(ContactList list) async {
+  //   cached[list.pub_key!] = list;
+  //   if (nostr != null && nostr!.publicKey == list.pub_key!) {
+  //     if (list.contacts!.isEmpty &&
+  //         list.followedCommunitys.isEmpty &&
+  //         list.followedTags.isEmpty &&
+  //         list.followedEvents.isEmpty) {
+  //       return 0;
+  //     }
+  //     return await DB.getIsar().writeTxn(() async {
+  //       return await DB
+  //           .getIsar()
+  //           .contactLists
+  //           .putByIndex("pub_key", list);
+  //     });
+  //
+  //     // db = await DB.getDB(db);
+  //     // await db!.delete("contact",where: "pub_key = ?", whereArgs: [pubKey]);
+  //     // return await insert(pubKey, list, updated_at);
+  //   }
+  //   return 0;
+  // }
 
   static ContactList fromJson(List<dynamic> tags) {
     ContactList list = ContactList();

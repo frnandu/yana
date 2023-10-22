@@ -3,303 +3,335 @@
 part of 'relay_metadata.dart';
 
 // **************************************************************************
-// IsarEmbeddedGenerator
+// _IsarEmbeddedGenerator
 // **************************************************************************
 
 // coverage:ignore-file
-// ignore_for_file: duplicate_ignore, non_constant_identifier_names, constant_identifier_names, invalid_use_of_protected_member, unnecessary_cast, prefer_const_constructors, lines_longer_than_80_chars, require_trailing_commas, inference_failure_on_function_invocation, unnecessary_parenthesis, unnecessary_raw_strings, unnecessary_null_checks, join_return_with_assignment, prefer_final_locals, avoid_js_rounded_ints, avoid_positional_boolean_parameters, always_specify_types
+// ignore_for_file: duplicate_ignore, invalid_use_of_protected_member, lines_longer_than_80_chars, constant_identifier_names, avoid_js_rounded_ints, no_leading_underscores_for_local_identifiers, require_trailing_commas, unnecessary_parenthesis, unnecessary_raw_strings, unnecessary_null_in_if_null_operators, library_private_types_in_public_api, prefer_const_constructors
+// ignore_for_file: type=lint
 
-const RelayMetadataSchema = Schema(
-  name: r'RelayMetadata',
-  id: 5113166679998147652,
-  properties: {
-    r'addr': PropertySchema(
-      id: 0,
-      name: r'addr',
-      type: IsarType.string,
-    ),
-    r'read': PropertySchema(
-      id: 1,
-      name: r'read',
-      type: IsarType.bool,
-    ),
-    r'write': PropertySchema(
-      id: 2,
-      name: r'write',
-      type: IsarType.bool,
-    )
-  },
-  estimateSize: _relayMetadataEstimateSize,
-  serialize: _relayMetadataSerialize,
-  deserialize: _relayMetadataDeserialize,
-  deserializeProp: _relayMetadataDeserializeProp,
+const RelayMetadataSchema = IsarGeneratedSchema(
+  schema: IsarSchema(
+    name: 'RelayMetadata',
+    embedded: true,
+    properties: [
+      IsarPropertySchema(
+        name: 'url',
+        type: IsarType.string,
+      ),
+      IsarPropertySchema(
+        name: 'read',
+        type: IsarType.bool,
+      ),
+      IsarPropertySchema(
+        name: 'write',
+        type: IsarType.bool,
+      ),
+    ],
+    indexes: [],
+  ),
+  converter: IsarObjectConverter<void, RelayMetadata>(
+    serialize: serializeRelayMetadata,
+    deserialize: deserializeRelayMetadata,
+  ),
 );
 
-int _relayMetadataEstimateSize(
-  RelayMetadata object,
-  List<int> offsets,
-  Map<Type, List<int>> allOffsets,
-) {
-  var bytesCount = offsets.last;
+@isarProtected
+int serializeRelayMetadata(IsarWriter writer, RelayMetadata object) {
   {
     final value = object.url;
-    if (value != null) {
-      bytesCount += 3 + value.length * 3;
+    if (value == null) {
+      IsarCore.writeNull(writer, 1);
+    } else {
+      IsarCore.writeString(writer, 1, value);
     }
   }
-  return bytesCount;
-}
-
-void _relayMetadataSerialize(
-  RelayMetadata object,
-  IsarWriter writer,
-  List<int> offsets,
-  Map<Type, List<int>> allOffsets,
-) {
-  writer.writeString(offsets[0], object.url);
-  writer.writeBool(offsets[1], object.read);
-  writer.writeBool(offsets[2], object.write);
-}
-
-RelayMetadata _relayMetadataDeserialize(
-  Id id,
-  IsarReader reader,
-  List<int> offsets,
-  Map<Type, List<int>> allOffsets,
-) {
-  final object = RelayMetadata();
-  object.url = reader.readStringOrNull(offsets[0]);
-  object.read = reader.readBoolOrNull(offsets[1]);
-  object.write = reader.readBoolOrNull(offsets[2]);
-  return object;
-}
-
-P _relayMetadataDeserializeProp<P>(
-  IsarReader reader,
-  int propertyId,
-  int offset,
-  Map<Type, List<int>> allOffsets,
-) {
-  switch (propertyId) {
-    case 0:
-      return (reader.readStringOrNull(offset)) as P;
-    case 1:
-      return (reader.readBoolOrNull(offset)) as P;
-    case 2:
-      return (reader.readBoolOrNull(offset)) as P;
-    default:
-      throw IsarError('Unknown property with id $propertyId');
+  {
+    final value = object.read;
+    if (value == null) {
+      IsarCore.writeNull(writer, 2);
+    } else {
+      IsarCore.writeBool(writer, 2, value);
+    }
   }
+  {
+    final value = object.write;
+    if (value == null) {
+      IsarCore.writeNull(writer, 3);
+    } else {
+      IsarCore.writeBool(writer, 3, value);
+    }
+  }
+  return 0;
+}
+
+@isarProtected
+RelayMetadata deserializeRelayMetadata(IsarReader reader) {
+  final object = RelayMetadata();
+  object.url = IsarCore.readString(reader, 1);
+  {
+    if (IsarCore.readNull(reader, 2)) {
+      object.read = null;
+    } else {
+      object.read = IsarCore.readBool(reader, 2);
+    }
+  }
+  {
+    if (IsarCore.readNull(reader, 3)) {
+      object.write = null;
+    } else {
+      object.write = IsarCore.readBool(reader, 3);
+    }
+  }
+  return object;
 }
 
 extension RelayMetadataQueryFilter
     on QueryBuilder<RelayMetadata, RelayMetadata, QFilterCondition> {
   QueryBuilder<RelayMetadata, RelayMetadata, QAfterFilterCondition>
-      addrIsNull() {
+      urlIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'addr',
-      ));
+      return query.addFilterCondition(const IsNullCondition(property: 1));
     });
   }
 
   QueryBuilder<RelayMetadata, RelayMetadata, QAfterFilterCondition>
-      addrIsNotNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'addr',
-      ));
+      urlIsNotNull() {
+    return QueryBuilder.apply(not(), (query) {
+      return query.addFilterCondition(const IsNullCondition(property: 1));
     });
   }
 
-  QueryBuilder<RelayMetadata, RelayMetadata, QAfterFilterCondition> addrEqualTo(
+  QueryBuilder<RelayMetadata, RelayMetadata, QAfterFilterCondition> urlEqualTo(
     String? value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'addr',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        EqualCondition(
+          property: 1,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<RelayMetadata, RelayMetadata, QAfterFilterCondition>
-      addrGreaterThan(
+      urlGreaterThan(
     String? value, {
-    bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'addr',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        GreaterCondition(
+          property: 1,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<RelayMetadata, RelayMetadata, QAfterFilterCondition>
-      addrLessThan(
+      urlGreaterThanOrEqualTo(
     String? value, {
-    bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'addr',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        GreaterOrEqualCondition(
+          property: 1,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<RelayMetadata, RelayMetadata, QAfterFilterCondition> addrBetween(
+  QueryBuilder<RelayMetadata, RelayMetadata, QAfterFilterCondition> urlLessThan(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        LessCondition(
+          property: 1,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<RelayMetadata, RelayMetadata, QAfterFilterCondition>
+      urlLessThanOrEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        LessOrEqualCondition(
+          property: 1,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<RelayMetadata, RelayMetadata, QAfterFilterCondition> urlBetween(
     String? lower,
     String? upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'addr',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        BetweenCondition(
+          property: 1,
+          lower: lower,
+          upper: upper,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<RelayMetadata, RelayMetadata, QAfterFilterCondition>
-      addrStartsWith(
+      urlStartsWith(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'addr',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        StartsWithCondition(
+          property: 1,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<RelayMetadata, RelayMetadata, QAfterFilterCondition>
-      addrEndsWith(
+  QueryBuilder<RelayMetadata, RelayMetadata, QAfterFilterCondition> urlEndsWith(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'addr',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        EndsWithCondition(
+          property: 1,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<RelayMetadata, RelayMetadata, QAfterFilterCondition>
-      addrContains(String value, {bool caseSensitive = true}) {
+  QueryBuilder<RelayMetadata, RelayMetadata, QAfterFilterCondition> urlContains(
+      String value,
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'addr',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        ContainsCondition(
+          property: 1,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<RelayMetadata, RelayMetadata, QAfterFilterCondition> addrMatches(
+  QueryBuilder<RelayMetadata, RelayMetadata, QAfterFilterCondition> urlMatches(
       String pattern,
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'addr',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        MatchesCondition(
+          property: 1,
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<RelayMetadata, RelayMetadata, QAfterFilterCondition>
-      addrIsEmpty() {
+      urlIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'addr',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        const EqualCondition(
+          property: 1,
+          value: '',
+        ),
+      );
     });
   }
 
   QueryBuilder<RelayMetadata, RelayMetadata, QAfterFilterCondition>
-      addrIsNotEmpty() {
+      urlIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'addr',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        const GreaterCondition(
+          property: 1,
+          value: '',
+        ),
+      );
     });
   }
 
   QueryBuilder<RelayMetadata, RelayMetadata, QAfterFilterCondition>
       readIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'read',
-      ));
+      return query.addFilterCondition(const IsNullCondition(property: 2));
     });
   }
 
   QueryBuilder<RelayMetadata, RelayMetadata, QAfterFilterCondition>
       readIsNotNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'read',
-      ));
+    return QueryBuilder.apply(not(), (query) {
+      return query.addFilterCondition(const IsNullCondition(property: 2));
     });
   }
 
   QueryBuilder<RelayMetadata, RelayMetadata, QAfterFilterCondition> readEqualTo(
-      bool? value) {
+    bool? value,
+  ) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'read',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        EqualCondition(
+          property: 2,
+          value: value,
+        ),
+      );
     });
   }
 
   QueryBuilder<RelayMetadata, RelayMetadata, QAfterFilterCondition>
       writeIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'write',
-      ));
+      return query.addFilterCondition(const IsNullCondition(property: 3));
     });
   }
 
   QueryBuilder<RelayMetadata, RelayMetadata, QAfterFilterCondition>
       writeIsNotNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'write',
-      ));
+    return QueryBuilder.apply(not(), (query) {
+      return query.addFilterCondition(const IsNullCondition(property: 3));
     });
   }
 
   QueryBuilder<RelayMetadata, RelayMetadata, QAfterFilterCondition>
-      writeEqualTo(bool? value) {
+      writeEqualTo(
+    bool? value,
+  ) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'write',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        EqualCondition(
+          property: 3,
+          value: value,
+        ),
+      );
     });
   }
 }

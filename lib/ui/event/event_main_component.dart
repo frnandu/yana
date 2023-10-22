@@ -417,7 +417,7 @@ class _EventMainComponent extends State<EventMainComponent> {
             color: hintColor,
           ),
           Container(
-            margin: EdgeInsets.only(
+            margin: const EdgeInsets.only(
               left: Base.BASE_PADDING_HALF,
               right: 3,
             ),
@@ -435,7 +435,7 @@ class _EventMainComponent extends State<EventMainComponent> {
                   eventRelation.communityId);
             },
             child: Text(
-              "${eventRelation.communityId!.title}",
+              eventRelation.communityId!.title,
               style: TextStyle(
                 fontSize: smallTextSize,
                 fontWeight: FontWeight.bold,
@@ -499,7 +499,7 @@ class _EventMainComponent extends State<EventMainComponent> {
       imageListMode: widget.imageListMode,
     );
 
-    var main = Container(
+    var main = SizedBox(
       width: double.maxFinite,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

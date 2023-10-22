@@ -220,7 +220,7 @@ void initProvidersAndStuff() async {
       if (nip65 != null) {
         createMyRelaySets(nip65);
       }
-      await relayManager.connect(bootstrapRelays: nip65 != null ? nip65!.relays.keys.toList() : RelayManager.DEFAULT_BOOTSTRAP_RELAYS);
+      await relayManager.connect(bootstrapRelays: nip65 != null ? nip65.urls : RelayManager.DEFAULT_BOOTSTRAP_RELAYS);
       // await relayProvider!.loadRelays(nostr!.publicKey, () {
       //   relayProvider.addRelays(nostr!).then((bla) {
       filterProvider = FilterProvider.getInstance();
@@ -242,7 +242,7 @@ void initProvidersAndStuff() async {
 void createMyRelaySets(Nip65 nip65) {
   Map<String, List<PubkeyMapping>> inboxMap = {};
   Map<String, List<PubkeyMapping>> outboxMap = {};
-  for (MapEntry<String, ReadWriteMarker> entry in nip65.relays.entries) {
+  for (MapEntry<String, dynamic> entry in nip65.relaysMap().entries) {
     if (entry.value.isRead) {
       inboxMap[entry.key] = [];
     }

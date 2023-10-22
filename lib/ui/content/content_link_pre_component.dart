@@ -47,6 +47,7 @@ class _ContentLinkPreComponent extends State<ContentLinkPreComponent> {
               // Save preview data
               linkPreviewDataProvider.set(widget.link, data);
             },
+            linkStyle: const TextStyle(color: Colors.pink),
             previewData: data,
             text: widget.link,
             width: mediaDataCache.size.width,

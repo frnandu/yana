@@ -1,17 +1,18 @@
 import 'package:isar/isar.dart';
-import 'package:yana/main.dart';
+import 'package:yana/models/db.dart';
 import 'package:yana/nostr/relay_metadata.dart';
 
-import 'db.dart';
+import '../main.dart';
 
 part 'relay_list.g.dart';
 
 @collection
 class RelayList {
-  Id id = Isar.autoIncrement;
 
-  @Index(type: IndexType.hash)
+  @Index(hash: true)
   String? pub_key;
+
+  String get id => pub_key!;
 
   List<RelayMetadata>? relays;
 
@@ -24,10 +25,10 @@ class RelayList {
     List<RelayMetadata>? list = useCache ? cached[pubKey] : null;
     if (list == null) {
       final startTime = DateTime.now();
-      final relayList = await DB
+      final relayList = DB
           .getIsar()
           .relayLists
-          .filter()
+          .where()
           .pub_keyEqualTo(pubKey)
           .findFirst();
       final endTime = DateTime.now();
@@ -48,15 +49,15 @@ class RelayList {
   static Future<int> writeToDB(
       String pubKey, List<RelayMetadata> list, int updated_at, {bool forceWrite = false}) async {
     cached[pubKey] = list;
-    if (forceWrite || nostr != null && nostr!.publicKey == pubKey || 
+    if (forceWrite || nostr != null && nostr!.publicKey == pubKey ||
         contactListProvider.contacts().contains(pubKey)) {
       RelayList relayList = RelayList();
       relayList.pub_key = pubKey;
       relayList.relays = list;
       relayList.timestamp = updated_at;
 
-      await DB.getIsar().writeTxn(() async {
-        await DB.getIsar().relayLists.putByIndex("pub_key", relayList!);
+      await DB.getIsar().writeAsync((isar) {
+        isar.relayLists.put(relayList!);
       });
     }
     return 0;

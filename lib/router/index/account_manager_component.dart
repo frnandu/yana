@@ -167,7 +167,7 @@ class AccountsState extends State<AccountsComponent> {
     String? key = settingProvider.key;
     bool isPrivate = settingProvider.isPrivateKey;
     Nip65? nip65 = await relayManager!.getSingleNip65(isPrivate ? getPublicKey(key!): key!);
-    await relayManager!.connect(bootstrapRelays: nip65!=null? nip65.relays.keys.toList() : RelayManager.DEFAULT_BOOTSTRAP_RELAYS);
+    await relayManager!.connect(bootstrapRelays: nip65!=null? nip65.urls : RelayManager.DEFAULT_BOOTSTRAP_RELAYS);
 
     // nostr = await relayProvider.genNostr(
     //     privateKey: isPrivate ? key : null, publicKey: isPrivate ? null : key);
@@ -207,7 +207,7 @@ class AccountsState extends State<AccountsComponent> {
         // use next privateKey to login
         bool isPrivate = settingProvider.isPrivateKey;
         Nip65? nip65 = await relayManager!.getSingleNip65(isPrivate ? getPublicKey(key!): key!);
-        await relayManager!.connect(bootstrapRelays: nip65!=null? nip65.relays.keys.toList() : RelayManager.DEFAULT_BOOTSTRAP_RELAYS);
+        await relayManager!.connect(bootstrapRelays: nip65!=null? nip65.urls : RelayManager.DEFAULT_BOOTSTRAP_RELAYS);
         //
         // nostr = await relayProvider.genNostr(
         //     privateKey: isPrivate ? key : null,

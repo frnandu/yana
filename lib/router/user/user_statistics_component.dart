@@ -43,7 +43,7 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
   static const Duration REFRESH_METADATA_DURATION = Duration(minutes: 10);
 
   EventMemBox? zapEventBox;
-  Map<String, ReadWriteMarker> relayMap = {};
+  Map<String, dynamic> relayMap = {};
   Nip02ContactList? contactList;
 
   // followedMap
@@ -71,8 +71,8 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
   void load() async {
     relayManager.loadMissingRelayListsFromNip65OrNip02([widget.pubkey]).then(
       (value) {
-        setState(() {
-          relayMap = relayManager.getRelayMarkerMap(widget.pubkey) ?? {};
+        setState(() async {
+          relayMap = await relayManager.getRelayMarkerMap(widget.pubkey) ?? {};
           contactList = relayManager.getContactList(widget.pubkey);
           if (widget.onContactListLoaded != null && contactList != null) {
             widget.onContactListLoaded!(contactList!);

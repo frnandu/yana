@@ -3,374 +3,316 @@
 part of 'relay_list.dart';
 
 // **************************************************************************
-// IsarCollectionGenerator
+// _IsarCollectionGenerator
 // **************************************************************************
 
 // coverage:ignore-file
-// ignore_for_file: duplicate_ignore, non_constant_identifier_names, constant_identifier_names, invalid_use_of_protected_member, unnecessary_cast, prefer_const_constructors, lines_longer_than_80_chars, require_trailing_commas, inference_failure_on_function_invocation, unnecessary_parenthesis, unnecessary_raw_strings, unnecessary_null_checks, join_return_with_assignment, prefer_final_locals, avoid_js_rounded_ints, avoid_positional_boolean_parameters, always_specify_types
+// ignore_for_file: duplicate_ignore, invalid_use_of_protected_member, lines_longer_than_80_chars, constant_identifier_names, avoid_js_rounded_ints, no_leading_underscores_for_local_identifiers, require_trailing_commas, unnecessary_parenthesis, unnecessary_raw_strings, unnecessary_null_in_if_null_operators, library_private_types_in_public_api, prefer_const_constructors
+// ignore_for_file: type=lint
 
 extension GetRelayListCollection on Isar {
-  IsarCollection<RelayList> get relayLists => this.collection();
+  IsarCollection<String, RelayList> get relayLists => this.collection();
 }
 
-const RelayListSchema = CollectionSchema(
-  name: r'RelayList',
-  id: 4658590272906361419,
-  properties: {
-    r'pub_key': PropertySchema(
-      id: 0,
-      name: r'pub_key',
-      type: IsarType.string,
-    ),
-    r'relays': PropertySchema(
-      id: 1,
-      name: r'relays',
-      type: IsarType.objectList,
-      target: r'RelayMetadata',
-    ),
-    r'timestamp': PropertySchema(
-      id: 2,
-      name: r'timestamp',
-      type: IsarType.long,
-    )
-  },
-  estimateSize: _relayListEstimateSize,
-  serialize: _relayListSerialize,
-  deserialize: _relayListDeserialize,
-  deserializeProp: _relayListDeserializeProp,
-  idName: r'id',
-  indexes: {
-    r'pub_key': IndexSchema(
-      id: -7465026138878299936,
-      name: r'pub_key',
-      unique: false,
-      replace: false,
-      properties: [
-        IndexPropertySchema(
-          name: r'pub_key',
-          type: IndexType.hash,
-          caseSensitive: true,
-        )
-      ],
-    )
-  },
-  links: {},
-  embeddedSchemas: {r'RelayMetadata': RelayMetadataSchema},
-  getId: _relayListGetId,
-  getLinks: _relayListGetLinks,
-  attach: _relayListAttach,
-  version: '3.1.0+1',
+const RelayListSchema = IsarGeneratedSchema(
+  schema: IsarSchema(
+    name: 'RelayList',
+    idName: 'id',
+    embedded: false,
+    properties: [
+      IsarPropertySchema(
+        name: 'pub_key',
+        type: IsarType.string,
+      ),
+      IsarPropertySchema(
+        name: 'relays',
+        type: IsarType.objectList,
+        target: 'RelayMetadata',
+      ),
+      IsarPropertySchema(
+        name: 'timestamp',
+        type: IsarType.long,
+      ),
+      IsarPropertySchema(
+        name: 'id',
+        type: IsarType.string,
+      ),
+    ],
+    indexes: [
+      IsarIndexSchema(
+        name: 'pub_key',
+        properties: [
+          "pub_key",
+        ],
+        unique: false,
+        hash: true,
+      ),
+    ],
+  ),
+  converter: IsarObjectConverter<String, RelayList>(
+    serialize: serializeRelayList,
+    deserialize: deserializeRelayList,
+    deserializeProperty: deserializeRelayListProp,
+  ),
+  embeddedSchemas: [RelayMetadataSchema],
 );
 
-int _relayListEstimateSize(
-  RelayList object,
-  List<int> offsets,
-  Map<Type, List<int>> allOffsets,
-) {
-  var bytesCount = offsets.last;
+@isarProtected
+int serializeRelayList(IsarWriter writer, RelayList object) {
   {
     final value = object.pub_key;
-    if (value != null) {
-      bytesCount += 3 + value.length * 3;
+    if (value == null) {
+      IsarCore.writeNull(writer, 1);
+    } else {
+      IsarCore.writeString(writer, 1, value);
     }
   }
   {
     final list = object.relays;
-    if (list != null) {
-      bytesCount += 3 + list.length * 3;
-      {
-        final offsets = allOffsets[RelayMetadata]!;
-        for (var i = 0; i < list.length; i++) {
+    if (list == null) {
+      IsarCore.writeNull(writer, 2);
+    } else {
+      final listWriter = IsarCore.beginList(writer, 2, list.length);
+      for (var i = 0; i < list.length; i++) {
+        {
           final value = list[i];
-          bytesCount +=
-              RelayMetadataSchema.estimateSize(value, offsets, allOffsets);
+          final objectWriter = IsarCore.beginObject(listWriter, i);
+          serializeRelayMetadata(objectWriter, value);
+          IsarCore.endObject(listWriter, objectWriter);
         }
+      }
+      IsarCore.endList(writer, listWriter);
+    }
+  }
+  IsarCore.writeLong(writer, 3, object.timestamp ?? -9223372036854775808);
+  IsarCore.writeString(writer, 4, object.id);
+  return Isar.fastHash(object.id);
+}
+
+@isarProtected
+RelayList deserializeRelayList(IsarReader reader) {
+  final object = RelayList();
+  object.pub_key = IsarCore.readString(reader, 1);
+  {
+    final length = IsarCore.readList(reader, 2, IsarCore.readerPtrPtr);
+    {
+      final reader = IsarCore.readerPtr;
+      if (reader.isNull) {
+        object.relays = null;
+      } else {
+        final list =
+            List<RelayMetadata>.filled(length, RelayMetadata(), growable: true);
+        for (var i = 0; i < length; i++) {
+          {
+            final objectReader = IsarCore.readObject(reader, i);
+            if (objectReader.isNull) {
+              list[i] = RelayMetadata();
+            } else {
+              final embedded = deserializeRelayMetadata(objectReader);
+              IsarCore.freeReader(objectReader);
+              list[i] = embedded;
+            }
+          }
+        }
+        IsarCore.freeReader(reader);
+        object.relays = list;
       }
     }
   }
-  return bytesCount;
-}
-
-void _relayListSerialize(
-  RelayList object,
-  IsarWriter writer,
-  List<int> offsets,
-  Map<Type, List<int>> allOffsets,
-) {
-  writer.writeString(offsets[0], object.pub_key);
-  writer.writeObjectList<RelayMetadata>(
-    offsets[1],
-    allOffsets,
-    RelayMetadataSchema.serialize,
-    object.relays,
-  );
-  writer.writeLong(offsets[2], object.timestamp);
-}
-
-RelayList _relayListDeserialize(
-  Id id,
-  IsarReader reader,
-  List<int> offsets,
-  Map<Type, List<int>> allOffsets,
-) {
-  final object = RelayList();
-  object.id = id;
-  object.pub_key = reader.readStringOrNull(offsets[0]);
-  object.relays = reader.readObjectList<RelayMetadata>(
-    offsets[1],
-    RelayMetadataSchema.deserialize,
-    allOffsets,
-    RelayMetadata(),
-  );
-  object.timestamp = reader.readLongOrNull(offsets[2]);
+  {
+    final value = IsarCore.readLong(reader, 3);
+    if (value == -9223372036854775808) {
+      object.timestamp = null;
+    } else {
+      object.timestamp = value;
+    }
+  }
   return object;
 }
 
-P _relayListDeserializeProp<P>(
-  IsarReader reader,
-  int propertyId,
-  int offset,
-  Map<Type, List<int>> allOffsets,
-) {
-  switch (propertyId) {
-    case 0:
-      return (reader.readStringOrNull(offset)) as P;
+@isarProtected
+dynamic deserializeRelayListProp(IsarReader reader, int property) {
+  switch (property) {
     case 1:
-      return (reader.readObjectList<RelayMetadata>(
-        offset,
-        RelayMetadataSchema.deserialize,
-        allOffsets,
-        RelayMetadata(),
-      )) as P;
+      return IsarCore.readString(reader, 1);
     case 2:
-      return (reader.readLongOrNull(offset)) as P;
+      {
+        final length = IsarCore.readList(reader, 2, IsarCore.readerPtrPtr);
+        {
+          final reader = IsarCore.readerPtr;
+          if (reader.isNull) {
+            return null;
+          } else {
+            final list = List<RelayMetadata>.filled(length, RelayMetadata(),
+                growable: true);
+            for (var i = 0; i < length; i++) {
+              {
+                final objectReader = IsarCore.readObject(reader, i);
+                if (objectReader.isNull) {
+                  list[i] = RelayMetadata();
+                } else {
+                  final embedded = deserializeRelayMetadata(objectReader);
+                  IsarCore.freeReader(objectReader);
+                  list[i] = embedded;
+                }
+              }
+            }
+            IsarCore.freeReader(reader);
+            return list;
+          }
+        }
+      }
+    case 3:
+      {
+        final value = IsarCore.readLong(reader, 3);
+        if (value == -9223372036854775808) {
+          return null;
+        } else {
+          return value;
+        }
+      }
+    case 4:
+      return IsarCore.readString(reader, 4) ?? '';
     default:
-      throw IsarError('Unknown property with id $propertyId');
+      throw ArgumentError('Unknown property: $property');
   }
 }
 
-Id _relayListGetId(RelayList object) {
-  return object.id;
+sealed class _RelayListUpdate {
+  bool call({
+    required String id,
+    String? pub_key,
+    int? timestamp,
+  });
 }
 
-List<IsarLinkBase<dynamic>> _relayListGetLinks(RelayList object) {
-  return [];
-}
+class _RelayListUpdateImpl implements _RelayListUpdate {
+  const _RelayListUpdateImpl(this.collection);
 
-void _relayListAttach(IsarCollection<dynamic> col, Id id, RelayList object) {
-  object.id = id;
-}
+  final IsarCollection<String, RelayList> collection;
 
-extension RelayListQueryWhereSort
-    on QueryBuilder<RelayList, RelayList, QWhere> {
-  QueryBuilder<RelayList, RelayList, QAfterWhere> anyId() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(const IdWhereClause.any());
-    });
-  }
-}
-
-extension RelayListQueryWhere
-    on QueryBuilder<RelayList, RelayList, QWhereClause> {
-  QueryBuilder<RelayList, RelayList, QAfterWhereClause> idEqualTo(Id id) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IdWhereClause.between(
-        lower: id,
-        upper: id,
-      ));
-    });
-  }
-
-  QueryBuilder<RelayList, RelayList, QAfterWhereClause> idNotEqualTo(Id id) {
-    return QueryBuilder.apply(this, (query) {
-      if (query.whereSort == Sort.asc) {
-        return query
-            .addWhereClause(
-              IdWhereClause.lessThan(upper: id, includeUpper: false),
-            )
-            .addWhereClause(
-              IdWhereClause.greaterThan(lower: id, includeLower: false),
-            );
-      } else {
-        return query
-            .addWhereClause(
-              IdWhereClause.greaterThan(lower: id, includeLower: false),
-            )
-            .addWhereClause(
-              IdWhereClause.lessThan(upper: id, includeUpper: false),
-            );
-      }
-    });
-  }
-
-  QueryBuilder<RelayList, RelayList, QAfterWhereClause> idGreaterThan(Id id,
-      {bool include = false}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(
-        IdWhereClause.greaterThan(lower: id, includeLower: include),
-      );
-    });
-  }
-
-  QueryBuilder<RelayList, RelayList, QAfterWhereClause> idLessThan(Id id,
-      {bool include = false}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(
-        IdWhereClause.lessThan(upper: id, includeUpper: include),
-      );
-    });
-  }
-
-  QueryBuilder<RelayList, RelayList, QAfterWhereClause> idBetween(
-    Id lowerId,
-    Id upperId, {
-    bool includeLower = true,
-    bool includeUpper = true,
+  @override
+  bool call({
+    required String id,
+    Object? pub_key = ignore,
+    Object? timestamp = ignore,
   }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IdWhereClause.between(
-        lower: lowerId,
-        includeLower: includeLower,
-        upper: upperId,
-        includeUpper: includeUpper,
-      ));
-    });
+    return collection.updateProperties([
+          id
+        ], {
+          if (pub_key != ignore) 1: pub_key as String?,
+          if (timestamp != ignore) 3: timestamp as int?,
+        }) >
+        0;
   }
+}
 
-  QueryBuilder<RelayList, RelayList, QAfterWhereClause> pub_keyIsNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'pub_key',
-        value: [null],
-      ));
-    });
-  }
+sealed class _RelayListUpdateAll {
+  int call({
+    required List<String> id,
+    String? pub_key,
+    int? timestamp,
+  });
+}
 
-  QueryBuilder<RelayList, RelayList, QAfterWhereClause> pub_keyIsNotNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.between(
-        indexName: r'pub_key',
-        lower: [null],
-        includeLower: false,
-        upper: [],
-      ));
-    });
-  }
+class _RelayListUpdateAllImpl implements _RelayListUpdateAll {
+  const _RelayListUpdateAllImpl(this.collection);
 
-  QueryBuilder<RelayList, RelayList, QAfterWhereClause> pub_keyEqualTo(
-      String? pub_key) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'pub_key',
-        value: [pub_key],
-      ));
-    });
-  }
+  final IsarCollection<String, RelayList> collection;
 
-  QueryBuilder<RelayList, RelayList, QAfterWhereClause> pub_keyNotEqualTo(
-      String? pub_key) {
-    return QueryBuilder.apply(this, (query) {
-      if (query.whereSort == Sort.asc) {
-        return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'pub_key',
-              lower: [],
-              upper: [pub_key],
-              includeUpper: false,
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'pub_key',
-              lower: [pub_key],
-              includeLower: false,
-              upper: [],
-            ));
-      } else {
-        return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'pub_key',
-              lower: [pub_key],
-              includeLower: false,
-              upper: [],
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'pub_key',
-              lower: [],
-              upper: [pub_key],
-              includeUpper: false,
-            ));
-      }
+  @override
+  int call({
+    required List<String> id,
+    Object? pub_key = ignore,
+    Object? timestamp = ignore,
+  }) {
+    return collection.updateProperties(id, {
+      if (pub_key != ignore) 1: pub_key as String?,
+      if (timestamp != ignore) 3: timestamp as int?,
     });
   }
+}
+
+extension RelayListUpdate on IsarCollection<String, RelayList> {
+  _RelayListUpdate get update => _RelayListUpdateImpl(this);
+
+  _RelayListUpdateAll get updateAll => _RelayListUpdateAllImpl(this);
+}
+
+sealed class _RelayListQueryUpdate {
+  int call({
+    String? pub_key,
+    int? timestamp,
+  });
+}
+
+class _RelayListQueryUpdateImpl implements _RelayListQueryUpdate {
+  const _RelayListQueryUpdateImpl(this.query, {this.limit});
+
+  final IsarQuery<RelayList> query;
+  final int? limit;
+
+  @override
+  int call({
+    Object? pub_key = ignore,
+    Object? timestamp = ignore,
+  }) {
+    return query.updateProperties(limit: limit, {
+      if (pub_key != ignore) 1: pub_key as String?,
+      if (timestamp != ignore) 3: timestamp as int?,
+    });
+  }
+}
+
+extension RelayListQueryUpdate on IsarQuery<RelayList> {
+  _RelayListQueryUpdate get updateFirst =>
+      _RelayListQueryUpdateImpl(this, limit: 1);
+
+  _RelayListQueryUpdate get updateAll => _RelayListQueryUpdateImpl(this);
+}
+
+class _RelayListQueryBuilderUpdateImpl implements _RelayListQueryUpdate {
+  const _RelayListQueryBuilderUpdateImpl(this.query, {this.limit});
+
+  final QueryBuilder<RelayList, RelayList, QOperations> query;
+  final int? limit;
+
+  @override
+  int call({
+    Object? pub_key = ignore,
+    Object? timestamp = ignore,
+  }) {
+    final q = query.build();
+    try {
+      return q.updateProperties(limit: limit, {
+        if (pub_key != ignore) 1: pub_key as String?,
+        if (timestamp != ignore) 3: timestamp as int?,
+      });
+    } finally {
+      q.close();
+    }
+  }
+}
+
+extension RelayListQueryBuilderUpdate
+    on QueryBuilder<RelayList, RelayList, QOperations> {
+  _RelayListQueryUpdate get updateFirst =>
+      _RelayListQueryBuilderUpdateImpl(this, limit: 1);
+
+  _RelayListQueryUpdate get updateAll => _RelayListQueryBuilderUpdateImpl(this);
 }
 
 extension RelayListQueryFilter
     on QueryBuilder<RelayList, RelayList, QFilterCondition> {
-  QueryBuilder<RelayList, RelayList, QAfterFilterCondition> idEqualTo(
-      Id value) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'id',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<RelayList, RelayList, QAfterFilterCondition> idGreaterThan(
-    Id value, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'id',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<RelayList, RelayList, QAfterFilterCondition> idLessThan(
-    Id value, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'id',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<RelayList, RelayList, QAfterFilterCondition> idBetween(
-    Id lower,
-    Id upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'id',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-      ));
-    });
-  }
-
   QueryBuilder<RelayList, RelayList, QAfterFilterCondition> pub_keyIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'pub_key',
-      ));
+      return query.addFilterCondition(const IsNullCondition(property: 1));
     });
   }
 
   QueryBuilder<RelayList, RelayList, QAfterFilterCondition> pub_keyIsNotNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'pub_key',
-      ));
+    return QueryBuilder.apply(not(), (query) {
+      return query.addFilterCondition(const IsNullCondition(property: 1));
     });
   }
 
@@ -379,60 +321,92 @@ extension RelayListQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'pub_key',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        EqualCondition(
+          property: 1,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<RelayList, RelayList, QAfterFilterCondition> pub_keyGreaterThan(
     String? value, {
-    bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'pub_key',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        GreaterCondition(
+          property: 1,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<RelayList, RelayList, QAfterFilterCondition>
+      pub_keyGreaterThanOrEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        GreaterOrEqualCondition(
+          property: 1,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<RelayList, RelayList, QAfterFilterCondition> pub_keyLessThan(
     String? value, {
-    bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'pub_key',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        LessCondition(
+          property: 1,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<RelayList, RelayList, QAfterFilterCondition>
+      pub_keyLessThanOrEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        LessOrEqualCondition(
+          property: 1,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<RelayList, RelayList, QAfterFilterCondition> pub_keyBetween(
     String? lower,
     String? upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'pub_key',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        BetweenCondition(
+          property: 1,
+          lower: lower,
+          upper: upper,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
@@ -441,11 +415,13 @@ extension RelayListQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'pub_key',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        StartsWithCondition(
+          property: 1,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
@@ -454,11 +430,13 @@ extension RelayListQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'pub_key',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        EndsWithCondition(
+          property: 1,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
@@ -466,11 +444,13 @@ extension RelayListQueryFilter
       String value,
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'pub_key',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        ContainsCondition(
+          property: 1,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
@@ -478,325 +458,533 @@ extension RelayListQueryFilter
       String pattern,
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'pub_key',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        MatchesCondition(
+          property: 1,
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<RelayList, RelayList, QAfterFilterCondition> pub_keyIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'pub_key',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        const EqualCondition(
+          property: 1,
+          value: '',
+        ),
+      );
     });
   }
 
   QueryBuilder<RelayList, RelayList, QAfterFilterCondition>
       pub_keyIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'pub_key',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        const GreaterCondition(
+          property: 1,
+          value: '',
+        ),
+      );
     });
   }
 
   QueryBuilder<RelayList, RelayList, QAfterFilterCondition> relaysIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'relays',
-      ));
+      return query.addFilterCondition(const IsNullCondition(property: 2));
     });
   }
 
   QueryBuilder<RelayList, RelayList, QAfterFilterCondition> relaysIsNotNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'relays',
-      ));
-    });
-  }
-
-  QueryBuilder<RelayList, RelayList, QAfterFilterCondition> relaysLengthEqualTo(
-      int length) {
-    return QueryBuilder.apply(this, (query) {
-      return query.listLength(
-        r'relays',
-        length,
-        true,
-        length,
-        true,
-      );
+    return QueryBuilder.apply(not(), (query) {
+      return query.addFilterCondition(const IsNullCondition(property: 2));
     });
   }
 
   QueryBuilder<RelayList, RelayList, QAfterFilterCondition> relaysIsEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.listLength(
-        r'relays',
-        0,
-        true,
-        0,
-        true,
-      );
-    });
+    return not().group(
+      (q) => q.relaysIsNull().or().relaysIsNotEmpty(),
+    );
   }
 
   QueryBuilder<RelayList, RelayList, QAfterFilterCondition> relaysIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.listLength(
-        r'relays',
-        0,
-        false,
-        999999,
-        true,
-      );
-    });
-  }
-
-  QueryBuilder<RelayList, RelayList, QAfterFilterCondition>
-      relaysLengthLessThan(
-    int length, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.listLength(
-        r'relays',
-        0,
-        true,
-        length,
-        include,
-      );
-    });
-  }
-
-  QueryBuilder<RelayList, RelayList, QAfterFilterCondition>
-      relaysLengthGreaterThan(
-    int length, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.listLength(
-        r'relays',
-        length,
-        include,
-        999999,
-        true,
-      );
-    });
-  }
-
-  QueryBuilder<RelayList, RelayList, QAfterFilterCondition> relaysLengthBetween(
-    int lower,
-    int upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.listLength(
-        r'relays',
-        lower,
-        includeLower,
-        upper,
-        includeUpper,
+      return query.addFilterCondition(
+        const GreaterOrEqualCondition(property: 2, value: null),
       );
     });
   }
 
   QueryBuilder<RelayList, RelayList, QAfterFilterCondition> timestampIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'timestamp',
-      ));
+      return query.addFilterCondition(const IsNullCondition(property: 3));
     });
   }
 
   QueryBuilder<RelayList, RelayList, QAfterFilterCondition>
       timestampIsNotNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'timestamp',
-      ));
+    return QueryBuilder.apply(not(), (query) {
+      return query.addFilterCondition(const IsNullCondition(property: 3));
     });
   }
 
   QueryBuilder<RelayList, RelayList, QAfterFilterCondition> timestampEqualTo(
-      int? value) {
+    int? value,
+  ) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'timestamp',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        EqualCondition(
+          property: 3,
+          value: value,
+        ),
+      );
     });
   }
 
   QueryBuilder<RelayList, RelayList, QAfterFilterCondition>
       timestampGreaterThan(
-    int? value, {
-    bool include = false,
-  }) {
+    int? value,
+  ) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'timestamp',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        GreaterCondition(
+          property: 3,
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<RelayList, RelayList, QAfterFilterCondition>
+      timestampGreaterThanOrEqualTo(
+    int? value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        GreaterOrEqualCondition(
+          property: 3,
+          value: value,
+        ),
+      );
     });
   }
 
   QueryBuilder<RelayList, RelayList, QAfterFilterCondition> timestampLessThan(
-    int? value, {
-    bool include = false,
-  }) {
+    int? value,
+  ) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'timestamp',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        LessCondition(
+          property: 3,
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<RelayList, RelayList, QAfterFilterCondition>
+      timestampLessThanOrEqualTo(
+    int? value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        LessOrEqualCondition(
+          property: 3,
+          value: value,
+        ),
+      );
     });
   }
 
   QueryBuilder<RelayList, RelayList, QAfterFilterCondition> timestampBetween(
     int? lower,
-    int? upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
+    int? upper,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        BetweenCondition(
+          property: 3,
+          lower: lower,
+          upper: upper,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<RelayList, RelayList, QAfterFilterCondition> idEqualTo(
+    String value, {
+    bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'timestamp',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-      ));
+      return query.addFilterCondition(
+        EqualCondition(
+          property: 4,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<RelayList, RelayList, QAfterFilterCondition> idGreaterThan(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        GreaterCondition(
+          property: 4,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<RelayList, RelayList, QAfterFilterCondition>
+      idGreaterThanOrEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        GreaterOrEqualCondition(
+          property: 4,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<RelayList, RelayList, QAfterFilterCondition> idLessThan(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        LessCondition(
+          property: 4,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<RelayList, RelayList, QAfterFilterCondition> idLessThanOrEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        LessOrEqualCondition(
+          property: 4,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<RelayList, RelayList, QAfterFilterCondition> idBetween(
+    String lower,
+    String upper, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        BetweenCondition(
+          property: 4,
+          lower: lower,
+          upper: upper,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<RelayList, RelayList, QAfterFilterCondition> idStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        StartsWithCondition(
+          property: 4,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<RelayList, RelayList, QAfterFilterCondition> idEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        EndsWithCondition(
+          property: 4,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<RelayList, RelayList, QAfterFilterCondition> idContains(
+      String value,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        ContainsCondition(
+          property: 4,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<RelayList, RelayList, QAfterFilterCondition> idMatches(
+      String pattern,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        MatchesCondition(
+          property: 4,
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<RelayList, RelayList, QAfterFilterCondition> idIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const EqualCondition(
+          property: 4,
+          value: '',
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<RelayList, RelayList, QAfterFilterCondition> idIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const GreaterCondition(
+          property: 4,
+          value: '',
+        ),
+      );
     });
   }
 }
 
 extension RelayListQueryObject
-    on QueryBuilder<RelayList, RelayList, QFilterCondition> {
-  QueryBuilder<RelayList, RelayList, QAfterFilterCondition> relaysElement(
-      FilterQuery<RelayMetadata> q) {
-    return QueryBuilder.apply(this, (query) {
-      return query.object(q, r'relays');
-    });
-  }
-}
-
-extension RelayListQueryLinks
     on QueryBuilder<RelayList, RelayList, QFilterCondition> {}
 
 extension RelayListQuerySortBy on QueryBuilder<RelayList, RelayList, QSortBy> {
-  QueryBuilder<RelayList, RelayList, QAfterSortBy> sortByPub_key() {
+  QueryBuilder<RelayList, RelayList, QAfterSortBy> sortByPub_key(
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'pub_key', Sort.asc);
+      return query.addSortBy(
+        1,
+        caseSensitive: caseSensitive,
+      );
     });
   }
 
-  QueryBuilder<RelayList, RelayList, QAfterSortBy> sortByPub_keyDesc() {
+  QueryBuilder<RelayList, RelayList, QAfterSortBy> sortByPub_keyDesc(
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'pub_key', Sort.desc);
+      return query.addSortBy(
+        1,
+        sort: Sort.desc,
+        caseSensitive: caseSensitive,
+      );
     });
   }
 
   QueryBuilder<RelayList, RelayList, QAfterSortBy> sortByTimestamp() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'timestamp', Sort.asc);
+      return query.addSortBy(3);
     });
   }
 
   QueryBuilder<RelayList, RelayList, QAfterSortBy> sortByTimestampDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'timestamp', Sort.desc);
+      return query.addSortBy(3, sort: Sort.desc);
+    });
+  }
+
+  QueryBuilder<RelayList, RelayList, QAfterSortBy> sortById(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(
+        4,
+        caseSensitive: caseSensitive,
+      );
+    });
+  }
+
+  QueryBuilder<RelayList, RelayList, QAfterSortBy> sortByIdDesc(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(
+        4,
+        sort: Sort.desc,
+        caseSensitive: caseSensitive,
+      );
     });
   }
 }
 
 extension RelayListQuerySortThenBy
     on QueryBuilder<RelayList, RelayList, QSortThenBy> {
-  QueryBuilder<RelayList, RelayList, QAfterSortBy> thenById() {
+  QueryBuilder<RelayList, RelayList, QAfterSortBy> thenByPub_key(
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'id', Sort.asc);
+      return query.addSortBy(1, caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<RelayList, RelayList, QAfterSortBy> thenByIdDesc() {
+  QueryBuilder<RelayList, RelayList, QAfterSortBy> thenByPub_keyDesc(
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'id', Sort.desc);
-    });
-  }
-
-  QueryBuilder<RelayList, RelayList, QAfterSortBy> thenByPub_key() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'pub_key', Sort.asc);
-    });
-  }
-
-  QueryBuilder<RelayList, RelayList, QAfterSortBy> thenByPub_keyDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'pub_key', Sort.desc);
+      return query.addSortBy(1, sort: Sort.desc, caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<RelayList, RelayList, QAfterSortBy> thenByTimestamp() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'timestamp', Sort.asc);
+      return query.addSortBy(3);
     });
   }
 
   QueryBuilder<RelayList, RelayList, QAfterSortBy> thenByTimestampDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'timestamp', Sort.desc);
+      return query.addSortBy(3, sort: Sort.desc);
+    });
+  }
+
+  QueryBuilder<RelayList, RelayList, QAfterSortBy> thenById(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(4, caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<RelayList, RelayList, QAfterSortBy> thenByIdDesc(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(4, sort: Sort.desc, caseSensitive: caseSensitive);
     });
   }
 }
 
 extension RelayListQueryWhereDistinct
     on QueryBuilder<RelayList, RelayList, QDistinct> {
-  QueryBuilder<RelayList, RelayList, QDistinct> distinctByPub_key(
+  QueryBuilder<RelayList, RelayList, QAfterDistinct> distinctByPub_key(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'pub_key', caseSensitive: caseSensitive);
+      return query.addDistinctBy(1, caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<RelayList, RelayList, QDistinct> distinctByTimestamp() {
+  QueryBuilder<RelayList, RelayList, QAfterDistinct> distinctByTimestamp() {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'timestamp');
+      return query.addDistinctBy(3);
     });
   }
 }
 
-extension RelayListQueryProperty
-    on QueryBuilder<RelayList, RelayList, QQueryProperty> {
-  QueryBuilder<RelayList, int, QQueryOperations> idProperty() {
+extension RelayListQueryProperty1
+    on QueryBuilder<RelayList, RelayList, QProperty> {
+  QueryBuilder<RelayList, String?, QAfterProperty> pub_keyProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'id');
+      return query.addProperty(1);
     });
   }
 
-  QueryBuilder<RelayList, String?, QQueryOperations> pub_keyProperty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'pub_key');
-    });
-  }
-
-  QueryBuilder<RelayList, List<RelayMetadata>?, QQueryOperations>
+  QueryBuilder<RelayList, List<RelayMetadata>?, QAfterProperty>
       relaysProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'relays');
+      return query.addProperty(2);
     });
   }
 
-  QueryBuilder<RelayList, int?, QQueryOperations> timestampProperty() {
+  QueryBuilder<RelayList, int?, QAfterProperty> timestampProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'timestamp');
+      return query.addProperty(3);
+    });
+  }
+
+  QueryBuilder<RelayList, String, QAfterProperty> idProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(4);
+    });
+  }
+}
+
+extension RelayListQueryProperty2<R>
+    on QueryBuilder<RelayList, R, QAfterProperty> {
+  QueryBuilder<RelayList, (R, String?), QAfterProperty> pub_keyProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(1);
+    });
+  }
+
+  QueryBuilder<RelayList, (R, List<RelayMetadata>?), QAfterProperty>
+      relaysProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(2);
+    });
+  }
+
+  QueryBuilder<RelayList, (R, int?), QAfterProperty> timestampProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(3);
+    });
+  }
+
+  QueryBuilder<RelayList, (R, String), QAfterProperty> idProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(4);
+    });
+  }
+}
+
+extension RelayListQueryProperty3<R1, R2>
+    on QueryBuilder<RelayList, (R1, R2), QAfterProperty> {
+  QueryBuilder<RelayList, (R1, R2, String?), QOperations> pub_keyProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(1);
+    });
+  }
+
+  QueryBuilder<RelayList, (R1, R2, List<RelayMetadata>?), QOperations>
+      relaysProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(2);
+    });
+  }
+
+  QueryBuilder<RelayList, (R1, R2, int?), QOperations> timestampProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(3);
+    });
+  }
+
+  QueryBuilder<RelayList, (R1, R2, String), QOperations> idProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(4);
     });
   }
 }

@@ -80,12 +80,14 @@ class _IndexRouter extends CustState<IndexRouter>
   }
 
   void init() async {
+
     await relayManager.connect();
+    await relayManager.init();
     Nip65? nip65 = await relayManager.getSingleNip65(nostr!.publicKey);
     if (nip65 != null) {
       createMyRelaySets(nip65);
     }
-    await relayManager.connect(bootstrapRelays: nip65 != null ? nip65!.relays.keys.toList() : RelayManager.DEFAULT_BOOTSTRAP_RELAYS);
+    await relayManager.connect(bootstrapRelays: nip65 != null ? nip65!.urls : RelayManager.DEFAULT_BOOTSTRAP_RELAYS);
     print("Loading contact list...");
     Nip02ContactList? contactList = await relayManager.loadContactList(nostr!.publicKey);
     if (contactList != null) {

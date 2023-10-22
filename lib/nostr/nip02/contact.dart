@@ -13,7 +13,6 @@ class Contact {
   static const PETNAME_TAG = "_TAG";
   static const PETNAME_EVENT = "_EVENT";
 
-
   Contact();
 
   /// Creates a new [Contact].

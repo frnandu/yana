@@ -328,12 +328,13 @@ class _LoginRouter extends State<LoginRouter>
   void initRelayManager(bool alreadyClosed, String publicKey) async {
     if (!alreadyClosed) {
       relayManager = RelayManager();
+      await relayManager.init();
       await relayManager.connect();
       Nip65? nip65 = await relayManager.getSingleNip65(publicKey);
       if (nip65!=null) {
         createMyRelaySets(nip65);
       }
-      await relayManager.connect(bootstrapRelays: nip65!=null? nip65!.relays.keys.toList() : RelayManager.DEFAULT_BOOTSTRAP_RELAYS);
+      await relayManager.connect(bootstrapRelays: nip65!=null? nip65.urls : RelayManager.DEFAULT_BOOTSTRAP_RELAYS);
 
       // nostr = await relayProvider.genNostr(
       //     privateKey: isPrivate ? key : null,
