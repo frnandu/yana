@@ -1,4 +1,5 @@
 import 'package:bot_toast/bot_toast.dart';
+import 'package:dart_ndk/db/user_relay_list.dart';
 import 'package:dart_ndk/nips/nip65/nip65.dart';
 import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
 import 'package:dart_ndk/pubkey_mapping.dart';
@@ -7,6 +8,7 @@ import 'package:dart_ndk/relay_manager.dart';
 import 'package:dart_ndk/relay_set.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:yana/utils/platform_util.dart';
 
@@ -328,13 +330,13 @@ class _LoginRouter extends State<LoginRouter>
   void initRelayManager(bool alreadyClosed, String publicKey) async {
     if (!alreadyClosed) {
       relayManager = RelayManager();
-      await relayManager.init();
+      await relayManager.init(dbPath: (await getApplicationDocumentsDirectory()).path);
       await relayManager.connect();
-      Nip65? nip65 = await relayManager.getSingleNip65(publicKey);
-      if (nip65!=null) {
-        createMyRelaySets(nip65);
+      UserRelayList? userRelayList = await relayManager.getSingleUserRelayList(publicKey);
+      if (userRelayList!=null) {
+        createMyRelaySets(userRelayList);
       }
-      await relayManager.connect(bootstrapRelays: nip65!=null? nip65.urls : RelayManager.DEFAULT_BOOTSTRAP_RELAYS);
+      await relayManager.connect(bootstrapRelays: userRelayList!=null? userRelayList.urls : RelayManager.DEFAULT_BOOTSTRAP_RELAYS);
 
       // nostr = await relayProvider.genNostr(
       //     privateKey: isPrivate ? key : null,

@@ -2,12 +2,9 @@ import 'package:isar/isar.dart';
 
 import '../utils/string_util.dart';
 
-part 'metadata.g.dart';
-@collection
 class Metadata {
   // Id id = Isar.autoIncrement;
 
-  @Index(hash: true)
   String? pubKey;
 
   String get id => pubKey!;

@@ -110,6 +110,12 @@ class FollowEventProvider extends ChangeNotifier
     }
     // TODO
     //addTagCommunityFilter([filter.toMap()], queriyTags);
+    if (settingProvider.gossip == 1 && feedRelaySet!=null) {
+      await relayManager
+          .reconnectRelays(feedRelaySet!.urls);
+    } else {
+      await relayManager.reconnectRelays(myInboxRelays!.urls);
+    }
 
     Stream<Nip01Event> stream = await relayManager!.subscription(
         filter, (feedRelaySet!=null && settingProvider.gossip==1)? feedRelaySet! : myInboxRelays!);

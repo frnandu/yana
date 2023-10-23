@@ -293,14 +293,14 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
         SettingsTile.navigation(
             onPressed: (context) {
               if (feedRelaySet != null &&
-                  feedRelaySet!.map.isNotEmpty &&
+                  feedRelaySet!.items.isNotEmpty &&
                   !loadingGossipRelays) {
-                List<RelayMetadata> filteredRelays = feedRelaySet!.map.entries
-                    .map((entry) => RelayMetadata.full(
-                    url: entry.key,
+                List<RelayMetadata> filteredRelays = feedRelaySet!.items
+                    .map((item) => RelayMetadata.full(
+                    url: item.url,
                     read: false,
                     write: true,
-                    count: entry.value.length))
+                    count: item.pubKeyMappings.length))
                     .toList();
 
                 // List<RelayMetadata> filteredRelays =
@@ -1011,8 +1011,11 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
         await relayManager.calculateRelaySet(
             contactListProvider.contactList!.contacts, RelayDirection.outbox,
             relayMinCountPerPubKey: settingProvider.followeesRelayMinCount);
-    if (newRelaySet!=null && newRelaySet!.map.isNotEmpty) {
+    if (newRelaySet!=null && newRelaySet.items.isNotEmpty) {
       feedRelaySet = newRelaySet;
+      feedRelaySet!.name = "feed";
+      feedRelaySet!.pubKey = nostr!.publicKey;
+      await relayManager.saveRelaySet(feedRelaySet!);
     }
     reloadingFollowNostr = false;
     setState(() {

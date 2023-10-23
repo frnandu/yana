@@ -152,7 +152,7 @@ class _SearchRouter extends CustState<SearchRouter>
         itemCount: metadatasFromCache.length + metadatasFromSearch.length + events.length);
 
     if (StringUtil.isBlank(controller.text)) {
-      bool anyNip50 = myInboxRelays!=null && relayManager.getConnectedRelays(myInboxRelays!.map.keys).any((relay) => relay.info!=null && relay.info!.nips!=null && relay.info!.nips.contains(50));
+      bool anyNip50 = myInboxRelays!=null && relayManager.getConnectedRelays(myInboxRelays!.urls).any((relay) => relay.info!=null && relay.info!.nips!=null && relay.info!.nips.contains(50));
       if (!anyNip50) {
         body = SearchActionItemComponent(onTap: () {
           RouterUtil.router(context, RouterPath.RELAYS);

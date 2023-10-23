@@ -56,12 +56,12 @@ class RelayProvider extends ChangeNotifier {
 
   String relayNumStr() {
     Set<String> set = {};
-    set.addAll(myInboxRelays!.map.keys);
-    set.addAll(myOutboxRelays!.map.keys);
+    set.addAll(myInboxRelays!.urls);
+    set.addAll(myOutboxRelays!.urls);
     String result = "${relayManager.getConnectedRelays(set).length}/${set.length}";
     // String result =
     //     "${nostr!.activeRelays().length}/${nostr!.allRelays().length}";
-    if (settingProvider.gossip == 1 && feedRelaySet != null && feedRelaySet!.map.isNotEmpty) {
+    if (settingProvider.gossip == 1 && feedRelaySet != null && feedRelaySet!.items.isNotEmpty) {
       result += " (feed ${feedRelaysNumStr()})";
     }
     return result;
@@ -69,7 +69,7 @@ class RelayProvider extends ChangeNotifier {
 
   String feedRelaysNumStr() {
     if (feedRelaySet != null) {
-      return "${relayManager.getConnectedRelays(feedRelaySet!.map.keys.toList()).length}/${feedRelaySet!.map.keys.length}";
+      return "${relayManager.getConnectedRelays(feedRelaySet!.urls).length}/${feedRelaySet!.urls.length}";
     }
     return "";
   }

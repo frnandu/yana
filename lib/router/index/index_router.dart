@@ -1,11 +1,13 @@
 import 'dart:async';
 
+import 'package:dart_ndk/db/user_relay_list.dart';
 import 'package:dart_ndk/nips/nip02/contact_list.dart';
 import 'package:dart_ndk/nips/nip65/nip65.dart';
 import 'package:dart_ndk/read_write.dart';
 import 'package:dart_ndk/relay_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:sizer/sizer.dart';
 import 'package:yana/provider/dm_provider.dart';
@@ -76,26 +78,42 @@ class _IndexRouter extends CustState<IndexRouter>
     followTabController =
         TabController(initialIndex: followInitTab, length: 3, vsync: this);
     dmTabController = TabController(length: 3, vsync: this);
-    init();
+    if (nostr != null) {
+      initRelays();
+    }
   }
 
-  void init() async {
+
+  void initRelays() async {
 
     await relayManager.connect();
-    await relayManager.init();
-    Nip65? nip65 = await relayManager.getSingleNip65(nostr!.publicKey);
-    if (nip65 != null) {
-      createMyRelaySets(nip65);
+    await relayManager.init(dbPath: (await getApplicationDocumentsDirectory()).path);
+    UserRelayList? userRelayList = await relayManager.getSingleUserRelayList(nostr!.publicKey);
+    if (userRelayList != null) {
+      createMyRelaySets(userRelayList);
     }
-    await relayManager.connect(bootstrapRelays: nip65 != null ? nip65!.urls : RelayManager.DEFAULT_BOOTSTRAP_RELAYS);
+    await relayManager.connect(bootstrapRelays: userRelayList != null ? userRelayList!.urls : RelayManager.DEFAULT_BOOTSTRAP_RELAYS);
     print("Loading contact list...");
     Nip02ContactList? contactList = await relayManager.loadContactList(nostr!.publicKey);
     if (contactList != null) {
       print("Loaded ${contactList.contacts.length} contacts...");
       contactListProvider.set(contactList);
       if (settingProvider.gossip == 1) {
-        feedRelaySet =
-        await relayManager.calculateRelaySet(contactList.contacts, RelayDirection.outbox, relayMinCountPerPubKey: settingProvider.followeesRelayMinCount);
+        feedRelaySet = relayManager.getRelaySet("feed", nostr!.publicKey);
+        if (feedRelaySet==null) {
+          feedRelaySet =
+          await relayManager.calculateRelaySet(contactList.contacts, RelayDirection.outbox, relayMinCountPerPubKey: settingProvider.followeesRelayMinCount);
+          feedRelaySet!.name = "feed";
+          feedRelaySet!.pubKey = nostr!.publicKey;
+          await relayManager.saveRelaySet(feedRelaySet!);
+        } else {
+          // final startTime = DateTime.now();
+          // print("connecting ${feedRelaySet!.items.length} relays");
+          // List<bool> connected = await Future.wait(feedRelaySet!.items.map((item) => relayManager.connectRelay(item.url)));
+          // final endTime = DateTime.now();
+          // final duration = endTime.difference(startTime);
+          // print("CONNECTED ${connected.where((element) => element).length} , ${connected.where((element) => !element ).length} FAILED took ${duration.inMilliseconds} ms");
+        }
       }
       followEventProvider.doQuery();
     }

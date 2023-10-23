@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:bot_toast/bot_toast.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:dart_ndk/db/user_relay_list.dart';
 import 'package:dart_ndk/nips/nip01/metadata.dart';
 import 'package:dart_ndk/nips/nip65/nip65.dart';
 import 'package:dart_ndk/relay_manager.dart';
@@ -166,8 +167,8 @@ class AccountsState extends State<AccountsComponent> {
   void doLogin() async {
     String? key = settingProvider.key;
     bool isPrivate = settingProvider.isPrivateKey;
-    Nip65? nip65 = await relayManager!.getSingleNip65(isPrivate ? getPublicKey(key!): key!);
-    await relayManager!.connect(bootstrapRelays: nip65!=null? nip65.urls : RelayManager.DEFAULT_BOOTSTRAP_RELAYS);
+    UserRelayList? userRelayList = await relayManager!.getSingleUserRelayList(isPrivate ? getPublicKey(key!): key!);
+    await relayManager!.connect(bootstrapRelays: userRelayList!=null? userRelayList.urls : RelayManager.DEFAULT_BOOTSTRAP_RELAYS);
 
     // nostr = await relayProvider.genNostr(
     //     privateKey: isPrivate ? key : null, publicKey: isPrivate ? null : key);
@@ -206,8 +207,8 @@ class AccountsState extends State<AccountsComponent> {
       if (settingProvider.key != null) {
         // use next privateKey to login
         bool isPrivate = settingProvider.isPrivateKey;
-        Nip65? nip65 = await relayManager!.getSingleNip65(isPrivate ? getPublicKey(key!): key!);
-        await relayManager!.connect(bootstrapRelays: nip65!=null? nip65.urls : RelayManager.DEFAULT_BOOTSTRAP_RELAYS);
+        UserRelayList? userRelayList = await relayManager!.getSingleUserRelayList(isPrivate ? getPublicKey(key!): key!);
+        await relayManager!.connect(bootstrapRelays: userRelayList!=null? userRelayList.urls : RelayManager.DEFAULT_BOOTSTRAP_RELAYS);
         //
         // nostr = await relayProvider.genNostr(
         //     privateKey: isPrivate ? key : null,

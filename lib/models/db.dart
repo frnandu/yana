@@ -42,12 +42,12 @@ class DB {
   }
 
   static init() async {
-    final dir = await getApplicationDocumentsDirectory();
-    isar = Isar.open(
-      inspector: kDebugMode,
-      directory: dir.path,
-      schemas: [MetadataSchema, RelayListSchema, ContactListSchema, RelayMetadataSchema, Nip65Schema],
-    );
+    // final dir = await getApplicationDocumentsDirectory();
+    // isar = Isar.open(
+    //   inspector: kDebugMode,
+    //   directory: dir.path,
+    //   schemas: [MetadataSchema, RelayListSchema, ContactListSchema, RelayMetadataSchema, Nip65Schema],
+    // );
     await performMigrationIfNeeded();
 
     // String path = _dbName;

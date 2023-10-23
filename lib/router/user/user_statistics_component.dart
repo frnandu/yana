@@ -2,10 +2,10 @@ import 'dart:async';
 
 import 'package:bot_toast/bot_toast.dart';
 import 'package:convert/convert.dart';
+import 'package:dart_ndk/db/user_relay_list.dart';
 import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip01/filter.dart';
 import 'package:dart_ndk/nips/nip02/contact_list.dart';
-import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
 import 'package:flutter/material.dart';
 import 'package:yana/ui/enum_selector_component.dart';
 import 'package:yana/utils/base_consts.dart';
@@ -43,7 +43,7 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
   static const Duration REFRESH_METADATA_DURATION = Duration(minutes: 10);
 
   EventMemBox? zapEventBox;
-  Map<String, dynamic> relayMap = {};
+  UserRelayList? userRelayList;
   Nip02ContactList? contactList;
 
   // followedMap
@@ -69,15 +69,17 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
   }
 
   void load() async {
-    relayManager.loadMissingRelayListsFromNip65OrNip02([widget.pubkey]).then(
-      (value) {
-        setState(() async {
-          relayMap = await relayManager.getRelayMarkerMap(widget.pubkey) ?? {};
-          contactList = relayManager.getContactList(widget.pubkey);
-          if (widget.onContactListLoaded != null && contactList != null) {
-            widget.onContactListLoaded!(contactList!);
-          }
-        });
+    await relayManager.loadMissingRelayListsFromNip65OrNip02([widget.pubkey]).then(
+      (value) async {
+        userRelayList = await relayManager.getSingleUserRelayList(widget.pubkey);
+        contactList = await relayManager.loadContactList(widget.pubkey);
+        if (!_disposed) {
+          setState(() {
+            if (widget.onContactListLoaded != null && contactList != null) {
+              widget.onContactListLoaded!(contactList!);
+            }
+          });
+        }
       },
     );
     queryFollowers();
@@ -102,9 +104,11 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
             if (widget.onContactListLoaded != null && newContactList != null) {
               widget.onContactListLoaded!(contactList!);
             }
-            setState(() {
-              contactList = newContactList;
-            });
+            if (!_disposed) {
+              setState(() {
+                contactList = newContactList;
+              });
+            }
           }
         },
       );
@@ -150,7 +154,7 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
     ));
 
     list.add(UserStatisticsItemComponent(
-        num: relayMap.length, name: s.Relays, onTap: onRelaysTap));
+        num: userRelayList!=null? userRelayList!.items.length:0, name: s.Relays, onTap: onRelaysTap));
 
     list.add(UserStatisticsItemComponent(
         num: contactList != null ? contactList!.followedTags.length : 0,
@@ -259,8 +263,8 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
           Filter(kinds: [Nip02ContactList.kind], pTags: [widget.pubkey]);
 
       Stream<Nip01Event> stream = await relayManager.requestRelays(
-          feedRelaySet!.map.keys.toList()
-            ..addAll(myInboxRelays!.map.keys.toList()),
+          feedRelaySet!.urls
+            ..addAll(myInboxRelays!.urls),
           filter,
           idleTimeout: 30);
       _followersSubscription = stream.listen((event) {
@@ -280,12 +284,12 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
   }
 
   onRelaysTap() {
-    if (relayMap.isNotEmpty) {
-      List<RelayMetadata> relays = relayMap.entries
-          .map((entry) => RelayMetadata.full(
-              url: entry.key,
-              read: entry.value.isRead,
-              write: entry.value.isWrite,
+    if (userRelayList!=null && userRelayList!.items.isNotEmpty) {
+      List<RelayMetadata> relays = userRelayList!.items
+          .map((item) => RelayMetadata.full(
+              url: item.url,
+              read: item.marker.isRead,
+              write: item.marker.isWrite,
               count: 0))
           .toList();
       RouterUtil.router(context, RouterPath.USER_RELAYS, relays);
@@ -302,8 +306,8 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
       // pull zap event
       zapSubscribeId = StringUtil.rndNameStr(12);
       Stream<Nip01Event> stream = await relayManager.requestRelays(
-          feedRelaySet!.map.keys.toList()
-            ..addAll(myInboxRelays!.map.keys.toList()),
+          feedRelaySet!.urls
+            ..addAll(myInboxRelays!.urls),
           Filter(kinds: [EventKind.ZAP], pTags: [widget.pubkey]),
           idleTimeout: 30
       );

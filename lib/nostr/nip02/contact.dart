@@ -3,10 +3,8 @@ import 'package:yana/utils/string_util.dart';
 
 import '../client_utils/keys.dart';
 
-part "contact.g.dart";
 
 /// A single contact for use with [ContactList]
-@embedded
 class Contact {
 
   static const PETNAME_COMMUNITY = "_COMMUNITY";

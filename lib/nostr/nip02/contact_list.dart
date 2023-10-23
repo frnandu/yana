@@ -4,15 +4,11 @@ import '../../main.dart';
 import '../../models/db.dart';
 import 'contact.dart';
 
-part 'contact_list.g.dart';
-
-@collection
 class ContactList {
   static Map<String, ContactList> cached = {};
 
   // Id id = Isar.autoIncrement;
 
-  @Index(hash: true)
   String? pub_key;
 
   String get id => pub_key!;

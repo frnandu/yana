@@ -7,7 +7,7 @@ class OpenStatus {
 
 class EnumObj {
   final dynamic value;
-  late Widget widget;
+  Widget? widget;
 
   EnumObj(
     this.value,
@@ -16,7 +16,7 @@ class EnumObj {
     if (widget!=null) {
       this.widget = widget!;
     } else {
-      widget = Text(name??"");
+      this.widget = Text(name??"");
     }
   }
 }

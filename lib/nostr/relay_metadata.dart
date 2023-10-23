@@ -1,8 +1,5 @@
 import 'package:isar/isar.dart';
 
-part 'relay_metadata.g.dart';
-
-@embedded
 class RelayMetadata {
   String? url;
 
