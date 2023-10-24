@@ -1,12 +1,10 @@
 import 'package:dart_ndk/nips/nip01/event.dart';
+import 'package:dart_ndk/nips/nip01/filter.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
-import '../nostr/event.dart';
-import 'package:dart_ndk/nips/nip01/filter.dart';
-import '../nostr/nip02/contact.dart';
-import '../models/event_mem_box.dart';
 import '../main.dart';
+import '../models/event_mem_box.dart';
 import '../utils/peddingevents_later_function.dart';
 import '../utils/string_util.dart';
 import 'follow_event_provider.dart';

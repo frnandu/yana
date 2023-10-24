@@ -5,7 +5,6 @@ import 'package:yana/utils/router_path.dart';
 import 'package:yana/provider/contact_list_provider.dart';
 import 'package:provider/provider.dart';
 
-import '../../nostr/nip02/contact_list.dart';
 import '../../utils/base.dart';
 import '../../i18n/i18n.dart';
 import '../../main.dart';

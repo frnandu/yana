@@ -2,12 +2,12 @@ import 'package:dart_ndk/nips/nip01/filter.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../main.dart';
+import '../../models/event_mem_box.dart';
 import '../../nostr/event_kind.dart' as kind;
 import '../../nostr/nip58/badge_definition.dart';
-import '../../utils/base.dart';
-import '../../models/event_mem_box.dart';
-import '../../main.dart';
 import '../../provider/badge_definition_provider.dart';
+import '../../utils/base.dart';
 import '../../utils/later_function.dart';
 import '../../utils/string_util.dart';
 import '../badge_component.dart';

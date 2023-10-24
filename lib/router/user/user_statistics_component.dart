@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:bot_toast/bot_toast.dart';
 import 'package:convert/convert.dart';
+import 'package:dart_ndk/db/user_contacts.dart';
 import 'package:dart_ndk/db/user_relay_list.dart';
 import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip01/filter.dart';
@@ -15,7 +16,6 @@ import '../../main.dart';
 import '../../models/event_mem_box.dart';
 import '../../nostr/event.dart';
 import '../../nostr/event_kind.dart';
-import '../../nostr/nip02/contact_list.dart';
 import '../../nostr/nip57/zap_num_util.dart';
 import '../../nostr/relay_metadata.dart';
 import '../../ui/cust_state.dart';
@@ -28,10 +28,10 @@ import '../../utils/string_util.dart';
 class UserStatisticsComponent extends StatefulWidget {
   String pubkey;
 
-  Function(Nip02ContactList)? onContactListLoaded;
+  Function(UserContacts)? onUserContactsLoaded;
 
   UserStatisticsComponent(
-      {super.key, required this.pubkey, this.onContactListLoaded});
+      {super.key, required this.pubkey, this.onUserContactsLoaded});
 
   @override
   State<StatefulWidget> createState() {
@@ -44,7 +44,7 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
 
   EventMemBox? zapEventBox;
   UserRelayList? userRelayList;
-  Nip02ContactList? contactList;
+  UserContacts? userContacts;
 
   // followedMap
   Map<String, Nip01Event>? followedMap;
@@ -72,11 +72,11 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
     await relayManager.loadMissingRelayListsFromNip65OrNip02([widget.pubkey]).then(
       (value) async {
         userRelayList = await relayManager.getSingleUserRelayList(widget.pubkey);
-        contactList = await relayManager.loadContactList(widget.pubkey);
+        userContacts = await relayManager.loadUserContacts(widget.pubkey);
         if (!_disposed) {
           setState(() {
-            if (widget.onContactListLoaded != null && contactList != null) {
-              widget.onContactListLoaded!(contactList!);
+            if (widget.onUserContactsLoaded != null && userContacts != null) {
+              widget.onUserContactsLoaded!(userContacts!);
             }
           });
         }
@@ -88,25 +88,25 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
   }
 
   void refreshContactListIfNeededAsync(String pubkey) {
-    Nip02ContactList? nip02 = relayManager.getContactList(pubkey);
+    UserContacts? userContacts = relayManager.getUserContacts(pubkey);
     int sometimeAgo = DateTime.now()
             .subtract(REFRESH_METADATA_DURATION)
             .millisecondsSinceEpoch ~/
         1000;
-    if (nip02 == null ||
-        nip02.loadedTimestamp == null ||
-        nip02.loadedTimestamp! < sometimeAgo) {
-      relayManager.loadContactList(pubkey!, forceRefresh: true).then(
+    if (userContacts == null ||
+        userContacts.refreshedTimestamp == null ||
+        userContacts.refreshedTimestamp! < sometimeAgo) {
+      relayManager.loadUserContacts(pubkey!, forceRefresh: true).then(
         (newContactList) {
           if (newContactList != null &&
-              (nip02 == null ||
-                  (nip02!.createdAt < newContactList.createdAt))) {
-            if (widget.onContactListLoaded != null && newContactList != null) {
-              widget.onContactListLoaded!(contactList!);
+              (userContacts == null ||
+                  (userContacts!.createdAt < newContactList.createdAt))) {
+            if (widget.onUserContactsLoaded != null && newContactList != null) {
+              widget.onUserContactsLoaded!(userContacts!);
             }
             if (!_disposed) {
               setState(() {
-                contactList = newContactList;
+                userContacts = newContactList;
               });
             }
           }
@@ -121,8 +121,8 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
 
     List<Widget> list = [];
 
-    if (contactList != null) {
-      length = contactList!.contacts.length;
+    if (userContacts != null) {
+      length = userContacts!.contacts.length;
     }
     list.add(UserStatisticsItemComponent(
         num: length, name: s.Following, onTap: onFollowingTap));
@@ -157,12 +157,12 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
         num: userRelayList!=null? userRelayList!.items.length:0, name: s.Relays, onTap: onRelaysTap));
 
     list.add(UserStatisticsItemComponent(
-        num: contactList != null ? contactList!.followedTags.length : 0,
+        num: userContacts != null && userContacts!.followedTags!=null? userContacts!.followedTags!.length : 0,
         name: s.Followed_Tags,
         onTap: onFollowedTagsTap));
 
     list.add(UserStatisticsItemComponent(
-        num: contactList != null ? contactList!.followedCommunities.length : 0,
+        num: userContacts != null && userContacts!.followedCommunities!=null ? userContacts!.followedCommunities!.length : 0,
         name: s.Followed_Communities,
         onTap: onFollowedCommunitiesTap));
 
@@ -204,20 +204,20 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
       var list = localContactBox!.all();
 
       List<EnumObj> enumList = [];
-      for (var event in list) {
-        var _contactList = ContactList.fromJson(event.tags);
-        var dt = DateTime.fromMillisecondsSinceEpoch(event.createdAt * 1000);
-        enumList.add(
-            EnumObj(event, "${format.encode(dt)} (${_contactList.total()})"));
-      }
-
-      var result = await EnumSelectorComponent.show(context, enumList);
-      if (result != null) {
-        var event = result.value as Event;
-        var _contactList = ContactList.fromJson(event.tags);
-        RouterUtil.router(
-            context, RouterPath.USER_HISTORY_CONTACT_LIST, _contactList);
-      }
+      // for (var event in list) {
+      //   var _contactList = ContactList.fromJson(event.tags);
+      //   var dt = DateTime.fromMillisecondsSinceEpoch(event.createdAt * 1000);
+      //   enumList.add(
+      //       EnumObj(event, "${format.encode(dt)} (${_contactList.total()})"));
+      // }
+      //
+      // var result = await EnumSelectorComponent.show(context, enumList);
+      // if (result != null) {
+      //   var event = result.value as Event;
+      //   var _contactList = ContactList.fromJson(event.tags);
+      //   RouterUtil.router(
+      //       context, RouterPath.USER_HISTORY_CONTACT_LIST, _contactList);
+      // }
     }
   }
 
@@ -230,10 +230,10 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
   }
 
   onFollowingTap() {
-    if (contactList != null) {
-      RouterUtil.router(context, RouterPath.USER_CONTACT_LIST, contactList);
+    if (userContacts != null) {
+      RouterUtil.router(context, RouterPath.USER_CONTACT_LIST, userContacts);
     } else if (isLocal) {
-      var cl = contactListProvider.nip02ContactList;
+      var cl = contactListProvider.userContacts;
       if (cl != null) {
         RouterUtil.router(context, RouterPath.USER_CONTACT_LIST, cl);
       }
@@ -241,10 +241,10 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
   }
 
   onFollowedTagsTap() {
-    if (contactList != null) {
-      RouterUtil.router(context, RouterPath.FOLLOWED_TAGS_LIST, contactList);
+    if (userContacts != null) {
+      RouterUtil.router(context, RouterPath.FOLLOWED_TAGS_LIST, userContacts);
     } else if (isLocal) {
-      var cl = contactListProvider.nip02ContactList;
+      var cl = contactListProvider.userContacts;
       if (cl != null) {
         RouterUtil.router(context, RouterPath.FOLLOWED_TAGS_LIST, cl);
       }
@@ -263,10 +263,10 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
           Filter(kinds: [Nip02ContactList.kind], pTags: [widget.pubkey]);
 
       Stream<Nip01Event> stream = await relayManager.requestRelays(
-          feedRelaySet!.urls
+          relayManager.bootstrapRelays
             ..addAll(myInboxRelays!.urls),
           filter,
-          idleTimeout: 30);
+          idleTimeout: 20);
       _followersSubscription = stream.listen((event) {
         var oldEvent = followedMap![event.pubKey];
         if (oldEvent == null || event.createdAt > oldEvent.createdAt) {
@@ -306,10 +306,10 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
       // pull zap event
       zapSubscribeId = StringUtil.rndNameStr(12);
       Stream<Nip01Event> stream = await relayManager.requestRelays(
-          feedRelaySet!.urls
+          relayManager.bootstrapRelays
             ..addAll(myInboxRelays!.urls),
           Filter(kinds: [EventKind.ZAP], pTags: [widget.pubkey]),
-          idleTimeout: 30
+          idleTimeout: 20
       );
       stream.listen(
         (event) {
@@ -341,10 +341,10 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
   bool _disposed = false;
 
   onFollowedCommunitiesTap() {
-    if (contactList != null) {
-      RouterUtil.router(context, RouterPath.FOLLOWED_COMMUNITIES, contactList);
+    if (userContacts != null) {
+      RouterUtil.router(context, RouterPath.FOLLOWED_COMMUNITIES, userContacts);
     } else if (isLocal) {
-      var cl = contactListProvider.nip02ContactList;
+      var cl = contactListProvider.userContacts;
       if (cl != null) {
         RouterUtil.router(context, RouterPath.FOLLOWED_COMMUNITIES, cl);
       }

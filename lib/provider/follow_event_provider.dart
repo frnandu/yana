@@ -7,7 +7,6 @@ import 'package:flutter/foundation.dart';
 import '../main.dart';
 import '../models/event_mem_box.dart';
 import '../nostr/event_kind.dart' as kind;
-import '../nostr/nip02/contact_list.dart';
 import '../utils/find_event_interface.dart';
 import '../utils/peddingevents_later_function.dart';
 

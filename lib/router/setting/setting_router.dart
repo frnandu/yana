@@ -1,5 +1,5 @@
+import 'package:dart_ndk/db/relay_set.dart';
 import 'package:dart_ndk/read_write.dart';
-import 'package:dart_ndk/relay_set.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_font_picker/flutter_font_picker.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
@@ -1009,7 +1009,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
     });
     RelaySet newRelaySet =
         await relayManager.calculateRelaySet(
-            contactListProvider.contactList!.contacts, RelayDirection.outbox,
+            contactListProvider.userContacts!.pubKeys, RelayDirection.outbox,
             relayMinCountPerPubKey: settingProvider.followeesRelayMinCount);
     if (newRelaySet!=null && newRelaySet.items.isNotEmpty) {
       feedRelaySet = newRelaySet;

@@ -559,7 +559,7 @@ class SettingData {
     } else {
       gossip = 0;
     }
-    if (json['followeesRelayMaxCount']!=null) {
+    if (json['followeesRelayMinCount']!=null) {
       followeesRelayMinCount = json['followeesRelayMinCount'];
     } else {
       followeesRelayMinCount = SettingProvider.DEFAULT_FOLLOWEES_RELAY_MIN_COUNT;

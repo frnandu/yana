@@ -1,23 +1,16 @@
 import 'dart:async';
-import 'dart:developer';
 
 import 'package:bot_toast/bot_toast.dart';
 import 'package:dart_ndk/nips/nip01/event.dart';
-import 'package:dart_ndk/nips/nip01/filter.dart';
-import 'package:dart_ndk/nips/nip02/contact_list.dart';
 import 'package:flutter/foundation.dart';
-import 'package:yana/main.dart';
 import 'package:yana/nostr/relay_pool.dart';
-import 'package:yana/nostr/subscription.dart';
 import 'package:yana/utils/string_util.dart';
 
+import '/js/js_helper.dart' as js;
 import 'client_utils/keys.dart';
 import 'event.dart';
 import 'event_kind.dart';
-import 'nip02/contact_list.dart';
 import 'relay.dart';
-
-import '/js/js_helper.dart' as js;
 
 @deprecated
 class Nostr {
@@ -98,11 +91,11 @@ class Nostr {
     return await sendEvent(event);
   }
 
-  Future<Nip01Event?> sendContactList(ContactList contacts) async {
-    final tags = contacts.toJson();
-    final event = Nip01Event(pubKey: _publicKey, kind: Nip02ContactList.kind, tags: tags, content: "");
-    return await sendEvent(event);
-  }
+  // Future<Nip01Event?> sendContactList() async {
+    // final tags = contacts.toJson();
+    // final event = Nip01Event(pubKey: _publicKey, kind: Nip02ContactList.kind, tags: tags, content: "");
+    // return await sendEvent(event);
+  // }
 
   FutureOr<Nip01Event> sendEvent(Nip01Event event) async {
     // if (StringUtil.isBlank(_privateKey)) {

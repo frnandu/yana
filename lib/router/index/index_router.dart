@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:dart_ndk/db/db_cache_manager.dart';
+import 'package:dart_ndk/db/user_contacts.dart';
 import 'package:dart_ndk/db/user_relay_list.dart';
 import 'package:dart_ndk/nips/nip02/contact_list.dart';
 import 'package:dart_ndk/nips/nip65/nip65.dart';
@@ -87,22 +89,24 @@ class _IndexRouter extends CustState<IndexRouter>
   void initRelays() async {
 
     await relayManager.connect();
-    await relayManager.init(dbPath: (await getApplicationDocumentsDirectory()).path);
+    IsarCacheManager cacheManager = IsarCacheManager();
+    await cacheManager.init(path: (await getApplicationDocumentsDirectory()).path);
+    await relayManager.setCacheManager(cacheManager);
     UserRelayList? userRelayList = await relayManager.getSingleUserRelayList(nostr!.publicKey);
     if (userRelayList != null) {
       createMyRelaySets(userRelayList);
     }
     await relayManager.connect(bootstrapRelays: userRelayList != null ? userRelayList!.urls : RelayManager.DEFAULT_BOOTSTRAP_RELAYS);
     print("Loading contact list...");
-    Nip02ContactList? contactList = await relayManager.loadContactList(nostr!.publicKey);
-    if (contactList != null) {
-      print("Loaded ${contactList.contacts.length} contacts...");
-      contactListProvider.set(contactList);
+    UserContacts? userContacts = await relayManager.loadUserContacts(nostr!.publicKey);
+    if (userContacts != null) {
+      print("Loaded ${userContacts.contacts.length} contacts...");
+      contactListProvider.set(userContacts);
       if (settingProvider.gossip == 1) {
         feedRelaySet = relayManager.getRelaySet("feed", nostr!.publicKey);
         if (feedRelaySet==null) {
           feedRelaySet =
-          await relayManager.calculateRelaySet(contactList.contacts, RelayDirection.outbox, relayMinCountPerPubKey: settingProvider.followeesRelayMinCount);
+          await relayManager.calculateRelaySet(userContacts.pubKeys, RelayDirection.outbox, relayMinCountPerPubKey: settingProvider.followeesRelayMinCount);
           feedRelaySet!.name = "feed";
           feedRelaySet!.pubKey = nostr!.publicKey;
           await relayManager.saveRelaySet(feedRelaySet!);

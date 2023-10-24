@@ -1,15 +1,8 @@
 import 'dart:isolate';
 
-import 'package:dart_ndk/nips/nip65/nip65.dart';
-import 'package:flutter/foundation.dart';
 import 'package:isar/isar.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
-import 'package:yana/models/metadata.dart';
-import 'package:yana/models/relay_list.dart';
-import 'package:yana/nostr/nip02/contact_list.dart';
-import 'package:yana/nostr/relay_metadata.dart';
 
 class DB {
   static const _VERSION = 6;

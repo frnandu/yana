@@ -1,8 +1,6 @@
 import 'package:dart_ndk/nips/nip02/contact_list.dart';
 import 'package:flutter/material.dart';
-import 'package:yana/main.dart';
 
-import '../../nostr/nip02/contact_list.dart';
 import '../../i18n/i18n.dart';
 import '../../utils/router_util.dart';
 import 'user_contact_list_component.dart';

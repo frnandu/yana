@@ -193,7 +193,7 @@ class _UserRouter extends CustState<UserRouter>
                   child: UserStatisticsComponent(
                     pubkey: pubkey!,
                     // userNostr: userNostr,
-                    onContactListLoaded: (contactList) {
+                    onUserContactsLoaded: (contactList) {
                       if (nostr != null &&
                           contactList.contacts.contains(nostr!.publicKey)) {
                         setState(() {

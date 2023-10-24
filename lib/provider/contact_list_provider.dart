@@ -1,15 +1,11 @@
 import 'dart:convert';
 
+import 'package:dart_ndk/db/user_contacts.dart';
 import 'package:dart_ndk/nips/nip01/event.dart';
-import 'package:dart_ndk/nips/nip02/contact_list.dart';
 import 'package:flutter/material.dart';
 import 'package:yana/router/tag/topic_map.dart';
 
 import '../main.dart';
-import '../nostr/event_kind.dart' as kind;
-import '../nostr/nip02/contact.dart';
-import '../nostr/nip02/contact_list.dart';
-import '../nostr/nostr.dart';
 import '../utils/string_util.dart';
 import 'data_util.dart';
 
@@ -18,7 +14,7 @@ class ContactListProvider extends ChangeNotifier {
 
   Nip01Event? _event;
 
-  Nip02ContactList? nip02ContactList;
+  UserContacts? userContacts;
 
   static ContactListProvider getInstance() {
     if (_contactListProvider == null) {
@@ -28,8 +24,8 @@ class ContactListProvider extends ChangeNotifier {
     return _contactListProvider!;
   }
 
-  void set(Nip02ContactList list) {
-    nip02ContactList = list;
+  void set(UserContacts userContacts) {
+    this.userContacts = userContacts;
   }
 
   // void reload({Nostr? targetNostr}) {
@@ -66,20 +62,6 @@ class ContactListProvider extends ChangeNotifier {
   //   _contactListProvider!._contactList = ContactList();
   // }
 
-  void clearCurrentContactList() {
-    var pubkey = nostr!.publicKey;
-    var str = sharedPreferences.getString(DataKey.CONTACT_LISTS);
-    if (StringUtil.isNotBlank(str)) {
-      var jsonMap = jsonDecode(str!);
-      if (jsonMap is Map) {
-        jsonMap.remove(pubkey);
-
-        var jsonStr = jsonEncode(jsonMap);
-        sharedPreferences.setString(DataKey.CONTACT_LISTS, jsonStr);
-      }
-    }
-  }
-
   var subscriptId = StringUtil.rndNameStr(16);
 
   // void _onEvent(Nip01Event e) {
@@ -112,27 +94,29 @@ class ContactListProvider extends ChangeNotifier {
     notifyListeners();
 
 
-    contactList!.contacts.forEach((contact) { metadataProvider.update(contact!);});
+    userContacts!.pubKeys.forEach((contact) { metadataProvider.update(contact!);});
     //followEventProvider.metadataUpdatedCallback(_contactList);
   }
 
   int total() {
-    return contactList!.contacts.length;
+    return userContacts!.contacts.length;
   }
 
-  Future<Nip02ContactList?> getContactList(String pubKey) async {
-    return await relayManager.loadContactList(pubKey);
+  Future<UserContacts?> getUserContacts(String pubKey) async {
+    return await relayManager.loadUserContacts(pubKey);
   }
 
   Future<void> addContact(Contact contact) async {
-    contactList!.contacts.add(contact.publicKey!);
+    /// TODO use dart_ndk
+    // contactList!.contacts.add(contact.publicKey!);
     // _event = await nostr!.sendContactList(_contactList!);
 
     _saveAndNotify();
   }
 
   Future<void> removeContact(String pubKey) async{
-    contactList!.contacts.remove(pubKey);
+    /// TODO use dart_ndk
+    // contactList!.contacts.remove(pubKey);
     // _event = await nostr!.sendContactList(_contactList!);
 
     _saveAndNotify();
@@ -145,16 +129,14 @@ class ContactListProvider extends ChangeNotifier {
   //   _saveAndNotify();
   // }
   //
-  Nip02ContactList? get contactList => nip02ContactList;
 
   List<String> contacts() {
-    return nip02ContactList!=null ? nip02ContactList!.contacts : [];
+    return userContacts!=null ? userContacts!.pubKeys : [];
   }
 
   void clear() {
     _event = null;
-    nip02ContactList = null;
-    clearCurrentContactList();
+    userContacts = null;
 
     notifyListeners();
   }
@@ -163,14 +145,14 @@ class ContactListProvider extends ChangeNotifier {
     var list = TopicMap.getList(tag);
     if (list != null) {
       for (var t in list) {
-        var exist = contactList!.followedTags.contains(t);
+        var exist = userContacts!.followedTags!=null && userContacts!.followedTags!.contains(t);
         if (exist) {
           return true;
         }
       }
       return false;
     } else {
-      return contactList!.followedTags.contains(tag);
+      return userContacts!.followedTags!=null && userContacts!.followedTags!.contains(tag);
     }
   }
 
@@ -193,7 +175,7 @@ class ContactListProvider extends ChangeNotifier {
   // }
 
   bool containCommunity(String id) {
-    return contactList!.followedCommunities.contains(id);
+    return userContacts!.followedCommunities!=null && userContacts!.followedCommunities!.contains(id);
   }
 
   void addCommunity(String tag) async {
