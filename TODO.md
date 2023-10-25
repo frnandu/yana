@@ -51,11 +51,13 @@
 - ~~STOP followers/zaps events from blocking the relay, when navigate away from that profile~~
 
 
+- ~~exchange sqflite with isar DB?~~
+- ~~use dart_ndk lib~~
+- ~~gossip/outbox model for feed~~
+- ~~show in which relays a note was loaded from~~
+
 v0.12
-- gossip
   - blacklist for relays
-  - lib 
-- ~~try exchange sqflite with isar DB?~~
 - isar v4 for web
 - nip05
 - sign verify

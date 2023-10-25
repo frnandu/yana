@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:bot_toast/bot_toast.dart';
+import 'package:dart_ndk/db/user_metadata.dart';
 import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip01/filter.dart';
 import 'package:dart_ndk/nips/nip01/metadata.dart';
@@ -112,7 +113,7 @@ class _SearchRouter extends CustState<SearchRouter>
         controller: scrollController,
         itemBuilder: (BuildContext context, int index) {
 
-          Metadata? metadata;
+          UserMetadata? metadata;
 
           if (index < metadatasFromCache.length) {
             metadata = metadatasFromCache[index];
@@ -121,15 +122,16 @@ class _SearchRouter extends CustState<SearchRouter>
           } else {
             var event = events[index - metadatasFromCache.length - metadatasFromSearch.length];
             if (event.kind == Metadata.kind) {
-              var jsonObj = jsonDecode(event.content);
-              metadata = Metadata.fromJson(jsonObj);
-              metadata.pubKey = event.pubKey;
-              bool inMetadatasAlready = metadatasFromCache.any((element) =>
-              element.pubKey == metadata!.pubKey);
-              if (!metadata.matchesSearch(controller.text) ||
-                  inMetadatasAlready) {
-                metadata = null;
-              }
+              /// TODO use dart_ndk
+              // var jsonObj = jsonDecode(event.content);
+              // metadata = Metadata.fromJson(jsonObj);
+              // metadata.pubKey = event.pubKey;
+              // bool inMetadatasAlready = metadatasFromCache.any((element) =>
+              // element.pubKey == metadata!.pubKey);
+              // if (!metadata.matchesSearch(controller.text) ||
+              //     inMetadatasAlready) {
+              //   metadata = null;
+              // }
             } else {
               return EventListComponent(
                           event: event,
@@ -301,7 +303,7 @@ class _SearchRouter extends CustState<SearchRouter>
       var jsonObj = jsonDecode(event.content);
       Metadata metadata = Metadata.fromJson(jsonObj);
       metadata.pubKey = event.pubKey;
-      metadatasFromSearch.add(metadata);
+      // metadatasFromSearch.add(metadata);
     } else {
       later(event, (list) {
         var addResult = eventMemBox.addList(list);
@@ -403,8 +405,8 @@ class _SearchRouter extends CustState<SearchRouter>
     }
   }
 
-  List<Metadata> metadatasFromCache = [];
-  List<Metadata> metadatasFromSearch = [];
+  List<UserMetadata> metadatasFromCache = [];
+  List<UserMetadata> metadatasFromSearch = [];
 
   searchMetadataFromCache() {
     // hideKeyBoard();
@@ -415,9 +417,9 @@ class _SearchRouter extends CustState<SearchRouter>
     if (StringUtil.isNotBlank(text)) {
       var list = metadataProvider.findUser(text, limit: searchMemLimit);
 
-      setState(() {
-        metadatasFromCache = list;
-      });
+      // setState(() {
+      //   metadatasFromCache = list;
+      // });
     } else {
       setState(() {});
     }

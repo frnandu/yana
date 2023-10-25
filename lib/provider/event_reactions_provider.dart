@@ -1,7 +1,9 @@
 import 'dart:async';
 
+import 'package:dart_ndk/db/relay_set.dart';
 import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip01/filter.dart';
+import 'package:dart_ndk/read_write.dart';
 import 'package:flutter/material.dart';
 
 import '../models/event_reactions.dart';
@@ -64,13 +66,15 @@ class EventReactionsProvider extends ChangeNotifier
   void update(String id, String? pubKey, int? kind) {
     var filter = kind!=null ? Filter(eTags: [id], kinds: [kind]) : Filter(eTags: [id]);
 
-    // TODO should use other relays inbox for pubKey....
-    relayManager!.subscription(
-        filter, (feedRelaySet!=null && settingProvider.gossip==1)? feedRelaySet! : myInboxRelays!).then((stream) {
-          subscriptions[id] = stream.listen((event) {
-        _handleSingleEvent2(event);
-      });
+    relayManager.calculateRelaySet([pubKey!], RelayDirection.inbox, relayMinCountPerPubKey: 2).then((relaySet) {
+      relayManager!.subscription(
+          filter, relaySet).then((stream) {
+        subscriptions[id] = stream.listen((event) {
+          _handleSingleEvent2(event);
+        });
+      },);
     },);
+    // TODO should use other relays inbox for pubKey....
   }
 
   EventReactions? get(Nip01Event event) {

@@ -3,6 +3,7 @@ import 'dart:ui';
 
 import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:bot_toast/bot_toast.dart';
+import 'package:dart_ndk/cache_manager.dart';
 import 'package:dart_ndk/db/relay_set.dart';
 import 'package:dart_ndk/db/user_relay_list.dart';
 import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
@@ -13,7 +14,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_background_service_android/flutter_background_service_android.dart';
-import 'package:flutter_cache_manager/flutter_cache_manager.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart' as FlutterCacheManager;
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:get_time_ago/get_time_ago.dart';
@@ -124,7 +125,7 @@ late BadgeDefinitionProvider badgeDefinitionProvider;
 
 late MediaDataCache mediaDataCache;
 
-late CacheManager localCacheManager;
+late FlutterCacheManager.CacheManager localCacheManager;
 
 late PcRouterFakeProvider pcRouterFakeProvider;
 
@@ -152,6 +153,7 @@ bool reloadingFollowNostr = false;
 List<RelayMetadata>? followRelays;
 
 RelayManager relayManager = RelayManager();
+late CacheManager cacheManager;
 
 RelaySet? feedRelaySet;
 RelaySet? myInboxRelays;

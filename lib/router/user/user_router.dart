@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:dart_ndk/db/relay_set.dart';
+import 'package:dart_ndk/db/user_metadata.dart';
 import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip01/filter.dart';
 import 'package:dart_ndk/nips/nip01/metadata.dart';
@@ -122,7 +124,7 @@ class _UserRouter extends CustState<UserRouter>
     var themeData = Theme.of(context);
     var cardColor = themeData.cardColor;
 
-    return Selector<MetadataProvider, Metadata?>(
+    return Selector<MetadataProvider, UserMetadata?>(
       shouldRebuild: (previous, next) {
         return previous != next;
       },
@@ -302,35 +304,15 @@ class _UserRouter extends CustState<UserRouter>
       authors: [pubkey!],
       limit: queryLimit,
     );
-    // subscribeId = StringUtil.rndNameStr(16);
-
-
-    //   var activeRelays = userNostr!.activeRelays();
-    //   if (!box.isEmpty() && activeRelays.isNotEmpty) {
-    //     var oldestCreatedAts = box.oldestCreatedAtByRelay(
-    //       activeRelays,
-    //     );
-    //     Map<String, List<Map<String, dynamic>>> filtersMap = {};
-    //     for (var relay in activeRelays) {
-    //       var oldestCreatedAt = oldestCreatedAts.createdAtMap[relay.url];
-    //       filter.until = oldestCreatedAt;
-    //       filtersMap[relay.url] = [filter.toMap()];
-    //     }
-    //     userNostr!.queryByFilters(filtersMap, onEvent, id: subscribeId);
-    //   } else {
-    //     userNostr!.query([filter.toMap()], onEvent, id: subscribeId);
-    //   }
-    // Stream<Nip01Event> stream =
-    // Map<String,ReadWriteMarker>? relayList = relayManager.getRelayMarkerMap(pubkey!);
-    // RelaySet? relaySet;
-    // if (relayList!=null) {
-    //   relaySet = RelaySet(relayMinCountPerPubkey: relayMinCountPerPubkey, direction: direction, map: relayList.map())
-      // we have already relay list for user, so use it
-    // } else {
-
-    // }
+    RelaySet relaySet = myInboxRelays!;
+    if (pubkey == nostr!.publicKey) {
+      relaySet = myOutboxRelays!;
+    } else
+      if (feedRelaySet!=null && settingProvider.gossip==1) {
+      relaySet = feedRelaySet!;
+    }
     relayManager!.subscription(
-        filter, (feedRelaySet!=null && settingProvider.gossip==1)? feedRelaySet! : myInboxRelays!).then((stream) {
+        filter, relaySet).then((stream) {
       _streamSubscription = stream.listen((event) {
         onEvent(event);
       });

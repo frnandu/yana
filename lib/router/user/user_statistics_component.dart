@@ -82,9 +82,9 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
         }
       },
     );
-    queryFollowers();
+    // queryFollowers();
     refreshContactListIfNeededAsync(widget.pubkey);
-    queryZaps();
+    // queryZaps();
   }
 
   void refreshContactListIfNeededAsync(String pubkey) {

@@ -1,22 +1,17 @@
 import 'dart:convert';
 
+import 'package:dart_ndk/db/relay_set.dart';
+import 'package:dart_ndk/db/user_metadata.dart';
 import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip01/metadata.dart';
-import 'package:dart_ndk/nips/nip01/filter.dart';
 import 'package:flutter/material.dart';
-import 'package:yana/nostr/nip05/nip05_validor.dart';
 import 'package:yana/utils/nip05status.dart';
 
 import '../main.dart';
-import '../nostr/event.dart';
-import '../nostr/event_kind.dart' as kind;
 import '../utils/later_function.dart';
 import '../utils/string_util.dart';
 
 class MetadataProvider extends ChangeNotifier with LaterFunction {
-  Map<String, Metadata> _metadataCache = {};
-
-  Map<String, int> _handingPubkeys = {};
 
   static MetadataProvider? _metadataProvider;
 
@@ -40,12 +35,11 @@ class MetadataProvider extends ChangeNotifier with LaterFunction {
 
   List<Metadata> findUser(String str, {int? limit = 5}) {
     List<Metadata> list = [];
-    if (StringUtil.isNotBlank(str)) {
-      var values = _metadataCache.values;
-      for (var metadata in values) {
-        if (metadata.matchesSearch(str)) {
+    if (StringUtil.isNotBlank(str) && contactListProvider.userContacts!=null) {
+      List<UserMetadata?> metadatas = relayManager.getUserMetadatas(contactListProvider.userContacts!.pubKeys);
+      for (var metadata in metadatas) {
+        if (metadata!=null && metadata.matchesSearch(str)) {
           list.add(metadata);
-
           if (limit != null && list.length >= limit) {
             break;
           }
@@ -59,10 +53,6 @@ class MetadataProvider extends ChangeNotifier with LaterFunction {
     if (_needUpdatePubKeys.isNotEmpty) {
       _laterSearch();
     }
-
-    if (_penddingEvents.isNotEmpty) {
-      _handlePenddingEvents();
-    }
   }
 
   List<String> _needUpdatePubKeys = [];
@@ -74,41 +64,41 @@ class MetadataProvider extends ChangeNotifier with LaterFunction {
     later(_laterCallback, null);
   }
 
-  Metadata? getMetadata(String pubkey) {
-    var metadata = _metadataCache[pubkey];
+  UserMetadata? getMetadata(String pubKey) {
+    var metadata = relayManager.getUserMetadata(pubKey);
     if (metadata != null) {
       return metadata;
     }
 
-    if (!_needUpdatePubKeys.contains(pubkey) &&
-        !_handingPubkeys.containsKey(pubkey)) {
-      _needUpdatePubKeys.add(pubkey);
+    if (!_needUpdatePubKeys.contains(pubKey)) {
+      _needUpdatePubKeys.add(pubKey);
     }
     later(_laterCallback, null);
     return null;
   }
 
-  void getMostRecentMetadata(String pubkey, Function(Metadata) onEvent) {
-    var metadata = _metadataCache[pubkey];
+  void getMostRecentMetadata(String pubKey, Function(UserMetadata) onReady) {
+    var metadata = relayManager.getUserMetadata(pubKey);
     if (metadata != null) {
-      onEvent(metadata);
+      onReady(metadata);
     } else {
-      nostr!.query([
-        Filter(kinds: [Metadata.kind], authors: [pubkey], limit: 1)
-            .toMap()
-      ], (event) {
-        var existing = _metadataCache[event.pubKey];
-        if (existing == null ||
-            existing.updatedAt == null ||
-            existing.updatedAt! < event.createdAt) {
-          handleEvent(event);
-        }
-      }, onComplete: () {
-        var metadata = _metadataCache[pubkey];
-        if (metadata != null) {
-          onEvent(metadata);
-        }
-      });
+      /// TODO use dart_ndk
+      // nostr!.query([
+      //   Filter(kinds: [Metadata.kind], authors: [pubKey], limit: 1)
+      //       .toMap()
+      // ], (event) {
+      //   var existing = _metadataCache[event.pubKey];
+      //   if (existing == null ||
+      //       existing.updatedAt == null ||
+      //       existing.updatedAt! < event.createdAt) {
+      //     handleEvent(event);
+      //   }
+      // }, onComplete: () {
+      //   var metadata = _metadataCache[pubKey];
+      //   if (metadata != null) {
+      //     onEvent(metadata);
+      //   }
+      // });
     }
   }
 
@@ -139,84 +129,23 @@ class MetadataProvider extends ChangeNotifier with LaterFunction {
     return Nip05Status.NIP05_NOT_FOUND;
   }
 
-  List<Nip01Event> _penddingEvents = [];
-
-  void _handlePenddingEvents() {
-    for (var event in _penddingEvents) {
-      if (StringUtil.isBlank(event.content)) {
-        continue;
-      }
-      _handingPubkeys.remove(event.pubKey);
-
-      var jsonObj = jsonDecode(event.content);
-      var md = Metadata.fromJson(jsonObj);
-      md.pubKey = event.pubKey;
-      md.updatedAt = event.createdAt;
-
-      // TODO
-      //Metadata.writeToDB(md);
-      _metadataCache[md.pubKey!] = md;
-    }
-    _penddingEvents.clear();
-
-    notifyListeners();
-  }
-
-  void _onEvent(Nip01Event event) {
-    _penddingEvents.add(event);
-    later(_laterCallback, null);
-  }
-
   void _laterSearch() async {
     if (_needUpdatePubKeys.isEmpty) {
       return;
     }
-
-    // List<Map<String, dynamic>> filters = [];
-    // for (var pubkey in _needUpdatePubKeys) {
-    //   var filter =
-    //       Filter(kinds: [kind.EventKind.METADATA], authors: [pubkey], limit: 1);
-    //   filters.add(filter.toMap());
-    //   if (filters.length > 11) {
-    //     nostr!.query(filters, _onEvent);
-    //     filters.clear();
-    //   }
-    // }
-    // if (filters.isNotEmpty) {
-    //   nostr!.query(filters, _onEvent);
-    // }
-    if (myInboxRelays!=null) {
-      Stream<Nip01Event> stream = await relayManager.requestRelays(
-          myInboxRelays!.items.map((e) => e.url).toList(), Filter(
-          kinds: [Metadata.kind], authors: _needUpdatePubKeys));
-      stream.listen((event) {
-        _onEvent(event);
-      });
-
-      for (var pubkey in _needUpdatePubKeys) {
-        _handingPubkeys[pubkey] = 1;
-      }
+    RelaySet? relaySet = settingProvider.gossip == 1 && feedRelaySet!=null ? feedRelaySet : myInboxRelays;
+    if (relaySet!=null) {
+      await relayManager.loadMissingUserMetadatas(
+        _needUpdatePubKeys,
+        relaySet
+      );
       _needUpdatePubKeys.clear();
+
+      notifyListeners();
     }
   }
 
   void clear() {
-    _metadataCache.clear();
-    // TODO
-    //Metadata.deleteAllFromDB();
-  }
-
-  Metadata handleEvent(Event event) {
-    _handingPubkeys.remove(event.pubKey);
-
-    var jsonObj = jsonDecode(event.content);
-    var md = Metadata.fromJson(jsonObj);
-    md.pubKey = event.pubKey;
-    md.updatedAt = event.createdAt;
-
-    // TODO
-    //Metadata.writeToDB(md);
-    _metadataCache[md.pubKey!] = md;
-    return md;
+    cacheManager.removeAllUserMetadatas();
   }
 }

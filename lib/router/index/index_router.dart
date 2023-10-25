@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:dart_ndk/cache_manager.dart';
 import 'package:dart_ndk/db/db_cache_manager.dart';
 import 'package:dart_ndk/db/user_contacts.dart';
 import 'package:dart_ndk/db/user_relay_list.dart';
@@ -89,9 +90,11 @@ class _IndexRouter extends CustState<IndexRouter>
   void initRelays() async {
 
     await relayManager.connect();
-    IsarCacheManager cacheManager = IsarCacheManager();
-    await cacheManager.init(path: (await getApplicationDocumentsDirectory()).path);
-    await relayManager.setCacheManager(cacheManager);
+    IsarCacheManager isarCacheManager = IsarCacheManager();
+    await isarCacheManager.init(path: (await getApplicationDocumentsDirectory()).path);
+    await relayManager.setCacheManager(isarCacheManager);
+    cacheManager = isarCacheManager;
+
     UserRelayList? userRelayList = await relayManager.getSingleUserRelayList(nostr!.publicKey);
     if (userRelayList != null) {
       createMyRelaySets(userRelayList);
