@@ -1,3 +1,4 @@
+import 'package:dart_ndk/db/user_contacts.dart';
 import 'package:dart_ndk/nips/nip02/contact_list.dart';
 import 'package:flutter/material.dart';
 
@@ -14,7 +15,7 @@ class UserHistoryContactListRouter extends StatefulWidget {
 
 class _UserHistoryContactListRouter
     extends State<UserHistoryContactListRouter> {
-  Nip02ContactList? contactList;
+  UserContacts? contactList;
 
   @override
   Widget build(BuildContext context) {
@@ -23,7 +24,7 @@ class _UserHistoryContactListRouter
     if (contactList == null) {
       var arg = RouterUtil.routerArgs(context);
       if (arg != null) {
-        contactList = arg as Nip02ContactList;
+        contactList = arg as UserContacts;
       }
     }
     if (contactList == null) {
@@ -68,7 +69,7 @@ class _UserHistoryContactListRouter
           ),
         ],
       ),
-      body: UserContactListComponent(contactList: contactList!),
+      body: UserContactListComponent(userContacts: contactList!),
     );
   }
 

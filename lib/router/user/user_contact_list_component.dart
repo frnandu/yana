@@ -1,3 +1,4 @@
+import 'package:dart_ndk/db/user_contacts.dart';
 import 'package:dart_ndk/nips/nip01/metadata.dart';
 import 'package:dart_ndk/nips/nip02/contact_list.dart';
 import 'package:flutter/material.dart';
@@ -11,9 +12,9 @@ import '../../utils/router_path.dart';
 import '../../utils/router_util.dart';
 
 class UserContactListComponent extends StatefulWidget {
-  Nip02ContactList contactList;
+  UserContacts userContacts;
 
-  UserContactListComponent({required this.contactList});
+  UserContactListComponent({required this.userContacts});
 
   @override
   State<StatefulWidget> createState() {
@@ -28,7 +29,7 @@ class _UserContactListComponent extends State<UserContactListComponent> {
 
   @override
   Widget build(BuildContext context) {
-    list ??= widget.contactList.contacts;
+    list ??= widget.userContacts.pubKeys;
 
     Widget main = ListView.builder(
       controller: _controller,
