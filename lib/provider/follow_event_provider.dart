@@ -113,11 +113,11 @@ class FollowEventProvider extends ChangeNotifier
       await relayManager
           .reconnectRelays(feedRelaySet!.urls);
     } else {
-      await relayManager.reconnectRelays(myInboxRelays!.urls);
+      await relayManager.reconnectRelays(myInboxRelaySet!.urls);
     }
 
     Stream<Nip01Event> stream = await relayManager!.subscription(
-        filter, (feedRelaySet!=null && settingProvider.gossip==1)? feedRelaySet! : myInboxRelays!);
+        filter, (feedRelaySet!=null && settingProvider.gossip==1)? feedRelaySet! : myInboxRelaySet!);
     _streamSubscription = stream.listen((event) {
       // if (event.pubKey == nostr!.publicKey) {
         onEvent(event);

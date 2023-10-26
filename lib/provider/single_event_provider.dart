@@ -69,9 +69,9 @@ class SingleEventProvider extends ChangeNotifier with LaterFunction {
     var filter = Filter(ids: _needUpdateIds);
     List<String> tempIds = [];
     tempIds.addAll(_needUpdateIds);
-    if (myInboxRelays!=null) {
+    if (myInboxRelaySet!=null) {
       Stream<Nip01Event> stream = await relayManager.requestRelays(
-          myInboxRelays!.urls, filter, idleTimeout: 20);
+          myInboxRelaySet!.urls, filter, idleTimeout: 20);
       stream.listen((event) {
         _onEvent(event);
       });

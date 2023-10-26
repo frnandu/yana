@@ -1,7 +1,7 @@
 import 'dart:convert';
 
-import 'package:dart_ndk/db/user_contacts.dart';
 import 'package:dart_ndk/nips/nip01/event.dart';
+import 'package:dart_ndk/nips/nip02/contact_list.dart';
 import 'package:flutter/material.dart';
 import 'package:yana/router/tag/topic_map.dart';
 
@@ -14,7 +14,7 @@ class ContactListProvider extends ChangeNotifier {
 
   Nip01Event? _event;
 
-  UserContacts? userContacts;
+  ContactList? contactList;
 
   static ContactListProvider getInstance() {
     if (_contactListProvider == null) {
@@ -24,8 +24,8 @@ class ContactListProvider extends ChangeNotifier {
     return _contactListProvider!;
   }
 
-  void set(UserContacts userContacts) {
-    this.userContacts = userContacts;
+  void set(ContactList contactList) {
+    this.contactList = contactList;
   }
 
   // void reload({Nostr? targetNostr}) {
@@ -94,19 +94,19 @@ class ContactListProvider extends ChangeNotifier {
     notifyListeners();
 
 
-    userContacts!.pubKeys.forEach((contact) { metadataProvider.update(contact!);});
+    contactList!.contacts.forEach((contact) { metadataProvider.update(contact!);});
     //followEventProvider.metadataUpdatedCallback(_contactList);
   }
 
   int total() {
-    return userContacts!.contacts.length;
+    return contactList!.contacts.length;
   }
 
-  Future<UserContacts?> getUserContacts(String pubKey) async {
-    return await relayManager.loadUserContacts(pubKey);
+  Future<ContactList?> getContactList(String pubKey) async {
+    return await relayManager.loadContactList(pubKey);
   }
 
-  Future<void> addContact(Contact contact) async {
+  Future<void> addContact(String contact) async {
     /// TODO use dart_ndk
     // contactList!.contacts.add(contact.publicKey!);
     // _event = await nostr!.sendContactList(_contactList!);
@@ -131,12 +131,12 @@ class ContactListProvider extends ChangeNotifier {
   //
 
   List<String> contacts() {
-    return userContacts!=null ? userContacts!.pubKeys : [];
+    return contactList!=null ? contactList!.contacts : [];
   }
 
   void clear() {
     _event = null;
-    userContacts = null;
+    contactList = null;
 
     notifyListeners();
   }
@@ -145,14 +145,14 @@ class ContactListProvider extends ChangeNotifier {
     var list = TopicMap.getList(tag);
     if (list != null) {
       for (var t in list) {
-        var exist = userContacts!.followedTags!=null && userContacts!.followedTags!.contains(t);
+        var exist = contactList!.followedTags!=null && contactList!.followedTags!.contains(t);
         if (exist) {
           return true;
         }
       }
       return false;
     } else {
-      return userContacts!.followedTags!=null && userContacts!.followedTags!.contains(tag);
+      return contactList!.followedTags!=null && contactList!.followedTags!.contains(tag);
     }
   }
 
@@ -175,7 +175,7 @@ class ContactListProvider extends ChangeNotifier {
   // }
 
   bool containCommunity(String id) {
-    return userContacts!.followedCommunities!=null && userContacts!.followedCommunities!.contains(id);
+    return contactList!.followedCommunities!=null && contactList!.followedCommunities!.contains(id);
   }
 
   void addCommunity(String tag) async {

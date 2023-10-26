@@ -200,7 +200,7 @@ class _EditorRouter extends CustState<EditorRouter> with EditorMixin {
       list.add(buildTitleWidget());
     }
 
-    if (publishAt != null) {
+    if (createdAt != null) {
       var dateFormate = DateFormat("yyyy-MM-dd HH:mm");
 
       list.add(GestureDetector(
@@ -214,7 +214,7 @@ class _EditorRouter extends CustState<EditorRouter> with EditorMixin {
               Container(
                 margin: EdgeInsets.only(left: 4),
                 child: Text(
-                  dateFormate.format(publishAt!),
+                  dateFormate.format(createdAt!),
                 ),
               ),
             ],

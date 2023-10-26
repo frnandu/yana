@@ -58,7 +58,7 @@ class EventMemBox implements FindEventInterface {
       for (var source in event.sources) {
         if (relayMap[source] != null) {
           // log("$source findCreatedAt $length $index ${length - index}");
-          result.createdAtMap[source] = event.createdAt;
+          result.createdAtMap[source] = event.createdAt!;
           relayMap.remove(source);
         }
       }
@@ -88,7 +88,7 @@ class EventMemBox implements FindEventInterface {
 
   void sort() {
     _eventList.sort((event1, event2) {
-      return event2.createdAt - event1.createdAt;
+      return event2.createdAt! - event1.createdAt!;
     });
   }
 

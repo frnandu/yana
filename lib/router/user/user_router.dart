@@ -1,7 +1,6 @@
 import 'dart:async';
 
-import 'package:dart_ndk/db/relay_set.dart';
-import 'package:dart_ndk/db/user_metadata.dart';
+import 'package:dart_ndk/models/relay_set.dart';
 import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip01/filter.dart';
 import 'package:dart_ndk/nips/nip01/metadata.dart';
@@ -124,7 +123,7 @@ class _UserRouter extends CustState<UserRouter>
     var themeData = Theme.of(context);
     var cardColor = themeData.cardColor;
 
-    return Selector<MetadataProvider, UserMetadata?>(
+    return Selector<MetadataProvider, Metadata?>(
       shouldRebuild: (previous, next) {
         return previous != next;
       },
@@ -195,9 +194,9 @@ class _UserRouter extends CustState<UserRouter>
                   child: UserStatisticsComponent(
                     pubkey: pubkey!,
                     // userNostr: userNostr,
-                    onUserContactsLoaded: (contactList) {
+                    onContactListLoaded: (contactList) {
                       if (nostr != null &&
-                          contactList.pubKeys.contains(nostr!.publicKey)) {
+                          contactList.contacts.contains(nostr!.publicKey)) {
                         setState(() {
                           followsYou = true;
                         });
@@ -304,9 +303,9 @@ class _UserRouter extends CustState<UserRouter>
       authors: [pubkey!],
       limit: queryLimit,
     );
-    RelaySet relaySet = myInboxRelays!;
+    RelaySet relaySet = myInboxRelaySet!;
     if (pubkey == nostr!.publicKey) {
-      relaySet = myOutboxRelays!;
+      relaySet = myOutboxRelaySet!;
     } else
       if (feedRelaySet!=null && settingProvider.gossip==1) {
       relaySet = feedRelaySet!;

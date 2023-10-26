@@ -1,8 +1,6 @@
 import 'dart:convert';
 
-import 'package:dart_ndk/db/relay_set.dart';
-import 'package:dart_ndk/db/user_metadata.dart';
-import 'package:dart_ndk/nips/nip01/event.dart';
+import 'package:dart_ndk/models/relay_set.dart';
 import 'package:dart_ndk/nips/nip01/metadata.dart';
 import 'package:flutter/material.dart';
 import 'package:yana/utils/nip05status.dart';
@@ -35,8 +33,8 @@ class MetadataProvider extends ChangeNotifier with LaterFunction {
 
   List<Metadata> findUser(String str, {int? limit = 5}) {
     List<Metadata> list = [];
-    if (StringUtil.isNotBlank(str) && contactListProvider.userContacts!=null) {
-      List<UserMetadata?> metadatas = relayManager.getUserMetadatas(contactListProvider.userContacts!.pubKeys);
+    if (StringUtil.isNotBlank(str) && contactListProvider.contactList!=null) {
+      List<Metadata?> metadatas = cacheManager.loadMetadatas(contactListProvider.contactList!.contacts);
       for (var metadata in metadatas) {
         if (metadata!=null && metadata.matchesSearch(str)) {
           list.add(metadata);
@@ -64,8 +62,8 @@ class MetadataProvider extends ChangeNotifier with LaterFunction {
     later(_laterCallback, null);
   }
 
-  UserMetadata? getMetadata(String pubKey) {
-    var metadata = relayManager.getUserMetadata(pubKey);
+  Metadata? getMetadata(String pubKey) {
+    var metadata = cacheManager.loadMetadata(pubKey);
     if (metadata != null) {
       return metadata;
     }
@@ -77,8 +75,8 @@ class MetadataProvider extends ChangeNotifier with LaterFunction {
     return null;
   }
 
-  void getMostRecentMetadata(String pubKey, Function(UserMetadata) onReady) {
-    var metadata = relayManager.getUserMetadata(pubKey);
+  void getMostRecentMetadata(String pubKey, Function(Metadata) onReady) {
+    var metadata = cacheManager.loadMetadata(pubKey);
     if (metadata != null) {
       onReady(metadata);
     } else {
@@ -133,9 +131,9 @@ class MetadataProvider extends ChangeNotifier with LaterFunction {
     if (_needUpdatePubKeys.isEmpty) {
       return;
     }
-    RelaySet? relaySet = settingProvider.gossip == 1 && feedRelaySet!=null ? feedRelaySet : myInboxRelays;
+    RelaySet? relaySet = settingProvider.gossip == 1 && feedRelaySet!=null ? feedRelaySet : myInboxRelaySet;
     if (relaySet!=null) {
-      await relayManager.loadMissingUserMetadatas(
+      await relayManager.loadMissingMetadatas(
         _needUpdatePubKeys,
         relaySet
       );
@@ -146,6 +144,6 @@ class MetadataProvider extends ChangeNotifier with LaterFunction {
   }
 
   void clear() {
-    cacheManager.removeAllUserMetadatas();
+    cacheManager.removeAllMetadatas();
   }
 }

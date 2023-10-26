@@ -1,17 +1,10 @@
-import 'dart:developer';
 import 'dart:io';
 
-import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/relay.dart';
 import 'package:flutter/material.dart';
-import 'package:yana/models/relay_list.dart';
-import 'package:yana/nostr/relay_metadata.dart';
 
 import '../main.dart';
 import '../models/relay_status.dart';
-import '../nostr/event_kind.dart' as kind;
-import '../nostr/nostr.dart';
-import '../utils/string_util.dart';
 import 'data_util.dart';
 
 class RelayProvider extends ChangeNotifier {
@@ -56,12 +49,12 @@ class RelayProvider extends ChangeNotifier {
 
   String relayNumStr() {
     Set<String> set = {};
-    set.addAll(myInboxRelays!.urls);
-    set.addAll(myOutboxRelays!.urls);
+    set.addAll(myInboxRelaySet!.urls);
+    set.addAll(myOutboxRelaySet!.urls);
     String result = "${relayManager.getConnectedRelays(set).length}/${set.length}";
     // String result =
     //     "${nostr!.activeRelays().length}/${nostr!.allRelays().length}";
-    if (settingProvider.gossip == 1 && feedRelaySet != null && feedRelaySet!.items.isNotEmpty) {
+    if (settingProvider.gossip == 1 && feedRelaySet != null && feedRelaySet!.urls.isNotEmpty) {
       result += " (feed ${feedRelaysNumStr()})";
     }
     return result;

@@ -20,14 +20,14 @@ class FollowedCommunitiesRouter extends StatefulWidget {
 }
 
 class _FollowedCommunitiesRouter extends State<FollowedCommunitiesRouter> {
-  Nip02ContactList? contactList;
+  ContactList? contactList;
 
   @override
   Widget build(BuildContext context) {
     if (contactList == null) {
       var arg = RouterUtil.routerArgs(context);
       if (arg != null) {
-        contactList = arg as Nip02ContactList;
+        contactList = arg as ContactList;
       }
     }
     if (contactList == null) {

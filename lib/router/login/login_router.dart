@@ -1,11 +1,8 @@
 import 'package:bot_toast/bot_toast.dart';
-import 'package:dart_ndk/cache_manager.dart';
-import 'package:dart_ndk/db/db_cache_manager.dart';
-import 'package:dart_ndk/db/user_relay_list.dart';
+import 'package:dart_ndk/models/user_relay_list.dart';
 import 'package:dart_ndk/relay_manager.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:yana/utils/platform_util.dart';
 
@@ -326,12 +323,6 @@ class _LoginRouter extends State<LoginRouter>
 
   void initRelayManager(bool alreadyClosed, String publicKey) async {
     if (!alreadyClosed) {
-      relayManager = RelayManager();
-      IsarCacheManager isarCacheManager = IsarCacheManager();
-      await isarCacheManager.init(path: (await getApplicationDocumentsDirectory()).path);
-      await relayManager.setCacheManager(isarCacheManager);
-      cacheManager = isarCacheManager;
-
       await relayManager.connect();
       UserRelayList? userRelayList = await relayManager.getSingleUserRelayList(publicKey);
       if (userRelayList!=null) {

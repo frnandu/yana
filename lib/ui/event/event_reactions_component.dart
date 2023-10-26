@@ -276,19 +276,13 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
                       ));
                     }
 
-                    list.add(PopupMenuItem(
-                      value: "share",
-                      child: Text(s.Share, style: popFontStyle),
-                    ));
                     list.add(PopupMenuDivider());
-                    list.add(PopupMenuItem(
-                      value: "source",
-                      child: Text(s.Source, style: popFontStyle),
-                    ));
-                    list.add(PopupMenuItem(
-                      value: "broadcase",
-                      child: Text(s.Broadcast, style: popFontStyle),
-                    ));
+                    if (widget.eventRelation.pubkey == nostr!.publicKey) {
+                      list.add(PopupMenuItem(
+                        value: "broadcast",
+                        child: Text(s.Broadcast, style: popFontStyle),
+                      ));
+                    }
                     list.add(PopupMenuItem(
                       value: "block",
                       child: Text(s.Block, style: popFontStyle),
@@ -353,18 +347,10 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
       _doCopy(text);
     } else if (value == "detail") {
       RouterUtil.router(context, RouterPath.EVENT_DETAIL, widget.event);
-    } else if (value == "share") {
-      onShareTap();
     } else if (value == "star") {
       // TODO star event
-    } else if (value == "broadcase") {
-      nostr!.broadcase(widget.event);
-    } else if (value == "source") {
-      List<EnumObj> list = [];
-      for (var source in widget.event.sources) {
-        list.add(EnumObj(source, source));
-      }
-      EnumSelectorComponent.show(context, list);
+    } else if (value == "broadcast") {
+      nostr!.broadcast(widget.event);
     } else if (value == "block") {
       filterProvider.addBlock(widget.event.pubKey);
     } else if (value == "delete") {
@@ -459,7 +445,7 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
       eventReactionsProvider.addRepost(widget.event.id);
 
       if (settingProvider.broadcaseWhenBoost == OpenStatus.OPEN) {
-        nostr!.broadcase(widget.event);
+        nostr!.broadcast(widget.event);
       }
     } else if (value == "quote") {
       var event = await EditorRouter.open(context, initEmbeds: [
@@ -499,22 +485,6 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
             });
           });
     }
-  }
-
-  void onShareTap() {
-    widget.screenshotController.capture().then((Uint8List? imageData) async {
-      if (imageData != null) {
-        if (imageData != null) {
-          var tempFile = await StoreUtil.saveBS2TempFile(
-            "png",
-            imageData,
-          );
-          Share.shareXFiles([XFile(tempFile)]);
-        }
-      }
-    }).catchError((onError) {
-      print(onError);
-    });
   }
 
   void genZap() {

@@ -32,8 +32,8 @@ class _RelaysRouter extends CustState<RelaysRouter> with WhenStopFunction {
 
   loadRelayInfos() async {
     Set<String> set = {};
-    set.addAll(myInboxRelays!.urls);
-    set.addAll(myOutboxRelays!.urls);
+    set.addAll(myInboxRelaySet!.urls);
+    set.addAll(myOutboxRelaySet!.urls);
 
     urls = List.of(set);
     await Future.wait(urls.map((url) => relayManager.getRelayInfo(url)));
@@ -79,9 +79,9 @@ class _RelaysRouter extends CustState<RelaysRouter> with WhenStopFunction {
               child: RefreshIndicator(
                 onRefresh: () async {
                   await relayManager
-                      .reconnectRelays(myOutboxRelays!.urls);
+                      .reconnectRelays(myOutboxRelaySet!.urls);
                   await relayManager
-                      .reconnectRelays(myInboxRelays!.urls);
+                      .reconnectRelays(myInboxRelaySet!.urls);
                   setState(() {});
                   // var filter = Filter(
                   //     authors: [nostr!.publicKey],

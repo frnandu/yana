@@ -16,14 +16,14 @@ class FollowedTagsListRouter extends StatefulWidget {
 }
 
 class _FollowedTagsListRouter extends State<FollowedTagsListRouter> {
-  Nip02ContactList? contactList;
+  ContactList? contactList;
 
   @override
   Widget build(BuildContext context) {
     if (contactList == null) {
       var arg = RouterUtil.routerArgs(context);
       if (arg != null) {
-        contactList = arg as Nip02ContactList;
+        contactList = arg as ContactList;
       }
     }
     if (contactList == null) {

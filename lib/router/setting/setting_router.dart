@@ -1,4 +1,4 @@
-import 'package:dart_ndk/db/relay_set.dart';
+import 'package:dart_ndk/models/relay_set.dart';
 import 'package:dart_ndk/read_write.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_font_picker/flutter_font_picker.dart';
@@ -293,14 +293,14 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
         SettingsTile.navigation(
             onPressed: (context) {
               if (feedRelaySet != null &&
-                  feedRelaySet!.items.isNotEmpty &&
+                  feedRelaySet!.urls.isNotEmpty &&
                   !loadingGossipRelays) {
-                List<RelayMetadata> filteredRelays = feedRelaySet!.items
-                    .map((item) => RelayMetadata.full(
-                    url: item.url,
+                List<RelayMetadata> filteredRelays = feedRelaySet!.relaysMap
+                    .entries.map((entry) => RelayMetadata.full(
+                    url: entry.key,
                     read: false,
                     write: true,
-                    count: item.pubKeyMappings.length))
+                    count: entry.value.length))
                     .toList();
 
                 // List<RelayMetadata> filteredRelays =
@@ -1009,9 +1009,13 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
     });
     RelaySet newRelaySet =
         await relayManager.calculateRelaySet(
-            contactListProvider.userContacts!.pubKeys, RelayDirection.outbox,
-            relayMinCountPerPubKey: settingProvider.followeesRelayMinCount);
-    if (newRelaySet!=null && newRelaySet.items.isNotEmpty) {
+            name: "feed",
+            ownerPubKey: nostr!.publicKey,
+            pubKeys: contactListProvider.contactList!.contacts,
+            direction: RelayDirection.outbox,
+            relayMinCountPerPubKey: settingProvider.followeesRelayMinCount
+        );
+    if (newRelaySet!=null && newRelaySet.urls.isNotEmpty) {
       feedRelaySet = newRelaySet;
       feedRelaySet!.name = "feed";
       feedRelaySet!.pubKey = nostr!.publicKey;

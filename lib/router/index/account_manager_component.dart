@@ -2,9 +2,8 @@ import 'dart:developer';
 
 import 'package:bot_toast/bot_toast.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:dart_ndk/db/user_relay_list.dart';
+import 'package:dart_ndk/models/user_relay_list.dart';
 import 'package:dart_ndk/nips/nip01/metadata.dart';
-import 'package:dart_ndk/nips/nip65/nip65.dart';
 import 'package:dart_ndk/relay_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:yana/ui/editor/text_input_dialog.dart';

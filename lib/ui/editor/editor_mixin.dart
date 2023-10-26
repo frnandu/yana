@@ -148,7 +148,7 @@ mixin EditorMixin {
         quill.QuillIconButton(
           onPressed: selectedTime,
           icon: Icon(Icons.timer_outlined,
-              color: publishAt != null ? mainColor : null),
+              color: createdAt != null ? mainColor : null),
         )
       ]);
     }
@@ -566,18 +566,18 @@ mixin EditorMixin {
       result = NIP04.encrypt(result, agreement, pubkey!);
       event = Nip01Event(
           pubKey: nostr!.publicKey, kind: kind.EventKind.DIRECT_MESSAGE, tags: allTags, content: result,
-          publishAt: publishAt!.millisecondsSinceEpoch ~/ 1000);
+          createdAt: createdAt!.millisecondsSinceEpoch ~/ 1000);
     } else if (inputPoll) {
       // poll event
       // get poll tag from PollInputComponentn
       var pollTags = pollInputController.getTags();
       allTags.addAll(pollTags);
       event = Nip01Event(pubKey: nostr!.publicKey, kind: kind.EventKind.POLL, tags: allTags, content: result,
-          publishAt: publishAt!.millisecondsSinceEpoch ~/ 1000);
+          createdAt: createdAt!.millisecondsSinceEpoch ~/ 1000);
     } else {
       // text note
       event = Nip01Event(pubKey: nostr!.publicKey, kind: Nip01Event.textNoteKind, tags: allTags, content:result,
-          publishAt: publishAt!.millisecondsSinceEpoch ~/ 1000);
+          createdAt: createdAt!.millisecondsSinceEpoch ~/ 1000);
     }
 
     // if (publishAt != null) {
@@ -772,12 +772,12 @@ mixin EditorMixin {
     );
   }
 
-  DateTime? publishAt;
+  DateTime? createdAt;
 
   Future<void> selectedTime() async {
     var dt = await DatetimePickerComponent.show(getContext(),
-        dateTime: publishAt != null ? publishAt : DateTime.now());
-    publishAt = dt;
+        dateTime: createdAt != null ? createdAt : DateTime.now());
+    createdAt = dt;
     updateUI();
   }
 }

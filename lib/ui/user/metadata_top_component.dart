@@ -1,6 +1,5 @@
 import 'package:bot_toast/bot_toast.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:dart_ndk/db/user_contacts.dart';
 import 'package:dart_ndk/nips/nip01/metadata.dart';
 import 'package:easy_image_viewer/easy_image_viewer.dart';
 import 'package:flutter/material.dart';
@@ -286,7 +285,7 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
                 borderColor: mainColor,
                 onTap: () {
                   contactListProvider
-                      .addContact(Contact(widget.pubkey, null, null));
+                      .addContact(widget.pubkey);
                 },
               ));
             } else {

@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:bot_toast/bot_toast.dart';
-import 'package:dart_ndk/db/user_metadata.dart';
 import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip01/filter.dart';
 import 'package:dart_ndk/nips/nip01/metadata.dart';
@@ -113,7 +112,7 @@ class _SearchRouter extends CustState<SearchRouter>
         controller: scrollController,
         itemBuilder: (BuildContext context, int index) {
 
-          UserMetadata? metadata;
+          Metadata? metadata;
 
           if (index < metadatasFromCache.length) {
             metadata = metadatasFromCache[index];
@@ -154,7 +153,7 @@ class _SearchRouter extends CustState<SearchRouter>
         itemCount: metadatasFromCache.length + metadatasFromSearch.length + events.length);
 
     if (StringUtil.isBlank(controller.text)) {
-      bool anyNip50 = myInboxRelays!=null && relayManager.getConnectedRelays(myInboxRelays!.urls).any((relay) => relay.info!=null && relay.info!.nips!=null && relay.info!.nips.contains(50));
+      bool anyNip50 = myInboxRelaySet!=null && relayManager.getConnectedRelays(myInboxRelaySet!.urls).any((relay) => relay.info!=null && relay.info!.nips!=null && relay.info!.nips.contains(50));
       if (!anyNip50) {
         body = SearchActionItemComponent(onTap: () {
           RouterUtil.router(context, RouterPath.RELAYS);
@@ -405,8 +404,8 @@ class _SearchRouter extends CustState<SearchRouter>
     }
   }
 
-  List<UserMetadata> metadatasFromCache = [];
-  List<UserMetadata> metadatasFromSearch = [];
+  List<Metadata> metadatasFromCache = [];
+  List<Metadata> metadatasFromSearch = [];
 
   searchMetadataFromCache() {
     // hideKeyBoard();

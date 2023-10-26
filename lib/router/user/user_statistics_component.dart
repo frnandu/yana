@@ -2,19 +2,16 @@ import 'dart:async';
 
 import 'package:bot_toast/bot_toast.dart';
 import 'package:convert/convert.dart';
-import 'package:dart_ndk/db/user_contacts.dart';
-import 'package:dart_ndk/db/user_relay_list.dart';
+import 'package:dart_ndk/models/user_relay_list.dart';
 import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip01/filter.dart';
 import 'package:dart_ndk/nips/nip02/contact_list.dart';
 import 'package:flutter/material.dart';
-import 'package:yana/ui/enum_selector_component.dart';
 import 'package:yana/utils/base_consts.dart';
 
 import '../../i18n/i18n.dart';
 import '../../main.dart';
 import '../../models/event_mem_box.dart';
-import '../../nostr/event.dart';
 import '../../nostr/event_kind.dart';
 import '../../nostr/nip57/zap_num_util.dart';
 import '../../nostr/relay_metadata.dart';
@@ -28,10 +25,10 @@ import '../../utils/string_util.dart';
 class UserStatisticsComponent extends StatefulWidget {
   String pubkey;
 
-  Function(UserContacts)? onUserContactsLoaded;
+  Function(ContactList)? onContactListLoaded;
 
   UserStatisticsComponent(
-      {super.key, required this.pubkey, this.onUserContactsLoaded});
+      {super.key, required this.pubkey, this.onContactListLoaded});
 
   @override
   State<StatefulWidget> createState() {
@@ -44,7 +41,7 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
 
   EventMemBox? zapEventBox;
   UserRelayList? userRelayList;
-  UserContacts? userContacts;
+  ContactList? contactList;
 
   // followedMap
   Map<String, Nip01Event>? followedMap;
@@ -72,11 +69,11 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
     await relayManager.loadMissingRelayListsFromNip65OrNip02([widget.pubkey]).then(
       (value) async {
         userRelayList = await relayManager.getSingleUserRelayList(widget.pubkey);
-        userContacts = await relayManager.loadUserContacts(widget.pubkey);
+        contactList = await relayManager.loadContactList(widget.pubkey);
         if (!_disposed) {
           setState(() {
-            if (widget.onUserContactsLoaded != null && userContacts != null) {
-              widget.onUserContactsLoaded!(userContacts!);
+            if (widget.onContactListLoaded != null && contactList != null) {
+              widget.onContactListLoaded!(contactList!);
             }
           });
         }
@@ -88,25 +85,25 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
   }
 
   void refreshContactListIfNeededAsync(String pubkey) {
-    UserContacts? userContacts = relayManager.getUserContacts(pubkey);
+    ContactList? contactList = cacheManager.loadContactList(pubkey);
     int sometimeAgo = DateTime.now()
             .subtract(REFRESH_METADATA_DURATION)
             .millisecondsSinceEpoch ~/
         1000;
-    if (userContacts == null ||
-        userContacts.refreshedTimestamp == null ||
-        userContacts.refreshedTimestamp! < sometimeAgo) {
-      relayManager.loadUserContacts(pubkey!, forceRefresh: true).then(
+    if (contactList == null ||
+        contactList.loadedTimestamp == null ||
+        contactList.loadedTimestamp! < sometimeAgo) {
+      relayManager.loadContactList(pubkey!, forceRefresh: true).then(
         (newContactList) {
           if (newContactList != null &&
-              (userContacts == null ||
-                  (userContacts!.createdAt < newContactList.createdAt))) {
-            if (widget.onUserContactsLoaded != null && newContactList != null) {
-              widget.onUserContactsLoaded!(userContacts!);
+              (contactList == null ||
+                  (contactList!.createdAt < newContactList.createdAt))) {
+            if (widget.onContactListLoaded != null && newContactList != null) {
+              widget.onContactListLoaded!(contactList!);
             }
             if (!_disposed) {
               setState(() {
-                userContacts = newContactList;
+                contactList = newContactList;
               });
             }
           }
@@ -121,8 +118,8 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
 
     List<Widget> list = [];
 
-    if (userContacts != null) {
-      length = userContacts!.contacts.length;
+    if (contactList != null) {
+      length = contactList!.contacts.length;
     }
     list.add(UserStatisticsItemComponent(
         num: length, name: s.Following, onTap: onFollowingTap));
@@ -154,15 +151,15 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
     ));
 
     list.add(UserStatisticsItemComponent(
-        num: userRelayList!=null? userRelayList!.items.length:0, name: s.Relays, onTap: onRelaysTap));
+        num: userRelayList!=null? userRelayList!.relays.length:0, name: s.Relays, onTap: onRelaysTap));
 
     list.add(UserStatisticsItemComponent(
-        num: userContacts != null && userContacts!.followedTags!=null? userContacts!.followedTags!.length : 0,
+        num: contactList != null && contactList!.followedTags!=null? contactList!.followedTags!.length : 0,
         name: s.Followed_Tags,
         onTap: onFollowedTagsTap));
 
     list.add(UserStatisticsItemComponent(
-        num: userContacts != null && userContacts!.followedCommunities!=null ? userContacts!.followedCommunities!.length : 0,
+        num: contactList != null && contactList!.followedCommunities!=null ? contactList!.followedCommunities!.length : 0,
         name: s.Followed_Communities,
         onTap: onFollowedCommunitiesTap));
 
@@ -230,10 +227,10 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
   }
 
   onFollowingTap() {
-    if (userContacts != null) {
-      RouterUtil.router(context, RouterPath.USER_CONTACT_LIST, userContacts);
+    if (contactList != null) {
+      RouterUtil.router(context, RouterPath.USER_CONTACT_LIST, contactList);
     } else if (isLocal) {
-      var cl = contactListProvider.userContacts;
+      var cl = contactListProvider.contactList;
       if (cl != null) {
         RouterUtil.router(context, RouterPath.USER_CONTACT_LIST, cl);
       }
@@ -241,10 +238,10 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
   }
 
   onFollowedTagsTap() {
-    if (userContacts != null) {
-      RouterUtil.router(context, RouterPath.FOLLOWED_TAGS_LIST, userContacts);
+    if (contactList != null) {
+      RouterUtil.router(context, RouterPath.FOLLOWED_TAGS_LIST, contactList);
     } else if (isLocal) {
-      var cl = contactListProvider.userContacts;
+      var cl = contactListProvider.contactList;
       if (cl != null) {
         RouterUtil.router(context, RouterPath.FOLLOWED_TAGS_LIST, cl);
       }
@@ -260,11 +257,11 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
       followedMap = {};
 
       Filter filter =
-          Filter(kinds: [Nip02ContactList.kind], pTags: [widget.pubkey]);
+          Filter(kinds: [ContactList.kind], pTags: [widget.pubkey]);
 
       Stream<Nip01Event> stream = await relayManager.requestRelays(
-          relayManager.bootstrapRelays
-            ..addAll(myInboxRelays!.urls),
+          relayManager.bootstrapRelays.toList()
+            ..addAll(myInboxRelaySet!.urls),
           filter,
           idleTimeout: 20);
       _followersSubscription = stream.listen((event) {
@@ -284,12 +281,12 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
   }
 
   onRelaysTap() {
-    if (userRelayList!=null && userRelayList!.items.isNotEmpty) {
-      List<RelayMetadata> relays = userRelayList!.items
-          .map((item) => RelayMetadata.full(
-              url: item.url,
-              read: item.marker.isRead,
-              write: item.marker.isWrite,
+    if (userRelayList!=null && userRelayList!.relays.isNotEmpty) {
+      List<RelayMetadata> relays = userRelayList!.relays
+          .entries.map((entry) => RelayMetadata.full(
+              url: entry.key,
+              read: entry.value.isRead,
+              write: entry.value.isWrite,
               count: 0))
           .toList();
       RouterUtil.router(context, RouterPath.USER_RELAYS, relays);
@@ -306,8 +303,8 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
       // pull zap event
       zapSubscribeId = StringUtil.rndNameStr(12);
       Stream<Nip01Event> stream = await relayManager.requestRelays(
-          relayManager.bootstrapRelays
-            ..addAll(myInboxRelays!.urls),
+          relayManager.bootstrapRelays.toList()
+            ..addAll(myInboxRelaySet!.urls),
           Filter(kinds: [EventKind.ZAP], pTags: [widget.pubkey]),
           idleTimeout: 20
       );
@@ -341,10 +338,10 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
   bool _disposed = false;
 
   onFollowedCommunitiesTap() {
-    if (userContacts != null) {
-      RouterUtil.router(context, RouterPath.FOLLOWED_COMMUNITIES, userContacts);
+    if (contactList != null) {
+      RouterUtil.router(context, RouterPath.FOLLOWED_COMMUNITIES, contactList);
     } else if (isLocal) {
-      var cl = contactListProvider.userContacts;
+      var cl = contactListProvider.contactList;
       if (cl != null) {
         RouterUtil.router(context, RouterPath.FOLLOWED_COMMUNITIES, cl);
       }

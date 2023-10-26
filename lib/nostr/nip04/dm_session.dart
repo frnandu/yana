@@ -39,6 +39,6 @@ class DMSession {
   }
 
   int lastTime() {
-    return _box.newestEvent!.createdAt;
+    return _box.newestEvent!.createdAt!;
   }
 }

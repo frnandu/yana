@@ -4,10 +4,10 @@ import 'dart:ui';
 import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:bot_toast/bot_toast.dart';
 import 'package:dart_ndk/cache_manager.dart';
-import 'package:dart_ndk/db/relay_set.dart';
-import 'package:dart_ndk/db/user_relay_list.dart';
-import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
-import 'package:dart_ndk/pubkey_mapping.dart';
+import 'package:dart_ndk/db/db_cache_manager.dart';
+import 'package:dart_ndk/models/pubkey_mapping.dart';
+import 'package:dart_ndk/models/relay_set.dart';
+import 'package:dart_ndk/models/user_relay_list.dart';
 import 'package:dart_ndk/read_write.dart';
 import 'package:dart_ndk/relay_manager.dart';
 import 'package:flutter/material.dart';
@@ -21,6 +21,7 @@ import 'package:get_time_ago/get_time_ago.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:protocol_handler/protocol_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -156,8 +157,8 @@ RelayManager relayManager = RelayManager();
 late CacheManager cacheManager;
 
 RelaySet? feedRelaySet;
-RelaySet? myInboxRelays;
-RelaySet? myOutboxRelays;
+RelaySet? myInboxRelaySet;
+RelaySet? myOutboxRelaySet;
 
 bool firstLogin = false;
 
@@ -241,15 +242,32 @@ void initProvidersAndStuff() async {
 }
 
 void createMyRelaySets(UserRelayList userRelayList) {
-  List<RelaySetItem> inboxList =
-  userRelayList.items.where((element) => element.marker.isRead)
-      .map((item) => RelaySetItem(item.url, [PubkeyMapping(pubKey: userRelayList.id, rwMarker: ReadWriteMarker.readWrite)])).toList();
-  List<RelaySetItem> outboxList =
-  userRelayList.items.where((element) => element.marker.isWrite)
-      .map((item) => RelaySetItem(item.url, [PubkeyMapping(pubKey: userRelayList.id, rwMarker: ReadWriteMarker.readWrite)])).toList();
 
-  myInboxRelays = RelaySet(relayMinCountPerPubkey: inboxList.length, direction: RelayDirection.inbox, items: inboxList, notCoveredPubkeys: []);
-  myOutboxRelays = RelaySet(relayMinCountPerPubkey: outboxList.length, direction: RelayDirection.outbox, items: outboxList);
+  Map<String,List<PubkeyMapping>> inbox =
+  {
+    for (var item in userRelayList.relays.entries.where((entry) => entry.value.isRead))
+      item.key : [PubkeyMapping(pubKey: userRelayList.pubKey, rwMarker: item.value)]
+  };
+  Map<String,List<PubkeyMapping>> outbox =
+  {
+    for (var item in userRelayList.relays.entries.where((entry) => entry.value.isWrite))
+      item.key : [PubkeyMapping(pubKey: userRelayList.pubKey, rwMarker: item.value)]
+  };
+  myInboxRelaySet = RelaySet(
+      name: "inbox",
+      pubKey: userRelayList.pubKey,
+      relayMinCountPerPubkey: inbox.length,
+      direction: RelayDirection.inbox,
+      relaysMap: inbox,
+      notCoveredPubkeys: []
+  );
+  myOutboxRelaySet = RelaySet(
+    name: "outbox",
+      pubKey: userRelayList.pubKey,
+      relayMinCountPerPubkey: outbox.length,
+      direction: RelayDirection.outbox,
+      relaysMap: outbox
+  );
 }
 
 Future<void> main() async {
@@ -261,6 +279,10 @@ Future<void> main() async {
   } catch (err) {
     print(err);
   }
+  DbCacheManager dbCacheManager = DbCacheManager();
+  await dbCacheManager.init(path: (await getApplicationDocumentsDirectory()).path);
+  cacheManager = dbCacheManager;
+  relayManager.setCacheManager(cacheManager);
 
   if (!PlatformUtil.isWeb() && PlatformUtil.isPC()) {
     await windowManager.ensureInitialized();

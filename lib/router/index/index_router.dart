@@ -1,18 +1,12 @@
 import 'dart:async';
 
-import 'package:dart_ndk/cache_manager.dart';
-import 'package:dart_ndk/db/db_cache_manager.dart';
-import 'package:dart_ndk/db/user_contacts.dart';
-import 'package:dart_ndk/db/user_relay_list.dart';
+import 'package:dart_ndk/models/user_relay_list.dart';
 import 'package:dart_ndk/nips/nip02/contact_list.dart';
-import 'package:dart_ndk/nips/nip65/nip65.dart';
 import 'package:dart_ndk/read_write.dart';
 import 'package:dart_ndk/relay_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
-import 'package:sizer/sizer.dart';
 import 'package:yana/provider/dm_provider.dart';
 import 'package:yana/provider/pc_router_fake_provider.dart';
 import 'package:yana/router/follow/notifications_router.dart';
@@ -90,10 +84,6 @@ class _IndexRouter extends CustState<IndexRouter>
   void initRelays() async {
 
     await relayManager.connect();
-    IsarCacheManager isarCacheManager = IsarCacheManager();
-    await isarCacheManager.init(path: (await getApplicationDocumentsDirectory()).path);
-    await relayManager.setCacheManager(isarCacheManager);
-    cacheManager = isarCacheManager;
 
     UserRelayList? userRelayList = await relayManager.getSingleUserRelayList(nostr!.publicKey);
     if (userRelayList != null) {
@@ -101,17 +91,21 @@ class _IndexRouter extends CustState<IndexRouter>
     }
     await relayManager.connect(bootstrapRelays: userRelayList != null ? userRelayList!.urls : RelayManager.DEFAULT_BOOTSTRAP_RELAYS);
     print("Loading contact list...");
-    UserContacts? userContacts = await relayManager.loadUserContacts(nostr!.publicKey);
-    if (userContacts != null) {
-      print("Loaded ${userContacts.contacts.length} contacts...");
-      contactListProvider.set(userContacts);
+    ContactList? contactList = await relayManager.loadContactList(nostr!.publicKey);
+    if (contactList != null) {
+      print("Loaded ${contactList.contacts.length} contacts...");
+      contactListProvider.set(contactList);
       if (settingProvider.gossip == 1) {
         feedRelaySet = relayManager.getRelaySet("feed", nostr!.publicKey);
         if (feedRelaySet==null) {
           feedRelaySet =
-          await relayManager.calculateRelaySet(userContacts.pubKeys, RelayDirection.outbox, relayMinCountPerPubKey: settingProvider.followeesRelayMinCount);
-          feedRelaySet!.name = "feed";
-          feedRelaySet!.pubKey = nostr!.publicKey;
+          await relayManager.calculateRelaySet(
+            name:"feed",
+              ownerPubKey: nostr!.publicKey,
+              pubKeys: contactList.contacts,
+              direction: RelayDirection.outbox,
+              relayMinCountPerPubKey: settingProvider.followeesRelayMinCount
+          );
           await relayManager.saveRelaySet(feedRelaySet!);
         } else {
           // final startTime = DateTime.now();

@@ -26,9 +26,7 @@ class Nostr {
   }) {
     if (StringUtil.isNotBlank(privateKey)) {
       _privateKey = privateKey!;
-      _publicKey = StringUtil.isNotBlank(publicKey)
-          ? publicKey!
-          : getPublicKey(privateKey);
+      _publicKey = StringUtil.isNotBlank(publicKey) ? publicKey! : getPublicKey(privateKey);
     } else {
       assert(publicKey != null);
 
@@ -43,15 +41,14 @@ class Nostr {
   String get publicKey => _publicKey;
 
   Future<Nip01Event?> sendLike(String id) async {
-    Nip01Event event = Nip01Event(pubKey: _publicKey,
-        kind:
-        EventKind.REACTION,
-        tags:
-        [
+    Nip01Event event = Nip01Event(
+        pubKey: _publicKey,
+        kind: EventKind.REACTION,
+        tags: [
           ["e", id]
         ],
-        content:
-        "+");
+        content: "+",
+        createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000);
     return await sendEvent(event);
   }
 
@@ -62,39 +59,38 @@ class Nostr {
         tags: [
           ["e", eventId]
         ],
-        content: "delete");
+        content: "delete",
+        createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000
+    );
     return await sendEvent(event);
   }
 
-  Future<Nip01Event?> sendRepost(String id,
-      {String? relayAddr, String content = ""}) async {
+  Future<Nip01Event?> sendRepost(String id, {String? relayAddr, String content = ""}) async {
     List<dynamic> tag = ["e", id];
     if (StringUtil.isNotBlank(relayAddr)) {
       tag.add(relayAddr);
     }
-    Nip01Event event = Nip01Event(pubKey: _publicKey, kind: EventKind.REPOST, tags: [tag], content: content);
+    Nip01Event event = Nip01Event(pubKey: _publicKey, kind: EventKind.REPOST, tags: [tag], content: content, createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000);
     return await sendEvent(event);
   }
 
-  Future<Nip01Event?> sendTextNote(String text,
-      [List<dynamic> tags = const []]) async {
-    Nip01Event event = Nip01Event(pubKey: _publicKey, kind: Nip01Event.textNoteKind, tags: tags, content: text);
+  Future<Nip01Event?> sendTextNote(String text, [List<dynamic> tags = const []]) async {
+    Nip01Event event = Nip01Event(pubKey: _publicKey, kind: Nip01Event.textNoteKind, tags: tags, content: text, createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000);
     return await sendEvent(event);
   }
 
   Future<Nip01Event?> recommendServer(String url) async {
-    if (!url.contains(RegExp(
-        r'^(wss?:\/\/)([0-9]{1,3}(?:\.[0-9]{1,3}){3}|[^:]+):?([0-9]{1,5})?$'))) {
+    if (!url.contains(RegExp(r'^(wss?:\/\/)([0-9]{1,3}(?:\.[0-9]{1,3}){3}|[^:]+):?([0-9]{1,5})?$'))) {
       throw ArgumentError.value(url, 'url', 'Not a valid relay URL');
     }
-    final event = Nip01Event(pubKey: _publicKey, kind: EventKind.RECOMMEND_SERVER, tags: [], content:url);
+    final event = Nip01Event(pubKey: _publicKey, kind: EventKind.RECOMMEND_SERVER, tags: [], content: url, createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000);
     return await sendEvent(event);
   }
 
   // Future<Nip01Event?> sendContactList() async {
-    // final tags = contacts.toJson();
-    // final event = Nip01Event(pubKey: _publicKey, kind: Nip02ContactList.kind, tags: tags, content: "");
-    // return await sendEvent(event);
+  // final tags = contacts.toJson();
+  // final event = Nip01Event(pubKey: _publicKey, kind: Nip02ContactList.kind, tags: tags, content: "");
+  // return await sendEvent(event);
   // }
 
   FutureOr<Nip01Event> sendEvent(Nip01Event event) async {
@@ -152,7 +148,7 @@ class Nostr {
     }
   }
 
-  Nip01Event broadcase(Nip01Event event) {
+  Nip01Event broadcast(Nip01Event event) {
     _pool.send(["EVENT", event.toJson()]);
     return event;
   }
@@ -165,8 +161,7 @@ class Nostr {
     _pool.unsubscribe(id);
   }
 
-  String query(List<Map<String, dynamic>> filters, Function(Event) onEvent,
-      {String? id, Function? onComplete}) {
+  String query(List<Map<String, dynamic>> filters, Function(Event) onEvent, {String? id, Function? onComplete}) {
     return _pool.query(filters, onEvent, id: id, onComplete: onComplete);
   }
 

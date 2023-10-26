@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:dart_ndk/db/relay_set.dart';
 import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip01/filter.dart';
 import 'package:dart_ndk/read_write.dart';
@@ -66,7 +65,13 @@ class EventReactionsProvider extends ChangeNotifier
   void update(String id, String? pubKey, int? kind) {
     var filter = kind!=null ? Filter(eTags: [id], kinds: [kind]) : Filter(eTags: [id]);
 
-    relayManager.calculateRelaySet([pubKey!], RelayDirection.inbox, relayMinCountPerPubKey: 2).then((relaySet) {
+    relayManager.calculateRelaySet(
+        name:"reactions-feed",
+        ownerPubKey: pubKey!,
+        pubKeys: [pubKey!],
+        direction: RelayDirection.inbox,
+        relayMinCountPerPubKey: 2
+    ).then((relaySet) {
       relayManager!.subscription(
           filter, relaySet).then((stream) {
         subscriptions[id] = stream.listen((event) {
