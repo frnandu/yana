@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:assorted_layout_widgets/assorted_layout_widgets.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip01/metadata.dart';
@@ -39,6 +40,12 @@ class EventTopComponent extends StatefulWidget {
 class _EventTopComponent extends State<EventTopComponent> {
   static const double IMAGE_WIDTH = 50;
 
+
+  @override
+  void initState() {
+    // loadRelayInfos();
+  }
+
   @override
   Widget build(BuildContext context) {
     var themeData = Theme.of(context);
@@ -58,20 +65,33 @@ class _EventTopComponent extends State<EventTopComponent> {
         }
       }
     }
-    // List<GestureDetector> relayIcons = [];
-    // widget.event.sources.forEach((source) {
-    //   Relay? relay = relayManager.relays[Relay.clean(source)];
-    //   Container? relayIcon = relay!=null ? getRelayIcon(relay) : null;
-    //   if (relayIcon!=null) {
-    //     relayIcons.add(GestureDetector(
-    //         onTap: () {
-    //           if (relay != null && relay.info != null) {
-    //             RouterUtil.router(context, RouterPath.RELAY_INFO, relay);
-    //           }
-    //         },
-    //         child:     relayIcon));
-    //   }
-    // });
+    List<GestureDetector> relayIcons = [];
+    widget.event.sources.forEach((source) {
+      Relay? relay = relayManager.relays[source];
+      relay ??= relayManager.relays[Relay.clean(source)];
+      Container? relayIcon = relay != null ? getRelayIcon(relay,13) : null;
+      if (relayIcon != null) {
+        relayIcons.add(GestureDetector(
+            onTap: () async {
+              await showRelaysPopup();
+              // if (relay != null && relay.info != null) {
+              //   RouterUtil.router(context, RouterPath.RELAY_INFO, relay);
+              // }
+            },
+            child: relayIcon));
+      }
+    });
+
+    int maxAvatars = 10;
+    double maxWidth = 50;
+    double width = 13;
+    int count = relayIcons.length > maxAvatars ? maxAvatars : relayIcons.length;
+    double distance = (maxWidth - count * width) / count;
+
+    if (distance > 3) {
+      distance = 3;
+    }
+
 
     return Selector<MetadataProvider, Metadata?>(
       shouldRebuild: (previous, next) {
@@ -117,24 +137,31 @@ class _EventTopComponent extends State<EventTopComponent> {
                         ),
                       ),
                       Row(
-                          children: [
-                            Text(
-                              (GetTimeAgo.parse(DateTime.fromMillisecondsSinceEpoch(
-                                  widget.event.createdAt * 1000)) +
-                                  " in "),
-                              style: TextStyle(
-                                fontSize: smallTextSize,
-                                color: themeData.hintColor,
-                              ),
-                            ),
-                          ]..add(GestureDetector(onTap: () { showRelaysPopup();}, child: Text(
-                            "${widget.event.sources.length}",
+                        children: [
+                          Text(
+                            (GetTimeAgo.parse(DateTime.fromMillisecondsSinceEpoch(widget.event.createdAt * 1000)) + " in "),
                             style: TextStyle(
                               fontSize: smallTextSize,
                               color: themeData.hintColor,
-                            )),
-                          ))..add(GestureDetector(onTap: () { showRelaysPopup();}, child: Icon(Icons.lan_outlined, color: themeData.hintColor, size: 15,)))
-                        //..addAll(relayIcons)
+                            ),
+                          ),
+                        ]..add(GestureDetector(onTap: () async { await showRelaysPopup();}, child: RowSuper(
+                            innerDistance: distance, //,
+                            outerDistance: 5.0,
+                            children: relayIcons
+                            )
+                          )
+                        ),
+
+                        // ..add(GestureDetector(onTap: () { showRelaysPopup();}, child: Text(
+                        //       "${widget.event.sources.length}",
+                        //       style: TextStyle(
+                        //         fontSize: smallTextSize,
+                        //         color: themeData.hintColor,
+                        //       )),
+                        //     ))
+                        //       ..add(GestureDetector(onTap: () { showRelaysPopup();}, child: Icon(Icons.lan_outlined, color: themeData.hintColor, size: 15,)))
+                        //   //..addAll(relayIcons)
                       )
                     ],
                   ),
@@ -163,7 +190,7 @@ class _EventTopComponent extends State<EventTopComponent> {
     );
   }
 
-  Container? getRelayIcon(Relay relay) {
+  Container? getRelayIcon(Relay relay, double size) {
     if (relay != null) {
       String? iconUrl;
       if (relay.url.startsWith("wss://relay.damus.io")) {
@@ -171,30 +198,23 @@ class _EventTopComponent extends State<EventTopComponent> {
       } else if (relay.url.startsWith("wss://relay.snort.social")) {
         iconUrl = "https://snort.social/favicon.ico";
       } else {
-        iconUrl = relay != null &&
-            relay.info != null &&
-            StringUtil.isNotBlank(relay.info!.icon)
-            ? relay.info!.icon
-            : StringUtil.robohash(HashUtil.md5(relay!.url));
+        iconUrl =
+            relay != null && relay.info != null && StringUtil.isNotBlank(relay.info!.icon) ? relay.info!.icon : StringUtil.robohash(HashUtil.md5(relay!.url));
       }
       try {
         return Container(
-            padding: const EdgeInsets.all(5),
+            // padding: const EdgeInsets.all(5),
             clipBehavior: Clip.hardEdge,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(20),
             ),
             child: CachedNetworkImage(
               imageUrl: iconUrl,
-              width: 20,
-              height: 20,
+              width: size,
+              height: size,
               fit: BoxFit.cover,
-              placeholder: (context, url) =>
-              const CircularProgressIndicator(),
-              errorWidget: (context, url, error) =>
-                  CachedNetworkImage(
-                      imageUrl:
-                      StringUtil.robohash(HashUtil.md5(relay!.url))),
+              placeholder: (context, url) => const CircularProgressIndicator(),
+              errorWidget: (context, url, error) => CachedNetworkImage(imageUrl: StringUtil.robohash(HashUtil.md5(relay!.url))),
               cacheManager: localCacheManager,
             ));
       } catch (e) {
@@ -205,27 +225,24 @@ class _EventTopComponent extends State<EventTopComponent> {
   }
 
   loadRelayInfos() async {
-    await Future.wait(
-        widget.event.sources.map((url) => relayManager.getRelayInfo(url)));
-    setState(() {
-    });
+    await Future.wait(widget.event.sources.map((url) => relayManager.getRelayInfo(Relay.clean(url)!)));
+    // setState(() {});
   }
 
-
-  void showRelaysPopup() async {
+  Future<void> showRelaysPopup() async {
     if (widget.event.sources.isNotEmpty) {
       await loadRelayInfos();
 
       List<EnumObj>? relays = widget.event.sources.map((source) {
-        Relay? relay = relayManager.relays[Relay.clean(source)];
-        return EnumObj(source, null,
-          widget: Row(children: [
-            relay != null ? getRelayIcon(relay)! : Container(),
-            Text(source.replaceAll("wss://", ""))
-          ]),);
+        Relay? relay = relayManager.relays[source];
+        relay ??= relayManager.relays[Relay.clean(source)];
+        return EnumObj(
+          source,
+          null,
+          widget: Row(children: [relay != null ? getRelayIcon(relay, 25)! : Container(), const SizedBox(width: 10,), Text(source.replaceAll("wss://", ""))]),
+        );
       }).toList();
-      EnumObj? resultEnumObj =
-      await EnumSelectorComponent.show(context, relays!);
+      EnumObj? resultEnumObj = await EnumSelectorComponent.show(context, relays!);
       if (resultEnumObj != null) {
         RouterUtil.router(context, RouterPath.RELAY_INFO, relayManager.relays[resultEnumObj.value]);
       }

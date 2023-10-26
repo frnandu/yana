@@ -5,6 +5,7 @@ import 'package:yana/utils/when_stop_function.dart';
 
 import '../../i18n/i18n.dart';
 import '../../main.dart';
+import '../../nostr/relay.dart';
 import '../../provider/relay_provider.dart';
 import '../../ui/cust_state.dart';
 import '../../utils/base.dart';
@@ -36,7 +37,7 @@ class _RelaysRouter extends CustState<RelaysRouter> with WhenStopFunction {
     set.addAll(myOutboxRelaySet!.urls);
 
     urls = List.of(set);
-    await Future.wait(urls.map((url) => relayManager.getRelayInfo(url)));
+    await Future.wait(urls.map((url) => relayManager.getRelayInfo(Relay.clean(url)!)));
     /// TODO check if widget is not disposed already...
     setState(() {
       print("loaded relay infos");
@@ -99,7 +100,7 @@ class _RelaysRouter extends CustState<RelaysRouter> with WhenStopFunction {
                     var url = urls[index];
 
                     return RelaysItemComponent(
-                      relay: relayManager.relays[url]!,
+                      relay: relayManager.getRelay(url)!,
                       onRemove: () {
                         setState(() {
                           urls = _relayProvider.relayAddrs;

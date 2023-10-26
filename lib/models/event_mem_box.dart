@@ -111,9 +111,9 @@ class EventMemBox implements FindEventInterface {
           !oldEvent.sources.contains(event.sources[0])) {
         oldEvent.sources.add(event.sources[0]);
         return true;
-      } else {
-        _eventList.remove(oldEvent);
-        event.sources.addAll(oldEvent.sources);
+      // } else {
+      //   _eventList.remove(oldEvent);
+      //   event.sources.addAll(oldEvent.sources);
       }
     }
 

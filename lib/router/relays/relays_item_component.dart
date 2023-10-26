@@ -12,6 +12,7 @@ import '../../i18n/i18n.dart';
 import '../../nostr/client_utils/keys.dart';
 import '../../ui/confirm_dialog.dart';
 import '../../utils/base.dart';
+import '../../utils/hash_util.dart';
 import '../../utils/store_util.dart';
 import '../../utils/string_util.dart';
 
@@ -46,7 +47,7 @@ class RelaysItemComponent extends StatelessWidget {
               relay.info != null &&
               StringUtil.isNotBlank(relay.info!.icon)
           ? relay.info!.icon
-          : StringUtil.robohash(getRandomHexString());
+          : StringUtil.robohash(HashUtil.md5(relay!.url));
     }
 
     imageWidget = Container(
@@ -62,7 +63,7 @@ class RelaysItemComponent extends StatelessWidget {
           fit: BoxFit.cover,
           placeholder: (context, url) => const CircularProgressIndicator(),
           errorWidget: (context, url, error) => CachedNetworkImage(
-              imageUrl: StringUtil.robohash(relay!.info!.name)),
+              imageUrl: StringUtil.robohash(HashUtil.md5(relay!.url))),
           cacheManager: localCacheManager,
         ));
 
