@@ -1,14 +1,19 @@
 import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip01/metadata.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:yana/main.dart';
 import 'package:yana/nostr/event_kind.dart';
 
 import '../../nostr/nip19/nip19.dart';
 import '../../nostr/nip19/nip19_tlv.dart';
+import '../../provider/setting_provider.dart';
 import '../../utils/base.dart';
 import '../../utils/base64.dart';
+import '../../utils/base_consts.dart';
 import '../../utils/platform_util.dart';
 import '../../utils/string_util.dart';
+import '../cust_state.dart';
 import '../event/event_quote_component.dart';
 import 'content_custom_emoji_component.dart';
 import 'content_event_tag_infos.dart';
@@ -50,15 +55,64 @@ class ContentDecoder {
     }
   }
 
+
+  // static String _closeHandledStr(String handledStr, List<dynamic> inlines) {
+  //   if (StringUtil.isNotBlank(handledStr)) {
+  //     inlines.add(Text(handledStr));
+  //     // inlines.add(handledStr);
+  //   }
+  //   return "";
+  // }
+
   static String _closeHandledStr(String handledStr, List<dynamic> inlines) {
     if (StringUtil.isNotBlank(handledStr)) {
-      inlines.add(Text(handledStr));
-      // inlines.add(handledStr);
+      // inlines.add(Text(handledStr));
+      inlines.add(handledStr);
     }
     return "";
   }
 
   static void _closeInlines(List<dynamic> inlines, List<Widget> list,
+      {Function? textOnTap}) {
+    if (inlines.isNotEmpty) {
+      if (inlines.length == 1) {
+        if (inlines[0] is String) {
+          // list.add(TextTranslateComponent(
+          //   inlines[0],
+          //   textOnTap: textOnTap,
+          // ));
+          list.add(LineTranslateComponent(
+            []..add(inlines[0]),
+            textOnTap: textOnTap,
+          ));
+        } else {
+          list.add(inlines[0]);
+        }
+      } else {
+        // List<InlineSpan> spans = [];
+        // for (var inline in inlines) {
+        //   if (inline is String) {
+        //     spans.add(WidgetSpan(
+        //         child: TextTranslateComponent(
+        //       inline + " ",
+        //       textOnTap: textOnTap,
+        //     )));
+        //   } else {
+        //     spans.add(WidgetSpan(child: inline));
+        //   }
+        // }
+        // list.add(Text.rich(TextSpan(children: spans)));
+
+        list.add(LineTranslateComponent(
+          []..addAll(inlines),
+          textOnTap: textOnTap,
+        ));
+      }
+      inlines.clear();
+    }
+  }
+
+  static void _closeInlines2(List<dynamic> inlines, List<Widget> list,
       {Function? textOnTap}) {
     if (inlines.isNotEmpty) {
       if (inlines.length == 1) {
@@ -435,8 +489,8 @@ class ContentDecoder {
             subStr.substring(1) != "#") {
           // inline
           // tag
-          handledStr = _closeHandledStr(handledStr, inlines);
-          inlines.add(ContentTagComponent(tag: subStr));
+            handledStr = _closeHandledStr(handledStr, inlines);
+            inlines.add(ContentTagComponent(tag: subStr));
         } else {
           var length = subStr.length;
           if (length > 2) {
@@ -531,6 +585,155 @@ class ContentDecoder {
       return "link";
     }
   }
+}
+
+class LineTranslateComponent extends StatefulWidget {
+  List<dynamic> inlines;
+
+  Function? textOnTap;
+
+  LineTranslateComponent(this.inlines, {this.textOnTap});
+
+  @override
+  State<StatefulWidget> createState() {
+    return _LineTranslateComponent();
+  }
+}
+
+class _LineTranslateComponent extends CustState<LineTranslateComponent> {
+  Map<String, String> targetTextMap = {};
+
+  String sourceText = "";
+
+  static const double MARGIN = 4;
+
+  late TranslateLanguage  sourceLanguage;
+
+  TranslateLanguage? targetLanguage;
+
+  bool showSource = false;
+
+  @override
+  Widget doBuild(BuildContext context) {
+    var _settingProvider = Provider.of<SettingProvider>(context);
+    var themeData = Theme.of(context);
+    var smallTextSize = themeData.textTheme.bodySmall!.fontSize;
+    var fontSize = themeData.textTheme.bodyMedium!.fontSize;
+    var iconWidgetWidth = fontSize! + 4;
+    var hintColor = themeData.hintColor;
+
+    if (isInited) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        checkAndTranslate();
+      });
+    }
+
+    List<InlineSpan> spans = [];
+
+    if (targetLanguage != null &&
+        sourceLanguage != null &&
+        targetTextMap.isNotEmpty) {
+      // translate
+      TextSpan? translateTips = TextSpan(
+        text: " <- -> ",
+        style: TextStyle(
+          color: hintColor,
+        ),
+      );
+      for (var inline in widget.inlines) {
+        if (inline is String) {
+          var targetInline = targetTextMap[inline];
+          if (StringUtil.isNotBlank(targetInline)) {
+            spans.add(TextSpan(text: "$targetInline "));
+
+            if (showSource) {
+              spans.add(translateTips);
+              spans.add(TextSpan(
+                text: "${inline} ",
+                style: TextStyle(
+                  color: hintColor,
+                ),
+              ));
+            }
+          } else {
+            spans.add(TextSpan(text: "${inline} "));
+          }
+        } else {
+          spans.add(WidgetSpan(child: inline));
+        }
+      }
+
+      var iconBtn = WidgetSpan(
+        child: GestureDetector(
+          onTap: () {
+            setState(() {
+              showSource = !showSource;
+            });
+          },
+          child: Container(
+            margin: const EdgeInsets.only(
+              left: MARGIN,
+              right: MARGIN,
+            ),
+            height: iconWidgetWidth,
+            width: iconWidgetWidth,
+            decoration: BoxDecoration(
+              border: Border.all(width: 1, color: hintColor),
+              borderRadius: BorderRadius.circular(iconWidgetWidth / 2),
+            ),
+            child: Icon(
+              Icons.translate,
+              size: smallTextSize,
+              color: hintColor,
+            ),
+          ),
+        ),
+      );
+      spans.add(iconBtn);
+    } else {
+      // no translate
+      for (var inline in widget.inlines) {
+        if (inline is String) {
+          spans.add(TextSpan(text: "$inline "));
+        } else {
+          spans.add(WidgetSpan(child: inline));
+        }
+      }
+    }
+
+    return SelectableText.rich(
+      TextSpan(children: spans),
+      onTap: () {
+        if (widget.textOnTap != null) {
+          widget.textOnTap!();
+        }
+      },
+    );
+  }
+
+  @override
+  Future<void> onReady(BuildContext context) async {
+    checkAndTranslate();
+  }
+
+  Future<void> checkAndTranslate() async {
+    var newSourceText = "";
+
+    for (var inline in widget.inlines) {
+      if (inline is String) {
+        newSourceText += inline;
+      }
+    }
+
+    if (newSourceText.length > 1000) {
+      return;
+    }
+
+    return;
+  }
+}
+
+class TranslateLanguage {
 }
 
 class ContentDecoderInfo {

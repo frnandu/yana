@@ -20,6 +20,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:get_time_ago/get_time_ago.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:isar/isar.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:protocol_handler/protocol_handler.dart';
@@ -47,6 +48,7 @@ import 'package:yana/utils/platform_util.dart';
 
 import 'i18n/i18n.dart';
 import 'nostr/client_utils/keys.dart';
+import 'nostr/relay.dart';
 import 'nostr/relay_metadata.dart';
 import 'provider/community_approved_provider.dart';
 import 'provider/contact_list_provider.dart';
@@ -246,12 +248,12 @@ void createMyRelaySets(UserRelayList userRelayList) {
   Map<String,List<PubkeyMapping>> inbox =
   {
     for (var item in userRelayList.relays.entries.where((entry) => entry.value.isRead))
-      item.key : [PubkeyMapping(pubKey: userRelayList.pubKey, rwMarker: item.value)]
+      Relay.clean(item.key)??item.key : [PubkeyMapping(pubKey: userRelayList.pubKey, rwMarker: item.value)]
   };
   Map<String,List<PubkeyMapping>> outbox =
   {
     for (var item in userRelayList.relays.entries.where((entry) => entry.value.isWrite))
-      item.key : [PubkeyMapping(pubKey: userRelayList.pubKey, rwMarker: item.value)]
+      Relay.clean(item.key)??item.key : [PubkeyMapping(pubKey: userRelayList.pubKey, rwMarker: item.value)]
   };
   myInboxRelaySet = RelaySet(
       name: "inbox",
@@ -280,7 +282,7 @@ Future<void> main() async {
     print(err);
   }
   DbCacheManager dbCacheManager = DbCacheManager();
-  await dbCacheManager.init(path: (await getApplicationDocumentsDirectory()).path);
+  await dbCacheManager.init(directory: PlatformUtil.isWeb()? Isar.sqliteInMemory :  (await getApplicationDocumentsDirectory()).path);
   cacheManager = dbCacheManager;
   relayManager.setCacheManager(cacheManager);
 

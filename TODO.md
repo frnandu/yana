@@ -57,7 +57,8 @@
 - ~~show in which relays a note was loaded from~~
 
 v0.12
-  - blacklist for relays
+- blacklist for relays
+- garbage collection of webSockets not used since X (for reactions)
 - isar v4 for web
 - nip05
 - sign verify

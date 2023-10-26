@@ -70,8 +70,9 @@ class EventReactionsProvider extends ChangeNotifier
         ownerPubKey: pubKey!,
         pubKeys: [pubKey!],
         direction: RelayDirection.inbox,
-        relayMinCountPerPubKey: 2
+        relayMinCountPerPubKey: 5
     ).then((relaySet) {
+      relaySet.addMoreRelays(myInboxRelaySet!.relaysMap);
       relayManager!.subscription(
           filter, relaySet).then((stream) {
         subscriptions[id] = stream.listen((event) {

@@ -19,8 +19,8 @@ class ContentStrLinkComponent extends StatelessWidget {
       onTap: () {
         this.onTap();
       },
-      child: Container(
-        margin: const EdgeInsets.only(top: 3, right:3, left:3),
+      child: Transform.translate( offset: const Offset(0, 4), child: Container(
+        margin: const EdgeInsets.only(bottom: 3, right:3, left:0),
         child: Text(
           StringUtil.breakWord(str),
           style: TextStyle(
@@ -31,6 +31,6 @@ class ContentStrLinkComponent extends StatelessWidget {
           ),
         ),
       ),
-    );
+    ));
   }
 }
