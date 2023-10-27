@@ -36,11 +36,11 @@ class FollowEventProvider extends ChangeNotifier
     return postsAndRepliesBox.listByPubkey(pubkey);
   }
 
-  void refreshPosts() {
+  void refreshPosts({List<String>? fallbackContacts}) {
     _initTime = DateTime.now().millisecondsSinceEpoch ~/ 1000;
     postsBox.clear();
     postsAndRepliesBox.clear();
-    doQuery();
+    doQuery(fallbackContacts: fallbackContacts);
 
     followNewEventProvider.clearPosts();
   }
@@ -77,30 +77,34 @@ class FollowEventProvider extends ChangeNotifier
     ];
   }
 
-  void doQuery ({int? until}) {
+  void doQuery ({int? until, List<String>? fallbackContacts}) {
     if (until!=null) {
       loadMore(until: until);
     } else {
-      load();
+      load(fallbackContacts: fallbackContacts);
     }
   }
 
-  void load() async {
+  void load({List<String>? fallbackContacts}) async {
     if (_streamSubscription!=null) {
       await _streamSubscription!.cancel();
     }
 
-    List<String>? contactList = contactListProvider.contacts();
+    List<String>? contactsForFeed = contactListProvider.contacts();
 
-    if (contactList == null || contactList.isEmpty) {
+    if (contactsForFeed == null || contactsForFeed.isEmpty) {
       if (kDebugMode) {
         print("CONTACT LIST empty, can not get follow content");
       }
-      return;
+      if (fallbackContacts!=null && fallbackContacts.isNotEmpty) {
+        contactsForFeed = fallbackContacts;
+      } else {
+        return;
+      }
     }
     var filter = Filter(
       kinds: queryEventKinds(),
-      authors: contactList..add(nostr!.publicKey),
+      authors: contactsForFeed..add(nostr!.publicKey),
       limit: 20,
     );
     // TODO
@@ -116,7 +120,7 @@ class FollowEventProvider extends ChangeNotifier
         filter, (feedRelaySet!=null && settingProvider.gossip==1)? feedRelaySet! : myInboxRelaySet!);
     _streamSubscription = stream.listen((event) {
       // if (event.pubKey == nostr!.publicKey) {
-        print("event.createdAt:${DateTime.fromMillisecondsSinceEpoch(event.createdAt*1000)}");
+      //   print("event.createdAt:${DateTime.fromMillisecondsSinceEpoch(event.createdAt*1000)}");
         onEvent(event);
       // }
     });

@@ -80,45 +80,6 @@ class _IndexRouter extends CustState<IndexRouter>
     }
   }
 
-
-  void initRelays() async {
-
-    await relayManager.connect();
-
-    UserRelayList? userRelayList = await relayManager.getSingleUserRelayList(nostr!.publicKey);
-    if (userRelayList != null) {
-      createMyRelaySets(userRelayList);
-    }
-    await relayManager.connect(urls: userRelayList != null ? userRelayList!.urls : RelayManager.DEFAULT_BOOTSTRAP_RELAYS);
-    print("Loading contact list...");
-    ContactList? contactList = await relayManager.loadContactList(nostr!.publicKey);
-    if (contactList != null) {
-      print("Loaded ${contactList.contacts.length} contacts...");
-      contactListProvider.set(contactList);
-      if (settingProvider.gossip == 1) {
-        feedRelaySet = relayManager.getRelaySet("feed", nostr!.publicKey);
-        if (feedRelaySet==null) {
-          feedRelaySet =
-          await relayManager.calculateRelaySet(
-            name:"feed",
-              ownerPubKey: nostr!.publicKey,
-              pubKeys: contactList.contacts,
-              direction: RelayDirection.outbox,
-              relayMinCountPerPubKey: settingProvider.followeesRelayMinCount
-          );
-          await relayManager.saveRelaySet(feedRelaySet!);
-        } else {
-          // final startTime = DateTime.now();
-          // print("connecting ${feedRelaySet!.items.length} relays");
-          // List<bool> connected = await Future.wait(feedRelaySet!.items.map((item) => relayManager.connectRelay(item.url)));
-          // final endTime = DateTime.now();
-          // final duration = endTime.difference(startTime);
-          // print("CONNECTED ${connected.where((element) => element).length} , ${connected.where((element) => !element ).length} FAILED took ${duration.inMilliseconds} ms");
-        }
-      }
-      followEventProvider.doQuery();
-    }
-  }
   @override
   Future<void> onReady(BuildContext context) async {
     if (settingProvider.lockOpen == OpenStatus.OPEN && !unlock) {
@@ -135,13 +96,14 @@ class _IndexRouter extends CustState<IndexRouter>
 
   @override
   Widget doBuild(BuildContext context) {
+    var _settingProvider = Provider.of<SettingProvider>(context);
+
     mediaDataCache.update(context);
     var s = I18n.of(context);
 
     if (nostr == null) {
       return LoginRouter();
     }
-    var _settingProvider = Provider.of<SettingProvider>(context);
     var _followEventProvider = Provider.of<FollowEventProvider>(context);
     var _followEventNewProvider = Provider.of<FollowNewEventProvider>(context);
     var _indexProvider = Provider.of<IndexProvider>(context);

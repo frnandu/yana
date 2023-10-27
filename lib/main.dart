@@ -8,6 +8,8 @@ import 'package:dart_ndk/db/db_cache_manager.dart';
 import 'package:dart_ndk/models/pubkey_mapping.dart';
 import 'package:dart_ndk/models/relay_set.dart';
 import 'package:dart_ndk/models/user_relay_list.dart';
+import 'package:dart_ndk/nips/nip02/contact_list.dart';
+import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
 import 'package:dart_ndk/read_write.dart';
 import 'package:dart_ndk/relay_manager.dart';
 import 'package:flutter/material.dart';
@@ -243,17 +245,65 @@ void initProvidersAndStuff() async {
   }
 }
 
-void createMyRelaySets(UserRelayList userRelayList) {
+List<String> DEFAULT_CONTACT_LIST_KEYS = [
+  "82341f882b6eabcd2ba7f1ef90aad961cf074af15b9ef44a09f9d2a8fbfbe6a2", // jack
+  "3bf0c63fcb93463407af97a5e5ee64fa883d107ef9e558472c4eb9aaaefa459d", // fiatjaf
+  "6e468422dfb74a5738702a8823b9b28168abab8655faacb6853cd0ee15deee93", // gigi
+  "04c915daefee38317fa734444acee390a8269fe5810b2241e5e6dd343dfbecc9", // ODELL
+];
 
-  Map<String,List<PubkeyMapping>> inbox =
-  {
+Future<void> initRelays({bool newKey = false}) async {
+  await relayManager.connect();
+
+  UserRelayList? userRelayList = !newKey ? await relayManager.getSingleUserRelayList(nostr!.publicKey) : null;
+  if (userRelayList != null) {
+    createMyRelaySets(userRelayList);
+    await relayManager.connect(urls: userRelayList != null ? userRelayList!.urls : RelayManager.DEFAULT_BOOTSTRAP_RELAYS);
+  } else {
+    int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+    createMyRelaySets(UserRelayList(
+        pubKey: nostr!.publicKey,
+        relays: {for (String url in RelayManager.DEFAULT_BOOTSTRAP_RELAYS) url: ReadWriteMarker.readWrite},
+        createdAt: now,
+        refreshedTimestamp: now));
+  }
+  print("Loading contact list...");
+  ContactList? contactList = !newKey ? await relayManager.loadContactList(nostr!.publicKey) : null;
+  if (contactList != null) {
+    print("Loaded ${contactList.contacts.length} contacts...");
+    contactListProvider.set(contactList);
+    if (settingProvider.gossip == 1) {
+      feedRelaySet = relayManager.getRelaySet("feed", nostr!.publicKey);
+      if (feedRelaySet == null) {
+        feedRelaySet = await relayManager.calculateRelaySet(
+            name: "feed",
+            ownerPubKey: nostr!.publicKey,
+            pubKeys: contactList.contacts,
+            direction: RelayDirection.outbox,
+            relayMinCountPerPubKey: settingProvider.followeesRelayMinCount);
+        await relayManager.saveRelaySet(feedRelaySet!);
+      } else {
+        final startTime = DateTime.now();
+        print("connecting ${feedRelaySet!.relaysMap.length} relays");
+        List<bool> connected = await Future.wait(feedRelaySet!.relaysMap.keys.map((url) => relayManager.connectRelay(url)));
+        final endTime = DateTime.now();
+        final duration = endTime.difference(startTime);
+        print(
+            "CONNECTED ${connected.where((element) => element).length} , ${connected.where((element) => !element).length} FAILED took ${duration.inMilliseconds} ms");
+      }
+    }
+  }
+  followEventProvider.refreshPosts(fallbackContacts: DEFAULT_CONTACT_LIST_KEYS);
+}
+
+void createMyRelaySets(UserRelayList userRelayList) {
+  Map<String, List<PubkeyMapping>> inbox = {
     for (var item in userRelayList.relays.entries.where((entry) => entry.value.isRead))
-      Relay.clean(item.key)??item.key : [PubkeyMapping(pubKey: userRelayList.pubKey, rwMarker: item.value)]
+      Relay.clean(item.key) ?? item.key: [PubkeyMapping(pubKey: userRelayList.pubKey, rwMarker: item.value)]
   };
-  Map<String,List<PubkeyMapping>> outbox =
-  {
+  Map<String, List<PubkeyMapping>> outbox = {
     for (var item in userRelayList.relays.entries.where((entry) => entry.value.isWrite))
-      Relay.clean(item.key)??item.key : [PubkeyMapping(pubKey: userRelayList.pubKey, rwMarker: item.value)]
+      Relay.clean(item.key) ?? item.key: [PubkeyMapping(pubKey: userRelayList.pubKey, rwMarker: item.value)]
   };
   myInboxRelaySet = RelaySet(
       name: "inbox",
@@ -261,15 +311,9 @@ void createMyRelaySets(UserRelayList userRelayList) {
       relayMinCountPerPubkey: inbox.length,
       direction: RelayDirection.inbox,
       relaysMap: inbox,
-      notCoveredPubkeys: []
-  );
-  myOutboxRelaySet = RelaySet(
-    name: "outbox",
-      pubKey: userRelayList.pubKey,
-      relayMinCountPerPubkey: outbox.length,
-      direction: RelayDirection.outbox,
-      relaysMap: outbox
-  );
+      notCoveredPubkeys: []);
+  myOutboxRelaySet =
+      RelaySet(name: "outbox", pubKey: userRelayList.pubKey, relayMinCountPerPubkey: outbox.length, direction: RelayDirection.outbox, relaysMap: outbox);
 }
 
 Future<void> main() async {
@@ -282,7 +326,7 @@ Future<void> main() async {
     print(err);
   }
   DbCacheManager dbCacheManager = DbCacheManager();
-  await dbCacheManager.init(directory: PlatformUtil.isWeb()? Isar.sqliteInMemory :  (await getApplicationDocumentsDirectory()).path);
+  await dbCacheManager.init(directory: PlatformUtil.isWeb() ? Isar.sqliteInMemory : (await getApplicationDocumentsDirectory()).path);
   cacheManager = dbCacheManager;
   relayManager.setCacheManager(cacheManager);
 

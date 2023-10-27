@@ -51,6 +51,8 @@ class _ContentLinkPreComponent extends State<ContentLinkPreComponent> {
             previewData: data,
             text: widget.link,
             width: mediaDataCache.size.width,
+            openOnPreviewImageTap: true,
+            openOnPreviewTitleTap: true,
             onLinkPressed: (link) {
               launchUrl(Uri.parse(link), mode: LaunchMode.externalApplication);
               // WebViewRouter.open(context, link);

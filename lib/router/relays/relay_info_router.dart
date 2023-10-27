@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dart_ndk/nips/nip01/metadata.dart';
 import 'package:dart_ndk/relay.dart';
+import 'package:dart_ndk/relay_info.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:yana/main.dart';
@@ -38,7 +39,11 @@ class _RelayInfoRouter extends State<RelayInfoRouter> {
     }
 
     var relay = relayItf as Relay;
-    var relayInfo = relay.info!;
+    RelayInfo? relayInfo = relay.info;
+    if (relayInfo==null) {
+      RouterUtil.back(context);
+      return Container();
+    }
 
     List<Widget> list = [];
     Widget imageWidget;
@@ -112,57 +117,59 @@ class _RelayInfoRouter extends State<RelayInfoRouter> {
       child: SelectableText(relay.url),
     ));
 
-    list.add(RelayInfoItemComponent(
-      title: "Owner",
-      child: Selector<MetadataProvider, Metadata?>(
-        builder: (context, metadata, child) {
-          List<Widget> list = [];
+    if (StringUtil.isNotBlank(relayInfo.pubKey)) {
+      list.add(RelayInfoItemComponent(
+        title: "Owner",
+        child: Selector<MetadataProvider, Metadata?>(
+          builder: (context, metadata, child) {
+            List<Widget> list = [];
 
-          Widget? imageWidget;
-          if (metadata != null) {
-            imageWidget = CachedNetworkImage(
-              imageUrl: metadata.picture!,
-              width: IMAGE_WIDTH,
+            Widget? imageWidget;
+            if (metadata != null) {
+              imageWidget = CachedNetworkImage(
+                imageUrl: metadata.picture!,
+                width: IMAGE_WIDTH,
+                height: IMAGE_WIDTH,
+                fit: BoxFit.cover,
+                placeholder: (context, url) => const CircularProgressIndicator(),
+                errorWidget: (context, url, error) => const Icon(Icons.error),
+                cacheManager: localCacheManager,
+              );
+            }
+            list.add(Container(
               height: IMAGE_WIDTH,
-              fit: BoxFit.cover,
-              placeholder: (context, url) => const CircularProgressIndicator(),
-              errorWidget: (context, url, error) => const Icon(Icons.error),
-              cacheManager: localCacheManager,
+              width: IMAGE_WIDTH,
+              clipBehavior: Clip.hardEdge,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(IMAGE_WIDTH),
+                color: Colors.grey,
+              ),
+              child: imageWidget,
+            ));
+
+            list.add(Container(
+              margin: const EdgeInsets.only(left: Base.BASE_PADDING),
+              child: NameComponent(
+                pubkey: relayInfo.pubKey,
+                metadata: metadata,
+              ),
+            ));
+
+            return GestureDetector(
+              onTap: () {
+                RouterUtil.router(context, RouterPath.USER, relayInfo.pubKey);
+              },
+              child: Row(
+                children: list,
+              ),
             );
-          }
-          list.add(Container(
-            height: IMAGE_WIDTH,
-            width: IMAGE_WIDTH,
-            clipBehavior: Clip.hardEdge,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(IMAGE_WIDTH),
-              color: Colors.grey,
-            ),
-            child: imageWidget,
-          ));
-
-          list.add(Container(
-            margin: const EdgeInsets.only(left: Base.BASE_PADDING),
-            child: NameComponent(
-              pubkey: relayInfo.pubKey,
-              metadata: metadata,
-            ),
-          ));
-
-          return GestureDetector(
-            onTap: () {
-              RouterUtil.router(context, RouterPath.USER, relayInfo.pubKey);
-            },
-            child: Row(
-              children: list,
-            ),
-          );
-        },
-        selector: (context, _provider) {
-          return _provider.getMetadata(relayInfo.pubKey);
-        },
-      ),
-    ));
+          },
+          selector: (context, _provider) {
+            return _provider.getMetadata(relayInfo.pubKey);
+          },
+        ),
+      ));
+    }
 
     list.add(RelayInfoItemComponent(
       title: "Contact",

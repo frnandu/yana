@@ -279,7 +279,7 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
         )));
         topBtnList.add(Selector<ContactListProvider, bool>(
           builder: (context, followed, child) {
-            if (followed == null) {
+            if (followed == null || !followed) {
               return wrapBtn(MetadataTextBtn(
                 text: "Follow",
                 borderColor: mainColor,

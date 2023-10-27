@@ -67,9 +67,9 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
 
   void load() async {
     await relayManager.loadMissingRelayListsFromNip65OrNip02([widget.pubkey]).then(
-      (value) async {
-        userRelayList = await relayManager.getSingleUserRelayList(widget.pubkey);
-        contactList = await relayManager.loadContactList(widget.pubkey);
+      (value) {
+        userRelayList = cacheManager.loadUserRelayList(widget.pubkey);
+        contactList = cacheManager.loadContactList(widget.pubkey);
         if (!_disposed) {
           setState(() {
             if (widget.onContactListLoaded != null && contactList != null) {
@@ -99,7 +99,7 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
               (contactList == null ||
                   (contactList!.createdAt < newContactList.createdAt))) {
             if (widget.onContactListLoaded != null && newContactList != null) {
-              widget.onContactListLoaded!(contactList!);
+              widget.onContactListLoaded!(newContactList!);
             }
             if (!_disposed) {
               setState(() {

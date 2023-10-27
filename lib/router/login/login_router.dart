@@ -302,38 +302,29 @@ class _LoginRouter extends State<LoginRouter>
         key = Nip19.decode(key);
       }
       await settingProvider.addAndChangeKey(key, !isPublic, updateUI: false);
-      if (!newKey) {
-        nostr = Nostr(
-            privateKey: !isPublic ? key : null,
-            publicKey: !isPublic ? null : key);
-
-        initRelayManager(false, isPublic ? key : getPublicKey(key));
-        var alreadyClosed = true;
+      nostr = Nostr(
+          privateKey: !isPublic ? key : null,
+          publicKey: !isPublic ? null : key);
+      // if (!newKey) {
+      //   await initRelayManager(false, isPublic ? key : getPublicKey(key), newKey);
+        var alreadyClosed = false;
         Future.delayed(const Duration(seconds: 10), () {
-          initRelayManager(alreadyClosed, isPublic ? key : getPublicKey(key));
+          initRelayManager(alreadyClosed, isPublic ? key : getPublicKey(key), newKey);
         });
-      } else {
-        initRelayManager(false, isPublic ? key : getPublicKey(key));
-      }
+      // } else {
+        await initRelayManager(alreadyClosed, isPublic ? key : getPublicKey(key), newKey);
+        alreadyClosed = true;
+      // }
     } catch (e) {
       BotToast.showText(text: e.toString());
       Navigator.of(context, rootNavigator: true).pop();
     }
   }
 
-  void initRelayManager(bool alreadyClosed, String publicKey) async {
+  Future<void> initRelayManager(bool alreadyClosed, String publicKey, bool newKey) async {
     if (!alreadyClosed) {
-      await relayManager.connect();
-      UserRelayList? userRelayList = await relayManager.getSingleUserRelayList(publicKey);
-      if (userRelayList!=null) {
-        createMyRelaySets(userRelayList);
-      }
-      await relayManager.connect(urls: userRelayList!=null? userRelayList.urls : RelayManager.DEFAULT_BOOTSTRAP_RELAYS);
-
-      // nostr = await relayProvider.genNostr(
-      //     privateKey: isPrivate ? key : null,
-      //     publicKey: isPrivate ? null : key);
       Navigator.of(context, rootNavigator: true).pop();
+      await initRelays(newKey: newKey);
       settingProvider.notifyListeners();
 
       firstLogin = true;

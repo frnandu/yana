@@ -237,8 +237,8 @@ class AccountsState extends State<AccountsComponent> {
     // remove private key
     settingProvider.removeKey(index);
     // clear local db
-    DMSessionInfoDB.deleteAll(index);
-    EventDB.deleteAll(index);
+    // DMSessionInfoDB.deleteAll(index);
+    // EventDB.deleteAll(index);
     // MetadataDB.deleteAll(); // MetadataDB don't delete here, but delete in setting
   }
 }
