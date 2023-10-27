@@ -1,8 +1,11 @@
+import 'dart:async';
+
 import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip01/filter.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:widget_size/widget_size.dart';
+import 'package:yana/provider/event_reactions_provider.dart';
 import 'package:yana/provider/single_event_provider.dart';
 
 import '../../main.dart';
@@ -105,13 +108,12 @@ class _ThreadDetailRouter extends CustState<ThreadDetailRouter> with PenddingEve
     if (eventId!=null) {
       var filter = Filter(ids: [eventId!]);
       if (myInboxRelaySet!=null) {
-        relayManager.requestRelays(myInboxRelaySet!.urls, filter, idleTimeout: 20).then((stream) {
-          stream.listen((event) {
-            setState(() {
-              loadedEvent = event;
-            });
+        Stream<Nip01Event> stream = await relayManager.requestRelays(myInboxRelaySet!.urls, filter, idleTimeout: 1);
+        stream.listen((event) {
+          setState(() {
+            loadedEvent = event;
           });
-        },);
+        });
       }
     }
   }
@@ -130,6 +132,16 @@ class _ThreadDetailRouter extends CustState<ThreadDetailRouter> with PenddingEve
 
     // load sourceEvent replies and avoid blank page
     var eventReactions = eventReactionsProvider.get(sourceEvent!);
+    // eventReactionsProvider.subscription(sourceEvent!.id, sourceEvent!.pubKey, null).then((sub) {
+    //   if (sub!=null) {
+    //     sub.onData((data) {
+    //       setState(() {
+    //         listToTree(refresh: true);
+    //       });
+    //     });
+    //   }
+    // },);
+
     if (eventReactions != null && eventReactions.replies.isNotEmpty) {
       box.addList(eventReactions.replies);
     } else if (rootEvent == null) {
@@ -141,6 +153,7 @@ class _ThreadDetailRouter extends CustState<ThreadDetailRouter> with PenddingEve
   @override
   Widget doBuild(BuildContext context) {
     var _singleEventProvider = Provider.of<SingleEventProvider>(context);
+    var _eventReactionsProvider = Provider.of<EventReactionsProvider>(context);
     if (sourceEvent == null) {
       if (loadedEvent!=null) {
         sourceEvent = loadedEvent;
@@ -148,19 +161,23 @@ class _ThreadDetailRouter extends CustState<ThreadDetailRouter> with PenddingEve
         var obj = RouterUtil.routerArgs(context);
         if (obj != null && obj is Nip01Event) {
           sourceEvent = obj;
-          // } else if (obj!=null && obj is String){
           if (sourceEvent == null) {
             RouterUtil.back(context);
             return Container();
           }
-        } else {
-          Future.delayed(Duration(seconds: 2),() async {
+        } else if (obj!=null && obj is String){
+          eventId = obj;
+          Future.delayed(const Duration(seconds: 2),() async {
             loadEvent();
           });
-          if (sourceEvent == null) {
-            return Container();
-          }
+        } else {
+          Future.delayed(const Duration(seconds: 2),() async {
+            loadEvent();
+          });
         }
+      }
+      if (sourceEvent == null) {
+        return Container();
       }
       initFromArgs();
     } else {
@@ -363,6 +380,9 @@ class _ThreadDetailRouter extends CustState<ThreadDetailRouter> with PenddingEve
   void dispose() {
     super.dispose();
     disposeLater();
+    if (sourceEvent!=null) {
+      eventReactionsProvider.removePendding(sourceEvent!.id);
+    }
   }
 
   void listToTree({bool refresh = true}) {

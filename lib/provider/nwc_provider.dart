@@ -221,7 +221,7 @@ class NwcProvider extends ChangeNotifier {
         var preImage = data['result']['preimage'];
         BotToast.showText(text: "Zap payed");
         if (payInvoiceEventId!=null) {
-          eventReactionsProvider.update(payInvoiceEventId!, null, EventKind.ZAP);
+          await eventReactionsProvider.subscription(payInvoiceEventId!, null, EventKind.ZAP);
         }
         notifyListeners();
         await requestBalance();

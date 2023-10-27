@@ -120,8 +120,7 @@ class _IndexRouter extends CustState<IndexRouter>
               key = key.substring(0, Nip19.NOTEID_LENGTH);
             }
             key = Nip19.decode(key);
-            /// TODO need the event
-            // RouterUtil.router(context, RouterPath.THREAD_DETAIL, event);
+            RouterUtil.router(context, RouterPath.THREAD_DETAIL, key);
           } else if (NIP19Tlv.isNprofile(key)) {
             var nprofile = NIP19Tlv.decodeNprofile(key);
             if (nprofile != null) {
@@ -141,17 +140,13 @@ class _IndexRouter extends CustState<IndexRouter>
           } else if (NIP19Tlv.isNevent(key)) {
             var nevent = NIP19Tlv.decodeNevent(key);
             if (nevent != null) {
-              // nevent.id
-              /// TODO need the event
-              // RouterUtil.router(context, RouterPath.THREAD_DETAIL, event);
+              RouterUtil.router(context, RouterPath.THREAD_DETAIL, nevent.id);
             }
           } else if (NIP19Tlv.isNaddr(key)) {
             var naddr = NIP19Tlv.decodeNaddr(key);
             if (naddr != null) {
               if (StringUtil.isNotBlank(naddr.id) && naddr.kind == Nip01Event.textNoteKind) {
-                /// TODO need the event
-                // RouterUtil.router(context, RouterPath.THREAD_DETAIL, event);
-                // id: naddr.id,
+                RouterUtil.router(context, RouterPath.THREAD_DETAIL, naddr.id);
               } else if (StringUtil.isNotBlank(naddr.author) && naddr.kind == Metadata.kind) {
                 RouterUtil.router(context, RouterPath.USER, naddr.author);
               }

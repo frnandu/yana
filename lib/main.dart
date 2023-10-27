@@ -738,7 +738,7 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
                         //   });
                         // },);
 
-                        jump = MaterialPageRoute(settings: RouteSettings(name: RouterPath.THREAD_DETAIL, arguments: key), builder: (context) => ThreadDetailRouter());
+                        jump = MaterialPageRoute(settings: RouteSettings(name: RouterPath.THREAD_DETAIL, arguments: key), builder: (context) => ThreadDetailRouter(eventId: key));
                         // RouterUtil.router(context, RouterPath.THREAD_DETAIL, event);
                       } else if (NIP19Tlv.isNprofile(key)) {
                         var nprofile = NIP19Tlv.decodeNprofile(key);
@@ -758,16 +758,13 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
                       } else if (NIP19Tlv.isNevent(key)) {
                         var nevent = NIP19Tlv.decodeNevent(key);
                         if (nevent != null) {
-                          jump = MaterialPageRoute(settings: RouteSettings(name: RouterPath.THREAD_DETAIL, arguments: nevent.id), builder: (context) => ThreadDetailRouter());
+                          jump = MaterialPageRoute(settings: RouteSettings(name: RouterPath.THREAD_DETAIL, arguments: nevent.id), builder: (context) => ThreadDetailRouter(eventId: nevent.id,));
                         }
                       } else if (NIP19Tlv.isNaddr(key)) {
                         var naddr = NIP19Tlv.decodeNaddr(key);
                         if (naddr != null) {
                           if (StringUtil.isNotBlank(naddr.id) && naddr.kind == Nip01Event.textNoteKind) {
-                            /// TODO need the event
-                            // RouterUtil.router(context, RouterPath.THREAD_DETAIL, event);
-                            // id: naddr.id,
-                            jump = MaterialPageRoute(settings: RouteSettings(name: RouterPath.THREAD_DETAIL, arguments: naddr.id), builder: (context) => ThreadDetailRouter());
+                            jump = MaterialPageRoute(settings: RouteSettings(name: RouterPath.THREAD_DETAIL, arguments: naddr.id), builder: (context) => ThreadDetailRouter(eventId: naddr.id,));
                           } else if (StringUtil.isNotBlank(naddr.author) && naddr.kind == Metadata.kind) {
                             jump = MaterialPageRoute(settings: RouteSettings(name: RouterPath.USER, arguments: naddr.author), builder: (context) => UserRouter());
                           }
@@ -775,9 +772,6 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
                       }
                     }
                   }
-                  // String noteId = Nip19.decode("note1tevmpk4lwjmfc9cs83xqn0y9mzwyspk5np5583wl6c5x0znxprqqe8m8jw");
-                  // jump = MaterialPageRoute(settings: RouteSettings(name: RouterPath.THREAD_DETAIL, arguments: noteId), builder: (context) => ThreadDetailRouter(eventId: noteId));
-
                   if (jump!=null) {
                     return [
                       MaterialPageRoute(builder: (context) => IndexRouter(reload: reload)),

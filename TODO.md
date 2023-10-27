@@ -58,6 +58,7 @@
 - ~~show in which relays a note was loaded from~~
 - ~~user Follow feed relays write to DB to improve startup time in outbox model~~
 - ~~register nostr: in android so that nostr links give yana option as an app to open~~
+  - ~~handle nostr:nevent1 (need to somehow load the event)~~
 
 v0.12
 - sign verify
@@ -71,14 +72,15 @@ v0.12
 - broadcast
 - notifications
 - global
-- load more on big posts
 - check why some replies appear on posts
 
-- 2better android/ios/linux badges on web version login screen (anchor links to readme.md for IOS/linux)
-- handle nostr:nevent1 (need to somehow load the event)
+- better android/ios/linux badges on web version login screen (anchor links to readme.md for IOS/linux)
+- 
+- make thread detail subscription of new replies work
 - 
 v0.13
 - isar v4 for web
+- load more on big posts
 
 - detect new followers by comparing in background previous followers list and generating new notification
 - login by searching some user by name/displayName

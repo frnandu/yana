@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:dart_ndk/models/relay_set.dart';
 import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip01/filter.dart';
 import 'package:dart_ndk/read_write.dart';
@@ -62,32 +63,31 @@ class EventReactionsProvider extends ChangeNotifier
     }
   }
 
-  void update(String id, String? pubKey, int? kind) {
+  Future<StreamSubscription<Nip01Event>> subscription(String id, String? pubKey, int? kind) async {
     var filter = kind!=null ? Filter(eTags: [id], kinds: [kind]) : Filter(eTags: [id]);
 
-    relayManager.calculateRelaySet(
+    RelaySet relaySet = await relayManager.calculateRelaySet(
         name:"reactions-feed",
         ownerPubKey: pubKey!,
         pubKeys: [pubKey!],
         direction: RelayDirection.inbox,
         relayMinCountPerPubKey: 5
-    ).then((relaySet) {
-      relaySet.addMoreRelays(myInboxRelaySet!.relaysMap);
-      relayManager!.subscription(
-          filter, relaySet).then((stream) {
-        subscriptions[id] = stream.listen((event) {
+    );
+    relaySet.addMoreRelays(myInboxRelaySet!.relaysMap);
+    Stream<Nip01Event> stream = await relayManager!.subscription(filter, relaySet);
+    StreamSubscription<Nip01Event> sub = stream.listen((event) {
           _handleSingleEvent2(event);
         });
-      },);
-    },);
+    subscriptions[id] = sub;
+    return sub;
     // TODO should use other relays inbox for pubKey....
   }
 
-  EventReactions? get(Nip01Event event) {
+  EventReactions? get(Nip01Event event, {bool forceSubscription=false}) {
     var er = _eventReactionsMap[event.id];
     if (er == null) {
       // plan to pull
-      update(event.id, event.pubKey, null);
+      subscription(event.id, event.pubKey, null);
       // _penddingIds[id] = 1;
       // // later(laterFunc, null);
       // whenStop(laterFunc);
@@ -95,6 +95,9 @@ class EventReactionsProvider extends ChangeNotifier
       er = EventReactions(event.id);
       _eventReactionsMap[event.id] = er;
     } else {
+      if (forceSubscription && subscriptions[event.id]==null) {
+        subscription(event.id, event.pubKey, null);
+      }
       var now = DateTime.now();
       // check dataTime if need to update
       // if (now.millisecondsSinceEpoch - er.dataTime.millisecondsSinceEpoch >
