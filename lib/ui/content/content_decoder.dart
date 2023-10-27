@@ -109,6 +109,10 @@ class ContentDecoder {
         ));
       }
       inlines.clear();
+    } else {
+      list.add(LineTranslateComponent(
+        []..addAll([Container()]),
+      ));
     }
   }
 
@@ -154,8 +158,8 @@ class ContentDecoder {
 
   static ContentDecoderInfo _decodeTest(String content) {
     content = content.trim();
-    content = content.replaceAll("\r\n", "\n");
-    content = content.replaceAll("\n\n", "\n");
+    // content = content.replaceAll("\r\n", "\n");
+    // content = content.replaceAll("\n\n", "\n");
     var strs = content.split("\n");
 
     ContentDecoderInfo info = ContentDecoderInfo();
@@ -213,209 +217,14 @@ class ContentDecoder {
       ///
       for (var subStr in subStrs) {
         if (subStr.indexOf("http") == 0) {
+          
           // link, image, video etc
-          var pathType = getPathType(subStr);
-          if (pathType == "image") {
-            if (showImage) {
-              imageList.add(subStr);
-              if (imageListMode && decodeInfo.imageNum > 1) {
-                // inline
-                handledStr = handledStr.trim();
-                var imagePlaceholder = Container(
-                  margin: const EdgeInsets.only(left: 4),
-                  child: const Icon(
-                    Icons.image,
-                    size: 15,
-                  ),
-                );
-                if (StringUtil.isBlank(handledStr) && inlines.isEmpty) {
-                  // add to pre line
-                  var listLength = list.length;
-                  if (listLength > 0) {
-                    var lastListWidget = list[listLength - 1];
-                    List<InlineSpan> spans = [];
-                    if (lastListWidget is SelectableText) {
-                      if (lastListWidget.data != null) {
-                        spans.add(TextSpan(text: lastListWidget.data!));
-                      } else if (lastListWidget.textSpan != null) {
-                        spans.addAll(lastListWidget.textSpan!.children!);
-                      }
-                    } else {
-                      spans.add(WidgetSpan(child: lastListWidget));
-                    }
-                    spans.add(WidgetSpan(child: imagePlaceholder));
-
-                    list[listLength - 1] = SelectableText.rich(
-                      TextSpan(children: spans),
-                      onTap: () {
-                        if (textOnTap != null) {
-                          textOnTap();
-                        }
-                      },
-                    );
-                  }
-                } else {
-                  if (StringUtil.isNotBlank(handledStr)) {
-                    handledStr = _closeHandledStr(handledStr, inlines);
-                  }
-                  inlines.add(imagePlaceholder);
-                }
-              } else {
-                // block
-                handledStr = _closeHandledStr(handledStr, inlines);
-                _closeInlines(inlines, list, textOnTap: textOnTap);
-                var imageIndex = imageList.length - 1;
-                var imageWidget = ContentImageComponent(
-                  imageUrl: subStr,
-                  imageList: imageList,
-                  imageIndex: imageIndex,
-                );
-                list.add(imageWidget);
-              }
-            } else {
-              // inline
-              handledStr = _closeHandledStr(handledStr, inlines);
-              inlines.add(ContentLinkComponent(link: subStr));
-            }
-          } else if (pathType == "video") {
-            if (showVideo && !PlatformUtil.isPC()) {
-              // block
-              handledStr = _closeHandledStr(handledStr, inlines);
-              _closeInlines(inlines, list, textOnTap: textOnTap);
-              var w = ContentVideoComponent(url: subStr);
-              list.add(w);
-            } else {
-              // inline
-              handledStr = _closeHandledStr(handledStr, inlines);
-              inlines.add(ContentLinkComponent(link: subStr));
-            }
-            // // TODO need to handle, this is temp handle
-            // handledStr = _addToHandledStr(handledStr, subStr);
-          } else if (pathType == "link") {
-            if (!showLinkPreview) {
-              // inline
-              handledStr = _closeHandledStr(handledStr, inlines);
-              inlines.add(ContentLinkComponent(link: subStr));
-            } else {
-              // block
-              handledStr = _closeHandledStr(handledStr, inlines);
-              _closeInlines(inlines, list, textOnTap: textOnTap);
-              // if (!PlatformUtil.isPC() &&
-              //     (subStr.contains("youtube.com") ||
-              //         subStr.contains("youtu.be"))) {
-              //   var w = ContnetYoutubeComponent(
-              //     link: subStr,
-              //   );
-              //   list.add(w);
-              // } else {
-              var w = ContentLinkPreComponent(
-                link: subStr,
-              );
-              list.add(w);
-              // }
-            }
-          }
+          handledStr = handleHttpLink(subStr, showImage, imageList, imageListMode, decodeInfo, handledStr, inlines, list, textOnTap, showVideo, showLinkPreview);
         } else if ((subStr.indexOf(NOTE_REFERENCES) == 0 || subStr.indexOf(NOTE_REFERENCES_AT) == 0)) {
           // var key = subStr.replaceFirst(NOTE_REFERENCES_AT, "");
           // key = key.replaceFirst(NOTE_REFERENCES, "");
 
-          RegExpMatch? match = Nip19.nip19regex.firstMatch(subStr);
-
-          if (match!=null) {
-            var key = match.group(2)!+match.group(3)!;
-            String? otherStr;
-
-            if (Nip19.isPubkey(key)) {
-              // inline
-              // mention user
-              if (key.length > NPUB_LENGTH) {
-                otherStr = key.substring(NPUB_LENGTH);
-                key = key.substring(0, NPUB_LENGTH);
-              }
-              key = Nip19.decode(key);
-              handledStr = _closeHandledStr(handledStr, inlines);
-              inlines.add(ContentMentionUserComponent(pubkey: key));
-            } else if (Nip19.isNoteId(key)) {
-              // block
-              if (key.length > NOTEID_LENGTH) {
-                otherStr = key.substring(NOTEID_LENGTH);
-                key = key.substring(0, NOTEID_LENGTH);
-              }
-              key = Nip19.decode(key);
-              handledStr = _closeHandledStr(handledStr, inlines);
-              _closeInlines(inlines, list, textOnTap: textOnTap);
-              var widget = EventQuoteComponent(
-                id: key,
-                showVideo: showVideo,
-              );
-              list.add(widget);
-            } else if (NIP19Tlv.isNprofile(key)) {
-              var nprofile = NIP19Tlv.decodeNprofile(key);
-              if (nprofile != null) {
-                // inline
-                // mention user
-                handledStr = _closeHandledStr(handledStr, inlines);
-                inlines.add(
-                    ContentMentionUserComponent(pubkey: nprofile.pubkey));
-              } else {
-                handledStr = _addToHandledStr(handledStr, subStr);
-              }
-            } else if (NIP19Tlv.isNrelay(key)) {
-              var nrelay = NIP19Tlv.decodeNrelay(key);
-              if (nrelay != null) {
-                // inline
-                handledStr = _closeHandledStr(handledStr, inlines);
-                inlines.add(ContentRelayComponent(nrelay.addr));
-              } else {
-                handledStr = _addToHandledStr(handledStr, subStr);
-              }
-            } else if (NIP19Tlv.isNevent(key)) {
-              var nevent = NIP19Tlv.decodeNevent(key);
-              if (nevent != null) {
-                // block
-                handledStr = _closeHandledStr(handledStr, inlines);
-                _closeInlines(inlines, list, textOnTap: textOnTap);
-                var widget = EventQuoteComponent(
-                  id: nevent.id,
-                  showVideo: showVideo,
-                );
-                list.add(widget);
-              } else {
-                handledStr = _addToHandledStr(handledStr, subStr);
-              }
-            } else if (NIP19Tlv.isNaddr(key)) {
-              var naddr = NIP19Tlv.decodeNaddr(key);
-              if (naddr != null) {
-                if (StringUtil.isNotBlank(naddr.id) &&
-                    naddr.kind == Nip01Event.textNoteKind) {
-                  // block
-                  handledStr = _closeHandledStr(handledStr, inlines);
-                  _closeInlines(inlines, list, textOnTap: textOnTap);
-                  var widget = EventQuoteComponent(
-                    id: naddr.id,
-                    showVideo: showVideo,
-                  );
-                  list.add(widget);
-                } else if (StringUtil.isNotBlank(naddr.author) &&
-                    naddr.kind == Metadata.kind) {
-                  // inline
-                  handledStr = _closeHandledStr(handledStr, inlines);
-                  inlines.add(
-                      ContentMentionUserComponent(pubkey: naddr.author));
-                } else {
-                  handledStr = _addToHandledStr(handledStr, subStr);
-                }
-              } else {
-                handledStr = _addToHandledStr(handledStr, subStr);
-              }
-            } else {
-              handledStr = _addToHandledStr(handledStr, subStr);
-            }
-
-            if (StringUtil.isNotBlank(otherStr)) {
-              handledStr = _addToHandledStr(handledStr, otherStr!);
-            }
-          }
+          handledStr = handleNostrReference(subStr, handledStr, inlines, list, textOnTap, showVideo);
         } else if (subStr.indexOf(MENTION_USER) == 0) {
           var key = subStr.replaceFirst("@", "");
           // inline
@@ -551,6 +360,216 @@ class ContentDecoder {
     }
 
     return list;
+  }
+
+  static String handleNostrReference(String subStr, String handledStr, List<dynamic> inlines, List<Widget> list, Function? textOnTap, bool showVideo) {
+    // var key = subStr.replaceFirst(NOTE_REFERENCES_AT, "");
+    // key = key.replaceFirst(NOTE_REFERENCES, "");
+    
+    RegExpMatch? match = Nip19.nip19regex.firstMatch(subStr);
+    
+    if (match!=null) {
+      var key = match.group(2)!+match.group(3)!;
+      String? otherStr;
+    
+      if (Nip19.isPubkey(key)) {
+        // inline
+        // mention user
+        if (key.length > NPUB_LENGTH) {
+          otherStr = key.substring(NPUB_LENGTH);
+          key = key.substring(0, NPUB_LENGTH);
+        }
+        key = Nip19.decode(key);
+        handledStr = _closeHandledStr(handledStr, inlines);
+        inlines.add(ContentMentionUserComponent(pubkey: key));
+      } else if (Nip19.isNoteId(key)) {
+        // block
+        if (key.length > NOTEID_LENGTH) {
+          otherStr = key.substring(NOTEID_LENGTH);
+          key = key.substring(0, NOTEID_LENGTH);
+        }
+        key = Nip19.decode(key);
+        handledStr = _closeHandledStr(handledStr, inlines);
+        _closeInlines(inlines, list, textOnTap: textOnTap);
+        var widget = EventQuoteComponent(
+          id: key,
+          showVideo: showVideo,
+        );
+        list.add(widget);
+      } else if (NIP19Tlv.isNprofile(key)) {
+        var nprofile = NIP19Tlv.decodeNprofile(key);
+        if (nprofile != null) {
+          // inline
+          // mention user
+          handledStr = _closeHandledStr(handledStr, inlines);
+          inlines.add(
+              ContentMentionUserComponent(pubkey: nprofile.pubkey));
+        } else {
+          handledStr = _addToHandledStr(handledStr, subStr);
+        }
+      } else if (NIP19Tlv.isNrelay(key)) {
+        var nrelay = NIP19Tlv.decodeNrelay(key);
+        if (nrelay != null) {
+          // inline
+          handledStr = _closeHandledStr(handledStr, inlines);
+          inlines.add(ContentRelayComponent(nrelay.addr));
+        } else {
+          handledStr = _addToHandledStr(handledStr, subStr);
+        }
+      } else if (NIP19Tlv.isNevent(key)) {
+        var nevent = NIP19Tlv.decodeNevent(key);
+        if (nevent != null) {
+          // block
+          handledStr = _closeHandledStr(handledStr, inlines);
+          _closeInlines(inlines, list, textOnTap: textOnTap);
+          var widget = EventQuoteComponent(
+            id: nevent.id,
+            showVideo: showVideo,
+          );
+          list.add(widget);
+        } else {
+          handledStr = _addToHandledStr(handledStr, subStr);
+        }
+      } else if (NIP19Tlv.isNaddr(key)) {
+        var naddr = NIP19Tlv.decodeNaddr(key);
+        if (naddr != null) {
+          if (StringUtil.isNotBlank(naddr.id) &&
+              naddr.kind == Nip01Event.textNoteKind) {
+            // block
+            handledStr = _closeHandledStr(handledStr, inlines);
+            _closeInlines(inlines, list, textOnTap: textOnTap);
+            var widget = EventQuoteComponent(
+              id: naddr.id,
+              showVideo: showVideo,
+            );
+            list.add(widget);
+          } else if (StringUtil.isNotBlank(naddr.author) &&
+              naddr.kind == Metadata.kind) {
+            // inline
+            handledStr = _closeHandledStr(handledStr, inlines);
+            inlines.add(
+                ContentMentionUserComponent(pubkey: naddr.author));
+          } else {
+            handledStr = _addToHandledStr(handledStr, subStr);
+          }
+        } else {
+          handledStr = _addToHandledStr(handledStr, subStr);
+        }
+      } else {
+        handledStr = _addToHandledStr(handledStr, subStr);
+      }
+    
+      if (StringUtil.isNotBlank(otherStr)) {
+        handledStr = _addToHandledStr(handledStr, otherStr!);
+      }
+    }
+    return handledStr;
+  }
+
+  static String handleHttpLink(String subStr, bool showImage, List<String> imageList, bool imageListMode, ContentDecoderInfo decodeInfo, String handledStr, List<dynamic> inlines, List<Widget> list, Function? textOnTap, bool showVideo, bool showLinkPreview) {
+    // link, image, video etc
+    var pathType = getPathType(subStr);
+    if (pathType == "image") {
+      if (showImage) {
+        imageList.add(subStr);
+        if (imageListMode && decodeInfo.imageNum > 1) {
+          // inline
+          handledStr = handledStr.trim();
+          var imagePlaceholder = Container(
+            margin: const EdgeInsets.only(left: 4),
+            child: const Icon(
+              Icons.image,
+              size: 15,
+            ),
+          );
+          if (StringUtil.isBlank(handledStr) && inlines.isEmpty) {
+            // add to pre line
+            var listLength = list.length;
+            if (listLength > 0) {
+              var lastListWidget = list[listLength - 1];
+              List<InlineSpan> spans = [];
+              if (lastListWidget is SelectableText) {
+                if (lastListWidget.data != null) {
+                  spans.add(TextSpan(text: lastListWidget.data!));
+                } else if (lastListWidget.textSpan != null) {
+                  spans.addAll(lastListWidget.textSpan!.children!);
+                }
+              } else {
+                spans.add(WidgetSpan(child: lastListWidget));
+              }
+              spans.add(WidgetSpan(child: imagePlaceholder));
+    
+              list[listLength - 1] = SelectableText.rich(
+                TextSpan(children: spans),
+                onTap: () {
+                  if (textOnTap != null) {
+                    textOnTap();
+                  }
+                },
+              );
+            }
+          } else {
+            if (StringUtil.isNotBlank(handledStr)) {
+              handledStr = _closeHandledStr(handledStr, inlines);
+            }
+            inlines.add(imagePlaceholder);
+          }
+        } else {
+          // block
+          handledStr = _closeHandledStr(handledStr, inlines);
+          _closeInlines(inlines, list, textOnTap: textOnTap);
+          var imageIndex = imageList.length - 1;
+          var imageWidget = ContentImageComponent(
+            imageUrl: subStr,
+            imageList: imageList,
+            imageIndex: imageIndex,
+          );
+          list.add(imageWidget);
+        }
+      } else {
+        // inline
+        handledStr = _closeHandledStr(handledStr, inlines);
+        inlines.add(ContentLinkComponent(link: subStr));
+      }
+    } else if (pathType == "video") {
+      if (showVideo && !PlatformUtil.isPC()) {
+        // block
+        handledStr = _closeHandledStr(handledStr, inlines);
+        _closeInlines(inlines, list, textOnTap: textOnTap);
+        var w = ContentVideoComponent(url: subStr);
+        list.add(w);
+      } else {
+        // inline
+        handledStr = _closeHandledStr(handledStr, inlines);
+        inlines.add(ContentLinkComponent(link: subStr));
+      }
+      // // TODO need to handle, this is temp handle
+      // handledStr = _addToHandledStr(handledStr, subStr);
+    } else if (pathType == "link") {
+      if (!showLinkPreview) {
+        // inline
+        handledStr = _closeHandledStr(handledStr, inlines);
+        inlines.add(ContentLinkComponent(link: subStr));
+      } else {
+        // block
+        handledStr = _closeHandledStr(handledStr, inlines);
+        _closeInlines(inlines, list, textOnTap: textOnTap);
+        // if (!PlatformUtil.isPC() &&
+        //     (subStr.contains("youtube.com") ||
+        //         subStr.contains("youtu.be"))) {
+        //   var w = ContnetYoutubeComponent(
+        //     link: subStr,
+        //   );
+        //   list.add(w);
+        // } else {
+        var w = ContentLinkPreComponent(
+          link: subStr,
+        );
+        list.add(w);
+        // }
+      }
+    }
+    return handledStr;
   }
 
   static const double CONTENT_IMAGE_LIST_HEIGHT = 90;
