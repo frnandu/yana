@@ -9,6 +9,7 @@ import 'package:dart_ndk/models/pubkey_mapping.dart';
 import 'package:dart_ndk/models/relay_set.dart';
 import 'package:dart_ndk/models/user_relay_list.dart';
 import 'package:dart_ndk/nips/nip01/event.dart';
+import 'package:dart_ndk/nips/nip01/filter.dart';
 import 'package:dart_ndk/nips/nip01/metadata.dart';
 import 'package:dart_ndk/nips/nip02/contact_list.dart';
 import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
@@ -26,7 +27,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:get_time_ago/get_time_ago.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
-import 'package:isar/isar.dart';
+import 'package:isar/isar.dart' as isar;
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:protocol_handler/protocol_handler.dart';
@@ -334,7 +335,7 @@ Future<void> main() async {
     print(err);
   }
   DbCacheManager dbCacheManager = DbCacheManager();
-  await dbCacheManager.init(directory: PlatformUtil.isWeb() ? Isar.sqliteInMemory : (await getApplicationDocumentsDirectory()).path);
+  await dbCacheManager.init(directory: PlatformUtil.isWeb() ? isar.Isar.sqliteInMemory : (await getApplicationDocumentsDirectory()).path);
   cacheManager = dbCacheManager;
   relayManager.setCacheManager(cacheManager);
 
@@ -595,7 +596,7 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
       RouterPath.USER_ZAP_LIST: (context) => const UserZapListRouter(),
       RouterPath.USER_RELAYS: (context) => const UserRelayRouter(),
       RouterPath.DM_DETAIL: (context) => const DMDetailRouter(),
-      RouterPath.THREAD_DETAIL: (context) => const ThreadDetailRouter(),
+      RouterPath.THREAD_DETAIL: (context) => ThreadDetailRouter(),
       RouterPath.EVENT_DETAIL: (context) => const EventDetailRouter(),
       RouterPath.TAG_DETAIL: (context) => const TagDetailRouter(),
       RouterPath.NOTICES: (context) => const NoticeRouter(),
@@ -730,8 +731,14 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
                           key = key.substring(0, Nip19.NOTEID_LENGTH);
                         }
                         key = Nip19.decode(key);
+                        // var filter = Filter(ids: [key]);
+                        // relayManager.requestRelays(relayManager.bootstrapRelays, filter, idleTimeout: 20).then((stream) {
+                        //   stream.listen((event) {
+                        //     RouterUtil.router(context, RouterPath.THREAD_DETAIL, event);
+                        //   });
+                        // },);
 
-                        /// TODO need the event
+                        jump = MaterialPageRoute(settings: RouteSettings(name: RouterPath.THREAD_DETAIL, arguments: key), builder: (context) => ThreadDetailRouter());
                         // RouterUtil.router(context, RouterPath.THREAD_DETAIL, event);
                       } else if (NIP19Tlv.isNprofile(key)) {
                         var nprofile = NIP19Tlv.decodeNprofile(key);
@@ -751,9 +758,7 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
                       } else if (NIP19Tlv.isNevent(key)) {
                         var nevent = NIP19Tlv.decodeNevent(key);
                         if (nevent != null) {
-                          // nevent.id
-                          /// TODO need the event
-                          // RouterUtil.router(context, RouterPath.THREAD_DETAIL, event);
+                          jump = MaterialPageRoute(settings: RouteSettings(name: RouterPath.THREAD_DETAIL, arguments: nevent.id), builder: (context) => ThreadDetailRouter());
                         }
                       } else if (NIP19Tlv.isNaddr(key)) {
                         var naddr = NIP19Tlv.decodeNaddr(key);
@@ -762,6 +767,7 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
                             /// TODO need the event
                             // RouterUtil.router(context, RouterPath.THREAD_DETAIL, event);
                             // id: naddr.id,
+                            jump = MaterialPageRoute(settings: RouteSettings(name: RouterPath.THREAD_DETAIL, arguments: naddr.id), builder: (context) => ThreadDetailRouter());
                           } else if (StringUtil.isNotBlank(naddr.author) && naddr.kind == Metadata.kind) {
                             jump = MaterialPageRoute(settings: RouteSettings(name: RouterPath.USER, arguments: naddr.author), builder: (context) => UserRouter());
                           }
@@ -769,6 +775,9 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
                       }
                     }
                   }
+                  // String noteId = Nip19.decode("note1tevmpk4lwjmfc9cs83xqn0y9mzwyspk5np5583wl6c5x0znxprqqe8m8jw");
+                  // jump = MaterialPageRoute(settings: RouteSettings(name: RouterPath.THREAD_DETAIL, arguments: noteId), builder: (context) => ThreadDetailRouter(eventId: noteId));
+
                   if (jump!=null) {
                     return [
                       MaterialPageRoute(builder: (context) => IndexRouter(reload: reload)),

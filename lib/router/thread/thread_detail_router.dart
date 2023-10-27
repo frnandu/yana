@@ -25,11 +25,13 @@ import 'thread_detail_event_main_component.dart';
 import 'thread_detail_item_component.dart';
 
 class ThreadDetailRouter extends StatefulWidget {
-  const ThreadDetailRouter({super.key});
+  String? eventId;
+
+  ThreadDetailRouter({super.key, this.eventId});
 
   @override
   State<StatefulWidget> createState() {
-    return _ThreadDetailRouter();
+    return _ThreadDetailRouter(eventId);
   }
 
   static Widget detailAppBarTitle(Nip01Event event, ThemeData themeData) {
@@ -62,22 +64,26 @@ class ThreadDetailRouter extends StatefulWidget {
   }
 }
 
-class _ThreadDetailRouter extends CustState<ThreadDetailRouter>
-    with PenddingEventsLaterFunction, WhenStopFunction {
+class _ThreadDetailRouter extends CustState<ThreadDetailRouter> with PenddingEventsLaterFunction, WhenStopFunction {
   EventMemBox box = EventMemBox();
 
+  String? eventId;
   Nip01Event? sourceEvent;
+  Nip01Event? loadedEvent;
   int? sourceIdx;
 
   bool showTitle = false;
 
   final ScrollController _controller = ScrollController();
+
   // final ItemScrollController itemScrollController = ItemScrollController();
   // final ScrollOffsetController scrollOffsetController = ScrollOffsetController();
   // final ItemPositionsListener itemPositionsListener = ItemPositionsListener.create();
   // final ScrollOffsetListener scrollOffsetListener = ScrollOffsetListener.create();
 
   double rootEventHeight = 120;
+
+  _ThreadDetailRouter(this.eventId);
 
   @override
   void initState() {
@@ -93,6 +99,21 @@ class _ThreadDetailRouter extends CustState<ThreadDetailRouter>
         });
       }
     });
+  }
+
+  void loadEvent() async {
+    if (eventId!=null) {
+      var filter = Filter(ids: [eventId!]);
+      if (myInboxRelaySet!=null) {
+        relayManager.requestRelays(myInboxRelaySet!.urls, filter, idleTimeout: 20).then((stream) {
+          stream.listen((event) {
+            setState(() {
+              loadedEvent = event;
+            });
+          });
+        },);
+      }
+    }
   }
 
   GlobalKey sourceEventKey = GlobalKey();
@@ -121,15 +142,26 @@ class _ThreadDetailRouter extends CustState<ThreadDetailRouter>
   Widget doBuild(BuildContext context) {
     var _singleEventProvider = Provider.of<SingleEventProvider>(context);
     if (sourceEvent == null) {
-      var obj = RouterUtil.routerArgs(context);
-      if (obj != null && obj is Nip01Event) {
-        sourceEvent = obj;
+      if (loadedEvent!=null) {
+        sourceEvent = loadedEvent;
+      } else {
+        var obj = RouterUtil.routerArgs(context);
+        if (obj != null && obj is Nip01Event) {
+          sourceEvent = obj;
+          // } else if (obj!=null && obj is String){
+          if (sourceEvent == null) {
+            RouterUtil.back(context);
+            return Container();
+          }
+        } else {
+          Future.delayed(Duration(seconds: 2),() async {
+            loadEvent();
+          });
+          if (sourceEvent == null) {
+            return Container();
+          }
+        }
       }
-      if (sourceEvent == null) {
-        RouterUtil.back(context);
-        return Container();
-      }
-
       initFromArgs();
     } else {
       var obj = RouterUtil.routerArgs(context);
@@ -161,8 +193,7 @@ class _ThreadDetailRouter extends CustState<ThreadDetailRouter>
 
     Widget? rootEventWidget;
     if (rootEvent == null) {
-      rootEventWidget = Selector<SingleEventProvider, Nip01Event?>(
-          builder: (context, event, child) {
+      rootEventWidget = Selector<SingleEventProvider, Nip01Event?>(builder: (context, event, child) {
         if (event == null) {
           return EventLoadListComponent();
         }
@@ -195,14 +226,12 @@ class _ThreadDetailRouter extends CustState<ThreadDetailRouter>
         rootEventHeight = size.height;
       },
     ));
-    int idx =1;
+    int idx = 1;
     for (var item in rootSubList!) {
       var totalLevelNum = item.totalLevelNum;
-      var needWidth = (totalLevelNum - 1) *
-              (Base.BASE_PADDING +
-                  ThreadDetailItemMainComponent.BORDER_LEFT_WIDTH) +
-          ThreadDetailItemMainComponent.EVENT_MAIN_MIN_WIDTH;
-      if (sourceEvent!=null && item.event.id == sourceEvent!.id) {
+      var needWidth =
+          (totalLevelNum - 1) * (Base.BASE_PADDING + ThreadDetailItemMainComponent.BORDER_LEFT_WIDTH) + ThreadDetailItemMainComponent.EVENT_MAIN_MIN_WIDTH;
+      if (sourceEvent != null && item.event.id == sourceEvent!.id) {
         sourceIdx = idx;
       }
       if (needWidth > mediaDataCache.size.width) {
@@ -230,7 +259,6 @@ class _ThreadDetailRouter extends CustState<ThreadDetailRouter>
       }
       idx++;
     }
-
 
     Widget main = ListView(
       controller: _controller,

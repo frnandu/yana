@@ -2,15 +2,12 @@ import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip01/metadata.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:yana/main.dart';
-import 'package:yana/nostr/event_kind.dart';
 
 import '../../nostr/nip19/nip19.dart';
 import '../../nostr/nip19/nip19_tlv.dart';
 import '../../provider/setting_provider.dart';
 import '../../utils/base.dart';
 import '../../utils/base64.dart';
-import '../../utils/base_consts.dart';
 import '../../utils/platform_util.dart';
 import '../../utils/string_util.dart';
 import '../cust_state.dart';
@@ -51,7 +48,6 @@ class ContentDecoder {
     }
   }
 
-
   // static String _closeHandledStr(String handledStr, List<dynamic> inlines) {
   //   if (StringUtil.isNotBlank(handledStr)) {
   //     inlines.add(Text(handledStr));
@@ -68,8 +64,7 @@ class ContentDecoder {
     return "";
   }
 
-  static void _closeInlines(List<dynamic> inlines, List<Widget> list,
-      {Function? textOnTap}) {
+  static void _closeInlines(List<dynamic> inlines, List<Widget> list, {Function? textOnTap}) {
     if (inlines.isNotEmpty) {
       if (inlines.length == 1) {
         if (inlines[0] is String) {
@@ -112,8 +107,7 @@ class ContentDecoder {
     }
   }
 
-  static void _closeInlines2(List<dynamic> inlines, List<Widget> list,
-      {Function? textOnTap}) {
+  static void _closeInlines2(List<dynamic> inlines, List<Widget> list, {Function? textOnTap}) {
     if (inlines.isNotEmpty) {
       if (inlines.length == 1) {
         if (inlines[0] is String) {
@@ -132,11 +126,11 @@ class ContentDecoder {
         List<InlineSpan> spans = [];
         for (var inline in inlines) {
           if (inline is String) {
-        //     spans.add(WidgetSpan(
-        //         child: TextTranslateComponent(
-        //       inline + " ",
-        //       textOnTap: textOnTap,
-        //     )));
+            //     spans.add(WidgetSpan(
+            //         child: TextTranslateComponent(
+            //       inline + " ",
+            //       textOnTap: textOnTap,
+            //     )));
           } else {
             spans.add(WidgetSpan(child: inline));
           }
@@ -213,9 +207,9 @@ class ContentDecoder {
       ///
       for (var subStr in subStrs) {
         if (subStr.indexOf("http") == 0) {
-          
           // link, image, video etc
-          handledStr = handleHttpLink(subStr, showImage, imageList, imageListMode, decodeInfo, handledStr, inlines, list, textOnTap, showVideo, showLinkPreview);
+          handledStr =
+              handleHttpLink(subStr, showImage, imageList, imageListMode, decodeInfo, handledStr, inlines, list, textOnTap, showVideo, showLinkPreview);
         } else if ((subStr.indexOf(NOTE_REFERENCES) == 0 || subStr.indexOf(NOTE_REFERENCES_AT) == 0)) {
           // var key = subStr.replaceFirst(NOTE_REFERENCES_AT, "");
           // key = key.replaceFirst(NOTE_REFERENCES, "");
@@ -257,9 +251,7 @@ class ContentDecoder {
           _closeInlines(inlines, list, textOnTap: textOnTap);
           var w = ContentLnbcComponent(lnbc: subStr);
           list.add(w);
-        } else if (subStr.indexOf("#[") == 0 &&
-            subStr.length > 3 &&
-            event != null) {
+        } else if (subStr.indexOf("#[") == 0 && subStr.length > 3 && event != null) {
           // mention
           var endIndex = subStr.indexOf("]");
           var indexStr = subStr.substring(2, endIndex);
@@ -288,20 +280,15 @@ class ContentDecoder {
               }
             }
           }
-        } else if (subStr.indexOf("#") == 0 &&
-            subStr.indexOf("[") != 1 &&
-            subStr.length > 1 &&
-            subStr.substring(1) != "#") {
+        } else if (subStr.indexOf("#") == 0 && subStr.indexOf("[") != 1 && subStr.length > 1 && subStr.substring(1) != "#") {
           // inline
           // tag
-            handledStr = _closeHandledStr(handledStr, inlines);
-            inlines.add(ContentTagComponent(tag: subStr));
+          handledStr = _closeHandledStr(handledStr, inlines);
+          inlines.add(ContentTagComponent(tag: subStr));
         } else {
           var length = subStr.length;
           if (length > 2) {
-            if (subStr.substring(0, 1) == ":" &&
-                subStr.substring(length - 1) == ":" &&
-                tagInfos != null) {
+            if (subStr.substring(0, 1) == ":" && subStr.substring(length - 1) == ":" && tagInfos != null) {
               var imagePath = tagInfos.emojiMap[subStr];
               if (StringUtil.isNotBlank(imagePath)) {
                 handledStr = _closeHandledStr(handledStr, inlines);
@@ -361,13 +348,13 @@ class ContentDecoder {
   static String handleNostrReference(String subStr, String handledStr, List<dynamic> inlines, List<Widget> list, Function? textOnTap, bool showVideo) {
     // var key = subStr.replaceFirst(NOTE_REFERENCES_AT, "");
     // key = key.replaceFirst(NOTE_REFERENCES, "");
-    
+
     RegExpMatch? match = Nip19.nip19regex.firstMatch(subStr);
-    
-    if (match!=null) {
-      var key = match.group(2)!+match.group(3)!;
+
+    if (match != null) {
+      var key = match.group(2)! + match.group(3)!;
       String? otherStr;
-    
+
       if (Nip19.isPubkey(key)) {
         // inline
         // mention user
@@ -398,8 +385,7 @@ class ContentDecoder {
           // inline
           // mention user
           handledStr = _closeHandledStr(handledStr, inlines);
-          inlines.add(
-              ContentMentionUserComponent(pubkey: nprofile.pubkey));
+          inlines.add(ContentMentionUserComponent(pubkey: nprofile.pubkey));
         } else {
           handledStr = _addToHandledStr(handledStr, subStr);
         }
@@ -429,8 +415,7 @@ class ContentDecoder {
       } else if (NIP19Tlv.isNaddr(key)) {
         var naddr = NIP19Tlv.decodeNaddr(key);
         if (naddr != null) {
-          if (StringUtil.isNotBlank(naddr.id) &&
-              naddr.kind == Nip01Event.textNoteKind) {
+          if (StringUtil.isNotBlank(naddr.id) && naddr.kind == Nip01Event.textNoteKind) {
             // block
             handledStr = _closeHandledStr(handledStr, inlines);
             _closeInlines(inlines, list, textOnTap: textOnTap);
@@ -439,12 +424,10 @@ class ContentDecoder {
               showVideo: showVideo,
             );
             list.add(widget);
-          } else if (StringUtil.isNotBlank(naddr.author) &&
-              naddr.kind == Metadata.kind) {
+          } else if (StringUtil.isNotBlank(naddr.author) && naddr.kind == Metadata.kind) {
             // inline
             handledStr = _closeHandledStr(handledStr, inlines);
-            inlines.add(
-                ContentMentionUserComponent(pubkey: naddr.author));
+            inlines.add(ContentMentionUserComponent(pubkey: naddr.author));
           } else {
             handledStr = _addToHandledStr(handledStr, subStr);
           }
@@ -454,7 +437,7 @@ class ContentDecoder {
       } else {
         handledStr = _addToHandledStr(handledStr, subStr);
       }
-    
+
       if (StringUtil.isNotBlank(otherStr)) {
         handledStr = _addToHandledStr(handledStr, otherStr!);
       }
@@ -462,7 +445,8 @@ class ContentDecoder {
     return handledStr;
   }
 
-  static String handleHttpLink(String subStr, bool showImage, List<String> imageList, bool imageListMode, ContentDecoderInfo decodeInfo, String handledStr, List<dynamic> inlines, List<Widget> list, Function? textOnTap, bool showVideo, bool showLinkPreview) {
+  static String handleHttpLink(String subStr, bool showImage, List<String> imageList, bool imageListMode, ContentDecoderInfo decodeInfo, String handledStr,
+      List<dynamic> inlines, List<Widget> list, Function? textOnTap, bool showVideo, bool showLinkPreview) {
     // link, image, video etc
     var pathType = getPathType(subStr);
     if (pathType == "image") {
@@ -494,7 +478,7 @@ class ContentDecoder {
                 spans.add(WidgetSpan(child: lastListWidget));
               }
               spans.add(WidgetSpan(child: imagePlaceholder));
-    
+
               list[listLength - 1] = SelectableText.rich(
                 TextSpan(children: spans),
                 onTap: () {
@@ -585,11 +569,7 @@ class ContentDecoder {
     var n = path.substring(index);
     n = n.toLowerCase();
 
-    if (n == ".png" ||
-        n == ".jpg" ||
-        n == ".jpeg" ||
-        n == ".gif" ||
-        n == ".webp") {
+    if (n == ".png" || n == ".jpg" || n == ".jpeg" || n == ".gif" || n == ".webp") {
       return "image";
     } else if (n == ".mp4" || n == ".mov" || n == ".wmv" || n == ".m3u8") {
       return "video";
@@ -622,7 +602,7 @@ class _LineTranslateComponent extends CustState<LineTranslateComponent> {
 
   static const double MARGIN = 4;
 
-  late TranslateLanguage  sourceLanguage;
+  late TranslateLanguage sourceLanguage;
 
   TranslateLanguage? targetLanguage;
 
@@ -645,9 +625,7 @@ class _LineTranslateComponent extends CustState<LineTranslateComponent> {
 
     List<InlineSpan> spans = [];
 
-    if (targetLanguage != null &&
-        sourceLanguage != null &&
-        targetTextMap.isNotEmpty) {
+    if (targetLanguage != null && sourceLanguage != null && targetTextMap.isNotEmpty) {
       // translate
       TextSpan? translateTips = TextSpan(
         text: " <- -> ",
@@ -748,8 +726,7 @@ class _LineTranslateComponent extends CustState<LineTranslateComponent> {
   }
 }
 
-class TranslateLanguage {
-}
+class TranslateLanguage {}
 
 class ContentDecoderInfo {
   int imageNum = 0;
