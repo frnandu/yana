@@ -39,6 +39,7 @@ class FollowEventProvider extends ChangeNotifier
   void refreshPosts() {
     _initTime = DateTime.now().millisecondsSinceEpoch ~/ 1000;
     postsBox.clear();
+    postsAndRepliesBox.clear();
     doQuery();
 
     followNewEventProvider.clearPosts();
@@ -46,6 +47,7 @@ class FollowEventProvider extends ChangeNotifier
 
   void refreshReplies() {
     _initTime = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+    postsBox.clear();
     postsAndRepliesBox.clear();
     doQuery();
 
@@ -75,12 +77,15 @@ class FollowEventProvider extends ChangeNotifier
     ];
   }
 
-  void doQuery (
-      {int? until, bool forceUserLimit = false}) {
-    load(until: until);
+  void doQuery ({int? until}) {
+    if (until!=null) {
+      loadMore(until: until);
+    } else {
+      load();
+    }
   }
 
-  void load({int? until}) async {
+  void load() async {
     if (_streamSubscription!=null) {
       await _streamSubscription!.cancel();
     }
@@ -96,7 +101,41 @@ class FollowEventProvider extends ChangeNotifier
     var filter = Filter(
       kinds: queryEventKinds(),
       authors: contactList..add(nostr!.publicKey),
-      until: until ?? _initTime,
+      limit: 20,
+    );
+    // TODO
+    //addTagCommunityFilter([filter.toMap()], queriyTags);
+    if (settingProvider.gossip == 1 && feedRelaySet!=null) {
+      await relayManager
+          .reconnectRelays(feedRelaySet!.urls);
+    } else {
+      await relayManager.reconnectRelays(myInboxRelaySet!.urls);
+    }
+
+    Stream<Nip01Event> stream = await relayManager!.subscription(
+        filter, (feedRelaySet!=null && settingProvider.gossip==1)? feedRelaySet! : myInboxRelaySet!);
+    _streamSubscription = stream.listen((event) {
+      // if (event.pubKey == nostr!.publicKey) {
+        print("event.createdAt:${DateTime.fromMillisecondsSinceEpoch(event.createdAt*1000)}");
+        onEvent(event);
+      // }
+    });
+  }
+
+  void loadMore({required int until}) async {
+
+    List<String>? contactList = contactListProvider.contacts();
+
+    if (contactList == null || contactList.isEmpty) {
+      if (kDebugMode) {
+        print("CONTACT LIST empty, can not get follow content");
+      }
+      return;
+    }
+    var filter = Filter(
+      kinds: queryEventKinds(),
+      authors: contactList..add(nostr!.publicKey),
+      until: until,
       limit: 20,
     );
 
@@ -116,11 +155,12 @@ class FollowEventProvider extends ChangeNotifier
       await relayManager.reconnectRelays(myInboxRelaySet!.urls);
     }
 
-    Stream<Nip01Event> stream = await relayManager!.subscription(
+    Stream<Nip01Event> stream = await relayManager!.query(
         filter, (feedRelaySet!=null && settingProvider.gossip==1)? feedRelaySet! : myInboxRelaySet!);
     _streamSubscription = stream.listen((event) {
       // if (event.pubKey == nostr!.publicKey) {
-        onEvent(event);
+      print("event.createdAt from loadMore:${DateTime.fromMillisecondsSinceEpoch(event.createdAt*1000)}");
+      onEvent(event);
       // }
     });
   }

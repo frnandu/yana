@@ -167,7 +167,7 @@ class AccountsState extends State<AccountsComponent> {
     String? key = settingProvider.key;
     bool isPrivate = settingProvider.isPrivateKey;
     UserRelayList? userRelayList = await relayManager!.getSingleUserRelayList(isPrivate ? getPublicKey(key!): key!);
-    await relayManager!.connect(bootstrapRelays: userRelayList!=null? userRelayList.urls : RelayManager.DEFAULT_BOOTSTRAP_RELAYS);
+    await relayManager!.connect(urls: userRelayList!=null? userRelayList.urls : RelayManager.DEFAULT_BOOTSTRAP_RELAYS);
 
     // nostr = await relayProvider.genNostr(
     //     privateKey: isPrivate ? key : null, publicKey: isPrivate ? null : key);
@@ -207,7 +207,7 @@ class AccountsState extends State<AccountsComponent> {
         // use next privateKey to login
         bool isPrivate = settingProvider.isPrivateKey;
         UserRelayList? userRelayList = await relayManager!.getSingleUserRelayList(isPrivate ? getPublicKey(key!): key!);
-        await relayManager!.connect(bootstrapRelays: userRelayList!=null? userRelayList.urls : RelayManager.DEFAULT_BOOTSTRAP_RELAYS);
+        await relayManager!.connect(urls: userRelayList!=null? userRelayList.urls : RelayManager.DEFAULT_BOOTSTRAP_RELAYS);
         //
         // nostr = await relayProvider.genNostr(
         //     privateKey: isPrivate ? key : null,

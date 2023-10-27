@@ -81,7 +81,7 @@ class _EventQuoteComponent extends CustState<EventQuoteComponent> {
       // child:
       Container(
         padding: const EdgeInsets.only(top: Base.BASE_PADDING),
-        margin: const EdgeInsets.all(Base.BASE_PADDING),
+        margin: const EdgeInsets.only(top: Base.BASE_PADDING),
         decoration: boxDecoration,
         child: GestureDetector(
           onTap: () {

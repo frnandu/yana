@@ -94,7 +94,8 @@ class _FollowPostsRouter extends KeepAliveCustState<FollowPostsRouter>
 
     Widget ri = RefreshIndicator(
       onRefresh: () async {
-        followEventProvider.refreshReplies();
+        followEventProvider.refreshPosts();
+        // followEventProvider.refreshReplies();
       },
       child: main,
     );
@@ -149,7 +150,7 @@ class _FollowPostsRouter extends KeepAliveCustState<FollowPostsRouter>
   @override
   void doQuery() {
     preQuery();
-    followEventProvider.doQuery(until: until, forceUserLimit: forceUserLimit);
+    followEventProvider.doQuery(until: until);
   }
 
   @override

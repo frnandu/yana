@@ -328,7 +328,7 @@ class _LoginRouter extends State<LoginRouter>
       if (userRelayList!=null) {
         createMyRelaySets(userRelayList);
       }
-      await relayManager.connect(bootstrapRelays: userRelayList!=null? userRelayList.urls : RelayManager.DEFAULT_BOOTSTRAP_RELAYS);
+      await relayManager.connect(urls: userRelayList!=null? userRelayList.urls : RelayManager.DEFAULT_BOOTSTRAP_RELAYS);
 
       // nostr = await relayProvider.genNostr(
       //     privateKey: isPrivate ? key : null,

@@ -224,7 +224,7 @@ void initProvidersAndStuff() async {
       if (userRelayList != null) {
         createMyRelaySets(userRelayList);
       }
-      await relayManager.connect(bootstrapRelays: userRelayList != null ? userRelayList.urls : RelayManager.DEFAULT_BOOTSTRAP_RELAYS);
+      await relayManager.connect(urls: userRelayList != null ? userRelayList.urls : RelayManager.DEFAULT_BOOTSTRAP_RELAYS);
       // await relayProvider!.loadRelays(nostr!.publicKey, () {
       //   relayProvider.addRelays(nostr!).then((bla) {
       filterProvider = FilterProvider.getInstance();

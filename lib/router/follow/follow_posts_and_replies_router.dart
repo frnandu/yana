@@ -44,7 +44,7 @@ class _FollowPostsAndRepliesRouter
     if (events.isEmpty) {
       return EventListPlaceholder(
         onRefresh: () {
-          // followEventProvider.refreshReplies();
+          followEventProvider.refreshReplies();
         },
       );
     }
@@ -77,8 +77,7 @@ class _FollowPostsAndRepliesRouter
 
     Widget ri = RefreshIndicator(
       onRefresh: () async {
-        // TODO
-        // followEventProvider.refreshReplies();
+        followEventProvider.refreshReplies();
       },
       child: main,
     );
@@ -131,7 +130,7 @@ class _FollowPostsAndRepliesRouter
   @override
   void doQuery() {
     preQuery();
-    followEventProvider.doQuery(until: until, forceUserLimit: forceUserLimit);
+    followEventProvider.doQuery(until: until);
   }
 
   @override

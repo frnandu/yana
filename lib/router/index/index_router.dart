@@ -89,7 +89,7 @@ class _IndexRouter extends CustState<IndexRouter>
     if (userRelayList != null) {
       createMyRelaySets(userRelayList);
     }
-    await relayManager.connect(bootstrapRelays: userRelayList != null ? userRelayList!.urls : RelayManager.DEFAULT_BOOTSTRAP_RELAYS);
+    await relayManager.connect(urls: userRelayList != null ? userRelayList!.urls : RelayManager.DEFAULT_BOOTSTRAP_RELAYS);
     print("Loading contact list...");
     ContactList? contactList = await relayManager.loadContactList(nostr!.publicKey);
     if (contactList != null) {
