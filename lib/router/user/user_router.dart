@@ -25,7 +25,8 @@ import '../../utils/string_util.dart';
 import 'user_statistics_component.dart';
 
 class UserRouter extends StatefulWidget {
-  const UserRouter({super.key});
+  String? pubKey;
+  UserRouter({super.key, this.pubKey});
 
   @override
   State<StatefulWidget> createState() {
@@ -88,7 +89,7 @@ class _UserRouter extends CustState<UserRouter>
     var _settingProvider = Provider.of<SettingProvider>(context);
     var _metadataProvider = Provider.of<MetadataProvider>(context);
 
-    if (StringUtil.isBlank(pubkey)) {
+    if (StringUtil.isBlank(pubkey) || _streamSubscription == null) {
       pubkey = RouterUtil.routerArgs(context) as String?;
       if (StringUtil.isBlank(pubkey)) {
         RouterUtil.back(context);
@@ -284,6 +285,9 @@ class _UserRouter extends CustState<UserRouter>
 
   @override
   void doQuery() {
+    if (myInboxRelaySet==null || myOutboxRelaySet==null) {
+      return;
+    }
     preQuery();
     if (StringUtil.isNotBlank(subscribeId)) {
       unSubscribe();

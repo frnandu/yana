@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:yana/ui/webview_router.dart';
+import 'package:provider/provider.dart';
 import 'package:yana/main.dart';
 import 'package:yana/provider/webview_provider.dart';
+import 'package:yana/ui/webview_router.dart';
 import 'package:yana/utils/platform_util.dart';
-import 'package:provider/provider.dart';
 
 import '../i18n/i18n.dart';
 

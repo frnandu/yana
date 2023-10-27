@@ -56,6 +56,7 @@ class _LoginRouter extends State<LoginRouter>
       "assets/imgs/logo/logo-with-name.png",
       width: 200,
       height: 200,
+      isAntiAlias:true
     );
 
     // var logoWidget = SvgPicture.asset(
@@ -210,7 +211,26 @@ class _LoginRouter extends State<LoginRouter>
     //   ),
     // ));
     if (PlatformUtil.isWeb()) {
-      var github = Image.asset("assets/imgs/github.png", width: 200);
+      // // list.add(Row(children: [
+      // //   MouseRegion(
+      // //       cursor: SystemMouseCursors.click,
+      // //       child: GestureDetector(
+      // //           onTap: () {
+      // //             var url = Uri.parse("https://github.com/frnandu/yana/releases");
+      // //             launchUrl(url, mode: LaunchMode.externalApplication);
+      // //           },
+      // //           child: Image.asset("assets/imgs/android.png", width: 100, isAntiAlias:true, filterQuality: FilterQuality.medium))),
+      // //   MouseRegion(
+      // //       cursor: SystemMouseCursors.click,
+      // //       child: GestureDetector(
+      // //           onTap: () {
+      // //             var url = Uri.parse("https://github.com/frnandu/yana/releases");
+      // //             launchUrl(url, mode: LaunchMode.externalApplication);
+      // //           },
+      // //           child: Image.asset("assets/imgs/ios.png", width: 100, isAntiAlias:true))),
+      // //
+      // ],));
+      var github = Image.asset("assets/imgs/github.png", width: 200, isAntiAlias:true);
       list.add(MouseRegion(
           cursor: SystemMouseCursors.click,
           child: GestureDetector(
@@ -220,7 +240,7 @@ class _LoginRouter extends State<LoginRouter>
               },
               child: github)));
 
-      var obtainium = Image.asset("assets/imgs/obtainium.png", width: 200);
+      var obtainium = Image.asset("assets/imgs/obtainium.png", width: 200, isAntiAlias:true);
       list.add(MouseRegion(
           cursor: SystemMouseCursors.click,
           child: GestureDetector(

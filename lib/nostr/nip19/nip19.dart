@@ -9,6 +9,8 @@ class Nip19 {
   //   data = Bech32.convertBits(data, 8, 5, true);
   //   return Bech32.encode(Hrps.PUBLIC_KEY, data);
   // }
+  static const int NPUB_LENGTH = 63;
+  static const int NOTEID_LENGTH = 63;
 
   static RegExp nip19regex = RegExp(r'@?(nostr:)?@?(nsec1|npub1|nevent1|naddr1|note1|nprofile1|nrelay1)([qpzry9x8gf2tvdw0s3jn54khce6mua7l]+)([\\S]*)', caseSensitive: false);
 

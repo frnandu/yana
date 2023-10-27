@@ -43,10 +43,6 @@ class ContentDecoder {
 
   static const LNBC_NUM_END = "1p";
 
-  static const int NPUB_LENGTH = 63;
-
-  static const int NOTEID_LENGTH = 63;
-
   static String _addToHandledStr(String handledStr, String subStr) {
     if (StringUtil.isBlank(handledStr)) {
       return subStr;
@@ -375,18 +371,18 @@ class ContentDecoder {
       if (Nip19.isPubkey(key)) {
         // inline
         // mention user
-        if (key.length > NPUB_LENGTH) {
-          otherStr = key.substring(NPUB_LENGTH);
-          key = key.substring(0, NPUB_LENGTH);
+        if (key.length > Nip19.NPUB_LENGTH) {
+          otherStr = key.substring(Nip19.NPUB_LENGTH);
+          key = key.substring(0, Nip19.NPUB_LENGTH);
         }
         key = Nip19.decode(key);
         handledStr = _closeHandledStr(handledStr, inlines);
         inlines.add(ContentMentionUserComponent(pubkey: key));
       } else if (Nip19.isNoteId(key)) {
         // block
-        if (key.length > NOTEID_LENGTH) {
-          otherStr = key.substring(NOTEID_LENGTH);
-          key = key.substring(0, NOTEID_LENGTH);
+        if (key.length > Nip19.NOTEID_LENGTH) {
+          otherStr = key.substring(Nip19.NOTEID_LENGTH);
+          key = key.substring(0, Nip19.NOTEID_LENGTH);
         }
         key = Nip19.decode(key);
         handledStr = _closeHandledStr(handledStr, inlines);

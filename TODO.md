@@ -50,31 +50,35 @@
 - ~~mention livesearch editor without popup~~
 - ~~STOP followers/zaps events from blocking the relay, when navigate away from that profile~~
 
-
+- ~~proper formating of text / newlines ??~~
+- ~~fix bad fonting after some @ mentions~~
 - ~~exchange sqflite with isar DB?~~
 - ~~use dart_ndk lib~~
 - ~~gossip/outbox model for feed~~
 - ~~show in which relays a note was loaded from~~
+- ~~user Follow feed relays write to DB to improve startup time in outbox model~~
+- ~~register nostr: in android so that nostr links give yana option as an app to open~~
 
 v0.12
+- sign verify
+- nip05
 - blacklist for relays
 - garbage collection of webSockets not used since X (for reactions)
-- isar v4 for web
-- nip05
-- sign verify
 
-- loading screen ASAP after splash
+- loading screen ASAP after splash - re-enable notifications
 - persist notes from feed for faster startup
 
+- broadcast
+- notifications
+- global
 - load more on big posts
-- proper formating of text / newlines ??
-- fix bad fonting after some @ mentions
+- check why some replies appear on posts
 
-- user Follow feed relays write to DB to improve startup time in outbox model
-- register nostr: in android so that nostr links give yana option as an app to open
-- better android/ios/linux badges on web version login screen (anchor links to readme.md for IOS/linux)
-
+- 2better android/ios/linux badges on web version login screen (anchor links to readme.md for IOS/linux)
+- handle nostr:nevent1 (need to somehow load the event)
+- 
 v0.13
+- isar v4 for web
 
 - detect new followers by comparing in background previous followers list and generating new notification
 - login by searching some user by name/displayName

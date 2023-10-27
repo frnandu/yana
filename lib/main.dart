@@ -8,9 +8,13 @@ import 'package:dart_ndk/db/db_cache_manager.dart';
 import 'package:dart_ndk/models/pubkey_mapping.dart';
 import 'package:dart_ndk/models/relay_set.dart';
 import 'package:dart_ndk/models/user_relay_list.dart';
+import 'package:dart_ndk/nips/nip01/event.dart';
+import 'package:dart_ndk/nips/nip01/metadata.dart';
 import 'package:dart_ndk/nips/nip02/contact_list.dart';
 import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
 import 'package:dart_ndk/read_write.dart';
+import 'package:dart_ndk/relay.dart';
+import 'package:dart_ndk/relay_info.dart';
 import 'package:dart_ndk/relay_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -47,10 +51,12 @@ import 'package:yana/router/wallet/nwc_router.dart';
 import 'package:yana/router/wallet/wallet_router.dart';
 import 'package:yana/utils/image/cache_manager_builder.dart';
 import 'package:yana/utils/platform_util.dart';
+import 'package:yana/utils/router_util.dart';
 
 import 'i18n/i18n.dart';
 import 'nostr/client_utils/keys.dart';
-import 'nostr/relay.dart';
+import 'nostr/nip19/nip19.dart';
+import 'nostr/nip19/nip19_tlv.dart';
 import 'nostr/relay_metadata.dart';
 import 'provider/community_approved_provider.dart';
 import 'provider/contact_list_provider.dart';
@@ -293,6 +299,7 @@ Future<void> initRelays({bool newKey = false}) async {
       }
     }
   }
+  metadataProvider.notifyListeners();
   followEventProvider.refreshPosts(fallbackContacts: DEFAULT_CONTACT_LIST_KEYS);
 }
 
@@ -322,6 +329,7 @@ Future<void> main() async {
   try {
     await protocolHandler.register('nostr+walletconnect');
     await protocolHandler.register('yana');
+    await protocolHandler.register('nostr');
   } catch (err) {
     print(err);
   }
@@ -428,6 +436,9 @@ Future<void> main() async {
     //     followEventProvider.doQuery();
     //   }
     //   runApp(MyApp());
+  }
+  if (nostr != null) {
+    initRelays();
   }
   runApp(MyApp());
 }
@@ -563,7 +574,6 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
       }
     }
     setGetTimeAgoDefaultLocale(_locale);
-
     var lightTheme = getLightTheme();
     var darkTheme = getDarkTheme();
     ThemeData defaultTheme;
@@ -579,7 +589,7 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
 
     routes = {
       RouterPath.INDEX: (context) => IndexRouter(reload: reload),
-      RouterPath.USER: (context) => const UserRouter(),
+      RouterPath.USER: (context) => UserRouter(),
       RouterPath.USER_CONTACT_LIST: (context) => const UserContactListRouter(),
       RouterPath.USER_HISTORY_CONTACT_LIST: (context) => UserHistoryContactListRouter(),
       RouterPath.USER_ZAP_LIST: (context) => const UserZapListRouter(),
@@ -681,7 +691,9 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
             builder: (context, orientation, deviceType) {
               return MaterialApp(
                 builder: BotToastInit(),
-                navigatorObservers: [BotToastNavigatorObserver()],
+                navigatorObservers: [
+                  BotToastNavigatorObserver(),
+                ],
                 locale: _locale,
                 title: packageInfo.appName,
                 localizationsDelegates: const [
@@ -693,7 +705,84 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
                 supportedLocales: I18n.delegate.supportedLocales,
                 theme: defaultTheme,
                 darkTheme: defaultDarkTheme,
-                initialRoute: RouterPath.INDEX,
+                onGenerateInitialRoutes: (initialRoute) {
+                  MaterialPageRoute? jump;
+                  if (initialRoute!.startsWith("nostr:")) {
+                    RegExpMatch? match = Nip19.nip19regex.firstMatch(initialRoute!);
+
+                    if (match != null) {
+                      var key = match.group(2)! + match.group(3)!;
+                      String? otherStr;
+
+                      if (Nip19.isPubkey(key)) {
+                        // inline
+                        // mention user
+                        if (key.length > Nip19.NPUB_LENGTH) {
+                          otherStr = key.substring(Nip19.NPUB_LENGTH);
+                          key = key.substring(0, Nip19.NPUB_LENGTH);
+                        }
+                        key = Nip19.decode(key);
+                        jump = MaterialPageRoute(settings: RouteSettings(name: RouterPath.USER, arguments: key), builder: (context) => UserRouter());
+                      } else if (Nip19.isNoteId(key)) {
+                        // block
+                        if (key.length > Nip19.NOTEID_LENGTH) {
+                          otherStr = key.substring(Nip19.NOTEID_LENGTH);
+                          key = key.substring(0, Nip19.NOTEID_LENGTH);
+                        }
+                        key = Nip19.decode(key);
+
+                        /// TODO need the event
+                        // RouterUtil.router(context, RouterPath.THREAD_DETAIL, event);
+                      } else if (NIP19Tlv.isNprofile(key)) {
+                        var nprofile = NIP19Tlv.decodeNprofile(key);
+                        if (nprofile != null) {
+                          // inline
+                          // mention user
+                          jump = MaterialPageRoute(settings: RouteSettings(name: RouterPath.USER, arguments: nprofile.pubkey), builder: (context) => UserRouter());
+                        }
+                      } else if (NIP19Tlv.isNrelay(key)) {
+                        var nrelay = NIP19Tlv.decodeNrelay(key);
+                        String? url = nrelay != null ? Relay.clean(nrelay.addr) : null;
+                        if (url != null) {
+                          // inline
+                          Relay relay = Relay(url);
+                          jump = MaterialPageRoute(settings: RouteSettings(name: RouterPath.RELAY_INFO, arguments: relay), builder: (context) => const RelayInfoRouter());
+                        }
+                      } else if (NIP19Tlv.isNevent(key)) {
+                        var nevent = NIP19Tlv.decodeNevent(key);
+                        if (nevent != null) {
+                          // nevent.id
+                          /// TODO need the event
+                          // RouterUtil.router(context, RouterPath.THREAD_DETAIL, event);
+                        }
+                      } else if (NIP19Tlv.isNaddr(key)) {
+                        var naddr = NIP19Tlv.decodeNaddr(key);
+                        if (naddr != null) {
+                          if (StringUtil.isNotBlank(naddr.id) && naddr.kind == Nip01Event.textNoteKind) {
+                            /// TODO need the event
+                            // RouterUtil.router(context, RouterPath.THREAD_DETAIL, event);
+                            // id: naddr.id,
+                          } else if (StringUtil.isNotBlank(naddr.author) && naddr.kind == Metadata.kind) {
+                            jump = MaterialPageRoute(settings: RouteSettings(name: RouterPath.USER, arguments: naddr.author), builder: (context) => UserRouter());
+                          }
+                        }
+                      }
+                    }
+                  }
+                  if (jump!=null) {
+                    return [
+                      MaterialPageRoute(builder: (context) => IndexRouter(reload: reload)),
+                      jump
+                    ];
+                  }
+                  return [
+                    MaterialPageRoute(builder: (context) => IndexRouter(reload: reload)),
+                    // MaterialPageRoute(
+                    //     settings: RouteSettings(name: RouterPath.USER, arguments: "30782a8323b7c98b172c5a2af7206bb8283c655be6ddce11133611a03d5f1177"),
+                    //     builder: (context) => UserRouter())
+                  ];
+                },
+                // initialRoute: RouterPath.INDEX,
                 routes: routes,
               );
             },

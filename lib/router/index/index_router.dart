@@ -1,11 +1,12 @@
 import 'dart:async';
 
-import 'package:dart_ndk/models/user_relay_list.dart';
-import 'package:dart_ndk/nips/nip02/contact_list.dart';
-import 'package:dart_ndk/read_write.dart';
-import 'package:dart_ndk/relay_manager.dart';
+import 'package:dart_ndk/nips/nip01/event.dart';
+import 'package:dart_ndk/nips/nip01/metadata.dart';
+import 'package:dart_ndk/relay.dart';
+import 'package:dart_ndk/relay_info.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:protocol_handler/protocol_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:yana/provider/dm_provider.dart';
 import 'package:yana/provider/pc_router_fake_provider.dart';
@@ -20,12 +21,16 @@ import 'package:yana/utils/string_util.dart';
 import '../../i18n/i18n.dart';
 import '../../main.dart';
 import '../../models/event_mem_box.dart';
+import '../../nostr/nip19/nip19.dart';
+import '../../nostr/nip19/nip19_tlv.dart';
 import '../../provider/follow_event_provider.dart';
 import '../../provider/follow_new_event_provider.dart';
 import '../../provider/index_provider.dart';
 import '../../provider/setting_provider.dart';
 import '../../utils/auth_util.dart';
 import '../../utils/base.dart';
+import '../../utils/router_path.dart';
+import '../../utils/router_util.dart';
 import '../dm/dm_router.dart';
 import '../edit/editor_router.dart';
 import '../follow/follow_index_router.dart';
@@ -47,7 +52,7 @@ class IndexRouter extends StatefulWidget {
 }
 
 class _IndexRouter extends CustState<IndexRouter>
-    with TickerProviderStateMixin {
+    with TickerProviderStateMixin, ProtocolListener{
   static double PC_MAX_COLUMN_0 = 280;
 
   static double PC_MAX_COLUMN_1 = 550;
@@ -63,6 +68,7 @@ class _IndexRouter extends CustState<IndexRouter>
     super.initState();
     int followInitTab = 0;
     int globalsInitTab = 0;
+    protocolHandler.addListener(this);
 
     if (settingProvider.defaultTab != null) {
       if (settingProvider.defaultIndex == 1) {
@@ -75,10 +81,87 @@ class _IndexRouter extends CustState<IndexRouter>
     followTabController =
         TabController(initialIndex: followInitTab, length: 3, vsync: this);
     dmTabController = TabController(length: 3, vsync: this);
-    if (nostr != null) {
-      initRelays();
+  }
+  @override
+  void onProtocolUrlReceived(String url) async {
+    // String log = 'Url received: $url)';
+    // print(log);
+    if (StringUtil.isNotBlank(url)) {
+      if (url.startsWith("nostr+walletconnect://")) {
+        Future.delayed(const Duration(microseconds: 1), () async {
+          await nwcProvider.connect(url);
+          var route = ModalRoute.of(context);
+          if (route != null && route!.settings.name != null && route!.settings.name! == RouterPath.NWC) {
+            RouterUtil.back(context);
+          } else {
+            RouterUtil.router(context, RouterPath.WALLET);
+          }
+        });
+      } else if (url.startsWith("nostr:")) {
+        RegExpMatch? match = Nip19.nip19regex.firstMatch(url);
+
+        if (match != null) {
+          var key = match.group(2)! + match.group(3)!;
+          String? otherStr;
+
+          if (Nip19.isPubkey(key)) {
+            // inline
+            // mention user
+            if (key.length > Nip19.NPUB_LENGTH) {
+              otherStr = key.substring(Nip19.NPUB_LENGTH);
+              key = key.substring(0, Nip19.NPUB_LENGTH);
+            }
+            key = Nip19.decode(key);
+            RouterUtil.router(context, RouterPath.USER, key);
+          } else if (Nip19.isNoteId(key)) {
+            // block
+            if (key.length > Nip19.NOTEID_LENGTH) {
+              otherStr = key.substring(Nip19.NOTEID_LENGTH);
+              key = key.substring(0, Nip19.NOTEID_LENGTH);
+            }
+            key = Nip19.decode(key);
+            /// TODO need the event
+            // RouterUtil.router(context, RouterPath.THREAD_DETAIL, event);
+          } else if (NIP19Tlv.isNprofile(key)) {
+            var nprofile = NIP19Tlv.decodeNprofile(key);
+            if (nprofile != null) {
+              // inline
+              // mention user
+              RouterUtil.router(context, RouterPath.USER, nprofile.pubkey);
+            }
+          } else if (NIP19Tlv.isNrelay(key)) {
+            var nrelay = NIP19Tlv.decodeNrelay(key);
+            String? url = nrelay != null ? Relay.clean(nrelay.addr) : null;
+            if (url != null) {
+              // inline
+              Relay relay = Relay(url);
+              relay.info = await RelayInfo.get(url);
+              RouterUtil.router(context, RouterPath.RELAY_INFO, relay);
+            }
+          } else if (NIP19Tlv.isNevent(key)) {
+            var nevent = NIP19Tlv.decodeNevent(key);
+            if (nevent != null) {
+              // nevent.id
+              /// TODO need the event
+              // RouterUtil.router(context, RouterPath.THREAD_DETAIL, event);
+            }
+          } else if (NIP19Tlv.isNaddr(key)) {
+            var naddr = NIP19Tlv.decodeNaddr(key);
+            if (naddr != null) {
+              if (StringUtil.isNotBlank(naddr.id) && naddr.kind == Nip01Event.textNoteKind) {
+                /// TODO need the event
+                // RouterUtil.router(context, RouterPath.THREAD_DETAIL, event);
+                // id: naddr.id,
+              } else if (StringUtil.isNotBlank(naddr.author) && naddr.kind == Metadata.kind) {
+                RouterUtil.router(context, RouterPath.USER, naddr.author);
+              }
+            }
+          }
+        }
+      }
     }
   }
+
 
   @override
   Future<void> onReady(BuildContext context) async {
