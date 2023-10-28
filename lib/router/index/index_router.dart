@@ -53,9 +53,7 @@ class IndexRouter extends StatefulWidget {
 
 class _IndexRouter extends CustState<IndexRouter>
     with TickerProviderStateMixin, ProtocolListener{
-  static double PC_MAX_COLUMN_0 = 280;
-
-  static double PC_MAX_COLUMN_1 = 550;
+  static double DRAWER_WIDTH = 300;
 
   late TabController followTabController;
 
@@ -438,42 +436,38 @@ class _IndexRouter extends CustState<IndexRouter>
     );
 
     if (PlatformUtil.isTableMode()) {
-      var maxWidth = mediaDataCache.size.width;
-      double column0Width = (maxWidth * 1) / 5;
-      double column1Width = (maxWidth * 2) / 5;
-      if (column0Width > PC_MAX_COLUMN_0) {
-        column0Width = PC_MAX_COLUMN_0;
-      }
-      if (column0Width < 280) {
-        column0Width = 280;
-      }
-      if (column1Width > PC_MAX_COLUMN_1) {
-        column1Width = PC_MAX_COLUMN_1;
-      }
-
-      print("$column0Width + $column1Width + ${maxWidth - column0Width - column1Width} = $maxWidth");
+      // var maxWidth = mediaDataCache.size.width;
+      // double column0Width = (maxWidth * 1) / 5;
+      // if (column0Width > DRAWER_WIDTH) {
+      //   column0Width = DRAWER_WIDTH;
+      // }
+      // if (column0Width < 280) {
+      //   column0Width = 280;
+      // }
+      //
+      // print("$column0Width + ${maxWidth - column0Width } = $maxWidth");
       return Scaffold(
         extendBody: true,
         floatingActionButton: addBtn,
         floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
         body: Row(children: [
           SizedBox(
-            width: column0Width,
+            width: 350,
             child: IndexDrawerContentComponent(reload: widget.reload),
           ),
-          Container(
-            width: column1Width,
-            margin: const EdgeInsets.only(
-              // left: 1,
-              right: 1,
-            ),
-            child: mainIndex,
-          ),
+          // Container(
+          //   width: column1Width,
+          //   margin: const EdgeInsets.only(
+          //     // left: 1,
+          //     right: 1,
+          //   ),
+          //   child: mainIndex,
+          // ),
           Expanded(
             child: Selector<PcRouterFakeProvider, List<RouterFakeInfo>>(
               builder: (context, infos, child) {
                 if (infos.isEmpty) {
-                  return const Center();
+                  return mainIndex;
                 }
 
                 List<Widget> pages = [];
