@@ -273,7 +273,7 @@ class _EventMainComponent extends State<EventMainComponent> {
           );
         }
       } else {
-        if (widget.showReplying && eventRelation.tagPList.isNotEmpty) {
+        if (widget.showReplying && eventRelation.tagPList.isNotEmpty && eventRelation.tagEList.isNotEmpty) {
           var textStyle = TextStyle(
             color: hintColor,
             fontSize: smallTextSize,
