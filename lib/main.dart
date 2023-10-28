@@ -35,6 +35,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sizer/sizer.dart';
 import 'package:window_manager/window_manager.dart';
+import 'package:yana/hybrid_event_verifier.dart';
 import 'package:yana/nostr/nostr.dart';
 import 'package:yana/provider/badge_definition_provider.dart';
 import 'package:yana/provider/community_info_provider.dart';
@@ -337,7 +338,8 @@ Future<void> main() async {
   DbCacheManager dbCacheManager = DbCacheManager();
   await dbCacheManager.init(directory: PlatformUtil.isWeb() ? isar.Isar.sqliteInMemory : (await getApplicationDocumentsDirectory()).path);
   cacheManager = dbCacheManager;
-  relayManager.setCacheManager(cacheManager);
+  relayManager.cacheManager = cacheManager;
+  relayManager.eventVerifier = HybridEventVerifier();
 
   if (!PlatformUtil.isWeb() && PlatformUtil.isPC()) {
     await windowManager.ensureInitialized();
