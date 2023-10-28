@@ -63,13 +63,13 @@
 - ~~nip05~~
 
 v0.12
- - blacklist for relays
+- broadcast
+- blacklist for relays
 - garbage collection of webSockets not used since X (for reactions)
 
 - loading screen ASAP after splash - re-enable notifications
 - persist notes from feed for faster startup
 
-- broadcast
 - notifications
 - global
 - check why some replies appear on posts

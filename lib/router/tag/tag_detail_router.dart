@@ -157,7 +157,7 @@ class _TagDetailRouter extends CustState<TagDetailRouter>
     // tag query
     // https://github.com/nostr-protocol/nips/blob/master/12.md
     var filter = Filter(kinds: [
-      Nip01Event.textNoteKind,
+      Nip01Event.TEXT_NODE_KIND,
       kind.EventKind.LONG_FORM,
       kind.EventKind.FILE_HEADER,
       kind.EventKind.POLL,

@@ -42,7 +42,7 @@ class NotificationsProvider extends ChangeNotifier
 
   List<int> queryEventKinds() {
     return [
-      Nip01Event.textNoteKind,
+      Nip01Event.TEXT_NODE_KIND,
       kind.EventKind.REACTION,
       kind.EventKind.REPOST,
       kind.EventKind.GENERIC_REPOST,

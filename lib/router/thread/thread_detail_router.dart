@@ -342,7 +342,7 @@ class _ThreadDetailRouter extends CustState<ThreadDetailRouter> with PenddingEve
       var filter = Filter(eTags: [
         rootId!
       ], kinds: [
-        Nip01Event.textNoteKind,
+        Nip01Event.TEXT_NODE_KIND,
         kind.EventKind.FILE_HEADER,
         kind.EventKind.POLL,
         kind.EventKind.ZAP,

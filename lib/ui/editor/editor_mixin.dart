@@ -576,7 +576,7 @@ mixin EditorMixin {
           createdAt: createdAt!.millisecondsSinceEpoch ~/ 1000);
     } else {
       // text note
-      event = Nip01Event(pubKey: nostr!.publicKey, kind: Nip01Event.textNoteKind, tags: allTags, content:result,
+      event = Nip01Event(pubKey: nostr!.publicKey, kind: Nip01Event.TEXT_NODE_KIND, tags: allTags, content:result,
           createdAt: createdAt!.millisecondsSinceEpoch ~/ 1000);
     }
 

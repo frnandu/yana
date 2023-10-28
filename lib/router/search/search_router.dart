@@ -246,7 +246,7 @@ class _SearchRouter extends CustState<SearchRouter>
   }
 
   List<int> searchEventKinds = [
-    Nip01Event.textNoteKind,
+    Nip01Event.TEXT_NODE_KIND,
     kind.EventKind.REPOST,
     kind.EventKind.GENERIC_REPOST,
     kind.EventKind.LONG_FORM,

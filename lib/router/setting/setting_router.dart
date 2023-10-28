@@ -808,7 +808,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
   //       var filter = Filter(authors: [
   //         nostr!.publicKey
   //       ], kinds: [
-  //         Nip01Event.textNoteKind,
+  //         Nip01Event.TEXT_NODE_KIND,
   //         kind.EventKind.REPOST,
   //         kind.EventKind.GENERIC_REPOST,
   //       ]);

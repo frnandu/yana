@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:ui';
 
 import 'package:awesome_notifications/awesome_notifications.dart';
@@ -8,7 +9,9 @@ import 'package:dart_ndk/db/db_cache_manager.dart';
 import 'package:dart_ndk/models/pubkey_mapping.dart';
 import 'package:dart_ndk/models/relay_set.dart';
 import 'package:dart_ndk/models/user_relay_list.dart';
+import 'package:dart_ndk/nips/nip01/bip340_event_signer.dart';
 import 'package:dart_ndk/nips/nip01/event.dart';
+import 'package:dart_ndk/nips/nip01/event_signer.dart';
 import 'package:dart_ndk/nips/nip01/filter.dart';
 import 'package:dart_ndk/nips/nip01/metadata.dart';
 import 'package:dart_ndk/nips/nip02/contact_list.dart';
@@ -36,6 +39,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sizer/sizer.dart';
 import 'package:window_manager/window_manager.dart';
 import 'package:yana/hybrid_event_verifier.dart';
+import 'package:yana/nostr/nip07/extension_event_signer.dart';
 import 'package:yana/nostr/nostr.dart';
 import 'package:yana/provider/badge_definition_provider.dart';
 import 'package:yana/provider/community_info_provider.dart';
@@ -158,6 +162,8 @@ AppLifecycleState appState = AppLifecycleState.resumed;
 
 @deprecated
 Nostr? nostr;
+
+late EventSigner loggedUserSigner;
 
 Nostr? followsNostr;
 
@@ -357,7 +363,12 @@ Future<void> main() async {
       await windowManager.focus();
     });
   }
-
+  if(!PlatformUtil.isTableModeWithoutSetting()) {
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
+  }
   // if (PlatformUtil.isWeb()) {
   //   databaseFactory = databaseFactoryFfiWeb;
   // } else if (PlatformUtil.isWindowsOrLinux()) {
@@ -427,6 +438,8 @@ Future<void> main() async {
     //   }
     //   await relayManager.connect(bootstrapRelays: nip65 != null ? nip65!.relays.keys.toList() : RelayManager.DEFAULT_BOOTSTRAP_RELAYS);
     nostr = Nostr(privateKey: isPrivate ? key : null, publicKey: publicKey);
+    loggedUserSigner = isPrivate ? Bip340EventSigner(key) : Nip07EventSigner();
+
     //   print("Loading contact list...");
     //   Nip02ContactList? contactList = await relayManager.loadContactList(publicKey);
     //   if (contactList != null) {
@@ -765,7 +778,7 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
                       } else if (NIP19Tlv.isNaddr(key)) {
                         var naddr = NIP19Tlv.decodeNaddr(key);
                         if (naddr != null) {
-                          if (StringUtil.isNotBlank(naddr.id) && naddr.kind == Nip01Event.textNoteKind) {
+                          if (StringUtil.isNotBlank(naddr.id) && naddr.kind == Nip01Event.TEXT_NODE_KIND) {
                             jump = MaterialPageRoute(settings: RouteSettings(name: RouterPath.THREAD_DETAIL, arguments: naddr.id), builder: (context) => ThreadDetailRouter(eventId: naddr.id,));
                           } else if (StringUtil.isNotBlank(naddr.author) && naddr.kind == Metadata.kind) {
                             jump = MaterialPageRoute(settings: RouteSettings(name: RouterPath.USER, arguments: naddr.author), builder: (context) => UserRouter());

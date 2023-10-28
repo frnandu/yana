@@ -415,7 +415,7 @@ class ContentDecoder {
       } else if (NIP19Tlv.isNaddr(key)) {
         var naddr = NIP19Tlv.decodeNaddr(key);
         if (naddr != null) {
-          if (StringUtil.isNotBlank(naddr.id) && naddr.kind == Nip01Event.textNoteKind) {
+          if (StringUtil.isNotBlank(naddr.id) && naddr.kind == Nip01Event.TEXT_NODE_KIND) {
             // block
             handledStr = _closeHandledStr(handledStr, inlines);
             _closeInlines(inlines, list, textOnTap: textOnTap);

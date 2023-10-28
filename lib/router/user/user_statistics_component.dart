@@ -79,8 +79,8 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
         }
       },
     );
-    // queryFollowers();
     refreshContactListIfNeededAsync(widget.pubkey);
+    // queryFollowers();
     // queryZaps();
   }
 
@@ -257,7 +257,7 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
       followedMap = {};
 
       Filter filter =
-          Filter(kinds: [ContactList.kind], pTags: [widget.pubkey]);
+          Filter(kinds: [ContactList.KIND], pTags: [widget.pubkey]);
 
       Stream<Nip01Event> stream = await relayManager.requestRelays(
           relayManager.bootstrapRelays.toList()

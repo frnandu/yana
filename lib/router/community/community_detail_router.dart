@@ -191,7 +191,7 @@ class _CommunityDetailRouter extends CustState<CommunityDetailRouter>
 
   void queryEvents() {
     var filter = Filter(kinds: [
-      Nip01Event.textNoteKind,
+      Nip01Event.TEXT_NODE_KIND,
       kind.EventKind.LONG_FORM,
       kind.EventKind.FILE_HEADER,
       kind.EventKind.POLL,

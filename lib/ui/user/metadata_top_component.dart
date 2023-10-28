@@ -388,7 +388,11 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
             textColor: themeData.primaryColor,
             text: widget.metadata!.website!,
             onTap: () {
-              launchUrl(Uri.parse(widget.metadata!.website!), mode: LaunchMode.externalApplication);
+              String url = widget.metadata!.website!;
+              if (!url.startsWith("https://") || !url.startsWith("http://")) {
+                url = "https://"+url;
+              }
+              launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
               // WebViewRouter.open(context, widget.metadata!.website!);
             },
           ));

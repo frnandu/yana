@@ -17,15 +17,6 @@ class MetadataProvider extends ChangeNotifier with LaterFunction {
   static Future<MetadataProvider> getInstance() async {
     if (_metadataProvider == null) {
       _metadataProvider = MetadataProvider();
-
-      // var list = await Metadata.loadAllFromDB();
-      // for (var md in list) {
-      //   if (md.valid == Nip05Status.NIP05_NOT_VALIDED) {
-      //     md.valid = null;
-      //   }
-      //   _metadataProvider!._metadataCache[md.pubKey!] = md;
-      // }
-      // lazyTimeMS begin bigger and request less
       _metadataProvider!.laterTimeMS = 500;
     }
 

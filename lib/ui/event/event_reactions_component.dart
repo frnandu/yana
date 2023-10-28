@@ -458,14 +458,19 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
     if (eventReactions?.myLikeEvents == null ||
         eventReactions!.myLikeEvents!.isEmpty) {
       // like
-      var likeEvent = await nostr!.sendLike(widget.event.id);
+      Nip01Event likeEvent = await relayManager!.broadcastReaction(
+          widget.event.id, nostr!.publicKey, myOutboxRelaySet!.urls, loggedUserSigner);
       if (likeEvent != null) {
         eventReactionsProvider.addLike(widget.event.id, likeEvent);
       }
     } else {
-      // delete like
+      /// TODO use dart_ndk
+      // // delete like
       for (var event in eventReactions!.myLikeEvents!) {
-        nostr!.deleteEvent(event.id);
+      //   Nip01Event likeEvent = await relayManager!.broadcastReaction(
+      //       widget.event.id, nostr!.publicKey, myOutboxRelaySet!.urls, loggedUserSigner);
+      //
+      //   nostr!.deleteEvent(event.id);
       }
       eventReactionsProvider.deleteLike(widget.event.id);
     }

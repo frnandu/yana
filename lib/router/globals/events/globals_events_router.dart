@@ -118,7 +118,7 @@ class _GlobalsEventsRouter extends KeepAliveCustState<GlobalsEventsRouter>
     //   }
     // }
     //
-    var filter = Filter(kinds: [Nip01Event.textNoteKind], since: _initTime);
+    var filter = Filter(kinds: [Nip01Event.TEXT_NODE_KIND], since: _initTime);
     // TODO use dart_ndk
     // nostr!.subscribe([filter.toMap()], (event) {
     //   if (widget.eventBox.isEmpty()) {

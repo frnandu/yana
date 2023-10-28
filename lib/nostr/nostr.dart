@@ -75,7 +75,7 @@ class Nostr {
   }
 
   Future<Nip01Event?> sendTextNote(String text, [List<dynamic> tags = const []]) async {
-    Nip01Event event = Nip01Event(pubKey: _publicKey, kind: Nip01Event.textNoteKind, tags: tags, content: text, createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000);
+    Nip01Event event = Nip01Event(pubKey: _publicKey, kind: Nip01Event.TEXT_NODE_KIND, tags: tags, content: text, createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000);
     return await sendEvent(event);
   }
 

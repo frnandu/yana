@@ -296,7 +296,7 @@ class _UserRouter extends CustState<UserRouter>
     // load event from relay
     var filter = Filter(
       kinds: [
-        Nip01Event.textNoteKind,
+        Nip01Event.TEXT_NODE_KIND,
         kind.EventKind.REPOST,
         kind.EventKind.GENERIC_REPOST,
         kind.EventKind.LONG_FORM,

@@ -143,7 +143,7 @@ class _IndexRouter extends CustState<IndexRouter>
           } else if (NIP19Tlv.isNaddr(key)) {
             var naddr = NIP19Tlv.decodeNaddr(key);
             if (naddr != null) {
-              if (StringUtil.isNotBlank(naddr.id) && naddr.kind == Nip01Event.textNoteKind) {
+              if (StringUtil.isNotBlank(naddr.id) && naddr.kind == Nip01Event.TEXT_NODE_KIND) {
                 RouterUtil.router(context, RouterPath.THREAD_DETAIL, naddr.id);
               } else if (StringUtil.isNotBlank(naddr.author) && naddr.kind == Metadata.kind) {
                 RouterUtil.router(context, RouterPath.USER, naddr.author);
