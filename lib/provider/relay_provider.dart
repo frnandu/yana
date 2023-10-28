@@ -51,7 +51,8 @@ class RelayProvider extends ChangeNotifier {
     Set<String> set = {};
     set.addAll(myInboxRelaySet!.urls);
     set.addAll(myOutboxRelaySet!.urls);
-    String result = "${relayManager.getConnectedRelays(set).length}/${set.length},${relayManager.webSockets.keys.where((element) => relayManager.isWebSocketOpen(element)).length}";
+    String result = "${relayManager.getConnectedRelays(set).length}/${set.length}";
+    // result +=",${relayManager.webSockets.keys.where((element) => relayManager.isWebSocketOpen(element)).length}";
     // String result =
     //     "${nostr!.activeRelays().length}/${nostr!.allRelays().length}";
     if (settingProvider.gossip == 1 && feedRelaySet != null && feedRelaySet!.urls.isNotEmpty) {

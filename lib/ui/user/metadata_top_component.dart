@@ -377,10 +377,8 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
       ));
       if (StringUtil.isNotBlank(widget.metadata!.nip05)) {
         topList.add(MetadataIconDataComp(
-          text: widget.metadata!.nip05!.startsWith("_@")
-              ? widget.metadata!.nip05!.replaceAll("_@", "")
-              : widget.metadata!.nip05!,
-          leftWidget: Nip05ValidComponent(pubkey: widget.pubkey),
+          text: widget.metadata!.cleanNip05!,
+          leftWidget: Nip05ValidComponent(metadata: widget.metadata!),
         ));
       }
       if (widget.metadata != null) {

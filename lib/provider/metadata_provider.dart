@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:dart_ndk/models/relay_set.dart';
 import 'package:dart_ndk/nips/nip01/metadata.dart';
+import 'package:dart_ndk/nips/nip05/nip05.dart';
 import 'package:flutter/material.dart';
 import 'package:yana/utils/nip05status.dart';
 
@@ -48,16 +49,20 @@ class MetadataProvider extends ChangeNotifier with LaterFunction {
   }
 
   void _laterCallback() {
-    if (_needUpdatePubKeys.isNotEmpty) {
-      _laterSearch();
+    if (_needUpdateMetadatas.isNotEmpty) {
+      _loadNeedingUpdateMetadatas();
+    }
+    if (_needUpdateNip05s.isNotEmpty) {
+      _loadNeedingUpdateNip05s();
     }
   }
 
-  List<String> _needUpdatePubKeys = [];
+  List<String> _needUpdateMetadatas = [];
+  List<Metadata> _needUpdateNip05s = [];
 
   void update(String pubkey) {
-    if (!_needUpdatePubKeys.contains(pubkey)) {
-      _needUpdatePubKeys.add(pubkey);
+    if (!_needUpdateMetadatas.contains(pubkey)) {
+      _needUpdateMetadatas.add(pubkey);
     }
     later(_laterCallback, null);
   }
@@ -68,8 +73,8 @@ class MetadataProvider extends ChangeNotifier with LaterFunction {
       return metadata;
     }
 
-    if (!_needUpdatePubKeys.contains(pubKey)) {
-      _needUpdatePubKeys.add(pubKey);
+    if (!_needUpdateMetadatas.contains(pubKey)) {
+      _needUpdateMetadatas.add(pubKey);
     }
     later(_laterCallback, null);
     return null;
@@ -99,51 +104,60 @@ class MetadataProvider extends ChangeNotifier with LaterFunction {
       // });
     }
   }
+  static const NIP05_NEEDS_UPDATE_DURATION = const Duration(days: 7);
 
-  int getNip05Status(String pubkey) {
-    // var metadata = getMetadata(pubkey);
-    // if (metadata == null) {
-    //   return Nip05Status.METADATA_NOT_FOUND;
-    // } else if (StringUtil.isBlank(metadata.nip05)) {
-    //   return Nip05Status.NIP05_NOT_FOUND;
-    // } else if (metadata.valid == null) {
-    //   Nip05Validor.valid(metadata.nip05!, pubkey).then((valid) async {
-    //     if (valid != null) {
-    //       if (valid) {
-    //         metadata.valid = Nip05Status.NIP05_VALIDED;
-    //         await Metadata.writeToDB(metadata);
-    //       } else {
-    //         // only update cache, next open app vill valid again
-    //         metadata.valid = Nip05Status.NIP05_NOT_VALIDED;
-    //       }
-    //       notifyListeners();
-    //     }
-    //   });
-    //
-    //   return Nip05Status.NIP05_NOT_VALIDED;
-    // } else if (metadata.valid! == Nip05Status.NIP05_VALIDED) {
-    //   return Nip05Status.NIP05_VALIDED;
-    // }
-    return Nip05Status.NIP05_NOT_FOUND;
+  bool? isNip05Valid(Metadata metadata) {
+    if (StringUtil.isNotBlank(metadata.nip05)) {
+      Nip05? nip05 = cacheManager.loadNip05(metadata.pubKey);
+      if (nip05==null || nip05.needsUpdate(NIP05_NEEDS_UPDATE_DURATION)) {
+        if (!_needUpdateNip05s.contains(metadata)) {
+          _needUpdateNip05s.add(metadata);
+          later(_laterCallback, null);
+          return null;
+        }
+      }
+      return nip05?.valid;
+    }
+    return null;
   }
 
-  void _laterSearch() async {
-    if (_needUpdatePubKeys.isEmpty) {
+  void _loadNeedingUpdateMetadatas() async {
+    if (_needUpdateMetadatas.isEmpty) {
       return;
     }
     RelaySet? relaySet = settingProvider.gossip == 1 && feedRelaySet!=null ? feedRelaySet : myInboxRelaySet;
     if (relaySet!=null) {
       await relayManager.loadMissingMetadatas(
-        _needUpdatePubKeys,
+        _needUpdateMetadatas,
         relaySet
       );
-      _needUpdatePubKeys.clear();
+      _needUpdateMetadatas.clear();
 
       notifyListeners();
     }
   }
 
+  void _loadNeedingUpdateNip05s() async {
+    if (_needUpdateNip05s.isEmpty) {
+      return;
+    }
+    List<Nip05> toSave = [];
+
+    List<Metadata> doCheck = List.of(_needUpdateNip05s);
+    for (var metadata in doCheck) {
+      Nip05? nip05 = cacheManager.loadNip05(metadata.pubKey);
+      bool valid = await Nip05.check(metadata.nip05!, metadata.pubKey);
+      nip05 ??= Nip05(pubKey: metadata.pubKey, nip05: metadata.nip05!, valid: valid, updatedAt: DateTime.now().millisecondsSinceEpoch ~/1000);
+      nip05.valid= valid;
+      toSave.add(nip05);
+    }
+    await cacheManager.saveNip05s(toSave);
+    _needUpdateNip05s.clear();
+    notifyListeners();
+  }
+
   void clear() {
     cacheManager.removeAllMetadatas();
+    cacheManager.removeAllNip05s();
   }
 }

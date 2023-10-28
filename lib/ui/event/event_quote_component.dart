@@ -47,9 +47,9 @@ class _EventQuoteComponent extends CustState<EventQuoteComponent> {
       color: themeData.focusColor,
       boxShadow: [
         BoxShadow(
-          color: Colors.black.withOpacity(0.2),
+          color: themeData.dividerColor.withOpacity(0.05),
           offset: const Offset(0, 0),
-          blurRadius: 10,
+          blurRadius: 15,
           spreadRadius: 0,
         ),
       ],

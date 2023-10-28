@@ -169,14 +169,15 @@ class SearchMentionUserItemComponent extends StatelessWidget {
                   //   overflow: TextOverflow.ellipsis,
                   // ),
                   ,
+                  StringUtil.isNotBlank(metadata.nip05)?
                   Text(
-                    name,
+                    metadata.cleanNip05!,
                     style: TextStyle(
                       fontSize: 12,
                       color: hintColor,
                     ),
                     overflow: TextOverflow.ellipsis,
-                  ),
+                  ):Container(),
                 ],
               ),
             ),

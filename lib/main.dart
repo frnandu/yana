@@ -820,9 +820,9 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
         if (backgroundService != null && settingProvider.backgroundService) {
           backgroundService!.invoke('stopService');
         }
-        nostr!.checkAndReconnectRelays().then((a) {
+        relayManager.reconnectRelays(relayManager.relays.keys).then((value) {
           newNotificationsProvider.queryNew();
-          followNewEventProvider.queryNew();
+          followEventProvider.refreshPosts();
         });
       }
     }
@@ -858,6 +858,7 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
     );
 
     // Color? mainTextColor;
+    Color? topFontColor = Colors.white;
     Color hintColor = Colors.grey;
     var scaffoldBackgroundColor = background;
 

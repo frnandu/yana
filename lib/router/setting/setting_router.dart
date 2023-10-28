@@ -269,7 +269,9 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
         onToggle: (value) {
           settingProvider.gossip = value ? 1 : 0;
           if (value && followsNostr == null) {
-            rebuildFollowsNostr();
+            rebuildFeedRelaySet();
+          } else {
+            followEventProvider.refreshPosts();
           }
         },
         initialValue: settingProvider.gossip == OpenStatus.OPEN,
@@ -284,7 +286,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
             int? old = _settingProvider.followeesRelayMinCount;
             await pickMaxRelays();
             if (_settingProvider.followeesRelayMinCount! != old) {
-              rebuildFollowsNostr();
+              rebuildFeedRelaySet();
             }
           },
           title: const Text("Minimal amount of relays per contact")));
@@ -1003,7 +1005,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
     }
   }
 
-  Future<void> rebuildFollowsNostr() async {
+  Future<void> rebuildFeedRelaySet() async {
     setState(() {
       loadingGossipRelays = true;
     });
@@ -1020,6 +1022,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
       feedRelaySet!.name = "feed";
       feedRelaySet!.pubKey = nostr!.publicKey;
       await relayManager.saveRelaySet(feedRelaySet!);
+      followEventProvider.refreshPosts();
     }
     reloadingFollowNostr = false;
     setState(() {

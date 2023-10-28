@@ -59,11 +59,11 @@
 - ~~user Follow feed relays write to DB to improve startup time in outbox model~~
 - ~~register nostr: in android so that nostr links give yana option as an app to open~~
   - ~~handle nostr:nevent1 (need to somehow load the event)~~
+- ~~sign verify~~
+- ~~nip05~~
 
 v0.12
-- sign verify
-- nip05
-- blacklist for relays
+ - blacklist for relays
 - garbage collection of webSockets not used since X (for reactions)
 
 - loading screen ASAP after splash - re-enable notifications
