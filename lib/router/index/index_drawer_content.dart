@@ -38,7 +38,7 @@ class _IndexDrawerContentComponnent extends State<IndexDrawerContentComponent> {
     var _indexProvider = Provider.of<IndexProvider>(context);
 
     var s = I18n.of(context);
-    var pubkey = nostr!.publicKey;
+    var pubkey = loggedUserSigner!.getPublicKey();
     var themeData = Theme.of(context);
     var mainColor = themeData.primaryColor;
     var hintColor = themeData.hintColor;
@@ -126,7 +126,7 @@ class _IndexDrawerContentComponnent extends State<IndexDrawerContentComponent> {
       },
     ));
 
-    if (nostr!.privateKey!=null) {
+    if (loggedUserSigner!.canSign()) {
       list.add(IndexDrawerItem(
           iconData: Icons.account_balance_wallet,
           name: s.Wallet,
@@ -199,7 +199,7 @@ class _IndexDrawerContentComponnent extends State<IndexDrawerContentComponent> {
       },
     ));
 
-    if (nostr!.privateKey!=null) {
+    if (loggedUserSigner!.canSign()) {
       list.add(IndexDrawerItem(
         iconData: Icons.key,
         name: s.Key_Backup,

@@ -59,7 +59,8 @@ class CommunityInfoProvider extends ChangeNotifier with LaterFunction {
       filters.add(queryArg);
     }
     var subscriptId = StringUtil.rndNameStr(16);
-    nostr!.query(filters, _onEvent, id: subscriptId);
+    /// TODO use dart_ndk
+    // nostr!.query(filters, _onEvent, id: subscriptId);
 
     for (var pubkey in _needPullIds) {
       _handingIds[pubkey] = 1;

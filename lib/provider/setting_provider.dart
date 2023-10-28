@@ -255,8 +255,8 @@ class SettingProvider extends ChangeNotifier {
     return _translateSourceArgsMap[str] != null;
   }
 
-  int? get broadcaseWhenBoost =>
-      _settingData!.broadcaseWhenBoost ?? OpenStatus.OPEN;
+  int? get broadcastWhenBoost =>
+      _settingData!.broadcastWhenBoost ?? OpenStatus.OPEN;
 
   double get fontSize =>
       _settingData!.fontSize ??
@@ -393,8 +393,8 @@ class SettingProvider extends ChangeNotifier {
     saveAndNotifyListeners();
   }
 
-  set broadcaseWhenBoost(int? o) {
-    _settingData!.broadcaseWhenBoost = o;
+  set broadcastWhenBoost(int? o) {
+    _settingData!.broadcastWhenBoost = o;
     saveAndNotifyListeners();
   }
 
@@ -485,7 +485,7 @@ class SettingData {
 
   String? translateSourceArgs;
 
-  int? broadcaseWhenBoost;
+  int? broadcastWhenBoost;
 
   double? fontSize;
 
@@ -521,7 +521,7 @@ class SettingData {
     this.openTranslate,
     this.translateTarget,
     this.translateSourceArgs,
-    this.broadcaseWhenBoost,
+    this.broadcastWhenBoost,
     this.fontSize,
     this.webviewAppbarOpen = OpenStatus.OPEN,
     this.tableMode,
@@ -573,7 +573,7 @@ class SettingData {
     openTranslate = json['openTranslate'];
     translateTarget = json['translateTarget'];
     translateSourceArgs = json['translateSourceArgs'];
-    broadcaseWhenBoost = json['broadcaseWhenBoost'];
+    broadcastWhenBoost = json['broadcaseWhenBoost'];
     fontSize = json['fontSize'];
     webviewAppbarOpen = json['webviewAppbarOpen'] != null
         ? json['webviewAppbarOpen']
@@ -613,7 +613,7 @@ class SettingData {
     data['openTranslate'] = this.openTranslate;
     data['translateTarget'] = this.translateTarget;
     data['translateSourceArgs'] = this.translateSourceArgs;
-    data['broadcaseWhenBoost'] = this.broadcaseWhenBoost;
+    data['broadcastWhenBoost'] = this.broadcastWhenBoost;
     data['fontSize'] = this.fontSize;
     data['webviewAppbarOpen'] = this.webviewAppbarOpen;
     data['tableMode'] = this.tableMode;

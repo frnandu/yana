@@ -4,6 +4,7 @@ import 'package:bot_toast/bot_toast.dart';
 import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip01/filter.dart';
 import 'package:dart_ndk/nips/nip01/metadata.dart';
+import 'package:dart_ndk/relay.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -272,7 +273,8 @@ class _SearchRouter extends CustState<SearchRouter>
     subscribeId = generatePrivateKey();
 
     if (!eventMemBox.isEmpty()) {
-      var activeRelays = nostr!.activeRelays();
+      List<Relay> activeRelays =
+        relayManager.relays.keys.where((url) => relayManager.isRelayConnected(url)).map((url) => relayManager.getRelay(url)!).toList();
       var oldestCreatedAts = eventMemBox.oldestCreatedAtByRelay(activeRelays);
       Map<String, List<Map<String, dynamic>>> filtersMap = {};
       for (var relay in activeRelays) {
@@ -314,7 +316,7 @@ class _SearchRouter extends CustState<SearchRouter>
   }
 
   void unSubscribe() {
-    nostr!.unsubscribe(subscribeId!);
+    // nostr!.unsubscribe(subscribeId!);
     subscribeId = null;
   }
 

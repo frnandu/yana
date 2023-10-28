@@ -291,7 +291,7 @@ class _ProfileEditorRouter extends CustState<ProfileEditorRouter> {
 
     // Set<String> uniqueRelays = Set<String>.from(RelayProvider.STATIC_RELAY_ADDRS);
     // uniqueRelays.addAll(relayProvider.relayAddrs);
-    // var tempNostr = Nostr(privateKey: nostr!.privateKey, publicKey: nostr!.publicKey);
+    // var tempNostr = Nostr(privateKey: nostr!.privateKey, publicKey: loggedUserSigner!.getPublicKey());
 
     // TODO use dart_ndk
 
@@ -311,7 +311,7 @@ class _ProfileEditorRouter extends CustState<ProfileEditorRouter> {
     // TODO use dart_ndk
 
     // var updateEvent = Nip01Event(pubKey:
-    //     tempNostr!.publicKey, kind: kind.EventKind.METADATA, tags: [], content: jsonEncode(metadataMap));
+    //     temploggedUserSigner!.getPublicKey(), kind: kind.EventKind.METADATA, tags: [], content: jsonEncode(metadataMap));
     // tempNostr!.sendEvent(updateEvent);
 
     RouterUtil.back(context);
@@ -323,14 +323,16 @@ class _ProfileEditorRouter extends CustState<ProfileEditorRouter> {
   Future<void> onReady(BuildContext context) async {
     var filter = Filter(
         kinds: [],
-        authors: [nostr!.publicKey],
+        authors: [loggedUserSigner!.getPublicKey()],
         limit: 1);
-    nostr!.query([filter.toMap()], (event) {
-      if (profileEvent == null) {
-        profileEvent = event;
-      } else if (event.createdAt > profileEvent!.createdAt) {
-        profileEvent = event;
-      }
-    });
+    /// TODO use dart_ndk
+    //
+    // nostr!.query([filter.toMap()], (event) {
+    //   if (profileEvent == null) {
+    //     profileEvent = event;
+    //   } else if (event.createdAt > profileEvent!.createdAt) {
+    //     profileEvent = event;
+    //   }
+    // });
   }
 }

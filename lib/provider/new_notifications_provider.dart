@@ -51,11 +51,12 @@ class NewNotificationsProvider extends ChangeNotifier
     if (kDebugMode) {
       print('!!!!!!!!!!!!!!! New notifications queryNew');
     }
-    if (subscribeId != null) {
-      try {
-        nostr!.unsubscribe(subscribeId!);
-      } catch (e) {}
-    }
+    /// TODO use dart_ndk
+    // if (subscribeId != null) {
+    //   try {
+    //     nostr!.unsubscribe(subscribeId!);
+    //   } catch (e) {}
+    // }
 
     _localSince =
         _localSince == null || notificationsProvider.lastTime() > _localSince!
@@ -66,7 +67,7 @@ class NewNotificationsProvider extends ChangeNotifier
     var filter = Filter(
       since: _localSince!,
       kinds: notificationsProvider.queryEventKinds(),
-      pTags: [nostr!.publicKey],
+      pTags: [loggedUserSigner!.getPublicKey()],
     );
     // TODO use dart_ndk
     // nostr!.query([filter.toMap()], (event) {
@@ -79,7 +80,7 @@ class NewNotificationsProvider extends ChangeNotifier
     // BotToast.showText(
     //     text: "Received ${events.length} notification events");
     events =
-        events.where((event) => event.pubKey != nostr?.publicKey && !notificationsProvider.eventBox.containsId(event.id)).toList();
+        events.where((event) => event.pubKey != loggedUserSigner?.getPublicKey() && !notificationsProvider.eventBox.containsId(event.id)).toList();
     if (events.isEmpty) {
       return;
     }

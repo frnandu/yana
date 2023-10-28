@@ -183,11 +183,11 @@ class RelaysItemComponent extends StatelessWidget {
                   bool? result = await ConfirmDialog.show(
                       context, I18n.of(context).Confirm);
 
-                  if (result!=null && result && nostr!.privateKey != null) {
+                  if (result!=null && result && loggedUserSigner!.canSign()) {
                     await removeRelay(relay.url);
                   }
                 },
-                child: nostr!.privateKey != null
+                child: loggedUserSigner!.canSign()
                     ? Container(
                         padding: const EdgeInsets.only(
                           right: Base.BASE_PADDING,

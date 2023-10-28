@@ -1,7 +1,10 @@
 import 'dart:convert';
 
+import 'package:bip340/bip340.dart';
 import 'package:bot_toast/bot_toast.dart';
+import 'package:dart_ndk/nips/nip01/bip340_event_signer.dart';
 import 'package:dart_ndk/nips/nip01/event.dart';
+import 'package:dart_ndk/nips/nip01/event_signer.dart';
 import 'package:flutter/material.dart';
 import 'package:yana/nostr/event_kind.dart';
 
@@ -11,7 +14,6 @@ import 'package:dart_ndk/nips/nip01/filter.dart';
 import '../nostr/nip04/nip04.dart';
 import '../nostr/nip47/nwc_commands.dart';
 import '../nostr/nip47/nwc_kind.dart';
-import '../nostr/nostr.dart';
 import '../utils/string_util.dart';
 import 'data_util.dart';
 
@@ -30,7 +32,7 @@ class NwcProvider extends ChangeNotifier {
 
   static Future<NwcProvider> getInstance() async {
     _nwcProvider ??= NwcProvider();
-    if (nostr!=null) {
+    if (loggedUserSigner!=null) {
       await _nwcProvider!._init();
     }
     return _nwcProvider!;
@@ -127,7 +129,7 @@ class NwcProvider extends ChangeNotifier {
     if (StringUtil.isNotBlank(walletPubKey) &&
         StringUtil.isNotBlank(relay) &&
         StringUtil.isNotBlank(secret)) {
-      Nostr nwcNostr = Nostr(privateKey: secret);
+      EventSigner nwcSigner = Bip340EventSigner(secret!, getPublicKey(secret!));
 
       var agreement = NIP04.getAgreement(secret!);
       var encrypted =
@@ -136,7 +138,7 @@ class NwcProvider extends ChangeNotifier {
         ["p", walletPubKey]
       ];
       final event =
-      Nip01Event(pubKey: nwcNostr!.publicKey, kind: NwcKind.REQUEST, tags: tags, content: encrypted);
+      Nip01Event(pubKey: nwcSigner!.getPublicKey(), kind: NwcKind.REQUEST, tags: tags, content: encrypted);
       // TODO use dart_ndk
       // await nwcNostr!.sendRelayEvent(event, relay!);
       var filter = Filter(
@@ -183,7 +185,7 @@ class NwcProvider extends ChangeNotifier {
     if (StringUtil.isNotBlank(walletPubKey) &&
         StringUtil.isNotBlank(relay) &&
         StringUtil.isNotBlank(secret)) {
-      Nostr nwcNostr = Nostr(privateKey: secret);
+      EventSigner nwcSigner = Bip340EventSigner(secret!, getPublicKey(secret!));
 
       payInvoiceEventId = eventId;
 
@@ -194,7 +196,7 @@ class NwcProvider extends ChangeNotifier {
         ["p", walletPubKey]
       ];
       final event =
-      Nip01Event(pubKey: nwcNostr!.publicKey, kind: NwcKind.REQUEST, tags: tags, content: encrypted);
+      Nip01Event(pubKey: nwcSigner!.getPublicKey(), kind: NwcKind.REQUEST, tags: tags, content: encrypted);
       var filter = Filter(
           kinds: [NwcKind.RESPONSE], authors: [walletPubKey!], eTags: [event.id]);
       // TODO use dart_ndk

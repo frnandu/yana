@@ -20,7 +20,7 @@ mixin PenddingEventsLaterFunction {
 
     latering = true;
     Future.delayed(Duration(milliseconds: laterTimeMS), () {
-      if (!_running || nostr==null) {
+      if (!_running || loggedUserSigner==null) {
         return;
       }
 

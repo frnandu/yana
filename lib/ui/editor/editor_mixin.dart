@@ -1,6 +1,3 @@
-import 'dart:convert';
-import 'dart:developer';
-
 import 'package:auto_size_text_field/auto_size_text_field.dart';
 import 'package:bot_toast/bot_toast.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -13,20 +10,20 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:pointycastle/ecc/api.dart';
 import 'package:provider/provider.dart';
-import 'package:yana/ui/datetime_picker_component.dart';
 import 'package:yana/provider/custom_emoji_provider.dart';
+import 'package:yana/ui/datetime_picker_component.dart';
 
+import '../../i18n/i18n.dart';
+import '../../main.dart';
+import '../../models/custom_emoji.dart';
 import '../../nostr/event_kind.dart' as kind;
 import '../../nostr/nip04/nip04.dart';
 import '../../nostr/nip19/nip19.dart';
 import '../../nostr/nip19/nip19_tlv.dart';
 import '../../nostr/upload/uploader.dart';
-import '../../utils/base.dart';
-import '../../models/custom_emoji.dart';
-import '../../i18n/i18n.dart';
-import '../../main.dart';
 import '../../router/edit/poll_input_component.dart';
 import '../../router/index/index_app_bar.dart';
+import '../../utils/base.dart';
 import '../../utils/platform_util.dart';
 import '../../utils/string_util.dart';
 import '../content/content_decoder.dart';
@@ -565,30 +562,23 @@ mixin EditorMixin {
       // dm message
       result = NIP04.encrypt(result, agreement, pubkey!);
       event = Nip01Event(
-          pubKey: nostr!.publicKey, kind: kind.EventKind.DIRECT_MESSAGE, tags: allTags, content: result,
+          pubKey: loggedUserSigner!.getPublicKey(), kind: kind.EventKind.DIRECT_MESSAGE, tags: allTags, content: result,
           createdAt: createdAt!.millisecondsSinceEpoch ~/ 1000);
     } else if (inputPoll) {
       // poll event
       // get poll tag from PollInputComponentn
       var pollTags = pollInputController.getTags();
       allTags.addAll(pollTags);
-      event = Nip01Event(pubKey: nostr!.publicKey, kind: kind.EventKind.POLL, tags: allTags, content: result,
-          createdAt: createdAt!.millisecondsSinceEpoch ~/ 1000);
+      event = Nip01Event(pubKey: loggedUserSigner!.getPublicKey(), kind: kind.EventKind.POLL, tags: allTags, content: result,
+          createdAt: createdAt!=null? createdAt!.millisecondsSinceEpoch ~/ 1000: null);
     } else {
       // text note
-      event = Nip01Event(pubKey: nostr!.publicKey, kind: Nip01Event.TEXT_NODE_KIND, tags: allTags, content:result,
-          createdAt: createdAt!.millisecondsSinceEpoch ~/ 1000);
+      event = Nip01Event(pubKey: loggedUserSigner!.getPublicKey(), kind: Nip01Event.TEXT_NODE_KIND, tags: allTags, content:result,
+          createdAt: createdAt!=null ? createdAt!.millisecondsSinceEpoch ~/ 1000: null);
     }
 
-    // if (publishAt != null) {
-    //   nostr!.signEvent(event);
-    //   return event;
-    // } else {
-      var e = nostr!.sendEvent(event);
-      log(jsonEncode(event.toJson()));
-
-      return e;
-    // }
+    await relayManager.broadcastEvent(event, myOutboxRelaySet!.urls, loggedUserSigner!);
+    return event;
   }
 
   String handleInlineValue(String result, String value) {

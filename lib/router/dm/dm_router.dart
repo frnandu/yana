@@ -24,9 +24,11 @@ class _DMRouter extends State<DMRouter> {
   @override
   Widget build(BuildContext context) {
     var themeData = Theme.of(context);
-    bool isPrivate = StringUtil.isNotBlank(nostr!.privateKey);
-    var agreement = isPrivate ? NIP04.getAgreement(nostr!.privateKey!) : null;
-
+    //loggedUserSigner.decrypt(msg)
+    // TODO use dart_ndk WTF??!?!
+    // bool isPrivate = StringUtil.isNotBlank(nostr!.privateKey);
+    var agreement = loggedUserSigner!.canSign() ? NIP04.getAgreement(loggedUserSigner!.getPrivateKey()!) : null;
+    //
     return Container(
       color: themeData.scaffoldBackgroundColor,
       child: TabBarView(

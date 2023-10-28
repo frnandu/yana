@@ -74,8 +74,8 @@ class _DMDetailRouter extends CustState<DMDetailRouter> with EditorMixin {
       },
     );
 
-    var localPubkey = nostr!.publicKey;
-    agreement = NIP04.getAgreement(nostr!.privateKey!);
+    var localPubkey = loggedUserSigner!.getPublicKey();
+    agreement = NIP04.getAgreement("TODO use dart_ndk for privateKey WTF?!?!?");
 
     List<Widget> list = [];
 

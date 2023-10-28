@@ -74,52 +74,31 @@ class ContactListProvider extends ChangeNotifier {
   //   }
   // }
 
-  void _saveAndNotify() {
-    var eventJsonMap = _event!.toJson();
-    var eventJsonStr = jsonEncode(eventJsonMap);
-
-    var pubkey = nostr!.publicKey;
-    Map<String, dynamic>? allJsonMap;
-
-    var str = sharedPreferences.getString(DataKey.CONTACT_LISTS);
-    if (StringUtil.isNotBlank(str)) {
-      allJsonMap = jsonDecode(str!);
-    }
-    allJsonMap ??= {};
-
-    allJsonMap[pubkey] = eventJsonStr;
-    var jsonStr = jsonEncode(allJsonMap);
-
-    sharedPreferences.setString(DataKey.CONTACT_LISTS, jsonStr);
-    notifyListeners();
-
-
-    contactList!.contacts.forEach((contact) { metadataProvider.update(contact!);});
+  // void _saveAndNotify() {
+    // contactList!.contacts.forEach((contact) { metadataProvider.update(contact!);});
     //followEventProvider.metadataUpdatedCallback(_contactList);
-  }
+  // }
 
   int total() {
     return contactList!.contacts.length;
   }
 
-  Future<ContactList?> getContactList(String pubKey) async {
+  ContactList? getContactList(String pubKey) {
+    return cacheManager.loadContactList(pubKey);
+  }
+
+  Future<ContactList?> loadContactList(String pubKey) async {
     return await relayManager.loadContactList(pubKey);
   }
 
   Future<void> addContact(String contact) async {
-    /// TODO use dart_ndk
-    // contactList!.contacts.add(contact.publicKey!);
-    // _event = await nostr!.sendContactList(_contactList!);
-
-    _saveAndNotify();
+    contactList = await relayManager.broadcastNewContact(contact, myOutboxRelaySet!.urls, loggedUserSigner!);
+    notifyListeners();
   }
 
   Future<void> removeContact(String pubKey) async{
-    /// TODO use dart_ndk
-    // contactList!.contacts.remove(pubKey);
-    // _event = await nostr!.sendContactList(_contactList!);
-
-    _saveAndNotify();
+    contactList = await relayManager.broadcastRemoveContact(pubKey, myOutboxRelaySet!.urls, loggedUserSigner!);
+    notifyListeners();
   }
 
   // Future<void> updateContacts(ContactList contactList) async {
@@ -160,14 +139,14 @@ class ContactListProvider extends ChangeNotifier {
     // _contactList!.addTag(tag);
     // _event = await nostr!.sendContactList(_contactList!);
 
-    _saveAndNotify();
+    // _saveAndNotify();
   }
 
   Future<void> removeTag(String tag) async {
     // _contactList!.removeTag(tag);
     // _event = await nostr!.sendContactList(_contactList!);
 
-    _saveAndNotify();
+    // _saveAndNotify();
   }
 
   // Iterable<String> tagList() {
@@ -182,14 +161,14 @@ class ContactListProvider extends ChangeNotifier {
     // _contactList!.addCommunity(tag);
     // _event = await nostr!.sendContactList(_contactList!);
 
-    _saveAndNotify();
+    // _saveAndNotify();
   }
 
   void removeCommunity(String tag) async {
     // _contactList!.removeCommunity(tag);
     // _event = await nostr!.sendContactList(_contactList!);
 
-    _saveAndNotify();
+    // _saveAndNotify();
   }
 
   // int totalfollowedCommunities() {

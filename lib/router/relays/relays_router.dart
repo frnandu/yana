@@ -1,11 +1,11 @@
 import 'package:bot_toast/bot_toast.dart';
+import 'package:dart_ndk/relay.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:yana/utils/when_stop_function.dart';
 
 import '../../i18n/i18n.dart';
 import '../../main.dart';
-import '../../nostr/relay.dart';
 import '../../provider/relay_provider.dart';
 import '../../ui/cust_state.dart';
 import '../../utils/base.dart';
@@ -85,7 +85,7 @@ class _RelaysRouter extends CustState<RelaysRouter> with WhenStopFunction {
                       .reconnectRelays(myInboxRelaySet!.urls);
                   setState(() {});
                   // var filter = Filter(
-                  //     authors: [nostr!.publicKey],
+                  //     authors: [loggedUserSigner!.getPublicKey()],
                   //     limit: 1,
                   //     kinds: [EventKind.RELAY_LIST_METADATA]);
                   //
@@ -112,7 +112,7 @@ class _RelaysRouter extends CustState<RelaysRouter> with WhenStopFunction {
                 ),
               )),
         ),
-        nostr!.privateKey != null
+        loggedUserSigner!.canSign()
             ? TextField(
                 controller: controller,
                 decoration: InputDecoration(

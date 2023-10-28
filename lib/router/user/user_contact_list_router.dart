@@ -1,7 +1,10 @@
 import 'package:dart_ndk/nips/nip02/contact_list.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:yana/main.dart';
 
 import '../../i18n/i18n.dart';
+import '../../provider/contact_list_provider.dart';
 import '../../utils/router_util.dart';
 import 'user_contact_list_component.dart';
 
@@ -15,45 +18,57 @@ class UserContactListRouter extends StatefulWidget {
 }
 
 class _UserContactListRouter extends State<UserContactListRouter> {
-  ContactList? contactList;
+  String? pubKey;
 
   @override
   Widget build(BuildContext context) {
+    var _contactListProvider = Provider.of<ContactListProvider>(context);
+
     var s = I18n.of(context);
 
-    if (contactList == null) {
+    if (pubKey == null) {
       var arg = RouterUtil.routerArgs(context);
       if (arg != null) {
-        contactList = arg as ContactList;
+        pubKey = arg as String;
+        contactListProvider.loadContactList(pubKey!).then((value) {
+          setState(() {
+          });
+        },);
       }
-    }
-    if (contactList == null) {
-      RouterUtil.back(context);
-      return Container();
     }
     var themeData = Theme.of(context);
     var titleFontSize = themeData.textTheme.bodyLarge!.fontSize;
 
     return Scaffold(
-      appBar: AppBar(
-        leading: GestureDetector(
-          onTap: () {
-            RouterUtil.back(context);
-          },
-          child: Icon(
-            Icons.arrow_back_ios,
-            color: themeData.appBarTheme.titleTextStyle!.color,
+        appBar: AppBar(
+          leading: GestureDetector(
+            onTap: () {
+              RouterUtil.back(context);
+            },
+            child: Icon(
+              Icons.arrow_back_ios,
+              color: themeData.appBarTheme.titleTextStyle!.color,
+            ),
+          ),
+          title: Text(
+            s.Following,
+            style: TextStyle(
+              fontSize: titleFontSize,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ),
-        title: Text(
-          s.Following,
-          style: TextStyle(
-            fontSize: titleFontSize,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ),
-      body: UserContactListComponent(contactList: contactList!),
+        body:  Selector<ContactListProvider, ContactList?>(
+            builder: (context, contactList, child) {
+              if (contactList!=null) {
+                return UserContactListComponent(contactList: contactList);
+              }
+              return Container();
+            },
+            selector: (context, _provider) {
+              return contactListProvider.getContactList(pubKey!);
+            }
+        )
     );
   }
 }

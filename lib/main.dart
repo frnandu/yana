@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 import 'dart:ui';
 
 import 'package:awesome_notifications/awesome_notifications.dart';
@@ -12,13 +11,11 @@ import 'package:dart_ndk/models/user_relay_list.dart';
 import 'package:dart_ndk/nips/nip01/bip340_event_signer.dart';
 import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip01/event_signer.dart';
-import 'package:dart_ndk/nips/nip01/filter.dart';
 import 'package:dart_ndk/nips/nip01/metadata.dart';
 import 'package:dart_ndk/nips/nip02/contact_list.dart';
 import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
 import 'package:dart_ndk/read_write.dart';
 import 'package:dart_ndk/relay.dart';
-import 'package:dart_ndk/relay_info.dart';
 import 'package:dart_ndk/relay_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -40,7 +37,6 @@ import 'package:sizer/sizer.dart';
 import 'package:window_manager/window_manager.dart';
 import 'package:yana/hybrid_event_verifier.dart';
 import 'package:yana/nostr/nip07/extension_event_signer.dart';
-import 'package:yana/nostr/nostr.dart';
 import 'package:yana/provider/badge_definition_provider.dart';
 import 'package:yana/provider/community_info_provider.dart';
 import 'package:yana/provider/custom_emoji_provider.dart';
@@ -57,8 +53,8 @@ import 'package:yana/router/wallet/nwc_router.dart';
 import 'package:yana/router/wallet/wallet_router.dart';
 import 'package:yana/utils/image/cache_manager_builder.dart';
 import 'package:yana/utils/platform_util.dart';
-import 'package:yana/utils/router_util.dart';
 
+import '/js/js_helper.dart' as js;
 import 'i18n/i18n.dart';
 import 'nostr/client_utils/keys.dart';
 import 'nostr/nip19/nip19.dart';
@@ -160,14 +156,7 @@ late NwcProvider nwcProvider;
 
 AppLifecycleState appState = AppLifecycleState.resumed;
 
-@deprecated
-Nostr? nostr;
-
-late EventSigner loggedUserSigner;
-
-Nostr? followsNostr;
-
-bool reloadingFollowNostr = false;
+EventSigner? loggedUserSigner;
 
 List<RelayMetadata>? followRelays;
 
@@ -214,9 +203,9 @@ void onStart(ServiceInstance service) async {
     Timer.periodic(const Duration(seconds: 60), (timer) async {
       if (service is AndroidServiceInstance) {
         AwesomeNotifications().getAppLifeCycle().then((value) {
-          if (value.toString() != "NotificationLifeCycle.Foreground" && nostr != null) {
+          if (value.toString() != "NotificationLifeCycle.Foreground" && myInboxRelaySet != null) {
             appState = AppLifecycleState.inactive;
-            nostr!.checkAndReconnectRelays().then((a) {
+            relayManager.reconnectRelays(myInboxRelaySet!.urls).then((a) {
               newNotificationsProvider.queryNew();
             });
           }
@@ -234,14 +223,15 @@ void initProvidersAndStuff() async {
   settingProvider = await SettingProvider.getInstance();
   if (StringUtil.isNotBlank(settingProvider.key)) {
     try {
-      nostr = Nostr(privateKey: settingProvider.key);
+
+      loggedUserSigner = Bip340EventSigner(settingProvider.key!, getPublicKey(settingProvider.key!));
       await relayManager.connect();
-      UserRelayList? userRelayList = await relayManager.getSingleUserRelayList(nostr!.publicKey);
+      UserRelayList? userRelayList = await relayManager.getSingleUserRelayList(loggedUserSigner!.getPublicKey());
       if (userRelayList != null) {
         createMyRelaySets(userRelayList);
       }
       await relayManager.connect(urls: userRelayList != null ? userRelayList.urls : RelayManager.DEFAULT_BOOTSTRAP_RELAYS);
-      // await relayProvider!.loadRelays(nostr!.publicKey, () {
+      // await relayProvider!.loadRelays(loggedUserSigner!.getPublicKey(), () {
       //   relayProvider.addRelays(nostr!).then((bla) {
       filterProvider = FilterProvider.getInstance();
       notificationsProvider = NotificationsProvider();
@@ -269,29 +259,29 @@ List<String> DEFAULT_CONTACT_LIST_KEYS = [
 Future<void> initRelays({bool newKey = false}) async {
   await relayManager.connect();
 
-  UserRelayList? userRelayList = !newKey ? await relayManager.getSingleUserRelayList(nostr!.publicKey) : null;
+  UserRelayList? userRelayList = !newKey ? await relayManager.getSingleUserRelayList(loggedUserSigner!.getPublicKey()) : null;
   if (userRelayList != null) {
     createMyRelaySets(userRelayList);
     await relayManager.connect(urls: userRelayList != null ? userRelayList!.urls : RelayManager.DEFAULT_BOOTSTRAP_RELAYS);
   } else {
     int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
     createMyRelaySets(UserRelayList(
-        pubKey: nostr!.publicKey,
+        pubKey: loggedUserSigner!.getPublicKey(),
         relays: {for (String url in RelayManager.DEFAULT_BOOTSTRAP_RELAYS) url: ReadWriteMarker.readWrite},
         createdAt: now,
         refreshedTimestamp: now));
   }
   print("Loading contact list...");
-  ContactList? contactList = !newKey ? await relayManager.loadContactList(nostr!.publicKey) : null;
+  ContactList? contactList = !newKey ? await relayManager.loadContactList(loggedUserSigner!.getPublicKey()) : null;
   if (contactList != null) {
     print("Loaded ${contactList.contacts.length} contacts...");
     contactListProvider.set(contactList);
     if (settingProvider.gossip == 1) {
-      feedRelaySet = relayManager.getRelaySet("feed", nostr!.publicKey);
+      feedRelaySet = relayManager.getRelaySet("feed", loggedUserSigner!.getPublicKey());
       if (feedRelaySet == null) {
         feedRelaySet = await relayManager.calculateRelaySet(
             name: "feed",
-            ownerPubKey: nostr!.publicKey,
+            ownerPubKey: loggedUserSigner!.getPublicKey(),
             pubKeys: contactList.contacts,
             direction: RelayDirection.outbox,
             relayMinCountPerPubKey: settingProvider.followeesRelayMinCount);
@@ -431,29 +421,9 @@ Future<void> main() async {
   if (StringUtil.isNotBlank(key)) {
     bool isPrivate = settingProvider.isPrivateKey;
     String publicKey = isPrivate ? getPublicKey(key!) : key!;
-    //   await relayManager.connect();
-    //   Nip65? nip65 = await relayManager.getSingleNip65(publicKey);
-    //   if (nip65 != null) {
-    //     createMyRelaySets(nip65);
-    //   }
-    //   await relayManager.connect(bootstrapRelays: nip65 != null ? nip65!.relays.keys.toList() : RelayManager.DEFAULT_BOOTSTRAP_RELAYS);
-    nostr = Nostr(privateKey: isPrivate ? key : null, publicKey: publicKey);
-    loggedUserSigner = isPrivate ? Bip340EventSigner(key) : Nip07EventSigner();
-
-    //   print("Loading contact list...");
-    //   Nip02ContactList? contactList = await relayManager.loadContactList(publicKey);
-    //   if (contactList != null) {
-    //     if (settingProvider.gossip == 1) {
-    //       print("Loaded ${contactList.contacts.length} contacts...");
-    //       contactListProvider.set(contactList);
-    //       feedRelaySet =
-    //           await relayManager.calculateRelaySet(contactList.contacts, RelayDirection.outbox, relayMinCountPerPubKey: settingProvider.followeesRelayMinCount);
-    //     }
-    //     followEventProvider.doQuery();
-    //   }
-    //   runApp(MyApp());
+    loggedUserSigner = isPrivate || !PlatformUtil.isWeb()? Bip340EventSigner(isPrivate? key:null, publicKey) : Nip07EventSigner(await js.getPublicKeyAsync());
   }
-  if (nostr != null) {
+  if (loggedUserSigner != null) {
     initRelays();
   }
   runApp(MyApp());
@@ -829,7 +799,7 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
     if (newState == AppLifecycleState.resumed &&
         (appState == AppLifecycleState.paused || appState == AppLifecycleState.hidden || appState == AppLifecycleState.inactive)) {
       //now you know that your app went to the background and is back to the foreground
-      if (nostr != null) {
+      if (loggedUserSigner != null) {
         if (backgroundService != null && settingProvider.backgroundService) {
           backgroundService!.invoke('stopService');
         }
@@ -842,8 +812,7 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
     if (newState != AppLifecycleState.paused &&
         (appState == AppLifecycleState.resumed || appState == AppLifecycleState.hidden || appState == AppLifecycleState.inactive) &&
         backgroundService != null &&
-        nostr != null &&
-        !nostr!.isEmpty()! &&
+        loggedUserSigner != null &&
         settingProvider.backgroundService) {
       backgroundService!.startService();
     }

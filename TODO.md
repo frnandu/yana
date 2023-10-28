@@ -59,26 +59,33 @@
 - ~~user Follow feed relays write to DB to improve startup time in outbox model~~
 - ~~register nostr: in android so that nostr links give yana option as an app to open~~
   - ~~handle nostr:nevent1 (need to somehow load the event)~~
+- ~~check why some replies appear on posts~~
 - ~~sign verify~~
 - ~~nip05~~
 
 v0.12
 - broadcast
+  - replies ?
+  - nip65 (add/remove relays)
+  - metadata (profile edit save)
+  - nwc
+
+- fix follow/unfollow button when needs refresh  
 - blacklist for relays
 - garbage collection of webSockets not used since X (for reactions)
 
-- loading screen ASAP after splash - re-enable notifications
+- re-enable awesome notifications
 - persist notes from feed for faster startup
 
 - notifications
 - global
-- check why some replies appear on posts
 
 - better android/ios/linux badges on web version login screen (anchor links to readme.md for IOS/linux)
 - 
 - make thread detail subscription of new replies work
 - 
 v0.13
+- animated screen ASAP after splash
 - isar v4 for web
 - load more on big posts
 

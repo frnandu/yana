@@ -87,14 +87,14 @@ class EventReactions implements FindEventInterface {
       eventIdMap[id] = 1;
 
       if (event.kind == Nip01Event.TEXT_NODE_KIND) {
-        if (event.pubKey == nostr!.publicKey) {
+        if (event.pubKey == loggedUserSigner!.getPublicKey()) {
           hasMyReply = true;
         }
         replyNum++;
         replies.add(event);
       } else if (event.kind == kind.EventKind.REPOST ||
           event.kind == kind.EventKind.GENERIC_REPOST) {
-        if (event.pubKey == nostr!.publicKey) {
+        if (event.pubKey == loggedUserSigner!.getPublicKey()) {
           hasMyRepost = true;
         }
         repostNum++;
@@ -105,7 +105,7 @@ class EventReactions implements FindEventInterface {
         } else {
           likeNum++;
           likes.add(event);
-          if (event.pubKey == nostr!.publicKey) {
+          if (event.pubKey == loggedUserSigner!.getPublicKey()) {
             myLikeEvents ??= [];
             myLikeEvents!.add(event);
           }
@@ -115,7 +115,7 @@ class EventReactions implements FindEventInterface {
         zaps.add(event);
 
         // if (StringUtil.isNotBlank(event.content)) {
-          if (event.pubKey == nostr!.publicKey) {
+          if (event.pubKey == loggedUserSigner!.getPublicKey()) {
             hasMyZap = true;
           } else {
             var tagLength = event.tags.length;
@@ -126,7 +126,7 @@ class EventReactions implements FindEventInterface {
                 var value = tag[1];
                 if (key == "description") {
                   var description = json.decode(value);
-                  if (description['pubkey'] == nostr!.publicKey) {
+                  if (description['pubkey'] == loggedUserSigner!.getPublicKey()) {
                     hasMyZap = true;
                     break;
                   }

@@ -31,8 +31,8 @@ class _Nip05ValidComponent extends State<Nip05ValidComponent> {
         iconColor = Colors.yellow;
         iconData = Icons.downloading;
       } else if (valid) {
-        iconColor = Colors.green ;
-        iconData = Icons.check_circle_outline;
+        iconColor = Colors.grey ;
+        iconData = Icons.verified;
       }
 
       return Icon(

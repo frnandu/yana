@@ -1,17 +1,18 @@
 import 'package:bot_toast/bot_toast.dart';
 import 'package:dart_ndk/models/user_relay_list.dart';
+import 'package:dart_ndk/nips/nip01/bip340_event_signer.dart';
 import 'package:dart_ndk/relay_manager.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:yana/utils/platform_util.dart';
 
+import '../../nostr/nip07/extension_event_signer.dart';
 import '/js/js_helper.dart' as js;
 import '../../i18n/i18n.dart';
 import '../../main.dart';
 import '../../nostr/client_utils/keys.dart';
 import '../../nostr/nip19/nip19.dart';
-import '../../nostr/nostr.dart';
 import '../../utils/base.dart';
 import '../../utils/index_taps.dart';
 import '../../utils/string_util.dart';
@@ -322,19 +323,16 @@ class _LoginRouter extends State<LoginRouter>
         key = Nip19.decode(key);
       }
       await settingProvider.addAndChangeKey(key, !isPublic, updateUI: false);
-      nostr = Nostr(
-          privateKey: !isPublic ? key : null,
-          publicKey: !isPublic ? null : key);
-      // if (!newKey) {
-      //   await initRelayManager(false, isPublic ? key : getPublicKey(key), newKey);
+      bool isPrivate = !isPublic;
+      String publicKey = isPrivate ? getPublicKey(key!) : key!;
+      loggedUserSigner = isPrivate || !PlatformUtil.isWeb()? Bip340EventSigner(isPrivate? key:null, publicKey) : Nip07EventSigner(await js.getPublicKeyAsync());
+
         var alreadyClosed = false;
         Future.delayed(const Duration(seconds: 10), () {
           initRelayManager(alreadyClosed, isPublic ? key : getPublicKey(key), newKey);
         });
-      // } else {
         await initRelayManager(alreadyClosed, isPublic ? key : getPublicKey(key), newKey);
         alreadyClosed = true;
-      // }
     } catch (e) {
       BotToast.showText(text: e.toString());
       Navigator.of(context, rootNavigator: true).pop();

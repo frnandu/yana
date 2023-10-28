@@ -16,17 +16,8 @@ class FollowNewEventProvider extends ChangeNotifier
 
   int? _localSince;
 
-  List<String> _subscribeIds = [];
 
   void doUnscribe() {
-    if (_subscribeIds.isNotEmpty) {
-      for (var subscribeId in _subscribeIds) {
-        try {
-          (settingProvider.gossip == 1 && followsNostr!=null ? followsNostr:nostr)!.unsubscribe(subscribeId);
-        } catch (e) {}
-      }
-      _subscribeIds.clear();
-    }
   }
 
   void queryNew() {

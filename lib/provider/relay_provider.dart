@@ -88,7 +88,8 @@ class RelayProvider extends ChangeNotifier {
     if (relayAddrs.contains(relayAddr)) {
       relayAddrs.remove(relayAddr);
       relayStatusMap.remove(relayAddr);
-      nostr!.removeRelay(relayAddr);
+      /// TODO use dart_ndk
+      // nostr!.removeRelay(relayAddr);
 
       await _updateRelayToData();
     }
@@ -120,7 +121,7 @@ class RelayProvider extends ChangeNotifier {
     //   Set<String> uniqueRelays = Set<String>.from(broadcastToRelays);
     //   uniqueRelays.addAll(relayAddrs);
     //   var tempNostr =
-    //       Nostr(privateKey: nostr!.privateKey, publicKey: nostr!.publicKey);
+    //       Nostr(privateKey: nostr!.privateKey, publicKey: loggedUserSigner!.getPublicKey());
     //
     //   uniqueRelays.forEach((relayAddr) {
     //     Relay r = Relay(
@@ -136,11 +137,11 @@ class RelayProvider extends ChangeNotifier {
     //   });
     //
     //   var event = Nip01Event(pubKey:
-    //       tempNostr!.publicKey, kind: kind.EventKind.RELAY_LIST_METADATA, tags: tags, content: "");
+    //       temploggedUserSigner!.getPublicKey(), kind: kind.EventKind.RELAY_LIST_METADATA, tags: tags, content: "");
     //   tempNostr!.sendEvent(event);
     //   int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
     //   try {
-    //     await RelayList.writeToDB(nostr!.publicKey, relays, now);
+    //     await RelayList.writeToDB(loggedUserSigner!.getPublicKey(), relays, now);
     //   } catch (e) {
     //     print(e);
     //   }

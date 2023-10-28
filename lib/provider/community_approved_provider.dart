@@ -18,7 +18,7 @@ class CommunityApprovedProvider extends ChangeNotifier with LaterFunction {
     }
 
     if (contactListProvider.contacts().contains(pubkey) ||
-        pubkey == nostr!.publicKey) {
+        pubkey == loggedUserSigner!.getPublicKey()) {
       return true;
     }
 
@@ -38,7 +38,8 @@ class CommunityApprovedProvider extends ChangeNotifier with LaterFunction {
       ids.addAll(eids);
       filter["#e"] = ids;
       eids.clear();
-      nostr!.query([filter], onEvent);
+      /// TODO use dart_ndk
+      // nostr!.query([filter], onEvent);
     }
 
     if (penddingEvents.isNotEmpty) {

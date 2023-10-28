@@ -104,7 +104,7 @@ class FollowEventProvider extends ChangeNotifier
     }
     var filter = Filter(
       kinds: queryEventKinds(),
-      authors: contactsForFeed..add(nostr!.publicKey),
+      authors: contactsForFeed..add(loggedUserSigner!.getPublicKey()),
       limit: 20,
     );
     // TODO
@@ -119,7 +119,7 @@ class FollowEventProvider extends ChangeNotifier
     Stream<Nip01Event> stream = await relayManager!.subscription(
         filter, (feedRelaySet!=null && settingProvider.gossip==1)? feedRelaySet! : myInboxRelaySet!);
     _streamSubscription = stream.listen((event) {
-      // if (event.pubKey == nostr!.publicKey) {
+      // if (event.pubKey == loggedUserSigner!.getPublicKey()) {
       //   print("event.createdAt:${DateTime.fromMillisecondsSinceEpoch(event.createdAt*1000)}");
         onEvent(event);
       // }
@@ -138,7 +138,7 @@ class FollowEventProvider extends ChangeNotifier
     }
     var filter = Filter(
       kinds: queryEventKinds(),
-      authors: contactList..add(nostr!.publicKey),
+      authors: contactList..add(loggedUserSigner!.getPublicKey()),
       until: until,
       limit: 20,
     );
@@ -162,7 +162,7 @@ class FollowEventProvider extends ChangeNotifier
     Stream<Nip01Event> stream = await relayManager!.query(
         filter, (feedRelaySet!=null && settingProvider.gossip==1)? feedRelaySet! : myInboxRelaySet!);
     _streamSubscription = stream.listen((event) {
-      // if (event.pubKey == nostr!.publicKey) {
+      // if (event.pubKey == loggedUserSigner!.getPublicKey()) {
       print("event.createdAt from loadMore:${DateTime.fromMillisecondsSinceEpoch(event.createdAt*1000)}");
       onEvent(event);
       // }

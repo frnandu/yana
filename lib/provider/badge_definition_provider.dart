@@ -1,10 +1,10 @@
 import 'package:dart_ndk/nips/nip01/filter.dart';
 import 'package:flutter/material.dart';
 
+import '../main.dart';
 import '../nostr/event.dart';
 import '../nostr/event_kind.dart' as kind;
 import '../nostr/nip58/badge_definition.dart';
-import '../main.dart';
 import '../utils/later_function.dart';
 import '../utils/string_util.dart';
 
@@ -50,7 +50,8 @@ class BadgeDefinitionProvider extends ChangeNotifier with LaterFunction {
     }
     var subscriptId = StringUtil.rndNameStr(16);
     // use query and close after EOSE
-    nostr!.query(filters, _onEvent, id: subscriptId);
+    /// TODO use dart_ndk
+    //nostr!.query(filters, _onEvent, id: subscriptId);
 
     for (var pubkey in _needUpdatePubKeys) {
       _handingPubkeys[pubkey] = 1;

@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:yana/main.dart';
 import 'package:yana/models/event_mem_box.dart';
-import 'package:yana/nostr/event.dart';
 import 'package:yana/provider/new_notifications_provider.dart';
 import 'package:yana/provider/notifications_provider.dart';
 import 'package:yana/ui/keep_alive_cust_state.dart';
@@ -35,7 +34,8 @@ class _NotificationsRouter extends KeepAliveCustState<NotificationsRouter>
   @override
   void initState() {
     super.initState();
-    notificationsProvider.doQuery();
+    /// TODO use dart_ndk
+    // notificationsProvider.doQuery();
     bindLoadMoreScroll(_controller);
   }
 
@@ -126,7 +126,8 @@ class _NotificationsRouter extends KeepAliveCustState<NotificationsRouter>
   @override
   void doQuery() {
     preQuery();
-    notificationsProvider.doQuery(until: until);
+    /// TODO use dart_ndk
+    // notificationsProvider.doQuery(until: until);
   }
 
   @override

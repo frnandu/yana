@@ -144,14 +144,14 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
       )
     ];
 
-    if (widget.pubkey == nostr?.publicKey &&  nostr!.privateKey!=null) {
+    if (widget.pubkey == loggedUserSigner!.getPublicKey() &&  loggedUserSigner!.canSign()) {
       topBtnList.add(wrapBtn(
         MetadataIconBtn(
           iconData: Icons.edit_square,
           onTap: jumpToProfileEdit,
         ),
       )
-          // if (!PlatformUtil.isTableMode() && widget.pubkey == nostr!.publicKey) {
+          // if (!PlatformUtil.isTableMode() && widget.pubkey == loggedUserSigner!.getPublicKey()) {
           //   // is phont and local
           //   topBtnList.add(wrapBtn(MetadataIconBtn(
           //     iconData: Icons.qr_code_scanner,
@@ -160,7 +160,7 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
           // }
           );
     }
-    if (widget.followsYou && widget.pubkey != nostr?.publicKey) {
+    if (widget.followsYou && widget.pubkey != loggedUserSigner!.getPublicKey()) {
       topBtnList.add(
           // MetadataIconDataComp(
           //   leftWidget: Container(),
@@ -272,7 +272,7 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
           ),
         )));
       }
-      if (widget.pubkey != nostr?.publicKey) {
+      if (widget.pubkey != loggedUserSigner!.getPublicKey()) {
         topBtnList.add(wrapBtn(MetadataIconBtn(
           iconData: Icons.mail,
           onTap: openDMSession,
@@ -284,8 +284,8 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
                 text: "Follow",
                 borderColor: mainColor,
                 onTap: () {
-                  contactListProvider
-                      .addContact(widget.pubkey);
+
+                  contactListProvider.addContact(widget.pubkey);
                 },
               ));
             } else {
@@ -484,7 +484,7 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
   }
 
   void jumpToProfileEdit() {
-    var metadata = metadataProvider.getMetadata(nostr!.publicKey);
+    var metadata = metadataProvider.getMetadata(loggedUserSigner!.getPublicKey());
     RouterUtil.router(context, RouterPath.PROFILE_EDITOR, metadata);
   }
 
@@ -506,6 +506,27 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
     }
   }
 }
+
+showLoaderDialog(BuildContext context, String text) {
+  AlertDialog alert = AlertDialog(
+    content: Row(
+      children: [
+        const CircularProgressIndicator(),
+        Container(
+            margin: const EdgeInsets.only(left: 7),
+            child: Text(text)),
+      ],
+    ),
+  );
+  showDialog(
+    barrierDismissible: false,
+    context: context,
+    builder: (BuildContext context) {
+      return alert;
+    },
+  );
+}
+
 
 class MetadataIconBtn extends StatelessWidget {
   void Function()? onTap;

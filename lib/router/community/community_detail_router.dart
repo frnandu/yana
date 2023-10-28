@@ -1,25 +1,25 @@
 import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip01/filter.dart';
 import 'package:flutter/material.dart';
-import 'package:yana/ui/community_info_component.dart';
-import 'package:yana/utils/base.dart';
-import 'package:yana/provider/community_info_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:widget_size/widget_size.dart';
+import 'package:yana/provider/community_info_provider.dart';
+import 'package:yana/ui/community_info_component.dart';
+import 'package:yana/utils/base.dart';
 
+import '../../main.dart';
+import '../../models/event_mem_box.dart';
 import '../../nostr/event.dart';
+import '../../nostr/event_kind.dart' as kind;
 import '../../nostr/nip172/community_id.dart';
 import '../../nostr/nip172/community_info.dart';
+import '../../provider/setting_provider.dart';
 import '../../ui/cust_state.dart';
 import '../../ui/event/event_list_component.dart';
 import '../../ui/event_delete_callback.dart';
 import '../../utils/base_consts.dart';
-import '../../models/event_mem_box.dart';
-import '../../main.dart';
-import '../../provider/setting_provider.dart';
 import '../../utils/peddingevents_later_function.dart';
 import '../../utils/router_util.dart';
-import '../../nostr/event_kind.dart' as kind;
 import '../../utils/string_util.dart';
 import '../edit/editor_router.dart';
 
@@ -213,10 +213,10 @@ class _CommunityDetailRouter extends CustState<CommunityDetailRouter>
   void dispose() {
     super.dispose();
     disposeLater();
-
-    try {
-      nostr!.unsubscribe(subscribeId);
-    } catch (e) {}
+    /// TODO use dart_ndk
+    // try {
+    //   nostr!.unsubscribe(subscribeId);
+    // } catch (e) {}
   }
 
   onDeleteCallback(Nip01Event event) {

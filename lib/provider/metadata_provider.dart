@@ -118,13 +118,15 @@ class MetadataProvider extends ChangeNotifier with LaterFunction {
     }
     RelaySet? relaySet = settingProvider.gossip == 1 && feedRelaySet!=null ? feedRelaySet : myInboxRelaySet;
     if (relaySet!=null) {
-      await relayManager.loadMissingMetadatas(
+      List<Metadata> loaded = await relayManager.loadMissingMetadatas(
         _needUpdateMetadatas,
         relaySet
       );
       _needUpdateMetadatas.clear();
 
-      notifyListeners();
+      if (loaded.isNotEmpty) {
+        notifyListeners();
+      }
     }
   }
 

@@ -96,7 +96,7 @@ class ZapAction {
       lud16Link: lud16Link!,
       sats: sats,
       recipientPubkey: pubkey,
-      targetNostr: nostr!,
+      signer: loggedUserSigner!,
       relays: relays,
       eventId: eventId,
       pollOption: pollOption,

@@ -73,7 +73,7 @@ class _EventPollComponent extends State<EventPollComponent> {
             if (num > 0 && StringUtil.isNotBlank(selectKey)) {
               total += num;
 
-              if (senderPubkey == nostr!.publicKey) {
+              if (senderPubkey == loggedUserSigner!.getPublicKey()) {
                 myNum += num;
               }
 

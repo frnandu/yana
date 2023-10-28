@@ -177,7 +177,7 @@ class _IndexRouter extends CustState<IndexRouter>
     mediaDataCache.update(context);
     var s = I18n.of(context);
 
-    if (nostr == null) {
+    if (loggedUserSigner == null) {
       return LoginRouter();
     }
     var _followEventProvider = Provider.of<FollowEventProvider>(context);
@@ -511,7 +511,7 @@ class _IndexRouter extends CustState<IndexRouter>
       return Scaffold(
           body: mainIndex,
           extendBody: true,
-          floatingActionButton:  nostr!=null && nostr!.privateKey!=null ? AnimatedOpacity(
+          floatingActionButton:  loggedUserSigner!=null && loggedUserSigner!.canSign() ? AnimatedOpacity(
             opacity: _scrollingDown ? 0 : 1,
             curve: Curves.fastOutSlowIn,
             duration: const Duration(milliseconds: 400),

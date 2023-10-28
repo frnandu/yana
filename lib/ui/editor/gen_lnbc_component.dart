@@ -63,7 +63,7 @@ class _GenLnbcComponent extends State<GenLnbcComponent> {
                       onTap: () async {
                         await RouterUtil.router(
                             context, RouterPath.PROFILE_EDITOR, metadata);
-                        metadataProvider.update(nostr!.publicKey);
+                        metadataProvider.update(loggedUserSigner!.getPublicKey());
                       },
                     ),
                   )
@@ -158,7 +158,7 @@ class _GenLnbcComponent extends State<GenLnbcComponent> {
         return main;
       },
       selector: (context, _provider) {
-        return _provider.getMetadata(nostr!.publicKey);
+        return _provider.getMetadata(loggedUserSigner!.getPublicKey());
       },
     );
   }

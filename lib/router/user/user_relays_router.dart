@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:dart_ndk/relay.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -8,7 +9,6 @@ import 'package:yana/models/relay_status.dart';
 import 'package:yana/provider/relay_provider.dart';
 
 import '../../i18n/i18n.dart';
-import '../../nostr/relay.dart';
 import '../../nostr/relay_metadata.dart';
 import '../../utils/base.dart';
 import '../../utils/router_util.dart';
@@ -46,7 +46,7 @@ class _UserRelayRouter extends State<UserRelayRouter>
         relays = arg;
       }
     }
-    if (followsNostr!=null && relays!.any((element) => element.count!=null)) {
+    if (feedRelaySet!=null && relays!.any((element) => element.count!=null)) {
       relays!.sort(
               (r1, r2) => compareRelays(r1, r2));
     }
@@ -72,8 +72,8 @@ class _UserRelayRouter extends State<UserRelayRouter>
               if (relays != null &&
                   relays!.isNotEmpty &&
                   relays![0].count != null &&
-                  followsNostr != null) {
-                await followsNostr!.checkAndReconnectRelays();
+                  feedRelaySet!=null) {
+                await relayManager.reconnectRelays(feedRelaySet!.urls);
                 relayProvider.notifyListeners();
                 setState(() {
                   if (kDebugMode) {
@@ -102,16 +102,16 @@ class _UserRelayRouter extends State<UserRelayRouter>
   }
 
   int compareRelays(RelayMetadata r1, RelayMetadata r2) {
-    Relay? relay1 = followsNostr!.getRelay(r1.url!);
-    Relay? relay2 = followsNostr!.getRelay(r2.url!);
+    Relay? relay1 = relayManager.getRelay(r1.url!);
+    Relay? relay2 = relayManager!.getRelay(r2.url!);
     if (relay1 == null) {
       return 1;
     }
     if (relay2 == null) {
       return -1;
     }
-    bool a1 = relay1!.isActive();
-    bool a2 = relay2!.isActive();
+    bool a1 = relayManager.isRelayConnected(r1.url!);
+    bool a2 = relayManager.isRelayConnected(r2.url!);
     if (a1) {
       return a2 ? (r2.count!=null?r2.count!.compareTo(r1.count!):0) : -1;
     }

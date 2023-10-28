@@ -15,6 +15,7 @@ import 'package:yana/ui/zap_gen_dialog.dart';
 import '../../i18n/i18n.dart';
 import '../../main.dart';
 import '../../models/event_reactions.dart';
+import '../../nostr/event_kind.dart';
 import '../../nostr/event_relation.dart';
 import '../../nostr/nip19/nip19.dart';
 import '../../nostr/nip57/zap_action.dart';
@@ -78,7 +79,7 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
         Color repostColor = themeData.hintColor;
         Color replyColor = themeData.hintColor;
         Color zapColor = themeData.hintColor;
-        // && widget.event.pubKey == nostr!.publicKey
+        // && widget.event.pubKey == loggedUserSigner!.getPublicKey()
 
         if (eventReactions != null) {
           replyNum = eventReactions.replies.length;
@@ -277,7 +278,7 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
                     }
 
                     list.add(PopupMenuDivider());
-                    if (widget.eventRelation.pubkey == nostr!.publicKey) {
+                    if (widget.eventRelation.pubkey == loggedUserSigner!.getPublicKey()) {
                       list.add(PopupMenuItem(
                         value: "broadcast",
                         child: Text(s.Broadcast, style: popFontStyle),
@@ -288,7 +289,7 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
                       child: Text(s.Block, style: popFontStyle),
                     ));
 
-                    if (widget.event.pubKey == nostr!.publicKey) {
+                    if (widget.event.pubKey == loggedUserSigner!.getPublicKey()) {
                       list.add(PopupMenuDivider());
                       list.add(PopupMenuItem(
                         value: "delete",
@@ -335,7 +336,7 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
     );
   }
 
-  void onPopupSelected(String value) {
+  void onPopupSelected(String value) async {
     if (value == "copyEvent") {
       var text = jsonEncode(widget.event.toJson());
       _doCopy(text);
@@ -350,18 +351,20 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
     } else if (value == "star") {
       // TODO star event
     } else if (value == "broadcast") {
-      nostr!.broadcast(widget.event);
+      await relayManager.broadcastEvent(widget.event, myOutboxRelaySet!.urls, loggedUserSigner!);
     } else if (value == "block") {
       filterProvider.addBlock(widget.event.pubKey);
     } else if (value == "delete") {
-      nostr!.deleteEvent(widget.event.id);
+
+      await relayManager!.broadcastDeletion(widget.event.id, myOutboxRelaySet!.urls, loggedUserSigner!);
+
       followEventProvider.deleteEvent(widget.event.id);
       notificationsProvider.deleteEvent(widget.event.id);
+
       var deleteCallback = EventDeleteCallback.of(context);
       if (deleteCallback != null) {
         deleteCallback.onDelete(widget.event);
       }
-      // BotToast.showText(text: "Delete success!");
     }
   }
 
@@ -434,45 +437,60 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
   }
 
   Future<void> onRepostTap(String value) async {
-    if (value == "boost") {
-      String? relayAddr;
-      if (widget.event.sources.isNotEmpty) {
-        relayAddr = widget.event.sources[0];
-      }
-      var content = jsonEncode(widget.event.toJson());
-      nostr!
-          .sendRepost(widget.event.id, relayAddr: relayAddr, content: content);
-      eventReactionsProvider.addRepost(widget.event.id);
+    if (loggedUserSigner!.canSign()) {
+      if (value == "boost") {
+        String? relayAddr;
+        if (widget.event.sources.isNotEmpty) {
+          relayAddr = widget.event.sources[0];
+        }
+        var content = jsonEncode(widget.event.toJson());
 
-      if (settingProvider.broadcaseWhenBoost == OpenStatus.OPEN) {
-        nostr!.broadcast(widget.event);
+        List<dynamic> tag = ["e", widget.event.id];
+        if (StringUtil.isNotBlank(relayAddr)) {
+          tag.add(relayAddr);
+        }
+        Nip01Event event = Nip01Event(
+            pubKey: loggedUserSigner!.getPublicKey(),
+            kind: EventKind.REPOST,
+            tags: [tag],
+            content: content,
+            createdAt: DateTime
+                .now()
+                .millisecondsSinceEpoch ~/ 1000);
+
+        await relayManager.broadcastEvent(
+            event, myOutboxRelaySet!.urls, loggedUserSigner!);
+
+        eventReactionsProvider.addRepost(widget.event.id);
+
+        // if (settingProvider.broadcastWhenBoost == OpenStatus.OPEN) {
+        //   nostr!.broadcast(widget.event);
+        // }
+      } else if (value == "quote") {
+        var event = await EditorRouter.open(context, initEmbeds: [
+          quill.CustomBlockEmbed(CustEmbedTypes.mention_event, widget.event.id)
+        ]);
       }
-    } else if (value == "quote") {
-      var event = await EditorRouter.open(context, initEmbeds: [
-        quill.CustomBlockEmbed(CustEmbedTypes.mention_event, widget.event.id)
-      ]);
     }
   }
 
   void onLikeTap() async {
-    if (eventReactions?.myLikeEvents == null ||
-        eventReactions!.myLikeEvents!.isEmpty) {
-      // like
-      Nip01Event likeEvent = await relayManager!.broadcastReaction(
-          widget.event.id, nostr!.publicKey, myOutboxRelaySet!.urls, loggedUserSigner);
-      if (likeEvent != null) {
-        eventReactionsProvider.addLike(widget.event.id, likeEvent);
+    if (loggedUserSigner!.canSign()) {
+      if (eventReactions?.myLikeEvents == null ||
+          eventReactions!.myLikeEvents!.isEmpty) {
+        // like
+        Nip01Event likeEvent = await relayManager!.broadcastReaction(
+            widget.event.id, myOutboxRelaySet!.urls, loggedUserSigner!);
+        if (likeEvent != null) {
+          eventReactionsProvider.addLike(widget.event.id, likeEvent);
+        }
+      } else {
+        for (var event in eventReactions!.myLikeEvents!) {
+          await relayManager!.broadcastDeletion(
+              event.id, myOutboxRelaySet!.urls, loggedUserSigner!);
+        }
+        eventReactionsProvider.deleteLike(widget.event.id);
       }
-    } else {
-      /// TODO use dart_ndk
-      // // delete like
-      for (var event in eventReactions!.myLikeEvents!) {
-      //   Nip01Event likeEvent = await relayManager!.broadcastReaction(
-      //       widget.event.id, nostr!.publicKey, myOutboxRelaySet!.urls, loggedUserSigner);
-      //
-      //   nostr!.deleteEvent(event.id);
-      }
-      eventReactionsProvider.deleteLike(widget.event.id);
     }
   }
 

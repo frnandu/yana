@@ -268,7 +268,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
         activeSwitchColor: themeData.primaryColor,
         onToggle: (value) {
           settingProvider.gossip = value ? 1 : 0;
-          if (value && followsNostr == null) {
+          if (value && feedRelaySet == null) {
             rebuildFeedRelaySet();
           } else {
             followEventProvider.refreshPosts();
@@ -385,7 +385,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
           AccountsState.onLogoutTap(index, routerBack: true, context: context);
           metadataProvider.clear();
         } else {
-          nostr = null;
+          loggedUserSigner = null;
         }
       },
       leading: const Icon(Icons.logout),
@@ -797,7 +797,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
   //
   //       // use a blank metadata to update it
   //       var blankMetadata = Metadata();
-  //       var updateEvent = Event(nostr!.publicKey, kind.EventKind.METADATA, [],
+  //       var updateEvent = Event(loggedUserSigner!.getPublicKey(), kind.EventKind.METADATA, [],
   //           jsonEncode(blankMetadata));
   //       nostr!.sendEvent(updateEvent);
   //
@@ -806,7 +806,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
   //       nostr!.sendContactList(blankContactList);
   //
   //       var filter = Filter(authors: [
-  //         nostr!.publicKey
+  //         loggedUserSigner!.getPublicKey()
   //       ], kinds: [
   //         Nip01Event.TEXT_NODE_KIND,
   //         kind.EventKind.REPOST,
@@ -947,7 +947,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
     EnumObj? resultEnumObj =
         await EnumSelectorComponent.show(context, openList!);
     if (resultEnumObj != null) {
-      settingProvider.broadcaseWhenBoost = resultEnumObj.value;
+      settingProvider.broadcastWhenBoost = resultEnumObj.value;
     }
   }
 
@@ -1012,7 +1012,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
     RelaySet newRelaySet =
         await relayManager.calculateRelaySet(
             name: "feed",
-            ownerPubKey: nostr!.publicKey,
+            ownerPubKey: loggedUserSigner!.getPublicKey(),
             pubKeys: contactListProvider.contactList!.contacts,
             direction: RelayDirection.outbox,
             relayMinCountPerPubKey: settingProvider.followeesRelayMinCount
@@ -1020,17 +1020,16 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
     if (newRelaySet!=null && newRelaySet.urls.isNotEmpty) {
       feedRelaySet = newRelaySet;
       feedRelaySet!.name = "feed";
-      feedRelaySet!.pubKey = nostr!.publicKey;
+      feedRelaySet!.pubKey = loggedUserSigner!.getPublicKey();
       await relayManager.saveRelaySet(feedRelaySet!);
       followEventProvider.refreshPosts();
     }
-    reloadingFollowNostr = false;
     setState(() {
       loadingGossipRelays = false;
     });
 
     // await relayProvider.buildNostrFromContactsRelays(
-    //     nostr!.publicKey,
+    //     loggedUserSigner!.getPublicKey(),
     //     contactListProvider.nip02ContactList!,
     //     settingProvider.followeesRelayMinCount!, (builtNostr) {
     //   reloadingFollowNostr = true;

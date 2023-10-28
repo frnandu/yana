@@ -9,7 +9,6 @@ import '../models/dm_session_info_db.dart';
 import '../models/event_db.dart';
 import '../nostr/event_kind.dart' as kind;
 import '../nostr/nip04/dm_session.dart';
-import '../nostr/nostr.dart';
 import '../utils/peddingevents_later_function.dart';
 import '../utils/string_util.dart';
 
@@ -248,22 +247,22 @@ class DMProvider extends ChangeNotifier with PenddingEventsLaterFunction {
     return addResult;
   }
 
-  void query({Nostr? targetNostr, bool subscribe = false}) {
-    targetNostr ??= nostr;
-    var filter0 = Filter(
-      kinds: [kind.EventKind.DIRECT_MESSAGE],
-      authors: [targetNostr!.publicKey],
-      since: _initSince + 1,
-    );
-    var filter1 = Filter(
-      kinds: [kind.EventKind.DIRECT_MESSAGE],
-      pTags: [targetNostr.publicKey],
-      since: _initSince + 1,
-    );
-
-    // TODO use dart_ndk
-//      targetNostr.query([filter0.toJson(), filter1.toJson()], onEvent);
-  }
+//   void query({Nostr? targetNostr, bool subscribe = false}) {
+//     targetNostr ??= nostr;
+//     var filter0 = Filter(
+//       kinds: [kind.EventKind.DIRECT_MESSAGE],
+//       authors: [targetloggedUserSigner!.getPublicKey()],
+//       since: _initSince + 1,
+//     );
+//     var filter1 = Filter(
+//       kinds: [kind.EventKind.DIRECT_MESSAGE],
+//       pTags: [targetNostr.publicKey],
+//       since: _initSince + 1,
+//     );
+//
+//     // TODO use dart_ndk
+// //      targetNostr.query([filter0.toJson(), filter1.toJson()], onEvent);
+//   }
 
   // void handleEventImmediately(Event event) {
   //   penddingEvents.add(event);

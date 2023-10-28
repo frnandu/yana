@@ -1,10 +1,10 @@
 import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip01/filter.dart';
+import 'package:dart_ndk/nips/nip01/filter.dart';
 import 'package:flutter/material.dart';
 
 import '../main.dart';
 import '../nostr/event.dart';
-import 'package:dart_ndk/nips/nip01/filter.dart';
 import '../utils/later_function.dart';
 import '../utils/string_util.dart';
 
@@ -62,7 +62,7 @@ class SingleEventProvider extends ChangeNotifier with LaterFunction {
   }
 
   void _laterSearch() async {
-    if (_needUpdateIds.isEmpty || nostr==null) {
+    if (_needUpdateIds.isEmpty || loggedUserSigner==null) {
       return;
     }
 

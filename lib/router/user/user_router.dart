@@ -196,8 +196,8 @@ class _UserRouter extends CustState<UserRouter>
                     pubkey: pubkey!,
                     // userNostr: userNostr,
                     onContactListLoaded: (contactList) {
-                      if (nostr != null &&
-                          contactList.contacts.contains(nostr!.publicKey)) {
+                      if (loggedUserSigner != null &&
+                          contactList.contacts.contains(loggedUserSigner!.getPublicKey())) {
                         setState(() {
                           followsYou = true;
                         });
@@ -308,7 +308,7 @@ class _UserRouter extends CustState<UserRouter>
       limit: queryLimit,
     );
     RelaySet relaySet = myInboxRelaySet!;
-    if (pubkey == nostr!.publicKey) {
+    if (pubkey == loggedUserSigner!.getPublicKey()) {
       relaySet = myOutboxRelaySet!;
     } else
       if (feedRelaySet!=null && settingProvider.gossip==1) {

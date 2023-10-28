@@ -140,7 +140,8 @@ class _GlobalsEventsRouter extends KeepAliveCustState<GlobalsEventsRouter>
 
   void unsubscribe() {
     try {
-      nostr!.unsubscribe(subscribeId);
+      /// TODO use dart_ndk
+      // nostr!.unsubscribe(subscribeId);
     } catch (e) {}
   }
 

@@ -2,7 +2,6 @@ import 'package:dart_ndk/nips/nip01/filter.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../main.dart';
 import '../../models/event_mem_box.dart';
 import '../../nostr/event_kind.dart' as kind;
 import '../../nostr/nip58/badge_definition.dart';
@@ -109,7 +108,7 @@ class _UserBadgesComponent extends CustState<UserBadgesComponent>
   @override
   void dispose() {
     super.dispose();
-    nostr!.unsubscribe(subscribeId);
+    // nostr!.unsubscribe(subscribeId);
     disposeLater();
   }
 }

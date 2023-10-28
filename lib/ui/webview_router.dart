@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:bot_toast/bot_toast.dart';
+import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -67,7 +68,7 @@ class _WebViewRouter extends CustState<WebViewRouter> {
         var confirmResult =
             await NIP07Dialog.show(context, NIP07Methods.getPublicKey);
         if (confirmResult == true) {
-          var pubkey = nostr!.publicKey;
+          var pubkey = loggedUserSigner!.getPublicKey();
           var script = "window.nostr.callback(\"$resultId\", \"$pubkey\");";
           _controller.runJavaScript(script);
         } else {
@@ -90,9 +91,13 @@ class _WebViewRouter extends CustState<WebViewRouter> {
           try {
             var eventObj = jsonDecode(content);
             var tags = eventObj["tags"];
-            Event event = Event(nostr!.publicKey, eventObj["kind"], tags ?? [],
-                eventObj["content"]);
-            event.sign(nostr!.privateKey!);
+            Nip01Event event = Nip01Event(
+                pubKey: loggedUserSigner!.getPublicKey(),
+                kind: eventObj["kind"],
+                tags: tags ?? [],
+                content: eventObj["content"]
+            );
+            loggedUserSigner!.sign(event);
 
             var eventResultStr = jsonEncode(event.toJson());
             // TODO this method to handle " may be error
@@ -146,7 +151,7 @@ class _WebViewRouter extends CustState<WebViewRouter> {
               context, NIP07Methods.nip04_encrypt,
               content: plaintext);
           if (comfirmResult == true) {
-            var agreement = NIP04.getAgreement(nostr!.privateKey!);
+            var agreement = NIP04.getAgreement(loggedUserSigner!.getPrivateKey()!);
             var resultStr = NIP04.encrypt(plaintext, agreement, pubkey);
             var script =
                 "window.nostr.callback(\"$resultId\", \"$resultStr\");";
@@ -171,7 +176,7 @@ class _WebViewRouter extends CustState<WebViewRouter> {
               context, NIP07Methods.nip04_decrypt,
               content: ciphertext);
           if (comfirmResult == true) {
-            var agreement = NIP04.getAgreement(nostr!.privateKey!);
+            var agreement = NIP04.getAgreement(loggedUserSigner!.getPrivateKey()!);
             var resultStr = NIP04.decrypt(ciphertext, agreement, pubkey);
             var script =
                 "window.nostr.callback(\"$resultId\", \"$resultStr\");";

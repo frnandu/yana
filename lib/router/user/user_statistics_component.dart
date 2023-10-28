@@ -55,7 +55,7 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
 
   @override
   void initState() {
-    isLocal = widget.pubkey == nostr!.publicKey;
+    isLocal = widget.pubkey == loggedUserSigner!.getPublicKey();
     // if (isLocal && widget.userNostr == null) {
     //   widget.userNostr = nostr;
     // }
@@ -66,6 +66,7 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
   }
 
   void load() async {
+    refreshContactListIfNeededAsync(widget.pubkey);
     await relayManager.loadMissingRelayListsFromNip65OrNip02([widget.pubkey]).then(
       (value) {
         userRelayList = cacheManager.loadUserRelayList(widget.pubkey);
@@ -79,20 +80,19 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
         }
       },
     );
-    refreshContactListIfNeededAsync(widget.pubkey);
     // queryFollowers();
     // queryZaps();
   }
 
   void refreshContactListIfNeededAsync(String pubkey) {
-    ContactList? contactList = cacheManager.loadContactList(pubkey);
+    contactList = cacheManager.loadContactList(pubkey);
     int sometimeAgo = DateTime.now()
             .subtract(REFRESH_METADATA_DURATION)
             .millisecondsSinceEpoch ~/
         1000;
     if (contactList == null ||
-        contactList.loadedTimestamp == null ||
-        contactList.loadedTimestamp! < sometimeAgo) {
+        contactList!.loadedTimestamp == null ||
+        contactList!.loadedTimestamp! < sometimeAgo) {
       relayManager.loadContactList(pubkey!, forceRefresh: true).then(
         (newContactList) {
           if (newContactList != null &&
@@ -109,6 +109,11 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
           }
         },
       );
+    } else {
+      if (!_disposed) {
+        setState(() {
+        });
+      }
     }
   }
 
@@ -228,11 +233,11 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
 
   onFollowingTap() {
     if (contactList != null) {
-      RouterUtil.router(context, RouterPath.USER_CONTACT_LIST, contactList);
+      RouterUtil.router(context, RouterPath.USER_CONTACT_LIST, widget.pubkey);
     } else if (isLocal) {
       var cl = contactListProvider.contactList;
       if (cl != null) {
-        RouterUtil.router(context, RouterPath.USER_CONTACT_LIST, cl);
+        RouterUtil.router(context, RouterPath.USER_CONTACT_LIST, widget.pubkey);
       }
     }
   }

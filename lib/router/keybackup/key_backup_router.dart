@@ -195,10 +195,11 @@ class _KeyBackupRouter extends State<KeyBackupRouter> {
     // if (!checkTips()) {
     //   return;
     // }
-
-    var pk = nostr!.privateKey;
-    var nip19Key = Nip19.encodePrivateKey(pk!);
-    doCopy(nip19Key);
+    if (loggedUserSigner!.getPrivateKey()!=null) {
+      var pk = loggedUserSigner!.getPrivateKey();
+      var nip19Key = Nip19.encodePrivateKey(pk!);
+      doCopy(nip19Key);
+    }
   }
 
   void doCopy(String key) {

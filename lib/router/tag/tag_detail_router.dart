@@ -5,7 +5,6 @@ import 'package:provider/provider.dart';
 import 'package:yana/router/tag/topic_map.dart';
 import 'package:yana/ui/event_delete_callback.dart';
 
-import '../../main.dart';
 import '../../models/event_mem_box.dart';
 import '../../nostr/event_kind.dart' as kind;
 import '../../provider/setting_provider.dart';
@@ -188,7 +187,7 @@ class _TagDetailRouter extends CustState<TagDetailRouter>
     disposeLater();
 
     try {
-      nostr!.unsubscribe(subscribeId);
+      // nostr!.unsubscribe(subscribeId);
     } catch (e) {}
   }
 
