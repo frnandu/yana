@@ -8,8 +8,6 @@ class EventKind {
 
   static const int REPOST = 6;
 
-  static const int REACTION = 7;
-
   static const int BADGE_AWARD = 8;
 
   static const int GENERIC_REPOST = 16;

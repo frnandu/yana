@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:dart_ndk/nips/nip01/event.dart';
+import 'package:dart_ndk/nips/nip25/reactions.dart';
 
 import '../main.dart';
 import '../nostr/event.dart';
@@ -99,7 +100,7 @@ class EventReactions implements FindEventInterface {
         }
         repostNum++;
         reposts.add(event);
-      } else if (event.kind == kind.EventKind.REACTION) {
+      } else if (event.kind == Nip25Reaction.KIND) {
         if (event.content == "-") {
           likeNum--;
         } else {

@@ -1,5 +1,6 @@
 import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip01/filter.dart';
+import 'package:dart_ndk/nips/nip25/reactions.dart';
 import 'package:flutter/material.dart';
 
 import '../main.dart';
@@ -42,7 +43,7 @@ class NotificationsProvider extends ChangeNotifier
   List<int> queryEventKinds() {
     return [
       Nip01Event.TEXT_NODE_KIND,
-      kind.EventKind.REACTION,
+      Nip25Reaction.KIND,
       kind.EventKind.REPOST,
       kind.EventKind.GENERIC_REPOST,
       kind.EventKind.ZAP,

@@ -5,7 +5,6 @@ import 'dart:js_util';
 
 import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:js/js.dart';
-import 'package:yana/nostr/event.dart';
 
 // This function will do Promise to return something
 @JS()
@@ -24,7 +23,7 @@ Future<String> getPublicKeyAsync() async {
   return await promiseToFuture(await getPublicKey());
 }
 
-Future<Event> signEventAsync(Nip01Event event) async {
+Future<Nip01Event> signEventAsync(Nip01Event event) async {
   return await promiseToFuture(await signEvent(event));
 }
 

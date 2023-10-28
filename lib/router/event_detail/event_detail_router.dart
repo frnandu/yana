@@ -1,4 +1,5 @@
 import 'package:dart_ndk/nips/nip01/event.dart';
+import 'package:dart_ndk/nips/nip25/reactions.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:widget_size/widget_size.dart';
@@ -139,7 +140,7 @@ class _EventDetailRouter extends State<EventDetailRouter> {
             } else if (event.kind == kind.EventKind.REPOST ||
                 event.kind == kind.EventKind.GENERIC_REPOST) {
               return ReactionEventListComponent(event: event, text: i18n.boosted);
-            } else if (event.kind == kind.EventKind.REACTION) {
+            } else if (event.kind ==Nip25Reaction.KIND) {
               return ReactionEventListComponent(event: event, text: i18n.liked);
             }
 

@@ -159,7 +159,7 @@ class _EventListComponent extends State<EventListComponent> {
       if (widget.event.content.contains("\"pubkey\"")) {
         try {
           var jsonMap = jsonDecode(widget.event.content);
-          var repostEvent = Event.fromJson(jsonMap);
+          var repostEvent = Nip01Event.fromJson(jsonMap);
           RouterUtil.router(context, RouterPath.THREAD_DETAIL, repostEvent);
           return;
         } catch (e) {
