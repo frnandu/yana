@@ -1,5 +1,6 @@
 import 'package:isar/isar.dart';
 
+@deprecated // use UserRelayList of RelaySet
 class RelayMetadata {
   String? url;
 
