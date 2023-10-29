@@ -22,8 +22,8 @@ class ContentRelayComponent extends StatelessWidget {
     }
     var fontSize = themeData.textTheme.bodyMedium!.fontSize;
 
-    return Selector<RelayProvider, RelayStatus?>(
-        builder: (context, relayStatus, client) {
+    return Selector<RelayProvider, bool>(
+        builder: (context, addable, client) {
       List<Widget> list = [
         Icon(
           Icons.lan,
@@ -37,7 +37,7 @@ class ContentRelayComponent extends StatelessWidget {
           child: Text(addr),
         )
       ];
-      if (relayStatus == null) {
+      if (addable) {
         list.add(Icon(
           Icons.add,
           size: fontSize,
@@ -61,7 +61,7 @@ class ContentRelayComponent extends StatelessWidget {
         ),
       );
 
-      if (relayStatus == null) {
+      if (addable) {
         main = GestureDetector(
           onTap: () async {
             var result = await ConfirmDialog.show(
@@ -76,7 +76,7 @@ class ContentRelayComponent extends StatelessWidget {
 
       return main;
     }, selector: (context, _provider) {
-      return _provider.getRelayStatus(addr);
+      return !myInboxRelaySet!.urls.contains(addr) && myOutboxRelaySet!.urls.contains(addr);
     });
   }
 }

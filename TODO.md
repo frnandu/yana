@@ -65,8 +65,6 @@
 
 v0.12
 - broadcast
-  - replies ?
-  - nip65 (add/remove relays)
   - metadata (profile edit save)
   - nwc
 

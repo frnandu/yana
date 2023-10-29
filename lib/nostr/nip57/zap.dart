@@ -59,7 +59,7 @@ class Zap {
     required String recipientPubkey,
     String? eventId,
     required EventSigner signer,
-    required List<String> relays,
+    required Iterable<String> relays,
     String? pollOption,
     String? comment,
   }) async {

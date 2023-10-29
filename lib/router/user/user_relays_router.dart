@@ -5,7 +5,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:yana/main.dart';
-import 'package:yana/models/relay_status.dart';
 import 'package:yana/provider/relay_provider.dart';
 
 import '../../i18n/i18n.dart';
@@ -85,14 +84,14 @@ class _UserRelayRouter extends State<UserRelayRouter>
             child: ListView.builder(
               itemBuilder: (context, index) {
                 var relayMetadata = relays![index];
-                return Selector<RelayProvider, RelayStatus?>(
-                    builder: (context, relayStatus, child) {
+                return Selector<RelayProvider, bool>(
+                    builder: (context, addAble, child) {
                   return RelayMetadataComponent(
                     relayMetadata: relayMetadata,
-                    addAble: relayMetadata.count == null && relayStatus == null,
+                    addAble: relayMetadata.count == null && addAble,
                   );
                 }, selector: (context, provider) {
-                  return provider.getRelayStatus(relayMetadata.url!);
+                  return relayManager.isRelayConnected(relayMetadata.url!);
                 });
               },
               itemCount: relays!.length,

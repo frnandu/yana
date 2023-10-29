@@ -123,7 +123,7 @@ class _WebViewRouter extends CustState<WebViewRouter> {
             await NIP07Dialog.show(context, NIP07Methods.getRelays);
         if (comfirmResult == true) {
           var relayMaps = {};
-          var relayAddrs = relayProvider.relayAddrs;
+          var relayAddrs = myInboxRelaySet!.urls.toList()..addAll(myOutboxRelaySet!.urls);
           for (var relayAddr in relayAddrs) {
             relayMaps[relayAddr] = {"read": true, "write": true};
           }

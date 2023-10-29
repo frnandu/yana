@@ -231,7 +231,6 @@ class AccountsState extends State<AccountsComponent> {
 
     eventReactionsProvider.clear();
     linkPreviewDataProvider.clear();
-    relayProvider.clear();
   }
 
   static void clearLocalData(int index) {

@@ -1,4 +1,5 @@
 import 'package:bot_toast/bot_toast.dart';
+import 'package:dart_ndk/models/user_relay_list.dart';
 import 'package:dart_ndk/relay.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -48,7 +49,6 @@ class _RelaysRouter extends CustState<RelaysRouter> with WhenStopFunction {
   Widget doBuild(BuildContext context) {
     var s = I18n.of(context);
     var _relayProvider = Provider.of<RelayProvider>(context);
-    // var relayStatusMap = relayProvider.relayStatusMap;
     var themeData = Theme.of(context);
     var titleFontSize = themeData.textTheme.bodyLarge!.fontSize;
 
@@ -79,21 +79,16 @@ class _RelaysRouter extends CustState<RelaysRouter> with WhenStopFunction {
               ),
               child: RefreshIndicator(
                 onRefresh: () async {
-                  await relayManager
-                      .reconnectRelays(myOutboxRelaySet!.urls);
-                  await relayManager
-                      .reconnectRelays(myInboxRelaySet!.urls);
+                  UserRelayList? oldRelayList = cacheManager.loadUserRelayList(loggedUserSigner!.getPublicKey());
+                  UserRelayList? userRelayList = await relayManager.getSingleUserRelayList(loggedUserSigner!.getPublicKey(), forceRefresh: true);
+                  if (userRelayList != null && (oldRelayList==null || oldRelayList.createdAt < userRelayList.createdAt)) {
+                    createMyRelaySets(userRelayList);
+                    await relayManager
+                        .reconnectRelays(myOutboxRelaySet!.urls);
+                    await relayManager
+                        .reconnectRelays(myInboxRelaySet!.urls);
+                  }
                   setState(() {});
-                  // var filter = Filter(
-                  //     authors: [loggedUserSigner!.getPublicKey()],
-                  //     limit: 1,
-                  //     kinds: [EventKind.RELAY_LIST_METADATA]);
-                  //
-                  // nostr!.query([filter.toMap()], (event) {
-                  //   LoginRouter.handleRemoteRelays(event, nostr!.privateKey!);
-                  //   nostr!.checkAndReconnectRelays();
-                  // });
-                  // nostr!.checkAndReconnectRelays();
                 },
                 child: ListView.builder(
                   itemBuilder: (context, index) {
@@ -101,10 +96,8 @@ class _RelaysRouter extends CustState<RelaysRouter> with WhenStopFunction {
 
                     return RelaysItemComponent(
                       relay: relayManager.getRelay(url)!,
-                      onRemove: () {
-                        setState(() {
-                          urls = _relayProvider.relayAddrs;
-                        });
+                      onRemove: () async {
+                        await loadRelayInfos();
                       },
                     );
                   },
@@ -138,6 +131,7 @@ class _RelaysRouter extends CustState<RelaysRouter> with WhenStopFunction {
     }
 
     await relayProvider.addRelay(addr);
+    await loadRelayInfos();
     controller.clear();
     FocusScope.of(context).unfocus();
   }

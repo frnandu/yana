@@ -1,5 +1,8 @@
 import 'dart:io';
 
+import 'package:dart_ndk/models/pubkey_mapping.dart';
+import 'package:dart_ndk/models/user_relay_list.dart';
+import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
 import 'package:dart_ndk/relay.dart';
 import 'package:flutter/material.dart';
 
@@ -10,31 +13,9 @@ import 'data_util.dart';
 class RelayProvider extends ChangeNotifier {
   static RelayProvider? _relayProvider;
 
-  // TODO make mechanism for reloading if cached/DB list is too old
-  static int RELOAD_RELAY_LIST_AFTER_THIS_SECONDS = 604800;
-
-  List<String> relayAddrs = [];
-
-  static const List<String> STATIC_RELAY_ADDRS = [
-    "wss://relay.damus.io",
-    "wss://purplepag.es",
-    "wss://nos.lol",
-    "wss://nostr.wine",
-    "wss://atlas.nostr.land",
-    "wss://relay.orangepill.dev",
-    "wss://relay.snort.social",
-    "wss://relay.nostr.band", // for search (NIP-50)
-  ];
-
-  Map<String, RelayStatus> relayStatusMap = {};
-
   static RelayProvider getInstance() {
     _relayProvider ??= RelayProvider();
     return _relayProvider!;
-  }
-
-  RelayStatus? getRelayStatus(String addr) {
-    return relayStatusMap[addr];
   }
 
   int? getFeedRelayState(String url) {
@@ -68,84 +49,45 @@ class RelayProvider extends ChangeNotifier {
     return "";
   }
 
-  int total() {
-    return relayAddrs.length;
-  }
-
   void onRelayStatusChange() {
     notifyListeners();
   }
 
   Future<void> addRelay(String relayAddr) async {
-    if (!relayAddrs.contains(relayAddr)) {
-      relayAddrs.add(relayAddr);
-      // await _doAddRelay(relayAddr);
-      await _updateRelayToData();
+    ReadWriteMarker marker = ReadWriteMarker.readWrite;
+    if (myOutboxRelaySet!=null && !myOutboxRelaySet!.urls.contains(relayAddr)) {
+      await relayManager.broadcastAddNip65Relay(
+          relayAddr, marker, myOutboxRelaySet!.urls,
+          loggedUserSigner!);
+      myOutboxRelaySet!.relaysMap[relayAddr] = [PubkeyMapping(pubKey: loggedUserSigner!.getPublicKey(), rwMarker: marker)];
+      await relayManager.saveRelaySet(myOutboxRelaySet!);
+      myInboxRelaySet!.relaysMap[relayAddr] = [PubkeyMapping(pubKey: loggedUserSigner!.getPublicKey(), rwMarker: marker)];
+      await relayManager.saveRelaySet(myInboxRelaySet!);
+      await relayManager
+          .reconnectRelays(myOutboxRelaySet!.urls);
+      await relayManager
+          .reconnectRelays(myInboxRelaySet!.urls);
+      notifyListeners();
     }
   }
 
   Future<void> removeRelay(String relayAddr) async {
-    if (relayAddrs.contains(relayAddr)) {
-      relayAddrs.remove(relayAddr);
-      relayStatusMap.remove(relayAddr);
-      /// TODO use dart_ndk
-      // nostr!.removeRelay(relayAddr);
-
-      await _updateRelayToData();
+    if (myOutboxRelaySet!=null && myOutboxRelaySet!.urls.contains(relayAddr)) {
+      UserRelayList? userRelayList = await relayManager.broadcastRemoveNip65Relay(
+          relayAddr, myOutboxRelaySet!.urls,
+          loggedUserSigner!);
+      if (userRelayList!=null) {
+        if (myOutboxRelaySet!.urls.contains(relayAddr)) {
+          myOutboxRelaySet!.relaysMap.remove(relayAddr);
+          await cacheManager.saveRelaySet(myOutboxRelaySet!);
+        }
+        if (myInboxRelaySet!.urls.contains(relayAddr)) {
+          myInboxRelaySet!.relaysMap.remove(relayAddr);
+          await cacheManager.saveRelaySet(myInboxRelaySet!);
+        }
+        notifyListeners();
+      }
     }
-  }
-
-  bool containRelay(String relayAddr) {
-    return relayAddrs.contains(relayAddr);
-  }
-
-  int? updatedTime() {
-    return sharedPreferences.getInt(DataKey.RELAY_UPDATED_TIME);
-  }
-
-  Future<void> _updateRelayToData(
-      {bool upload = true,
-      List<String> broadcastToRelays = STATIC_RELAY_ADDRS}) async {
-    // sharedPreferences.setInt(DataKey.RELAY_UPDATED_TIME,
-    //     DateTime.now().millisecondsSinceEpoch ~/ 1000);
-    //
-    // List<RelayMetadata> relays = [];
-    // // update to relay
-    // if (upload) {
-    //   List<dynamic> tags = [];
-    //   for (var addr in relayAddrs) {
-    //     tags.add(["r", addr, ""]);
-    //     relays.add(RelayMetadata.full(url: addr, read: true, write: true));
-    //   }
-    //
-    //   Set<String> uniqueRelays = Set<String>.from(broadcastToRelays);
-    //   uniqueRelays.addAll(relayAddrs);
-    //   var tempNostr =
-    //       Nostr(privateKey: nostr!.privateKey, publicKey: loggedUserSigner!.getPublicKey());
-    //
-    //   uniqueRelays.forEach((relayAddr) {
-    //     Relay r = Relay(
-    //       relayAddr,
-    //       RelayStatus(relayAddr),
-    //       access: WriteAccess.readWrite,
-    //     );
-    //     try {
-    //       tempNostr.addRelay(r, checkInfo: false);
-    //     } catch (e) {
-    //       log("relay $relayAddr add to temp nostr for broadcasting of nip065 relay list: ${e.toString()}");
-    //     }
-    //   });
-    //
-    //   var event = Nip01Event(pubKey:
-    //       temploggedUserSigner!.getPublicKey(), kind: kind.EventKind.RELAY_LIST_METADATA, tags: tags, content: "");
-    //   tempNostr!.sendEvent(event);
-    //   int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-    //   try {
-    //     await RelayList.writeToDB(loggedUserSigner!.getPublicKey(), relays, now);
-    //   } catch (e) {
-    //     print(e);
-    //   }
-    // }
   }
 
   // Relay genRelay(String relayAddr) {
@@ -188,7 +130,4 @@ class RelayProvider extends ChangeNotifier {
   //   }
   // }
 
-  void clear() {
-    relayStatusMap.clear();
-  }
 }
