@@ -100,7 +100,7 @@ class EventReactions implements FindEventInterface {
         }
         repostNum++;
         reposts.add(event);
-      } else if (event.kind == Nip25Reaction.KIND) {
+      } else if (event.kind == Reaction.KIND) {
         if (event.content == "-") {
           likeNum--;
         } else {

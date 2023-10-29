@@ -140,7 +140,7 @@ class _EventDetailRouter extends State<EventDetailRouter> {
             } else if (event.kind == kind.EventKind.REPOST ||
                 event.kind == kind.EventKind.GENERIC_REPOST) {
               return ReactionEventListComponent(event: event, text: i18n.boosted);
-            } else if (event.kind ==Nip25Reaction.KIND) {
+            } else if (event.kind == Reaction.KIND) {
               return ReactionEventListComponent(event: event, text: i18n.liked);
             }
 

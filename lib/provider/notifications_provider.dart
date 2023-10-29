@@ -1,14 +1,11 @@
 import 'package:dart_ndk/nips/nip01/event.dart';
-import 'package:dart_ndk/nips/nip01/filter.dart';
 import 'package:dart_ndk/nips/nip25/reactions.dart';
 import 'package:flutter/material.dart';
 
 import '../main.dart';
 import '../models/event_mem_box.dart';
-import '../nostr/event.dart';
 import '../nostr/event_kind.dart' as kind;
 import '../utils/peddingevents_later_function.dart';
-import '../utils/string_util.dart';
 
 class NotificationsProvider extends ChangeNotifier
     with PenddingEventsLaterFunction {
@@ -43,7 +40,7 @@ class NotificationsProvider extends ChangeNotifier
   List<int> queryEventKinds() {
     return [
       Nip01Event.TEXT_NODE_KIND,
-      Nip25Reaction.KIND,
+      Reaction.KIND,
       kind.EventKind.REPOST,
       kind.EventKind.GENERIC_REPOST,
       kind.EventKind.ZAP,
