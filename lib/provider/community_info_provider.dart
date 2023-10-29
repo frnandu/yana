@@ -1,11 +1,10 @@
+import 'package:dart_ndk/nips/nip01/event.dart';
+import 'package:dart_ndk/nips/nip01/filter.dart';
 import 'package:flutter/material.dart';
 import 'package:yana/nostr/nip172/community_id.dart';
-import '../nostr/event.dart';
-import '../nostr/event_kind.dart' as kind;
 import 'package:yana/nostr/nip172/community_info.dart';
 
-import 'package:dart_ndk/nips/nip01/filter.dart';
-import '../main.dart';
+import '../nostr/event_kind.dart' as kind;
 import '../utils/later_function.dart';
 import '../utils/string_util.dart';
 
@@ -16,7 +15,7 @@ class CommunityInfoProvider extends ChangeNotifier with LaterFunction {
 
   List<String> _needPullIds = [];
 
-  List<Event> _penddingEvents = [];
+  List<Nip01Event> _penddingEvents = [];
 
   CommunityInfo? getCommunity(String aid) {
     var ci = _cache[aid];
@@ -68,7 +67,7 @@ class CommunityInfoProvider extends ChangeNotifier with LaterFunction {
     _needPullIds.clear();
   }
 
-  void _onEvent(Event event) {
+  void _onEvent(Nip01Event event) {
     _penddingEvents.add(event);
     later(_laterCallback, null);
   }

@@ -333,7 +333,7 @@ class _EventMainComponent extends State<EventMainComponent> {
           }
         }
 
-        if (widget.event.kind != Metadata.kind) {
+        if (widget.event.kind != Metadata.KIND) {
           list.add(
             buildContentWidget(_settingProvider, imagePreview, videoPreview),
           );
@@ -389,7 +389,7 @@ class _EventMainComponent extends State<EventMainComponent> {
             }
           }
         }
-        if (widget.event.kind != kind.EventKind.ZAP && widget.showReactions) {
+        if (widget.event.kind != kind.EventKind.ZAP_RECEIPT && widget.showReactions) {
           list.add(EventReactionsComponent(
             screenshotController: widget.screenshotController,
             event: widget.event,

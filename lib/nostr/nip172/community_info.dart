@@ -1,7 +1,7 @@
-import 'package:yana/nostr/event.dart';
+import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:yana/utils/string_util.dart';
-import '../../nostr/event_kind.dart' as kind;
 
+import '../../nostr/event_kind.dart' as kind;
 import 'community_id.dart';
 
 class CommunityInfo {
@@ -20,7 +20,7 @@ class CommunityInfo {
     this.image,
   });
 
-  static CommunityInfo? fromEvent(Event event) {
+  static CommunityInfo? fromEvent(Nip01Event event) {
     if (event.kind == kind.EventKind.COMMUNITY_DEFINITION) {
       String title = "";
       String description = "";

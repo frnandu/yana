@@ -6,7 +6,6 @@ import 'package:flutter/foundation.dart';
 import '../main.dart';
 import '../models/dm_session_info.dart';
 import '../models/dm_session_info_db.dart';
-import '../models/event_db.dart';
 import '../nostr/event_kind.dart' as kind;
 import '../nostr/nip04/dm_session.dart';
 import '../utils/peddingevents_later_function.dart';
@@ -116,8 +115,9 @@ class DMProvider extends ChangeNotifier with PenddingEventsLaterFunction {
 
     this.localPubkey = localPubkey;
     var keyIndex = settingProvider.privateKeyIndex!;
-    var events = await EventDB.list(
-        keyIndex, kind.EventKind.DIRECT_MESSAGE, 0, 10000000);
+    var events = [];
+    // await EventDB.list(
+    //     keyIndex, kind.EventKind.DIRECT_MESSAGE, 0, 10000000);
     if (events.isNotEmpty) {
       // find the newest event, subscribe behind the new newest event
       _initSince = events.first.createdAt;
@@ -285,7 +285,7 @@ class DMProvider extends ChangeNotifier with PenddingEventsLaterFunction {
       // save to local
       if (addResult) {
         updated = true;
-        EventDB.insert(keyIndex, event);
+        // EventDB.insert(keyIndex, event);
       }
     }
 

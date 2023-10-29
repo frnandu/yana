@@ -53,7 +53,7 @@ class _EventTopComponent extends State<EventTopComponent> {
 
     var pubkey = widget.event.pubKey;
     // if this is the zap event, change the pubkey from the zap tag info
-    if (widget.event.kind == EventKind.ZAP) {
+    if (widget.event.kind == EventKind.ZAP_RECEIPT) {
       for (var tag in widget.event.tags) {
         if (tag[0] == "description" && widget.event.tags.length > 1) {
           var description = tag[1];

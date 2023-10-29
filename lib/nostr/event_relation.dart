@@ -2,7 +2,6 @@ import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:yana/nostr/nip19/nip19.dart';
 import 'package:yana/nostr/nip19/nip19_tlv.dart';
 
-import 'event.dart';
 import 'nip172/community_id.dart';
 
 class EventRelation {

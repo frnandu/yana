@@ -65,7 +65,8 @@
 
 v0.12
 - broadcast
-  - metadata (profile edit save)
+  - reposts
+  - zaps
   - nwc
 
 - fix follow/unfollow button when needs refresh  
@@ -77,11 +78,12 @@ v0.12
 
 - notifications
 - global
+- dms
 
 - better android/ios/linux badges on web version login screen (anchor links to readme.md for IOS/linux)
-- 
 - make thread detail subscription of new replies work
-- 
+
+
 v0.13
 - animated screen ASAP after splash
 - isar v4 for web

@@ -44,7 +44,7 @@ class _ThreadDetailItemComponent extends State<ThreadDetailItemComponent> {
       sourceEventKey: widget.sourceEventKey,
     );
 
-    if (widget.item.event.kind == kind.EventKind.ZAP) {
+    if (widget.item.event.kind == kind.EventKind.ZAP_RECEIPT) {
       var zapNum = ZapNumUtil.getNumFromZapEvent(widget.item.event);
       String zapNumStr = NumberFormatUtil.format(zapNum);
 

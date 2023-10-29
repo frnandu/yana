@@ -9,7 +9,6 @@ import 'package:yana/utils/base.dart';
 
 import '../../main.dart';
 import '../../models/event_mem_box.dart';
-import '../../nostr/event.dart';
 import '../../nostr/event_kind.dart' as kind;
 import '../../nostr/nip172/community_id.dart';
 import '../../nostr/nip172/community_info.dart';

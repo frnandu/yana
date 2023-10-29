@@ -9,7 +9,6 @@ import 'package:flutter/material.dart';
 import 'package:yana/nostr/event_kind.dart';
 
 import '../main.dart';
-import '../nostr/event.dart';
 import 'package:dart_ndk/nips/nip01/filter.dart';
 import '../nostr/nip04/nip04.dart';
 import '../nostr/nip47/nwc_commands.dart';
@@ -96,7 +95,7 @@ class NwcProvider extends ChangeNotifier {
     // await requestBalance();
   }
 
-  Future<void> onEventInfo(Event event) async {
+  Future<void> onEventInfo(Nip01Event event) async {
     if (event.kind == NwcKind.INFO_REQUEST &&
         StringUtil.isNotBlank(event.content)) {
       walletPubKey = event.pubKey;
@@ -150,7 +149,7 @@ class NwcProvider extends ChangeNotifier {
     }
   }
 
-  void onGetBalanceResponse(Event event) async {
+  void onGetBalanceResponse(Nip01Event event) async {
     if (event.kind == NwcKind.RESPONSE &&
         StringUtil.isNotBlank(event.content) &&
         StringUtil.isNotBlank(secret) &&
@@ -208,7 +207,7 @@ class NwcProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> onPayInvoiceResponse(Event event, Function(bool) onZapped) async {
+  Future<void> onPayInvoiceResponse(Nip01Event event, Function(bool) onZapped) async {
     if (event.kind == NwcKind.RESPONSE &&
         StringUtil.isNotBlank(event.content) &&
         StringUtil.isNotBlank(secret) &&
@@ -223,7 +222,7 @@ class NwcProvider extends ChangeNotifier {
         var preImage = data['result']['preimage'];
         BotToast.showText(text: "Zap payed");
         if (payInvoiceEventId!=null) {
-          await eventReactionsProvider.subscription(payInvoiceEventId!, null, EventKind.ZAP);
+          await eventReactionsProvider.subscription(payInvoiceEventId!, null, EventKind.ZAP_RECEIPT);
         }
         notifyListeners();
         await requestBalance();

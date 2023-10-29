@@ -1,7 +1,6 @@
 import 'package:dart_ndk/nips/nip01/event.dart';
 
 import '../../models/event_mem_box.dart';
-import '../event.dart';
 
 class DMSession {
   final String pubkey;

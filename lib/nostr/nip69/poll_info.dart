@@ -1,7 +1,5 @@
 import 'package:dart_ndk/nips/nip01/event.dart';
 
-import '../event.dart';
-
 class PollInfo {
   List<List<String>> pollOptions = [];
 

@@ -7,8 +7,6 @@ import 'package:dart_ndk/relay.dart';
 import 'package:flutter/material.dart';
 
 import '../main.dart';
-import '../models/relay_status.dart';
-import 'data_util.dart';
 
 class RelayProvider extends ChangeNotifier {
   static RelayProvider? _relayProvider;

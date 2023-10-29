@@ -1,10 +1,6 @@
 class EventKind {
 
-  static const int RECOMMEND_SERVER = 2;
-
   static const int DIRECT_MESSAGE = 4;
-
-  static const int EVENT_DELETION = 5;
 
   static const int REPOST = 6;
 
@@ -20,7 +16,7 @@ class EventKind {
 
   static const int ZAP_REQUEST = 9734;
 
-  static const int ZAP = 9735;
+  static const int ZAP_RECEIPT = 9735;
 
   static const int AUTHENTICATION = 22242;
 

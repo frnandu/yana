@@ -9,7 +9,6 @@ import 'package:provider/provider.dart';
 import 'package:screenshot/screenshot.dart';
 
 import '../../nostr/event_kind.dart' as kind;
-import '../../nostr/event.dart';
 import '../../nostr/event_relation.dart';
 import '../../nostr/nip57/zap_num_util.dart';
 import '../../utils/base.dart';
@@ -94,7 +93,7 @@ class _EventListComponent extends State<EventListComponent> {
       // ),
     );
 
-    if (widget.event.kind == kind.EventKind.ZAP) {
+    if (widget.event.kind == kind.EventKind.ZAP_RECEIPT) {
       var zapNum = ZapNumUtil.getNumFromZapEvent(widget.event);
       String zapNumStr = NumberFormatUtil.format(zapNum);
 

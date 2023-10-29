@@ -1,10 +1,7 @@
-import 'dart:convert';
-
 import 'package:dart_ndk/models/relay_set.dart';
 import 'package:dart_ndk/nips/nip01/metadata.dart';
 import 'package:dart_ndk/nips/nip05/nip05.dart';
 import 'package:flutter/material.dart';
-import 'package:yana/utils/nip05status.dart';
 
 import '../main.dart';
 import '../utils/later_function.dart';
@@ -71,30 +68,6 @@ class MetadataProvider extends ChangeNotifier with LaterFunction {
     return null;
   }
 
-  void getMostRecentMetadata(String pubKey, Function(Metadata) onReady) {
-    var metadata = cacheManager.loadMetadata(pubKey);
-    if (metadata != null) {
-      onReady(metadata);
-    } else {
-      /// TODO use dart_ndk
-      // nostr!.query([
-      //   Filter(kinds: [Metadata.kind], authors: [pubKey], limit: 1)
-      //       .toMap()
-      // ], (event) {
-      //   var existing = _metadataCache[event.pubKey];
-      //   if (existing == null ||
-      //       existing.updatedAt == null ||
-      //       existing.updatedAt! < event.createdAt) {
-      //     handleEvent(event);
-      //   }
-      // }, onComplete: () {
-      //   var metadata = _metadataCache[pubKey];
-      //   if (metadata != null) {
-      //     onEvent(metadata);
-      //   }
-      // });
-    }
-  }
   static const NIP05_NEEDS_UPDATE_DURATION = const Duration(days: 7);
 
   bool? isNip05Valid(Metadata metadata) {

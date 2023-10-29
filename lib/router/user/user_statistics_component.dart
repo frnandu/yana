@@ -310,12 +310,12 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
       Stream<Nip01Event> stream = await relayManager.requestRelays(
           relayManager.bootstrapRelays.toList()
             ..addAll(myInboxRelaySet!.urls),
-          Filter(kinds: [EventKind.ZAP], pTags: [widget.pubkey]),
+          Filter(kinds: [EventKind.ZAP_RECEIPT], pTags: [widget.pubkey]),
           idleTimeout: 20
       );
       stream.listen(
         (event) {
-          if (event.kind == EventKind.ZAP && zapEventBox!.add(event)) {
+          if (event.kind == EventKind.ZAP_RECEIPT && zapEventBox!.add(event)) {
             if (!_disposed) {
               setState(() {
                 zapNum = zapNum! + ZapNumUtil.getNumFromZapEvent(event);

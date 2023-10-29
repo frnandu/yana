@@ -16,7 +16,6 @@ import 'package:yana/provider/webview_provider.dart';
 import 'package:yana/utils/platform_util.dart';
 import 'package:yana/utils/string_util.dart';
 
-import '../nostr/event.dart';
 import '../nostr/nip04/nip04.dart';
 import '../nostr/nip07/nip07_methods.dart';
 import '../i18n/i18n.dart';

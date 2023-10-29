@@ -3,11 +3,10 @@ import 'package:dart_ndk/nips/nip01/event.dart';
 import '../../../nostr/event_kind.dart' as kind;
 import '../../utils/spider_util.dart';
 import '../../utils/string_util.dart';
-import '../event.dart';
 
 class ZapNumUtil {
   static int getNumFromZapEvent(Nip01Event event) {
-    if (event.kind == kind.EventKind.ZAP) {
+    if (event.kind == kind.EventKind.ZAP_RECEIPT) {
       for (var tag in event.tags) {
         if (tag.length > 1) {
           var tagType = tag[0] as String;

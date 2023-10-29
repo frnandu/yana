@@ -1,7 +1,5 @@
 import 'package:dart_ndk/nips/nip01/event.dart';
 
-import '../../nostr/event.dart';
-
 class ThreadDetailEvent {
   Nip01Event event;
 

@@ -5,7 +5,6 @@ import 'package:yana/ui/user_pic_component.dart';
 import 'package:yana/utils/base.dart';
 
 import '../main.dart';
-import '../nostr/event.dart';
 
 class NewNotesUpdatedComponent extends StatelessWidget {
   Function? onTap;

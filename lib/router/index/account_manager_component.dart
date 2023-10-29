@@ -18,8 +18,6 @@ import 'package:yana/utils/router_util.dart';
 
 import '../../i18n/i18n.dart';
 import '../../main.dart';
-import '../../models/dm_session_info_db.dart';
-import '../../models/event_db.dart';
 import '../../nostr/client_utils/keys.dart';
 import '../../nostr/nip07/extension_event_signer.dart';
 import '../../nostr/nip19/nip19.dart';

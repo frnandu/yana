@@ -63,7 +63,7 @@ class _NotificationsRouter extends KeepAliveCustState<NotificationsRouter>
         Map<String, dynamic> map = event.toJson();
         map['content'] = map['content'].replaceAll('+', '❤');
         event = Nip01Event.fromJson(map);
-        if (event.kind == kind.EventKind.ZAP &&
+        if (event.kind == kind.EventKind.ZAP_RECEIPT &&
             StringUtil.isBlank(event.content)) {
           return ZapEventListComponent(event: event);
         } else {

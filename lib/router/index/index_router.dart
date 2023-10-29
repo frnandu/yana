@@ -145,7 +145,7 @@ class _IndexRouter extends CustState<IndexRouter>
             if (naddr != null) {
               if (StringUtil.isNotBlank(naddr.id) && naddr.kind == Nip01Event.TEXT_NODE_KIND) {
                 RouterUtil.router(context, RouterPath.THREAD_DETAIL, naddr.id);
-              } else if (StringUtil.isNotBlank(naddr.author) && naddr.kind == Metadata.kind) {
+              } else if (StringUtil.isNotBlank(naddr.author) && naddr.kind == Metadata.KIND) {
                 RouterUtil.router(context, RouterPath.USER, naddr.author);
               }
             }

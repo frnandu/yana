@@ -1,12 +1,12 @@
 import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:bot_toast/bot_toast.dart';
 import 'package:dart_ndk/nips/nip01/event.dart';
+import 'package:dart_ndk/nips/nip01/metadata.dart';
 import 'package:flutter/foundation.dart';
 import 'package:yana/utils/index_taps.dart';
 
 import '../main.dart';
 import '../models/event_mem_box.dart';
-import '../nostr/event.dart';
 import 'package:dart_ndk/nips/nip01/filter.dart';
 import '../utils/peddingevents_later_function.dart';
 import '../utils/string_util.dart';
@@ -87,9 +87,10 @@ class NewNotificationsProvider extends ChangeNotifier
     eventMemBox.addList(events);
     _localSince = eventMemBox.newestEvent!.createdAt;
     if (eventMemBox.length() > previousCount) {
-      AwesomeNotifications().getAppLifeCycle().then((value) {
+      AwesomeNotifications().getAppLifeCycle().then((value) async {
         if (value.toString() != "NotificationLifeCycle.Foreground") {
-          metadataProvider.getMostRecentMetadata(events.first.pubKey, (metadata) {
+          Metadata? metadata = await relayManager.getSingleMetadata(events.first.pubKey);
+          if (metadata!=null) {
             AwesomeNotifications().createNotification(
               content: NotificationContent(
                   id: events.first.id.hashCode,
@@ -113,7 +114,7 @@ class NewNotificationsProvider extends ChangeNotifier
                 //         dmProvider.unknownList)
               ),
             );
-          });
+          }
         }
       });
     }

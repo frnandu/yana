@@ -1,7 +1,6 @@
 import 'package:dart_ndk/nips/nip01/event.dart';
 
 import '../main.dart';
-import '../nostr/event.dart';
 
 mixin PenddingEventsLaterFunction {
   int laterTimeMS = 200;

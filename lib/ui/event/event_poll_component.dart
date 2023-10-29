@@ -7,7 +7,6 @@ import 'package:provider/provider.dart';
 import '../../i18n/i18n.dart';
 import '../../main.dart';
 import '../../models/event_reactions.dart';
-import '../../nostr/event.dart';
 import '../../nostr/nip57/zap_action.dart';
 import '../../nostr/nip57/zap_num_util.dart';
 import '../../nostr/nip69/poll_info.dart';

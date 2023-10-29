@@ -424,7 +424,7 @@ class ContentDecoder {
               showVideo: showVideo,
             );
             list.add(widget);
-          } else if (StringUtil.isNotBlank(naddr.author) && naddr.kind == Metadata.kind) {
+          } else if (StringUtil.isNotBlank(naddr.author) && naddr.kind == Metadata.KIND) {
             // inline
             handledStr = _closeHandledStr(handledStr, inlines);
             inlines.add(ContentMentionUserComponent(pubkey: naddr.author));

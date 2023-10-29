@@ -1,7 +1,6 @@
 import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:flutter/material.dart';
 
-import '../../nostr/event.dart';
 import '../../ui/event/zap_event_list_component.dart';
 import '../../utils/router_util.dart';
 

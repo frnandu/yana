@@ -121,7 +121,7 @@ class _SearchRouter extends CustState<SearchRouter>
             metadata = metadatasFromSearch[index - metadatasFromCache.length];
           } else {
             var event = events[index - metadatasFromCache.length - metadatasFromSearch.length];
-            if (event.kind == Metadata.kind) {
+            if (event.kind == Metadata.KIND) {
               /// TODO use dart_ndk
               // var jsonObj = jsonDecode(event.content);
               // metadata = Metadata.fromJson(jsonObj);
@@ -253,7 +253,7 @@ class _SearchRouter extends CustState<SearchRouter>
     kind.EventKind.LONG_FORM,
     kind.EventKind.FILE_HEADER,
     kind.EventKind.POLL,
-    Metadata.kind
+    Metadata.KIND
   ];
 
   String? subscribeId;
@@ -300,7 +300,7 @@ class _SearchRouter extends CustState<SearchRouter>
   }
 
   void onQueryEvent(Nip01Event event) {
-    if (event.kind == Metadata.kind) {
+    if (event.kind == Metadata.KIND) {
       var jsonObj = jsonDecode(event.content);
       Metadata metadata = Metadata.fromJson(jsonObj);
       metadata.pubKey = event.pubKey;

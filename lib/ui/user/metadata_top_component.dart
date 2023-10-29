@@ -144,7 +144,8 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
       )
     ];
 
-    if (widget.pubkey == loggedUserSigner!.getPublicKey() &&  loggedUserSigner!.canSign()) {
+    if (widget.pubkey == loggedUserSigner!.getPublicKey() &&
+        loggedUserSigner!.canSign()) {
       topBtnList.add(wrapBtn(
         MetadataIconBtn(
           iconData: Icons.edit_square,
@@ -160,7 +161,8 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
           // }
           );
     }
-    if (widget.followsYou && widget.pubkey != loggedUserSigner!.getPublicKey()) {
+    if (widget.followsYou &&
+        widget.pubkey != loggedUserSigner!.getPublicKey()) {
       topBtnList.add(
           // MetadataIconDataComp(
           //   leftWidget: Container(),
@@ -173,13 +175,14 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
                 color: themeData.dividerColor,
                 borderRadius: BorderRadius.circular(20),
               ),
-              padding: const EdgeInsets.only(top: 4, bottom: 4, left:8 , right: 8),
+              padding:
+                  const EdgeInsets.only(top: 4, bottom: 4, left: 8, right: 8),
               margin: const EdgeInsets.only(right: 5),
               child: Text(
                 "follows you",
                 style: TextStyle(
-                    color: themeData.hintColor,
-                    fontSize: themeData.textTheme.labelSmall!.fontSize! - 2,
+                  color: themeData.hintColor,
+                  fontSize: themeData.textTheme.labelSmall!.fontSize! - 2,
                 ),
               )));
     }
@@ -263,9 +266,7 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
           onSelected: onZapSelect,
           child: MetadataIconBtn(
             onLongPress: () {
-              ZapGenDialog.show(context, widget.pubkey, onZapped: (success) {
-
-              });
+              ZapGenDialog.show(context, widget.pubkey, onZapped: (success) {});
             },
             iconData: Icons.bolt,
             iconColor: Colors.orange,
@@ -284,7 +285,6 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
                 text: "Follow",
                 borderColor: mainColor,
                 onTap: () {
-
                   contactListProvider.addContact(widget.pubkey);
                 },
               ));
@@ -368,13 +368,18 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
     ));
     if (widget.metadata != null && !widget.condensedIcons) {
       topList.add(userNameComponent);
+    }
 
+    if (!widget.condensedIcons) {
       topList.add(MetadataIconDataComp(
-        leftWidget: Container(),
+        iconData: Icons.copy,
         text: nip19PubKey,
         textBG: true,
         onTap: copyPubKey,
       ));
+    }
+
+    if (widget.metadata != null && !widget.condensedIcons) {
       if (StringUtil.isNotBlank(widget.metadata!.nip05)) {
         topList.add(MetadataIconDataComp(
           text: widget.metadata!.cleanNip05!,
@@ -390,7 +395,7 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
             onTap: () {
               String url = widget.metadata!.website!;
               if (!url.startsWith("https://") || !url.startsWith("http://")) {
-                url = "https://"+url;
+                url = "https://" + url;
               }
               launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
               // WebViewRouter.open(context, widget.metadata!.website!);
@@ -480,12 +485,11 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
   }
 
   void onZapSelect(int sats) {
-    ZapAction.handleZap(context, sats, widget.pubkey, onZapped: (bool ) {  });
+    ZapAction.handleZap(context, sats, widget.pubkey, onZapped: (bool) {});
   }
 
   void jumpToProfileEdit() {
-    var metadata = metadataProvider.getMetadata(loggedUserSigner!.getPublicKey());
-    RouterUtil.router(context, RouterPath.PROFILE_EDITOR, metadata);
+    RouterUtil.router(context, RouterPath.PROFILE_EDITOR);
   }
 
   void userPicturePreview() {
@@ -512,9 +516,7 @@ showLoaderDialog(BuildContext context, String text) {
     content: Row(
       children: [
         const CircularProgressIndicator(),
-        Container(
-            margin: const EdgeInsets.only(left: 7),
-            child: Text(text)),
+        Container(margin: const EdgeInsets.only(left: 7), child: Text(text)),
       ],
     ),
   );
@@ -526,7 +528,6 @@ showLoaderDialog(BuildContext context, String text) {
     },
   );
 }
-
 
 class MetadataIconBtn extends StatelessWidget {
   void Function()? onTap;

@@ -1,5 +1,6 @@
+import 'package:dart_ndk/nips/nip01/event.dart';
+
 import '../../utils/string_util.dart';
-import '../event.dart';
 import '../event_kind.dart' as kind;
 
 class BadgeDefinition {
@@ -18,7 +19,7 @@ class BadgeDefinition {
   BadgeDefinition(this.d, this.updatedAt,
       {this.name, this.description, this.image, this.thumb});
 
-  static BadgeDefinition? loadFromEvent(Event event) {
+  static BadgeDefinition? loadFromEvent(Nip01Event event) {
     String? d;
     String? name;
     String? description;

@@ -158,8 +158,6 @@ AppLifecycleState appState = AppLifecycleState.resumed;
 
 EventSigner? loggedUserSigner;
 
-List<RelayMetadata>? followRelays;
-
 RelayManager relayManager = RelayManager();
 late CacheManager cacheManager;
 
@@ -750,7 +748,7 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
                         if (naddr != null) {
                           if (StringUtil.isNotBlank(naddr.id) && naddr.kind == Nip01Event.TEXT_NODE_KIND) {
                             jump = MaterialPageRoute(settings: RouteSettings(name: RouterPath.THREAD_DETAIL, arguments: naddr.id), builder: (context) => ThreadDetailRouter(eventId: naddr.id,));
-                          } else if (StringUtil.isNotBlank(naddr.author) && naddr.kind == Metadata.kind) {
+                          } else if (StringUtil.isNotBlank(naddr.author) && naddr.kind == Metadata.KIND) {
                             jump = MaterialPageRoute(settings: RouteSettings(name: RouterPath.USER, arguments: naddr.author), builder: (context) => UserRouter());
                           }
                         }

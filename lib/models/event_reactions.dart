@@ -4,7 +4,6 @@ import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip25/reactions.dart';
 
 import '../main.dart';
-import '../nostr/event.dart';
 import '../nostr/event_kind.dart' as kind;
 import '../nostr/nip57/zap_num_util.dart';
 import '../utils/find_event_interface.dart';
@@ -111,7 +110,7 @@ class EventReactions implements FindEventInterface {
             myLikeEvents!.add(event);
           }
         }
-      } else if (event.kind == kind.EventKind.ZAP) {
+      } else if (event.kind == kind.EventKind.ZAP_RECEIPT) {
         zapNum += ZapNumUtil.getNumFromZapEvent(event);
         zaps.add(event);
 

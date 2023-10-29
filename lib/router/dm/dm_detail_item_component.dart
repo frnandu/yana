@@ -8,7 +8,6 @@ import 'package:yana/ui/content/content_decoder.dart';
 import 'package:yana/utils/router_path.dart';
 import 'package:yana/utils/router_util.dart';
 
-import '../../nostr/event.dart';
 import '../../provider/setting_provider.dart';
 import '../../ui/user_pic_component.dart';
 import '../../utils/base.dart';

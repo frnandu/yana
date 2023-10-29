@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:yana/main.dart';
-import 'package:yana/models/relay_status.dart';
 import 'package:yana/provider/relay_provider.dart';
 
 import '../../i18n/i18n.dart';

@@ -345,7 +345,7 @@ class _ThreadDetailRouter extends CustState<ThreadDetailRouter> with PenddingEve
         Nip01Event.TEXT_NODE_KIND,
         kind.EventKind.FILE_HEADER,
         kind.EventKind.POLL,
-        kind.EventKind.ZAP,
+        kind.EventKind.ZAP_RECEIPT,
       ]);
       // TODO use dart_ndk
 //      nostr!.query([filter.toMap()], onEvent);
@@ -365,7 +365,7 @@ class _ThreadDetailRouter extends CustState<ThreadDetailRouter> with PenddingEve
   // }
 
   void onEvent(Nip01Event event) {
-    if (event.kind == kind.EventKind.ZAP && StringUtil.isBlank(event.content)) {
+    if (event.kind == kind.EventKind.ZAP_RECEIPT && StringUtil.isBlank(event.content)) {
       return;
     }
 

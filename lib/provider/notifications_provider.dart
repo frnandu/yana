@@ -43,7 +43,7 @@ class NotificationsProvider extends ChangeNotifier
       Reaction.KIND,
       kind.EventKind.REPOST,
       kind.EventKind.GENERIC_REPOST,
-      kind.EventKind.ZAP,
+      kind.EventKind.ZAP_RECEIPT,
       kind.EventKind.LONG_FORM,
     ];
   }
