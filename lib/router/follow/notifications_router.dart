@@ -34,8 +34,6 @@ class _NotificationsRouter extends KeepAliveCustState<NotificationsRouter>
   @override
   void initState() {
     super.initState();
-    /// TODO use dart_ndk
-    // notificationsProvider.doQuery();
     bindLoadMoreScroll(_controller);
   }
 
@@ -47,6 +45,7 @@ class _NotificationsRouter extends KeepAliveCustState<NotificationsRouter>
     var eventBox = _notificationsProvider.eventBox;
     var events = eventBox.all();
     if (events.isEmpty) {
+      notificationsProvider.doQuery();
       return EventListPlaceholder(
         onRefresh: () {
           notificationsProvider.refresh();
@@ -60,9 +59,7 @@ class _NotificationsRouter extends KeepAliveCustState<NotificationsRouter>
       controller: _controller,
       itemBuilder: (BuildContext context, int index) {
         var event = events[index];
-        Map<String, dynamic> map = event.toJson();
-        map['content'] = map['content'].replaceAll('+', '❤');
-        event = Nip01Event.fromJson(map);
+        event.content = event.content.replaceAll('+', '❤');
         if (event.kind == kind.EventKind.ZAP_RECEIPT &&
             StringUtil.isBlank(event.content)) {
           return ZapEventListComponent(event: event);
@@ -126,8 +123,7 @@ class _NotificationsRouter extends KeepAliveCustState<NotificationsRouter>
   @override
   void doQuery() {
     preQuery();
-    /// TODO use dart_ndk
-    // notificationsProvider.doQuery(until: until);
+    notificationsProvider.doQuery();
   }
 
   @override

@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:dart_ndk/nips/nip01/event.dart';
+import 'package:dart_ndk/nips/nip01/filter.dart';
 import 'package:dart_ndk/nips/nip25/reactions.dart';
 import 'package:flutter/material.dart';
 
@@ -21,8 +24,7 @@ class NotificationsProvider extends ChangeNotifier
   void refresh() {
     _initTime = DateTime.now().millisecondsSinceEpoch ~/ 1000;
     eventBox.clear();
-    // doQuery();
-
+    doQuery();
     newNotificationsProvider.clear();
   }
 
@@ -48,7 +50,27 @@ class NotificationsProvider extends ChangeNotifier
     ];
   }
 
-  String? subscribeId;
+  StreamSubscription<Nip01Event>? _streamSubscription;
+
+  void doQuery() async {
+    if (_streamSubscription != null) {
+      await _streamSubscription!.cancel();
+    }
+
+    if (myInboxRelaySet!=null) {
+      var filter = Filter(
+          kinds: queryEventKinds(),
+          pTags: [loggedUserSigner!.getPublicKey()],
+          limit: 100);
+      // await relayManager.reconnectRelays(myInboxRelaySet!.urls);
+
+      Stream<Nip01Event> stream = await relayManager!.subscription(
+          filter, myInboxRelaySet!);
+      _streamSubscription = stream.listen((event) {
+        onEvent(event);
+      });
+    }
+  }
 
   // void doQuery({Nostr? targetNostr, bool initQuery = false, int? until}) {
   //   targetNostr ??= nostr!;
@@ -99,7 +121,10 @@ class NotificationsProvider extends ChangeNotifier
 
   void onEvent(Nip01Event event) {
     later(event, (list) {
-      list = list.where((element) => element.pubKey != loggedUserSigner?.getPublicKey()).toList();
+      list = list
+          .where(
+              (element) => element.pubKey != loggedUserSigner?.getPublicKey())
+          .toList();
       var result = eventBox.addList(list);
       if (result) {
         notifyListeners();

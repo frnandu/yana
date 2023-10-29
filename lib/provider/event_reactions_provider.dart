@@ -66,15 +66,21 @@ class EventReactionsProvider extends ChangeNotifier
   Future<StreamSubscription<Nip01Event>> subscription(String id, String? pubKey, int? kind) async {
     var filter = kind!=null ? Filter(eTags: [id], kinds: [kind]) : Filter(eTags: [id]);
 
-    RelaySet relaySet = await relayManager.calculateRelaySet(
-        name:"reactions-feed",
-        ownerPubKey: pubKey!,
-        pubKeys: [pubKey!],
-        direction: RelayDirection.inbox,
-        relayMinCountPerPubKey: 5
-    );
-    relaySet.addMoreRelays(myInboxRelaySet!.relaysMap);
-    Stream<Nip01Event> stream = await relayManager!.subscription(filter, relaySet);
+    RelaySet? relaySet;
+
+    if (settingProvider.gossip == 1) {
+      relaySet = await relayManager.calculateRelaySet(
+          name: "reactions-feed",
+          ownerPubKey: pubKey!,
+          pubKeys: [pubKey!],
+          direction: RelayDirection.inbox,
+          relayMinCountPerPubKey: 5
+      );
+      relaySet.addMoreRelays(myInboxRelaySet!.relaysMap);
+    } else {
+      relaySet = myInboxRelaySet;
+    }
+    Stream<Nip01Event> stream = await relayManager!.subscription(filter, relaySet!, splitRequestsByPubKeyMappings: settingProvider.gossip == 1);
     StreamSubscription<Nip01Event> sub = stream.listen((event) {
           _handleSingleEvent2(event);
         });

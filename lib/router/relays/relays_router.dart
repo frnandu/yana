@@ -1,5 +1,6 @@
 import 'package:bot_toast/bot_toast.dart';
 import 'package:dart_ndk/models/user_relay_list.dart';
+import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
 import 'package:dart_ndk/relay.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -25,7 +26,7 @@ class RelaysRouter extends StatefulWidget {
 
 class _RelaysRouter extends CustState<RelaysRouter> with WhenStopFunction {
   TextEditingController controller = TextEditingController();
-  List<String> urls = [];
+  UserRelayList? userRelayList;
 
   @override
   void initState() {
@@ -33,12 +34,18 @@ class _RelaysRouter extends CustState<RelaysRouter> with WhenStopFunction {
   }
 
   loadRelayInfos() async {
-    Set<String> set = {};
-    set.addAll(myInboxRelaySet!.urls);
-    set.addAll(myOutboxRelaySet!.urls);
+    // Set<String> set = {};
+    // set.addAll(myInboxRelaySet!.urls);
+    // set.addAll(myOutboxRelaySet!.urls);
 
-    urls = List.of(set);
-    await Future.wait(urls.map((url) => relayManager.getRelayInfo(Relay.clean(url)!)));
+    userRelayList =
+        cacheManager.loadUserRelayList(loggedUserSigner!.getPublicKey());
+    userRelayList ??= await relayManager.getSingleUserRelayList(
+        loggedUserSigner!.getPublicKey(),
+        forceRefresh: true);
+    await Future.wait(userRelayList!.urls
+        .map((url) => relayManager.getRelayInfo(Relay.clean(url)!)));
+
     /// TODO check if widget is not disposed already...
     setState(() {
       print("loaded relay infos");
@@ -78,32 +85,48 @@ class _RelaysRouter extends CustState<RelaysRouter> with WhenStopFunction {
                 top: Base.BASE_PADDING,
               ),
               child: RefreshIndicator(
-                onRefresh: () async {
-                  UserRelayList? oldRelayList = cacheManager.loadUserRelayList(loggedUserSigner!.getPublicKey());
-                  UserRelayList? userRelayList = await relayManager.getSingleUserRelayList(loggedUserSigner!.getPublicKey(), forceRefresh: true);
-                  if (userRelayList != null && (oldRelayList==null || oldRelayList.createdAt < userRelayList.createdAt)) {
-                    createMyRelaySets(userRelayList);
-                    await relayManager
-                        .reconnectRelays(myOutboxRelaySet!.urls);
-                    await relayManager
-                        .reconnectRelays(myInboxRelaySet!.urls);
-                  }
-                  setState(() {});
-                },
-                child: ListView.builder(
-                  itemBuilder: (context, index) {
-                    var url = urls[index];
-
-                    return RelaysItemComponent(
-                      relay: relayManager.getRelay(url)!,
-                      onRemove: () async {
-                        await loadRelayInfos();
-                      },
-                    );
+                  onRefresh: () async {
+                    UserRelayList? oldRelayList = cacheManager
+                        .loadUserRelayList(loggedUserSigner!.getPublicKey());
+                    UserRelayList? userRelayList =
+                        await relayManager.getSingleUserRelayList(
+                            loggedUserSigner!.getPublicKey(),
+                            forceRefresh: true);
+                    if (userRelayList != null &&
+                        (oldRelayList == null ||
+                            oldRelayList.createdAt < userRelayList.createdAt)) {
+                      createMyRelaySets(userRelayList);
+                    }
+                    await loadRelayInfos();
+                    await relayManager.reconnectRelays(userRelayList!.urls);
+                    setState(() {});
                   },
-                  itemCount: urls.length,
-                ),
-              )),
+                  child: Selector<RelayProvider, UserRelayList?>(
+                    selector: (BuildContext, RelayProvider) {
+                      return relayProvider
+                          .getUserRelayList(loggedUserSigner!.getPublicKey());
+                    },
+                    builder: (BuildContext context, UserRelayList? userRelayList,
+                        Widget? child) {
+                      return userRelayList==null? Container(): ListView.builder(
+                        itemBuilder: (context, index) {
+                          var url = userRelayList!.urls.toList()[index];
+                          ReadWriteMarker? marker = userRelayList!.relays[url]!;
+                          return RelaysItemComponent(
+                            url: url,
+                            relay: relayManager.getRelay(url)!,
+                            marker: marker,
+                            onRemove: () async {
+                              await loadRelayInfos();
+                            },
+                          );
+                        },
+                        itemCount: userRelayList != null
+                            ? userRelayList!.relays.length
+                            : 0,
+                      );
+                    },
+                  ))),
         ),
         loggedUserSigner!.canSign()
             ? TextField(
@@ -136,8 +159,6 @@ class _RelaysRouter extends CustState<RelaysRouter> with WhenStopFunction {
     FocusScope.of(context).unfocus();
   }
 
-
   @override
-  Future<void> onReady(BuildContext context) async {
-  }
+  Future<void> onReady(BuildContext context) async {}
 }

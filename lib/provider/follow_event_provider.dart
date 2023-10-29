@@ -117,7 +117,7 @@ class FollowEventProvider extends ChangeNotifier
     }
 
     Stream<Nip01Event> stream = await relayManager!.subscription(
-        filter, (feedRelaySet!=null && settingProvider.gossip==1)? feedRelaySet! : myInboxRelaySet!);
+        filter, (feedRelaySet!=null && settingProvider.gossip==1)? feedRelaySet! : myInboxRelaySet!, splitRequestsByPubKeyMappings: settingProvider.gossip == 1);
     _streamSubscription = stream.listen((event) {
       // if (event.pubKey == loggedUserSigner!.getPublicKey()) {
       //   print("event.createdAt:${DateTime.fromMillisecondsSinceEpoch(event.createdAt*1000)}");

@@ -59,7 +59,6 @@ import 'i18n/i18n.dart';
 import 'nostr/client_utils/keys.dart';
 import 'nostr/nip19/nip19.dart';
 import 'nostr/nip19/nip19_tlv.dart';
-import 'nostr/relay_metadata.dart';
 import 'provider/community_approved_provider.dart';
 import 'provider/contact_list_provider.dart';
 import 'provider/data_util.dart';
@@ -300,6 +299,9 @@ Future<void> initRelays({bool newKey = false}) async {
 }
 
 void createMyRelaySets(UserRelayList userRelayList) {
+  print("FROM USER RELAY LIST: ");
+  userRelayList.relays.entries.forEach((entry) { print("  - ${entry.key} : ${entry.value}");});
+
   Map<String, List<PubkeyMapping>> inbox = {
     for (var item in userRelayList.relays.entries.where((entry) => entry.value.isRead))
       Relay.clean(item.key) ?? item.key: [PubkeyMapping(pubKey: userRelayList.pubKey, rwMarker: item.value)]
@@ -317,6 +319,10 @@ void createMyRelaySets(UserRelayList userRelayList) {
       notCoveredPubkeys: []);
   myOutboxRelaySet =
       RelaySet(name: "outbox", pubKey: userRelayList.pubKey, relayMinCountPerPubkey: outbox.length, direction: RelayDirection.outbox, relaysMap: outbox);
+  print("GENERATED INBOX: ");
+  myInboxRelaySet!.relaysMap.entries.forEach((entry) { print("  - ${entry.key} : ${entry.value.first.rwMarker}");});
+  print("GENERATED OUTBOX: ");
+  myOutboxRelaySet!.relaysMap.entries.forEach((entry) { print("  - ${entry.key} : ${entry.value.first.rwMarker}");});
 }
 
 Future<void> main() async {

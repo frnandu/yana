@@ -65,24 +65,25 @@
 
 v0.12
 - broadcast
-  - reposts
-  - zaps
   - nwc
 
 - fix follow/unfollow button when needs refresh  
 - blacklist for relays
 - garbage collection of webSockets not used since X (for reactions)
 
-- re-enable awesome notifications
 - persist notes from feed for faster startup
 
 - notifications
+  - FIX UI/UX
 - global
 - dms
+- re-enable awesome notifications
 
+- search
 - better android/ios/linux badges on web version login screen (anchor links to readme.md for IOS/linux)
 - make thread detail subscription of new replies work
-
+- FIX THREADED VIEW
+- on back from background, reconnect relay + resubscribe to all existing subscriptions
 
 v0.13
 - animated screen ASAP after splash

@@ -93,7 +93,8 @@ class MetadataProvider extends ChangeNotifier with LaterFunction {
     if (relaySet!=null) {
       List<Metadata> loaded = await relayManager.loadMissingMetadatas(
         _needUpdateMetadatas,
-        relaySet
+        relaySet,
+        splitRequestsByPubKeyMappings: settingProvider.gossip == 1
       );
       _needUpdateMetadatas.clear();
 
