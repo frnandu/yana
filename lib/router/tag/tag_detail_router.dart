@@ -2,7 +2,7 @@ import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip01/filter.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:yana/router/tag/topic_map.dart';
+import 'package:yana/main.dart';
 import 'package:yana/ui/event_delete_callback.dart';
 
 import '../../models/event_mem_box.dart';
@@ -145,32 +145,35 @@ class _TagDetailRouter extends CustState<TagDetailRouter>
     );
   }
 
-  var subscribeId = StringUtil.rndNameStr(16);
-
   @override
   Future<void> onReady(BuildContext context) async {
     doQuery();
   }
 
   void doQuery() {
-    // tag query
-    // https://github.com/nostr-protocol/nips/blob/master/12.md
+    var plainTag = tag!.replaceFirst("#", "");
     var filter = Filter(kinds: [
       Nip01Event.TEXT_NODE_KIND,
       kind.EventKind.LONG_FORM,
       kind.EventKind.FILE_HEADER,
       kind.EventKind.POLL,
-    ], limit: 100);
-    var queryArg = filter.toMap();
-    var plainTag = tag!.replaceFirst("#", "");
+    ],
+        tTags: [plainTag],
+        limit: 100);
+    // var queryArg = filter.toMap();
     // this place set #t not #r ???
-    var list = TopicMap.getList(plainTag);
-    if (list != null) {
-      queryArg["#t"] = list;
-    } else {
-      queryArg["#t"] = [plainTag];
-    }
+    // var list = TopicMap.getList(plainTag);
+    // if (list != null) {
+    //   queryArg["#t"] = list;
+    // } else {
+    //   queryArg["#t"] = [plainTag];
+    // }
     // TODO use dart_ndk
+    relayManager.subscription(filter, myInboxRelaySet!).then((stream) {
+      stream.listen((event) {
+        onEvent(event);
+      });
+    },);
 //    nostr!.query([queryArg], onEvent, id: subscribeId);
   }
 

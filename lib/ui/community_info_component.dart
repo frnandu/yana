@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:yana/ui/content/content_decoder.dart';
 import 'package:yana/utils/base.dart';
 import 'package:yana/provider/contact_list_provider.dart';
@@ -51,7 +52,13 @@ class _CommunityInfoComponent extends State<CommunityInfoComponent> {
       }
 
       return GestureDetector(
-        onTap: () {
+        onTap: () async {
+          bool finished = false;
+          Future.delayed(const Duration(seconds: 1),() {
+            if (!finished) {
+              EasyLoading.show(status: "Refreshing from relays before action...", maskType: EasyLoadingMaskType.black);
+            }
+          });
           if (exist) {
             contactListProvider
                 .removeCommunity(widget.info.communityId.toAString());
@@ -59,6 +66,8 @@ class _CommunityInfoComponent extends State<CommunityInfoComponent> {
             contactListProvider
                 .addCommunity(widget.info.communityId.toAString());
           }
+          finished = true;
+          EasyLoading.dismiss();
         },
         child: Container(
           margin: const EdgeInsets.only(

@@ -70,7 +70,7 @@ class _SearchMentionUserComponent extends State<SearchMentionUserComponent>
     metadatas.clear();
 
     if (StringUtil.isNotBlank(text)) {
-      var list = metadataProvider.findUser(text!, limit: searchMemLimit);
+      var list = cacheManager.searchMetadatas(text!, searchMemLimit).toList();
       metadatas = list;
     }
 

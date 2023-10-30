@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
 import 'package:dart_ndk/relay.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:yana/main.dart';
 import 'package:yana/utils/router_path.dart';
 import 'package:yana/utils/router_util.dart';
@@ -189,7 +190,14 @@ class RelaysItemComponent extends StatelessWidget {
                         if (result != null && result) {
                           marker = ReadWriteMarker.from(
                               read: !marker.isRead, write: marker.isWrite);
+                          bool finished = false;
+                          Future.delayed(const Duration(seconds: 1),() {
+                            if (!finished) {
+                              EasyLoading.show(status: "Refreshing relay list before changing...", maskType: EasyLoadingMaskType.black);
+                            }
+                          });
                           await relayProvider.updateMarker(url, marker);
+                          finished = true;
                         }
                       },
                       child: Container(
@@ -219,7 +227,15 @@ class RelaysItemComponent extends StatelessWidget {
                         if (result != null && result) {
                           marker = ReadWriteMarker.from(
                               read: marker.isRead, write: !marker.isWrite);
+                          bool finished = false;
+                          Future.delayed(const Duration(seconds: 1),() {
+                            if (!finished) {
+                              EasyLoading.show(status: "Refreshing relay list before changing...", maskType: EasyLoadingMaskType.black);
+                            }
+                          });
                           await relayProvider.updateMarker(url, marker);
+                          finished = true;
+                          EasyLoading.dismiss();
                         }
                       },
                       child: Container(
@@ -242,7 +258,15 @@ class RelaysItemComponent extends StatelessWidget {
                             context, "Broadcast removal of relay?");
 
                         if (result != null && result) {
+                          bool finished = false;
+                          Future.delayed(const Duration(seconds: 1),() {
+                            if (!finished) {
+                              EasyLoading.show(status: "Refreshing relay list before removing...", maskType: EasyLoadingMaskType.black);
+                            }
+                          });
                           await relayProvider.removeRelay(url);
+                          finished = true;
+                          EasyLoading.dismiss();
                           onRemove();
                         }
                       },

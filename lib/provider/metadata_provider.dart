@@ -20,22 +20,6 @@ class MetadataProvider extends ChangeNotifier with LaterFunction {
     return _metadataProvider!;
   }
 
-  List<Metadata> findUser(String str, {int? limit = 5}) {
-    List<Metadata> list = [];
-    if (StringUtil.isNotBlank(str) && contactListProvider.contactList!=null) {
-      List<Metadata?> metadatas = cacheManager.loadMetadatas(contactListProvider.contactList!.contacts);
-      for (var metadata in metadatas) {
-        if (metadata!=null && metadata.matchesSearch(str)) {
-          list.add(metadata);
-          if (limit != null && list.length >= limit) {
-            break;
-          }
-        }
-      }
-    }
-    return list;
-  }
-
   void _laterCallback() {
     if (_needUpdateMetadatas.isNotEmpty) {
       _loadNeedingUpdateMetadatas();

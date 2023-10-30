@@ -408,8 +408,7 @@ class _EditorRouter extends CustState<EditorRouter> with EditorMixin {
             if (word != null && (word[0] == "@" || word[1] == "@")) {
               widget.mentionWordEditingStart = value.selection.baseOffset - word!.length;
               widget.mentionWordEditingEnd = value.selection.baseOffset;
-              list = metadataProvider.findUser(word.replaceAll("@", "")!,
-                  limit: 100);
+              list = cacheManager.searchMetadatas(word.replaceAll("@", ""), 100).toList();
             } else {
               widget.mentionWordEditingStart = null;
               widget.mentionWordEditingEnd = null;

@@ -1,8 +1,10 @@
 import 'package:bot_toast/bot_toast.dart';
 import 'package:dart_ndk/models/user_relay_list.dart';
+import 'package:dart_ndk/nips/nip01/helpers.dart';
 import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
 import 'package:dart_ndk/relay.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:provider/provider.dart';
 import 'package:yana/utils/when_stop_function.dart';
 
@@ -43,6 +45,7 @@ class _RelaysRouter extends CustState<RelaysRouter> with WhenStopFunction {
     userRelayList ??= await relayManager.getSingleUserRelayList(
         loggedUserSigner!.getPublicKey(),
         forceRefresh: true);
+    userRelayList ??= UserRelayList(pubKey: loggedUserSigner!.getPublicKey(), relays: { for (String url in relayManager.bootstrapRelays) url : ReadWriteMarker.readWrite}, createdAt: Helpers.now, refreshedTimestamp: Helpers.now);
     await Future.wait(userRelayList!.urls
         .map((url) => relayManager.getRelayInfo(Relay.clean(url)!)));
 
@@ -149,12 +152,20 @@ class _RelaysRouter extends CustState<RelaysRouter> with WhenStopFunction {
     var addr = controller.text;
     addr = addr.trim();
     if (StringUtil.isBlank(addr)) {
-      BotToast.showText(text: I18n.of(context).Address_can_t_be_null);
+      EasyLoading.showError(I18n.of(context).Address_can_t_be_null, dismissOnTap: true);
       return;
     }
 
+    bool finished = false;
+    Future.delayed(const Duration(seconds: 1),() {
+      if (!finished) {
+        EasyLoading.show(status: "Refreshing relay list before adding...", maskType: EasyLoadingMaskType.black);
+      }
+    });
     await relayProvider.addRelay(addr);
     await loadRelayInfos();
+    finished = true;
+    EasyLoading.dismiss();
     controller.clear();
     FocusScope.of(context).unfocus();
   }

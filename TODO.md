@@ -62,18 +62,15 @@
 - ~~check why some replies appear on posts~~
 - ~~sign verify~~
 - ~~nip05~~
-- ~~global~~
 
 v0.12
+- tags
+- communities
 - verify signature ASYNC!?!?!?!
-- search
 - FIX THREADED VIEW
 - persist notes from feed for faster startup
 - dms
-- broadcast
-  - nwc
-- tags
-- communities
+- nwc
 - new posts/replies appear in layered popup with avatars
 - blacklist for relays
 - garbage collection of webSockets not used since X (for reactions)
@@ -86,9 +83,10 @@ v0.12
 - make thread detail subscription of new replies work
 - on back from background, reconnect relay + resubscribe to all existing subscriptions
 
-- choose to which relays / lists to broadcast on new note
+- choose to which relays / lists to broadcast on new note (bounty)
 - show progress of broadcasting note on relays
-- 
+- include relay hints on nevent and stuff (bounty)
+
 v0.13
 - animated screen ASAP after splash
 - isar v4 for web
