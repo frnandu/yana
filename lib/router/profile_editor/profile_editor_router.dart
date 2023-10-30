@@ -1,6 +1,7 @@
 import 'package:dart_ndk/nips/nip01/helpers.dart';
 import 'package:dart_ndk/nips/nip01/metadata.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:yana/nostr/upload/uploader.dart';
 import 'package:yana/utils/platform_util.dart';
@@ -82,6 +83,7 @@ class _ProfileEditorRouter extends CustState<ProfileEditorRouter> {
             loggedUserSigner!.getPublicKey(), forceRefresh: true).then((
             metadata) {
           setState(() {
+            metadata ??= Metadata(pubKey: loggedUserSigner!.getPublicKey());
             this.metadata = metadata;
           });
         },).timeout(const Duration(seconds: 6), onTimeout: () {
@@ -90,8 +92,11 @@ class _ProfileEditorRouter extends CustState<ProfileEditorRouter> {
                 updatedAt: Helpers.now);
           });
         });
-        return loader("Refreshing metadata from relays...");
+        EasyLoading.show(status: "Refreshing metadata from relays...", maskType: EasyLoadingMaskType.black);
+        return Container();
       }
+    } else {
+      EasyLoading.dismiss();
     }
 
     displayNameController.text = getText(metadata!.displayName);

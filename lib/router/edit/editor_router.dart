@@ -2,6 +2,7 @@ import 'package:bot_toast/bot_toast.dart';
 import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip01/metadata.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:intl/intl.dart';
 import 'package:pointycastle/ecc/api.dart';
@@ -461,16 +462,19 @@ class _EditorRouter extends CustState<EditorRouter> with EditorMixin {
   }
 
   Future<void> documentSave() async {
-    var cancelFunc = BotToast.showLoading();
+    EasyLoading.show(status: 'Broadcasting to relays...', maskType: EasyLoadingMaskType.black);
+    // var cancelFunc = BotToast.showLoading();
     try {
       var event = await doDocumentSave();
       if (event == null) {
-        BotToast.showText(text: I18n.of(context).Send_fail);
+        // BotToast.showText(text: I18n.of(context).Send_fail);
+        EasyLoading.showError('Failed...');
         return;
       }
+      EasyLoading.showSuccess('Success!');
       RouterUtil.back(context, event);
     } finally {
-      cancelFunc.call();
+      EasyLoading.dismiss();
     }
   }
 

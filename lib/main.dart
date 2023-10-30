@@ -22,6 +22,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_background_service_android/flutter_background_service_android.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart' as FlutterCacheManager;
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:get_time_ago/get_time_ago.dart';
@@ -680,7 +681,8 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
           child: Sizer(
             builder: (context, orientation, deviceType) {
               return MaterialApp(
-                builder: BotToastInit(),
+                builder: EasyLoading.init(),
+                // builder: BotToastInit(),
                 navigatorObservers: [
                   BotToastNavigatorObserver(),
                 ],

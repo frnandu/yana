@@ -4,6 +4,7 @@ import 'package:dart_ndk/nips/nip01/bip340_event_signer.dart';
 import 'package:dart_ndk/relay_manager.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:yana/utils/platform_util.dart';
 
@@ -315,7 +316,15 @@ class _LoginRouter extends State<LoginRouter>
       BotToast.showText(text: I18n.of(context).Private_key_is_null);
       return;
     }
-    showLoaderDialog(context);
+    var alreadyClosed = false;
+    //showLoaderDialog(context);
+    Future.delayed(const Duration(seconds: 1), () {
+      if (!alreadyClosed) {
+        EasyLoading.show(status: I18n
+            .of(context)
+            .Searching_relays, maskType: EasyLoadingMaskType.black);
+      }
+    });
 
     try {
       bool isPublic = pubOnly || Nip19.isPubkey(key);
@@ -327,23 +336,25 @@ class _LoginRouter extends State<LoginRouter>
       String publicKey = isPrivate ? getPublicKey(key!) : key!;
       loggedUserSigner = isPrivate || !PlatformUtil.isWeb()? Bip340EventSigner(isPrivate? key:null, publicKey) : Nip07EventSigner(await js.getPublicKeyAsync());
 
-        var alreadyClosed = false;
         Future.delayed(const Duration(seconds: 10), () {
           initRelayManager(alreadyClosed, isPublic ? key : getPublicKey(key), newKey);
         });
         await initRelayManager(alreadyClosed, isPublic ? key : getPublicKey(key), newKey);
         alreadyClosed = true;
     } catch (e) {
-      BotToast.showText(text: e.toString());
+      EasyLoading.showError(e.toString());
+      // BotToast.showText(text: e.toString());
       Navigator.of(context, rootNavigator: true).pop();
     }
   }
 
   Future<void> initRelayManager(bool alreadyClosed, String publicKey, bool newKey) async {
     if (!alreadyClosed) {
-      Navigator.of(context, rootNavigator: true).pop();
+      EasyLoading.dismiss();
+      // Navigator.of(context, rootNavigator: true).pop();
       await initRelays(newKey: newKey);
       settingProvider.notifyListeners();
+      alreadyClosed = true;
 
       firstLogin = true;
       indexProvider.setCurrentTap(IndexTaps.FOLLOW);

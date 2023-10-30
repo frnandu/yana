@@ -4,6 +4,7 @@ import 'package:dart_ndk/nips/nip01/metadata.dart';
 import 'package:easy_image_viewer/easy_image_viewer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:yana/i18n/i18n.dart';
@@ -284,16 +285,32 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
               return wrapBtn(MetadataTextBtn(
                 text: "Follow",
                 borderColor: mainColor,
-                onTap: () {
-                  contactListProvider.addContact(widget.pubkey);
+                onTap: () async {
+                  bool finished = false;
+                  Future.delayed(const Duration(seconds: 1),() {
+                    if (!finished) {
+                      EasyLoading.show(status: "Refreshing contacts from relays before following...", maskType: EasyLoadingMaskType.black);
+                    }
+                  });
+                  await contactListProvider.addContact(widget.pubkey);
+                  finished = true;
+                  EasyLoading.dismiss();
                 },
               ));
             } else {
               return wrapBtn(MetadataTextBtn(
                 text: "Unfollow",
                 borderColor: mainColor,
-                onTap: () {
-                  contactListProvider.removeContact(widget.pubkey);
+                onTap: () async {
+                  bool finished = false;
+                  Future.delayed(const Duration(seconds: 1),() {
+                    if (!finished) {
+                      EasyLoading.show(status: "Refreshing contacts from relays before unfollowing...", maskType: EasyLoadingMaskType.black);
+                    }
+                  });
+                  await contactListProvider.removeContact(widget.pubkey);
+                  finished = true;
+                  EasyLoading.dismiss();
                 },
               ));
             }
@@ -464,7 +481,7 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
 
   Widget wrapBtn(Widget child) {
     return Container(
-      margin: const EdgeInsets.only(right: 8),
+      margin: const EdgeInsets.only(top: 10, right: 8),
       child: child,
     );
   }
@@ -509,24 +526,6 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
           doubleTapZoomable: true, swipeDismissible: true);
     }
   }
-}
-
-showLoaderDialog(BuildContext context, String text) {
-  AlertDialog alert = AlertDialog(
-    content: Row(
-      children: [
-        const CircularProgressIndicator(),
-        Container(margin: const EdgeInsets.only(left: 7), child: Text(text)),
-      ],
-    ),
-  );
-  showDialog(
-    barrierDismissible: false,
-    context: context,
-    builder: (BuildContext context) {
-      return alert;
-    },
-  );
 }
 
 class MetadataIconBtn extends StatelessWidget {
@@ -592,7 +591,7 @@ class MetadataTextBtn extends StatelessWidget {
 
   Color? borderColor;
 
-  MetadataTextBtn({
+  MetadataTextBtn({super.key,
     required this.text,
     required this.onTap,
     this.borderColor,
@@ -600,26 +599,22 @@ class MetadataTextBtn extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Ink(
+    return Container(
+      // padding: const EdgeInsets.only(left: 6, right: 6),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(20),
         border: borderColor != null
             ? Border.all(width: 1, color: borderColor!)
             : Border.all(width: 1),
       ),
-      child: InkWell(
-        onTap: onTap,
-        child: Container(
-          height: 28,
-          padding: const EdgeInsets.only(left: 6, right: 6),
-          alignment: Alignment.center,
-          child: Text(
-            text,
-            style: TextStyle(
-              fontSize: Base.BASE_FONT_SIZE + 4,
-              // fontWeight: FontWeight.bold,
-              color: borderColor,
-            ),
+      child: TextButton(
+        onPressed: onTap,
+        child: Text(
+          text,
+          style: TextStyle(
+            fontSize: Base.BASE_FONT_SIZE + 4,
+            // fontWeight: FontWeight.bold,
+            color: borderColor,
           ),
         ),
       ),

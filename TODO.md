@@ -67,7 +67,6 @@
 v0.12
 - verify signature ASYNC!?!?!?!
 - search
-- fix follow/unfollow button when needs refresh
 - FIX THREADED VIEW
 - persist notes from feed for faster startup
 - dms
@@ -87,6 +86,9 @@ v0.12
 - make thread detail subscription of new replies work
 - on back from background, reconnect relay + resubscribe to all existing subscriptions
 
+- choose to which relays / lists to broadcast on new note
+- show progress of broadcasting note on relays
+- 
 v0.13
 - animated screen ASAP after splash
 - isar v4 for web
