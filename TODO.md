@@ -62,27 +62,29 @@
 - ~~check why some replies appear on posts~~
 - ~~sign verify~~
 - ~~nip05~~
+- ~~global~~
 
 v0.12
+- verify signature ASYNC!?!?!?!
+- search
+- fix follow/unfollow button when needs refresh
+- FIX THREADED VIEW
+- persist notes from feed for faster startup
+- dms
 - broadcast
   - nwc
-
-- fix follow/unfollow button when needs refresh  
+- tags
+- communities
+- new posts/replies appear in layered popup with avatars
 - blacklist for relays
 - garbage collection of webSockets not used since X (for reactions)
 
-- persist notes from feed for faster startup
-
 - notifications
   - FIX UI/UX
-- global
-- dms
 - re-enable awesome notifications
 
-- search
 - better android/ios/linux badges on web version login screen (anchor links to readme.md for IOS/linux)
 - make thread detail subscription of new replies work
-- FIX THREADED VIEW
 - on back from background, reconnect relay + resubscribe to all existing subscriptions
 
 v0.13
