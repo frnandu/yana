@@ -95,7 +95,7 @@ class _FollowedCommunitiesRouter extends State<FollowedCommunitiesRouter> {
                     ),
                   );
                 }, selector: (context, _provider) {
-                  return _provider.containCommunity(id.toAString());
+                  return _provider.followsCommunity(id.toAString());
                 })
               ])),
         );

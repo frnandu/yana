@@ -16,7 +16,6 @@ class FollowEventProvider extends ChangeNotifier
   late int _initTime;
   StreamSubscription<Nip01Event>? _streamSubscription;
 
-
   late EventMemBox postsAndRepliesBox; // posts and replies
   late EventMemBox postsBox;
 

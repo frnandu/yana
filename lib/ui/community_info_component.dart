@@ -81,7 +81,7 @@ class _CommunityInfoComponent extends State<CommunityInfoComponent> {
         ),
       );
     }, selector: (context, _provider) {
-      return _provider.containCommunity(widget.info.communityId.toAString());
+      return _provider.followsCommunity(widget.info.communityId.toAString());
     });
 
     List<Widget> list = [

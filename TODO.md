@@ -64,28 +64,27 @@
 - ~~nip05~~
 
 v0.12
-- tags
-- communities
+- community posts not showing all of events WTF?
+- persist notes from feed for faster startup
+- new posts/replies appear in layered popup with avatars
+- choose to which relays / lists to broadcast on new note (bounty)
+ 
 - verify signature ASYNC!?!?!?!
 - FIX THREADED VIEW
-- persist notes from feed for faster startup
 - dms
 - nwc
-- new posts/replies appear in layered popup with avatars
 - blacklist for relays
-- garbage collection of webSockets not used since X (for reactions)
 
 - notifications
   - FIX UI/UX
 - re-enable awesome notifications
-
-- better android/ios/linux badges on web version login screen (anchor links to readme.md for IOS/linux)
 - make thread detail subscription of new replies work
 - on back from background, reconnect relay + resubscribe to all existing subscriptions
 
-- choose to which relays / lists to broadcast on new note (bounty)
+- better android/ios/linux badges on web version login screen (anchor links to readme.md for IOS/linux)
 - show progress of broadcasting note on relays
 - include relay hints on nevent and stuff (bounty)
+- garbage collection of webSockets not used since X (for reactions)
 
 v0.13
 - animated screen ASAP after splash

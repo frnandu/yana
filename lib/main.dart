@@ -273,7 +273,6 @@ Future<void> initRelays({bool newKey = false}) async {
   ContactList? contactList = !newKey ? await relayManager.loadContactList(loggedUserSigner!.getPublicKey()) : null;
   if (contactList != null) {
     print("Loaded ${contactList.contacts.length} contacts...");
-    contactListProvider.set(contactList);
     if (settingProvider.gossip == 1) {
       feedRelaySet = relayManager.getRelaySet("feed", loggedUserSigner!.getPublicKey());
       if (feedRelaySet == null) {

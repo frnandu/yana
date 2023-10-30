@@ -255,7 +255,8 @@ class _SearchRouter extends CustState<SearchRouter>
     kind.EventKind.LONG_FORM,
     kind.EventKind.FILE_HEADER,
     kind.EventKind.POLL,
-    Metadata.KIND
+    Metadata.KIND,
+    kind.EventKind.COMMUNITY_DEFINITION
   ];
 
   EventMemBox eventMemBox = EventMemBox();

@@ -1013,7 +1013,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
         await relayManager.calculateRelaySet(
             name: "feed",
             ownerPubKey: loggedUserSigner!.getPublicKey(),
-            pubKeys: contactListProvider.contactList!.contacts,
+            pubKeys: contactListProvider.contacts(),
             direction: RelayDirection.outbox,
             relayMinCountPerPubKey: settingProvider.followeesRelayMinCount
         );

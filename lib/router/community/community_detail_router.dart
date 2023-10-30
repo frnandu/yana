@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip01/filter.dart';
 import 'package:flutter/material.dart';
@@ -31,8 +33,7 @@ class CommunityDetailRouter extends StatefulWidget {
   }
 }
 
-class _CommunityDetailRouter extends CustState<CommunityDetailRouter>
-    with PenddingEventsLaterFunction {
+class _CommunityDetailRouter extends CustState<CommunityDetailRouter> with PenddingEventsLaterFunction {
   EventMemBox box = EventMemBox();
 
   CommunityId? communityId;
@@ -92,8 +93,7 @@ class _CommunityDetailRouter extends CustState<CommunityDetailRouter>
         controller: _controller,
         itemBuilder: (context, index) {
           if (index == 0) {
-            return Selector<CommunityInfoProvider, CommunityInfo?>(
-                builder: (context, info, child) {
+            return Selector<CommunityInfoProvider, CommunityInfo?>(builder: (context, info, child) {
               if (info == null) {
                 return Container();
               }
@@ -156,49 +156,34 @@ class _CommunityDetailRouter extends CustState<CommunityDetailRouter>
     );
   }
 
-  var infoSubscribeId = StringUtil.rndNameStr(16);
-
-  var subscribeId = StringUtil.rndNameStr(16);
-
-  // CommunityInfo? communityInfo;
-
   @override
   Future<void> onReady(BuildContext context) async {
     if (communityId != null) {
-      // {
-      //   var filter = Filter(kinds: [
-      //     kind.EventKind.COMMUNITY_DEFINITION,
-      //   ], authors: [
-      //     communityId!.pubkey
-      //   ], limit: 1);
-      //   var queryArg = filter.toMap();
-      //   queryArg["#d"] = [communityId!.title];
-      //   nostr!.query([queryArg], (e) {
-      //     if (communityInfo == null || communityInfo!.createdAt < e.createdAt) {
-      //       var ci = CommunityInfo.fromEvent(e);
-      //       if (ci != null) {
-      //         setState(() {
-      //           communityInfo = ci;
-      //         });
-      //       }
-      //     }
-      //   }, id: infoSubscribeId);
-      // }
       queryEvents();
     }
   }
 
+  StreamSubscription<Nip01Event>? _streamSubscription;
+
   void queryEvents() {
+    if (_streamSubscription!=null) {
+      _streamSubscription!.cancel();
+    }
     var filter = Filter(kinds: [
       Nip01Event.TEXT_NODE_KIND,
       kind.EventKind.LONG_FORM,
       kind.EventKind.FILE_HEADER,
       kind.EventKind.POLL,
+    ], aTags: [
+      communityId!.toAString()
     ], limit: 100);
-    var queryArg = filter.toMap();
-    queryArg["#a"] = [communityId!.toAString()];
-    // TODO use dart_ndk
-    //nostr!.query([queryArg], onEvent, id: subscribeId);
+
+    relayManager.subscription(filter, myInboxRelaySet!).then((stream) {
+      _streamSubscription = stream.listen((event) {
+        onEvent(event);
+      });
+    },);
+
   }
 
   void onEvent(Nip01Event event) {
@@ -212,10 +197,10 @@ class _CommunityDetailRouter extends CustState<CommunityDetailRouter>
   void dispose() {
     super.dispose();
     disposeLater();
-    /// TODO use dart_ndk
-    // try {
-    //   nostr!.unsubscribe(subscribeId);
-    // } catch (e) {}
+
+    if (_streamSubscription!=null) {
+      _streamSubscription!.cancel();
+    }
   }
 
   onDeleteCallback(Nip01Event event) {
@@ -226,7 +211,7 @@ class _CommunityDetailRouter extends CustState<CommunityDetailRouter>
   Future<void> addToCommunity() async {
     if (communityId != null) {
       List<String> aTag = ["a", communityId!.toAString()];
-      if (myOutboxRelaySet!=null && myOutboxRelaySet!.urls.isNotEmpty) {
+      if (myOutboxRelaySet != null && myOutboxRelaySet!.urls.isNotEmpty) {
         aTag.add(myOutboxRelaySet!.urls.first);
       }
 

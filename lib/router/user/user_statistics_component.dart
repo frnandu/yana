@@ -235,7 +235,7 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
     if (contactList != null) {
       RouterUtil.router(context, RouterPath.USER_CONTACT_LIST, widget.pubkey);
     } else if (isLocal) {
-      var cl = contactListProvider.contactList;
+      var cl = contactListProvider.getContactList(loggedUserSigner!.getPublicKey());
       if (cl != null) {
         RouterUtil.router(context, RouterPath.USER_CONTACT_LIST, widget.pubkey);
       }
@@ -246,7 +246,7 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
     if (contactList != null) {
       RouterUtil.router(context, RouterPath.FOLLOWED_TAGS_LIST, contactList);
     } else if (isLocal) {
-      var cl = contactListProvider.contactList;
+      var cl = contactListProvider.getContactList(loggedUserSigner!.getPublicKey());
       if (cl != null) {
         RouterUtil.router(context, RouterPath.FOLLOWED_TAGS_LIST, cl);
       }
@@ -346,7 +346,7 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
     if (contactList != null) {
       RouterUtil.router(context, RouterPath.FOLLOWED_COMMUNITIES, contactList);
     } else if (isLocal) {
-      var cl = contactListProvider.contactList;
+      var cl = contactListProvider.getContactList(loggedUserSigner!.getPublicKey());
       if (cl != null) {
         RouterUtil.router(context, RouterPath.FOLLOWED_COMMUNITIES, cl);
       }

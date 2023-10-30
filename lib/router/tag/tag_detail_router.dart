@@ -160,7 +160,6 @@ class _TagDetailRouter extends CustState<TagDetailRouter>
     ],
         tTags: [plainTag],
         limit: 100);
-    // var queryArg = filter.toMap();
     // this place set #t not #r ???
     // var list = TopicMap.getList(plainTag);
     // if (list != null) {
@@ -168,13 +167,11 @@ class _TagDetailRouter extends CustState<TagDetailRouter>
     // } else {
     //   queryArg["#t"] = [plainTag];
     // }
-    // TODO use dart_ndk
     relayManager.subscription(filter, myInboxRelaySet!).then((stream) {
       stream.listen((event) {
         onEvent(event);
       });
     },);
-//    nostr!.query([queryArg], onEvent, id: subscribeId);
   }
 
   void onEvent(Nip01Event event) {
