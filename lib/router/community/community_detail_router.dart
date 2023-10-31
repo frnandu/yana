@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:bot_toast/bot_toast.dart';
 import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip01/filter.dart';
 import 'package:flutter/material.dart';
@@ -21,7 +22,6 @@ import '../../ui/event_delete_callback.dart';
 import '../../utils/base_consts.dart';
 import '../../utils/peddingevents_later_function.dart';
 import '../../utils/router_util.dart';
-import '../../utils/string_util.dart';
 import '../edit/editor_router.dart';
 
 class CommunityDetailRouter extends StatefulWidget {
@@ -113,7 +113,6 @@ class _CommunityDetailRouter extends CustState<CommunityDetailRouter> with Pendd
           if (event == null) {
             return null;
           }
-
           return EventListComponent(
             event: event,
             showVideo: _settingProvider.videoPreview == OpenStatus.OPEN,

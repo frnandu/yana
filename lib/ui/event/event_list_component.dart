@@ -68,9 +68,11 @@ class _EventListComponent extends State<EventListComponent> {
     var eventRelation = EventRelation.fromEvent(widget.event);
 
     Widget main =
-    // Screenshot(
-    //   controller: screenshotController,
-    //   child:
+    // Text(widget.event.content);
+
+    Screenshot(
+      controller: screenshotController,
+      child:
       Container(
         color: cardColor,
         margin: const EdgeInsets.only(bottom: 1),
@@ -90,7 +92,7 @@ class _EventListComponent extends State<EventListComponent> {
           showCommunity: widget.showCommunity,
           eventRelation: eventRelation,
         ),
-      // ),
+      ),
     );
 
     if (widget.event.kind == kind.EventKind.ZAP_RECEIPT) {
@@ -130,25 +132,25 @@ class _EventListComponent extends State<EventListComponent> {
       );
     }
 
-    Widget approvedWrap = Selector<CommunityApprovedProvider, bool>(
-        builder: (context, approved, child) {
-      if (approved) {
-        return main;
-      }
-
-      return Container();
-    }, selector: (context, _provider) {
-      return _provider.check(widget.event.pubKey, widget.event.id,
-          communityId: eventRelation.communityId);
-    });
+    // Widget approvedWrap = Selector<CommunityApprovedProvider, bool>(
+    //     builder: (context, approved, child) {
+    //   if (approved) {
+    //     return main;
+    //   }
+    //
+    //   return Container();
+    // }, selector: (context, _provider) {
+    //   return _provider.check(widget.event.pubKey, widget.event.id,
+    //       communityId: eventRelation.communityId);
+    // });
 
     if (widget.jumpable) {
       return GestureDetector(
         onTap: jumpToThread,
-        child: approvedWrap,
+        child: main,
       );
     } else {
-      return approvedWrap;
+      return main;
     }
   }
 

@@ -21,6 +21,8 @@ class FilterProvider extends ChangeNotifier {
         for (var block in blockList) {
           _instance!.blocks[block] = 1;
         }
+        relayManager.blockedEventPubKeys.clear();
+        relayManager.blockedEventPubKeys.addAll(_instance!.blocks.keys);
       }
 
       var dirtywordList =
@@ -88,6 +90,8 @@ class FilterProvider extends ChangeNotifier {
   void _updateBlock() {
     var list = blocks.keys.toList();
     sharedPreferences.setStringList(DataKey.BLOCK_LIST, list);
+    relayManager.blockedEventPubKeys.clear();
+    relayManager.blockedEventPubKeys.addAll(blocks.keys);
     notifyListeners();
   }
 }
