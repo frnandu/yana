@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip01/filter.dart';
+import 'package:dart_ndk/request.dart';
 import 'package:flutter/foundation.dart';
 
 import '../main.dart';
@@ -14,7 +15,7 @@ class FollowEventProvider extends ChangeNotifier
     with PenddingEventsLaterFunction
     implements FindEventInterface {
   late int _initTime;
-  StreamSubscription<Nip01Event>? _streamSubscription;
+  NostrRequest? subscription;
 
   late EventMemBox postsAndRepliesBox; // posts and replies
   late EventMemBox postsBox;
@@ -85,8 +86,8 @@ class FollowEventProvider extends ChangeNotifier
   }
 
   void load({List<String>? fallbackContacts}) async {
-    if (_streamSubscription!=null) {
-      await _streamSubscription!.cancel();
+    if (subscription!=null) {
+      await relayManager.closeNostrRequest(subscription!);
     }
 
     List<String>? contactsForFeed = contactListProvider.contacts();
@@ -115,9 +116,9 @@ class FollowEventProvider extends ChangeNotifier
       await relayManager.reconnectRelays(myInboxRelaySet!.urls);
     }
 
-    Stream<Nip01Event> stream = await relayManager!.subscription(
+    subscription = await relayManager!.subscription(
         filter, (feedRelaySet!=null && settingProvider.gossip==1)? feedRelaySet! : myInboxRelaySet!, splitRequestsByPubKeyMappings: settingProvider.gossip == 1);
-    _streamSubscription = stream.listen((event) {
+    subscription!.stream.listen((event) {
       // if (event.pubKey == loggedUserSigner!.getPublicKey()) {
       //   print("event.createdAt:${DateTime.fromMillisecondsSinceEpoch(event.createdAt*1000)}");
         onEvent(event);
@@ -158,9 +159,9 @@ class FollowEventProvider extends ChangeNotifier
       await relayManager.reconnectRelays(myInboxRelaySet!.urls);
     }
 
-    Stream<Nip01Event> stream = await relayManager!.query(
+    subscription = await relayManager!.query(
         filter, (feedRelaySet!=null && settingProvider.gossip==1)? feedRelaySet! : myInboxRelaySet!);
-    _streamSubscription = stream.listen((event) {
+    subscription!.stream.listen((event) {
       // if (event.pubKey == loggedUserSigner!.getPublicKey()) {
       print("event.createdAt from loadMore:${DateTime.fromMillisecondsSinceEpoch(event.createdAt*1000)}");
       onEvent(event);
@@ -169,9 +170,8 @@ class FollowEventProvider extends ChangeNotifier
   }
 
   void doUnscribe() {
-    if (_streamSubscription!=null) {
-      _streamSubscription!.cancel().then((value) {
-      },);
+    if (subscription!=null) {
+      relayManager.closeNostrRequest(subscription!);
     }
   }
 

@@ -1,5 +1,6 @@
 import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip01/filter.dart';
+import 'package:dart_ndk/request.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:yana/nostr/nip172/community_id.dart';
@@ -63,8 +64,8 @@ class CommunityInfoProvider extends ChangeNotifier with LaterFunction {
     var filter = Filter(kinds: [
       kind.EventKind.COMMUNITY_DEFINITION,
     ], authors: ids.map((e) => e.pubkey).toList());
-    relayManager.query(filter, myInboxRelaySet!).then((stream) {
-      stream.listen((event) {
+    relayManager.query(filter, myInboxRelaySet!).then((request) {
+      request.stream.listen((event) {
         _onEvent(event);
       });
     });

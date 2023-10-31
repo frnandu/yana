@@ -4,6 +4,7 @@ import 'package:bot_toast/bot_toast.dart';
 import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:provider/provider.dart';
@@ -101,6 +102,7 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
             zapColor = Colors.orange;
           }
         }
+        EasyLoading.showInfo("ACTIVE requests: ${relayManager.nostrRequests.length}", duration: const Duration(seconds: 5));
 
         return Container(
           margin: const EdgeInsets.only(top:10),

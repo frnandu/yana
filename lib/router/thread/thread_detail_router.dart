@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip01/filter.dart';
+import 'package:dart_ndk/request.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:widget_size/widget_size.dart';
@@ -108,8 +109,8 @@ class _ThreadDetailRouter extends CustState<ThreadDetailRouter> with PenddingEve
     if (eventId!=null) {
       var filter = Filter(ids: [eventId!]);
       if (myInboxRelaySet!=null) {
-        Stream<Nip01Event> stream = await relayManager.requestRelays(myInboxRelaySet!.urls, filter, idleTimeout: 1);
-        stream.listen((event) {
+        NostrRequest request = await relayManager.requestRelays(myInboxRelaySet!.urls, filter, idleTimeout: 1);
+        request.stream.listen((event) {
           setState(() {
             loadedEvent = event;
           });

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip01/filter.dart';
 import 'package:dart_ndk/nips/nip25/reactions.dart';
+import 'package:dart_ndk/request.dart';
 import 'package:flutter/material.dart';
 
 import '../main.dart';
@@ -50,11 +51,11 @@ class NotificationsProvider extends ChangeNotifier
     ];
   }
 
-  StreamSubscription<Nip01Event>? _streamSubscription;
+  NostrRequest? subscription;
 
   void doQuery() async {
-    if (_streamSubscription != null) {
-      await _streamSubscription!.cancel();
+    if (subscription != null) {
+      await relayManager.closeNostrRequest(subscription!);
     }
 
     if (myInboxRelaySet!=null) {
@@ -64,9 +65,9 @@ class NotificationsProvider extends ChangeNotifier
           limit: 100);
       // await relayManager.reconnectRelays(myInboxRelaySet!.urls);
 
-      Stream<Nip01Event> stream = await relayManager!.subscription(
+      subscription = await relayManager!.subscription(
           filter, myInboxRelaySet!);
-      _streamSubscription = stream.listen((event) {
+      subscription!.stream.listen((event) {
         onEvent(event);
       });
     }

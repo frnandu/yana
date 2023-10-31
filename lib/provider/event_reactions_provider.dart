@@ -1,9 +1,11 @@
 import 'dart:async';
 
+import 'package:bot_toast/bot_toast.dart';
 import 'package:dart_ndk/models/relay_set.dart';
 import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip01/filter.dart';
 import 'package:dart_ndk/read_write.dart';
+import 'package:dart_ndk/request.dart';
 import 'package:flutter/material.dart';
 
 import '../models/event_reactions.dart';
@@ -16,7 +18,7 @@ class EventReactionsProvider extends ChangeNotifier
   int update_time = 1000 * 60 * 10;
 
   Map<String, EventReactions> _eventReactionsMap = {};
-  Map<String, StreamSubscription<Nip01Event>> subscriptions = {};
+  Map<String, NostrRequest> requests = {};
 
   EventReactionsProvider() {
     laterTimeMS = 2000;
@@ -63,8 +65,8 @@ class EventReactionsProvider extends ChangeNotifier
     }
   }
 
-  Future<StreamSubscription<Nip01Event>> subscription(String id, String? pubKey, int? kind) async {
-    var filter = kind!=null ? Filter(eTags: [id], kinds: [kind]) : Filter(eTags: [id]);
+  Future<void> subscription(String eventId, String? pubKey, int? kind) async {
+    var filter = kind!=null ? Filter(eTags: [eventId], kinds: [kind]) : Filter(eTags: [eventId]);
 
     RelaySet? relaySet;
 
@@ -80,12 +82,12 @@ class EventReactionsProvider extends ChangeNotifier
     } else {
       relaySet = myInboxRelaySet;
     }
-    Stream<Nip01Event> stream = await relayManager!.subscription(filter, relaySet!, splitRequestsByPubKeyMappings: settingProvider.gossip == 1);
-    StreamSubscription<Nip01Event> sub = stream.listen((event) {
+    NostrRequest request = await relayManager!.query(filter, relaySet!, splitRequestsByPubKeyMappings: settingProvider.gossip == 1);
+    requests[eventId] = request;
+
+    request.stream.listen((event) {
           _handleSingleEvent2(event);
         });
-    subscriptions[id] = sub;
-    return sub;
     // TODO should use other relays inbox for pubKey....
   }
 
@@ -101,7 +103,7 @@ class EventReactionsProvider extends ChangeNotifier
       er = EventReactions(event.id);
       _eventReactionsMap[event.id] = er;
     } else {
-      if (forceSubscription && subscriptions[event.id]==null) {
+      if (forceSubscription && requests[event.id]==null) {
         subscription(event.id, event.pubKey, null);
       }
       var now = DateTime.now();
@@ -221,11 +223,11 @@ class EventReactionsProvider extends ChangeNotifier
     return updated;
   }
 
-  void removePendding(String id) async {
-    _penddingIds.remove(id);
-    if (subscriptions[id]!=null) {
-      await subscriptions[id]!.cancel();
-      subscriptions.remove(id);
+  void removePendding(String eventId) async {
+    _penddingIds.remove(eventId);
+    if (requests[eventId]!=null) {
+      await relayManager.closeNostrRequest(requests[eventId]!);
+      requests.remove(eventId);
     }
   }
 

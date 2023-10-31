@@ -1,5 +1,6 @@
 import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip01/filter.dart';
+import 'package:dart_ndk/request.dart';
 import 'package:flutter/material.dart';
 
 import '../main.dart';
@@ -67,9 +68,9 @@ class SingleEventProvider extends ChangeNotifier with LaterFunction {
     List<String> tempIds = [];
     tempIds.addAll(_needUpdateIds);
     if (myInboxRelaySet!=null) {
-      Stream<Nip01Event> stream = await relayManager.requestRelays(
+      NostrRequest request = await relayManager.requestRelays(
           myInboxRelaySet!.urls, filter, idleTimeout: 20);
-      stream.listen((event) {
+      request.stream.listen((event) {
         _onEvent(event);
       });
     }

@@ -1,5 +1,6 @@
 import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip01/filter.dart';
+import 'package:dart_ndk/request.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:yana/main.dart';
@@ -31,6 +32,8 @@ class _TagDetailRouter extends CustState<TagDetailRouter>
   EventMemBox box = EventMemBox();
 
   ScrollController _controller = ScrollController();
+
+  NostrRequest? subscription;
 
   bool showTitle = false;
 
@@ -150,7 +153,10 @@ class _TagDetailRouter extends CustState<TagDetailRouter>
     doQuery();
   }
 
-  void doQuery() {
+  void doQuery() async {
+    if (subscription!=null) {
+      await relayManager.closeNostrRequest(subscription!);
+    }
     var plainTag = tag!.replaceFirst("#", "");
     var filter = Filter(kinds: [
       Nip01Event.TEXT_NODE_KIND,
@@ -167,11 +173,10 @@ class _TagDetailRouter extends CustState<TagDetailRouter>
     // } else {
     //   queryArg["#t"] = [plainTag];
     // }
-    relayManager.subscription(filter, myInboxRelaySet!).then((stream) {
-      stream.listen((event) {
-        onEvent(event);
-      });
-    },);
+    subscription = await relayManager.subscription(filter, myInboxRelaySet!);
+    subscription!.stream.listen((event) {
+      onEvent(event);
+    });
   }
 
   void onEvent(Nip01Event event) {
@@ -187,6 +192,7 @@ class _TagDetailRouter extends CustState<TagDetailRouter>
     disposeLater();
 
     try {
+      relayManager.closeNostrRequest(subscription!);
       // nostr!.unsubscribe(subscribeId);
     } catch (e) {}
   }

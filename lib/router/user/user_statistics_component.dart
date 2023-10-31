@@ -6,6 +6,7 @@ import 'package:dart_ndk/models/user_relay_list.dart';
 import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip01/filter.dart';
 import 'package:dart_ndk/nips/nip02/contact_list.dart';
+import 'package:dart_ndk/request.dart';
 import 'package:flutter/material.dart';
 import 'package:yana/utils/base_consts.dart';
 
@@ -80,8 +81,8 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
         }
       },
     );
-    // queryFollowers();
-    // queryZaps();
+    queryFollowers();
+    queryZaps();
   }
 
   void refreshContactListIfNeededAsync(String pubkey) {
@@ -255,7 +256,8 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
 
   String followedSubscribeId = "";
 
-  StreamSubscription<Nip01Event>? _followersSubscription;
+  NostrRequest? _followersSubscription;
+  NostrRequest? _zapsSubscription;
 
   queryFollowers() async {
     if (followedMap == null) {
@@ -264,12 +266,12 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
       Filter filter =
           Filter(kinds: [ContactList.KIND], pTags: [widget.pubkey]);
 
-      Stream<Nip01Event> stream = await relayManager.requestRelays(
+      _followersSubscription = await relayManager.requestRelays(
           relayManager.bootstrapRelays.toList()
             ..addAll(myInboxRelaySet!.urls),
           filter,
-          idleTimeout: 20);
-      _followersSubscription = stream.listen((event) {
+          idleTimeout: 60);
+      _followersSubscription!.stream.listen((event) {
         var oldEvent = followedMap![event.pubKey];
         if (oldEvent == null || event.createdAt > oldEvent.createdAt) {
           followedMap![event.pubKey] = event;
@@ -300,20 +302,17 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
     }
   }
 
-  String zapSubscribeId = "";
-
   queryZaps() async {
     if (zapEventBox == null) {
       zapEventBox = EventMemBox(sortAfterAdd: false);
       // pull zap event
-      zapSubscribeId = StringUtil.rndNameStr(12);
-      Stream<Nip01Event> stream = await relayManager.requestRelays(
+      _zapsSubscription = await relayManager.requestRelays(
           relayManager.bootstrapRelays.toList()
             ..addAll(myInboxRelaySet!.urls),
           Filter(kinds: [EventKind.ZAP_RECEIPT], pTags: [widget.pubkey]),
           idleTimeout: 20
       );
-      stream.listen(
+      _zapsSubscription!.stream.listen(
         (event) {
           if (event.kind == EventKind.ZAP_RECEIPT && zapEventBox!.add(event)) {
             if (!_disposed) {
@@ -335,7 +334,10 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
   void dispose() {
     super.dispose();
     if (_followersSubscription != null) {
-      _followersSubscription!.cancel();
+      relayManager.closeNostrRequest(_followersSubscription!);
+    }
+    if (_zapsSubscription != null) {
+      relayManager.closeNostrRequest(_zapsSubscription!);
     }
     _disposed = true;
   }

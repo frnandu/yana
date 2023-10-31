@@ -4,6 +4,7 @@ import 'package:dart_ndk/models/relay_set.dart';
 import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip01/filter.dart';
 import 'package:dart_ndk/nips/nip01/metadata.dart';
+import 'package:dart_ndk/request.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -39,7 +40,7 @@ class _UserRouter extends CustState<UserRouter>
   final GlobalKey<NestedScrollViewState> globalKey = GlobalKey();
 
   ScrollController _controller = ScrollController();
-  StreamSubscription<Nip01Event>? _streamSubscription;
+  NostrRequest? subscription;
 
   String? pubkey;
 
@@ -89,7 +90,7 @@ class _UserRouter extends CustState<UserRouter>
     var _settingProvider = Provider.of<SettingProvider>(context);
     var _metadataProvider = Provider.of<MetadataProvider>(context);
 
-    if (StringUtil.isBlank(pubkey) || _streamSubscription == null) {
+    if (StringUtil.isBlank(pubkey) || subscription == null) {
       pubkey = RouterUtil.routerArgs(context) as String?;
       if (StringUtil.isBlank(pubkey)) {
         RouterUtil.back(context);
@@ -270,8 +271,8 @@ class _UserRouter extends CustState<UserRouter>
   @override
   void dispose() {
     super.dispose();
-    if (_streamSubscription!=null) {
-      _streamSubscription!.cancel();
+    if (subscription!=null) {
+      relayManager.closeNostrRequest(subscription!);
     }
     disposeLater();
   }
@@ -315,8 +316,9 @@ class _UserRouter extends CustState<UserRouter>
       relaySet = feedRelaySet!;
     }
     relayManager!.subscription(
-        filter, relaySet).then((stream) {
-      _streamSubscription = stream.listen((event) {
+        filter, relaySet).then((request) {
+          subscription = request;
+          subscription!.stream.listen((event) {
         onEvent(event);
       });
     },);

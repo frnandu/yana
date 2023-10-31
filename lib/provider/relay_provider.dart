@@ -66,7 +66,7 @@ class RelayProvider extends ChangeNotifier {
       createMyRelaySets(userRelayList);
       await relayManager.saveRelaySet(myOutboxRelaySet!);
       await relayManager.saveRelaySet(myInboxRelaySet!);
-      await relayManager.reconnectRelays(userRelayList.urls);
+      await relayManager.connect(urls: userRelayList.urls);
       notifyListeners();
     }
   }
@@ -78,6 +78,7 @@ class RelayProvider extends ChangeNotifier {
       createMyRelaySets(userRelayList);
       await cacheManager.saveRelaySet(myOutboxRelaySet!);
       await cacheManager.saveRelaySet(myInboxRelaySet!);
+      await relayManager.connect(urls: userRelayList.urls);
       notifyListeners();
     }
   }

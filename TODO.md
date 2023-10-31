@@ -62,19 +62,24 @@
 - ~~check why some replies appear on posts~~
 - ~~sign verify~~
 - ~~nip05~~
+- ~~relay setting of read/write~~
+- ~~https://docs.flutter.dev/ui/navigation/deep-linking~~
+- ~~subscription on profile/DMS/notifications should be kept open to receive updates from WS - REFACTOR logic of later loading & caching metadata~~
 
 v0.12
-- community posts not showing all of events WTF?
+- [\"NOTICE\",\"Subscription error: Maximum concurrent subscription count reached\"] on nostr.filmweb.pl
 - persist notes from feed for faster startup
 - new posts/replies appear in layered popup with avatars
 - choose to which relays / lists to broadcast on new note (bounty)
- 
+- don't load stuff in tabs that are not visible!!!!
+
 - verify signature ASYNC!?!?!?!
 - FIX THREADED VIEW
 - dms
 - nwc
 - blacklist for relays
-
+- when blocking make the note disappear
+- 
 - notifications
   - FIX UI/UX
 - re-enable awesome notifications
@@ -106,19 +111,9 @@ v0.13
 - Mutiny NWC Wallet
 - Current.io NWC Wallet
 - LndHub Wallet
+- greenlight LN NODE
 
 - WebLN for web: https://github.com/aniketambore/flutter_webln
-
-
-- make promo video:
-  - music https://soundcloud.com/ben-murray-smith/spectrum
-  - “It's very attractive to the libertarian viewpoint if we can explain it properly. I'm better with code than with words though.” ― Satoshi Nakamoto
-  - free Ross
-  - "We the Cypherpunks are dedicated to building anonymous systems"
-  - free Assange
-  - "...but now I work for the public" - Snowden
-  - "Is this the official nostr channel? No, nothing is official - Fiatjaf"
-  - "WikiLeaks has kicked the hornet’s nest, and the swarm is headed towards us." ― Satoshi Nakamoto
 
 - nip19 nprofile
 - custom zap amounts
@@ -130,17 +125,11 @@ v0.13
 - update service check for new release from github
 - login with nip05
 - login with mnemonic
-- 
 - remember eventMemBox for Posts/Replies on DB (on just timestamp lastRead) so badge counter persists between app restarts
-- 
 - get notifications in background for all accounts
-- make sure background service starts after device reboot
 - floating icon (+) on DMS sends new msg to CHOOSE
-- subscription on profile/DMS/notifications should be kept open to receive updates from WS - REFACTOR logic of later loading & caching metadata
 - optimize zaps/followed downloading (caching on db) on background 
-- relay setting of read/write
 - Auto-Translate/detect language note contents using something else than google services 
-- https://docs.flutter.dev/ui/navigation/deep-linking
 - mark all DMs as read feature
 - submit to f-droid
 - badges also on drawer when in tablet mode
@@ -150,7 +139,6 @@ v0.13
 - show common followers/followees
 - try to load images using Isolate and compute, so that feed scrolling does not freeze while loading images
 - add SystemMouseCursors.click to everything that is clickable for web version
-- move reposts from replies to posts? maybe new tab only for reposts?
 - https://pub.dev/packages/objectbox
 - integration with https://github.com/greenart7c3/Amber
 - long posts should be cut and have "show more"
@@ -163,4 +151,14 @@ v0.13
 - umbrel store package with web client
 - when new user with no following, suggest jack, fiatjaf and others
 - make it work on iOS/MacOS
-- try https://pub.dev/packages/flutter_rust_bridge for background loading of new events
+
+
+- make promo video:
+  - music https://soundcloud.com/ben-murray-smith/spectrum
+  - “It's very attractive to the libertarian viewpoint if we can explain it properly. I'm better with code than with words though.” ― Satoshi Nakamoto
+  - free Ross
+  - "We the Cypherpunks are dedicated to building anonymous systems"
+  - free Assange
+  - "...but now I work for the public" - Snowden
+  - "Is this the official nostr channel? No, nothing is official - Fiatjaf"
+  - "WikiLeaks has kicked the hornet’s nest, and the swarm is headed towards us." ― Satoshi Nakamoto

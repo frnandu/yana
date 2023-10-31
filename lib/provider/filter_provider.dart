@@ -1,10 +1,12 @@
+import 'package:dart_ndk/event_filter.dart';
+import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:flutter/material.dart';
 import 'package:yana/provider/data_util.dart';
 
 import '../main.dart';
 import '../utils/dirtywords_util.dart';
 
-class FilterProvider extends ChangeNotifier {
+class FilterProvider extends ChangeNotifier implements EventFilter {
   static FilterProvider? _instance;
 
   Map<String, int> blocks = {};
@@ -21,8 +23,6 @@ class FilterProvider extends ChangeNotifier {
         for (var block in blockList) {
           _instance!.blocks[block] = 1;
         }
-        relayManager.blockedEventPubKeys.clear();
-        relayManager.blockedEventPubKeys.addAll(_instance!.blocks.keys);
       }
 
       var dirtywordList =
@@ -90,8 +90,11 @@ class FilterProvider extends ChangeNotifier {
   void _updateBlock() {
     var list = blocks.keys.toList();
     sharedPreferences.setStringList(DataKey.BLOCK_LIST, list);
-    relayManager.blockedEventPubKeys.clear();
-    relayManager.blockedEventPubKeys.addAll(blocks.keys);
     notifyListeners();
+  }
+
+  @override
+  bool filter(Nip01Event event) {
+    return !blocks.keys.contains(event.pubKey) && !checkDirtyword(event.content);
   }
 }

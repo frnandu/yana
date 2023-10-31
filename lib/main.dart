@@ -255,6 +255,8 @@ List<String> DEFAULT_CONTACT_LIST_KEYS = [
 ];
 
 Future<void> initRelays({bool newKey = false}) async {
+  relayManager.eventFilters.add(filterProvider);
+
   await relayManager.connect();
 
   UserRelayList? userRelayList = !newKey ? await relayManager.getSingleUserRelayList(loggedUserSigner!.getPublicKey()) : null;

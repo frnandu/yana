@@ -279,8 +279,8 @@ class _SearchRouter extends CustState<SearchRouter>
         filterMap!["until"] = until;
       }
     }
-    relayManager.requestRelays(relaysWithNip50, Filter.fromMap(filterMap!)).then((stream) {
-      stream.listen((event) {
+    relayManager.requestRelays(relaysWithNip50, Filter.fromMap(filterMap!)).then((request) {
+      request.stream.listen((event) {
         onQueryEvent(event);
       });
     });

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:bot_toast/bot_toast.dart';
 import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip01/filter.dart';
+import 'package:dart_ndk/request.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:widget_size/widget_size.dart';
@@ -162,11 +163,11 @@ class _CommunityDetailRouter extends CustState<CommunityDetailRouter> with Pendd
     }
   }
 
-  StreamSubscription<Nip01Event>? _streamSubscription;
+  NostrRequest? subscription;
 
   void queryEvents() {
-    if (_streamSubscription!=null) {
-      _streamSubscription!.cancel();
+    if (subscription!=null) {
+      relayManager.closeNostrRequest(subscription!);
     }
     var filter = Filter(kinds: [
       Nip01Event.TEXT_NODE_KIND,
@@ -177,8 +178,9 @@ class _CommunityDetailRouter extends CustState<CommunityDetailRouter> with Pendd
       communityId!.toAString()
     ], limit: 100);
 
-    relayManager.subscription(filter, myInboxRelaySet!).then((stream) {
-      _streamSubscription = stream.listen((event) {
+    relayManager.subscription(filter, myInboxRelaySet!).then((request) {
+      subscription = request;
+      subscription!.stream.listen((event) {
         onEvent(event);
       });
     },);
@@ -197,8 +199,8 @@ class _CommunityDetailRouter extends CustState<CommunityDetailRouter> with Pendd
     super.dispose();
     disposeLater();
 
-    if (_streamSubscription!=null) {
-      _streamSubscription!.cancel();
+    if (subscription!=null) {
+      relayManager.closeNostrRequest(subscription!);
     }
   }
 
