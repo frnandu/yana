@@ -381,13 +381,13 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
     var id = widget.event.id;
     eventReactionsProvider.removePendding(id);
   }
-  //
-  // @override
-  // void deactivate() {
-  //   super.deactivate();
-  //   var id = widget.event.id;
-  //   eventReactionsProvider.removePendding(id);
-  // }
+
+  @override
+  void deactivate() {
+    super.deactivate();
+    var id = widget.event.id;
+    eventReactionsProvider.removePendding(id);
+  }
 
   @override
   void activate() {

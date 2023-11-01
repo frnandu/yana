@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 
 import '../models/event_reactions.dart';
 import '../main.dart';
+import '../nostr/event_kind.dart';
 import '../utils/later_function.dart';
 import '../utils/when_stop_function.dart';
 
@@ -66,7 +67,9 @@ class EventReactionsProvider extends ChangeNotifier
   }
 
   Future<void> subscription(String eventId, String? pubKey, int? kind) async {
-    var filter = kind!=null ? Filter(eTags: [eventId], kinds: [kind]) : Filter(eTags: [eventId]);
+    var filter = kind != null
+        ? Filter(eTags: [eventId], kinds: [kind])
+        : Filter(eTags: [eventId]);
 
     RelaySet? relaySet;
 
@@ -76,22 +79,24 @@ class EventReactionsProvider extends ChangeNotifier
           ownerPubKey: pubKey!,
           pubKeys: [pubKey!],
           direction: RelayDirection.inbox,
-          relayMinCountPerPubKey: 5
-      );
+          relayMinCountPerPubKey: 5);
       relaySet.addMoreRelays(myInboxRelaySet!.relaysMap);
     } else {
       relaySet = myInboxRelaySet;
     }
-    NostrRequest request = await relayManager!.query(filter, relaySet!, splitRequestsByPubKeyMappings: settingProvider.gossip == 1);
+    print(
+        "----------------NOSTR REQUESTS: ${relayManager.nostrRequests.length}, reactions subscriptions: ${requests.length}");
+    NostrRequest request = await relayManager!.subscription(filter, relaySet!,
+        splitRequestsByPubKeyMappings: settingProvider.gossip == 1);
     requests[eventId] = request;
 
     request.stream.listen((event) {
-          _handleSingleEvent2(event);
-        });
+      _handleSingleEvent2(event);
+    });
     // TODO should use other relays inbox for pubKey....
   }
 
-  EventReactions? get(Nip01Event event, {bool forceSubscription=false}) {
+  EventReactions? get(Nip01Event event, {bool forceSubscription = false}) {
     var er = _eventReactionsMap[event.id];
     if (er == null) {
       // plan to pull
@@ -102,10 +107,14 @@ class EventReactionsProvider extends ChangeNotifier
       // // set a empty er to avoid pull many times
       er = EventReactions(event.id);
       _eventReactionsMap[event.id] = er;
+      return er;
     } else {
-      if (forceSubscription && requests[event.id]==null) {
+      if (requests[event.id] == null) {
         subscription(event.id, event.pubKey, null);
       }
+      // if (forceSubscription && requests[event.id] == null) {
+      //   subscription(event.id, event.pubKey, null);
+      // }
       var now = DateTime.now();
       // check dataTime if need to update
       // if (now.millisecondsSinceEpoch - er.dataTime.millisecondsSinceEpoch >
@@ -224,8 +233,8 @@ class EventReactionsProvider extends ChangeNotifier
   }
 
   void removePendding(String eventId) async {
-    _penddingIds.remove(eventId);
-    if (requests[eventId]!=null) {
+    // _penddingIds.remove(eventId);
+    if (requests[eventId] != null) {
       await relayManager.closeNostrRequest(requests[eventId]!);
       requests.remove(eventId);
     }

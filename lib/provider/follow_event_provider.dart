@@ -212,8 +212,8 @@ class FollowEventProvider extends ChangeNotifier
             : myInboxRelaySet!);
     subscription!.stream.listen((event) {
       // if (event.pubKey == loggedUserSigner!.getPublicKey()) {
-      print(
-          "event.createdAt from loadMore:${DateTime.fromMillisecondsSinceEpoch(event.createdAt * 1000)}");
+      // print(
+      //     "event.createdAt from loadMore:${DateTime.fromMillisecondsSinceEpoch(event.createdAt * 1000)}");
       onEvent(event);
       // }
     });

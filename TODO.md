@@ -75,6 +75,7 @@ v0.12
 - when blocking make the note disappear
 - re-enable awesome notifications
 
+- get all your contacts metadatas for search
 - FIX THREADED VIEW
 
 - persist notes from feed for faster startup

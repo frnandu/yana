@@ -134,8 +134,8 @@ class EventReactions implements FindEventInterface {
               }
             }
           }
-          replyNum++;
-          replies.add(event);
+          // replyNum++;
+          // replies.add(event);
         // }
       }
 

@@ -411,7 +411,7 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
             text: widget.metadata!.website!,
             onTap: () {
               String url = widget.metadata!.website!;
-              if (!url.startsWith("https://") || !url.startsWith("http://")) {
+              if (!url.startsWith("https://") && !url.startsWith("http://")) {
                 url = "https://" + url;
               }
               launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);

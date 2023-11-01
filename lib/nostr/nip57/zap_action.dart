@@ -1,50 +1,49 @@
 import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 
 import '../../i18n/i18n.dart';
 import '../../main.dart';
 import '../../utils/lightning_util.dart';
 import '../../utils/string_util.dart';
+import '../event_kind.dart';
 import 'zap.dart';
 
 class ZapAction {
   static Future<void> handleZap(BuildContext context, int sats, String pubkey,
       {String? eventId, String? pollOption, String? comment, required Function(bool) onZapped}) async {
     var s = I18n.of(context);
-    var cancelFunc = BotToast.showLoading();
-    try {
-      var invoiceCode = await _doGenInvoiceCode(context, sats, pubkey,
-          eventId: eventId, pollOption: pollOption, comment: comment);
+    // EasyLoading.sho.showLoading();
+    var invoiceCode = await _doGenInvoiceCode(context, sats, pubkey,
+        eventId: eventId, pollOption: pollOption, comment: comment);
 
-      if (StringUtil.isBlank(invoiceCode)) {
-        BotToast.showText(text: s.Gen_invoice_code_error);
-        return;
+    if (StringUtil.isBlank(invoiceCode)) {
+      EasyLoading.showError(s.Gen_invoice_code_error, duration: const Duration(seconds: 5));
+      return;
+    }
+    bool sendWithWallet = false;
+    if (await nwcProvider.isConnected) {
+      int? balance = await nwcProvider.getBalance;
+      if (balance!=null && balance > 10) {
+        await nwcProvider.payInvoice(invoiceCode!, eventId, onZapped);
+        sendWithWallet = true;
       }
-      bool sendWithWallet = false;
-      if (await nwcProvider.isConnected) {
-        int? balance = await nwcProvider.getBalance;
-        if (balance!=null && balance > 10) {
-          await nwcProvider.payInvoice(invoiceCode!, eventId, onZapped);
-          sendWithWallet = true;
-        }
-      }
-      if (!sendWithWallet) {
-        await LightningUtil.goToPay(context, invoiceCode!);
-      }
-    } finally {
-      cancelFunc.call();
+    }
+    if (!sendWithWallet) {
+      await LightningUtil.goToPay(context, invoiceCode!);
+//      await eventReactionsProvider.subscription(eventId!, null, EventKind.ZAP_RECEIPT);
+      onZapped(true);
     }
   }
 
   static Future<String?> genInvoiceCode(
       BuildContext context, int sats, String pubkey,
       {String? eventId, String? pollOption, String? comment}) async {
-    var cancelFunc = BotToast.showLoading();
     try {
       return await _doGenInvoiceCode(context, sats, pubkey,
           eventId: eventId, pollOption: pollOption, comment: comment);
-    } finally {
-      cancelFunc.call();
+    } catch (e) {
+      print(e);
     }
   }
 
@@ -54,7 +53,7 @@ class ZapAction {
     var s = I18n.of(context);
     var metadata = metadataProvider.getMetadata(pubkey);
     if (metadata == null) {
-      BotToast.showText(text: s.Metadata_can_not_be_found);
+      EasyLoading.show(status: s.Metadata_can_not_be_found);
       return null;
     }
 
@@ -70,7 +69,7 @@ class ZapAction {
       }
     }
     if (StringUtil.isBlank(lnurl)) {
-      BotToast.showText(text: "Lnurl ${s.not_found}");
+      EasyLoading.show(status: "Lnurl ${s.not_found}");
       return null;
     }
     // check if user set wrong
