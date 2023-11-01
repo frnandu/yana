@@ -170,18 +170,20 @@ class RelayMetadataComponent extends StatelessWidget {
         }, selector: (context, _provider) {
           return _provider.getFeedRelayState(relayMetadata.url!);
         });
-        rightBtn = Row(children: [
-          Text("${relayMetadata.count} ",
+        if (relayMetadata.count!=null && relayMetadata.count! > 0) {
+          rightBtn = Row(children: [
+            Text("${relayMetadata.count} ",
+                style: TextStyle(
+                    color: themeData.dividerColor,
+                    fontSize: themeData.textTheme.labelLarge!.fontSize)),
+            Text(
+              "contact" + ((relayMetadata.count! > 1) ? "s" : ""),
               style: TextStyle(
-                  color: themeData.dividerColor,
-                  fontSize: themeData.textTheme.labelLarge!.fontSize)),
-          Text(
-            "contact"+((relayMetadata.count!>1)?"s":""),
-            style: TextStyle(
-                color: themeData.disabledColor,
-                fontSize: themeData.textTheme.labelSmall!.fontSize),
-          )
-        ]);
+                  color: themeData.disabledColor,
+                  fontSize: themeData.textTheme.labelSmall!.fontSize),
+            )
+          ]);
+        }
       }
     }
 

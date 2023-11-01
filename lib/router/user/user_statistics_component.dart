@@ -333,6 +333,17 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
   }
 
   @override
+  void deactivate() {
+    super.deactivate();
+    if (  _followersSubscription != null) {
+      relayManager.closeNostrRequest(_followersSubscription!);
+    }
+    if (_zapsSubscription != null) {
+      relayManager.closeNostrRequest(_zapsSubscription!);
+    }
+  }
+
+  @override
   void dispose() {
     super.dispose();
     if (_followersSubscription != null) {
