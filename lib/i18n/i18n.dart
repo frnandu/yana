@@ -751,7 +751,7 @@ class I18n {
   /// `searching relays`
   String get Searching_relays {
     return Intl.message(
-      'Searching for relays...',
+      'Searching for relays and other stuff...',
       name: 'Searching_relays',
       desc: '',
       args: [],

@@ -102,6 +102,7 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
             zapColor = Colors.orange;
           }
         }
+
         EasyLoading.showInfo("ACTIVE requests: ${relayManager.nostrRequests.length}", duration: const Duration(seconds: 5));
 
         return Container(

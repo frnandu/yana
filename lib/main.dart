@@ -247,13 +247,6 @@ void initProvidersAndStuff() async {
   }
 }
 
-List<String> DEFAULT_CONTACT_LIST_KEYS = [
-  "82341f882b6eabcd2ba7f1ef90aad961cf074af15b9ef44a09f9d2a8fbfbe6a2", // jack
-  "3bf0c63fcb93463407af97a5e5ee64fa883d107ef9e558472c4eb9aaaefa459d", // fiatjaf
-  "6e468422dfb74a5738702a8823b9b28168abab8655faacb6853cd0ee15deee93", // gigi
-  "04c915daefee38317fa734444acee390a8269fe5810b2241e5e6dd343dfbecc9", // ODELL
-];
-
 Future<void> initRelays({bool newKey = false}) async {
   relayManager.eventFilters.add(filterProvider);
 
@@ -297,7 +290,7 @@ Future<void> initRelays({bool newKey = false}) async {
     }
   }
   metadataProvider.notifyListeners();
-  followEventProvider.refreshPosts(fallbackContacts: DEFAULT_CONTACT_LIST_KEYS);
+  followEventProvider.refreshPosts();
 }
 
 void createMyRelaySets(UserRelayList userRelayList) {

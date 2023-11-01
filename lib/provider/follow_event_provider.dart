@@ -36,11 +36,20 @@ class FollowEventProvider extends ChangeNotifier
     return postsAndRepliesBox.listByPubkey(pubkey);
   }
 
-  void refreshPosts({List<String>? fallbackContacts}) {
+  List<String> FALLBACK_TAGS_FOR_EMPTY_CONTACT_LIST = [
+    "grownostr",
+    "plebchain",
+    "welcome",
+    "introductions",
+    "cofeechain",
+    "photography"
+  ];
+
+  void refreshPosts() {
     _initTime = DateTime.now().millisecondsSinceEpoch ~/ 1000;
     postsBox.clear();
     postsAndRepliesBox.clear();
-    doQuery(fallbackContacts: fallbackContacts);
+    doQuery(fallbackTags: FALLBACK_TAGS_FOR_EMPTY_CONTACT_LIST);
 
     followNewEventProvider.clearPosts();
   }
@@ -77,57 +86,72 @@ class FollowEventProvider extends ChangeNotifier
     ];
   }
 
-  void doQuery ({int? until, List<String>? fallbackContacts}) {
-    if (until!=null) {
+  void doQuery(
+      {int? until,
+      List<String>? fallbackContacts,
+      List<String>? fallbackTags}) {
+    if (until != null) {
       loadMore(until: until);
     } else {
-      load(fallbackContacts: fallbackContacts);
+      load(fallbackContacts: fallbackContacts, fallbackTags: fallbackTags);
     }
   }
 
-  void load({List<String>? fallbackContacts}) async {
-    if (subscription!=null) {
+  void load(
+      {List<String>? fallbackContacts, List<String>? fallbackTags}) async {
+    if (subscription != null) {
       await relayManager.closeNostrRequest(subscription!);
     }
 
-    List<String>? contactsForFeed = contactListProvider.contacts();
+    List<String> contactsForFeed = contactListProvider.contacts();
+    var filter = Filter(
+      kinds: queryEventKinds(),
+      authors: contactsForFeed, //..add(loggedUserSigner!.getPublicKey()),
+      limit: 20,
+    );
 
     if (contactsForFeed == null || contactsForFeed.isEmpty) {
       if (kDebugMode) {
         print("CONTACT LIST empty, can not get follow content");
       }
-      if (fallbackContacts!=null && fallbackContacts.isNotEmpty) {
-        contactsForFeed = fallbackContacts;
+      filter.authors = null;
+      if (fallbackContacts != null && fallbackContacts.isNotEmpty) {
+        filter.authors = fallbackContacts;
+      } else if (fallbackTags != null && fallbackTags.isNotEmpty) {
+        filter.tTags = fallbackTags;
       } else {
         return;
       }
     }
-    var filter = Filter(
-      kinds: queryEventKinds(),
-      authors: contactsForFeed..add(loggedUserSigner!.getPublicKey()),
-      limit: 20,
-    );
-    // TODO
-    //addTagCommunityFilter([filter.toMap()], queriyTags);
-    if (settingProvider.gossip == 1 && feedRelaySet!=null) {
-      await relayManager
-          .reconnectRelays(feedRelaySet!.urls);
+    List<String> tags = contactListProvider.followedTags();
+    if (tags.isNotEmpty) {
+      filter.tTags = tags;
+    }
+    List<String> communities = contactListProvider.followedCommunities();
+    if (communities.isNotEmpty) {
+      filter.aTags = communities;
+    }
+    if (settingProvider.gossip == 1 && feedRelaySet != null) {
+      await relayManager.reconnectRelays(feedRelaySet!.urls);
     } else {
       await relayManager.reconnectRelays(myInboxRelaySet!.urls);
     }
 
     subscription = await relayManager!.subscription(
-        filter, (feedRelaySet!=null && settingProvider.gossip==1)? feedRelaySet! : myInboxRelaySet!, splitRequestsByPubKeyMappings: settingProvider.gossip == 1);
+        filter,
+        (feedRelaySet != null && settingProvider.gossip == 1)
+            ? feedRelaySet!
+            : myInboxRelaySet!,
+        splitRequestsByPubKeyMappings: settingProvider.gossip == 1);
     subscription!.stream.listen((event) {
       // if (event.pubKey == loggedUserSigner!.getPublicKey()) {
       //   print("event.createdAt:${DateTime.fromMillisecondsSinceEpoch(event.createdAt*1000)}");
-        onEvent(event);
+      onEvent(event);
       // }
     });
   }
 
   void loadMore({required int until}) async {
-
     List<String>? contactList = contactListProvider.contacts();
 
     if (contactList == null || contactList.isEmpty) {
@@ -138,39 +162,42 @@ class FollowEventProvider extends ChangeNotifier
     }
     var filter = Filter(
       kinds: queryEventKinds(),
-      authors: contactList..add(loggedUserSigner!.getPublicKey()),
+      authors: contactList, //..add(loggedUserSigner!.getPublicKey()),
       until: until,
       limit: 20,
     );
 
     if (!postsAndRepliesBox.isEmpty()) {
       Nip01Event? event = postsAndRepliesBox.oldestEvent;
-      if (event!=null) {
+      if (event != null) {
         filter.until = event.createdAt;
         filter.since = event.createdAt - 60 * 60 * 24;
       }
     }
     // TODO
     //addTagCommunityFilter([filter.toMap()], queriyTags);
-    if (settingProvider.gossip == 1 && feedRelaySet!=null) {
-      await relayManager
-          .reconnectRelays(feedRelaySet!.urls);
+    if (settingProvider.gossip == 1 && feedRelaySet != null) {
+      await relayManager.reconnectRelays(feedRelaySet!.urls);
     } else {
       await relayManager.reconnectRelays(myInboxRelaySet!.urls);
     }
 
     subscription = await relayManager!.query(
-        filter, (feedRelaySet!=null && settingProvider.gossip==1)? feedRelaySet! : myInboxRelaySet!);
+        filter,
+        (feedRelaySet != null && settingProvider.gossip == 1)
+            ? feedRelaySet!
+            : myInboxRelaySet!);
     subscription!.stream.listen((event) {
       // if (event.pubKey == loggedUserSigner!.getPublicKey()) {
-      print("event.createdAt from loadMore:${DateTime.fromMillisecondsSinceEpoch(event.createdAt*1000)}");
+      print(
+          "event.createdAt from loadMore:${DateTime.fromMillisecondsSinceEpoch(event.createdAt * 1000)}");
       onEvent(event);
       // }
     });
   }
 
   void doUnscribe() {
-    if (subscription!=null) {
+    if (subscription != null) {
       relayManager.closeNostrRequest(subscription!);
     }
   }
@@ -302,16 +329,16 @@ class FollowEventProvider extends ChangeNotifier
     notifyListeners();
   }
 
-  // void metadataUpdatedCallback(ContactList? _contactList) {
-  //   if (firstLogin ||
-  //       (postsAndRepliesBox.isEmpty() &&
-  //           _contactList != null &&
-  //           !_contactList.isEmpty())) {
-  //     doQuery();
-  //   }
-  //
-  //   if (firstLogin && _contactList != null && _contactList.list().length > 10) {
-  //     firstLogin = false;
-  //   }
-  // }
+// void metadataUpdatedCallback(ContactList? _contactList) {
+//   if (firstLogin ||
+//       (postsAndRepliesBox.isEmpty() &&
+//           _contactList != null &&
+//           !_contactList.isEmpty())) {
+//     doQuery();
+//   }
+//
+//   if (firstLogin && _contactList != null && _contactList.list().length > 10) {
+//     firstLogin = false;
+//   }
+// }
 }

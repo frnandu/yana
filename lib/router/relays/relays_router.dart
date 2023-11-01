@@ -113,6 +113,8 @@ class _RelaysRouter extends CustState<RelaysRouter> with WhenStopFunction {
                     },
                     builder: (BuildContext context, UserRelayList? userRelayList,
                         Widget? child) {
+                      userRelayList ??= UserRelayList(pubKey: loggedUserSigner!.getPublicKey(), relays: { for (String url in relayManager.bootstrapRelays) url : ReadWriteMarker.readWrite}, createdAt: Helpers.now, refreshedTimestamp: Helpers.now);
+
                       return userRelayList==null? Container(): ListView.builder(
                         itemBuilder: (context, index) {
                           var url = userRelayList!.urls.toList()[index];

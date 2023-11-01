@@ -54,12 +54,8 @@ class _LoginRouter extends State<LoginRouter>
       }
     }
 
-    var logoWidget = Image.asset(
-      "assets/imgs/logo/logo-with-name.png",
-      width: 200,
-      height: 200,
-      isAntiAlias:true
-    );
+    var logoWidget = Image.asset("assets/imgs/logo/logo-with-name.png",
+        width: 200, height: 200, isAntiAlias: true);
 
     // var logoWidget = SvgPicture.asset(
     //   width: 200,
@@ -232,7 +228,8 @@ class _LoginRouter extends State<LoginRouter>
       // //           child: Image.asset("assets/imgs/ios.png", width: 100, isAntiAlias:true))),
       // //
       // ],));
-      var github = Image.asset("assets/imgs/github.png", width: 200, isAntiAlias:true);
+      var github =
+          Image.asset("assets/imgs/github.png", width: 200, isAntiAlias: true);
       list.add(MouseRegion(
           cursor: SystemMouseCursors.click,
           child: GestureDetector(
@@ -242,7 +239,8 @@ class _LoginRouter extends State<LoginRouter>
               },
               child: github)));
 
-      var obtainium = Image.asset("assets/imgs/obtainium.png", width: 200, isAntiAlias:true);
+      var obtainium = Image.asset("assets/imgs/obtainium.png",
+          width: 200, isAntiAlias: true);
       list.add(MouseRegion(
           cursor: SystemMouseCursors.click,
           child: GestureDetector(
@@ -316,16 +314,6 @@ class _LoginRouter extends State<LoginRouter>
       BotToast.showText(text: I18n.of(context).Private_key_is_null);
       return;
     }
-    var alreadyClosed = false;
-    //showLoaderDialog(context);
-    Future.delayed(const Duration(seconds: 1), () {
-      if (!alreadyClosed) {
-        EasyLoading.show(status: I18n
-            .of(context)
-            .Searching_relays, maskType: EasyLoadingMaskType.black);
-      }
-    });
-
     try {
       bool isPublic = pubOnly || Nip19.isPubkey(key);
       if (Nip19.isPubkey(key) || Nip19.isPrivateKey(key)) {
@@ -334,30 +322,21 @@ class _LoginRouter extends State<LoginRouter>
       await settingProvider.addAndChangeKey(key, !isPublic, updateUI: false);
       bool isPrivate = !isPublic;
       String publicKey = isPrivate ? getPublicKey(key!) : key!;
-      loggedUserSigner = isPrivate || !PlatformUtil.isWeb()? Bip340EventSigner(isPrivate? key:null, publicKey) : Nip07EventSigner(await js.getPublicKeyAsync());
+      loggedUserSigner = isPrivate || !PlatformUtil.isWeb()
+          ? Bip340EventSigner(isPrivate ? key : null, publicKey)
+          : Nip07EventSigner(await js.getPublicKeyAsync());
 
-        Future.delayed(const Duration(seconds: 10), () {
-          initRelayManager(alreadyClosed, isPublic ? key : getPublicKey(key), newKey);
-        });
-        await initRelayManager(alreadyClosed, isPublic ? key : getPublicKey(key), newKey);
-        alreadyClosed = true;
+      await initRelayManager(isPublic ? key : getPublicKey(key), newKey);
     } catch (e) {
-      EasyLoading.showError(e.toString());
-      // BotToast.showText(text: e.toString());
-      Navigator.of(context, rootNavigator: true).pop();
+      EasyLoading.showError(e.toString(), duration: const Duration(seconds: 5));
     }
   }
 
-  Future<void> initRelayManager(bool alreadyClosed, String publicKey, bool newKey) async {
-    if (!alreadyClosed) {
-      EasyLoading.dismiss();
-      // Navigator.of(context, rootNavigator: true).pop();
+  Future<void> initRelayManager( String publicKey, bool newKey) async {
       await initRelays(newKey: newKey);
-      settingProvider.notifyListeners();
-      alreadyClosed = true;
+    settingProvider.notifyListeners();
 
-      firstLogin = true;
-      indexProvider.setCurrentTap(IndexTaps.FOLLOW);
-    }
+    firstLogin = true;
+    indexProvider.setCurrentTap(IndexTaps.FOLLOW);
   }
 }

@@ -56,8 +56,6 @@ class ContactListProvider extends ChangeNotifier {
   //   _contactListProvider!._contactList = ContactList();
   // }
 
-  var subscriptId = StringUtil.rndNameStr(16);
-
   // void _onEvent(Nip01Event e) {
   //   if (e.kind == kind.EventKind.CONTACT_LIST) {
   //     if (_event == null || e.createdAt > _event!.createdAt) {
@@ -94,6 +92,16 @@ class ContactListProvider extends ChangeNotifier {
   List<String> contacts() {
     ContactList? contactList = getContactList(loggedUserSigner!.getPublicKey());
     return contactList!=null ? contactList!.contacts : [];
+  }
+  
+  List<String> followedTags() {
+    ContactList? contactList = getContactList(loggedUserSigner!.getPublicKey());
+    return contactList!=null ? contactList!.followedTags : [];
+  }
+
+  List<String> followedCommunities() {
+    ContactList? contactList = getContactList(loggedUserSigner!.getPublicKey());
+    return contactList!=null ? contactList!.followedCommunities : [];
   }
 
   void clear() {

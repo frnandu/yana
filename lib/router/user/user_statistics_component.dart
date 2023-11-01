@@ -266,11 +266,13 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
       Filter filter =
           Filter(kinds: [ContactList.KIND], pTags: [widget.pubkey]);
 
-      _followersSubscription = await relayManager.requestRelays(
-          relayManager.bootstrapRelays.toList()
-            ..addAll(myInboxRelaySet!.urls),
+      _followersSubscription = await relayManager.subscription(
+          // relayManager.bootstrapRelays.toList()
+          //   ..addAll(myInboxRelaySet!.urls),
           filter,
-          idleTimeout: 60);
+          myInboxRelaySet!
+          // idleTimeout: 60
+      );
       _followersSubscription!.stream.listen((event) {
         var oldEvent = followedMap![event.pubKey];
         if (oldEvent == null || event.createdAt > oldEvent.createdAt) {
@@ -306,11 +308,11 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
     if (zapEventBox == null) {
       zapEventBox = EventMemBox(sortAfterAdd: false);
       // pull zap event
-      _zapsSubscription = await relayManager.requestRelays(
-          relayManager.bootstrapRelays.toList()
-            ..addAll(myInboxRelaySet!.urls),
+      _zapsSubscription = await relayManager.subscription(
+          // relayManager.bootstrapRelays.toList()
+          //   ..addAll(myInboxRelaySet!.urls),
           Filter(kinds: [EventKind.ZAP_RECEIPT], pTags: [widget.pubkey]),
-          idleTimeout: 20
+          myInboxRelaySet!,
       );
       _zapsSubscription!.stream.listen(
         (event) {
