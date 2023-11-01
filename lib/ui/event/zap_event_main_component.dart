@@ -77,7 +77,7 @@ class _ZapEventMainComponent extends State<ZapEventMainComponent> {
       text: TextSpan(
         style: DefaultTextStyle.of(context).style, // default text style
         children: <TextSpan>[
-          TextSpan(text: ' zapped ', style: DefaultTextStyle.of(context).style),
+          TextSpan(text: ' zapped '/*, style: DefaultTextStyle.of(context).style*/),
           TextSpan(
             text: zapNumStr.toString(),
             style: const TextStyle(

@@ -126,6 +126,11 @@ class NotificationsProvider extends ChangeNotifier
           .where(
               (element) => element.pubKey != loggedUserSigner?.getPublicKey())
           .toList();
+      if (eventBox.length() >20 && list.first.createdAt > eventBox.newestEvent!.createdAt) {
+        newNotificationsProvider.handleEvents(list);
+        return;
+      }
+
       var result = eventBox.addList(list);
       if (result) {
         notifyListeners();

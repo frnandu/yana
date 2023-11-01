@@ -65,22 +65,21 @@
 - ~~relay setting of read/write~~
 - ~~https://docs.flutter.dev/ui/navigation/deep-linking~~
 - ~~subscription on profile/DMS/notifications should be kept open to receive updates from WS - REFACTOR logic of later loading & caching metadata~~
+- ~~verify signature ASYNC!?!?!?!~~
+- ~~notifications FIX UI/UX~~
+- ~~new posts/replies appear in layered popup with avatars~~
 
 v0.12
 - persist notes from feed for faster startup
-- new posts/replies appear in layered popup with avatars
+- WTF metadata takes so long to load???
 - choose to which relays / lists to broadcast on new note (bounty)
 - don't load stuff in tabs that are not visible!!!!
-
-- verify signature ASYNC!?!?!?!
 - FIX THREADED VIEW
 - dms
 - nwc
 - blacklist for relays
 - when blocking make the note disappear
 - 
-- notifications
-  - FIX UI/UX
 - re-enable awesome notifications
 - make thread detail subscription of new replies work
 - on back from background, reconnect relay + resubscribe to all existing subscriptions
@@ -88,9 +87,9 @@ v0.12
 - better android/ios/linux badges on web version login screen (anchor links to readme.md for IOS/linux)
 - show progress of broadcasting note on relays
 - include relay hints on nevent and stuff (bounty)
-- garbage collection of webSockets not used since X (for reactions)
 
 v0.13
+- garbage collection of webSockets not used since X (for reactions)
 - animated screen ASAP after splash
 - isar v4 for web
 - load more on big posts

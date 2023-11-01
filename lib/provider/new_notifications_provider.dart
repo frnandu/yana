@@ -77,8 +77,7 @@ class NewNotificationsProvider extends ChangeNotifier
 
   handleEvents(List<Nip01Event> events) {
     int previousCount = eventMemBox.length();
-    // BotToast.showText(
-    //     text: "Received ${events.length} notification events");
+    print("Received ${events.length} notification events");
     events =
         events.where((event) => event.pubKey != loggedUserSigner?.getPublicKey() && !notificationsProvider.eventBox.containsId(event.id)).toList();
     if (events.isEmpty) {

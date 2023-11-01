@@ -193,8 +193,9 @@ class _TagDetailRouter extends CustState<TagDetailRouter>
 
     try {
       relayManager.closeNostrRequest(subscription!);
-      // nostr!.unsubscribe(subscribeId);
-    } catch (e) {}
+    } catch (e) {
+      print(e);
+    }
   }
 
   onDeleteCallback(Nip01Event event) {

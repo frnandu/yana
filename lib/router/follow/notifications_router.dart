@@ -1,4 +1,4 @@
-import 'package:dart_ndk/nips/nip01/event.dart';
+import 'package:dart_ndk/nips/nip25/reactions.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:yana/main.dart';
@@ -13,6 +13,7 @@ import '../../i18n/i18n.dart';
 import '../../nostr/event_kind.dart' as kind;
 import '../../provider/setting_provider.dart';
 import '../../ui/event/event_list_component.dart';
+import '../../ui/event/reaction_event_list_component.dart';
 import '../../ui/event/zap_event_list_component.dart';
 import '../../ui/new_notes_updated_component.dart';
 import '../../ui/placeholder/event_list_placeholder.dart';
@@ -41,7 +42,8 @@ class _NotificationsRouter extends KeepAliveCustState<NotificationsRouter>
   Widget doBuild(BuildContext context) {
     var _settingProvider = Provider.of<SettingProvider>(context);
     var _notificationsProvider = Provider.of<NotificationsProvider>(context);
-    var _newNotificationsProvider = Provider.of<NewNotificationsProvider>(context);
+    var _newNotificationsProvider =
+        Provider.of<NewNotificationsProvider>(context);
     var eventBox = _notificationsProvider.eventBox;
     var events = eventBox.all();
     if (events.isEmpty) {
@@ -63,9 +65,12 @@ class _NotificationsRouter extends KeepAliveCustState<NotificationsRouter>
         if (event.kind == kind.EventKind.ZAP_RECEIPT &&
             StringUtil.isBlank(event.content)) {
           return ZapEventListComponent(event: event);
+        } else if (event.kind == Reaction.KIND) {
+          return ReactionEventListComponent(event:event, text: "reacted ${event.content}    ", renderRootEvent: true,);
         } else {
           return EventListComponent(
             event: event,
+            showReactions: event.kind != Reaction.KIND,
             showVideo: _settingProvider.videoPreview == OpenStatus.OPEN,
           );
         }
@@ -101,11 +106,11 @@ class _NotificationsRouter extends KeepAliveCustState<NotificationsRouter>
 
           return NewNotesUpdatedComponent(
             text: I18n.of(context).message_new,
-
             newEvents: eventMemBox.all(),
             onTap: () {
               notificationsProvider.mergeNewEvent();
-              _controller.animateTo(0,curve: Curves.ease, duration: const Duration(seconds: 1));
+              _controller.animateTo(0,
+                  curve: Curves.ease, duration: const Duration(seconds: 1));
             },
           );
         },

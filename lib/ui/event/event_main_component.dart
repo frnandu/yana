@@ -2,13 +2,13 @@ import 'dart:convert';
 
 import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip01/metadata.dart';
+import 'package:dart_ndk/nips/nip25/reactions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:provider/provider.dart';
 import 'package:screenshot/screenshot.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:yana/ui/content/content_video_component.dart';
-import 'package:yana/ui/content/markdown/markdown_mention_event_element_builder.dart';
 import 'package:yana/utils/platform_util.dart';
 
 import '../../i18n/i18n.dart';
@@ -31,11 +31,9 @@ import '../content/content_image_component.dart';
 import '../content/content_link_component.dart';
 import '../content/content_tag_component.dart';
 import '../content/markdown/markdown_mention_event_inline_syntax.dart';
-import '../content/markdown/markdown_mention_user_element_builder.dart';
 import '../content/markdown/markdown_mention_user_inline_syntax.dart';
 import '../content/markdown/markdown_nevent_inline_syntax.dart';
 import '../content/markdown/markdown_nprofile_inline_syntax.dart';
-import '../content/markdown/markdown_nrelay_element_builder.dart';
 import '../content/markdown/markdown_nrelay_inline_syntax copy.dart';
 import 'event_poll_component.dart';
 import 'event_quote_component.dart';
@@ -274,43 +272,57 @@ class _EventMainComponent extends State<EventMainComponent> {
         }
       } else {
         if (widget.showReplying && eventRelation.tagPList.isNotEmpty && eventRelation.tagEList.isNotEmpty) {
-          var textStyle = TextStyle(
-            color: hintColor,
-            fontSize: smallTextSize,
-          );
-          List<Widget> replyingList = [];
-          var length = eventRelation.tagPList.length;
-          replyingList.add(Text(
-            "${s.Replying}: ",
-            style: textStyle,
-          ));
-          for (var index = 0; index < length; index++) {
-            var p = eventRelation.tagPList[index];
-            var isLast = index < length - 1 ? false : true;
-            replyingList.add(EventReplyingcomponent(pubkey: p));
-            if (!isLast) {
-              replyingList.add(Text(
-                " & ",
-                style: textStyle,
+          if (widget.event.kind!=Reaction.KIND) {
+            var textStyle = TextStyle(
+              color: hintColor,
+              fontSize: smallTextSize,
+            );
+            List<Widget> replyingList = [];
+            var length = eventRelation.tagPList.length;
+            replyingList.add(Text(
+              "${s.Replying}: ",
+              style: textStyle,
+            ));
+            for (var index = 0; index < length; index++) {
+              var p = eventRelation.tagPList[index];
+              var isLast = index < length - 1 ? false : true;
+              replyingList.add(EventReplyingcomponent(pubkey: p));
+              if (!isLast) {
+                replyingList.add(Text(
+                  " & ",
+                  style: textStyle,
+                ));
+              }
+            }
+            list.add(Container(
+              width: double.maxFinite,
+              padding: const EdgeInsets.only(
+                bottom: Base.BASE_PADDING_HALF,
+              ),
+              child: Wrap(
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: replyingList,
+              ),
+            ));
+
+            if (eventRelation.replyId != null) {
+              list.add(EventQuoteComponent(
+                id: eventRelation.replyId,
+                showReactions: false,//widget.showReactions,
+                showVideo: widget.showVideo,
               ));
             }
-          }
-          list.add(Container(
-            width: double.maxFinite,
-            padding: const EdgeInsets.only(
-              bottom: Base.BASE_PADDING_HALF,
-            ),
-            child: Wrap(
-              crossAxisAlignment: WrapCrossAlignment.center,
-              children: replyingList,
-            ),
-          ));
-          if (eventRelation.replyId != null) {
-            list.add(EventQuoteComponent(
-              id: eventRelation.replyId,
-              showReactions: false,//widget.showReactions,
-              showVideo: widget.showVideo,
-            ));
+          } else {
+            list.add(
+              buildContentWidget(_settingProvider, imagePreview, videoPreview),
+            );
+            if (eventRelation.rootId != null) {
+              list.add(EventQuoteComponent(
+                id: eventRelation.rootId,
+                showReactions: false,//widget.showReactions,
+                showVideo: widget.showVideo,
+              ));
+            }
           }
         } else {
           // hide the reply note subject!
@@ -333,7 +345,7 @@ class _EventMainComponent extends State<EventMainComponent> {
           }
         }
 
-        if (widget.event.kind != Metadata.KIND) {
+        if (widget.event.kind != Metadata.KIND && widget.event.kind != Reaction.KIND) {
           list.add(
             buildContentWidget(_settingProvider, imagePreview, videoPreview),
           );
@@ -537,13 +549,13 @@ class _EventMainComponent extends State<EventMainComponent> {
     return MarkdownBody(
       data: content,
       selectable: true,
-      builders: {
-        MarkdownMentionUserElementBuilder.TAG:
-            MarkdownMentionUserElementBuilder(),
-        MarkdownMentionEventElementBuilder.TAG:
-            MarkdownMentionEventElementBuilder(),
-        MarkdownNrelayElementBuilder.TAG: MarkdownNrelayElementBuilder(),
-      },
+      // builders: {
+      //   MarkdownMentionUserElementBuilder.TAG:
+      //       MarkdownMentionUserElementBuilder(),
+      //   MarkdownMentionEventElementBuilder.TAG:
+      //       MarkdownMentionEventElementBuilder(),
+      //   MarkdownNrelayElementBuilder.TAG: MarkdownNrelayElementBuilder(),
+      // },
       blockSyntaxes: [],
       inlineSyntaxes: [
         MarkdownMentionEventInlineSyntax(),

@@ -274,15 +274,19 @@ class _AccountManagerItemComponent extends State<AccountManagerItemComponent> {
 
   static const double LINE_HEIGHT = 44;
 
-  late String pubkey;
+  String? pubkey;
 
   @override
   void initState() {
     super.initState();
-    pubkey = StringUtil.isBlank(widget.publicKey) &&
-            StringUtil.isNotBlank(widget.privateKey)
-        ? getPublicKey(widget.privateKey!)
-        : widget.publicKey!;
+    try {
+      pubkey = StringUtil.isBlank(widget.publicKey) &&
+          StringUtil.isNotBlank(widget.privateKey)
+          ? getPublicKey(widget.privateKey!)
+          : widget.publicKey!;
+    } catch (e) {
+      print(e);
+    }
   }
 
   @override
@@ -297,14 +301,17 @@ class _AccountManagerItemComponent extends State<AccountManagerItemComponent> {
         builder: (context, metadata, child) {
       Color currentColor = Colors.green;
       List<Widget> list = [];
+      if (metadata==null) {
+        return Container();
+      }
 
-      var nip19PubKey = Nip19.encodePubKey(pubkey);
+      var nip19PubKey = pubkey!=null? Nip19.encodePubKey(pubkey!) : null;
 
       Widget? imageWidget;
 
       String? url = metadata != null && StringUtil.isNotBlank(metadata.picture)
           ? metadata.picture
-          : StringUtil.robohash(pubkey);
+          : StringUtil.robohash(pubkey!);
 
       if (url != null) {
         imageWidget = CachedNetworkImage(
@@ -346,11 +353,10 @@ class _AccountManagerItemComponent extends State<AccountManagerItemComponent> {
       list.add(Container(
         margin: EdgeInsets.only(left: 5, right: 5),
         child: NameComponent(
-          pubkey: pubkey,
+          pubkey: pubkey!,
           metadata: metadata,
         ),
       ));
-
       list.add(Expanded(
           child: Container(
         padding: const EdgeInsets.only(
@@ -364,7 +370,7 @@ class _AccountManagerItemComponent extends State<AccountManagerItemComponent> {
           borderRadius: BorderRadius.circular(10),
         ),
         child: Text(
-          nip19PubKey,
+          nip19PubKey!,
           overflow: TextOverflow.ellipsis,
         ),
       )));
@@ -395,7 +401,7 @@ class _AccountManagerItemComponent extends State<AccountManagerItemComponent> {
         ),
       );
     }, selector: (context, _provider) {
-      return _provider.getMetadata(pubkey);
+      return pubkey!=null ? _provider.getMetadata(pubkey!) : null;
     });
   }
 

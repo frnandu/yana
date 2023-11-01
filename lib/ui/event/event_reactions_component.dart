@@ -103,8 +103,6 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
           }
         }
 
-        EasyLoading.showInfo("ACTIVE requests: ${relayManager.nostrRequests.length}", duration: const Duration(seconds: 5));
-
         return Container(
           margin: const EdgeInsets.only(top:10),
           height: 40,

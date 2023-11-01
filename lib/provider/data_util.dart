@@ -28,4 +28,9 @@ class DataKey {
 
   static final String NWC_RELAY= "nwcRelay";
 
+  static final String FEED_POSTS_TIMESTAMP= "feedPosts";
+
+  static final String FEED_REPLIES_TIMESTAMP= "feedReplies";
+
+  static final String NOTIFICATIONS_TIMESTAMP= "notificationsTimestamp";
 }

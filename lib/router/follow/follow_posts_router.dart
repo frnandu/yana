@@ -1,7 +1,9 @@
 import 'dart:async';
 
+import 'package:dart_ndk/nips/nip01/helpers.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:visibility_detector/visibility_detector.dart';
 import 'package:yana/main.dart';
 import 'package:yana/models/event_mem_box.dart';
 import 'package:yana/provider/follow_event_provider.dart';
@@ -12,6 +14,7 @@ import 'package:yana/utils/base.dart';
 import 'package:yana/utils/base_consts.dart';
 
 import '../../i18n/i18n.dart';
+import '../../provider/data_util.dart';
 import '../../provider/setting_provider.dart';
 import '../../ui/event/event_list_component.dart';
 import '../../ui/placeholder/event_list_placeholder.dart';
@@ -35,7 +38,20 @@ class _FollowPostsRouter extends KeepAliveCustState<FollowPostsRouter>
   void initState() {
     super.initState();
     bindLoadMoreScroll(_controller);
-    // doQuery();
+    _controller.addListener(() {
+      if (followEventProvider.postsTimestamp == null) {
+        followEventProvider.postsTimestamp = Helpers.now;
+        sharedPreferences.setInt(
+            DataKey.FEED_POSTS_TIMESTAMP, followEventProvider.postsTimestamp!);
+      }
+    });
+  }
+
+  @override
+  void deactivate() {
+    followEventProvider.postsTimestamp = Helpers.now;
+    sharedPreferences.setInt(
+        DataKey.FEED_POSTS_TIMESTAMP, followEventProvider.postsTimestamp!);
   }
 
   @override
@@ -55,21 +71,30 @@ class _FollowPostsRouter extends KeepAliveCustState<FollowPostsRouter>
     indexProvider.setFollowPostsScrollController(_controller);
     preBuild();
 
-    var main = ListView.builder(
-      controller: _controller,
-      itemBuilder: (BuildContext context, int index) {
-        var event = events[index];
-        // Map<String, dynamic> map = event.toJson();
-        // map['content']=event.content+event.sources.toString();
-        // var e = Nip01Event.fromJson(map);
-        // e.sources = event.sources;
-        return EventListComponent(
-          event: event,
-          showVideo: _settingProvider.videoPreview == OpenStatus.OPEN,
-        );
-      },
-      itemCount: events.length,
-    );
+    var main = VisibilityDetector(
+        key: const Key('feed-posts'),
+        onVisibilityChanged: (visibilityInfo) {
+          if (visibilityInfo.visibleFraction==0.0) {
+            followEventProvider.postsTimestamp = Helpers.now;
+            sharedPreferences.setInt(
+                DataKey.FEED_POSTS_TIMESTAMP, followEventProvider.postsTimestamp!);
+          }
+        },
+        child: ListView.builder(
+          controller: _controller,
+          itemBuilder: (BuildContext context, int index) {
+            var event = events[index];
+            // Map<String, dynamic> map = event.toJson();
+            // map['content']=event.content+event.sources.toString();
+            // var e = Nip01Event.fromJson(map);
+            // e.sources = event.sources;
+            return EventListComponent(
+              event: event,
+              showVideo: _settingProvider.videoPreview == OpenStatus.OPEN,
+            );
+          },
+          itemCount: events.length,
+        ));
 
     // var main = SingleChildScrollView(
     //     controller: _controller,
@@ -125,7 +150,8 @@ class _FollowPostsRouter extends KeepAliveCustState<FollowPostsRouter>
             onTap: () {
               setState(() {
                 followEventProvider.mergeNewPostEvents();
-                _controller.animateTo(0,curve: Curves.ease, duration: const Duration(seconds: 1));
+                _controller.animateTo(0,
+                    curve: Curves.ease, duration: const Duration(seconds: 1));
               });
             },
           );
@@ -142,15 +168,15 @@ class _FollowPostsRouter extends KeepAliveCustState<FollowPostsRouter>
         //   color: Colors.grey,
         // ),
         child: Stack(
-          alignment: Alignment.center,
-          children: stackList,
-        ));
+      alignment: Alignment.center,
+      children: stackList,
+    ));
   }
 
   @override
   void doQuery() {
     preQuery();
-    followEventProvider.doQuery(until: until, forceUserLimit: forceUserLimit);
+    followEventProvider.doQuery(until: until);
   }
 
   @override
@@ -160,5 +186,4 @@ class _FollowPostsRouter extends KeepAliveCustState<FollowPostsRouter>
 
   @override
   Future<void> onReady(BuildContext context) async {}
-
 }

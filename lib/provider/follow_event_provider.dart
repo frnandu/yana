@@ -4,6 +4,7 @@ import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip01/filter.dart';
 import 'package:dart_ndk/request.dart';
 import 'package:flutter/foundation.dart';
+import 'package:yana/provider/data_util.dart';
 
 import '../main.dart';
 import '../models/event_mem_box.dart';
@@ -17,6 +18,9 @@ class FollowEventProvider extends ChangeNotifier
   late int _initTime;
   NostrRequest? subscription;
 
+  int? postsTimestamp;
+  int? repliesTimestamp;
+
   late EventMemBox postsAndRepliesBox; // posts and replies
   late EventMemBox postsBox;
 
@@ -25,6 +29,8 @@ class FollowEventProvider extends ChangeNotifier
     postsAndRepliesBox =
         EventMemBox(sortAfterAdd: false); // sortAfterAdd by call
     postsBox = EventMemBox(sortAfterAdd: false);
+    postsTimestamp = sharedPreferences.getInt(DataKey.FEED_POSTS_TIMESTAMP);
+    repliesTimestamp = sharedPreferences.getInt(DataKey.FEED_REPLIES_TIMESTAMP);
   }
 
   @override
@@ -49,6 +55,9 @@ class FollowEventProvider extends ChangeNotifier
     _initTime = DateTime.now().millisecondsSinceEpoch ~/ 1000;
     postsBox.clear();
     postsAndRepliesBox.clear();
+    postsTimestamp = null;
+    sharedPreferences.remove(DataKey.FEED_POSTS_TIMESTAMP);
+
     doQuery(fallbackTags: FALLBACK_TAGS_FOR_EMPTY_CONTACT_LIST);
 
     followNewEventProvider.clearPosts();
@@ -58,7 +67,10 @@ class FollowEventProvider extends ChangeNotifier
     _initTime = DateTime.now().millisecondsSinceEpoch ~/ 1000;
     postsBox.clear();
     postsAndRepliesBox.clear();
-    doQuery();
+    repliesTimestamp = null;
+    sharedPreferences.remove(DataKey.FEED_REPLIES_TIMESTAMP);
+
+    doQuery(fallbackTags: FALLBACK_TAGS_FOR_EMPTY_CONTACT_LIST);
 
     followNewEventProvider.clearReplies();
   }
@@ -89,11 +101,11 @@ class FollowEventProvider extends ChangeNotifier
   void doQuery(
       {int? until,
       List<String>? fallbackContacts,
-      List<String>? fallbackTags, required bool forceUserLimit}) {
+      List<String>? fallbackTags }) {
     if (until != null) {
-      loadMore(until: until, forceUserLimit: forceUserLimit);
+      loadMore(until: until, fallbackTags: fallbackTags ?? FALLBACK_TAGS_FOR_EMPTY_CONTACT_LIST);
     } else {
-      load(fallbackContacts: fallbackContacts, fallbackTags: fallbackTags);
+      load(fallbackContacts: fallbackContacts, fallbackTags: fallbackTags ?? FALLBACK_TAGS_FOR_EMPTY_CONTACT_LIST);
     }
   }
 
@@ -151,21 +163,28 @@ class FollowEventProvider extends ChangeNotifier
     });
   }
 
-  void loadMore({required int until, required bool forceUserLimit}) async {
-    List<String>? contactList = contactListProvider.contacts();
+  void loadMore({required int until, List<String>? fallbackTags}) async {
 
-    if (contactList == null || contactList.isEmpty) {
-      if (kDebugMode) {
-        print("CONTACT LIST empty, can not get follow content");
-      }
-      return;
-    }
+    List<String> contactsForFeed = contactListProvider.contacts();
     var filter = Filter(
       kinds: queryEventKinds(),
-      authors: contactList, //..add(loggedUserSigner!.getPublicKey()),
+      authors: contactsForFeed, //..add(loggedUserSigner!.getPublicKey()),
       until: until,
       limit: 20,
     );
+
+    if (contactsForFeed == null || contactsForFeed.isEmpty) {
+      if (kDebugMode) {
+        print("CONTACT LIST empty, can not get follow content");
+      }
+      filter.authors = null;
+      if (fallbackTags != null && fallbackTags.isNotEmpty) {
+        filter.tTags = fallbackTags;
+      } else {
+        return;
+      }
+    }
+
 
     if (!postsAndRepliesBox.isEmpty()) {
       Nip01Event? event = postsAndRepliesBox.oldestEvent;
@@ -268,6 +287,8 @@ class FollowEventProvider extends ChangeNotifier
 
     // sort
     postsAndRepliesBox.sort();
+    repliesTimestamp = null;
+    sharedPreferences.remove(DataKey.FEED_REPLIES_TIMESTAMP);
 
     followNewEventProvider.clearReplies();
 
@@ -284,6 +305,8 @@ class FollowEventProvider extends ChangeNotifier
     postsBox.sort();
 
     followNewEventProvider.clearPosts();
+    postsTimestamp = null;
+    sharedPreferences.remove(DataKey.FEED_POSTS_TIMESTAMP);
 
     // update ui
     notifyListeners();
@@ -302,8 +325,16 @@ class FollowEventProvider extends ChangeNotifier
       for (var e in list) {
         bool isPosts = eventIsPost(e);
         if (!isPosts) {
+          if (repliesTimestamp!=null && list.first.createdAt > repliesTimestamp!) {
+            followNewEventProvider.handleEvents(list);
+            return;
+          }
           addedReplies = postsAndRepliesBox.add(e);
         } else {
+          if (postsTimestamp!=null && list.first.createdAt > postsTimestamp!) {
+            followNewEventProvider.handleEvents(list);
+            return;
+          }
           addedPosts = postsBox.add(e);
         }
       }
