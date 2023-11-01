@@ -74,7 +74,7 @@ class _FollowPostsRouter extends KeepAliveCustState<FollowPostsRouter>
     var main = VisibilityDetector(
         key: const Key('feed-posts'),
         onVisibilityChanged: (visibilityInfo) {
-          if (visibilityInfo.visibleFraction==0.0) {
+          if (followEventProvider.postsTimestamp==null && visibilityInfo.visibleFraction==0.0) {
             followEventProvider.postsTimestamp = Helpers.now;
             sharedPreferences.setInt(
                 DataKey.FEED_POSTS_TIMESTAMP, followEventProvider.postsTimestamp!);

@@ -71,7 +71,7 @@ class _FollowPostsAndRepliesRouter
     var main = VisibilityDetector(
         key: const Key('feed-replies'),
         onVisibilityChanged: (visibilityInfo) {
-          if (visibilityInfo.visibleFraction == 0.0) {
+          if (followEventProvider.repliesTimestamp==null && visibilityInfo.visibleFraction == 0.0) {
             followEventProvider.repliesTimestamp = Helpers.now;
             sharedPreferences.setInt(DataKey.FEED_REPLIES_TIMESTAMP,
                 followEventProvider.repliesTimestamp!);
