@@ -89,9 +89,9 @@ class FollowEventProvider extends ChangeNotifier
   void doQuery(
       {int? until,
       List<String>? fallbackContacts,
-      List<String>? fallbackTags}) {
+      List<String>? fallbackTags, required bool forceUserLimit}) {
     if (until != null) {
-      loadMore(until: until);
+      loadMore(until: until, forceUserLimit: forceUserLimit);
     } else {
       load(fallbackContacts: fallbackContacts, fallbackTags: fallbackTags);
     }
@@ -151,7 +151,7 @@ class FollowEventProvider extends ChangeNotifier
     });
   }
 
-  void loadMore({required int until}) async {
+  void loadMore({required int until, required bool forceUserLimit}) async {
     List<String>? contactList = contactListProvider.contacts();
 
     if (contactList == null || contactList.isEmpty) {
