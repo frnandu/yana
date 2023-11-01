@@ -70,25 +70,26 @@
 - ~~new posts/replies appear in layered popup with avatars~~
 
 v0.12
+- nwc
+- dms
+- when blocking make the note disappear
+- re-enable awesome notifications
+
+- FIX THREADED VIEW
+
 - persist notes from feed for faster startup
 - WTF metadata takes so long to load???
 - choose to which relays / lists to broadcast on new note (bounty)
 - don't load stuff in tabs that are not visible!!!!
-- FIX THREADED VIEW
-- dms
-- nwc
 - blacklist for relays
-- when blocking make the note disappear
-- 
-- re-enable awesome notifications
 - make thread detail subscription of new replies work
 - on back from background, reconnect relay + resubscribe to all existing subscriptions
 - make reactions live again with subscriptions or some other way 
-- better android/ios/linux badges on web version login screen (anchor links to readme.md for IOS/linux)
 - show progress of broadcasting note on relays
 - include relay hints on nevent and stuff (bounty)
 
 v0.13
+- better android/ios/linux badges on web version login screen (anchor links to readme.md for IOS/linux)
 - garbage collection of webSockets not used since X (for reactions)
 - animated screen ASAP after splash
 - isar v4 for web

@@ -804,8 +804,8 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
           backgroundService!.invoke('stopService');
         }
         relayManager.reconnectRelays(relayManager.relays.keys).then((value) {
-          newNotificationsProvider.queryNew();
-          followEventProvider.refreshPosts();
+          // newNotificationsProvider.queryNew();
+          // followEventProvider.refreshPosts();
         });
       }
     }

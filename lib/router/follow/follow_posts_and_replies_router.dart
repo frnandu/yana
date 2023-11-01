@@ -36,19 +36,18 @@ class _FollowPostsAndRepliesRouter
     super.initState();
     bindLoadMoreScroll(_controller);
     _controller.addListener(() {
-      if (followEventProvider.repliesTimestamp == null) {
-        followEventProvider.repliesTimestamp = Helpers.now;
-        sharedPreferences.setInt(DataKey.FEED_REPLIES_TIMESTAMP,
-            followEventProvider.repliesTimestamp!);
-      }
+      followEventProvider.setRepliesTimestampToNewestAndSave();
     });
   }
 
   @override
   void deactivate() {
-    followEventProvider.repliesTimestamp = Helpers.now;
-    sharedPreferences.setInt(
-        DataKey.FEED_REPLIES_TIMESTAMP, followEventProvider.repliesTimestamp!);
+    followEventProvider.setRepliesTimestampToNewestAndSave();
+  }
+
+  @override
+  void dispose() {
+    followEventProvider.setRepliesTimestampToNewestAndSave();
   }
 
   @override
@@ -71,10 +70,8 @@ class _FollowPostsAndRepliesRouter
     var main = VisibilityDetector(
         key: const Key('feed-replies'),
         onVisibilityChanged: (visibilityInfo) {
-          if (followEventProvider.repliesTimestamp==null && visibilityInfo.visibleFraction == 0.0) {
-            followEventProvider.repliesTimestamp = Helpers.now;
-            sharedPreferences.setInt(DataKey.FEED_REPLIES_TIMESTAMP,
-                followEventProvider.repliesTimestamp!);
+          if (visibilityInfo.visibleFraction == 0.0) {
+            followEventProvider.setRepliesTimestampToNewestAndSave;
           }
         },
         child: ListView.builder(

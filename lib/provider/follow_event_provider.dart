@@ -31,6 +31,10 @@ class FollowEventProvider extends ChangeNotifier
     postsBox = EventMemBox(sortAfterAdd: false);
     postsTimestamp = sharedPreferences.getInt(DataKey.FEED_POSTS_TIMESTAMP);
     repliesTimestamp = sharedPreferences.getInt(DataKey.FEED_REPLIES_TIMESTAMP);
+    DateTime? a = postsTimestamp!=null ? DateTime.fromMillisecondsSinceEpoch(postsTimestamp!*1000) : null;
+    print("POSTS READ TIMESTAMP: $a");
+    DateTime? b = repliesTimestamp!=null ? DateTime.fromMillisecondsSinceEpoch(repliesTimestamp!*1000) : null;
+    print("REPLIES READ TIMESTAMP: $b");
   }
 
   @override
@@ -221,45 +225,6 @@ class FollowEventProvider extends ChangeNotifier
     }
   }
 
-  static List<Map<String, dynamic>> addTagCommunityFilter(
-      List<Map<String, dynamic>> filters, bool queriyTags) {
-    // if (queriyTags && filters.isNotEmpty) {
-    //   var filter = filters[0];
-    //   // tags filter
-    //   {
-    //     var tagFilter = Map<String, dynamic>.from(filter);
-    //     tagFilter.remove("authors");
-    //     // handle tag with TopicMap
-    //     var tagList = contactListProvider.tagList().toList();
-    //     List<String> queryTagList = [];
-    //     for (var tag in tagList) {
-    //       var list = TopicMap.getList(tag);
-    //       if (list != null) {
-    //         queryTagList.addAll(list);
-    //       } else {
-    //         queryTagList.add(tag);
-    //       }
-    //     }
-    //     if (queryTagList.isNotEmpty) {
-    //       tagFilter["#t"] = queryTagList;
-    //       filters.add(tagFilter);
-    //     }
-    //   }
-    //   // community filter
-    //   {
-    //     var communityFilter = Map<String, dynamic>.from(filter);
-    //     communityFilter.remove("authors");
-    //     var communityList =
-    //         contactListProvider.followedCommunitiesList().toList();
-    //     if (communityList.isNotEmpty) {
-    //       communityFilter["#a"] = communityList;
-    //       filters.add(communityFilter);
-    //     }
-    //   }
-    // }
-    return filters;
-  }
-
   // check if is posts (no tag e and not Mentions, TODO handle NIP27)
   static bool eventIsPost(Nip01Event event) {
     bool isPosts = true;
@@ -288,7 +253,7 @@ class FollowEventProvider extends ChangeNotifier
     // sort
     postsAndRepliesBox.sort();
     repliesTimestamp = null;
-    sharedPreferences.remove(DataKey.FEED_REPLIES_TIMESTAMP);
+    setRepliesTimestampToNewestAndSave();
 
     followNewEventProvider.clearReplies();
 
@@ -306,7 +271,7 @@ class FollowEventProvider extends ChangeNotifier
 
     followNewEventProvider.clearPosts();
     postsTimestamp = null;
-    sharedPreferences.remove(DataKey.FEED_POSTS_TIMESTAMP);
+    setPostsTimestampToNewestAndSave();
 
     // update ui
     notifyListeners();
@@ -325,14 +290,14 @@ class FollowEventProvider extends ChangeNotifier
       for (var e in list) {
         bool isPosts = eventIsPost(e);
         if (!isPosts) {
-          if (repliesTimestamp!=null && list.first.createdAt > repliesTimestamp!) {
-            followNewEventProvider.handleEvents(list);
+          if (repliesTimestamp!=null && e.createdAt > repliesTimestamp!) {
+            followNewEventProvider.handleEvents([e]);
             return;
           }
           addedReplies = postsAndRepliesBox.add(e);
         } else {
-          if (postsTimestamp!=null && list.first.createdAt > postsTimestamp!) {
-            followNewEventProvider.handleEvents(list);
+          if (postsTimestamp!=null && e.createdAt > postsTimestamp!) {
+            followNewEventProvider.handleEvents([e]);
             return;
           }
           addedPosts = postsBox.add(e);
@@ -351,6 +316,26 @@ class FollowEventProvider extends ChangeNotifier
         notifyListeners();
       }
     }, null);
+  }
+
+  void setPostsTimestampToNewestAndSave() {
+    if (postsTimestamp==null && postsBox.newestEvent!=null) {
+      followEventProvider.postsTimestamp = postsBox.newestEvent!.createdAt;
+      sharedPreferences.setInt(
+          DataKey.FEED_POSTS_TIMESTAMP, postsTimestamp!);
+      DateTime a = DateTime.fromMillisecondsSinceEpoch(postsTimestamp!*1000);
+      print("POSTS WRITTEN TIMESTAMP: $a");
+    }
+  }
+
+  void setRepliesTimestampToNewestAndSave() {
+    if (repliesTimestamp==null && postsAndRepliesBox.newestEvent!=null) {
+      followEventProvider.repliesTimestamp = postsAndRepliesBox.newestEvent!.createdAt;
+      sharedPreferences.setInt(
+          DataKey.FEED_REPLIES_TIMESTAMP, repliesTimestamp!);
+      DateTime a = DateTime.fromMillisecondsSinceEpoch(repliesTimestamp!*1000);
+      print("REPLIES WRITTEN TIMESTAMP: $a");
+    }
   }
 
   void clear() {

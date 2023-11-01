@@ -39,19 +39,18 @@ class _FollowPostsRouter extends KeepAliveCustState<FollowPostsRouter>
     super.initState();
     bindLoadMoreScroll(_controller);
     _controller.addListener(() {
-      if (followEventProvider.postsTimestamp == null) {
-        followEventProvider.postsTimestamp = Helpers.now;
-        sharedPreferences.setInt(
-            DataKey.FEED_POSTS_TIMESTAMP, followEventProvider.postsTimestamp!);
-      }
+      followEventProvider.setPostsTimestampToNewestAndSave();
     });
   }
 
   @override
   void deactivate() {
-    followEventProvider.postsTimestamp = Helpers.now;
-    sharedPreferences.setInt(
-        DataKey.FEED_POSTS_TIMESTAMP, followEventProvider.postsTimestamp!);
+    followEventProvider.setPostsTimestampToNewestAndSave();
+  }
+
+  @override
+  void dispose() {
+    followEventProvider.setPostsTimestampToNewestAndSave();
   }
 
   @override
@@ -74,10 +73,8 @@ class _FollowPostsRouter extends KeepAliveCustState<FollowPostsRouter>
     var main = VisibilityDetector(
         key: const Key('feed-posts'),
         onVisibilityChanged: (visibilityInfo) {
-          if (followEventProvider.postsTimestamp==null && visibilityInfo.visibleFraction==0.0) {
-            followEventProvider.postsTimestamp = Helpers.now;
-            sharedPreferences.setInt(
-                DataKey.FEED_POSTS_TIMESTAMP, followEventProvider.postsTimestamp!);
+          if (visibilityInfo.visibleFraction==0.0) {
+            followEventProvider.setPostsTimestampToNewestAndSave();
           }
         },
         child: ListView.builder(
