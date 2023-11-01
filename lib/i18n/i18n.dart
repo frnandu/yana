@@ -1061,8 +1061,8 @@ class I18n {
   /// `Nip05`
   String get Nip05 {
     return Intl.message(
-      'Nip05',
-      name: 'Nip05',
+      'Nostr Address (nip05)',
+      name: 'Nostr Address (nip05)',
       desc: '',
       args: [],
     );
@@ -1071,8 +1071,8 @@ class I18n {
   /// `Lud16`
   String get Lud16 {
     return Intl.message(
-      'Lud16',
-      name: 'Lud16',
+      'Lightning Network Address (lud16)',
+      name: 'Lightning Network Address (lud16)',
       desc: '',
       args: [],
     );

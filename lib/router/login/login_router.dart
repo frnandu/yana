@@ -333,8 +333,10 @@ class _LoginRouter extends State<LoginRouter>
   }
 
   Future<void> initRelayManager( String publicKey, bool newKey) async {
-      await initRelays(newKey: newKey);
+    EasyLoading.showToast("Relaying other stuff...", dismissOnTap: true,  duration: const Duration(seconds: 5), maskType: EasyLoadingMaskType.black);
+    await initRelays(newKey: newKey);
     settingProvider.notifyListeners();
+    EasyLoading.dismiss();
 
     firstLogin = true;
     indexProvider.setCurrentTap(IndexTaps.FOLLOW);

@@ -316,7 +316,7 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
       );
       _zapsSubscription!.stream.listen(
         (event) {
-          if (event.kind == EventKind.ZAP_RECEIPT && zapEventBox!.add(event)) {
+          if (event.kind == EventKind.ZAP_RECEIPT && zapEventBox!.add(event, returnTrueOnNewSources: false)) {
             if (!_disposed) {
               setState(() {
                 zapNum = zapNum! + ZapNumUtil.getNumFromZapEvent(event);

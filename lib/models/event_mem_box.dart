@@ -103,14 +103,16 @@ class EventMemBox implements FindEventInterface {
     return true;
   }
 
-  bool add(Nip01Event event) {
+  bool add(Nip01Event event, {bool returnTrueOnNewSources=true}) {
     var oldEvent = _idMap[event.id];
 
     if (oldEvent != null) {
       if (event.sources.isNotEmpty &&
           !oldEvent.sources.contains(event.sources[0])) {
         oldEvent.sources.add(event.sources[0]);
-        return true;
+        if (returnTrueOnNewSources) {
+          return true;
+        }
       // } else {
       //   _eventList.remove(oldEvent);
       //   event.sources.addAll(oldEvent.sources);

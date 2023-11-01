@@ -237,14 +237,14 @@ class _ProfileEditorRouter extends CustState<ProfileEditorRouter> {
       ),
     ));
 
-    list.add(Container(
-      margin: margin,
-      padding: padding,
-      child: TextField(
-        controller: lud06Controller,
-        decoration: InputDecoration(labelText: "Lnurl"),
-      ),
-    ));
+    // list.add(Container(
+    //   margin: margin,
+    //   padding: padding,
+    //   child: TextField(
+    //     controller: lud06Controller,
+    //     decoration: InputDecoration(labelText: "Lnurl"),
+    //   ),
+    // ));
 
     return Scaffold(
       body: Stack(

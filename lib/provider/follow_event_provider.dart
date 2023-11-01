@@ -123,14 +123,14 @@ class FollowEventProvider extends ChangeNotifier
         return;
       }
     }
-    List<String> tags = contactListProvider.followedTags();
-    if (tags.isNotEmpty) {
-      filter.tTags = tags;
-    }
-    List<String> communities = contactListProvider.followedCommunities();
-    if (communities.isNotEmpty) {
-      filter.aTags = communities;
-    }
+    // List<String> tags = contactListProvider.followedTags();
+    // if (tags.isNotEmpty) {
+    //   filter.tTags = tags;
+    // }
+    // List<String> communities = contactListProvider.followedCommunities();
+    // if (communities.isNotEmpty) {
+    //   filter.aTags = communities;
+    // }
     if (settingProvider.gossip == 1 && feedRelaySet != null) {
       await relayManager.reconnectRelays(feedRelaySet!.urls);
     } else {

@@ -40,6 +40,7 @@ class MetadataProvider extends ChangeNotifier with LaterFunction {
   }
 
   Metadata? getMetadata(String pubKey) {
+    // relayManager.getSingleMetadata(pubKey);
     var metadata = cacheManager.loadMetadata(pubKey);
     if (metadata != null) {
       return metadata;
