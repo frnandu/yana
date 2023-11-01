@@ -87,6 +87,8 @@ class NwcProvider extends ChangeNotifier {
     await settingProvider.setNwc(nwc);
     await settingProvider.setNwcSecret(secret!);
     var filter = Filter(kinds: [NwcKind.INFO_REQUEST], authors: [walletPubKey!]);
+    if (await relayManager.connectRelay(relay)) {
+      await relayManager.requestRelays([relay], filter);
     // TODO use dart_ndk
     // nostr!.queryRelay(filter.toMap(), relay!, onEventInfo);
     // walletPubKey = pubKey;
