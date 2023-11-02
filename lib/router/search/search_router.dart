@@ -477,8 +477,9 @@ class _SearchRouter extends CustState<SearchRouter>
   }
 
   Future<void> handleScanner() async {
-    var result = await RouterUtil.router(context, RouterPath.QRSCANNER);
+    String result = await RouterUtil.router(context, RouterPath.QRSCANNER);
     if (StringUtil.isNotBlank(result)) {
+      result = result.replaceAll("nostr:","");
       if (Nip19.isPubkey(result)) {
         var pubkey = Nip19.decode(result);
         RouterUtil.router(context, RouterPath.USER, pubkey);

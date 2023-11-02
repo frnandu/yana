@@ -71,24 +71,25 @@
 - ~~persist notes from feed for faster startup~~
 
 v0.12
-- don't validate signature for events cached on DB
-- handle event deletions coming from relays, should delete in cache
 - dms
-- when blocking make the note disappear
 - re-enable awesome notifications
 - use inboxForReactions for broadcasting reactions to inbox relays
 - get all your contacts metadatas for search
 - FIX THREADED VIEW
-
 - WTF metadata takes so long to load???
+- blacklist for relays
+- on back from background, reconnect relay + resubscribe to all existing subscriptions
+- PULL BACKGROUND SERVICE
+- 
 - choose to which relays / lists to broadcast on new note (bounty)
 - don't load stuff in tabs that are not visible!!!!
-- blacklist for relays
 - make thread detail subscription of new replies work
-- on back from background, reconnect relay + resubscribe to all existing subscriptions
 - make reactions live again with subscriptions or some other way 
 - show progress of broadcasting note on relays
+- when blocking make the note disappear
 - include relay hints on nevent and stuff (bounty)
+- handle event deletions coming from relays, should delete in cache
+- don't validate signature for events cached on DB
 
 v0.13
 - better android/ios/linux badges on web version login screen (anchor links to readme.md for IOS/linux)
