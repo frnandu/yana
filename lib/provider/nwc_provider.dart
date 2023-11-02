@@ -1,15 +1,17 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:bip340/bip340.dart';
-import 'package:bot_toast/bot_toast.dart';
 import 'package:dart_ndk/nips/nip01/bip340_event_signer.dart';
 import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip01/event_signer.dart';
+import 'package:dart_ndk/nips/nip01/filter.dart';
+import 'package:dart_ndk/nips/nip01/helpers.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:yana/nostr/event_kind.dart';
 
 import '../main.dart';
-import 'package:dart_ndk/nips/nip01/filter.dart';
 import '../nostr/nip04/nip04.dart';
 import '../nostr/nip47/nwc_commands.dart';
 import '../nostr/nip47/nwc_kind.dart';
@@ -53,8 +55,8 @@ class NwcProvider extends ChangeNotifier {
   }
 
   Future<void> reload() async {
-    await _init();
-    notifyListeners();
+    // await _init();
+    // notifyListeners();
   }
 
   int? get getBalance => balance;
@@ -64,7 +66,7 @@ class NwcProvider extends ChangeNotifier {
       permissions.isNotEmpty &&
       StringUtil.isNotBlank(secret);
 
-  Future<void> connect(String nwc) async {
+  Future<void>  connect(String nwc) async {
     nwc = nwc.replaceAll("yana:", "nostr+walletconnect:");
     Uri uri = Uri.parse(nwc.replaceAll("nostr+walletconnect:", "https:"));
     String? walletPubKey = uri.host;
@@ -72,29 +74,32 @@ class NwcProvider extends ChangeNotifier {
     secret = uri.queryParameters['secret'];
     // String? lud16 = uri.queryParameters['lub16'];
     if (StringUtil.isBlank(relay)) {
-      BotToast.showText(text: "missing relay parameter");
+      EasyLoading.show(status: "missing relay parameter");
       return;
     }
     if (StringUtil.isBlank(secret)) {
-      BotToast.showText(text: "missing secret parameter");
+      EasyLoading.show(status: "missing secret parameter");
       return;
     }
     if (StringUtil.isBlank(walletPubKey)) {
-      BotToast.showText(text: "missing pubKey from connection uri");
+      EasyLoading.show(status: "missing pubKey from connection uri");
       return;
     }
     relay = Uri.decodeFull(relay!);
     await settingProvider.setNwc(nwc);
     await settingProvider.setNwcSecret(secret!);
     var filter = Filter(kinds: [NwcKind.INFO_REQUEST], authors: [walletPubKey!]);
-    if (await relayManager.connectRelay(relay)) {
-      await relayManager.requestRelays([relay], filter);
+    // if (await relayManager.connectRelay(relay)) {
+    //   (await relayManager.requestRelays([relay], filter)).stream.listen((event) {
+    //     onEventInfo.call(event);
+    //   });
+    // }
     // TODO use dart_ndk
     // nostr!.queryRelay(filter.toMap(), relay!, onEventInfo);
     // walletPubKey = pubKey;
     // this.relay = relay;
     // permissions = ["get_balance","pay_invoice"];
-    // await requestBalance();
+    await requestBalance(walletPubKey, relay, secret!);
   }
 
   Future<void> onEventInfo(Nip01Event event) async {
@@ -107,7 +112,7 @@ class NwcProvider extends ChangeNotifier {
       sharedPreferences.setString(DataKey.NWC_PUB_KEY, walletPubKey!);
       permissions = event.content.split(",");
       if (permissions.contains(NwcCommand.GET_BALANCE)) {
-        await requestBalance();
+        await requestBalance(walletPubKey!, relay!, secret!);
       }
       notifyListeners();
     }
@@ -126,7 +131,7 @@ class NwcProvider extends ChangeNotifier {
     permissions = [];
     notifyListeners();
   }
-  Future<void> requestBalance() async {
+  Future<void> requestBalance(String walletPubKey, String relay, String secret) async {
     if (StringUtil.isNotBlank(walletPubKey) &&
         StringUtil.isNotBlank(relay) &&
         StringUtil.isNotBlank(secret)) {
@@ -138,16 +143,34 @@ class NwcProvider extends ChangeNotifier {
       var tags = [
         ["p", walletPubKey]
       ];
-      final event =
-      Nip01Event(pubKey: nwcSigner!.getPublicKey(), kind: NwcKind.REQUEST, tags: tags, content: encrypted);
-      // TODO use dart_ndk
-      // await nwcNostr!.sendRelayEvent(event, relay!);
+      final event = Nip01Event(pubKey: nwcSigner!.getPublicKey(), kind: NwcKind.REQUEST, tags: tags, content: encrypted);
+      await relayManager.reconnectRelay(relay!);
       var filter = Filter(
           kinds: [NwcKind.RESPONSE], authors: [walletPubKey!], eTags: [event.id]);
-      // TODO use dart_ndk
+      var webSocket = await WebSocket.connect(relay!);
+      webSocket.listen((event) {
+        print(event);
+      });
+      List<dynamic> request = ["REQ", Helpers.getRandomString(10), filter.toMap()];
+      final encoded = jsonEncode(request);
+      webSocket.add(encoded);
+
+      await relayManager.broadcastEvent(event, [relay!], nwcSigner);
+
+
+      // (await relayManager.requestRelays([relay!], filter, idleTimeout: 20, groupIdletimeout: 21)).stream.listen(onGetBalanceResponse);
+
+      // await nwcNostr!.sendRelayEvent(event, relay!);
       // nwcNostr!.queryRelay(filter.toMap(), relay!, onGetBalanceResponse);
+
     } else {
-      BotToast.showText(text: "missing pubKey and/or relay for connecting");
+      var filter = Filter(kinds: [NwcKind.INFO_REQUEST], authors: [walletPubKey!]);
+      if (await relayManager.connectRelay(relay!)) {
+        (await relayManager.requestRelays([relay!], filter)).stream.listen((event) {
+          onEventInfo.call(event);
+        });
+      }
+      // EasyLoading.show(status: "missing pubKey and/or relay for connecting");
     }
   }
 
@@ -205,7 +228,7 @@ class NwcProvider extends ChangeNotifier {
       // TODO use dart_ndk
       // await nwcNostr!.sendRelayEvent(event, relay!);
     } else {
-      BotToast.showText(text: "missing pubKey and/or relay for connecting");
+      EasyLoading.show(status: "missing pubKey and/or relay for connecting");
     }
   }
 
@@ -222,16 +245,16 @@ class NwcProvider extends ChangeNotifier {
           data.containsKey("result") &&
           data['result_type'] == NwcCommand.PAY_INVOICE) {
         var preImage = data['result']['preimage'];
-        BotToast.showText(text: "Zap payed");
+        EasyLoading.show(status: "Zap payed");
         if (payInvoiceEventId!=null) {
           await eventReactionsProvider.subscription(payInvoiceEventId!, null, EventKind.ZAP_RECEIPT);
         }
         notifyListeners();
-        await requestBalance();
+        await requestBalance(walletPubKey!, relay!, secret!);
         onZapped(true);
       } else if (data!=null && data.containsKey("error")){
         onZapped(false);
-        BotToast.showText(text: "error: ${data['error'].toString()}");
+        EasyLoading.show(status: "error: ${data['error'].toString()}");
       }
     }
     payInvoiceEventId = null;
