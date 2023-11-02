@@ -66,15 +66,15 @@ class NwcProvider extends ChangeNotifier {
     secret = uri.queryParameters['secret'];
     // String? lud16 = uri.queryParameters['lub16'];
     if (StringUtil.isBlank(relay)) {
-      EasyLoading.show(status: "missing relay parameter");
+      EasyLoading.showError("missing relay parameter", duration: const Duration(seconds: 5));
       return;
     }
     if (StringUtil.isBlank(secret)) {
-      EasyLoading.show(status: "missing secret parameter");
+      EasyLoading.showError("missing secret parameter", duration: const Duration(seconds: 5));
       return;
     }
     if (StringUtil.isBlank(walletPubKey)) {
-      EasyLoading.show(status: "missing pubKey from connection uri");
+      EasyLoading.showError("missing pubKey from connection uri", duration: const Duration(seconds: 5));
       return;
     }
     relay = Uri.decodeFull(relay!);
@@ -160,7 +160,6 @@ class NwcProvider extends ChangeNotifier {
           onEventInfo.call(event);
         });
       }
-      // EasyLoading.show(status: "missing pubKey and/or relay for connecting");
     }
   }
 
@@ -209,16 +208,19 @@ class NwcProvider extends ChangeNotifier {
       var tags = [
         ["p", walletPubKey]
       ];
-      final event =
-      Nip01Event(pubKey: nwcSigner!.getPublicKey(), kind: NwcKind.REQUEST, tags: tags, content: encrypted);
+      final event = Nip01Event(pubKey: nwcSigner!.getPublicKey(), kind: NwcKind.REQUEST, tags: tags, content: encrypted);
       var filter = Filter(
           kinds: [NwcKind.RESPONSE], authors: [walletPubKey!], eTags: [event.id]);
+      (await relayManager.requestRelays([relay!], filter, idleTimeout: 20)).stream.listen((event) {
+        onPayInvoiceResponse(event, onZapped);
+      });
+      await relayManager.broadcastEvent(event, [relay!], nwcSigner);
       // TODO use dart_ndk
       // nwcNostr!.queryRelay2(filter.toMap(), relay!, onPayInvoiceResponse, onZapped: onZapped);
       // TODO use dart_ndk
       // await nwcNostr!.sendRelayEvent(event, relay!);
     } else {
-      EasyLoading.show(status: "missing pubKey and/or relay for connecting");
+      EasyLoading.showError("missing pubKey and/or relay for connecting", duration: const Duration(seconds: 5));
     }
   }
 
@@ -235,16 +237,16 @@ class NwcProvider extends ChangeNotifier {
           data.containsKey("result") &&
           data['result_type'] == NwcCommand.PAY_INVOICE) {
         var preImage = data['result']['preimage'];
-        EasyLoading.show(status: "Zap payed");
+        EasyLoading.showSuccess("Zap payed", duration: const Duration(seconds: 2));
         if (payInvoiceEventId!=null) {
-          await eventReactionsProvider.subscription(payInvoiceEventId!, null, EventKind.ZAP_RECEIPT);
+          // await eventReactionsProvider.subscription(payInvoiceEventId!, null, EventKind.ZAP_RECEIPT);
         }
         notifyListeners();
-        await requestBalance(walletPubKey!, relay!, secret!);
+        requestBalance(walletPubKey!, relay!, secret!);
         onZapped(true);
       } else if (data!=null && data.containsKey("error")){
         onZapped(false);
-        EasyLoading.show(status: "error: ${data['error'].toString()}");
+        EasyLoading.showError("error ${data['error'].toString()}", duration: const Duration(seconds: 5));
       }
     }
     payInvoiceEventId = null;
