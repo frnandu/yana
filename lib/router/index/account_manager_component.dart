@@ -301,11 +301,15 @@ class _AccountManagerItemComponent extends State<AccountManagerItemComponent> {
         builder: (context, metadata, child) {
       Color currentColor = Colors.green;
       List<Widget> list = [];
-      if (metadata==null) {
+      // if (metadata==null) {
+      //   return Container();
+      // }
+      String? nip19PubKey;
+      try {
+        nip19PubKey = pubkey != null ? Nip19.encodePubKey(pubkey!) : null;
+      } catch (e) {
         return Container();
       }
-
-      var nip19PubKey = pubkey!=null? Nip19.encodePubKey(pubkey!) : null;
 
       Widget? imageWidget;
 
