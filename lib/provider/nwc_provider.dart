@@ -143,8 +143,9 @@ class NwcProvider extends ChangeNotifier {
       var tags = [
         ["p", walletPubKey]
       ];
-      final event = Nip01Event(pubKey: nwcSigner!.getPublicKey(), kind: NwcKind.REQUEST, tags: tags, content: encrypted);
       await relayManager.reconnectRelay(relay!);
+      final event = Nip01Event(pubKey: nwcSigner!.getPublicKey(), kind: NwcKind.REQUEST, tags: tags, content: encrypted);
+
       var filter = Filter(
           kinds: [NwcKind.RESPONSE], authors: [walletPubKey!], eTags: [event.id]);
       var webSocket = await WebSocket.connect(relay!);
@@ -157,6 +158,13 @@ class NwcProvider extends ChangeNotifier {
 
       await relayManager.broadcastEvent(event, [relay!], nwcSigner);
 
+
+      // final event =
+      // Event(nwcNostr!.publicKey, NwcKind.REQUEST, tags, encrypted);
+      // await nwcNostr!.sendRelayEvent(event, relay!);
+      // var filter = Filter(
+      //     kinds: [NwcKind.RESPONSE], authors: [walletPubKey!], e: [event.id]);
+      // nwcNostr!.queryRelay(filter.toJson(), relay!, onGetBalanceResponse);
 
       // (await relayManager.requestRelays([relay!], filter, idleTimeout: 20, groupIdletimeout: 21)).stream.listen(onGetBalanceResponse);
 
