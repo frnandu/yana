@@ -335,6 +335,7 @@ Future<void> initRelays({bool newKey = false}) async {
     }
     followEventProvider.startSubscription();
   }
+  notificationsProvider.startSubscription();
   metadataProvider.notifyListeners();
 }
 

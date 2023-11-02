@@ -1,6 +1,7 @@
 import 'package:dart_ndk/nips/nip25/reactions.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:visibility_detector/visibility_detector.dart';
 import 'package:yana/main.dart';
 import 'package:yana/models/event_mem_box.dart';
 import 'package:yana/provider/new_notifications_provider.dart';
@@ -36,6 +37,11 @@ class _NotificationsRouter extends KeepAliveCustState<NotificationsRouter>
   void initState() {
     super.initState();
     bindLoadMoreScroll(_controller);
+    _controller.addListener(() {
+      if (notificationsProvider.timestamp==null) {
+        notificationsProvider.setTimestampToNewestAndSave();
+      }
+    });
   }
 
   @override
@@ -47,7 +53,6 @@ class _NotificationsRouter extends KeepAliveCustState<NotificationsRouter>
     var eventBox = _notificationsProvider.eventBox;
     var events = eventBox.all();
     if (events.isEmpty) {
-      notificationsProvider.doQuery();
       return EventListPlaceholder(
         onRefresh: () {
           notificationsProvider.refresh();
@@ -57,25 +62,37 @@ class _NotificationsRouter extends KeepAliveCustState<NotificationsRouter>
     indexProvider.setMentionedScrollController(_controller);
     preBuild();
 
-    var main = ListView.builder(
-      controller: _controller,
-      itemBuilder: (BuildContext context, int index) {
-        var event = events[index];
-        event.content = event.content.replaceAll('+', '❤');
-        if (event.kind == kind.EventKind.ZAP_RECEIPT &&
-            StringUtil.isBlank(event.content)) {
-          return ZapEventListComponent(event: event);
-        } else if (event.kind == Reaction.KIND) {
-          return ReactionEventListComponent(event:event, text: "reacted ${event.content}    ", renderRootEvent: true,);
-        } else {
-          return EventListComponent(
-            event: event,
-            showReactions: event.kind != Reaction.KIND,
-            showVideo: _settingProvider.videoPreview == OpenStatus.OPEN,
-          );
-        }
-      },
-      itemCount: events.length,
+    var main = VisibilityDetector(
+        key: const Key('feed-posts'),
+        onVisibilityChanged: (visibilityInfo) {
+          if (visibilityInfo.visibleFraction == 0.0) {
+            notificationsProvider.setTimestampToNewestAndSave();
+          }
+        },
+        child: ListView.builder(
+          controller: _controller,
+          itemBuilder: (BuildContext context, int index) {
+            var event = events[index];
+            event.content = event.content.replaceAll('+', '❤');
+            if (event.kind == kind.EventKind.ZAP_RECEIPT &&
+                StringUtil.isBlank(event.content)) {
+              return ZapEventListComponent(event: event);
+            } else if (event.kind == Reaction.KIND) {
+              return ReactionEventListComponent(
+                event: event,
+                text: "reacted ${event.content}    ",
+                renderRootEvent: true,
+              );
+            } else {
+              return EventListComponent(
+                event: event,
+                showReactions: event.kind != Reaction.KIND,
+                showVideo: _settingProvider.videoPreview == OpenStatus.OPEN,
+              );
+            }
+          },
+          itemCount: events.length,
+        )
     );
 
     Widget ri = RefreshIndicator(
@@ -126,9 +143,19 @@ class _NotificationsRouter extends KeepAliveCustState<NotificationsRouter>
   }
 
   @override
+  void deactivate() {
+    notificationsProvider.setTimestampToNewestAndSave();
+  }
+
+  @override
+  void dispose() {
+    notificationsProvider.setTimestampToNewestAndSave();
+  }
+
+  @override
   void doQuery() {
     preQuery();
-    notificationsProvider.doQuery();
+    notificationsProvider.startSubscription();
   }
 
   @override

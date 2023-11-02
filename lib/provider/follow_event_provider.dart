@@ -45,14 +45,16 @@ class FollowEventProvider extends ChangeNotifier
 
   Future<void> startSubscription() async {
     int? since;
-    if (postsBox.newestEvent!=null) {
-      since = postsBox.newestEvent!.createdAt;
+    var newestPost = postsBox.newestEvent;
+    if (newestPost!=null) {
+      since = newestPost!.createdAt;
     }
-    if (postsAndRepliesBox.newestEvent!=null && (since==null || postsAndRepliesBox.newestEvent!.createdAt > since)) {
-      since = postsAndRepliesBox.newestEvent!.createdAt;
+    var newestReply = postsAndRepliesBox.newestEvent;
+    if (newestReply!=null && (since==null || newestReply!.createdAt > since)) {
+      since = newestReply!.createdAt;
     }
     // await contactListProvider.loadContactList(loggedUserSigner!.getPublicKey());
-    subscribe(since: since, fallbackTags: followEventProvider.FALLBACK_TAGS_FOR_EMPTY_CONTACT_LIST);
+    subscribe(since: null, fallbackTags: followEventProvider.FALLBACK_TAGS_FOR_EMPTY_CONTACT_LIST);
   }
 
   @override
@@ -142,7 +144,7 @@ class FollowEventProvider extends ChangeNotifier
       kinds: queryEventKinds(),
       since: since,
       authors: contactsForFeed, //..add(loggedUserSigner!.getPublicKey()),
-      limit: 20,
+      limit: 100,
     );
 
     if (contactsForFeed == null || contactsForFeed.isEmpty) {
@@ -344,7 +346,7 @@ class FollowEventProvider extends ChangeNotifier
   }
   void setPostsTimestampToNewestAndSave() {
     if (postsTimestamp==null && postsBox.newestEvent!=null) {
-      followEventProvider.postsTimestamp = postsBox.newestEvent!.createdAt;
+      postsTimestamp = postsBox.newestEvent!.createdAt;
       sharedPreferences.setInt(
           DataKey.FEED_POSTS_TIMESTAMP, postsTimestamp!);
       DateTime a = DateTime.fromMillisecondsSinceEpoch(postsTimestamp!*1000);
@@ -354,7 +356,7 @@ class FollowEventProvider extends ChangeNotifier
 
   void setRepliesTimestampToNewestAndSave() {
     if (repliesTimestamp==null && postsAndRepliesBox.newestEvent!=null) {
-      followEventProvider.repliesTimestamp = postsAndRepliesBox.newestEvent!.createdAt;
+      repliesTimestamp = postsAndRepliesBox.newestEvent!.createdAt;
       sharedPreferences.setInt(
           DataKey.FEED_REPLIES_TIMESTAMP, repliesTimestamp!);
       DateTime a = DateTime.fromMillisecondsSinceEpoch(repliesTimestamp!*1000);

@@ -5,6 +5,7 @@ import 'package:dart_ndk/nips/nip01/filter.dart';
 import 'package:dart_ndk/nips/nip25/reactions.dart';
 import 'package:dart_ndk/request.dart';
 import 'package:flutter/material.dart';
+import 'package:yana/provider/data_util.dart';
 
 import '../main.dart';
 import '../models/event_mem_box.dart';
@@ -15,17 +16,30 @@ class NotificationsProvider extends ChangeNotifier
     with PenddingEventsLaterFunction {
   late int _initTime;
 
+  int? timestamp;
   late EventMemBox eventBox;
 
   NotificationsProvider() {
     _initTime = DateTime.now().millisecondsSinceEpoch ~/ 1000;
     eventBox = EventMemBox();
+    timestamp = sharedPreferences.getInt(DataKey.NOTIFICATIONS_TIMESTAMP);
+  }
+
+  void setTimestampToNewestAndSave() {
+    if (eventBox.newestEvent!=null) {
+      timestamp = eventBox.newestEvent!.createdAt;
+      sharedPreferences.setInt(
+          DataKey.NOTIFICATIONS_TIMESTAMP, timestamp!);
+      // DateTime a = DateTime.fromMillisecondsSinceEpoch(timestamp!*1000);
+      // print("NOTIFICATION WRITTEN TIMESTAMP: $a");
+    }
   }
 
   void refresh() {
     _initTime = DateTime.now().millisecondsSinceEpoch ~/ 1000;
     eventBox.clear();
-    doQuery();
+    startSubscription();
+    sharedPreferences.remove(DataKey.NOTIFICATIONS_TIMESTAMP);
     newNotificationsProvider.clear();
   }
 
@@ -53,7 +67,7 @@ class NotificationsProvider extends ChangeNotifier
 
   NostrRequest? subscription;
 
-  void doQuery() async {
+  void startSubscription() async {
     if (subscription != null) {
       await relayManager.closeNostrRequest(subscription!);
     }
@@ -126,15 +140,20 @@ class NotificationsProvider extends ChangeNotifier
           .where(
               (element) => element.pubKey != loggedUserSigner?.getPublicKey())
           .toList();
-      if (eventBox.length() >20 && list.first.createdAt > eventBox.newestEvent!.createdAt) {
-        newNotificationsProvider.handleEvents(list);
-        return;
-      }
-
-      var result = eventBox.addList(list);
-      if (result) {
-        notifyListeners();
-      }
+      list.forEach((event) {
+        if (timestamp!=null && event.createdAt > timestamp!) {
+          newNotificationsProvider.handleEvents([event]);
+        } else {
+          var result = eventBox.addList([event]);
+          if (result) {
+            notifyListeners();
+          }
+        }
+      });
+      // if (eventBox.length() >20 && list.first.createdAt > eventBox.newestEvent!.createdAt) {
+      //   newNotificationsProvider.handleEvents(list);
+      //   return;
+      // }
     }, null);
   }
 
@@ -152,7 +171,7 @@ class NotificationsProvider extends ChangeNotifier
     eventBox.sort();
 
     newNotificationsProvider.clear();
-
+    notificationsProvider.setTimestampToNewestAndSave();
     // update ui
     notifyListeners();
   }

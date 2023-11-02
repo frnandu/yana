@@ -285,7 +285,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
 
     if (settingProvider.gossip == 1) {
       networkTiles.add(SettingsTile.navigation(
-          leading: Container( margin: const EdgeInsets.only(left:10), child: const Icon(Icons.lan_outlined)),
+          leading: Container( margin: const EdgeInsets.only(left:20), child: const Icon(Icons.lan_outlined)),
           trailing: Text('${settingProvider.followeesRelayMinCount}'),
           onPressed: (context) async {
             int? old = _settingProvider.followeesRelayMinCount;
@@ -319,7 +319,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
                     context, RouterPath.USER_RELAYS, filteredRelays);
               }
             },
-            leading: Container( margin: const EdgeInsets.only(left:10), child: Text(
+            leading: Container( margin: const EdgeInsets.only(left:20), child: Text(
               "Feed Connected / Total relays ",
               style: TextStyle(color: themeData.disabledColor),
             )),
@@ -353,17 +353,17 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
         leading: GestureDetector(child: Icon(Icons.info_outline, color: themeData.primaryColor), onTap: () {
           launchUrl(OUTBOX_MODEL_INFO_URL,mode: LaunchMode.externalApplication);
         }),
-        title: const Text("Use inbox relays for reactions")));
+        title: const Text("Broadcast reactions to other people's inbox relays")));
 
     if (settingProvider.inboxForReactions == 1) {
       networkTiles.add(SettingsTile.navigation(
-          leading: Container( margin: const EdgeInsets.only(left:10), child: const Icon(Icons.lan_outlined)),
+          leading: Container( margin: const EdgeInsets.only(left:20), child: const Icon(Icons.lan_outlined)),
           trailing: Text('${settingProvider.broadcastToInboxMaxCount}'),
           onPressed: (context) async {
             int? old = _settingProvider.broadcastToInboxMaxCount;
             await pickMaxRelays();
           },
-          title: const Text("Max amount of relays")));
+          title: const Text("Max amount of relays per reaction")));
     }
 
     List<AbstractSettingsTile> securityTiles = [];

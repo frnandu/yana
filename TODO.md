@@ -68,9 +68,9 @@
 - ~~verify signature ASYNC!?!?!?!~~
 - ~~notifications FIX UI/UX~~
 - ~~new posts/replies appear in layered popup with avatars~~
+- ~~persist notes from feed for faster startup~~
 
 v0.12
-- persist notes from feed for faster startup
 - don't validate signature for events cached on DB
 - handle event deletions coming from relays, should delete in cache
 - dms
