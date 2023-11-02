@@ -80,7 +80,8 @@ v0.12
 - blacklist for relays
 - on back from background, reconnect relay + resubscribe to all existing subscriptions
 - PULL BACKGROUND SERVICE
-- 
+-
+- NIP07 browser for some web apps!?
 - choose to which relays / lists to broadcast on new note (bounty)
 - don't load stuff in tabs that are not visible!!!!
 - make thread detail subscription of new replies work
