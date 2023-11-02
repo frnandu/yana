@@ -88,8 +88,10 @@ class _IndexRouter extends CustState<IndexRouter>
       if (url.startsWith("nostr+walletconnect://")) {
         Future.delayed(const Duration(microseconds: 1), () async {
           await nwcProvider.connect(url);
-          var route = ModalRoute.of(context);
-          if (route != null && route!.settings.name != null && route!.settings.name! == RouterPath.NWC) {
+          bool canPop = Navigator.canPop(context);
+          // var route = ModalRoute.of(context);
+          // if (route != null && route!.settings.name != null && route!.settings.name! == RouterPath.NWC) {
+          if (canPop) {
             RouterUtil.back(context);
           } else {
             RouterUtil.router(context, RouterPath.WALLET);

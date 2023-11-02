@@ -407,8 +407,7 @@ Future<void> main() async {
   customEmojiProvider = CustomEmojiProvider.load();
   communityApprovedProvider = CommunityApprovedProvider();
   communityInfoProvider = CommunityInfoProvider();
-
-  nwcProvider = await NwcProvider.getInstance();
+  nwcProvider = NwcProvider();
 
   // try {
   //   if (PlatformUtil.isAndroid() || PlatformUtil.isIOS()) {
@@ -422,8 +421,10 @@ Future<void> main() async {
     String publicKey = isPrivate ? getPublicKey(key!) : key!;
     loggedUserSigner = isPrivate || !PlatformUtil.isWeb()? Bip340EventSigner(isPrivate? key:null, publicKey) : Nip07EventSigner(await js.getPublicKeyAsync());
   }
+
   if (loggedUserSigner != null) {
     initRelays();
+    nwcProvider.init();
   }
   runApp(MyApp());
 }

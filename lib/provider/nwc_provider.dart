@@ -31,15 +31,7 @@ class NwcProvider extends ChangeNotifier {
 
   List<String> permissions = [];
 
-  static Future<NwcProvider> getInstance() async {
-    _nwcProvider ??= NwcProvider();
-    if (loggedUserSigner!=null) {
-      await _nwcProvider!._init();
-    }
-    return _nwcProvider!;
-  }
-
-  Future<void> _init() async {
+  Future<void> init() async {
     // TODO make this multi account aware
     String? perms = sharedPreferences.getString(DataKey.NWC_PERMISSIONS);
     if (StringUtil.isNotBlank(perms)) {
@@ -55,8 +47,8 @@ class NwcProvider extends ChangeNotifier {
   }
 
   Future<void> reload() async {
-    // await _init();
-    // notifyListeners();
+    await init();
+    notifyListeners();
   }
 
   int? get getBalance => balance;
@@ -104,14 +96,14 @@ class NwcProvider extends ChangeNotifier {
 
   Future<void> onEventInfo(Nip01Event event) async {
     if (event.kind == NwcKind.INFO_REQUEST &&
-        StringUtil.isNotBlank(event.content) && permissions.isEmpty) {
+        StringUtil.isNotBlank(event.content)) {
       walletPubKey = event.pubKey;
       relay = event.sources[0];
       sharedPreferences.setString(DataKey.NWC_PERMISSIONS, event.content);
       sharedPreferences.setString(DataKey.NWC_RELAY, relay!);
       sharedPreferences.setString(DataKey.NWC_PUB_KEY, walletPubKey!);
       permissions = event.content.split(",");
-      if (permissions.contains(NwcCommand.GET_BALANCE)) {
+      if (permissions.contains(NwcCommand.GET_BALANCE) && balance==null) {
         await requestBalance(walletPubKey!, relay!, secret!);
       }
       notifyListeners();

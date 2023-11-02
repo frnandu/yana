@@ -25,7 +25,7 @@ class _WalletRouter extends State<WalletRouter> {
 
   @override
   void initState() {
-    nwcProvider.reload();
+    // nwcProvider.reload();
   }
 
   @override
