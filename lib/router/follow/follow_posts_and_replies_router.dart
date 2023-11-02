@@ -38,6 +38,7 @@ class _FollowPostsAndRepliesRouter
     _controller.addListener(() {
       followEventProvider.setRepliesTimestampToNewestAndSave();
     });
+
   }
 
   @override
@@ -153,7 +154,9 @@ class _FollowPostsAndRepliesRouter
   @override
   void doQuery() {
     preQuery();
-    followEventProvider.doQuery(until: until);
+    if (until != null) {
+      followEventProvider.queryOlder(until: until!);
+    }
   }
 
   @override

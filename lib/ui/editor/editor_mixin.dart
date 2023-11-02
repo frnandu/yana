@@ -570,11 +570,11 @@ mixin EditorMixin {
       var pollTags = pollInputController.getTags();
       allTags.addAll(pollTags);
       event = Nip01Event(pubKey: loggedUserSigner!.getPublicKey(), kind: kind.EventKind.POLL, tags: allTags, content: result,
-          createdAt: createdAt!=null? createdAt!.millisecondsSinceEpoch ~/ 1000: null);
+          createdAt: createdAt!=null? createdAt!.millisecondsSinceEpoch ~/ 1000: 0);
     } else {
       // text note
       event = Nip01Event(pubKey: loggedUserSigner!.getPublicKey(), kind: Nip01Event.TEXT_NODE_KIND, tags: allTags, content:result,
-          createdAt: createdAt!=null ? createdAt!.millisecondsSinceEpoch ~/ 1000: null);
+          createdAt: createdAt!=null ? createdAt!.millisecondsSinceEpoch ~/ 1000: 0);
     }
 
     await relayManager.broadcastEvent(event, myOutboxRelaySet!.urls, loggedUserSigner!);

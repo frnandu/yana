@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:dart_ndk/nips/nip01/helpers.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:visibility_detector/visibility_detector.dart';
@@ -14,7 +13,6 @@ import 'package:yana/utils/base.dart';
 import 'package:yana/utils/base_consts.dart';
 
 import '../../i18n/i18n.dart';
-import '../../provider/data_util.dart';
 import '../../provider/setting_provider.dart';
 import '../../ui/event/event_list_component.dart';
 import '../../ui/placeholder/event_list_placeholder.dart';
@@ -173,7 +171,9 @@ class _FollowPostsRouter extends KeepAliveCustState<FollowPostsRouter>
   @override
   void doQuery() {
     preQuery();
-    followEventProvider.doQuery(until: until);
+    if (until!=null) {
+      followEventProvider.queryOlder(until: until!);
+    }
   }
 
   @override
@@ -182,5 +182,6 @@ class _FollowPostsRouter extends KeepAliveCustState<FollowPostsRouter>
   }
 
   @override
-  Future<void> onReady(BuildContext context) async {}
+  Future<void> onReady(BuildContext context) async {
+  }
 }

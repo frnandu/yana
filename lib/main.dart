@@ -5,12 +5,14 @@ import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:bot_toast/bot_toast.dart';
 import 'package:dart_ndk/cache_manager.dart';
 import 'package:dart_ndk/db/db_cache_manager.dart';
+import 'package:dart_ndk/db/db_event.dart';
 import 'package:dart_ndk/models/pubkey_mapping.dart';
 import 'package:dart_ndk/models/relay_set.dart';
 import 'package:dart_ndk/models/user_relay_list.dart';
 import 'package:dart_ndk/nips/nip01/bip340_event_signer.dart';
 import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip01/event_signer.dart';
+import 'package:dart_ndk/nips/nip01/helpers.dart';
 import 'package:dart_ndk/nips/nip01/metadata.dart';
 import 'package:dart_ndk/nips/nip02/contact_list.dart';
 import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
@@ -249,6 +251,49 @@ void initProvidersAndStuff() async {
 
 Future<void> initRelays({bool newKey = false}) async {
   relayManager.eventFilters.add(filterProvider);
+  // //
+  // String pubKey1 = "pubKey1";
+  // String pubKey2 = "pubKey2";
+  // DbEvent event11 = DbEvent(
+  //   pubKey: pubKey1,
+  //   content: "content 11",
+  //   kind: 1,
+  //   tags: [],
+  //   createdAt: Helpers.now
+  // );
+  // DbEvent event12 = DbEvent(
+  //   pubKey: pubKey1,
+  //   content: "content 12",
+  //   kind: 2,
+  //   tags: [],
+  //   createdAt: Helpers.now
+  // );
+  // DbEvent event21 = DbEvent(
+  //   pubKey: pubKey2,
+  //   content: "content 21",
+  //   kind: 1,
+  //   tags: [],
+  //   createdAt: Helpers.now
+  // );
+  // DbEvent event22 = DbEvent(
+  //     pubKey: pubKey2,
+  //     content: "content 22",
+  //     kind: 2,
+  //     tags: [],
+  //     createdAt: Helpers.now
+  // );
+  // event11.sig = "signature";
+  // event11.validSig = true;
+  // event11.sources = ["wss://relay1.com", "wss://relay2.com"];
+  //
+  // await cacheManager.removeAllEvents(pubKey1);
+  // await cacheManager.removeAllEvents(pubKey2);
+  //
+  // await cacheManager.saveEvents([event11, event12, event21, event22]);
+  //
+  // List<Nip01Event>? loadedEventsKind11 = cacheManager.loadEvents([], [1]);
+  //
+  // List<Nip01Event>? loadedEventsKind22 = cacheManager.loadEvents([pubKey2], [2]);
 
   await relayManager.connect();
 
@@ -288,9 +333,9 @@ Future<void> initRelays({bool newKey = false}) async {
             "CONNECTED ${connected.where((element) => element).length} , ${connected.where((element) => !element).length} FAILED took ${duration.inMilliseconds} ms");
       }
     }
+    followEventProvider.startSubscription();
   }
   metadataProvider.notifyListeners();
-  followEventProvider.refreshPosts();
 }
 
 void createMyRelaySets(UserRelayList userRelayList) {
@@ -423,6 +468,7 @@ Future<void> main() async {
   }
 
   if (loggedUserSigner != null) {
+    followEventProvider.loadCachedFeed();
     initRelays();
     nwcProvider.init();
   }

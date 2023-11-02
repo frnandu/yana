@@ -31,10 +31,28 @@ class FollowEventProvider extends ChangeNotifier
     postsBox = EventMemBox(sortAfterAdd: false);
     postsTimestamp = sharedPreferences.getInt(DataKey.FEED_POSTS_TIMESTAMP);
     repliesTimestamp = sharedPreferences.getInt(DataKey.FEED_REPLIES_TIMESTAMP);
-    DateTime? a = postsTimestamp!=null ? DateTime.fromMillisecondsSinceEpoch(postsTimestamp!*1000) : null;
-    print("POSTS READ TIMESTAMP: $a");
-    DateTime? b = repliesTimestamp!=null ? DateTime.fromMillisecondsSinceEpoch(repliesTimestamp!*1000) : null;
-    print("REPLIES READ TIMESTAMP: $b");
+    // DateTime? a = postsTimestamp!=null ? DateTime.fromMillisecondsSinceEpoch(postsTimestamp!*1000) : null;
+    // print("POSTS READ TIMESTAMP: $a");
+    // DateTime? b = repliesTimestamp!=null ? DateTime.fromMillisecondsSinceEpoch(repliesTimestamp!*1000) : null;
+    // print("REPLIES READ TIMESTAMP: $b");
+  }
+
+  void loadCachedFeed() async {
+    List<String> contactsForFeed = contactListProvider.contacts();
+    List<Nip01Event>? cachedEvents = cacheManager.loadEvents(contactsForFeed, queryEventKinds());
+    onEvents(cachedEvents, saveToCache: false);
+  }
+
+  Future<void> startSubscription() async {
+    int? since;
+    if (postsBox.newestEvent!=null) {
+      since = postsBox.newestEvent!.createdAt;
+    }
+    if (postsAndRepliesBox.newestEvent!=null && (since==null || postsAndRepliesBox.newestEvent!.createdAt > since)) {
+      since = postsAndRepliesBox.newestEvent!.createdAt;
+    }
+    // await contactListProvider.loadContactList(loggedUserSigner!.getPublicKey());
+    subscribe(since: since, fallbackTags: followEventProvider.FALLBACK_TAGS_FOR_EMPTY_CONTACT_LIST);
   }
 
   @override
@@ -62,7 +80,7 @@ class FollowEventProvider extends ChangeNotifier
     postsTimestamp = null;
     sharedPreferences.remove(DataKey.FEED_POSTS_TIMESTAMP);
 
-    doQuery(fallbackTags: FALLBACK_TAGS_FOR_EMPTY_CONTACT_LIST);
+    subscribe(fallbackTags: FALLBACK_TAGS_FOR_EMPTY_CONTACT_LIST);
 
     followNewEventProvider.clearPosts();
   }
@@ -74,7 +92,7 @@ class FollowEventProvider extends ChangeNotifier
     repliesTimestamp = null;
     sharedPreferences.remove(DataKey.FEED_REPLIES_TIMESTAMP);
 
-    doQuery(fallbackTags: FALLBACK_TAGS_FOR_EMPTY_CONTACT_LIST);
+    subscribe(fallbackTags: FALLBACK_TAGS_FOR_EMPTY_CONTACT_LIST);
 
     followNewEventProvider.clearReplies();
   }
@@ -102,19 +120,19 @@ class FollowEventProvider extends ChangeNotifier
     ];
   }
 
-  void doQuery(
-      {int? until,
-      List<String>? fallbackContacts,
-      List<String>? fallbackTags }) {
-    if (until != null) {
-      loadMore(until: until, fallbackTags: fallbackTags ?? FALLBACK_TAGS_FOR_EMPTY_CONTACT_LIST);
-    } else {
-      load(fallbackContacts: fallbackContacts, fallbackTags: fallbackTags ?? FALLBACK_TAGS_FOR_EMPTY_CONTACT_LIST);
-    }
-  }
+  // void doQuery(
+  //     {int? until,
+  //     List<String>? fallbackContacts,
+  //     List<String>? fallbackTags }) {
+  //   if (until != null) {
+  //     loadMore(until: until, fallbackTags: fallbackTags ?? FALLBACK_TAGS_FOR_EMPTY_CONTACT_LIST);
+  //   } else {
+  //     load(fallbackContacts: fallbackContacts, fallbackTags: fallbackTags ?? FALLBACK_TAGS_FOR_EMPTY_CONTACT_LIST);
+  //   }
+  // }
 
-  void load(
-      {List<String>? fallbackContacts, List<String>? fallbackTags}) async {
+  void subscribe(
+      {int? since, List<String>? fallbackContacts, List<String>? fallbackTags}) async {
     if (subscription != null) {
       await relayManager.closeNostrRequest(subscription!);
     }
@@ -122,6 +140,7 @@ class FollowEventProvider extends ChangeNotifier
     List<String> contactsForFeed = contactListProvider.contacts();
     var filter = Filter(
       kinds: queryEventKinds(),
+      since: since,
       authors: contactsForFeed, //..add(loggedUserSigner!.getPublicKey()),
       limit: 20,
     );
@@ -167,7 +186,7 @@ class FollowEventProvider extends ChangeNotifier
     });
   }
 
-  void loadMore({required int until, List<String>? fallbackTags}) async {
+  void queryOlder({required int until, List<String>? fallbackTags}) async {
 
     List<String> contactsForFeed = contactListProvider.contacts();
     var filter = Filter(
@@ -283,41 +302,46 @@ class FollowEventProvider extends ChangeNotifier
     } else {
       laterTimeMS = 500;
     }
-    later(event, (list) {
-      // var e = event;
-      bool addedPosts = false;
-      bool addedReplies = false;
-      for (var e in list) {
-        bool isPosts = eventIsPost(e);
-        if (!isPosts) {
-          if (repliesTimestamp!=null && e.createdAt > repliesTimestamp!) {
-            followNewEventProvider.handleEvents([e]);
-            return;
-          }
-          addedReplies = postsAndRepliesBox.add(e);
-        } else {
-          if (postsTimestamp!=null && e.createdAt > postsTimestamp!) {
-            followNewEventProvider.handleEvents([e]);
-            return;
-          }
-          addedPosts = postsBox.add(e);
-        }
-      }
-      if (addedReplies) {
-        print("Received ${list.length} events, some new replies");
-        postsAndRepliesBox.sort();
-      }
-      if (addedPosts) {
-        print("Received ${list.length} events, some new posts");
-        postsBox.sort();
-      }
-
-      if (addedPosts || addedReplies) {
-        notifyListeners();
-      }
-    }, null);
+    later(event, onEvents, null);
   }
 
+  void onEvents(List<Nip01Event> list, {bool saveToCache=true}) {
+    // var e = event;
+    bool addedPosts = false;
+    bool addedReplies = false;
+    for (var e in list) {
+      bool isPosts = eventIsPost(e);
+      if (!isPosts) {
+        if (repliesTimestamp!=null && e.createdAt > repliesTimestamp!) {
+          followNewEventProvider.handleEvents([e]);
+          return;
+        }
+        addedReplies = postsAndRepliesBox.add(e);
+      } else {
+        if (postsTimestamp!=null && e.createdAt > postsTimestamp!) {
+          followNewEventProvider.handleEvents([e]);
+          return;
+        }
+        addedPosts = postsBox.add(e);
+      }
+    }
+    if (addedReplies) {
+      print("Received ${list.length} events, some new replies");
+      postsAndRepliesBox.sort();
+    }
+    if (addedPosts) {
+      print("Received ${list.length} events, some new posts");
+      postsBox.sort();
+    }
+
+    if (addedPosts || addedReplies) {
+      if (saveToCache) {
+        cacheManager.saveEvents(postsBox.all());
+        cacheManager.saveEvents(postsAndRepliesBox.all());
+      }
+      notifyListeners();
+    }
+  }
   void setPostsTimestampToNewestAndSave() {
     if (postsTimestamp==null && postsBox.newestEvent!=null) {
       followEventProvider.postsTimestamp = postsBox.newestEvent!.createdAt;

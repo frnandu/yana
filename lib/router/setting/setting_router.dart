@@ -6,6 +6,7 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:provider/provider.dart';
 import 'package:settings_ui/settings_ui.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:yana/nostr/relay_metadata.dart';
 import 'package:yana/router/index/account_manager_component.dart';
 import 'package:yana/utils/platform_util.dart';
@@ -42,6 +43,8 @@ class SettingRouter extends StatefulWidget {
 
 class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
   bool loadingGossipRelays = false;
+
+  Uri OUTBOX_MODEL_INFO_URL = Uri.parse("https://mikedilger.com/gossip-model/");
 
   @override
   Widget build(BuildContext context) {
@@ -275,16 +278,18 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
           }
         },
         initialValue: settingProvider.gossip == OpenStatus.OPEN,
-        leading: const Icon(Icons.grain),
+        leading: GestureDetector(child: Icon(Icons.info_outline, color: themeData.primaryColor), onTap: () {
+          launchUrl(OUTBOX_MODEL_INFO_URL,mode: LaunchMode.externalApplication);
+        }),
         title: const Text("Use contacts outbox relays for feed")));
 
     if (settingProvider.gossip == 1) {
       networkTiles.add(SettingsTile.navigation(
-          leading: const Icon(Icons.lan_outlined),
+          leading: Container( margin: const EdgeInsets.only(left:10), child: const Icon(Icons.lan_outlined)),
           trailing: Text('${settingProvider.followeesRelayMinCount}'),
           onPressed: (context) async {
             int? old = _settingProvider.followeesRelayMinCount;
-            await pickMaxRelays();
+            await pickMinRelays();
             if (_settingProvider.followeesRelayMinCount! != old) {
               rebuildFeedRelaySet();
             }
@@ -314,10 +319,10 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
                     context, RouterPath.USER_RELAYS, filteredRelays);
               }
             },
-            leading: Text(
+            leading: Container( margin: const EdgeInsets.only(left:10), child: Text(
               "Feed Connected / Total relays ",
               style: TextStyle(color: themeData.disabledColor),
-            ),
+            )),
             trailing: loadingGossipRelays
                 ? Container()
                 : Icon(Icons.navigate_next, color: themeData.disabledColor),
@@ -337,6 +342,28 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
               return _provider.feedRelaysNumStr();
             })),
       );
+    }
+
+    networkTiles.add(SettingsTile.switchTile(
+        activeSwitchColor: themeData.primaryColor,
+        onToggle: (value) {
+          settingProvider.inboxForReactions = value ? 1 : 0;
+        },
+        initialValue: settingProvider.inboxForReactions == OpenStatus.OPEN,
+        leading: GestureDetector(child: Icon(Icons.info_outline, color: themeData.primaryColor), onTap: () {
+          launchUrl(OUTBOX_MODEL_INFO_URL,mode: LaunchMode.externalApplication);
+        }),
+        title: const Text("Use inbox relays for reactions")));
+
+    if (settingProvider.inboxForReactions == 1) {
+      networkTiles.add(SettingsTile.navigation(
+          leading: Container( margin: const EdgeInsets.only(left:10), child: const Icon(Icons.lan_outlined)),
+          trailing: Text('${settingProvider.broadcastToInboxMaxCount}'),
+          onPressed: (context) async {
+            int? old = _settingProvider.broadcastToInboxMaxCount;
+            await pickMaxRelays();
+          },
+          title: const Text("Max amount of relays")));
     }
 
     List<AbstractSettingsTile> securityTiles = [];
@@ -485,7 +512,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
 
   List<EnumObj>? i18nList;
 
-  List<EnumObj>? maxRelays;
+  List<EnumObj>? relaysNums;
 
   void init(I18n s) {
     if (i18nList == null) {
@@ -496,10 +523,10 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
         i18nList!.add(EnumObj(key, key));
       }
     }
-    if (maxRelays == null) {
-      maxRelays = [];
-      for (var i = 1; i <= 10; i++) {
-        maxRelays!.add(EnumObj(i, "$i"));
+    if (relaysNums == null) {
+      relaysNums = [];
+      for (var i = 1; i <= 20; i++) {
+        relaysNums!.add(EnumObj(i, "$i"));
       }
     }
   }
@@ -539,12 +566,28 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
     }
   }
 
-  Future pickMaxRelays() async {
+  Future pickMinRelays() async {
     EnumObj? resultEnumObj =
-        await EnumSelectorComponent.show(context, maxRelays!);
+        await EnumSelectorComponent.show(context, relaysNums!);
     if (resultEnumObj != null) {
       settingProvider.followeesRelayMinCount = resultEnumObj.value;
       widget.indexReload();
+      // Future.delayed(Duration(seconds: 1), () {
+      //   setState(() {
+      //     // TODO others setting enumObjList
+      //     i18nList = null;
+      //     themeStyleList = null;
+      //   });
+      // });
+    }
+  }
+
+  Future pickMaxRelays() async {
+    EnumObj? resultEnumObj =
+    await EnumSelectorComponent.show(context, relaysNums!);
+    if (resultEnumObj != null) {
+      settingProvider.broadcastToInboxMaxCount = resultEnumObj.value;
+      // widget.indexReload();
       // Future.delayed(Duration(seconds: 1), () {
       //   setState(() {
       //     // TODO others setting enumObjList

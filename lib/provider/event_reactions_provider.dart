@@ -84,6 +84,9 @@ class EventReactionsProvider extends ChangeNotifier
     } else {
       relaySet = myInboxRelaySet;
     }
+    if (relaySet==null) {
+      return;
+    }
     print(
         "----------------NOSTR REQUESTS: ${relayManager.nostrRequests.length}, reactions subscriptions: ${requests.length}");
     NostrRequest request = await relayManager!.subscription(filter, relaySet!,
