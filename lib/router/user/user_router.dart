@@ -44,6 +44,8 @@ class _UserRouter extends CustState<UserRouter>
 
   String? pubkey;
 
+  bool disposed = false;
+
   bool showTitle = false;
 
   bool followsYou = false;
@@ -197,7 +199,7 @@ class _UserRouter extends CustState<UserRouter>
                     pubkey: pubkey!,
                     // userNostr: userNostr,
                     onContactListLoaded: (contactList) {
-                      if (loggedUserSigner != null &&
+                      if (!disposed && loggedUserSigner != null &&
                           contactList.contacts.contains(loggedUserSigner!.getPublicKey())) {
                         setState(() {
                           followsYou = true;
@@ -271,6 +273,7 @@ class _UserRouter extends CustState<UserRouter>
   @override
   void dispose() {
     super.dispose();
+    disposed = true;
     if (subscription!=null) {
       relayManager.closeNostrRequest(subscription!);
     }

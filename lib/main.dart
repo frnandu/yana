@@ -333,7 +333,7 @@ Future<void> initRelays({bool newKey = false}) async {
             "CONNECTED ${connected.where((element) => element).length} , ${connected.where((element) => !element).length} FAILED took ${duration.inMilliseconds} ms");
       }
     }
-    followEventProvider.startSubscription();
+    followEventProvider.startSubscriptions();
   }
   notificationsProvider.startSubscription();
   metadataProvider.notifyListeners();
@@ -851,10 +851,9 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
         if (backgroundService != null && settingProvider.backgroundService) {
           backgroundService!.invoke('stopService');
         }
-        relayManager.reconnectRelays(relayManager.relays.keys).then((value) {
-          // newNotificationsProvider.queryNew();
-          // followEventProvider.refreshPosts();
-        });
+
+        followEventProvider.startSubscriptions();
+        notificationsProvider.startSubscription();
       }
     }
     if (newState != AppLifecycleState.paused &&

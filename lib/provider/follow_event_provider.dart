@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip01/filter.dart';
+import 'package:dart_ndk/nips/nip02/contact_list.dart';
 import 'package:dart_ndk/request.dart';
 import 'package:flutter/foundation.dart';
 import 'package:yana/provider/data_util.dart';
@@ -17,6 +18,9 @@ class FollowEventProvider extends ChangeNotifier
     implements FindEventInterface {
   late int _initTime;
   NostrRequest? subscription;
+  NostrRequest? subscriptionTags;
+  NostrRequest? subscriptionCommunities;
+  NostrRequest? subscriptionEvents;
 
   int? postsTimestamp;
   int? repliesTimestamp;
@@ -43,7 +47,7 @@ class FollowEventProvider extends ChangeNotifier
     onEvents(cachedEvents, saveToCache: false);
   }
 
-  Future<void> startSubscription() async {
+  Future<void> startSubscriptions() async {
     int? since;
     var newestPost = postsBox.newestEvent;
     if (newestPost!=null) {
@@ -54,7 +58,7 @@ class FollowEventProvider extends ChangeNotifier
       since = newestReply!.createdAt;
     }
     // await contactListProvider.loadContactList(loggedUserSigner!.getPublicKey());
-    subscribe(since: null, fallbackTags: followEventProvider.FALLBACK_TAGS_FOR_EMPTY_CONTACT_LIST);
+    subscribe(since: since, fallbackTags: followEventProvider.FALLBACK_TAGS_FOR_EMPTY_CONTACT_LIST);
   }
 
   @override
@@ -135,16 +139,19 @@ class FollowEventProvider extends ChangeNotifier
 
   void subscribe(
       {int? since, List<String>? fallbackContacts, List<String>? fallbackTags}) async {
-    if (subscription != null) {
-      await relayManager.closeNostrRequest(subscription!);
-    }
+    doUnscribe();
 
-    List<String> contactsForFeed = contactListProvider.contacts();
+    ContactList? contactList = contactListProvider.getContactList(loggedUserSigner!.getPublicKey());
+    List<String> contactsForFeed = contactList!=null? contactList.contacts : [];
+
     var filter = Filter(
       kinds: queryEventKinds(),
       since: since,
+      // tTags: contactList?.followedTags,
+      // aTags: contactList?.followedCommunities,
+      // eTags: contactList?.followedEvents,
       authors: contactsForFeed, //..add(loggedUserSigner!.getPublicKey()),
-      limit: 100,
+      limit: since!=null? null: 100,
     );
 
     if (contactsForFeed == null || contactsForFeed.isEmpty) {
@@ -181,10 +188,37 @@ class FollowEventProvider extends ChangeNotifier
             : myInboxRelaySet!,
         splitRequestsByPubKeyMappings: settingProvider.gossip == 1);
     subscription!.stream.listen((event) {
-      // if (event.pubKey == loggedUserSigner!.getPublicKey()) {
-      //   print("event.createdAt:${DateTime.fromMillisecondsSinceEpoch(event.createdAt*1000)}");
       onEvent(event);
-      // }
+    });
+    subscriptionTags = await relayManager!.subscription(
+        Filter(
+          kinds: queryEventKinds(),
+          since: since,
+          tTags: contactList?.followedTags,
+          limit: since!=null? null: 100,
+        ), myInboxRelaySet!, splitRequestsByPubKeyMappings: false);
+    subscriptionTags!.stream.listen((event) {
+      onEvent(event);
+    });
+    subscriptionCommunities = await relayManager!.subscription(
+        Filter(
+          kinds: queryEventKinds(),
+          since: since,
+          aTags: contactList?.followedCommunities,
+          limit: since!=null? null: 100,
+        ), myInboxRelaySet!, splitRequestsByPubKeyMappings: false);
+    subscriptionCommunities!.stream.listen((event) {
+      onEvent(event);
+    });
+    subscriptionEvents = await relayManager!.subscription(
+        Filter(
+          kinds: queryEventKinds(),
+          since: since,
+          eTags: contactList?.followedEvents,
+          limit: since!=null? null: 100,
+        ), myInboxRelaySet!, splitRequestsByPubKeyMappings: false);
+    subscriptionEvents!.stream.listen((event) {
+      onEvent(event);
     });
   }
 
@@ -210,7 +244,6 @@ class FollowEventProvider extends ChangeNotifier
       }
     }
 
-
     if (!postsAndRepliesBox.isEmpty()) {
       Nip01Event? event = postsAndRepliesBox.oldestEvent;
       if (event != null) {
@@ -226,17 +259,13 @@ class FollowEventProvider extends ChangeNotifier
       await relayManager.reconnectRelays(myInboxRelaySet!.urls);
     }
 
-    subscription = await relayManager!.query(
+    NostrRequest request = await relayManager!.query(
         filter,
         (feedRelaySet != null && settingProvider.gossip == 1)
             ? feedRelaySet!
             : myInboxRelaySet!);
-    subscription!.stream.listen((event) {
-      // if (event.pubKey == loggedUserSigner!.getPublicKey()) {
-      // print(
-      //     "event.createdAt from loadMore:${DateTime.fromMillisecondsSinceEpoch(event.createdAt * 1000)}");
+    request!.stream.listen((event) {
       onEvent(event);
-      // }
     });
   }
 
@@ -244,6 +273,16 @@ class FollowEventProvider extends ChangeNotifier
     if (subscription != null) {
       relayManager.closeNostrRequest(subscription!);
     }
+    if (subscriptionTags != null) {
+      relayManager.closeNostrRequest(subscriptionTags!);
+    }
+    if (subscriptionCommunities != null) {
+      relayManager.closeNostrRequest(subscriptionCommunities!);
+    }
+    if (subscriptionEvents != null) {
+      relayManager.closeNostrRequest(subscriptionEvents!);
+    }
+
   }
 
   // check if is posts (no tag e and not Mentions, TODO handle NIP27)
@@ -311,6 +350,7 @@ class FollowEventProvider extends ChangeNotifier
     // var e = event;
     bool addedPosts = false;
     bool addedReplies = false;
+    List<Nip01Event> toSave = [];
     for (var e in list) {
       bool isPosts = eventIsPost(e);
       if (!isPosts) {
@@ -326,6 +366,9 @@ class FollowEventProvider extends ChangeNotifier
         }
         addedPosts = postsBox.add(e);
       }
+      if (saveToCache && (addedReplies || addedPosts)) {
+        toSave.add(e);
+      }
     }
     if (addedReplies) {
       print("Received ${list.length} events, some new replies");
@@ -337,9 +380,8 @@ class FollowEventProvider extends ChangeNotifier
     }
 
     if (addedPosts || addedReplies) {
-      if (saveToCache) {
-        cacheManager.saveEvents(postsBox.all());
-        cacheManager.saveEvents(postsAndRepliesBox.all());
+      if (toSave.isNotEmpty) {
+        cacheManager.saveEvents(toSave);
       }
       notifyListeners();
     }

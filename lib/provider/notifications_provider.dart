@@ -77,7 +77,8 @@ class NotificationsProvider extends ChangeNotifier
           kinds: queryEventKinds(),
           pTags: [loggedUserSigner!.getPublicKey()],
           limit: 100);
-      // await relayManager.reconnectRelays(myInboxRelaySet!.urls);
+
+      await relayManager.reconnectRelays(myInboxRelaySet!.urls);
 
       subscription = await relayManager!.subscription(
           filter, myInboxRelaySet!);

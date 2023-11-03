@@ -71,6 +71,9 @@
 - ~~persist notes from feed for faster startup~~
 
 v0.12
+- MISSING POSTS in feed!
+- include tags/communities in feed filter?!
+- too much notifications of reactions to replies of replies of post where you're tagged
 - dms
 - re-enable awesome notifications
 - use inboxForReactions for broadcasting reactions to inbox relays
