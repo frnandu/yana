@@ -1,4 +1,4 @@
-import 'package:bot_toast/bot_toast.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter/material.dart';
 
 import '../i18n/i18n.dart';
@@ -174,7 +174,7 @@ class _ZapGenDialog extends State<ZapGenDialog> {
     var text = controller.text;
     var num = int.tryParse(text);
     if (num == null) {
-      BotToast.showText(text: I18n.of(context).Number_parse_error);
+      EasyLoading.show(status: I18n.of(context).Number_parse_error);
       return;
     }
 

@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:bot_toast/bot_toast.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip01/filter.dart';
 import 'package:dart_ndk/request.dart';

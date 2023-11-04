@@ -13,7 +13,7 @@ class Nip07EventSigner extends EventSigner {
   Future<void> sign(Nip01Event event) async {
     event.sig = await js.signSchnorrAsync(event.id);
     // if (kDebugMode) {
-    //   BotToast.showText(text: signedEvent.toString());
+    //   EasyLoading.show(status: signedEvent.toString());
     //   print("SIGNED EVENT: " + signedEvent.toString());
     // }
   }

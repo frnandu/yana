@@ -1,4 +1,4 @@
-import 'package:bot_toast/bot_toast.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 

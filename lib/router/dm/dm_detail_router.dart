@@ -1,4 +1,4 @@
-import 'package:bot_toast/bot_toast.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:dart_ndk/nips/nip01/metadata.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -243,18 +243,18 @@ class _DMDetailRouter extends CustState<DMDetailRouter> with EditorMixin {
   }
 
   Future<void> send() async {
-    var cancelFunc = BotToast.showLoading();
+    var cancelFunc = EasyLoading.show(status: "Sending...");
     try {
       var event = await doDocumentSave();
       if (event == null) {
-        BotToast.showText(text: I18n.of(context).Send_fail);
+        EasyLoading.show(status: I18n.of(context).Send_fail);
         return;
       }
       dmProvider.addEventAndUpdateReadedTime(detail!, event);
       editorController.clear();
       setState(() {});
     } finally {
-      cancelFunc.call();
+      EasyLoading.dismiss();
     }
   }
 

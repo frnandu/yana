@@ -1,4 +1,3 @@
-import 'package:bot_toast/bot_toast.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dart_ndk/nips/nip01/metadata.dart';
 import 'package:easy_image_viewer/easy_image_viewer.dart';
@@ -487,9 +486,7 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
   }
 
   copyPubKey() {
-    Clipboard.setData(ClipboardData(text: nip19PubKey)).then((_) {
-      BotToast.showText(text: I18n.of(context).key_has_been_copy);
-    });
+    Clipboard.setData(ClipboardData(text: nip19PubKey));
   }
 
   void jumpToUserRouter() {

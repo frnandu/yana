@@ -1,4 +1,4 @@
-import 'package:bot_toast/bot_toast.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:pretty_qr_code/pretty_qr_code.dart';
@@ -126,7 +126,7 @@ class _LightningQrcodeDialog extends State<LightningQrcodeDialog> {
 
   void _doCopy(String text) {
     Clipboard.setData(ClipboardData(text: text)).then((_) {
-      BotToast.showText(text: I18n.of(context).Copy_success);
+      EasyLoading.show(status: I18n.of(context).Copy_success);
     });
   }
 }

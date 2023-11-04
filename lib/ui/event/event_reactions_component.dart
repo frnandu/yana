@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:bot_toast/bot_toast.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -371,7 +371,7 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
 
   void _doCopy(String text) {
     Clipboard.setData(ClipboardData(text: text)).then((_) {
-      BotToast.showText(text: I18n.of(context).Copy_success);
+      EasyLoading.show(status: I18n.of(context).Copy_success);
     });
   }
 

@@ -1,4 +1,4 @@
-import 'package:bot_toast/bot_toast.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip01/metadata.dart';
 import 'package:flutter/material.dart';
@@ -466,7 +466,7 @@ class _EditorRouter extends CustState<EditorRouter> with EditorMixin {
     try {
       var event = await doDocumentSave();
       if (event == null) {
-        // BotToast.showText(text: I18n.of(context).Send_fail);
+        // EasyLoading.show(status: I18n.of(context).Send_fail);
         EasyLoading.showError('Failed...');
         return;
       }

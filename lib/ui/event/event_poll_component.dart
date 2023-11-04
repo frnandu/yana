@@ -1,4 +1,4 @@
-import 'package:bot_toast/bot_toast.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:convert/convert.dart';
 import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:flutter/material.dart';
@@ -242,28 +242,26 @@ class _EventPollComponent extends State<EventPollComponent> {
 
   bool inputCheck(BuildContext context, String value) {
     if (StringUtil.isBlank(value)) {
-      BotToast.showText(text: I18n.of(context).Input_can_not_be_null);
+      EasyLoading.show(status: I18n.of(context).Input_can_not_be_null);
       return false;
     }
 
     var num = int.tryParse(value);
     if (num == null) {
-      BotToast.showText(text: I18n.of(context).Input_parse_error);
+      EasyLoading.show(status: I18n.of(context).Input_parse_error);
       return false;
     } else {
       if (pollInfo != null &&
           pollInfo!.valueMinimum != null &&
           pollInfo!.valueMinimum! > num) {
-        BotToast.showText(
-            text:
+        EasyLoading.show(status:
                 "${I18n.of(context).Zap_num_can_not_smaller_then} ${pollInfo!.valueMinimum!}");
         return false;
       }
       if (pollInfo != null &&
           pollInfo!.valueMaximum != null &&
           pollInfo!.valueMaximum! < num) {
-        BotToast.showText(
-            text:
+        EasyLoading.show(status:
                 "${I18n.of(context).Zap_num_can_not_bigger_then} ${pollInfo!.valueMaximum!}");
         return false;
       }

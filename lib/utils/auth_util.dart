@@ -1,4 +1,4 @@
-import 'package:bot_toast/bot_toast.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter/widgets.dart';
 import 'package:local_auth/local_auth.dart';
 
@@ -14,11 +14,11 @@ class AuthUtil {
         localizedReason: reason,
       );
       if (!didAuthenticate && showFail) {
-        BotToast.showText(text: s.Verify_failure);
+        EasyLoading.show(status: s.Verify_failure);
       }
       return didAuthenticate;
     } catch (e) {
-      BotToast.showText(text: s.Verify_error);
+      EasyLoading.show(status: s.Verify_error);
     }
     return false;
   }

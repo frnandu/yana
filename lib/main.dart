@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:ui';
 
 import 'package:awesome_notifications/awesome_notifications.dart';
-import 'package:bot_toast/bot_toast.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:dart_ndk/cache_manager.dart';
 import 'package:dart_ndk/db/db_cache_manager.dart';
 import 'package:dart_ndk/db/db_event.dart';
@@ -725,9 +725,9 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
               return MaterialApp(
                 builder: EasyLoading.init(),
                 // builder: BotToastInit(),
-                navigatorObservers: [
-                  BotToastNavigatorObserver(),
-                ],
+                // navigatorObservers: [
+                //   BotToastNavigatorObserver(),
+                // ],
                 locale: _locale,
                 title: packageInfo.appName,
                 localizationsDelegates: const [

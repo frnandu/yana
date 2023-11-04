@@ -1,4 +1,4 @@
-import 'package:bot_toast/bot_toast.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter/material.dart';
 import 'package:yana/main.dart';
 import 'package:yana/provider/filter_provider.dart';
@@ -63,7 +63,7 @@ class _FilterDirtywordComponent extends State<BlockedWordsComponent> {
     var word = controller.text;
     word = word.trim();
     if (StringUtil.isBlank(word)) {
-      BotToast.showText(text: I18n.of(context).Word_can_t_be_null);
+      EasyLoading.show(status: I18n.of(context).Word_can_t_be_null);
       return;
     }
 

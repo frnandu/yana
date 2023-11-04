@@ -1,4 +1,4 @@
-import 'package:bot_toast/bot_toast.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip01/filter.dart';
 import 'package:flutter/foundation.dart';
@@ -123,8 +123,7 @@ class DMProvider extends ChangeNotifier with PenddingEventsLaterFunction {
       _initSince = events.first.createdAt;
     }
     if (kDebugMode) {
-      BotToast.showText(
-          text: "Loaded ${events.length} DM events from DB");
+      EasyLoading.show(status: "Loaded ${events.length} DM events from DB");
     }
     Map<String, List<Nip01Event>> eventListMap = {};
     for (var event in events) {
@@ -277,8 +276,7 @@ class DMProvider extends ChangeNotifier with PenddingEventsLaterFunction {
     bool updated = false;
     var keyIndex = settingProvider.privateKeyIndex!;
     if (kDebugMode) {
-      BotToast.showText(
-          text: "Loaded ${events.length} DM events from relays");
+      EasyLoading.show(status: "Loaded ${events.length} DM events from relays");
     }
     for (var event in events) {
       var addResult = _addEvent(localPubkey!, event);

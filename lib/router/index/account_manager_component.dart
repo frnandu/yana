@@ -1,7 +1,7 @@
 import 'dart:developer';
 import '/js/js_helper.dart' as js;
 
-import 'package:bot_toast/bot_toast.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dart_ndk/models/user_relay_list.dart';
 import 'package:dart_ndk/nips/nip01/bip340_event_signer.dart';
@@ -156,7 +156,7 @@ class AccountsState extends State<AccountsComponent> {
       try {
         getPublicKey(privateKey);
       } catch (e) {
-        BotToast.showText(text: I18n.of(context).Wrong_Private_Key_format);
+        EasyLoading.show(status: I18n.of(context).Wrong_Private_Key_format);
         return false;
       }
     }

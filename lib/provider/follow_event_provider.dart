@@ -43,22 +43,37 @@ class FollowEventProvider extends ChangeNotifier
 
   void loadCachedFeed() async {
     List<String> contactsForFeed = contactListProvider.contacts();
-    List<Nip01Event>? cachedEvents = cacheManager.loadEvents(contactsForFeed, queryEventKinds());
+    List<Nip01Event>? cachedEvents =
+        cacheManager.loadEvents(contactsForFeed, queryEventKinds());
+    print("FOLLOW loaded ${cachedEvents.length} events from cache DB");
     onEvents(cachedEvents, saveToCache: false);
+    if (postsBox.newestEvent!=null) {
+      DateTime? a = DateTime.fromMillisecondsSinceEpoch(
+          postsBox.newestEvent!.createdAt * 1000);
+      print("   newest POST date is $a");
+    }
+    if (postsAndRepliesBox.newestEvent!=null) {
+      DateTime? a = DateTime.fromMillisecondsSinceEpoch(
+          postsAndRepliesBox.newestEvent!.createdAt * 1000);
+      print("   newest REPLY date is $a");
+    }
   }
 
   Future<void> startSubscriptions() async {
     int? since;
     var newestPost = postsBox.newestEvent;
-    if (newestPost!=null) {
+    if (newestPost != null) {
       since = newestPost!.createdAt;
     }
     var newestReply = postsAndRepliesBox.newestEvent;
-    if (newestReply!=null && (since==null || newestReply!.createdAt > since)) {
+    if (newestReply != null &&
+        (since == null || newestReply!.createdAt > since)) {
       since = newestReply!.createdAt;
     }
     // await contactListProvider.loadContactList(loggedUserSigner!.getPublicKey());
-    subscribe(since: since, fallbackTags: followEventProvider.FALLBACK_TAGS_FOR_EMPTY_CONTACT_LIST);
+    subscribe(
+        since: since,
+        fallbackTags: followEventProvider.FALLBACK_TAGS_FOR_EMPTY_CONTACT_LIST);
   }
 
   @override
@@ -85,7 +100,7 @@ class FollowEventProvider extends ChangeNotifier
     postsAndRepliesBox.clear();
     postsTimestamp = null;
     sharedPreferences.remove(DataKey.FEED_POSTS_TIMESTAMP);
-
+    cacheManager.removeAllEvents();
     subscribe(fallbackTags: FALLBACK_TAGS_FOR_EMPTY_CONTACT_LIST);
 
     followNewEventProvider.clearPosts();
@@ -98,6 +113,7 @@ class FollowEventProvider extends ChangeNotifier
     repliesTimestamp = null;
     sharedPreferences.remove(DataKey.FEED_REPLIES_TIMESTAMP);
 
+    cacheManager.removeAllEvents();
     subscribe(fallbackTags: FALLBACK_TAGS_FOR_EMPTY_CONTACT_LIST);
 
     followNewEventProvider.clearReplies();
@@ -138,11 +154,15 @@ class FollowEventProvider extends ChangeNotifier
   // }
 
   void subscribe(
-      {int? since, List<String>? fallbackContacts, List<String>? fallbackTags}) async {
+      {int? since,
+      List<String>? fallbackContacts,
+      List<String>? fallbackTags}) async {
     doUnscribe();
 
-    ContactList? contactList = contactListProvider.getContactList(loggedUserSigner!.getPublicKey());
-    List<String> contactsForFeed = contactList!=null? contactList.contacts : [];
+    ContactList? contactList =
+        contactListProvider.getContactList(loggedUserSigner!.getPublicKey());
+    List<String> contactsForFeed =
+        contactList != null ? contactList.contacts : [];
 
     var filter = Filter(
       kinds: queryEventKinds(),
@@ -151,7 +171,7 @@ class FollowEventProvider extends ChangeNotifier
       // aTags: contactList?.followedCommunities,
       // eTags: contactList?.followedEvents,
       authors: contactsForFeed, //..add(loggedUserSigner!.getPublicKey()),
-      limit: since!=null? null: 100,
+      limit: since != null ? null : 100,
     );
 
     if (contactsForFeed == null || contactsForFeed.isEmpty) {
@@ -195,8 +215,10 @@ class FollowEventProvider extends ChangeNotifier
           kinds: queryEventKinds(),
           since: since,
           tTags: contactList?.followedTags,
-          limit: since!=null? null: 100,
-        ), myInboxRelaySet!, splitRequestsByPubKeyMappings: false);
+          limit: since != null ? null : 100,
+        ),
+        myInboxRelaySet!,
+        splitRequestsByPubKeyMappings: false);
     subscriptionTags!.stream.listen((event) {
       onEvent(event);
     });
@@ -205,8 +227,10 @@ class FollowEventProvider extends ChangeNotifier
           kinds: queryEventKinds(),
           since: since,
           aTags: contactList?.followedCommunities,
-          limit: since!=null? null: 100,
-        ), myInboxRelaySet!, splitRequestsByPubKeyMappings: false);
+          limit: since != null ? null : 100,
+        ),
+        myInboxRelaySet!,
+        splitRequestsByPubKeyMappings: false);
     subscriptionCommunities!.stream.listen((event) {
       onEvent(event);
     });
@@ -215,21 +239,24 @@ class FollowEventProvider extends ChangeNotifier
           kinds: queryEventKinds(),
           since: since,
           eTags: contactList?.followedEvents,
-          limit: since!=null? null: 100,
-        ), myInboxRelaySet!, splitRequestsByPubKeyMappings: false);
+          limit: since != null ? null : 100,
+        ),
+        myInboxRelaySet!,
+        splitRequestsByPubKeyMappings: false);
     subscriptionEvents!.stream.listen((event) {
       onEvent(event);
     });
   }
 
   void queryOlder({required int until, List<String>? fallbackTags}) async {
-
+    ContactList? contactList =
+        contactListProvider.getContactList(loggedUserSigner!.getPublicKey());
     List<String> contactsForFeed = contactListProvider.contacts();
     var filter = Filter(
       kinds: queryEventKinds(),
       authors: contactsForFeed, //..add(loggedUserSigner!.getPublicKey()),
       until: until,
-      limit: 20,
+      limit: 100,
     );
 
     if (contactsForFeed == null || contactsForFeed.isEmpty) {
@@ -251,8 +278,6 @@ class FollowEventProvider extends ChangeNotifier
         filter.since = event.createdAt - 60 * 60 * 24;
       }
     }
-    // TODO
-    //addTagCommunityFilter([filter.toMap()], queriyTags);
     if (settingProvider.gossip == 1 && feedRelaySet != null) {
       await relayManager.reconnectRelays(feedRelaySet!.urls);
     } else {
@@ -267,22 +292,55 @@ class FollowEventProvider extends ChangeNotifier
     request!.stream.listen((event) {
       onEvent(event);
     });
+
+    (await relayManager!.query(
+            Filter(
+                kinds: queryEventKinds(),
+                tTags: contactList?.followedTags,
+                until: until,
+                limit: 100),
+            myInboxRelaySet!))
+        .stream
+        .listen((event) {
+      onEvent(event);
+    });
+    (await relayManager!.query(
+        Filter(
+            kinds: queryEventKinds(),
+            aTags: contactList?.followedCommunities,
+            until: until,
+            limit: 100),
+        myInboxRelaySet!))
+        .stream
+        .listen((event) {
+      onEvent(event);
+    });
+    (await relayManager!.query(
+        Filter(
+            kinds: queryEventKinds(),
+            eTags: contactList?.followedEvents,
+            until: until,
+            limit: 100),
+        myInboxRelaySet!))
+        .stream
+        .listen((event) {
+      onEvent(event);
+    });
   }
 
   void doUnscribe() {
-    if (subscription != null) {
-      relayManager.closeNostrRequest(subscription!);
-    }
-    if (subscriptionTags != null) {
-      relayManager.closeNostrRequest(subscriptionTags!);
-    }
-    if (subscriptionCommunities != null) {
-      relayManager.closeNostrRequest(subscriptionCommunities!);
-    }
-    if (subscriptionEvents != null) {
-      relayManager.closeNostrRequest(subscriptionEvents!);
-    }
-
+    // if (subscription != null) {
+    //   relayManager.closeNostrRequest(subscription!);
+    // }
+    // if (subscriptionTags != null) {
+    //   relayManager.closeNostrRequest(subscriptionTags!);
+    // }
+    // if (subscriptionCommunities != null) {
+    //   relayManager.closeNostrRequest(subscriptionCommunities!);
+    // }
+    // if (subscriptionEvents != null) {
+    //   relayManager.closeNostrRequest(subscriptionEvents!);
+    // }
   }
 
   // check if is posts (no tag e and not Mentions, TODO handle NIP27)
@@ -346,7 +404,7 @@ class FollowEventProvider extends ChangeNotifier
     later(event, onEvents, null);
   }
 
-  void onEvents(List<Nip01Event> list, {bool saveToCache=true}) {
+  void onEvents(List<Nip01Event> list, {bool saveToCache = true}) {
     // var e = event;
     bool addedPosts = false;
     bool addedReplies = false;
@@ -354,13 +412,13 @@ class FollowEventProvider extends ChangeNotifier
     for (var e in list) {
       bool isPosts = eventIsPost(e);
       if (!isPosts) {
-        if (repliesTimestamp!=null && e.createdAt > repliesTimestamp!) {
+        if (repliesTimestamp != null && e.createdAt > repliesTimestamp!) {
           followNewEventProvider.handleEvents([e]);
           return;
         }
         addedReplies = postsAndRepliesBox.add(e);
       } else {
-        if (postsTimestamp!=null && e.createdAt > postsTimestamp!) {
+        if (postsTimestamp != null && e.createdAt > postsTimestamp!) {
           followNewEventProvider.handleEvents([e]);
           return;
         }
@@ -371,11 +429,11 @@ class FollowEventProvider extends ChangeNotifier
       }
     }
     if (addedReplies) {
-      print("Received ${list.length} events, some new replies");
+      print("Received ${list.length} events FROM ${saveToCache?"RELAYS":"CACHE"}, some new replies");
       postsAndRepliesBox.sort();
     }
     if (addedPosts) {
-      print("Received ${list.length} events, some new posts");
+      print("Received ${list.length} events FROM ${saveToCache?"RELAYS":"CACHE"}, some new posts");
       postsBox.sort();
     }
 
@@ -386,22 +444,23 @@ class FollowEventProvider extends ChangeNotifier
       notifyListeners();
     }
   }
+
   void setPostsTimestampToNewestAndSave() {
-    if (postsTimestamp==null && postsBox.newestEvent!=null) {
+    if (postsTimestamp == null && postsBox.newestEvent != null) {
       postsTimestamp = postsBox.newestEvent!.createdAt;
-      sharedPreferences.setInt(
-          DataKey.FEED_POSTS_TIMESTAMP, postsTimestamp!);
-      DateTime a = DateTime.fromMillisecondsSinceEpoch(postsTimestamp!*1000);
+      sharedPreferences.setInt(DataKey.FEED_POSTS_TIMESTAMP, postsTimestamp!);
+      DateTime a = DateTime.fromMillisecondsSinceEpoch(postsTimestamp! * 1000);
       print("POSTS WRITTEN TIMESTAMP: $a");
     }
   }
 
   void setRepliesTimestampToNewestAndSave() {
-    if (repliesTimestamp==null && postsAndRepliesBox.newestEvent!=null) {
+    if (repliesTimestamp == null && postsAndRepliesBox.newestEvent != null) {
       repliesTimestamp = postsAndRepliesBox.newestEvent!.createdAt;
       sharedPreferences.setInt(
           DataKey.FEED_REPLIES_TIMESTAMP, repliesTimestamp!);
-      DateTime a = DateTime.fromMillisecondsSinceEpoch(repliesTimestamp!*1000);
+      DateTime a =
+          DateTime.fromMillisecondsSinceEpoch(repliesTimestamp! * 1000);
       print("REPLIES WRITTEN TIMESTAMP: $a");
     }
   }

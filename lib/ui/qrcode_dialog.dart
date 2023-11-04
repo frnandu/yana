@@ -1,4 +1,4 @@
-import 'package:bot_toast/bot_toast.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:dart_ndk/nips/nip01/metadata.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -154,7 +154,7 @@ class _QrcodeDialog extends State<QrcodeDialog> {
 
   void _doCopy(String text) {
     Clipboard.setData(ClipboardData(text: text)).then((_) {
-      BotToast.showText(text: I18n.of(context).key_has_been_copy);
+      EasyLoading.show(status: I18n.of(context).key_has_been_copy);
     });
   }
 }

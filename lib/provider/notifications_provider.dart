@@ -69,7 +69,7 @@ class NotificationsProvider extends ChangeNotifier
 
   void startSubscription() async {
     if (subscription != null) {
-      await relayManager.closeNostrRequest(subscription!);
+      // await relayManager.closeNostrRequest(subscription!);
     }
 
     if (myInboxRelaySet!=null) {

@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:bot_toast/bot_toast.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:dart_ndk/models/relay_set.dart';
 import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip01/filter.dart';
@@ -238,8 +238,8 @@ class EventReactionsProvider extends ChangeNotifier
   void removePendding(String eventId) async {
     // _penddingIds.remove(eventId);
     if (requests[eventId] != null) {
-      await relayManager.closeNostrRequest(requests[eventId]!);
-      requests.remove(eventId);
+      // await relayManager.closeNostrRequest(requests[eventId]!);
+      // requests.remove(eventId);
     }
   }
 

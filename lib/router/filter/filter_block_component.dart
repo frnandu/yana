@@ -1,4 +1,4 @@
-import 'package:bot_toast/bot_toast.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:yana/nostr/nip19/nip19.dart';
@@ -50,7 +50,7 @@ class FilterBlockItemComponent extends StatelessWidget {
     return GestureDetector(
       onTap: () {
         Clipboard.setData(ClipboardData(text: nip19Pubkey)).then((_) {
-          BotToast.showText(text: s.key_has_been_copy);
+          EasyLoading.show(status: s.key_has_been_copy);
         });
       },
       child: Container(

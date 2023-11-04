@@ -2,11 +2,13 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:bip340/bip340.dart';
+import 'package:dart_ndk/dart_ndk.dart';
 import 'package:dart_ndk/nips/nip01/bip340_event_signer.dart';
 import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip01/event_signer.dart';
 import 'package:dart_ndk/nips/nip01/filter.dart';
 import 'package:dart_ndk/nips/nip01/helpers.dart';
+import 'package:dart_ndk/request.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:yana/nostr/event_kind.dart';
@@ -81,17 +83,12 @@ class NwcProvider extends ChangeNotifier {
     await settingProvider.setNwc(nwc);
     await settingProvider.setNwcSecret(secret!);
     var filter = Filter(kinds: [NwcKind.INFO_REQUEST], authors: [walletPubKey!]);
-    if (await relayManager.reconnectRelay(relay)) {
-      (await relayManager.requestRelays([relay], filter)).stream.listen((event) {
-        onEventInfo.call(event);
+
+    if (await relayManager.reconnectRelay(relay, force: true)) {
+      (await relayManager.requestRelays([relay], filter)).stream.listen((event) async {
+        await onEventInfo.call(event);
       });
     }
-    // TODO use dart_ndk
-    // nostr!.queryRelay(filter.toMap(), relay!, onEventInfo);
-    // walletPubKey = pubKey;
-    // this.relay = relay;
-    // permissions = ["get_balance","pay_invoice"];
-    // await requestBalance(walletPubKey, relay, secret!);
   }
 
   Future<void> onEventInfo(Nip01Event event) async {
@@ -135,23 +132,18 @@ class NwcProvider extends ChangeNotifier {
       var tags = [
         ["p", walletPubKey]
       ];
-      await relayManager.reconnectRelay(relay!);
       final event = Nip01Event(pubKey: nwcSigner!.getPublicKey(), kind: NwcKind.REQUEST, tags: tags, content: encrypted);
 
       var filter = Filter(
           kinds: [NwcKind.RESPONSE], authors: [walletPubKey!], eTags: [event.id]);
-      // var webSocket = await WebSocket.connect(relay!);
-      // webSocket.listen((event) {
-      //   print(event);
-      // });
-      // List<dynamic> request = ["REQ", Helpers.getRandomString(10), filter.toMap()];
-      // final encoded = jsonEncode(request);
-      // print("---------------SEND QUERY: ${jsonEncode(request)}");
-      // webSocket.add(encoded);
-      // await nwcSigner.sign(event);
-      // print("----------------SEND EVENT: ${jsonEncode(["EVENT",event.toJson()])}");
 
-      (await relayManager.requestRelays([relay!], filter, idleTimeout: 20)).stream.listen(onGetBalanceResponse);
+      await relayManager.reconnectRelay(relay);
+
+      NostrRequest balanceSubscription = await relayManager.requestRelays([relay!], filter, closeOnEOSE: false);
+      balanceSubscription.stream.listen((event) async {
+        await relayManager.closeNostrRequest(balanceSubscription);
+        await onGetBalanceResponse(event);
+      });
       await relayManager.broadcastEvent(event, [relay!], nwcSigner);
     } else {
       var filter = Filter(kinds: [NwcKind.INFO_REQUEST], authors: [walletPubKey!]);
@@ -163,7 +155,7 @@ class NwcProvider extends ChangeNotifier {
     }
   }
 
-  void onGetBalanceResponse(Nip01Event event) async {
+  Future<void> onGetBalanceResponse(Nip01Event event) async {
     if (event.kind == NwcKind.RESPONSE &&
         StringUtil.isNotBlank(event.content) &&
         StringUtil.isNotBlank(secret) &&

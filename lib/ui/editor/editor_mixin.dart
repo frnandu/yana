@@ -1,5 +1,5 @@
 import 'package:auto_size_text_field/auto_size_text_field.dart';
-import 'package:bot_toast/bot_toast.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip01/metadata.dart';
@@ -388,11 +388,11 @@ mixin EditorMixin {
 
   bool baseInputCheck(BuildContext context, String value) {
     if (value.contains(" ")) {
-      BotToast.showText(text: I18n.of(context).Text_can_t_contain_blank_space);
+      EasyLoading.show(status: I18n.of(context).Text_can_t_contain_blank_space);
       return false;
     }
     if (value.contains("\n")) {
-      BotToast.showText(text: I18n.of(context).Text_can_t_contain_new_line);
+      EasyLoading.show(status: I18n.of(context).Text_can_t_contain_new_line);
       return false;
     }
     return true;
@@ -452,7 +452,7 @@ mixin EditorMixin {
               if (StringUtil.isNotBlank(imagePath)) {
                 value = imagePath;
               } else {
-                BotToast.showText(text: I18n.of(context).Upload_fail);
+                EasyLoading.show(status: I18n.of(context).Upload_fail);
                 return null;
               }
             }

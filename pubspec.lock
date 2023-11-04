@@ -1906,13 +1906,21 @@ packages:
     source: hosted
     version: "0.1.4-beta"
   web_socket_channel:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: web_socket_channel
       sha256: d88238e5eac9a42bb43ca4e721edba3c08c6354d4a53063afaa568516217621b
       url: "https://pub.dev"
     source: hosted
     version: "2.4.0"
+  websocket_universal:
+    dependency: transitive
+    description:
+      name: websocket_universal
+      sha256: "2c78fc0f2e454effdf99635b3391c3ba96a2d6dc735dd984fa3886e5f04104d4"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.1.1"
   webview_flutter:
     dependency: "direct main"
     description:

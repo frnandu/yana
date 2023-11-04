@@ -1,6 +1,6 @@
 import 'dart:developer';
 
-import 'package:bot_toast/bot_toast.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:dart_ndk/nips/nip01/metadata.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -167,7 +167,7 @@ class _GenLnbcComponent extends State<GenLnbcComponent> {
     var text = controller.text;
     var num = int.tryParse(text);
     if (num == null) {
-      BotToast.showText(text: I18n.of(context).Number_parse_error);
+      EasyLoading.show(status: I18n.of(context).Number_parse_error);
       return;
     }
 

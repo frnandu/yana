@@ -69,17 +69,17 @@
 - ~~notifications FIX UI/UX~~
 - ~~new posts/replies appear in layered popup with avatars~~
 - ~~persist notes from feed for faster startup~~
+- ~~include tags/communities in feed filter?!~~
 
 v0.12
-- MISSING POSTS in feed!
-- include tags/communities in feed filter?!
+- FIX THREADED VIEW
+- FIX LOGOUT/SWITCH accounts screens!
+- 
 - too much notifications of reactions to replies of replies of post where you're tagged
 - dms
 - re-enable awesome notifications
 - use inboxForReactions for broadcasting reactions to inbox relays
 - get all your contacts metadatas for search
-- FIX THREADED VIEW
-- WTF metadata takes so long to load???
 - blacklist for relays
 - on back from background, reconnect relay + resubscribe to all existing subscriptions
 - PULL BACKGROUND SERVICE

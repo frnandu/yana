@@ -43,11 +43,13 @@ class _FollowPostsAndRepliesRouter
 
   @override
   void deactivate() {
+    super.deactivate();
     followEventProvider.setRepliesTimestampToNewestAndSave();
   }
 
   @override
   void dispose() {
+    super.dispose();
     followEventProvider.setRepliesTimestampToNewestAndSave();
   }
 

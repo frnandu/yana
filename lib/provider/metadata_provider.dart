@@ -1,14 +1,21 @@
+import 'dart:convert';
+
 import 'package:dart_ndk/models/relay_set.dart';
+import 'package:dart_ndk/nips/nip01/event.dart';
+import 'package:dart_ndk/nips/nip01/filter.dart';
+import 'package:dart_ndk/nips/nip01/helpers.dart';
 import 'package:dart_ndk/nips/nip01/metadata.dart';
 import 'package:dart_ndk/nips/nip05/nip05.dart';
+import 'package:dart_ndk/relay.dart';
+import 'package:dart_ndk/request.dart';
 import 'package:flutter/material.dart';
+import 'package:websocket_universal/websocket_universal.dart';
 
 import '../main.dart';
 import '../utils/later_function.dart';
 import '../utils/string_util.dart';
 
 class MetadataProvider extends ChangeNotifier with LaterFunction {
-
   static MetadataProvider? _metadataProvider;
 
   static Future<MetadataProvider> getInstance() async {
@@ -45,7 +52,6 @@ class MetadataProvider extends ChangeNotifier with LaterFunction {
     if (metadata != null) {
       return metadata;
     }
-
     if (!_needUpdateMetadatas.contains(pubKey)) {
       _needUpdateMetadatas.add(pubKey);
     }
@@ -58,7 +64,7 @@ class MetadataProvider extends ChangeNotifier with LaterFunction {
   bool? isNip05Valid(Metadata metadata) {
     if (StringUtil.isNotBlank(metadata.nip05)) {
       Nip05? nip05 = cacheManager.loadNip05(metadata.pubKey);
-      if (nip05==null || nip05.needsUpdate(NIP05_NEEDS_UPDATE_DURATION)) {
+      if (nip05 == null || nip05.needsUpdate(NIP05_NEEDS_UPDATE_DURATION)) {
         if (!_needUpdateNip05s.contains(metadata)) {
           _needUpdateNip05s.add(metadata);
           later(_laterCallback, null);
@@ -74,13 +80,13 @@ class MetadataProvider extends ChangeNotifier with LaterFunction {
     if (_needUpdateMetadatas.isEmpty) {
       return;
     }
-    RelaySet? relaySet = settingProvider.gossip == 1 && feedRelaySet!=null ? feedRelaySet : myInboxRelaySet;
-    if (relaySet!=null) {
+    RelaySet? relaySet = settingProvider.gossip == 1 && feedRelaySet != null
+        ? feedRelaySet
+        : myInboxRelaySet;
+    if (relaySet != null) {
       List<Metadata> loaded = await relayManager.loadMissingMetadatas(
-        _needUpdateMetadatas,
-        relaySet,
-        splitRequestsByPubKeyMappings: settingProvider.gossip == 1
-      );
+          _needUpdateMetadatas, relaySet,
+          splitRequestsByPubKeyMappings: settingProvider.gossip == 1);
       _needUpdateMetadatas.clear();
 
       if (loaded.isNotEmpty) {
@@ -99,8 +105,14 @@ class MetadataProvider extends ChangeNotifier with LaterFunction {
     for (var metadata in doCheck) {
       Nip05? nip05 = cacheManager.loadNip05(metadata.pubKey);
       bool valid = await Nip05.check(metadata.nip05!, metadata.pubKey);
-      nip05 ??= Nip05(pubKey: metadata.pubKey, nip05: metadata.nip05!, valid: valid, updatedAt: DateTime.now().millisecondsSinceEpoch ~/1000);
-      nip05.valid= valid;
+      nip05 ??= Nip05(
+          pubKey: metadata.pubKey,
+          nip05: metadata.nip05!,
+          valid: valid,
+          updatedAt: DateTime
+              .now()
+              .millisecondsSinceEpoch ~/ 1000);
+      nip05.valid = valid;
       toSave.add(nip05);
     }
     await cacheManager.saveNip05s(toSave);

@@ -62,6 +62,7 @@ class _GlobalsEventsRouter extends KeepAliveCustState<GlobalsEventsRouter>
 
     var main = RefreshIndicator(
         onRefresh: () async {
+          until= null;
           refresh();
         },
         child: EventDeleteCallback(

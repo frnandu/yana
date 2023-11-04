@@ -1,4 +1,4 @@
-import 'package:bot_toast/bot_toast.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:dart_ndk/models/user_relay_list.dart';
 import 'package:dart_ndk/nips/nip01/bip340_event_signer.dart';
 import 'package:dart_ndk/relay_manager.dart';
@@ -144,12 +144,12 @@ class _LoginRouter extends State<LoginRouter>
             var pubKey = await js.getPublicKeyAsync();
             if (StringUtil.isNotBlank(pubKey)) {
               if (kDebugMode) {
-                BotToast.showText(text: pubKey);
+                EasyLoading.show(status: pubKey);
                 print("PUBLIC KEY: " + pubKey);
               }
               await doLogin(pubKey, true, false);
             } else {
-              BotToast.showText(text: "Invalid public key");
+              EasyLoading.show(status: "Invalid public key");
             }
           },
           child: Container(
@@ -311,7 +311,7 @@ class _LoginRouter extends State<LoginRouter>
 
   Future<void> doLogin(String key, bool pubOnly, bool newKey) async {
     if (StringUtil.isBlank(key)) {
-      BotToast.showText(text: I18n.of(context).Private_key_is_null);
+      EasyLoading.show(status: I18n.of(context).Private_key_is_null);
       return;
     }
     try {

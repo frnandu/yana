@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:bot_toast/bot_toast.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:convert/convert.dart';
 import 'package:dart_ndk/models/user_relay_list.dart';
 import 'package:dart_ndk/nips/nip01/event.dart';
@@ -192,7 +192,7 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
       // widget.userNostr!.query([filter.toMap()], (event) {
       //   localContactBox!.add(event);
       // }, id: fetchLocalContactsId);
-      BotToast.showText(text: I18n.of(context).Begin_to_load_Contact_History);
+      EasyLoading.show(status: I18n.of(context).Begin_to_load_Contact_History);
     }
   }
 
@@ -335,11 +335,13 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
   @override
   void deactivate() {
     super.deactivate();
-    if (  _followersSubscription != null) {
+    if (_followersSubscription != null) {
       relayManager.closeNostrRequest(_followersSubscription!);
+      _followersSubscription=null;
     }
     if (_zapsSubscription != null) {
       relayManager.closeNostrRequest(_zapsSubscription!);
+      _zapsSubscription=null;
     }
   }
 
@@ -348,9 +350,11 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
     super.dispose();
     if (_followersSubscription != null) {
       relayManager.closeNostrRequest(_followersSubscription!);
+      _followersSubscription=null;
     }
     if (_zapsSubscription != null) {
       relayManager.closeNostrRequest(_zapsSubscription!);
+      _zapsSubscription=null;
     }
     _disposed = true;
   }

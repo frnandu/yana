@@ -110,7 +110,7 @@ class _TextInputDialogInnerComponent
   void _onConfirm() {
     var value = controller.text;
     // if (StringUtil.isBlank(value)) {
-    //   BotToast.showText(text: "Input can't be null");
+    //   EasyLoading.show(status: "Input can't be null");
     //   return;
     // }
 

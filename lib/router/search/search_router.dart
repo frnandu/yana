@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:bot_toast/bot_toast.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:dart_ndk/models/relay_set.dart';
 import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip01/filter.dart';
@@ -314,7 +314,7 @@ class _SearchRouter extends CustState<SearchRouter>
     var value = controller.text;
     value = value.trim();
     // if (StringUtil.isBlank(value)) {
-    //   BotToast.showText(text: S.of(context).Empty_text_may_be_ban_by_relays);
+    //   EasyLoading.show(status: S.of(context).Empty_text_may_be_ban_by_relays);
     // }
 
     // List<String>? authors;
@@ -510,7 +510,7 @@ class _SearchRouter extends CustState<SearchRouter>
         // WebViewRouter.open(context, result);
       } else {
         Clipboard.setData(ClipboardData(text: result)).then((_) {
-          BotToast.showText(text: I18n.of(context).Copy_success);
+          EasyLoading.show(status: I18n.of(context).Copy_success);
         });
       }
     }
@@ -523,7 +523,7 @@ class _SearchRouter extends CustState<SearchRouter>
     var value = controller.text;
     value = value.trim();
     // if (StringUtil.isBlank(value)) {
-    //   BotToast.showText(text: S.of(context).Empty_text_may_be_ban_by_relays);
+    //   EasyLoading.show(status: S.of(context).Empty_text_may_be_ban_by_relays);
     // }
 
     eventMemBox = EventMemBox();

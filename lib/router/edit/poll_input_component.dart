@@ -1,4 +1,4 @@
-import 'package:bot_toast/bot_toast.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter/material.dart';
 import 'package:yana/utils/string_util.dart';
 
@@ -38,21 +38,21 @@ class PollInputController {
     if (StringUtil.isNotBlank(maxValueController.text)) {
       var num = int.tryParse(maxValueController.text);
       if (num == null) {
-        BotToast.showText(text: s.Number_parse_error);
+        EasyLoading.show(status: s.Number_parse_error);
         return false;
       }
     }
     if (StringUtil.isNotBlank(minValueController.text)) {
       var num = int.tryParse(minValueController.text);
       if (num == null) {
-        BotToast.showText(text: s.Number_parse_error);
+        EasyLoading.show(status: s.Number_parse_error);
         return false;
       }
     }
 
     for (var pollOptionController in pollOptionControllers) {
       if (StringUtil.isBlank(pollOptionController.text)) {
-        BotToast.showText(text: s.Input_can_not_be_null);
+        EasyLoading.show(status: s.Input_can_not_be_null);
         return false;
       }
     }

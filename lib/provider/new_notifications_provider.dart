@@ -1,5 +1,5 @@
 import 'package:awesome_notifications/awesome_notifications.dart';
-import 'package:bot_toast/bot_toast.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip01/metadata.dart';
 import 'package:flutter/foundation.dart';
@@ -23,8 +23,7 @@ class NewNotificationsProvider extends ChangeNotifier
   static Future<void> onActionReceivedMethod(
       ReceivedAction receivedAction) async {
     if (kDebugMode) {
-      BotToast.showText(
-          text: "Received notification " + receivedAction.payload.toString());
+      EasyLoading.show(status: "Received notification " + receivedAction.payload.toString());
     }
     newNotificationsProvider.queryNew();
     Future.delayed(Duration(seconds: 1), () {

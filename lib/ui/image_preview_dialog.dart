@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'dart:ui';
 
-import 'package:bot_toast/bot_toast.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:easy_image_viewer/easy_image_viewer.dart';
 import 'package:file_saver/file_saver.dart';
 import 'package:flutter/material.dart';
@@ -252,8 +252,7 @@ class _ImagePreviewDialog extends State<ImagePreviewDialog> {
           bytes: imageAsBytes,
           ext: ".png",
         );
-        BotToast.showText(
-            text: "${I18n.of(context).Image_save_success} $result");
+        EasyLoading.show(status: "${I18n.of(context).Image_save_success} $result");
       }
     }
   }

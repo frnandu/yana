@@ -1,6 +1,6 @@
 import 'dart:developer';
 
-import 'package:bot_toast/bot_toast.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter/material.dart';
 import 'package:yana/models/custom_emoji.dart';
 
@@ -169,16 +169,16 @@ class _CustomEmojiAddDialog extends State<CustomEmojiAddDialog> {
     var s = I18n.of(context);
     var text = controller.text;
     if (StringUtil.isBlank(text)) {
-      BotToast.showText(text: s.Input_can_not_be_null);
+      EasyLoading.show(status: s.Input_can_not_be_null);
       return;
     }
 
     if (RegExp(_regExp).firstMatch(text) == null) {
-      BotToast.showText(text: s.Input_parse_error);
+      EasyLoading.show(status: s.Input_parse_error);
       return;
     }
 
-    var cancel = BotToast.showLoading();
+    EasyLoading.show(status: "...");
     try {
       var imagePath = await Uploader.upload(
         filepath!,
@@ -187,13 +187,13 @@ class _CustomEmojiAddDialog extends State<CustomEmojiAddDialog> {
       log("$text $imagePath");
 
       if (StringUtil.isBlank(imagePath)) {
-        BotToast.showText(text: s.Upload_fail);
+        EasyLoading.show(status: s.Upload_fail);
         return;
       }
 
       filepath = imagePath;
     } finally {
-      cancel.call();
+      EasyLoading.dismiss();
     }
 
     RouterUtil.back(context, CustomEmoji(name: text, filepath: filepath));

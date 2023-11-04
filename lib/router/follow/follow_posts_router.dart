@@ -43,11 +43,13 @@ class _FollowPostsRouter extends KeepAliveCustState<FollowPostsRouter>
 
   @override
   void deactivate() {
+    super.deactivate();
     followEventProvider.setPostsTimestampToNewestAndSave();
   }
 
   @override
   void dispose() {
+    super.dispose();
     followEventProvider.setPostsTimestampToNewestAndSave();
   }
 

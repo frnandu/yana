@@ -1,7 +1,11 @@
+import 'dart:convert';
+
 import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip01/filter.dart';
+import 'package:dart_ndk/nips/nip01/helpers.dart';
 import 'package:dart_ndk/request.dart';
 import 'package:flutter/material.dart';
+import 'package:websocket_universal/websocket_universal.dart';
 
 import '../main.dart';
 import '../utils/later_function.dart';
@@ -67,24 +71,40 @@ class SingleEventProvider extends ChangeNotifier with LaterFunction {
     var filter = Filter(ids: _needUpdateIds);
     List<String> tempIds = [];
     tempIds.addAll(_needUpdateIds);
+
+    // const connectionOptions = SocketConnectionOptions(
+    //   timeoutConnectionMs: 30000, // connection fail timeout after 4000 ms
+    //   skipPingMessages: true,
+    //   pingRestrictionForce: true,
+    // );
+    // final textSocketHandler = IWebSocketHandler<String, String>.createClient(
+    //   "wss://relay.damus.io", // Postman echo ws server
+    //   SocketSimpleTextProcessor(),
+    //   connectionOptions: connectionOptions
+    // );
+    //
+    // textSocketHandler.incomingMessagesStream.listen((message) {
+    //   List<dynamic> eventJson = json.decode(message);
+    //   if (eventJson[0] == 'EVENT') {
+    //     // print('> webSocket  got text message from server: "$message" ');
+    //     Nip01Event event = Nip01Event.fromJson(eventJson[2]);
+    //     _onEvent(event);
+    //     textSocketHandler.disconnect("");
+    //     textSocketHandler.close();
+    //   }
+    // });
+    // await textSocketHandler.connect();
+    // List<dynamic> request = ["REQ", Helpers.getRandomString(10), filter.toMap()];
+    // final encoded = jsonEncode(request);
+    // textSocketHandler.sendMessage(encoded);
+
     if (myInboxRelaySet!=null) {
       NostrRequest request = await relayManager.requestRelays(
-          myInboxRelaySet!.urls, filter, idleTimeout: 20);
+          myInboxRelaySet!.urls, filter, idleTimeout: 1);
       request.stream.listen((event) {
         _onEvent(event);
       });
     }
-    // todo use dart_ndk
-    // nostr!.query([filter.toMap()], _onEvent, id: subscriptId, onComplete: () {
-    //   // log("singleEventProvider onComplete $tempIds");
-    //   for (var id in tempIds) {
-    //     _handingIds.remove(id);
-    //   }
-    // });
-
-    // for (var id in _needUpdateIds) {
-    //   _handingIds[id] = 1;
-    // }
     _needUpdateIds.clear();
   }
 }
