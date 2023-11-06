@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:dart_ndk/models/relay_set.dart';
 import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip01/filter.dart';
@@ -8,9 +7,8 @@ import 'package:dart_ndk/read_write.dart';
 import 'package:dart_ndk/request.dart';
 import 'package:flutter/material.dart';
 
-import '../models/event_reactions.dart';
 import '../main.dart';
-import '../nostr/event_kind.dart';
+import '../models/event_reactions.dart';
 import '../utils/later_function.dart';
 import '../utils/when_stop_function.dart';
 
