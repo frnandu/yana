@@ -72,6 +72,7 @@
 - ~~include tags/communities in feed filter?!~~
 
 v0.12
+- FIX SOCKETS CONNECTION PROBLEMS!!!!!!!!!!!!!!!
 - FIX THREADED VIEW
 - FIX LOGOUT/SWITCH accounts screens!
 - 
@@ -94,6 +95,7 @@ v0.12
 - include relay hints on nevent and stuff (bounty)
 - handle event deletions coming from relays, should delete in cache
 - don't validate signature for events cached on DB
+- when following someone new and gossip=1, ask confirmation for that user's relay list acceptance, and eventual blocking some relays
 
 v0.13
 - better android/ios/linux badges on web version login screen (anchor links to readme.md for IOS/linux)

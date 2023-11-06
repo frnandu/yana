@@ -234,6 +234,7 @@ class AccountsState extends State<AccountsComponent> {
   static void clearLocalData(int index) {
     // remove private key
     settingProvider.removeKey(index);
+    cacheManager.removeAllEvents();
     // clear local db
     // DMSessionInfoDB.deleteAll(index);
     // EventDB.deleteAll(index);

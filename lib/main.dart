@@ -333,8 +333,8 @@ Future<void> initRelays({bool newKey = false}) async {
             "CONNECTED ${connected.where((element) => element).length} , ${connected.where((element) => !element).length} FAILED took ${duration.inMilliseconds} ms");
       }
     }
-    followEventProvider.startSubscriptions();
   }
+  followEventProvider.startSubscriptions();
   notificationsProvider.startSubscription();
   metadataProvider.notifyListeners();
 }

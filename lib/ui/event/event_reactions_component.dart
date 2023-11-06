@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:dart_ndk/models/user_relay_list.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:flutter/material.dart';
@@ -480,8 +481,22 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
       if (eventReactions?.myLikeEvents == null ||
           eventReactions!.myLikeEvents!.isEmpty) {
         // like
+        Iterable<String> urlsToBroadcast = [];
+        if (settingProvider.inboxForReactions == 1) {
+          UserRelayList? userRelayList = await relayManager.getSingleUserRelayList(widget.event.pubKey);
+          if (userRelayList!=null) {
+            urlsToBroadcast = userRelayList.readUrls;
+            if (urlsToBroadcast.length > settingProvider.broadcastToInboxMaxCount) {
+              urlsToBroadcast = urlsToBroadcast.take(settingProvider.broadcastToInboxMaxCount);
+            }
+          }
+        }
+        if (urlsToBroadcast.isEmpty) {
+            urlsToBroadcast = myOutboxRelaySet!.urls;
+        }
+        await relayManager.reconnectRelays(urlsToBroadcast);
         Nip01Event likeEvent = await relayManager!.broadcastReaction(
-            widget.event.id, myOutboxRelaySet!.urls, loggedUserSigner!);
+            widget.event.id, urlsToBroadcast, loggedUserSigner!);
         if (likeEvent != null) {
           eventReactionsProvider.addLike(widget.event.id, likeEvent);
         }
