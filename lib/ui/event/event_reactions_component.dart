@@ -358,7 +358,9 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
       filterProvider.addBlock(widget.event.pubKey);
     } else if (value == "delete") {
 
-      await relayManager!.broadcastDeletion(widget.event.id, myOutboxRelaySet!.urls, loggedUserSigner!);
+      Set<String> urlsToBroadcast = (await broadcastUrls(widget.event.pubKey)).toSet()..addAll(widget.event.sources);
+      await relayManager.reconnectRelays(urlsToBroadcast);
+      await relayManager!.broadcastDeletion(widget.event.id, urlsToBroadcast, loggedUserSigner!);
 
       followEventProvider.deleteEvent(widget.event.id);
       notificationsProvider.deleteEvent(widget.event.id);
@@ -367,6 +369,9 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
       if (deleteCallback != null) {
         deleteCallback.onDelete(widget.event);
       }
+      setState(() {
+
+      });
     }
   }
 
@@ -428,7 +433,7 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
 
     // TODO reply maybe change the placeholder in editor router.
     var event = await EditorRouter.open(context,
-        tags: tags, tagsAddedWhenSend: tagsAddedWhenSend, tagPs: tagPs);
+        tags: tags, tagsAddedWhenSend: tagsAddedWhenSend, tagPs: tagPs, pubkey:widget.event.pubKey);
     if (event != null) {
       eventReactionsProvider.addEventAndHandle(event);
       var callback = EventReplyCallback.of(context);
@@ -459,15 +464,14 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
             createdAt: DateTime
                 .now()
                 .millisecondsSinceEpoch ~/ 1000);
+        Iterable<String> urlsToBroadcast = await broadcastUrls(widget.event.pubKey);
+        await relayManager.reconnectRelays(urlsToBroadcast);
 
         await relayManager.broadcastEvent(
-            event, myOutboxRelaySet!.urls, loggedUserSigner!);
+            event, urlsToBroadcast, loggedUserSigner!);
 
         eventReactionsProvider.addRepost(widget.event.id);
 
-        // if (settingProvider.broadcastWhenBoost == OpenStatus.OPEN) {
-        //   nostr!.broadcast(widget.event);
-        // }
       } else if (value == "quote") {
         var event = await EditorRouter.open(context, initEmbeds: [
           quill.CustomBlockEmbed(CustEmbedTypes.mention_event, widget.event.id)
@@ -478,23 +482,12 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
 
   void onLikeTap() async {
     if (loggedUserSigner!.canSign()) {
+      Iterable<String> urlsToBroadcast = await broadcastUrls(widget.event.pubKey);
+      await relayManager.reconnectRelays(urlsToBroadcast);
+
       if (eventReactions?.myLikeEvents == null ||
           eventReactions!.myLikeEvents!.isEmpty) {
         // like
-        Iterable<String> urlsToBroadcast = [];
-        if (settingProvider.inboxForReactions == 1) {
-          UserRelayList? userRelayList = await relayManager.getSingleUserRelayList(widget.event.pubKey);
-          if (userRelayList!=null) {
-            urlsToBroadcast = userRelayList.readUrls;
-            if (urlsToBroadcast.length > settingProvider.broadcastToInboxMaxCount) {
-              urlsToBroadcast = urlsToBroadcast.take(settingProvider.broadcastToInboxMaxCount);
-            }
-          }
-        }
-        if (urlsToBroadcast.isEmpty) {
-            urlsToBroadcast = myOutboxRelaySet!.urls;
-        }
-        await relayManager.reconnectRelays(urlsToBroadcast);
         Nip01Event likeEvent = await relayManager!.broadcastReaction(
             widget.event.id, urlsToBroadcast, loggedUserSigner!);
         if (likeEvent != null) {
@@ -503,7 +496,7 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
       } else {
         for (var event in eventReactions!.myLikeEvents!) {
           await relayManager!.broadcastDeletion(
-              event.id, myOutboxRelaySet!.urls, loggedUserSigner!);
+              event.id, urlsToBroadcast, loggedUserSigner!);
         }
         eventReactionsProvider.deleteLike(widget.event.id);
       }

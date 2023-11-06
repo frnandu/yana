@@ -576,8 +576,11 @@ mixin EditorMixin {
       event = Nip01Event(pubKey: loggedUserSigner!.getPublicKey(), kind: Nip01Event.TEXT_NODE_KIND, tags: allTags, content:result,
           createdAt: createdAt!=null ? createdAt!.millisecondsSinceEpoch ~/ 1000: 0);
     }
+    // TODO what about more people that might take part in the thread conversation?
+    Iterable<String> urlsToBroadcast = await broadcastUrls(getPubkey());
+    await relayManager.reconnectRelays(urlsToBroadcast);
 
-    await relayManager.broadcastEvent(event, myOutboxRelaySet!.urls, loggedUserSigner!);
+    await relayManager.broadcastEvent(event, urlsToBroadcast,loggedUserSigner!);
     return event;
   }
 

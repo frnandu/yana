@@ -339,6 +339,23 @@ Future<void> initRelays({bool newKey = false}) async {
   metadataProvider.notifyListeners();
 }
 
+Future<Iterable<String>> broadcastUrls(String? pubKey) async {
+  Iterable<String> urlsToBroadcast = [];
+  if (settingProvider.inboxForReactions == 1 && pubKey!=null) {
+    UserRelayList? userRelayList = await relayManager.getSingleUserRelayList(pubKey!);
+    if (userRelayList!=null) {
+      urlsToBroadcast = userRelayList.readUrls;
+      if (urlsToBroadcast.length > settingProvider.broadcastToInboxMaxCount) {
+        urlsToBroadcast = urlsToBroadcast.take(settingProvider.broadcastToInboxMaxCount);
+      }
+    }
+  }
+  if (urlsToBroadcast.isEmpty) {
+    urlsToBroadcast = myOutboxRelaySet!.urls;
+  }
+  return urlsToBroadcast;
+}
+
 void createMyRelaySets(UserRelayList userRelayList) {
   print("FROM USER RELAY LIST: ");
   userRelayList.relays.entries.forEach((entry) { print("  - ${entry.key} : ${entry.value}");});
