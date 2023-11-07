@@ -203,7 +203,7 @@ class NwcProvider extends ChangeNotifier {
       final event = Nip01Event(pubKey: nwcSigner!.getPublicKey(), kind: NwcKind.REQUEST, tags: tags, content: encrypted);
       var filter = Filter(
           kinds: [NwcKind.RESPONSE], authors: [walletPubKey!], eTags: [event.id]);
-      (await relayManager.requestRelays([relay!], filter, idleTimeout: 20)).stream.listen((event) {
+      (await relayManager.requestRelays([relay!], filter, timeout: 20)).stream.listen((event) {
         onPayInvoiceResponse(event, onZapped);
       });
       await relayManager.broadcastEvent(event, [relay!], nwcSigner);

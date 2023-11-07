@@ -109,7 +109,7 @@ class _ThreadDetailRouter extends CustState<ThreadDetailRouter> with PenddingEve
     if (eventId!=null) {
       var filter = Filter(ids: [eventId!]);
       if (myInboxRelaySet!=null) {
-        NostrRequest request = await relayManager.requestRelays(myInboxRelaySet!.urls, filter, idleTimeout: 1);
+        NostrRequest request = await relayManager.requestRelays(myInboxRelaySet!.urls, filter, timeout: 2);
         request.stream.listen((event) {
           setState(() {
             loadedEvent = event;
