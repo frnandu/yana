@@ -86,7 +86,7 @@ class EventReactionsProvider extends ChangeNotifier
       return;
     }
     print(
-        "----------------NOSTR REQUESTS: ${relayManager.nostrRequests.length}, reactions subscriptions: ${requests.length}");
+        "---------------- reactions subscriptions: ${requests.length}");
     NostrRequest request = await relayManager!.subscription(filter, relaySet!,
         splitRequestsByPubKeyMappings: settingProvider.gossip == 1);
     requests[eventId] = request;
@@ -101,7 +101,7 @@ class EventReactionsProvider extends ChangeNotifier
     var er = _eventReactionsMap[event.id];
     if (er == null) {
       // plan to pull
-      subscription(event.id, event.pubKey, null);
+      // subscription(event.id, event.pubKey, null);
       // _penddingIds[id] = 1;
       // // later(laterFunc, null);
       // whenStop(laterFunc);
@@ -111,7 +111,7 @@ class EventReactionsProvider extends ChangeNotifier
       return er;
     } else {
       if (requests[event.id] == null) {
-        subscription(event.id, event.pubKey, null);
+        // subscription(event.id, event.pubKey, null);
       }
       // if (forceSubscription && requests[event.id] == null) {
       //   subscription(event.id, event.pubKey, null);
@@ -236,8 +236,8 @@ class EventReactionsProvider extends ChangeNotifier
   void removePendding(String eventId) async {
     // _penddingIds.remove(eventId);
     if (requests[eventId] != null) {
-      // await relayManager.closeNostrRequest(requests[eventId]!);
-      // requests.remove(eventId);
+      await relayManager.closeNostrRequest(requests[eventId]!);
+      requests.remove(eventId);
     }
   }
 

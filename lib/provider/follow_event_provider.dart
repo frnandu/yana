@@ -289,18 +289,18 @@ class FollowEventProvider extends ChangeNotifier with PenddingEventsLaterFunctio
   }
 
   void doUnscribe() {
-    // if (subscription != null) {
-    //   relayManager.closeNostrRequest(subscription!);
-    // }
-    // if (subscriptionTags != null) {
-    //   relayManager.closeNostrRequest(subscriptionTags!);
-    // }
-    // if (subscriptionCommunities != null) {
-    //   relayManager.closeNostrRequest(subscriptionCommunities!);
-    // }
-    // if (subscriptionEvents != null) {
-    //   relayManager.closeNostrRequest(subscriptionEvents!);
-    // }
+    if (subscription != null) {
+      relayManager.closeNostrRequest(subscription!);
+    }
+    if (subscriptionTags != null) {
+      relayManager.closeNostrRequest(subscriptionTags!);
+    }
+    if (subscriptionCommunities != null) {
+      relayManager.closeNostrRequest(subscriptionCommunities!);
+    }
+    if (subscriptionEvents != null) {
+      relayManager.closeNostrRequest(subscriptionEvents!);
+    }
   }
 
   // check if is posts (no tag e and not Mentions, TODO handle NIP27)

@@ -49,6 +49,7 @@ class _GlobalsEventsRouter extends KeepAliveCustState<GlobalsEventsRouter>
   @override
   Widget doBuild(BuildContext context) {
     var _settingProvider = Provider.of<SettingProvider>(context);
+    preBuild();
 
     if (eventBox.isEmpty()) {
       return EventListPlaceholder(
