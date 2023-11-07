@@ -87,8 +87,8 @@ class EventReactionsProvider extends ChangeNotifier
     }
     print(
         "---------------- reactions subscriptions: ${requests.length}");
-    NostrRequest request = await relayManager!.subscription(filter, relaySet!,
-        splitRequestsByPubKeyMappings: settingProvider.gossip == 1);
+    NostrRequest request = await relayManager!.query(filter, relaySet!,
+        splitRequestsByPubKeyMappings: settingProvider.gossip == 1, idleTimeout: 5);
     requests[eventId] = request;
 
     request.stream.listen((event) {
@@ -111,7 +111,7 @@ class EventReactionsProvider extends ChangeNotifier
       return er;
     } else {
       if (requests[event.id] == null) {
-        // subscription(event.id, event.pubKey, null);
+        subscription(event.id, event.pubKey, null);
       }
       // if (forceSubscription && requests[event.id] == null) {
       //   subscription(event.id, event.pubKey, null);
