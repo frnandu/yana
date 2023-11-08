@@ -64,14 +64,14 @@ class EventReactionsProvider extends ChangeNotifier
     }
   }
 
-  Future<void> subscription(String eventId, String? pubKey, int? kind) async {
-    var filter = kind != null
-        ? Filter(eTags: [eventId], kinds: [kind])
+  Future<void> subscription(String eventId, String? pubKey, List<int>? kinds) async {
+    var filter = kinds != null
+        ? Filter(eTags: [eventId], kinds: kinds)
         : Filter(eTags: [eventId]);
 
     RelaySet? relaySet;
 
-    if (settingProvider.gossip == 1) {
+    if (settingProvider.gossip == 1 && pubKey!=null) {
       relaySet = await relayManager.calculateRelaySet(
           name: "reactions-feed",
           ownerPubKey: pubKey!,
@@ -97,8 +97,8 @@ class EventReactionsProvider extends ChangeNotifier
     // TODO should use other relays inbox for pubKey....
   }
 
-  EventReactions? get(Nip01Event event, {bool forceSubscription = false}) {
-    var er = _eventReactionsMap[event.id];
+  EventReactions? get(String id, {String? pubKey, bool forceSubscription = false, List<int>? kinds}) {
+    var er = _eventReactionsMap[id];
     if (er == null) {
       // plan to pull
       // subscription(event.id, event.pubKey, null);
@@ -106,12 +106,12 @@ class EventReactionsProvider extends ChangeNotifier
       // // later(laterFunc, null);
       // whenStop(laterFunc);
       // // set a empty er to avoid pull many times
-      er = EventReactions(event.id);
-      _eventReactionsMap[event.id] = er;
+      er = EventReactions(id);
+      _eventReactionsMap[id] = er;
       return er;
     } else {
-      if (requests[event.id] == null) {
-        subscription(event.id, event.pubKey, null);
+      if (requests[id] == null) {
+        subscription(id, pubKey, kinds);
       }
       // if (forceSubscription && requests[event.id] == null) {
       //   subscription(event.id, event.pubKey, null);

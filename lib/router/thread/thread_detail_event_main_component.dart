@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:yana/ui/event/event_main_component.dart';
 import 'package:yana/main.dart';
 import 'package:yana/router/thread/thread_detail_event.dart';
@@ -36,16 +37,26 @@ class _ThreadDetailItemMainComponent
     extends State<ThreadDetailItemMainComponent> {
   ScreenshotController screenshotController = ScreenshotController();
 
+
+  @override
+  void initState() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (widget.sourceEventId == widget.item.event.id) {
+        Scrollable.ensureVisible(context);
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     var themeData = Theme.of(context);
     var hintColor = themeData.hintColor;
-    var cardColor = themeData.cardColor;
 
     var currentMainEvent = EventMainComponent(
       screenshotController: screenshotController,
       event: widget.item.event,
       showReplying: false,
+      highlight: widget.sourceEventId == widget.item.event.id,
       showVideo: true,
       imageListMode: false,
       showSubject: false,
@@ -54,71 +65,120 @@ class _ThreadDetailItemMainComponent
     List<Widget> list = [];
     var currentWidth = mediaDataCache.size.width;
     var leftWidth = (widget.item.currentLevel - 1) *
-        (Base.BASE_PADDING_HALF + ThreadDetailItemMainComponent.BORDER_LEFT_WIDTH);
+        (Base.BASE_PADDING_HALF + ThreadDetailItemMainComponent.BORDER_LEFT_WIDTH*10);
     currentWidth = mediaDataCache.size.width - leftWidth;
     if (currentWidth < ThreadDetailItemMainComponent.EVENT_MAIN_MIN_WIDTH) {
       currentWidth = ThreadDetailItemMainComponent.EVENT_MAIN_MIN_WIDTH;
     }
-    list.add(Container(
-      alignment: Alignment.centerLeft,
-      width: currentWidth,
-      child: currentMainEvent,
-    ));
+    Key? currentEventKey = ValueKey<String>(widget.item.event.id);
+    // if (widget.item.event.id == widget.sourceEventId) {
+    //   currentEventKey = widget.sourceEventKey;
+    // }
 
-    if (widget.item.subItems != null && widget.item.subItems.isNotEmpty) {
-      List<Widget> subWidgets = [];
-      for (var subItem in widget.item.subItems) {
-        Key? currentEventKey;
-        if (subItem.event.id == widget.sourceEventId) {
-          currentEventKey = widget.sourceEventKey;
-        }
-
-        subWidgets.add(
-          ThreadDetailItemMainComponent(
-            key: currentEventKey,
-            item: subItem,
-            totalMaxWidth: widget.totalMaxWidth,
-            sourceEventId: widget.sourceEventId,
-            sourceEventKey: widget.sourceEventKey,
-          ),
-        );
-      }
-      list.add(Container(
-        alignment: Alignment.centerLeft,
-        margin: const EdgeInsets.only(
-          bottom: Base.BASE_PADDING,
-          left: Base.BASE_PADDING_HALF,
-        ),
-        decoration: BoxDecoration(
-          border: Border(
-            left: BorderSide(
-              width: ThreadDetailItemMainComponent.BORDER_LEFT_WIDTH,
-              color: hintColor,
+    List<Widget> aaa = [];
+    for (var i = 0; i < widget.item.currentLevel; i++) {
+      aaa.add(
+        Container(
+          child: Expanded(child: Divider()),
+          decoration: BoxDecoration(
+            border: Border(
+              left: BorderSide(
+                width: ThreadDetailItemMainComponent.BORDER_LEFT_WIDTH*widget.item.currentLevel,
+                color: widget.sourceEventId == widget.item.event.id ? themeData.primaryColor : hintColor,
+              ),
             ),
-          ),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: subWidgets,
-        ),
-      ));
+          )
+        )
+      );
     }
+    aaa.add(Expanded(
+      key: currentEventKey,
+      //alignment: Alignment.centerLeft,
+      child: currentMainEvent,
 
-    Key? currentEventKey;
-    if (widget.item.event.id == widget.sourceEventId) {
-      currentEventKey = widget.sourceEventKey;
-    }
+    ));
+    list.add(Row(children: aaa,));
+    // list.add(Container(
+    //     decoration: BoxDecoration(
+    //         border: Border(
+    //           left: BorderSide(
+    //             width: ThreadDetailItemMainComponent.BORDER_LEFT_WIDTH*widget.item.currentLevel,
+    //             color: widget.sourceEventId == widget.item.event.id ? themeData.primaryColor : hintColor,
+    //           ),
+    //         ),
+    //     ),
+    //     child: currentMainEvent
+    // ));
+
+    // if (widget.item.subItems != null && widget.item.subItems.isNotEmpty) {
+    //   List<Widget> subWidgets = [];
+    //   for (var subItem in widget.item.subItems) {
+    //     Key? currentEventKey;
+    //     if (subItem.event.id == widget.sourceEventId) {
+    //       currentEventKey = widget.sourceEventKey;
+    //     }
+    //     Key? subCurrentEventKey = ValueKey<String>(subItem.event.id);
+    //     // if (widget.item.event.id == widget.sourceEventId) {
+    //     //   subCurrentEventKey = widget.sourceEventKey;
+    //     // }
+    //     // subWidgets.add(Text("${widget.sourceEventKey} == ${subCurrentEventKey}"));
+    //
+    //     subWidgets.add(
+    //       ThreadDetailItemMainComponent(
+    //         key: subCurrentEventKey,
+    //         item: subItem,
+    //         totalMaxWidth: widget.totalMaxWidth,
+    //         sourceEventId: widget.sourceEventId,
+    //         sourceEventKey: widget.sourceEventKey,
+    //       ),
+    //     );
+    //   }
+    //   list.add(Container(
+    //     alignment: Alignment.centerLeft,
+    //     margin: const EdgeInsets.only(
+    //       bottom: Base.BASE_PADDING,
+    //       left: Base.BASE_PADDING_HALF / 2,
+    //     ),
+    //     decoration: BoxDecoration(
+    //       border: Border(
+    //         left: BorderSide(
+    //           width: ThreadDetailItemMainComponent.BORDER_LEFT_WIDTH,
+    //           color: hintColor,
+    //         ),
+    //       ),
+    //     ),
+    //     child: Column(
+    //       crossAxisAlignment: CrossAxisAlignment.start,
+    //       children: subWidgets,
+    //     ),
+    //   ));
+    // }
 
     return
       // Screenshot(
       // controller: screenshotController,
       // child:
       Container(
-        key: currentEventKey,
-        padding: const EdgeInsets.only(
-          top: Base.BASE_PADDING,
-        ),
-        color: cardColor,
+        // alignment: Alignment.centerLeft,
+        // margin: widget.item.currentLevel==1 ? const EdgeInsets.only(
+        //   // bottom: Base.BASE_PADDING,
+        //   left: Base.BASE_PADDING_HALF / 2,
+        // ) : null,
+        // decoration: BoxDecoration(
+        //   color: themeData.cardColor,
+        //   // color: widget.sourceEventId == widget.item.event.id? Colors.grey[600] : null,
+        //   border: widget.item.currentLevel==1 ? Border(
+        //     left: BorderSide(
+        //       width: ThreadDetailItemMainComponent.BORDER_LEFT_WIDTH,
+        //       color: hintColor,
+        //     ),
+        //   ) : null,
+        // ),
+        //
+        // padding: const EdgeInsets.only(
+        //   top: Base.BASE_PADDING,
+        // ),
+        // // // color: cardColor,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,

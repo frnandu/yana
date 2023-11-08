@@ -320,7 +320,7 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
         );
       },
       selector: (context, _provider) {
-        return _provider.get(widget.event);
+        return _provider.get(widget.event.id, pubKey: widget.event.pubKey);
       },
       shouldRebuild: (previous, next) {
         if ((previous == null && next != null) ||

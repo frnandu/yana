@@ -5,7 +5,9 @@ import 'package:dart_ndk/nips/nip01/filter.dart';
 import 'package:dart_ndk/request.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:widget_size/widget_size.dart';
+import 'package:yana/models/event_reactions.dart';
 import 'package:yana/provider/event_reactions_provider.dart';
 import 'package:yana/provider/single_event_provider.dart';
 
@@ -80,11 +82,6 @@ class _ThreadDetailRouter extends CustState<ThreadDetailRouter> with PenddingEve
 
   final ScrollController _controller = ScrollController();
 
-  // final ItemScrollController itemScrollController = ItemScrollController();
-  // final ScrollOffsetController scrollOffsetController = ScrollOffsetController();
-  // final ItemPositionsListener itemPositionsListener = ItemPositionsListener.create();
-  // final ScrollOffsetListener scrollOffsetListener = ScrollOffsetListener.create();
-
   double rootEventHeight = 120;
 
   _ThreadDetailRouter(this.eventId);
@@ -92,6 +89,12 @@ class _ThreadDetailRouter extends CustState<ThreadDetailRouter> with PenddingEve
   @override
   void initState() {
     super.initState();
+    // Future.delayed(const Duration(seconds: 5), () {
+    //   if (sourceIdx!=null && sourceEvent!=null) {
+    //     itemScrollController.jumpTo(
+    //         index: sourceIdx!);
+    //   }
+    // });
     _controller.addListener(() {
       if (_controller.offset > rootEventHeight * 0.8 && !showTitle) {
         setState(() {
@@ -121,6 +124,22 @@ class _ThreadDetailRouter extends CustState<ThreadDetailRouter> with PenddingEve
 
   GlobalKey sourceEventKey = GlobalKey();
 
+  final ItemScrollController itemScrollController = ItemScrollController();
+  final ScrollOffsetController scrollOffsetController = ScrollOffsetController();
+  final ItemPositionsListener itemPositionsListener = ItemPositionsListener.create();
+  final ScrollOffsetListener scrollOffsetListener = ScrollOffsetListener.create();
+
+  List<int> queryEventKinds() {
+    return [
+      Nip01Event.TEXT_NODE_KIND,
+      kind.EventKind.REPOST,
+      kind.EventKind.GENERIC_REPOST,
+      kind.EventKind.LONG_FORM,
+      kind.EventKind.FILE_HEADER,
+      kind.EventKind.POLL,
+    ];
+  }
+
   void initFromArgs() {
     // do some init oper
     var eventRelation = EventRelation.fromEvent(sourceEvent!);
@@ -132,7 +151,7 @@ class _ThreadDetailRouter extends CustState<ThreadDetailRouter> with PenddingEve
     }
 
     // load sourceEvent replies and avoid blank page
-    var eventReactions = eventReactionsProvider.get(sourceEvent!);
+    // var eventReactions = eventReactionsProvider.get(rootId!);
     // eventReactionsProvider.subscription(sourceEvent!.id, sourceEvent!.pubKey, null).then((sub) {
     //   if (sub!=null) {
     //     sub.onData((data) {
@@ -143,12 +162,12 @@ class _ThreadDetailRouter extends CustState<ThreadDetailRouter> with PenddingEve
     //   }
     // },);
 
-    if (eventReactions != null && eventReactions.replies.isNotEmpty) {
-      box.addList(eventReactions.replies);
-    } else if (rootEvent == null) {
-      box.add(sourceEvent!);
-    }
-    listToTree(refresh: false);
+    // if (eventReactions != null && eventReactions.replies.isNotEmpty) {
+    //   box.addList(eventReactions.replies);
+    // } else if (rootEvent == null) {
+    //   box.add(sourceEvent!);
+    // }
+    // listToTree(refresh: true);
   }
 
   @override
@@ -190,11 +209,9 @@ class _ThreadDetailRouter extends CustState<ThreadDetailRouter> with PenddingEve
           rootId = null;
           rootEvent = null;
           box = EventMemBox();
-          rootSubList = [];
 
           sourceEvent = obj;
           initFromArgs();
-          doQuery();
         }
       }
     }
@@ -236,63 +253,100 @@ class _ThreadDetailRouter extends CustState<ThreadDetailRouter> with PenddingEve
       );
     }
 
-    List<Widget> mainList = [];
+    Widget main = Selector<EventReactionsProvider, EventReactions?>(
+        builder: (context, reactions, child) {
+          if (reactions != null && reactions.replies.isNotEmpty) {
+            box.addList(reactions.replies.where((event) {
+              var eventRelation = EventRelation.fromEvent(event);
+              if (eventRelation.replyId!=null || eventRelation.rootId!=null) {
+                return true;
+              }
+              return false;
+            }).toList());
+          } else if (rootEvent == null) {
+            box.add(sourceEvent!);
+          }
 
-    mainList.add(WidgetSize(
-      child: rootEventWidget,
-      onChange: (size) {
-        rootEventHeight = size.height;
-      },
-    ));
-    int idx = 1;
-    for (var item in rootSubList!) {
-      var totalLevelNum = item.totalLevelNum;
-      var needWidth =
-          (totalLevelNum - 1) * (Base.BASE_PADDING + ThreadDetailItemMainComponent.BORDER_LEFT_WIDTH) + ThreadDetailItemMainComponent.EVENT_MAIN_MIN_WIDTH;
-      if (sourceEvent != null && item.event.id == sourceEvent!.id) {
-        sourceIdx = idx;
-      }
-      if (needWidth > mediaDataCache.size.width) {
-        mainList.add(SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: SizedBox(
-            width: needWidth,
-            child: ThreadDetailItemComponent(
-              // key: sourceEvent!=null && item.event.id == sourceEvent!.id? sourceEventKey : null,
-              item: item,
-              totalMaxWidth: needWidth,
-              sourceEventId: sourceEvent!.id,
-              sourceEventKey: sourceEventKey,
-            ),
-          ),
-        ));
-      } else {
-        mainList.add(ThreadDetailItemComponent(
-          // key: sourceEvent!=null && item.event.id == sourceEvent!.id? sourceEventKey : null,
-          item: item,
-          totalMaxWidth: needWidth,
-          sourceEventId: sourceEvent!.id,
-          sourceEventKey: sourceEventKey,
-        ));
-      }
-      idx++;
-    }
+          List<ThreadDetailEvent>? rootSubList = listToTree();
 
-    Widget main = ListView(
-      controller: _controller,
-      children: mainList,
+          List<Widget> mainList = [];
+
+          mainList.add(WidgetSize(
+            child: rootEventWidget!,
+            onChange: (size) {
+              rootEventHeight = size.height;
+            },
+          ));
+          for (var item in rootSubList!) {
+            addThreadItem(item, mainList);
+            //
+            // if (item.subItems != null && item.subItems.isNotEmpty) {
+            //   for (var subItem in item.subItems) {
+            //     Key? subCurrentEventKey = ValueKey<String>(subItem.event.id);
+            //     if (subItem.event.id == sourceEvent!.id) {
+            //       sourceIdx = idx;
+            //     }
+            //
+            //     mainList.add(
+            //       ThreadDetailItemComponent(
+            //         key: subCurrentEventKey,
+            //         item: subItem,
+            //         totalMaxWidth: needWidth,
+            //         sourceEventId: sourceEvent!.id,
+            //         sourceEventKey: sourceEventKey,
+            //       ),
+            //     );
+            //     idx++;
+            //   }
+            //   // mainList.add(Container(
+            //   //   alignment: Alignment.centerLeft,
+            //   //   margin: const EdgeInsets.only(
+            //   //     bottom: Base.BASE_PADDING,
+            //   //     left: Base.BASE_PADDING_HALF / 2,
+            //   //   ),
+            //   //   decoration: BoxDecoration(
+            //   //     border: Border(
+            //   //       left: BorderSide(
+            //   //         width: ThreadDetailItemMainComponent.BORDER_LEFT_WIDTH,
+            //   //         color: hintColor,
+            //   //       ),
+            //   //     ),
+            //   //   ),
+            //   //   child: Column(
+            //   //     crossAxisAlignment: CrossAxisAlignment.start,
+            //   //     children: subWidgets,
+            //   //   ),
+            //   // ));
+            // }
+          }
+          // return SingleChildScrollView(
+          //   controller: _controller,
+          //   child: Column(
+          //     children: mainList,
+          //   )
+          // );
+          return ScrollablePositionedList.builder(
+            initialScrollIndex: sourceIdx??0,
+            itemCount: mainList.length,
+            itemBuilder: (context, index) => mainList[index],
+            itemScrollController: itemScrollController,
+            scrollOffsetController: scrollOffsetController,
+            itemPositionsListener: itemPositionsListener,
+            scrollOffsetListener: scrollOffsetListener,
+          );
+
+
+          return ListView(
+
+            controller: _controller,
+            children: mainList,
+          );
+        },
+        selector:  (context, provider) {
+          return provider.get(rootId!);
+        },
     );
 
-    // Widget main = ScrollablePositionedList.builder(
-    //   itemCount: mainList.length,
-    //   itemBuilder: (context, index) => mainList[index],
-    //   itemScrollController: itemScrollController,
-    //   scrollOffsetController: scrollOffsetController,
-    //   itemPositionsListener: itemPositionsListener,
-    //   scrollOffsetListener: scrollOffsetListener,
-    //   // controller: _controller,
-    //   // children: mainList,
-    // );
 
     if (PlatformUtil.isTableMode()) {
       main = GestureDetector(
@@ -332,33 +386,14 @@ class _ThreadDetailRouter extends CustState<ThreadDetailRouter> with PenddingEve
 
   @override
   Future<void> onReady(BuildContext context) async {
-    doQuery();
-  }
-
-  void doQuery() {
-    if (StringUtil.isNotBlank(rootId)) {
-      rootEvent ??= singleEventProvider.getEvent(rootId!);
-
-      // query sub events
-      var filter = Filter(eTags: [
-        rootId!
-      ], kinds: [
-        Nip01Event.TEXT_NODE_KIND,
-        kind.EventKind.FILE_HEADER,
-        kind.EventKind.POLL,
-        kind.EventKind.ZAP_RECEIPT,
-      ]);
-      // TODO use dart_ndk
-//      nostr!.query([filter.toMap()], onEvent);
-    }
   }
 
   String? rootId;
 
   Nip01Event? rootEvent;
 
-  List<ThreadDetailEvent>? rootSubList = [];
-
+  // List<ThreadDetailEvent>? rootSubList = [];
+  //
   // void onRootEvent(Event event) {
   //   setState(() {
   //     rootEvent = event;
@@ -372,7 +407,7 @@ class _ThreadDetailRouter extends CustState<ThreadDetailRouter> with PenddingEve
 
     later(event, (list) {
       box.addList(list);
-      listToTree();
+      //listToTree();
       eventReactionsProvider.onEvents(list);
     }, null);
   }
@@ -384,9 +419,12 @@ class _ThreadDetailRouter extends CustState<ThreadDetailRouter> with PenddingEve
     if (sourceEvent!=null) {
       eventReactionsProvider.removePendding(sourceEvent!.id);
     }
+    sourceEvent=null;
   }
 
-  void listToTree({bool refresh = true}) {
+  List<ThreadDetailEvent>? listToTree() {
+    List<ThreadDetailEvent>? rootSubList = [];
+
     // event in box had been sorted. The last one is the oldest.
     var all = box.all();
     var length = all.length;
@@ -421,24 +459,47 @@ class _ThreadDetailRouter extends CustState<ThreadDetailRouter> with PenddingEve
       rootSub.handleTotalLevelNum(0);
     }
 
-    if (refresh) {
-      // WidgetsBinding.instance.addPostFrameCallback((_) {
-      //   Scrollable.ensureVisible(sourceEventKey.currentContext!);
-      // });
-      whenStop(() {
-        // if (sourceIdx!=null) {
-        //   itemScrollController.jumpTo(index: sourceIdx!);
-        // }
-        if (sourceEventKey.currentContext != null) {
-          Scrollable.ensureVisible(sourceEventKey.currentContext!);
-        }
-      });
-
-      setState(() {});
-    }
+    return _rootSubList;
   }
 
   onReplyCallback(Nip01Event event) {
     onEvent(event);
+  }
+
+  void addThreadItem(ThreadDetailEvent item, List<Widget> mainList) {
+    var totalLevelNum = item.totalLevelNum;
+    var needWidth =
+        (totalLevelNum - 1) * (Base.BASE_PADDING + ThreadDetailItemMainComponent.BORDER_LEFT_WIDTH) + ThreadDetailItemMainComponent.EVENT_MAIN_MIN_WIDTH;
+    if (item.event.id == sourceEvent!.id) {
+      sourceIdx = mainList.length;
+    }
+    if (needWidth > mediaDataCache.size.width) {
+      mainList.add(SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: SizedBox(
+          width: needWidth,
+          child: ThreadDetailItemComponent(
+            // key: sourceEvent!=null && item.event.id == sourceEvent!.id? sourceEventKey : null,
+            item: item,
+            totalMaxWidth: needWidth,
+            sourceEventId: sourceEvent!.id,
+            sourceEventKey: sourceEventKey,
+          ),
+        ),
+      ));
+    } else {
+      mainList.add(ThreadDetailItemComponent(
+        // key: sourceEvent!=null && item.event.id == sourceEvent!.id? sourceEventKey : null,
+        item: item,
+        totalMaxWidth: needWidth,
+        sourceEventId: sourceEvent!.id,
+        sourceEventKey: sourceEventKey,
+      ));
+    }
+    if (item.subItems != null && item.subItems.isNotEmpty) {
+      for (var subItem in item.subItems!) {
+        addThreadItem(subItem, mainList);
+      }
+    }
   }
 }

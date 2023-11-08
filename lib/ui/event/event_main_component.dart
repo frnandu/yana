@@ -67,12 +67,15 @@ class EventMainComponent extends StatefulWidget {
 
   bool addDivider;
 
+  bool highlight;
+
   EventRelation? eventRelation;
 
   EventMainComponent({
     super.key,
     required this.screenshotController,
     required this.event,
+
     this.pagePubkey,
     this.showReplying = true,
     this.textOnTap,
@@ -85,6 +88,7 @@ class EventMainComponent extends StatefulWidget {
     this.showCommunity = true,
     this.eventRelation,
     this.addDivider = true,
+    this.highlight = false,
   });
 
   @override
@@ -135,6 +139,9 @@ class _EventMainComponent extends State<EventMainComponent> {
     if (contentCardColor == Colors.white) {
       contentCardColor = Colors.grey[300];
     }
+    // if (widget.highlight) {
+    //   contentCardColor = Colors.grey[600];
+    // }
 
     Nip01Event? repostEvent;
     if ((widget.event.kind == kind.EventKind.REPOST ||
@@ -458,6 +465,7 @@ class _EventMainComponent extends State<EventMainComponent> {
       );
 
       eventAllList.add(Container(
+        // color: contentCardColor,
         padding: const EdgeInsets.only(
           left: Base.BASE_PADDING + 4,
           right: Base.BASE_PADDING + 4,
@@ -468,11 +476,13 @@ class _EventMainComponent extends State<EventMainComponent> {
     }
 
     eventAllList.add(EventTopComponent(
+      // color: contentCardColor,
       event: widget.event,
       pagePubkey: widget.pagePubkey,
     ));
 
     eventAllList.add(Container(
+      // color: contentCardColor,
       width: double.maxFinite,
       padding: const EdgeInsets.only(
         left: Base.BASE_PADDING,
@@ -485,7 +495,7 @@ class _EventMainComponent extends State<EventMainComponent> {
     ));
 
     if (widget.addDivider) {
-      eventAllList.add(Container(color: themeData.disabledColor, margin: EdgeInsets.only(top:3), padding: EdgeInsets.only(bottom: 1),));
+      eventAllList.add(Container(color: themeData.disabledColor, padding: const EdgeInsets.only(bottom: 1),));
     }
 
     return Column(
@@ -659,7 +669,7 @@ class _EventMainComponent extends State<EventMainComponent> {
               });
             },
             child: Container(
-              margin: EdgeInsets.only(top: Base.BASE_PADDING_HALF),
+              margin: const EdgeInsets.only(top: Base.BASE_PADDING_HALF),
               padding: const EdgeInsets.only(
                 top: 4,
                 bottom: 4,
@@ -672,7 +682,7 @@ class _EventMainComponent extends State<EventMainComponent> {
               ),
               child: Text(
                 s.Show,
-                style: TextStyle(color: Colors.white),
+                style: const TextStyle(color: Colors.white),
               ),
             ),
           ),

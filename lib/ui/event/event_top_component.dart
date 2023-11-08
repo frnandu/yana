@@ -25,11 +25,13 @@ import '../user_pic_component.dart';
 
 class EventTopComponent extends StatefulWidget {
   Nip01Event event;
-  String? pagePubkey;
 
-  EventTopComponent({
+  String? pagePubkey;
+  Color? color;
+
+  EventTopComponent({super.key,
     required this.event,
-    this.pagePubkey,
+    this.pagePubkey, this.color,
   });
 
   @override
@@ -109,6 +111,7 @@ class _EventTopComponent extends State<EventTopComponent> {
           width: IMAGE_WIDTH,
         );
         return Container(
+          color: widget.color,
           padding: const EdgeInsets.only(
             left: Base.BASE_PADDING,
             right: Base.BASE_PADDING,
