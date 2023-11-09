@@ -480,6 +480,12 @@ class _EventMainComponent extends State<EventMainComponent> {
         child: communityTitle,
       ));
     }
+    eventAllList.add(Container(
+      // color: contentCardColor,
+      padding: const EdgeInsets.only(
+        top: Base.BASE_PADDING,
+      ),
+    ));
 
     eventAllList.add(EventTopComponent(
       // color: contentCardColor,

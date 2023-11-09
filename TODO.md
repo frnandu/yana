@@ -74,6 +74,7 @@
 v0.12
 - FIX SOCKETS CONNECTION PROBLEMS!!!!!!!!!!!!!!!
 - FIX LOGOUT/SWITCH accounts screens!
+- FIX NIP05 yellow all the time
 - 
 - dms
 - re-enable awesome notifications
@@ -94,7 +95,7 @@ v0.12
 - don't validate signature for events cached on DB
 - when following someone new and gossip=1, ask confirmation for that user's relay list acceptance, and eventual blocking some relays
 - too much notifications of reactions to replies of replies of post where you're tagged
-
+- WTF nwc needs fresh relayManager for get_info/get_balance??
 v0.13
 - after adding follow, recalculate relaySet for gossip
 - better android/ios/linux badges on web version login screen (anchor links to readme.md for IOS/linux)

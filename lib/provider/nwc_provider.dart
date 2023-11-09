@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:bip340/bip340.dart';
 import 'package:dart_ndk/dart_ndk.dart';
@@ -7,11 +6,9 @@ import 'package:dart_ndk/nips/nip01/bip340_event_signer.dart';
 import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip01/event_signer.dart';
 import 'package:dart_ndk/nips/nip01/filter.dart';
-import 'package:dart_ndk/nips/nip01/helpers.dart';
 import 'package:dart_ndk/request.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
-import 'package:yana/nostr/event_kind.dart';
 
 import '../main.dart';
 import '../nostr/nip04/nip04.dart';
@@ -83,12 +80,18 @@ class NwcProvider extends ChangeNotifier {
     await settingProvider.setNwc(nwc);
     await settingProvider.setNwcSecret(secret!);
     var filter = Filter(kinds: [NwcKind.INFO_REQUEST], authors: [walletPubKey!]);
-
-    if (await relayManager.reconnectRelay(relay, force: true)) {
-      (await relayManager.requestRelays([relay], filter)).stream.listen((event) async {
-        await onEventInfo.call(event);
-      });
-    }
+    RelayManager relayManager = RelayManager();
+    // if (relayManager.webSockets[relay]!=null) {
+    //   relayManager.webSockets[relay]!.disconnect("a");
+    //   relayManager.webSockets[relay]!.close();
+    // }
+    relayManager.reconnectRelay(relay, force: true).then((connected) async {
+      if (connected) {
+        (await relayManager.requestRelays([relay!], filter)).stream.listen((event) async {
+          await onEventInfo.call(event);
+        });
+      }
+    });
   }
 
   Future<void> onEventInfo(Nip01Event event) async {
@@ -136,7 +139,7 @@ class NwcProvider extends ChangeNotifier {
 
       var filter = Filter(
           kinds: [NwcKind.RESPONSE], authors: [walletPubKey!], eTags: [event.id]);
-
+      // RelayManager relayManager = RelayManager();
       await relayManager.reconnectRelay(relay);
 
       NostrRequest balanceSubscription = await relayManager.requestRelays([relay!], filter, closeOnEOSE: false);

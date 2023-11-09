@@ -65,9 +65,10 @@ class EventReactionsProvider extends ChangeNotifier
     }
   }
 
-  Future<List<Nip01Event>> getThreadReplies(String id) async {
+  Future<List<Nip01Event>> getThreadReplies(String id, {bool force=false}) async {
     var replies = _repliesMap[id];
-    if (replies==null) {
+    /// TODO refresh after some time
+    if (replies==null || force) {
       /// TODO use other relaySet if gossip
       NostrRequest request = await relayManager!.query(Filter(eTags: [id], kinds: [Nip01Event.TEXT_NODE_KIND]), myInboxRelaySet!,
           splitRequestsByPubKeyMappings: false, idleTimeout: 1);
@@ -79,8 +80,17 @@ class EventReactionsProvider extends ChangeNotifier
       }
       replies = map.values.toList();
       _repliesMap[id] = replies;
+      if (_eventReactionsMap[id]!=null) {
+        _eventReactionsMap[id]!.replies = replies;
+      }
     }
     return replies;
+  }
+
+  void addReply(String id, Nip01Event reply) {
+    if (_repliesMap[id]!=null) {
+      _repliesMap[id]!.add(reply);
+    }
   }
 
   Future<void> subscription(String eventId, String? pubKey, List<int>? kinds) async {

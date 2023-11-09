@@ -110,9 +110,9 @@ class _ThreadDetailRouter extends CustState<ThreadDetailRouter> with PenddingEve
   }
 
   void loadEvent() async {
-    if (eventId!=null) {
+    if (eventId != null) {
       var filter = Filter(ids: [eventId!]);
-      if (myInboxRelaySet!=null) {
+      if (myInboxRelaySet != null) {
         NostrRequest request = await relayManager.requestRelays(myInboxRelaySet!.urls, filter, timeout: 2);
         request.stream.listen((event) {
           setState(() {
@@ -122,6 +122,7 @@ class _ThreadDetailRouter extends CustState<ThreadDetailRouter> with PenddingEve
       }
     }
   }
+
   List<ThreadDetailEvent>? rootSubList;
 
   GlobalKey sourceEventKey = GlobalKey();
@@ -131,7 +132,7 @@ class _ThreadDetailRouter extends CustState<ThreadDetailRouter> with PenddingEve
   final ItemPositionsListener itemPositionsListener = ItemPositionsListener.create();
   final ScrollOffsetListener scrollOffsetListener = ScrollOffsetListener.create();
 
-  void initFromArgs() {
+  void initFromArgs({bool force=false}) {
     // do some init oper
     var eventRelation = EventRelation.fromEvent(sourceEvent!);
     rootId = eventRelation.rootId;
@@ -140,28 +141,30 @@ class _ThreadDetailRouter extends CustState<ThreadDetailRouter> with PenddingEve
       rootId = sourceEvent!.id;
       rootEvent = sourceEvent!;
     }
-    eventReactionsProvider.getThreadReplies(rootId!).then((replies) {
-      box.addList(replies.where((event) {
-        if (event.content.startsWith("nostr:nevent1") && !event.content.contains(" ")) {
-          return false;
-        }
-        var eventRelation = EventRelation.fromEvent(event);
-        if (eventRelation.replyId!=null || eventRelation.rootId!=null) {
-          return true;
-        }
-        return false;
-      }).toList());
-      setState(() {
-        rootSubList = listToTree();
-      });
-      if (sourceIdx==null && replies.length > 5) {
-        Future.delayed(const Duration(milliseconds: 500), () {
-          if (sourceIdx!=null) {
-            itemScrollController.jumpTo(index: sourceIdx!);
+    eventReactionsProvider.getThreadReplies(rootId!, force: force).then(
+      (replies) {
+        box.addList(replies.where((event) {
+          if (event.content.startsWith("nostr:nevent1") && !event.content.contains(" ")) {
+            return false;
           }
+          var eventRelation = EventRelation.fromEvent(event);
+          if (eventRelation.replyId != null || eventRelation.rootId != null) {
+            return true;
+          }
+          return false;
+        }).toList());
+        setState(() {
+          rootSubList = listToTree();
         });
-      }
-    },);
+        if (sourceIdx == null && replies.length > 5) {
+          Future.delayed(const Duration(milliseconds: 500), () {
+            if (sourceIdx != null) {
+              itemScrollController.jumpTo(index: sourceIdx!);
+            }
+          });
+        }
+      },
+    );
 
     // load sourceEvent replies and avoid blank page
     // var eventReactions = eventReactionsProvider.get(rootId!);
@@ -188,7 +191,7 @@ class _ThreadDetailRouter extends CustState<ThreadDetailRouter> with PenddingEve
     var _singleEventProvider = Provider.of<SingleEventProvider>(context);
     var _eventReactionsProvider = Provider.of<EventReactionsProvider>(context);
     if (sourceEvent == null) {
-      if (loadedEvent!=null) {
+      if (loadedEvent != null) {
         sourceEvent = loadedEvent;
       } else {
         var obj = RouterUtil.routerArgs(context);
@@ -198,13 +201,13 @@ class _ThreadDetailRouter extends CustState<ThreadDetailRouter> with PenddingEve
             RouterUtil.back(context);
             return Container();
           }
-        } else if (obj!=null && obj is String){
+        } else if (obj != null && obj is String) {
           eventId = obj;
-          Future.delayed(const Duration(seconds: 2),() async {
+          Future.delayed(const Duration(seconds: 2), () async {
             loadEvent();
           });
         } else {
-          Future.delayed(const Duration(seconds: 2),() async {
+          Future.delayed(const Duration(seconds: 2), () async {
             loadEvent();
           });
         }
@@ -252,21 +255,23 @@ class _ThreadDetailRouter extends CustState<ThreadDetailRouter> with PenddingEve
 
     Widget? rootEventWidget;
     if (rootEvent == null) {
-      rootEventWidget = rootId!=null ? Selector<SingleEventProvider, Nip01Event?>(builder: (context, event, child) {
-        if (event == null) {
-          return EventLoadListComponent();
-        }
+      rootEventWidget = rootId != null
+          ? Selector<SingleEventProvider, Nip01Event?>(builder: (context, event, child) {
+              if (event == null) {
+                return EventLoadListComponent();
+              }
 
-        return EventListComponent(
-          event: event,
-          jumpable: false,
-          showVideo: true,
-          imageListMode: false,
-          showLongContent: true,
-        );
-      }, selector: (context, provider) {
-        return provider.getEvent(rootId!);
-      }) : null;
+              return EventListComponent(
+                event: event,
+                jumpable: false,
+                showVideo: true,
+                imageListMode: false,
+                showLongContent: true,
+              );
+            }, selector: (context, provider) {
+              return provider.getEvent(rootId!);
+            })
+          : null;
     } else {
       rootEventWidget = EventListComponent(
         event: rootEvent!,
@@ -293,36 +298,36 @@ class _ThreadDetailRouter extends CustState<ThreadDetailRouter> with PenddingEve
     //
     //       List<ThreadDetailEvent>? rootSubList = listToTree();
 
-          List<Widget> mainList = [];
+    List<Widget> mainList = [];
 
-          if (rootEventWidget!=null) {
-            mainList.add(WidgetSize(
-              child: rootEventWidget!,
-              onChange: (size) {
-                rootEventHeight = size.height;
-              },
-            ));
-          }
-          if (rootSubList!=null) {
-            for (var item in rootSubList!) {
-              addThreadItem(item, mainList);
-            }
-          }
-          Widget main = ScrollablePositionedList.builder(
-            initialScrollIndex: sourceIdx ?? 0,
-            itemCount: mainList.length,
-            itemBuilder: (context, index) => mainList[index],
-            itemScrollController: itemScrollController,
-            scrollOffsetController: scrollOffsetController,
-            itemPositionsListener: itemPositionsListener,
-            scrollOffsetListener: scrollOffsetListener,
-          );
-          // return ListView(
-          //
-          //   controller: _controller,
-          //   children: mainList,
-          // );
-        // },
+    if (rootEventWidget != null) {
+      mainList.add(WidgetSize(
+        child: rootEventWidget!,
+        onChange: (size) {
+          rootEventHeight = size.height;
+        },
+      ));
+    }
+    if (rootSubList != null) {
+      for (var item in rootSubList!) {
+        addThreadItem(item, mainList);
+      }
+    }
+    Widget main = ScrollablePositionedList.builder(
+      initialScrollIndex: sourceIdx ?? 0,
+      itemCount: mainList.length,
+      itemBuilder: (context, index) => mainList[index],
+      itemScrollController: itemScrollController,
+      scrollOffsetController: scrollOffsetController,
+      itemPositionsListener: itemPositionsListener,
+      scrollOffsetListener: scrollOffsetListener,
+    );
+    // return ListView(
+    //
+    //   controller: _controller,
+    //   children: mainList,
+    // );
+    // },
     //     selector:  (context, provider) {
     //       return provider.get(rootId!);
     //     },
@@ -338,30 +343,34 @@ class _ThreadDetailRouter extends CustState<ThreadDetailRouter> with PenddingEve
       );
     }
 
-    return Scaffold(
-      appBar: AppBar(
-        leading: GestureDetector(
-          onTap: () {
-            RouterUtil.back(context);
-          },
-          child: Icon(
-            Icons.arrow_back_ios,
-            color: themeData.appBarTheme.titleTextStyle!.color,
+    return  RefreshIndicator(
+        onRefresh: () async {
+          initFromArgs(force: true);
+        },
+        child: Scaffold(
+        appBar: AppBar(
+          leading: GestureDetector(
+            onTap: () {
+              RouterUtil.back(context);
+            },
+            child: Icon(
+              Icons.arrow_back_ios,
+              color: themeData.appBarTheme.titleTextStyle!.color,
+            ),
           ),
+          // actions: [
+          //   IconButton(
+          //     onPressed: () {},
+          //     icon: Icon(Icons.more_horiz),
+          //   ),
+          // ],
+          title: appBarTitle,
         ),
-        // actions: [
-        //   IconButton(
-        //     onPressed: () {},
-        //     icon: Icon(Icons.more_horiz),
-        //   ),
-        // ],
-        title: appBarTitle,
-      ),
-      body: EventReplyCallback(
-        onReplyCallback: onReplyCallback,
-        child: main,
-      ),
-    );
+        body: EventReplyCallback(
+            onReplyCallback: onReplyCallback,
+            child: main,
+          ),
+        ));
   }
 
   @override
@@ -397,10 +406,10 @@ class _ThreadDetailRouter extends CustState<ThreadDetailRouter> with PenddingEve
   void dispose() {
     super.dispose();
     disposeLater();
-    if (sourceEvent!=null) {
+    if (sourceEvent != null) {
       eventReactionsProvider.removePendding(sourceEvent!.id);
     }
-    sourceEvent=null;
+    sourceEvent = null;
   }
 
   List<ThreadDetailEvent> listToTree() {
