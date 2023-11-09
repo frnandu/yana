@@ -17,6 +17,7 @@ class EventReactionsProvider extends ChangeNotifier
   int update_time = 1000 * 60 * 10;
 
   Map<String, EventReactions> _eventReactionsMap = {};
+  Map<String, List<Nip01Event>> _repliesMap = {};
   Map<String, NostrRequest> requests = {};
 
   EventReactionsProvider() {
@@ -64,6 +65,24 @@ class EventReactionsProvider extends ChangeNotifier
     }
   }
 
+  Future<List<Nip01Event>> getThreadReplies(String id) async {
+    var replies = _repliesMap[id];
+    if (replies==null) {
+      /// TODO use other relaySet if gossip
+      NostrRequest request = await relayManager!.query(Filter(eTags: [id], kinds: [Nip01Event.TEXT_NODE_KIND]), myInboxRelaySet!,
+          splitRequestsByPubKeyMappings: false, idleTimeout: 1);
+      Map<String, Nip01Event> map = {};
+      await for (final event in request.stream) {
+        if (map[event.id] == null || map[event.id]!.createdAt < event.createdAt) {
+          map[event.id] = event;
+        }
+      }
+      replies = map.values.toList();
+      _repliesMap[id] = replies;
+    }
+    return replies;
+  }
+
   Future<void> subscription(String eventId, String? pubKey, List<int>? kinds) async {
     var filter = kinds != null
         ? Filter(eTags: [eventId], kinds: kinds)
@@ -108,11 +127,12 @@ class EventReactionsProvider extends ChangeNotifier
       // // set a empty er to avoid pull many times
       er = EventReactions(id);
       _eventReactionsMap[id] = er;
+      subscription(id, pubKey, kinds);
       return er;
     } else {
-      if (requests[id] == null) {
-        subscription(id, pubKey, kinds);
-      }
+      // if (requests[id] == null) {
+      //   subscription(id, pubKey, kinds);
+      // }
       // if (forceSubscription && requests[event.id] == null) {
       //   subscription(event.id, event.pubKey, null);
       // }

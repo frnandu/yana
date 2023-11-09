@@ -389,11 +389,11 @@ class FollowEventProvider extends ChangeNotifier with PenddingEventsLaterFunctio
       }
     }
     if (addedReplies) {
-      print("Received ${list.length} events FROM ${saveToCache ? "RELAYS" : "CACHE"}, some new replies");
+      // print("Received ${list.length} events FROM ${saveToCache ? "RELAYS" : "CACHE"}, some new replies");
       postsAndRepliesBox.sort();
     }
     if (addedPosts) {
-      print("Received ${list.length} events FROM ${saveToCache ? "RELAYS" : "CACHE"}, some new posts");
+      // print("Received ${list.length} events FROM ${saveToCache ? "RELAYS" : "CACHE"}, some new posts");
       postsBox.sort();
     }
 

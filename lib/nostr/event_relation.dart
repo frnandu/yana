@@ -37,7 +37,7 @@ class EventRelation {
       var tag = event.tags[i];
 
       var mentionStr = "#[" + i.toString() + "]";
-      if (event.content.contains(mentionStr) || event.content.startsWith("nostr:nevent1") && !event.content.contains(" ")) {
+      if (event.content.contains(mentionStr)) {
         continue;
       }
 

@@ -1,14 +1,13 @@
 import 'dart:convert';
 
-import 'package:flutter_easyloading/flutter_easyloading.dart';
-import 'package:dart_ndk/models/relay_set.dart';
 import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip01/filter.dart';
 import 'package:dart_ndk/nips/nip01/metadata.dart';
+import 'package:dart_ndk/nips/nip02/contact_list.dart';
 import 'package:dart_ndk/relay.dart';
-import 'package:dart_ndk/relay_info.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:yana/models/event_find_util.dart';
@@ -19,7 +18,6 @@ import 'package:yana/utils/when_stop_function.dart';
 import '../../i18n/i18n.dart';
 import '../../main.dart';
 import '../../models/event_mem_box.dart';
-import '../../nostr/client_utils/keys.dart';
 import '../../nostr/event_kind.dart' as kind;
 import '../../nostr/nip19/nip19.dart';
 import '../../nostr/nip19/nip19_tlv.dart';
@@ -61,6 +59,12 @@ class _SearchRouter extends CustState<SearchRouter>
   Future<void> onReady(BuildContext context) async {
     bindLoadMoreScroll(loadableScrollController);
 
+    ContactList? contactList = await contactListProvider.loadContactList(loggedUserSigner!.getPublicKey());
+    if (contactList!=null) {
+      for (var element in contactList.contacts) {
+        metadataProvider.getMetadata(element);
+      }
+    }
     controller.addListener(() {
       var hasText = StringUtil.isNotBlank(controller.text);
       if (!showSuffix && hasText) {

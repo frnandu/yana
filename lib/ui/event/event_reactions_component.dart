@@ -1,17 +1,12 @@
 import 'dart:convert';
 
-import 'package:dart_ndk/models/user_relay_list.dart';
-import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:provider/provider.dart';
 import 'package:screenshot/screenshot.dart';
-import 'package:share_plus/share_plus.dart';
-import 'package:yana/ui/enum_selector_component.dart';
 import 'package:yana/ui/zap_gen_dialog.dart';
 
 import '../../i18n/i18n.dart';
@@ -23,11 +18,9 @@ import '../../nostr/nip19/nip19.dart';
 import '../../nostr/nip57/zap_action.dart';
 import '../../provider/event_reactions_provider.dart';
 import '../../router/edit/editor_router.dart';
-import '../../utils/base_consts.dart';
 import '../../utils/number_format_util.dart';
 import '../../utils/router_path.dart';
 import '../../utils/router_util.dart';
-import '../../utils/store_util.dart';
 import '../../utils/string_util.dart';
 import '../editor/cust_embed_types.dart';
 import '../event_delete_callback.dart';
@@ -377,7 +370,7 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
 
   void _doCopy(String text) {
     Clipboard.setData(ClipboardData(text: text)).then((_) {
-      EasyLoading.show(status: I18n.of(context).Copy_success);
+      // EasyLoading.show(status: I18n.of(context).Copy_success);
     });
   }
 

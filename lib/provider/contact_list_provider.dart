@@ -81,6 +81,7 @@ class ContactListProvider extends ChangeNotifier {
 
   Future<void> addContact(String contact) async {
     await relayManager.broadcastAddContact(contact, myOutboxRelaySet!.urls, loggedUserSigner!);
+
     notifyListeners();
   }
 

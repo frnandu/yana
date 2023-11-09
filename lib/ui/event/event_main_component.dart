@@ -118,7 +118,7 @@ class _EventMainComponent extends State<EventMainComponent> {
     var s = I18n.of(context);
     var _settingProvider = Provider.of<SettingProvider>(context);
     if (eventRelation.id != widget.event.id) {
-      // change when thead root load lazy
+      // change when thread root load lazy
       eventRelation = EventRelation.fromEvent(widget.event);
     }
 
@@ -315,6 +315,12 @@ class _EventMainComponent extends State<EventMainComponent> {
             if (eventRelation.replyId != null) {
               list.add(EventQuoteComponent(
                 id: eventRelation.replyId,
+                showReactions: false,//widget.showReactions,
+                showVideo: widget.showVideo,
+              ));
+            } else if (eventRelation.rootId != null) {
+              list.add(EventQuoteComponent(
+                id: eventRelation.rootId,
                 showReactions: false,//widget.showReactions,
                 showVideo: widget.showVideo,
               ));

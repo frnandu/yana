@@ -4,6 +4,7 @@ import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip01/filter.dart';
 import 'package:dart_ndk/request.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:provider/provider.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:widget_size/widget_size.dart';
@@ -89,7 +90,7 @@ class _ThreadDetailRouter extends CustState<ThreadDetailRouter> with PenddingEve
   @override
   void initState() {
     super.initState();
-    // Future.delayed(const Duration(seconds: 5), () {
+    // Future.delayed(const Duration(seconds: 3), () {
     //   if (sourceIdx!=null && sourceEvent!=null) {
     //     itemScrollController.jumpTo(
     //         index: sourceIdx!);
@@ -121,6 +122,7 @@ class _ThreadDetailRouter extends CustState<ThreadDetailRouter> with PenddingEve
       }
     }
   }
+  List<ThreadDetailEvent>? rootSubList;
 
   GlobalKey sourceEventKey = GlobalKey();
 
@@ -128,17 +130,6 @@ class _ThreadDetailRouter extends CustState<ThreadDetailRouter> with PenddingEve
   final ScrollOffsetController scrollOffsetController = ScrollOffsetController();
   final ItemPositionsListener itemPositionsListener = ItemPositionsListener.create();
   final ScrollOffsetListener scrollOffsetListener = ScrollOffsetListener.create();
-
-  List<int> queryEventKinds() {
-    return [
-      Nip01Event.TEXT_NODE_KIND,
-      kind.EventKind.REPOST,
-      kind.EventKind.GENERIC_REPOST,
-      kind.EventKind.LONG_FORM,
-      kind.EventKind.FILE_HEADER,
-      kind.EventKind.POLL,
-    ];
-  }
 
   void initFromArgs() {
     // do some init oper
@@ -149,6 +140,28 @@ class _ThreadDetailRouter extends CustState<ThreadDetailRouter> with PenddingEve
       rootId = sourceEvent!.id;
       rootEvent = sourceEvent!;
     }
+    eventReactionsProvider.getThreadReplies(rootId!).then((replies) {
+      box.addList(replies.where((event) {
+        if (event.content.startsWith("nostr:nevent1") && !event.content.contains(" ")) {
+          return false;
+        }
+        var eventRelation = EventRelation.fromEvent(event);
+        if (eventRelation.replyId!=null || eventRelation.rootId!=null) {
+          return true;
+        }
+        return false;
+      }).toList());
+      setState(() {
+        rootSubList = listToTree();
+      });
+      if (sourceIdx==null && replies.length > 5) {
+        Future.delayed(const Duration(milliseconds: 500), () {
+          if (sourceIdx!=null) {
+            itemScrollController.jumpTo(index: sourceIdx!);
+          }
+        });
+      }
+    },);
 
     // load sourceEvent replies and avoid blank page
     // var eventReactions = eventReactionsProvider.get(rootId!);
@@ -199,7 +212,7 @@ class _ThreadDetailRouter extends CustState<ThreadDetailRouter> with PenddingEve
       if (sourceEvent == null) {
         return Container();
       }
-      initFromArgs();
+//      initFromArgs();
     } else {
       var obj = RouterUtil.routerArgs(context);
       if (obj != null && obj is Nip01Event) {
@@ -207,13 +220,24 @@ class _ThreadDetailRouter extends CustState<ThreadDetailRouter> with PenddingEve
           // arg change! reset.
           sourceEvent = null;
           rootId = null;
+          rootSubList = null;
           rootEvent = null;
+          sourceIdx = null;
           box = EventMemBox();
 
           sourceEvent = obj;
-          initFromArgs();
+//          initFromArgs();
         }
       }
+    }
+    if (rootSubList == null) {
+      Future.delayed(const Duration(milliseconds: 500), () {
+        if (rootSubList == null) {
+          EasyLoading.show(status: "Loading thread...", dismissOnTap: true);
+        }
+      });
+    } else {
+      EasyLoading.dismiss();
     }
 
     var themeData = Theme.of(context);
@@ -228,7 +252,7 @@ class _ThreadDetailRouter extends CustState<ThreadDetailRouter> with PenddingEve
 
     Widget? rootEventWidget;
     if (rootEvent == null) {
-      rootEventWidget = Selector<SingleEventProvider, Nip01Event?>(builder: (context, event, child) {
+      rootEventWidget = rootId!=null ? Selector<SingleEventProvider, Nip01Event?>(builder: (context, event, child) {
         if (event == null) {
           return EventLoadListComponent();
         }
@@ -242,7 +266,7 @@ class _ThreadDetailRouter extends CustState<ThreadDetailRouter> with PenddingEve
         );
       }, selector: (context, provider) {
         return provider.getEvent(rootId!);
-      });
+      }) : null;
     } else {
       rootEventWidget = EventListComponent(
         event: rootEvent!,
@@ -253,80 +277,39 @@ class _ThreadDetailRouter extends CustState<ThreadDetailRouter> with PenddingEve
       );
     }
 
-    Widget main = Selector<EventReactionsProvider, EventReactions?>(
-        builder: (context, reactions, child) {
-          if (reactions != null && reactions.replies.isNotEmpty) {
-            box.addList(reactions.replies.where((event) {
-              var eventRelation = EventRelation.fromEvent(event);
-              if (eventRelation.replyId!=null || eventRelation.rootId!=null) {
-                return true;
-              }
-              return false;
-            }).toList());
-          } else if (rootEvent == null) {
-            box.add(sourceEvent!);
-          }
-
-          List<ThreadDetailEvent>? rootSubList = listToTree();
+    // Widget main = Selector<EventReactionsProvider, EventReactions?>(
+    //     builder: (context, reactions, child) {
+    //       if (reactions != null && reactions.replies.isNotEmpty) {
+    //         box.addList(reactions.replies.where((event) {
+    //           var eventRelation = EventRelation.fromEvent(event);
+    //           if (eventRelation.replyId!=null || eventRelation.rootId!=null) {
+    //             return true;
+    //           }
+    //           return false;
+    //         }).toList());
+    //       } else if (rootEvent == null) {
+    //         box.add(sourceEvent!);
+    //       }
+    //
+    //       List<ThreadDetailEvent>? rootSubList = listToTree();
 
           List<Widget> mainList = [];
 
-          mainList.add(WidgetSize(
-            child: rootEventWidget!,
-            onChange: (size) {
-              rootEventHeight = size.height;
-            },
-          ));
-          for (var item in rootSubList!) {
-            addThreadItem(item, mainList);
-            //
-            // if (item.subItems != null && item.subItems.isNotEmpty) {
-            //   for (var subItem in item.subItems) {
-            //     Key? subCurrentEventKey = ValueKey<String>(subItem.event.id);
-            //     if (subItem.event.id == sourceEvent!.id) {
-            //       sourceIdx = idx;
-            //     }
-            //
-            //     mainList.add(
-            //       ThreadDetailItemComponent(
-            //         key: subCurrentEventKey,
-            //         item: subItem,
-            //         totalMaxWidth: needWidth,
-            //         sourceEventId: sourceEvent!.id,
-            //         sourceEventKey: sourceEventKey,
-            //       ),
-            //     );
-            //     idx++;
-            //   }
-            //   // mainList.add(Container(
-            //   //   alignment: Alignment.centerLeft,
-            //   //   margin: const EdgeInsets.only(
-            //   //     bottom: Base.BASE_PADDING,
-            //   //     left: Base.BASE_PADDING_HALF / 2,
-            //   //   ),
-            //   //   decoration: BoxDecoration(
-            //   //     border: Border(
-            //   //       left: BorderSide(
-            //   //         width: ThreadDetailItemMainComponent.BORDER_LEFT_WIDTH,
-            //   //         color: hintColor,
-            //   //       ),
-            //   //     ),
-            //   //   ),
-            //   //   child: Column(
-            //   //     crossAxisAlignment: CrossAxisAlignment.start,
-            //   //     children: subWidgets,
-            //   //   ),
-            //   // ));
-            // }
+          if (rootEventWidget!=null) {
+            mainList.add(WidgetSize(
+              child: rootEventWidget!,
+              onChange: (size) {
+                rootEventHeight = size.height;
+              },
+            ));
           }
-          // return SingleChildScrollView(
-          //   controller: _controller,
-          //   child: Column(
-          //     children: mainList,
-          //   )
-          // );
-          return ScrollablePositionedList.builder(
-            initialScrollIndex: sourceIdx??0,
+          if (rootSubList!=null) {
+            for (var item in rootSubList!) {
+              addThreadItem(item, mainList);
+            }
+          }
+          Widget main = ScrollablePositionedList.builder(
+            initialScrollIndex: sourceIdx ?? 0,
             itemCount: mainList.length,
             itemBuilder: (context, index) => mainList[index],
             itemScrollController: itemScrollController,
@@ -334,19 +317,16 @@ class _ThreadDetailRouter extends CustState<ThreadDetailRouter> with PenddingEve
             itemPositionsListener: itemPositionsListener,
             scrollOffsetListener: scrollOffsetListener,
           );
-
-
-          return ListView(
-
-            controller: _controller,
-            children: mainList,
-          );
-        },
-        selector:  (context, provider) {
-          return provider.get(rootId!);
-        },
-    );
-
+          // return ListView(
+          //
+          //   controller: _controller,
+          //   children: mainList,
+          // );
+        // },
+    //     selector:  (context, provider) {
+    //       return provider.get(rootId!);
+    //     },
+    // );
 
     if (PlatformUtil.isTableMode()) {
       main = GestureDetector(
@@ -386,6 +366,7 @@ class _ThreadDetailRouter extends CustState<ThreadDetailRouter> with PenddingEve
 
   @override
   Future<void> onReady(BuildContext context) async {
+    initFromArgs();
   }
 
   String? rootId;
@@ -422,8 +403,8 @@ class _ThreadDetailRouter extends CustState<ThreadDetailRouter> with PenddingEve
     sourceEvent=null;
   }
 
-  List<ThreadDetailEvent>? listToTree() {
-    List<ThreadDetailEvent>? rootSubList = [];
+  List<ThreadDetailEvent> listToTree() {
+    List<ThreadDetailEvent> rootSubList = [];
 
     // event in box had been sorted. The last one is the oldest.
     var all = box.all();

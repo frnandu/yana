@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
-import 'package:yana/ui/event/event_main_component.dart';
+import 'package:screenshot/screenshot.dart';
 import 'package:yana/main.dart';
 import 'package:yana/router/thread/thread_detail_event.dart';
-import 'package:screenshot/screenshot.dart';
+import 'package:yana/ui/event/event_main_component.dart';
 
 import '../../utils/base.dart';
 
 class ThreadDetailItemMainComponent extends StatefulWidget {
-  static double BORDER_LEFT_WIDTH = 1;
+  static double BORDER_LEFT_WIDTH = 2;
 
   static double EVENT_MAIN_MIN_WIDTH = 200;
 
@@ -33,8 +32,7 @@ class ThreadDetailItemMainComponent extends StatefulWidget {
   }
 }
 
-class _ThreadDetailItemMainComponent
-    extends State<ThreadDetailItemMainComponent> {
+class _ThreadDetailItemMainComponent extends State<ThreadDetailItemMainComponent> {
   ScreenshotController screenshotController = ScreenshotController();
 
 
@@ -45,6 +43,24 @@ class _ThreadDetailItemMainComponent
         Scrollable.ensureVisible(context);
       }
     });
+  }
+
+  Widget getContainer(Widget w, int level, Color color) {
+    if (level == 0) {
+      return w;
+    }
+    return Container(
+        margin: EdgeInsets.only(left: ThreadDetailItemMainComponent.BORDER_LEFT_WIDTH),
+        decoration: BoxDecoration(
+          border: Border(
+            left: BorderSide(
+              width: ThreadDetailItemMainComponent.BORDER_LEFT_WIDTH,
+              color: color,
+            ),
+          ),
+        ),
+        child: getContainer(w, level - 1, color)
+    );
   }
 
   @override
@@ -63,38 +79,49 @@ class _ThreadDetailItemMainComponent
     );
 
     List<Widget> list = [];
-    var currentWidth = mediaDataCache.size.width;
-    var leftWidth = (widget.item.currentLevel - 1) *
-        (Base.BASE_PADDING_HALF + ThreadDetailItemMainComponent.BORDER_LEFT_WIDTH*10);
-    currentWidth = mediaDataCache.size.width - leftWidth;
-    if (currentWidth < ThreadDetailItemMainComponent.EVENT_MAIN_MIN_WIDTH) {
-      currentWidth = ThreadDetailItemMainComponent.EVENT_MAIN_MIN_WIDTH;
-    }
+    // var currentWidth = mediaDataCache.size.width;
+    // var leftWidth = (widget.item.currentLevel - 1) *
+    //     (Base.BASE_PADDING_HALF + ThreadDetailItemMainComponent.BORDER_LEFT_WIDTH);
+    // currentWidth = mediaDataCache.size.width - leftWidth;
+    // if (currentWidth < ThreadDetailItemMainComponent.EVENT_MAIN_MIN_WIDTH) {
+    //   currentWidth = ThreadDetailItemMainComponent.EVENT_MAIN_MIN_WIDTH;
+    // }
     Key? currentEventKey = ValueKey<String>(widget.item.event.id);
     // if (widget.item.event.id == widget.sourceEventId) {
     //   currentEventKey = widget.sourceEventKey;
     // }
 
     List<Widget> aaa = [];
-    for (var i = 0; i < widget.item.currentLevel; i++) {
-      aaa.add(
-        Container(
-          child: Expanded(child: Divider()),
-          decoration: BoxDecoration(
-            border: Border(
-              left: BorderSide(
-                width: ThreadDetailItemMainComponent.BORDER_LEFT_WIDTH*widget.item.currentLevel,
-                color: widget.sourceEventId == widget.item.event.id ? themeData.primaryColor : hintColor,
-              ),
-            ),
-          )
-        )
-      );
-    }
+    // for (var i = 0; i < widget.item.currentLevel; i++) {
+    //   aaa.add(
+    //     Container(
+    //         margin: const EdgeInsets.only(top: Base.BASE_PADDING),
+    //         child: Divider(height: 200, thickness: ThreadDetailItemMainComponent.BORDER_LEFT_WIDTH*widget.item.currentLevel),
+    //       decoration: BoxDecoration(
+    //         border: Border(
+    //           left: BorderSide(
+    //             width: ThreadDetailItemMainComponent.BORDER_LEFT_WIDTH*widget.item.currentLevel*2,
+    //             color: widget.sourceEventId == widget.item.event.id ? themeData.primaryColor : hintColor,
+    //           ),
+    //         ),
+    //       )
+    //     )
+    //   );
+    // }
     aaa.add(Expanded(
       key: currentEventKey,
       //alignment: Alignment.centerLeft,
-      child: currentMainEvent,
+      child: getContainer(currentMainEvent, widget.item.currentLevel, widget.sourceEventId == widget.item.event.id ? themeData.primaryColor : hintColor)
+      // Container(
+      //     decoration: BoxDecoration(
+      //       border: Border(
+      //         left: BorderSide(
+      //           width: ThreadDetailItemMainComponent.BORDER_LEFT_WIDTH * widget.item.currentLevel * 2,
+      //           color: ,
+      //         ),
+      //       ),
+      //     ),
+      //     child: currentMainEvent),
 
     ));
     list.add(Row(children: aaa,));
@@ -179,12 +206,13 @@ class _ThreadDetailItemMainComponent
         //   top: Base.BASE_PADDING,
         // ),
         // // // color: cardColor,
+        // margin: const EdgeInsets.only(top: Base.BASE_PADDING),
         child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: list,
+          // mainAxisSize: MainAxisSize.min,
+          // crossAxisAlignment: CrossAxisAlignment.start,
+          children: [getContainer(currentMainEvent, widget.item.currentLevel, widget.sourceEventId == widget.item.event.id ? themeData.primaryColor : hintColor)],
         ),
-      // ),
-    );
+        // ),
+      );
   }
 }
