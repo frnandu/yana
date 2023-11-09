@@ -25,4 +25,5 @@ class RouterPath {
   static const String FOLLOWED_COMMUNITIES = "/followedCommunities";
   static const String FOLLOWED = "/followed";
   static const String SEARCH = "/search";
+  static const String LOGIN = "/login";
 }

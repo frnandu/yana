@@ -1,4 +1,6 @@
 import 'dart:developer';
+import '../../utils/platform_util.dart';
+import '../../utils/router_path.dart';
 import '/js/js_helper.dart' as js;
 
 import 'package:flutter_easyloading/flutter_easyloading.dart';
@@ -79,7 +81,7 @@ class AccountsState extends State<AccountsComponent> {
         isCurrent: _settingProvider.privateKeyIndex == index,
         onLoginTap: onLoginTap,
         onLogoutTap: (index) {
-          onLogoutTap(index, context: context);
+          AccountsState.onLogoutTap(index, context: context);
         },
       ));
     });
@@ -120,30 +122,32 @@ class AccountsState extends State<AccountsComponent> {
   }
 
   Future<void> addAccount() async {
-    String? key = await TextInputDialog.show(
-        context, I18n.of(context).Input_account_private_key,
-        valueCheck: addAccountCheck);
-    if (StringUtil.isNotBlank(key)) {
-      if (mounted) {
-        var result = await ConfirmDialog.show(
-            context, I18n.of(context).Add_account_and_login);
-        if (result == true) {
-          bool isPublic = Nip19.isPubkey(key!);
-          if (isPublic || Nip19.isPrivateKey(key)) {
-            key = Nip19.decode(key);
-          }
-          // logout current and login new
-          var oldIndex = settingProvider.privateKeyIndex;
-          var newIndex = await settingProvider.addAndChangeKey(key, !isPublic);
-          if (oldIndex != newIndex) {
-            clearCurrentMemInfo();
-            doLogin();
-            settingProvider.notifyListeners();
-            RouterUtil.back(context);
-          }
-        }
-      }
-    }
+    RouterUtil.router(context, RouterPath.LOGIN);
+    //
+    // String? key = await TextInputDialog.show(
+    //     context, I18n.of(context).Input_account_private_key,
+    //     valueCheck: addAccountCheck);
+    // if (StringUtil.isNotBlank(key)) {
+    //   if (mounted) {
+    //     var result = await ConfirmDialog.show(
+    //         context, I18n.of(context).Add_account_and_login);
+    //     if (result == true) {
+    //       bool isPublic = Nip19.isPubkey(key!);
+    //       if (isPublic || Nip19.isPrivateKey(key)) {
+    //         key = Nip19.decode(key);
+    //       }
+    //       // logout current and login new
+    //       var oldIndex = settingProvider.privateKeyIndex;
+    //       var newIndex = await settingProvider.addAndChangeKey(key, !isPublic);
+    //       if (oldIndex != newIndex) {
+    //         clearCurrentMemInfo();
+    //         doLogin();
+    //         settingProvider.notifyListeners();
+    //         RouterUtil.back(context);
+    //       }
+    //     }
+    //   }
+    // }
   }
 
   bool addAccountCheck(BuildContext p1, String privateKey) {
@@ -164,18 +168,31 @@ class AccountsState extends State<AccountsComponent> {
     return true;
   }
 
-  void doLogin() async {
+  static void doLogin() async {
+    EasyLoading.show(status: "Logging in...");
+
     String? key = settingProvider.key;
     bool isPrivate = settingProvider.isPrivateKey;
-    UserRelayList? userRelayList = await relayManager!.getSingleUserRelayList(isPrivate ? getPublicKey(key!): key!);
-    await relayManager!.connect(urls: userRelayList!=null? userRelayList.urls : RelayManager.DEFAULT_BOOTSTRAP_RELAYS);
-    loggedUserSigner = isPrivate ? Bip340EventSigner(key, getPublicKey(key)) : Nip07EventSigner(await js.getPublicKeyAsync());
+    loggedUserSigner = isPrivate ? Bip340EventSigner(key, getPublicKey(key!)) : Nip07EventSigner(await js.getPublicKeyAsync());
+
+    await initRelays(newKey: false);
+
+    followEventProvider.loadCachedFeed();
+    notificationsProvider.notifyListeners();
+    nwcProvider.init();
+    settingProvider.notifyListeners();
+    EasyLoading.dismiss();
+
+    // UserRelayList? userRelayList = await relayManager!.getSingleUserRelayList(isPrivate ? getPublicKey(key!): key!);
+    // await relayManager!.connect(urls: userRelayList!=null? userRelayList.urls : RelayManager.DEFAULT_BOOTSTRAP_RELAYS);
+    // loggedUserSigner = isPrivate ? Bip340EventSigner(key, getPublicKey(key)) : Nip07EventSigner(await js.getPublicKeyAsync());
     // nostr = await relayProvider.genNostr(
     //     privateKey: isPrivate ? key : null, publicKey: isPrivate ? null : key);
   }
 
   void onLoginTap(int index) {
     if (settingProvider.privateKeyIndex != index) {
+      EasyLoading.show(status: "Logging out...");
       clearCurrentMemInfo();
       loggedUserSigner = null;
 
@@ -192,26 +209,31 @@ class AccountsState extends State<AccountsComponent> {
   }
 
   static void onLogoutTap(int index,
-      {bool routerBack = true, BuildContext? context}) async {
+      {bool routerBack = true, required BuildContext context}) {
     var oldIndex = settingProvider.privateKeyIndex;
     clearLocalData(index);
 
     if (oldIndex == index) {
       clearCurrentMemInfo();
-      loggedUserSigner = null;
-
-      // signOut complete
-      String? key = settingProvider.key;
-      if (settingProvider.key != null) {
-        // use next privateKey to login
-        bool isPrivate = settingProvider.isPrivateKey;
-        UserRelayList? userRelayList = await relayManager!.getSingleUserRelayList(isPrivate ? getPublicKey(key!): key!);
-        await relayManager!.connect(urls: userRelayList!=null? userRelayList.urls : RelayManager.DEFAULT_BOOTSTRAP_RELAYS);
-        //
-        // nostr = await relayProvider.genNostr(
-        //     privateKey: isPrivate ? key : null,
-        //     publicKey: isPrivate ? null : key);
+      if (settingProvider.keyMap.isNotEmpty) {
+        settingProvider.privateKeyIndex = int.tryParse(settingProvider.keyMap.keys.first);
+        if (settingProvider.key != null) {
+          // use next privateKey to login
+          doLogin();
+          settingProvider.notifyListeners();
+          RouterUtil.back(context);
+        }
+      } else {
+        loggedUserSigner = null;
       }
+      // signOut complete
+      // String? key = settingProvider.key;
+      // if (settingProvider.key != null) {
+      //   // use next privateKey to login
+      //   bool isPrivate = settingProvider.isPrivateKey;
+      //   UserRelayList? userRelayList = await relayManager!.getSingleUserRelayList(isPrivate ? getPublicKey(key!): key!);
+      //   await relayManager!.connect(urls: userRelayList!=null? userRelayList.urls : RelayManager.DEFAULT_BOOTSTRAP_RELAYS);
+      // }
     }
 
     settingProvider.notifyListeners();
@@ -223,9 +245,11 @@ class AccountsState extends State<AccountsComponent> {
   static void clearCurrentMemInfo() {
     notificationsProvider.clear();
     followEventProvider.clear();
+    followNewEventProvider.clear();
     dmProvider.clear();
     noticeProvider.clear();
     contactListProvider.clear();
+    cacheManager.removeAllEvents();
 
     eventReactionsProvider.clear();
     linkPreviewDataProvider.clear();
@@ -234,7 +258,7 @@ class AccountsState extends State<AccountsComponent> {
   static void clearLocalData(int index) {
     // remove private key
     settingProvider.removeKey(index);
-    cacheManager.removeAllEvents();
+    // cacheManager.removeAllEvents();
     // clear local db
     // DMSessionInfoDB.deleteAll(index);
     // EventDB.deleteAll(index);

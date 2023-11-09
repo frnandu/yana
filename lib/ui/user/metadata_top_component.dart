@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dart_ndk/nips/nip01/metadata.dart';
 import 'package:easy_image_viewer/easy_image_viewer.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
@@ -160,6 +161,35 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
           //   )));
           // }
           );
+    }
+    if (widget.pubkey != loggedUserSigner!.getPublicKey() && kDebugMode) {
+      topBtnList.add(Container(
+        child:
+        PopupMenuButton<String>(
+          tooltip: "more",
+          itemBuilder: (context) {
+            List<PopupMenuEntry<String>> list = [
+              PopupMenuItem(
+                value: "login_as",
+                child: Text("Login as..."),
+              ),
+            ];
+
+            return list;
+          },
+          onSelected: (value) {
+            if (value == "login_as") {
+
+            }
+          },
+          child: Icon(
+            Icons.expand_more,
+            size: 16,
+            color: Colors.white,
+          ),
+        ),
+      )
+      );
     }
     if (widget.followsYou &&
         widget.pubkey != loggedUserSigner!.getPublicKey()) {

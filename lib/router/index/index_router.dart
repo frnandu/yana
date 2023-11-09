@@ -180,7 +180,7 @@ class _IndexRouter extends CustState<IndexRouter>
     var s = I18n.of(context);
 
     if (loggedUserSigner == null) {
-      return LoginRouter();
+      return LoginRouter(canGoBack: false,);
     }
     var _followEventProvider = Provider.of<FollowEventProvider>(context);
     var _followEventNewProvider = Provider.of<FollowNewEventProvider>(context);

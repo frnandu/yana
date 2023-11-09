@@ -2,17 +2,14 @@ import 'dart:async';
 import 'dart:ui';
 
 import 'package:awesome_notifications/awesome_notifications.dart';
-import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:dart_ndk/cache_manager.dart';
 import 'package:dart_ndk/db/db_cache_manager.dart';
-import 'package:dart_ndk/db/db_event.dart';
 import 'package:dart_ndk/models/pubkey_mapping.dart';
 import 'package:dart_ndk/models/relay_set.dart';
 import 'package:dart_ndk/models/user_relay_list.dart';
 import 'package:dart_ndk/nips/nip01/bip340_event_signer.dart';
 import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip01/event_signer.dart';
-import 'package:dart_ndk/nips/nip01/helpers.dart';
 import 'package:dart_ndk/nips/nip01/metadata.dart';
 import 'package:dart_ndk/nips/nip02/contact_list.dart';
 import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
@@ -46,6 +43,7 @@ import 'package:yana/provider/custom_emoji_provider.dart';
 import 'package:yana/provider/follow_new_event_provider.dart';
 import 'package:yana/provider/new_notifications_provider.dart';
 import 'package:yana/provider/nwc_provider.dart';
+import 'package:yana/router/login/login_router.dart';
 import 'package:yana/router/relays/relay_info_router.dart';
 import 'package:yana/router/search/search_router.dart';
 import 'package:yana/router/user/followed_router.dart';
@@ -251,49 +249,6 @@ void initProvidersAndStuff() async {
 
 Future<void> initRelays({bool newKey = false}) async {
   relayManager.eventFilters.add(filterProvider);
-  // //
-  // String pubKey1 = "pubKey1";
-  // String pubKey2 = "pubKey2";
-  // DbEvent event11 = DbEvent(
-  //   pubKey: pubKey1,
-  //   content: "content 11",
-  //   kind: 1,
-  //   tags: [],
-  //   createdAt: Helpers.now
-  // );
-  // DbEvent event12 = DbEvent(
-  //   pubKey: pubKey1,
-  //   content: "content 12",
-  //   kind: 2,
-  //   tags: [],
-  //   createdAt: Helpers.now
-  // );
-  // DbEvent event21 = DbEvent(
-  //   pubKey: pubKey2,
-  //   content: "content 21",
-  //   kind: 1,
-  //   tags: [],
-  //   createdAt: Helpers.now
-  // );
-  // DbEvent event22 = DbEvent(
-  //     pubKey: pubKey2,
-  //     content: "content 22",
-  //     kind: 2,
-  //     tags: [],
-  //     createdAt: Helpers.now
-  // );
-  // event11.sig = "signature";
-  // event11.validSig = true;
-  // event11.sources = ["wss://relay1.com", "wss://relay2.com"];
-  //
-  // await cacheManager.removeAllEvents(pubKey1);
-  // await cacheManager.removeAllEvents(pubKey2);
-  //
-  // await cacheManager.saveEvents([event11, event12, event21, event22]);
-  //
-  // List<Nip01Event>? loadedEventsKind11 = cacheManager.loadEvents([], [1]);
-  //
-  // List<Nip01Event>? loadedEventsKind22 = cacheManager.loadEvents([pubKey2], [2]);
 
   await relayManager.connect();
 
@@ -663,6 +618,7 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
       RouterPath.COMMUNITY_DETAIL: (context) => const CommunityDetailRouter(),
       RouterPath.FOLLOWED_COMMUNITIES: (context) => const FollowedCommunitiesRouter(),
       RouterPath.FOLLOWED: (context) => const FollowedRouter(),
+      RouterPath.LOGIN: (context) => const LoginRouter(canGoBack: true),
     };
 
     return MultiProvider(

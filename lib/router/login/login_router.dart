@@ -9,6 +9,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:yana/utils/platform_util.dart';
 
 import '../../nostr/nip07/extension_event_signer.dart';
+import '../../utils/router_util.dart';
 import '/js/js_helper.dart' as js;
 import '../../i18n/i18n.dart';
 import '../../main.dart';
@@ -19,7 +20,10 @@ import '../../utils/index_taps.dart';
 import '../../utils/string_util.dart';
 
 class LoginRouter extends StatefulWidget {
-  const LoginRouter({super.key});
+
+  final bool canGoBack;
+
+  const LoginRouter({super.key, required this.canGoBack});
 
   @override
   State<StatefulWidget> createState() {
@@ -194,6 +198,31 @@ class _LoginRouter extends State<LoginRouter>
         ),
       ),
     ));
+    if (widget.canGoBack) {
+      list.add(Container(
+        margin: const EdgeInsets.all(Base.BASE_PADDING),
+        child: InkWell(
+          onTap: () async {
+            RouterUtil.back(context);
+          },
+          child: Container(
+            height: 40,
+            color: Colors.grey,
+            alignment: Alignment.center,
+            child: Text(
+              "<< cancel",
+              style: const TextStyle(
+                fontFamily: 'Montserrat',
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ),
+      ));
+
+    }
     //
     // mainList.add(Container(
     //   margin: const EdgeInsets.only(bottom: 100),
@@ -319,6 +348,9 @@ class _LoginRouter extends State<LoginRouter>
       if (Nip19.isPubkey(key) || Nip19.isPrivateKey(key)) {
         key = Nip19.decode(key);
       }
+      notificationsProvider.clear();
+      followEventProvider.clear();
+      followEventProvider.clear();
       await settingProvider.addAndChangeKey(key, !isPublic, updateUI: false);
       bool isPrivate = !isPublic;
       String publicKey = isPrivate ? getPublicKey(key!) : key!;
@@ -342,5 +374,8 @@ class _LoginRouter extends State<LoginRouter>
 
     firstLogin = true;
     indexProvider.setCurrentTap(IndexTaps.FOLLOW);
+    if (widget.canGoBack) {
+      RouterUtil.back(context);
+    }
   }
 }
