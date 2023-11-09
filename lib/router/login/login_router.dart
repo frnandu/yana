@@ -9,6 +9,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:yana/utils/platform_util.dart';
 
 import '../../nostr/nip07/extension_event_signer.dart';
+import '../../provider/data_util.dart';
 import '../../utils/router_util.dart';
 import '/js/js_helper.dart' as js;
 import '../../i18n/i18n.dart';
@@ -348,7 +349,11 @@ class _LoginRouter extends State<LoginRouter>
       if (Nip19.isPubkey(key) || Nip19.isPrivateKey(key)) {
         key = Nip19.decode(key);
       }
+      sharedPreferences.remove(DataKey.NOTIFICATIONS_TIMESTAMP);
+      sharedPreferences.remove(DataKey.FEED_POSTS_TIMESTAMP);
+      sharedPreferences.remove(DataKey.FEED_REPLIES_TIMESTAMP);
       notificationsProvider.clear();
+      newNotificationsProvider.clear();
       followEventProvider.clear();
       followEventProvider.clear();
       await settingProvider.addAndChangeKey(key, !isPublic, updateUI: false);

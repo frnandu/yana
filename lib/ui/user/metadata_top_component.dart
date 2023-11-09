@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:dart_ndk/nips/nip01/bip340_event_signer.dart';
 import 'package:dart_ndk/nips/nip01/metadata.dart';
 import 'package:easy_image_viewer/easy_image_viewer.dart';
 import 'package:flutter/foundation.dart';
@@ -19,6 +20,7 @@ import 'package:yana/utils/router_util.dart';
 
 import '../../nostr/nip19/nip19.dart';
 import '../../nostr/nip57/zap_action.dart';
+import '../../provider/data_util.dart';
 import '../../utils/base.dart';
 import '../../utils/string_util.dart';
 import '../image_preview_dialog.dart';
@@ -162,35 +164,6 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
           // }
           );
     }
-    if (widget.pubkey != loggedUserSigner!.getPublicKey() && kDebugMode) {
-      topBtnList.add(Container(
-        child:
-        PopupMenuButton<String>(
-          tooltip: "more",
-          itemBuilder: (context) {
-            List<PopupMenuEntry<String>> list = [
-              PopupMenuItem(
-                value: "login_as",
-                child: Text("Login as..."),
-              ),
-            ];
-
-            return list;
-          },
-          onSelected: (value) {
-            if (value == "login_as") {
-
-            }
-          },
-          child: Icon(
-            Icons.expand_more,
-            size: 16,
-            color: Colors.white,
-          ),
-        ),
-      )
-      );
-    }
     if (widget.followsYou &&
         widget.pubkey != loggedUserSigner!.getPublicKey()) {
       topBtnList.add(
@@ -207,7 +180,7 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
               ),
               padding:
                   const EdgeInsets.only(top: 4, bottom: 4, left: 8, right: 8),
-              margin: const EdgeInsets.only(right: 5),
+              margin: const EdgeInsets.only(right: 5, top:8),
               child: Text(
                 "follows you",
                 style: TextStyle(
@@ -304,50 +277,97 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
         )));
       }
       if (widget.pubkey != loggedUserSigner!.getPublicKey()) {
-        topBtnList.add(wrapBtn(MetadataIconBtn(
-          iconData: Icons.mail,
-          onTap: openDMSession,
-        )));
-        topBtnList.add(Selector<ContactListProvider, bool>(
-          builder: (context, followed, child) {
-            if (followed == null || !followed) {
-              return wrapBtn(MetadataTextBtn(
-                text: "Follow",
-                borderColor: mainColor,
-                onTap: () async {
-                  bool finished = false;
-                  Future.delayed(const Duration(seconds: 1),() {
-                    if (!finished) {
-                      EasyLoading.show(status: "Refreshing contacts from relays before following...", maskType: EasyLoadingMaskType.black);
-                    }
-                  });
-                  await contactListProvider.addContact(widget.pubkey);
-                  finished = true;
-                  EasyLoading.dismiss();
-                },
-              ));
-            } else {
-              return wrapBtn(MetadataTextBtn(
-                text: "Unfollow",
-                borderColor: mainColor,
-                onTap: () async {
-                  bool finished = false;
-                  Future.delayed(const Duration(seconds: 1),() {
-                    if (!finished) {
-                      EasyLoading.show(status: "Refreshing contacts from relays before unfollowing...", maskType: EasyLoadingMaskType.black);
-                    }
-                  });
-                  await contactListProvider.removeContact(widget.pubkey);
-                  finished = true;
-                  EasyLoading.dismiss();
-                },
-              ));
-            }
-          },
-          selector: (context, _provider) {
-            return _provider.contacts().contains(widget.pubkey);
-          },
-        ));
+        if (loggedUserSigner!.canSign()) {
+          topBtnList.add(wrapBtn(MetadataIconBtn(
+            iconData: Icons.mail,
+            onTap: openDMSession,
+          )));
+          topBtnList.add(Selector<ContactListProvider, bool>(
+            builder: (context, followed, child) {
+              if (followed == null || !followed) {
+                return wrapBtn(MetadataTextBtn(
+                  text: "Follow",
+                  borderColor: mainColor,
+                  onTap: () async {
+                    bool finished = false;
+                    Future.delayed(const Duration(seconds: 1), () {
+                      if (!finished) {
+                        EasyLoading.show(status: "Refreshing contacts from relays before following...", maskType: EasyLoadingMaskType.black);
+                      }
+                    });
+                    await contactListProvider.addContact(widget.pubkey);
+                    finished = true;
+                    EasyLoading.dismiss();
+                  },
+                ));
+              } else {
+                return wrapBtn(MetadataTextBtn(
+                  text: "Unfollow",
+                  borderColor: mainColor,
+                  onTap: () async {
+                    bool finished = false;
+                    Future.delayed(const Duration(seconds: 1), () {
+                      if (!finished) {
+                        EasyLoading.show(status: "Refreshing contacts from relays before unfollowing...", maskType: EasyLoadingMaskType.black);
+                      }
+                    });
+                    await contactListProvider.removeContact(widget.pubkey);
+                    finished = true;
+                    EasyLoading.dismiss();
+                  },
+                ));
+              }
+            },
+            selector: (context, _provider) {
+              return _provider.contacts().contains(widget.pubkey);
+            },
+          ));
+        }
+        topBtnList.add(Container(
+          margin: const EdgeInsets.only(top: Base.BASE_PADDING, right: 4),
+          child:
+          PopupMenuButton<String>(
+            tooltip: "more",
+            itemBuilder: (context) {
+              List<PopupMenuEntry<String>> list = [
+                PopupMenuItem(
+                  value: "login_as",
+                  child: Text("Login as ${displayName}"),
+                ),
+              ];
+
+              return list;
+            },
+            onSelected: (value) async {
+              if (value == "login_as") {
+                EasyLoading.showToast("Logging in as ${displayName}...", dismissOnTap: true,  duration: const Duration(seconds: 5), maskType: EasyLoadingMaskType.black);
+                sharedPreferences.remove(DataKey.NOTIFICATIONS_TIMESTAMP);
+                sharedPreferences.remove(DataKey.FEED_POSTS_TIMESTAMP);
+                sharedPreferences.remove(DataKey.FEED_REPLIES_TIMESTAMP);
+                notificationsProvider.clear();
+                newNotificationsProvider.clear();
+                followEventProvider.clear();
+                followEventProvider.clear();
+                settingProvider.addAndChangeKey(widget.metadata!.pubKey, false, updateUI: true);
+                String publicKey = widget.metadata!.pubKey;
+                loggedUserSigner = Bip340EventSigner(null, publicKey);
+                await initRelays(newKey: false);
+                followEventProvider.loadCachedFeed();
+                nwcProvider.init();
+                settingProvider.notifyListeners();
+                EasyLoading.dismiss();
+                RouterUtil.back(context);
+              }
+            },
+            child: const Icon(
+              Icons.more_vert_sharp,
+              size: 20,
+              color: Colors.white,
+            ),
+          ),
+        )
+        );
+
       }
     }
 
@@ -510,7 +530,7 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
 
   Widget wrapBtn(Widget child) {
     return Container(
-      margin: const EdgeInsets.only(top: 10, right: 8),
+      margin: const EdgeInsets.only(top: 10, right: 4),
       child: child,
     );
   }
@@ -639,7 +659,7 @@ class MetadataTextBtn extends StatelessWidget {
         child: Text(
           text,
           style: TextStyle(
-            fontSize: Base.BASE_FONT_SIZE + 4,
+            fontSize: Base.BASE_FONT_SIZE + 2,
             // fontWeight: FontWeight.bold,
             color: borderColor,
           ),

@@ -1,30 +1,26 @@
 import 'dart:developer';
-import '../../utils/platform_util.dart';
-import '../../utils/router_path.dart';
-import '/js/js_helper.dart' as js;
 
-import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:dart_ndk/models/user_relay_list.dart';
 import 'package:dart_ndk/nips/nip01/bip340_event_signer.dart';
 import 'package:dart_ndk/nips/nip01/metadata.dart';
-import 'package:dart_ndk/relay_manager.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:provider/provider.dart';
 import 'package:yana/provider/metadata_provider.dart';
 import 'package:yana/provider/setting_provider.dart';
-import 'package:yana/ui/editor/text_input_dialog.dart';
 import 'package:yana/ui/name_component.dart';
 import 'package:yana/ui/point_component.dart';
 import 'package:yana/utils/router_util.dart';
 
+import '../../provider/data_util.dart';
+import '/js/js_helper.dart' as js;
 import '../../i18n/i18n.dart';
 import '../../main.dart';
 import '../../nostr/client_utils/keys.dart';
 import '../../nostr/nip07/extension_event_signer.dart';
 import '../../nostr/nip19/nip19.dart';
-import '../../ui/confirm_dialog.dart';
 import '../../utils/base.dart';
+import '../../utils/router_path.dart';
 import '../../utils/string_util.dart';
 import 'index_drawer_content.dart';
 
@@ -160,7 +156,7 @@ class AccountsState extends State<AccountsComponent> {
       try {
         getPublicKey(privateKey);
       } catch (e) {
-        EasyLoading.show(status: I18n.of(context).Wrong_Private_Key_format);
+        EasyLoading.show(status: I18n.of(context).Wrong_Private_Key_format, maskType: EasyLoadingMaskType.black);
         return false;
       }
     }
@@ -169,7 +165,7 @@ class AccountsState extends State<AccountsComponent> {
   }
 
   static void doLogin() async {
-    EasyLoading.show(status: "Logging in...");
+    EasyLoading.show(status: "Logging in...",maskType: EasyLoadingMaskType.black);
 
     String? key = settingProvider.key;
     bool isPrivate = settingProvider.isPrivateKey;
@@ -192,7 +188,7 @@ class AccountsState extends State<AccountsComponent> {
 
   void onLoginTap(int index) {
     if (settingProvider.privateKeyIndex != index) {
-      EasyLoading.show(status: "Logging out...");
+      EasyLoading.show(status: "Logging out...",maskType: EasyLoadingMaskType.black);
       clearCurrentMemInfo();
       loggedUserSigner = null;
 
@@ -243,7 +239,11 @@ class AccountsState extends State<AccountsComponent> {
   }
 
   static void clearCurrentMemInfo() {
+    sharedPreferences.remove(DataKey.NOTIFICATIONS_TIMESTAMP);
+    sharedPreferences.remove(DataKey.FEED_POSTS_TIMESTAMP);
+    sharedPreferences.remove(DataKey.FEED_REPLIES_TIMESTAMP);
     notificationsProvider.clear();
+    newNotificationsProvider.clear();
     followEventProvider.clear();
     followNewEventProvider.clear();
     dmProvider.clear();

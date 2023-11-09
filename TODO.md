@@ -70,10 +70,10 @@
 - ~~new posts/replies appear in layered popup with avatars~~
 - ~~persist notes from feed for faster startup~~
 - ~~include tags/communities in feed filter?!~~
+- ~~FIX LOGOUT/SWITCH accounts screens~~!
 
-v0.12
+===== v0.12
 - FIX SOCKETS CONNECTION PROBLEMS!!!!!!!!!!!!!!!
-- FIX LOGOUT/SWITCH accounts screens!
 - FIX NIP05 yellow all the time
 - 
 - dms
@@ -96,7 +96,8 @@ v0.12
 - when following someone new and gossip=1, ask confirmation for that user's relay list acceptance, and eventual blocking some relays
 - too much notifications of reactions to replies of replies of post where you're tagged
 - WTF nwc needs fresh relayManager for get_info/get_balance??
-v0.13
+- 
+===== v0.13
 - after adding follow, recalculate relaySet for gossip
 - better android/ios/linux badges on web version login screen (anchor links to readme.md for IOS/linux)
 - garbage collection of webSockets not used since X (for reactions)
