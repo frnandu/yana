@@ -50,7 +50,7 @@ class _ThreadDetailItemMainComponent extends State<ThreadDetailItemMainComponent
       return w;
     }
     return Container(
-        margin: EdgeInsets.only(left: ThreadDetailItemMainComponent.BORDER_LEFT_WIDTH),
+        margin: EdgeInsets.only(left: ThreadDetailItemMainComponent.BORDER_LEFT_WIDTH+1),
         decoration: BoxDecoration(
           border: Border(
             left: BorderSide(
