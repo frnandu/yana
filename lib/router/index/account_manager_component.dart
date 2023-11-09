@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dart_ndk/nips/nip01/bip340_event_signer.dart';
+import 'package:dart_ndk/nips/nip01/event_signer.dart';
 import 'package:dart_ndk/nips/nip01/metadata.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
@@ -13,6 +14,7 @@ import 'package:yana/ui/point_component.dart';
 import 'package:yana/utils/router_util.dart';
 
 import '../../provider/data_util.dart';
+import '../../utils/platform_util.dart';
 import '/js/js_helper.dart' as js;
 import '../../i18n/i18n.dart';
 import '../../main.dart';
@@ -169,7 +171,10 @@ class AccountsState extends State<AccountsComponent> {
 
     String? key = settingProvider.key;
     bool isPrivate = settingProvider.isPrivateKey;
-    loggedUserSigner = isPrivate ? Bip340EventSigner(key, getPublicKey(key!)) : Nip07EventSigner(await js.getPublicKeyAsync());
+    String publicKey = isPrivate ? getPublicKey(key!) : key!;
+    loggedUserSigner = isPrivate || !PlatformUtil.isWeb()
+        ? Bip340EventSigner(isPrivate ? key : null, publicKey)
+        : Nip07EventSigner(await js.getPublicKeyAsync());
 
     await initRelays(newKey: false);
 
