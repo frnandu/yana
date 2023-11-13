@@ -87,6 +87,16 @@ class EventReactionsProvider extends ChangeNotifier
     return replies;
   }
 
+  void addZap(String id, Nip01Event zapReceipt) {
+    var er = _eventReactionsMap[id];
+    if (er != null) {
+      er = er.clone();
+      er.onEvent(zapReceipt);
+      _eventReactionsMap[id] = er;
+      notifyListeners();
+    }
+  }
+
   void addReply(String id, Nip01Event reply) {
     if (_repliesMap[id]!=null) {
       _repliesMap[id]!.add(reply);
@@ -117,7 +127,7 @@ class EventReactionsProvider extends ChangeNotifier
     print(
         "---------------- reactions subscriptions: ${requests.length}");
     NostrRequest request = await relayManager!.query(filter, relaySet!,
-        splitRequestsByPubKeyMappings: settingProvider.gossip == 1, idleTimeout: 5);
+        splitRequestsByPubKeyMappings: settingProvider.gossip == 1, idleTimeout: 10);
     requests[eventId] = request;
 
     request.stream.listen((event) {

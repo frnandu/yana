@@ -111,10 +111,9 @@ class MetadataProvider extends ChangeNotifier with LaterFunction {
           pubKey: metadata.pubKey,
           nip05: metadata.nip05!,
           valid: valid,
-          updatedAt: DateTime
-              .now()
-              .millisecondsSinceEpoch ~/ 1000);
+          updatedAt: Helpers.now);
       nip05.valid = valid;
+      nip05.updatedAt = Helpers.now;
       toSave.add(nip05);
     }
     await cacheManager.saveNip05s(toSave);

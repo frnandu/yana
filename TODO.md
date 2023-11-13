@@ -73,9 +73,6 @@
 - ~~FIX LOGOUT/SWITCH accounts screens~~!
 
 ===== v0.12
-- FIX SOCKETS CONNECTION PROBLEMS!!!!!!!!!!!!!!!
-- FIX NIP05 yellow all the time
-- 
 - dms
 - re-enable awesome notifications
 - use inboxForReactions for broadcasting reactions to inbox relays
@@ -83,6 +80,7 @@
 - on back from background, reconnect relay + resubscribe to all existing subscriptions
 - PULL BACKGROUND SERVICE
 -
+- FIX SOCKETS CONNECTION PROBLEMS!!!!!!!!!!!!!!!
 - NIP07 browser for some web apps!?
 - choose to which relays / lists to broadcast on new note (bounty)
 - don't load stuff in tabs that are not visible!!!!
@@ -96,8 +94,8 @@
 - when following someone new and gossip=1, ask confirmation for that user's relay list acceptance, and eventual blocking some relays
 - too much notifications of reactions to replies of replies of post where you're tagged
 - WTF nwc needs fresh relayManager for get_info/get_balance??
-- 
-===== v0.13
+
+- ===== v0.13
 - after adding follow, recalculate relaySet for gossip
 - better android/ios/linux badges on web version login screen (anchor links to readme.md for IOS/linux)
 - garbage collection of webSockets not used since X (for reactions)

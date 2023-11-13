@@ -11,6 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 
 import '../main.dart';
+import '../nostr/event_kind.dart';
 import '../nostr/nip04/nip04.dart';
 import '../nostr/nip47/nwc_commands.dart';
 import '../nostr/nip47/nwc_kind.dart';
@@ -206,8 +207,11 @@ class NwcProvider extends ChangeNotifier {
       final event = Nip01Event(pubKey: nwcSigner!.getPublicKey(), kind: NwcKind.REQUEST, tags: tags, content: encrypted);
       var filter = Filter(
           kinds: [NwcKind.RESPONSE], authors: [walletPubKey!], eTags: [event.id]);
-      (await relayManager.requestRelays([relay!], filter, timeout: 20)).stream.listen((event) {
-        onPayInvoiceResponse(event, onZapped);
+
+      NostrRequest subscription = await relayManager.requestRelays([relay!], filter, closeOnEOSE: false);
+      subscription.stream.listen((event) async {
+        await relayManager.closeNostrRequest(subscription);
+        await onPayInvoiceResponse(event, onZapped);
       });
       await relayManager.broadcastEvent(event, [relay!], nwcSigner);
       // TODO use dart_ndk
@@ -234,7 +238,19 @@ class NwcProvider extends ChangeNotifier {
         var preImage = data['result']['preimage'];
         EasyLoading.showSuccess("Zap payed", duration: const Duration(seconds: 2));
         if (payInvoiceEventId!=null) {
-          // await eventReactionsProvider.subscription(payInvoiceEventId!, null, EventKind.ZAP_RECEIPT);
+          String payInvoiceEventId = this.payInvoiceEventId!;
+          var filter = Filter(
+              kinds: [EventKind.ZAP_RECEIPT], eTags: [payInvoiceEventId!]);
+          Nip01Event? zapReceipt;
+          NostrRequest subscription = await relayManager.requestRelays(myInboxRelaySet!.urls.toList()..add(relay!), filter, closeOnEOSE: false);
+          subscription.stream.listen((event) async {
+            await relayManager.closeNostrRequest(subscription);
+            if (zapReceipt==null || zapReceipt!.createdAt < event.createdAt) {
+              zapReceipt = event;
+              eventReactionsProvider.addZap(payInvoiceEventId!, event);
+            }
+          });
+          // await eventReactionsProvider.subscription(payInvoiceEventId!, null, [EventKind.ZAP_RECEIPT]);
         }
         notifyListeners();
         requestBalance(walletPubKey!, relay!, secret!);
