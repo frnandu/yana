@@ -59,7 +59,6 @@ class _UserRouter extends CustState<UserRouter>
     super.initState();
 
     queryLimit = 100;
-
     _controller.addListener(() {
       var _showTitle = false;
       var _showAppbarBG = false;
@@ -260,12 +259,15 @@ class _UserRouter extends CustState<UserRouter>
     }
   }
 
-  void onEvent(Nip01Event event) {
+  void onEvent(Nip01Event event, {bool saveToCache = false}) {
     if (event.pubKey!=pubkey) {
       print("WTF $event");
     }
     later(event, (list) {
-      box.addList(list);
+      bool added = box.addList(list);
+      if (saveToCache && added) {
+        cacheManager.saveEvents(list);
+      }
       setState(() {});
     }, null);
   }
@@ -286,9 +288,27 @@ class _UserRouter extends CustState<UserRouter>
     // }
     // subscribeId = null;
   }
+  List<int> queryEventKinds() {
+    return [
+      Nip01Event.TEXT_NODE_KIND,
+      kind.EventKind.REPOST,
+      kind.EventKind.GENERIC_REPOST,
+      kind.EventKind.LONG_FORM,
+      kind.EventKind.FILE_HEADER,
+      kind.EventKind.POLL,
+    ];
+  }
 
   @override
   void doQuery() {
+    if (box.isEmpty()) {
+      List<Nip01Event>? cachedEvents = cacheManager.loadEvents([pubkey!], [1]);// queryEventKinds());
+      print("USER loaded ${cachedEvents.length} events from cache DB");
+      for (var event in cachedEvents) {
+        onEvent(event, saveToCache: false);
+      }
+    }
+
     if (myInboxRelaySet==null || myOutboxRelaySet==null) {
       return;
     }
@@ -299,14 +319,7 @@ class _UserRouter extends CustState<UserRouter>
 
     // load event from relay
     var filter = Filter(
-      kinds: [
-        Nip01Event.TEXT_NODE_KIND,
-        kind.EventKind.REPOST,
-        kind.EventKind.GENERIC_REPOST,
-        kind.EventKind.LONG_FORM,
-        kind.EventKind.FILE_HEADER,
-        kind.EventKind.POLL,
-      ],
+      kinds: queryEventKinds(),
       until: until,
       authors: [pubkey!],
       limit: queryLimit,
@@ -322,7 +335,7 @@ class _UserRouter extends CustState<UserRouter>
         filter, relaySet).then((request) {
           subscription = request;
           subscription!.stream.listen((event) {
-        onEvent(event);
+        onEvent(event, saveToCache: pubkey == loggedUserSigner!.getPublicKey());
       });
     },);
   }

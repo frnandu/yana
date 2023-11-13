@@ -75,9 +75,9 @@
 ===== v0.12
 - dms
 - re-enable awesome notifications
+- on back from background, reconnect relay + resubscribe to all existing subscriptions
 - use inboxForReactions for broadcasting reactions to inbox relays
 - blacklist for relays
-- on back from background, reconnect relay + resubscribe to all existing subscriptions
 - PULL BACKGROUND SERVICE
 -
 - FIX SOCKETS CONNECTION PROBLEMS!!!!!!!!!!!!!!!
