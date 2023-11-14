@@ -101,7 +101,13 @@ class _RelaysRouter extends CustState<RelaysRouter> with WhenStopFunction {
                       createMyRelaySets(userRelayList);
                     }
                     await loadRelayInfos();
-                    await relayManager.connect(urls: userRelayList!.urls);
+                    // try {
+                    //   await Future.wait(userRelayList!.urls.map((url) => relayManager.webSockets[url]!,).map((webSocket) => webSocket.disconnect("reconnect")).toList());
+                    // } catch (e) {
+                    //   print(e);
+                    // }
+
+                    await relayManager.reconnectRelays(userRelayList!.urls);
 
                     // await relayManager.reconnectRelays(userRelayList!.urls);
                     setState(() {});

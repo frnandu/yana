@@ -197,7 +197,7 @@ void onStart(ServiceInstance service) async {
   if (!ss.backgroundService) {
     service.stopSelf();
   } else {
-    Timer.periodic(const Duration(seconds: 30), (timer) {
+    Timer.periodic(const Duration(seconds: 60), (timer) {
       if (service is AndroidServiceInstance) {
         AwesomeNotifications().getAppLifeCycle().then((value) {
           if (value.toString() != "NotificationLifeCycle.Foreground" && myInboxRelaySet != null) {
@@ -510,8 +510,8 @@ void initBackgroundService(bool startOnBoot) async {
       autoStartOnBoot: startOnBoot,
       isForegroundMode: true,
       notificationChannelId: 'yana-service',
-      initialNotificationTitle: 'Yana pull service',
-      initialNotificationContent: 'this notification can be hidden',
+      initialNotificationTitle: 'Background service',
+      initialNotificationContent: 'you can hide this: long-press -> settings -> Notification categories',
       foregroundServiceNotificationId: 888,
     ),
     iosConfiguration: IosConfiguration(
@@ -823,7 +823,7 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
   }
 
   @override
-  void didChangeAppLifecycleState(AppLifecycleState newState) {
+  void didChangeAppLifecycleState(AppLifecycleState newState) async {
     super.didChangeAppLifecycleState(newState);
 
     if (newState == AppLifecycleState.resumed &&
@@ -833,7 +833,30 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
         if (backgroundService != null && settingProvider.backgroundService) {
           backgroundService!.invoke('stopService');
         }
+        List<String> requestIdsToClose = relayManager.nostrRequests.keys.toList();
+        requestIdsToClose.forEach((id) async {
+          try {
+            await relayManager.closeNostrRequestById(id);
+          } catch (e) {
+            print(e);
+          }
+        });
 
+        try {
+          await Future.wait(relayManager.webSockets.values.map((webSocket) => webSocket.disconnect("reconnect")).toList());
+        } catch (e) {
+          print(e);
+        }
+
+        Set<String> urls = {};
+        urls.addAll(feedRelaySet!.urls);
+        urls.addAll(myInboxRelaySet!.urls);
+
+        await relayManager.reconnectRelays(urls);
+
+        if (settingProvider.gossip == 1) {
+          await relayManager.reconnectRelays(feedRelaySet!.urls);
+        }
         followEventProvider.startSubscriptions();
         notificationsProvider.startSubscription();
       }

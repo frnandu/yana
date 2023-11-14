@@ -71,6 +71,7 @@
 - ~~persist notes from feed for faster startup~~
 - ~~include tags/communities in feed filter?!~~
 - ~~FIX LOGOUT/SWITCH accounts screens~~!
+- ~~don't load stuff in tabs that are not visible!!!!~~
 
 ===== v0.12
 - on back from background, reconnect relays + resubscribe to all existing subscriptions
@@ -81,7 +82,6 @@
 - FIX SOCKETS CONNECTION PROBLEMS!!!!!!!!!!!!!!!
 - NIP07 browser for some web apps!?
 - choose to which relays / lists to broadcast on new note (bounty)
-- don't load stuff in tabs that are not visible!!!!
 - make thread detail subscription of new replies work
 - make reactions live again with subscriptions or some other way 
 - show progress of broadcasting note on relays
