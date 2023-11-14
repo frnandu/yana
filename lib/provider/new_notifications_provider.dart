@@ -20,9 +20,9 @@ class NewNotificationsProvider extends ChangeNotifier
   @pragma("vm:entry-point")
   static Future<void> onActionReceivedMethod(
       ReceivedAction receivedAction) async {
-    if (kDebugMode) {
-      EasyLoading.show(status: "Received notification " + receivedAction.payload.toString());
-    }
+    // if (kDebugMode) {
+    //   EasyLoading.show(status: "Received notification " + receivedAction.payload.toString());
+    // }
     newNotificationsProvider.queryNew();
     Future.delayed(const Duration(seconds: 1), () {
       notificationsProvider.mergeNewEvent();
@@ -44,7 +44,7 @@ class NewNotificationsProvider extends ChangeNotifier
   }
 
   @pragma('vm:entry-point')
-  void queryNew() {
+  Future<void> queryNew() async {
     if (kDebugMode) {
       print('!!!!!!!!!!!!!!! New notifications queryNew');
     }
@@ -59,11 +59,9 @@ class NewNotificationsProvider extends ChangeNotifier
       kinds: notificationsProvider.queryEventKinds(),
       pTags: [loggedUserSigner!.getPublicKey()],
     );
-    relayManager!.query(filter, myInboxRelaySet!).then((request) {
-      request.stream.listen((event) {
+    await for (final event in (await relayManager!.query(filter, myInboxRelaySet!)).stream) {
         later(event, handleEvents, null);
-      });
-    },);
+    }
   }
 
   handleEvents(List<Nip01Event> events) {

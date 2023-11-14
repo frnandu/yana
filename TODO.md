@@ -73,11 +73,9 @@
 - ~~FIX LOGOUT/SWITCH accounts screens~~!
 
 ===== v0.12
-- re-enable awesome notifications
-- on back from background, reconnect relay + resubscribe to all existing subscriptions
+- on back from background, reconnect relays + resubscribe to all existing subscriptions
 - use inboxForReactions for broadcasting reactions to inbox relays
 - blacklist for relays
-- PULL BACKGROUND SERVICE
 -
 - save notification events to cache DB
 - FIX SOCKETS CONNECTION PROBLEMS!!!!!!!!!!!!!!!

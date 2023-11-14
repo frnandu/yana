@@ -197,13 +197,13 @@ void onStart(ServiceInstance service) async {
   if (!ss.backgroundService) {
     service.stopSelf();
   } else {
-    Timer.periodic(const Duration(seconds: 60), (timer) async {
+    Timer.periodic(const Duration(seconds: 60), (timer) {
       if (service is AndroidServiceInstance) {
         AwesomeNotifications().getAppLifeCycle().then((value) {
           if (value.toString() != "NotificationLifeCycle.Foreground" && myInboxRelaySet != null) {
             appState = AppLifecycleState.inactive;
-            relayManager.reconnectRelays(myInboxRelaySet!.urls).then((a) {
-              newNotificationsProvider.queryNew();
+            relayManager.reconnectRelays(myInboxRelaySet!.urls).then((a) async {
+              await newNotificationsProvider.queryNew();
             });
           }
         });
@@ -510,7 +510,7 @@ void initBackgroundService(bool startOnBoot) async {
       autoStartOnBoot: startOnBoot,
       isForegroundMode: true,
       notificationChannelId: 'yana-service',
-      initialNotificationTitle: 'Yana notifications service',
+      initialNotificationTitle: 'Yana pull service',
       initialNotificationContent: 'this notification can be hidden',
       foregroundServiceNotificationId: 888,
     ),
