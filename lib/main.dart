@@ -848,15 +848,20 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
           print(e);
         }
 
+        await relayManager.connect(urls: relayManager.bootstrapRelays);
+
         Set<String> urls = {};
-        urls.addAll(feedRelaySet!.urls);
         urls.addAll(myInboxRelaySet!.urls);
-
-        await relayManager.reconnectRelays(urls);
-
-        if (settingProvider.gossip == 1) {
-          await relayManager.reconnectRelays(feedRelaySet!.urls);
+        if (settingProvider.gossip == 1 && feedRelaySet!=null) {
+          urls.addAll(feedRelaySet!.urls);
         }
+
+        try {
+          await relayManager.reconnectRelays(urls);
+        } catch (e) {
+          print(e);
+        }
+
         followEventProvider.startSubscriptions();
         notificationsProvider.startSubscription();
       }

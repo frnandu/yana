@@ -72,9 +72,10 @@
 - ~~include tags/communities in feed filter?!~~
 - ~~FIX LOGOUT/SWITCH accounts screens~~!
 - ~~don't load stuff in tabs that are not visible!!!!~~
+- ~~on back from background, reconnect relays + resubscribe to all existing subscriptions~~
 
 ===== v0.12
-- on back from background, reconnect relays + resubscribe to all existing subscriptions
+- show used data of background service in KBs
 - use inboxForReactions for broadcasting reactions to inbox relays
 - blacklist for relays
 -

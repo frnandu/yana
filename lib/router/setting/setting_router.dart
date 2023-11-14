@@ -398,7 +398,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
         },
         initialValue: settingProvider.backgroundService,
         leading: const Icon(Icons.notification_important_outlined),
-        title: const Text("Start pull background service"),
+        title: const Text("Use background service"),
       ));
     }
 
