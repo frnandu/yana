@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get_time_ago/get_time_ago.dart';
 import 'package:pointycastle/export.dart' as pointycastle;
 import 'package:provider/provider.dart';
+import 'package:yana/main.dart';
 import 'package:yana/nostr/nip04/nip04.dart';
 import 'package:yana/provider/dm_provider.dart';
 import 'package:yana/provider/metadata_provider.dart';
@@ -47,6 +48,7 @@ class _DMSessionListItemComponent extends State<DMSessionListItemComponent> {
       content = content!.replaceAll("\r", " ");
       content = content!.replaceAll("\n", " ");
     }
+
   }
 
   @override
@@ -85,6 +87,11 @@ class _DMSessionListItemComponent extends State<DMSessionListItemComponent> {
     if (hasNewMessage) {
       contentList.add(PointComponent(color: mainColor));
     }
+    // return Text(metadataProvider.getMetadata(widget.detail.dmSession.pubkey)!.name!+" "+content!);
+    // return Container(
+    //   margin: const EdgeInsets.only(top: 2),
+    //   child: Row(children: [Text(metadataProvider.getMetadata(widget.detail.dmSession.pubkey)!.name!+" ")]..addAll(contentList)),
+    // );
 
     var main = Container(
       padding: const EdgeInsets.all(Base.BASE_PADDING),

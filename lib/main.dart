@@ -99,7 +99,6 @@ import 'utils/locale_util.dart';
 import 'utils/media_data_cache.dart';
 import 'utils/router_path.dart';
 import 'utils/string_util.dart';
-import 'utils/system_timer.dart';
 import 'utils/theme_style.dart';
 
 late SharedPreferences sharedPreferences;
@@ -193,7 +192,7 @@ void onStart(ServiceInstance service) async {
     service.stopSelf();
   });
 
-  initProvidersAndStuff();
+  await initProvidersAndStuff();
   SettingProvider ss = await SettingProvider.getInstance();
   if (!ss.backgroundService) {
     service.stopSelf();
@@ -213,7 +212,7 @@ void onStart(ServiceInstance service) async {
   }
 }
 
-void initProvidersAndStuff() async {
+Future<void> initProvidersAndStuff() async {
   sharedPreferences = await DataUtil.getInstance();
   metadataProvider = await MetadataProvider.getInstance();
   relayProvider = RelayProvider.getInstance();
@@ -222,7 +221,17 @@ void initProvidersAndStuff() async {
   if (StringUtil.isNotBlank(settingProvider.key)) {
     try {
 
-      loggedUserSigner = Bip340EventSigner(settingProvider.key!, getPublicKey(settingProvider.key!));
+      String? key = settingProvider.key;
+      if (StringUtil.isNotBlank(key)) {
+        bool isPrivate = settingProvider.isPrivateKey;
+        String publicKey = isPrivate ? getPublicKey(key!) : key!;
+        loggedUserSigner = isPrivate || !PlatformUtil.isWeb()? Bip340EventSigner(isPrivate? key:null, publicKey) : Nip07EventSigner(await js.getPublicKeyAsync());
+      }
+      //
+      // loggedUserSigner = Bip340EventSigner(settingProvider.key!, getPublicKey(settingProvider.key!));
+      filterProvider = FilterProvider.getInstance();
+      relayManager.eventFilters.add(filterProvider);
+
       await relayManager.connect();
       UserRelayList? userRelayList = await relayManager.getSingleUserRelayList(loggedUserSigner!.getPublicKey());
       if (userRelayList != null) {
@@ -231,7 +240,6 @@ void initProvidersAndStuff() async {
       await relayManager.connect(urls: userRelayList != null ? userRelayList.urls : RelayManager.DEFAULT_BOOTSTRAP_RELAYS);
       // await relayProvider!.loadRelays(loggedUserSigner!.getPublicKey(), () {
       //   relayProvider.addRelays(nostr!).then((bla) {
-      filterProvider = FilterProvider.getInstance();
       notificationsProvider = NotificationsProvider();
       dmProvider = DMProvider();
       newNotificationsProvider = NewNotificationsProvider();
@@ -239,10 +247,11 @@ void initProvidersAndStuff() async {
       // });
       // log("nostr init over");
     } catch (e) {
-      var index = settingProvider.privateKeyIndex;
-      if (index != null) {
-        settingProvider.removeKey(index);
-      }
+      print(e);
+      // var index = settingProvider.privateKeyIndex;
+      // if (index != null) {
+      //   settingProvider.removeKey(index);
+      // }
     }
   }
 }
@@ -291,6 +300,7 @@ Future<void> initRelays({bool newKey = false}) async {
   }
   followEventProvider.startSubscriptions();
   notificationsProvider.startSubscription();
+  dmProvider.initDMSessions(loggedUserSigner!.getPublicKey());
   metadataProvider.notifyListeners();
 }
 
@@ -392,7 +402,6 @@ Future<void> main() async {
     print(e);
   }
 
-  // var dbInitTask = DB.getCurrentDatabase();
   var dataUtilTask = DataUtil.getInstance();
   var dataFutureResultList = await Future.wait([dataUtilTask]);
   sharedPreferences = dataFutureResultList[0] as SharedPreferences;
@@ -427,11 +436,11 @@ Future<void> main() async {
   communityInfoProvider = CommunityInfoProvider();
   nwcProvider = NwcProvider();
 
-  // try {
-  //   if (PlatformUtil.isAndroid() || PlatformUtil.isIOS()) {
-  //     initBackgroundService(true);
-  //   }
-  // } catch (e) {}
+  try {
+    if (PlatformUtil.isAndroid() || PlatformUtil.isIOS()) {
+      initBackgroundService(true);
+    }
+  } catch (e) {}
 
   String? key = settingProvider.key;
   if (StringUtil.isNotBlank(key)) {
@@ -803,13 +812,13 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     WidgetsBinding.instance!.addObserver(this);
-    SystemTimer.run();
+    // SystemTimer.run();
   }
 
   @override
   void dispose() {
     super.dispose();
-    SystemTimer.stopTask();
+    // SystemTimer.stopTask();
     WidgetsBinding.instance!.removeObserver(this);
   }
 

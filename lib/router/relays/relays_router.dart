@@ -163,7 +163,7 @@ class _RelaysRouter extends CustState<RelaysRouter> with WhenStopFunction {
     bool finished = false;
     Future.delayed(const Duration(seconds: 1),() {
       if (!finished) {
-        EasyLoading.show(status: "Refreshing relay list before adding...", maskType: EasyLoadingMaskType.black);
+        EasyLoading.showInfo("Refreshing relay list before adding...", maskType: EasyLoadingMaskType.black, dismissOnTap: true, duration: const Duration(seconds: 5));
       }
     });
     await relayProvider.addRelay(addr);

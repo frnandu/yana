@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:yana/main.dart';
 import 'package:yana/provider/notice_provider.dart';
 import 'package:pointycastle/ecc/api.dart';
 import 'package:provider/provider.dart';
 
+import '../../nostr/nip04/nip04.dart';
 import '../../provider/dm_provider.dart';
 import '../../provider/index_provider.dart';
+import '../../utils/index_taps.dart';
 import 'dm_notice_item_component.dart';
 import 'dm_session_list_item_component.dart';
 
@@ -55,7 +58,12 @@ class _DMFollowingRouter extends State<DMFollowingRouter> {
           );
         } else {
           var detail = details[index - flag];
+          String content = NIP04.decrypt(detail.dmSession.newestEvent!.content,
+              widget.agreement!, detail.dmSession.pubkey);
+
+          // return Text(metadataProvider.getMetadata(detail.dmSession.pubkey)!.name!+" "+content);
           return DMSessionListItemComponent(
+            key: ValueKey(detail.dmSession.pubkey),
             detail: detail,
             agreement: widget.agreement,
           );

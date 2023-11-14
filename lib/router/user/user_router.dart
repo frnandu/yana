@@ -272,6 +272,14 @@ class _UserRouter extends CustState<UserRouter>
     }, null);
   }
 
+
+  @override
+  void deactivate() {
+    if (subscription!=null) {
+      relayManager.closeNostrRequest(subscription!);
+    }
+  }
+
   @override
   void dispose() {
     super.dispose();

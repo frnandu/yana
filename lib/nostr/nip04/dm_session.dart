@@ -14,7 +14,7 @@ class DMSession {
   }
 
   bool addEvent(Nip01Event event) {
-    return _box.add(event);
+    return _box.add(event, returnTrueOnNewSources: false);
   }
 
   void addEvents(List<Nip01Event> events) {

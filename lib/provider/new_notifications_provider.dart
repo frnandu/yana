@@ -17,8 +17,6 @@ class NewNotificationsProvider extends ChangeNotifier
 
   int? _localSince;
 
-  String? subscribeId;
-
   @pragma("vm:entry-point")
   static Future<void> onActionReceivedMethod(
       ReceivedAction receivedAction) async {
@@ -26,7 +24,7 @@ class NewNotificationsProvider extends ChangeNotifier
       EasyLoading.show(status: "Received notification " + receivedAction.payload.toString());
     }
     newNotificationsProvider.queryNew();
-    Future.delayed(Duration(seconds: 1), () {
+    Future.delayed(const Duration(seconds: 1), () {
       notificationsProvider.mergeNewEvent();
     });
 
@@ -50,28 +48,22 @@ class NewNotificationsProvider extends ChangeNotifier
     if (kDebugMode) {
       print('!!!!!!!!!!!!!!! New notifications queryNew');
     }
-    /// TODO use dart_ndk
-    // if (subscribeId != null) {
-    //   try {
-    //     nostr!.unsubscribe(subscribeId!);
-    //   } catch (e) {}
-    // }
 
     _localSince =
         _localSince == null || notificationsProvider.lastTime() > _localSince!
             ? notificationsProvider.lastTime()
             : _localSince;
 
-    subscribeId = StringUtil.rndNameStr(12);
     var filter = Filter(
       since: _localSince!,
       kinds: notificationsProvider.queryEventKinds(),
       pTags: [loggedUserSigner!.getPublicKey()],
     );
-    // TODO use dart_ndk
-    // nostr!.query([filter.toMap()], (event) {
-    //   later(event, handleEvents, null);
-    // }, id: subscribeId);
+    relayManager!.query(filter, myInboxRelaySet!).then((request) {
+      request.stream.listen((event) {
+        later(event, handleEvents, null);
+      });
+    },);
   }
 
   handleEvents(List<Nip01Event> events) {

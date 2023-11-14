@@ -5,6 +5,7 @@ import 'package:yana/utils/string_util.dart';
 import '../../nostr/nip04/nip04.dart';
 import '../../main.dart';
 import '../../provider/index_provider.dart';
+import '../../utils/index_taps.dart';
 import 'dm_known_list_router.dart';
 import 'dm_unknown_list_router.dart';
 
@@ -21,12 +22,16 @@ class DMRouter extends StatefulWidget {
 }
 
 class _DMRouter extends State<DMRouter> {
+
+
+
   @override
   Widget build(BuildContext context) {
+    if (indexProvider.currentTap != IndexTaps.DM) {
+      return Container();
+    }
+
     var themeData = Theme.of(context);
-    //loggedUserSigner.decrypt(msg)
-    // TODO use dart_ndk WTF??!?!
-    // bool isPrivate = StringUtil.isNotBlank(nostr!.privateKey);
     var agreement = loggedUserSigner!.canSign() ? NIP04.getAgreement(loggedUserSigner!.getPrivateKey()!) : null;
     //
     return Container(

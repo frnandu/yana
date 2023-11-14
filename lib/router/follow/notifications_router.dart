@@ -20,6 +20,7 @@ import '../../ui/new_notes_updated_component.dart';
 import '../../ui/placeholder/event_list_placeholder.dart';
 import '../../utils/base.dart';
 import '../../utils/base_consts.dart';
+import '../../utils/index_taps.dart';
 import '../../utils/platform_util.dart';
 
 class NotificationsRouter extends StatefulWidget {
@@ -46,6 +47,9 @@ class _NotificationsRouter extends KeepAliveCustState<NotificationsRouter>
 
   @override
   Widget doBuild(BuildContext context) {
+    if (indexProvider.currentTap != IndexTaps.NOTIFICATIONS) {
+      return Container();
+    }
     var _settingProvider = Provider.of<SettingProvider>(context);
     var _notificationsProvider = Provider.of<NotificationsProvider>(context);
     var _newNotificationsProvider =
