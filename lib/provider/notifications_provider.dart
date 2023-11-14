@@ -88,53 +88,6 @@ class NotificationsProvider extends ChangeNotifier
     }
   }
 
-  // void doQuery({Nostr? targetNostr, bool initQuery = false, int? until}) {
-  //   targetNostr ??= nostr!;
-  //   var filter = Filter(
-  //     kinds: queryEventKinds(),
-  //     until: until ?? _initTime,
-  //     limit: 50,
-  //     pTags: [targetNostr.publicKey],
-  //   );
-  //
-  //   if (subscribeId != null) {
-  //     try {
-  //       targetNostr.unsubscribe(subscribeId!);
-  //     } catch (e) {}
-  //   }
-  //
-  //   subscribeId = _doQueryFunc(targetNostr, filter, initQuery: initQuery);
-  // }
-
-  // String _doQueryFunc(Nostr targetNostr, Filter filter,
-  //     {bool initQuery = false}) {
-  //   var subscribeId = StringUtil.rndNameStr(12);
-  //   if (initQuery) {
-  //     // TODO use dart_ndk
-  //     // targetNostr.addInitQuery([filter.toMap()], onEvent, id: subscribeId);
-  //   } else {
-  //     if (!eventBox.isEmpty()) {
-  //       var activeRelays = targetNostr.activeRelays();
-  //       var oldestCreatedAts =
-  //           eventBox.oldestCreatedAtByRelay(activeRelays, _initTime);
-  //       Map<String, List<Map<String, dynamic>>> filtersMap = {};
-  //       for (var relay in activeRelays) {
-  //         var oldestCreatedAt = oldestCreatedAts.createdAtMap[relay.url];
-  //         if (oldestCreatedAt != null) {
-  //           filter.until = oldestCreatedAt;
-  //           filtersMap[relay.url] = [filter.toMap()];
-  //         }
-  //       }
-  //       // TODO use dart_ndk
-  //       // targetNostr.queryByFilters(filtersMap, onEvent, id: subscribeId);
-  //     } else {
-  //       // TODO use dart_ndk
-  //       // targetNostr.query([filter.toMap()], onEvent, id: subscribeId);
-  //     }
-  //   }
-  //   return subscribeId;
-  // }
-
   void onEvent(Nip01Event event) {
     later(event, (list) {
       list = list
@@ -151,10 +104,6 @@ class NotificationsProvider extends ChangeNotifier
           }
         }
       });
-      // if (eventBox.length() >20 && list.first.createdAt > eventBox.newestEvent!.createdAt) {
-      //   newNotificationsProvider.handleEvents(list);
-      //   return;
-      // }
     }, null);
   }
 
