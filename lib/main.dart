@@ -197,7 +197,7 @@ void onStart(ServiceInstance service) async {
   if (!ss.backgroundService) {
     service.stopSelf();
   } else {
-    Timer.periodic(const Duration(seconds: 60), (timer) {
+    Timer.periodic(const Duration(seconds: 30), (timer) {
       if (service is AndroidServiceInstance) {
         AwesomeNotifications().getAppLifeCycle().then((value) {
           if (value.toString() != "NotificationLifeCycle.Foreground" && myInboxRelaySet != null) {

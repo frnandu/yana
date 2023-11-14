@@ -96,7 +96,7 @@ class NotificationsProvider extends ChangeNotifier
           .toList();
       list.forEach((event) {
         if (timestamp!=null && event.createdAt > timestamp!) {
-          newNotificationsProvider.handleEvents([event]);
+          newNotificationsProvider.handleEvent(event);
         } else {
           var result = eventBox.addList([event]);
           if (result) {
