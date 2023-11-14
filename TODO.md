@@ -75,9 +75,8 @@
 - ~~on back from background, reconnect relays + resubscribe to all existing subscriptions~~
 
 ===== v0.12
-- show used data of background service in KBs
 - use inboxForReactions for broadcasting reactions to inbox relays
-- blacklist for relays
+- blacklist for relays (NIP-51 PR)
 -
 - save notification events to cache DB
 - FIX SOCKETS CONNECTION PROBLEMS!!!!!!!!!!!!!!!
@@ -95,6 +94,7 @@
 - WTF nwc needs fresh relayManager for get_info/get_balance??
 
 - ===== v0.13
+- show used data of background service in KBs
 - after adding follow, recalculate relaySet for gossip
 - better android/ios/linux badges on web version login screen (anchor links to readme.md for IOS/linux)
 - garbage collection of webSockets not used since X (for reactions)

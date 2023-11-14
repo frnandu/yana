@@ -1,4 +1,5 @@
 import 'package:dart_ndk/models/relay_set.dart';
+import 'package:dart_ndk/nips/nip51/nip51.dart';
 import 'package:dart_ndk/read_write.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_font_picker/flutter_font_picker.dart';
@@ -366,7 +367,25 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
           title: const Text("Max amount of relays per reaction")));
     }
 
-    List<AbstractSettingsTile> securityTiles = [];
+    networkTiles.add(
+      SettingsTile.navigation(
+          onPressed: (context) async {
+            Nip51RelaySet? set = await relayManager.getSingleNip51RelaySet(loggedUserSigner!.getPublicKey(), "blocked");
+            RouterUtil.router(
+                context, RouterPath.USER_RELAYS, set!=null? set.relays.map((url) => RelayMetadata.full(url: url,read: null,write: null,count: 0),).toList(): []);
+          },
+          leading: const Icon(
+            Icons.not_interested,
+          ),
+          trailing: Icon(Icons.navigate_next, color: themeData.disabledColor),
+          title: Text(
+            "Blocked relays",
+            style: TextStyle(color: themeData.disabledColor),
+          ),
+    )
+  );
+
+  List<AbstractSettingsTile> securityTiles = [];
 
     if (!PlatformUtil.isWeb() &&
         (PlatformUtil.isIOS() || PlatformUtil.isAndroid())) {

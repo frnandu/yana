@@ -1,11 +1,13 @@
 import 'dart:io';
 
+import 'package:dart_ndk/nips/nip51/nip51.dart';
 import 'package:dart_ndk/relay.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:yana/main.dart';
 import 'package:yana/provider/relay_provider.dart';
+import 'package:yana/utils/router_path.dart';
 
 import '../../i18n/i18n.dart';
 import '../../nostr/relay_metadata.dart';
@@ -88,7 +90,7 @@ class _UserRelayRouter extends State<UserRelayRouter>
                     builder: (context, addAble, child) {
                   return RelayMetadataComponent(
                     relayMetadata: relayMetadata,
-                    addAble: relayMetadata.count == null && addAble,
+                    addAble: (relayMetadata.count == null || relayMetadata.count==0) && addAble,
                   );
                 }, selector: (context, provider) {
                   return relayManager.isRelayConnected(relayMetadata.url!);
@@ -182,6 +184,21 @@ class RelayMetadataComponent extends StatelessWidget {
                   color: themeData.disabledColor,
                   fontSize: themeData.textTheme.labelSmall!.fontSize),
             )
+            ,
+            loggedUserSigner!.canSign() ?
+            GestureDetector(onTap: () async {
+              Nip51RelaySet set = await relayManager.broadcastAddNip51Relay(relayMetadata.url!, "blocked", myOutboxRelaySet!.urls, loggedUserSigner!);
+              // TODO recalculate gossip
+              RouterUtil.router(
+                  context, RouterPath.USER_RELAYS, set.relays.map((url) => RelayMetadata.full(url: url,read: null,write: null,count: 0),).toList());
+            }, child: Container(
+                margin: const EdgeInsets.only(
+                  left: Base.BASE_PADDING_HALF,
+                ),
+                child: const Icon(
+              Icons.not_interested,
+              color: Colors.red,
+            ))):Container()
           ]);
         }
       }
