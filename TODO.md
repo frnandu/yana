@@ -73,10 +73,11 @@
 - ~~FIX LOGOUT/SWITCH accounts screens~~!
 - ~~don't load stuff in tabs that are not visible!!!!~~
 - ~~on back from background, reconnect relays + resubscribe to all existing subscriptions~~
+- ~~blacklist for relays (NIP-51 PR)~~
 
 ===== v0.12
-- blacklist for relays (NIP-51 PR)
 - use inboxForReactions for broadcasting reactions to inbox relays
+- nip-51 PRIVATE relay sets!
 -
 - save notification events to cache DB
 - FIX SOCKETS CONNECTION PROBLEMS!!!!!!!!!!!!!!!
