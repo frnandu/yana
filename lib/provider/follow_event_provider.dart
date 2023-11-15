@@ -185,50 +185,50 @@ class FollowEventProvider extends ChangeNotifier with PenddingEventsLaterFunctio
       onEvent(event);
     });
 
-    if (contactList != null) {
-      if (contactList.followedTags.isNotEmpty) {
-        subscriptionTags = await relayManager!.subscription(
-            Filter(
-              kinds: queryEventKinds(),
-              since: since,
-              tTags: contactList?.followedTags,
-              limit: since != null ? null : 100,
-            ),
-            myInboxRelaySet!,
-            splitRequestsByPubKeyMappings: false);
-        subscriptionTags!.stream.listen((event) {
-          onEvent(event);
-        });
-      }
-      if (contactList.followedCommunities.isNotEmpty) {
-        subscriptionCommunities = await relayManager!.subscription(
-            Filter(
-              kinds: queryEventKinds(),
-              since: since,
-              aTags: contactList?.followedCommunities,
-              limit: since != null ? null : 100,
-            ),
-            myInboxRelaySet!,
-            splitRequestsByPubKeyMappings: false);
-        subscriptionCommunities!.stream.listen((event) {
-          onEvent(event);
-        });
-      }
-      if (contactList.followedEvents.isNotEmpty) {
-        subscriptionEvents = await relayManager!.subscription(
-            Filter(
-              kinds: queryEventKinds(),
-              since: since,
-              eTags: contactList?.followedEvents,
-              limit: since != null ? null : 100,
-            ),
-            myInboxRelaySet!,
-            splitRequestsByPubKeyMappings: false);
-        subscriptionEvents!.stream.listen((event) {
-          onEvent(event);
-        });
-      }
-    }
+    // if (contactList != null) {
+    //   if (contactList.followedTags.isNotEmpty) {
+    //     subscriptionTags = await relayManager!.subscription(
+    //         Filter(
+    //           kinds: queryEventKinds(),
+    //           since: since,
+    //           tTags: contactList?.followedTags,
+    //           limit: since != null ? null : 100,
+    //         ),
+    //         myInboxRelaySet!,
+    //         splitRequestsByPubKeyMappings: false);
+    //     subscriptionTags!.stream.listen((event) {
+    //       onEvent(event);
+    //     });
+    //   }
+    //   if (contactList.followedCommunities.isNotEmpty) {
+    //     subscriptionCommunities = await relayManager!.subscription(
+    //         Filter(
+    //           kinds: queryEventKinds(),
+    //           since: since,
+    //           aTags: contactList?.followedCommunities,
+    //           limit: since != null ? null : 100,
+    //         ),
+    //         myInboxRelaySet!,
+    //         splitRequestsByPubKeyMappings: false);
+    //     subscriptionCommunities!.stream.listen((event) {
+    //       onEvent(event);
+    //     });
+    //   }
+    //   if (contactList.followedEvents.isNotEmpty) {
+    //     subscriptionEvents = await relayManager!.subscription(
+    //         Filter(
+    //           kinds: queryEventKinds(),
+    //           since: since,
+    //           eTags: contactList?.followedEvents,
+    //           limit: since != null ? null : 100,
+    //         ),
+    //         myInboxRelaySet!,
+    //         splitRequestsByPubKeyMappings: false);
+    //     subscriptionEvents!.stream.listen((event) {
+    //       onEvent(event);
+    //     });
+    //   }
+    // }
   }
 
   void queryOlder({required int until, List<String>? fallbackTags}) async {

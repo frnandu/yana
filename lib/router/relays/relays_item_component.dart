@@ -197,6 +197,7 @@ class RelaysItemComponent extends StatelessWidget {
                             }
                           });
                           await relayProvider.updateMarker(url, marker);
+                          EasyLoading.dismiss();
                           finished = true;
                         }
                       },
