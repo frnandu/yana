@@ -117,7 +117,9 @@ class EventReactionsProvider extends ChangeNotifier
           pubKeys: [pubKey!],
           direction: RelayDirection.inbox,
           relayMinCountPerPubKey: 5);
-      relaySet.addMoreRelays(myInboxRelaySet!.relaysMap);
+      if (myInboxRelaySet!=null) {
+        relaySet.addMoreRelays(myInboxRelaySet!.relaysMap);
+      }
     } else {
       relaySet = myInboxRelaySet;
     }

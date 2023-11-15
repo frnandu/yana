@@ -2,8 +2,10 @@ import 'dart:convert';
 
 import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip01/filter.dart';
+import 'package:dart_ndk/nips/nip01/helpers.dart';
 import 'package:dart_ndk/nips/nip01/metadata.dart';
 import 'package:dart_ndk/nips/nip02/contact_list.dart';
+import 'package:dart_ndk/nips/nip51/nip51.dart';
 import 'package:dart_ndk/relay.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -160,12 +162,22 @@ class _SearchRouter extends CustState<SearchRouter>
         itemCount: metadatasFromCache.length + metadatasFromSearch.length + events.length);
 
     if (StringUtil.isBlank(controller.text)) {
-      bool anyNip50 = myInboxRelaySet!=null && relayManager.getConnectedRelays(myInboxRelaySet!.urls).any((relay) => relay.info!=null && relay.info!.nips!=null && relay.info!.nips.contains(50));
-      if (!anyNip50) {
-        body = SearchActionItemComponent(onTap: () {
-          RouterUtil.router(context, RouterPath.RELAYS);
+      // bool anyNip50 = myInboxRelaySet!=null && relayManager.getConnectedRelays(myInboxRelaySet!.urls).any((relay) => relay.info!=null && relay.info!.nips!=null && relay.info!.nips.contains(50));
+      if (searchRelays==null || searchRelays.isEmpty) {
+        body = SearchActionItemComponent(onTap: () async {
+          bool finished = false;
+          Future.delayed(const Duration(milliseconds: 500), () {
+            if (!finished) {
+              EasyLoading.show(status: 'Loading relay list...', maskType: EasyLoadingMaskType.black, dismissOnTap: true);
+            }
+          });
+          Nip51RelaySet? set = await relayManager.getSingleNip51RelaySet(loggedUserSigner!.getPublicKey(), "search");
+          finished = true;
+          EasyLoading.dismiss();
+          RouterUtil.router(context, RouterPath.RELAY_SET, set!=null? set : Nip51RelaySet(pubKey: loggedUserSigner!.getPublicKey(), name: "search", relays: searchRelays, createdAt: Helpers.now));
         },
-            title: "⚠ You have no relays with search capabilities (NIP-50 support).\nConsider adding some (ex.: wss://relay.nostr.band), otherwise ONLY your contacts metadata will be searched.\nClick to relay settings >>");
+            title: "⚠ Your search relay list is empty.\nAdd some relays >>");
+//            You have no relays with search capabilities (NIP-50 support).\nConsider adding some (ex.: wss://relay.nostr.band), otherwise ONLY your contacts metadata will be searched.\nClick to relay settings >>");
       }
     }
 
@@ -271,7 +283,7 @@ class _SearchRouter extends CustState<SearchRouter>
   @override
   void doQuery() {
     preQuery();
-    List<String> relaysWithNip50 = myInboxRelaySet!=null ? myInboxRelaySet!.urls.where((url) {
+    List<String> relaysWithNip50 = searchRelays!=null? searchRelays.where((url) {
       Relay? relay = relayManager.getRelay(url);
       return relay!=null? relay.supportsNip(50) : false;
     }).toList() : [];
@@ -283,7 +295,7 @@ class _SearchRouter extends CustState<SearchRouter>
         filterMap!["until"] = until;
       }
     }
-    relayManager.requestRelays(relaysWithNip50, Filter.fromMap(filterMap!)).then((request) {
+    relayManager.requestRelays(relaysWithNip50, Filter.fromMap(filterMap!), timeout: 2).then((request) {
       request.stream.listen((event) {
         onQueryEvent(event);
       });

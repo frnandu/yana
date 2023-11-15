@@ -75,8 +75,8 @@
 - ~~on back from background, reconnect relays + resubscribe to all existing subscriptions~~
 
 ===== v0.12
-- use inboxForReactions for broadcasting reactions to inbox relays
 - blacklist for relays (NIP-51 PR)
+- use inboxForReactions for broadcasting reactions to inbox relays
 -
 - save notification events to cache DB
 - FIX SOCKETS CONNECTION PROBLEMS!!!!!!!!!!!!!!!

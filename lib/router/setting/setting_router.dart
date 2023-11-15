@@ -1,7 +1,9 @@
 import 'package:dart_ndk/models/relay_set.dart';
+import 'package:dart_ndk/nips/nip01/helpers.dart';
 import 'package:dart_ndk/nips/nip51/nip51.dart';
 import 'package:dart_ndk/read_write.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_font_picker/flutter_font_picker.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:local_auth/local_auth.dart';
@@ -230,8 +232,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
           activeSwitchColor: themeData.primaryColor,
           enabled: settingProvider.themeStyle != ThemeStyle.AUTO,
           onToggle: (value) {
-            settingProvider.themeStyle =
-                value ? ThemeStyle.DARK : ThemeStyle.LIGHT;
+            settingProvider.themeStyle = value ? ThemeStyle.DARK : ThemeStyle.LIGHT;
             widget.indexReload();
           },
           initialValue: settingProvider.themeStyle == ThemeStyle.AUTO
@@ -279,14 +280,16 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
           }
         },
         initialValue: settingProvider.gossip == OpenStatus.OPEN,
-        leading: GestureDetector(child: Icon(Icons.info_outline, color: themeData.primaryColor), onTap: () {
-          launchUrl(OUTBOX_MODEL_INFO_URL,mode: LaunchMode.externalApplication);
-        }),
+        leading: GestureDetector(
+            child: Icon(Icons.info_outline, color: themeData.primaryColor),
+            onTap: () {
+              launchUrl(OUTBOX_MODEL_INFO_URL, mode: LaunchMode.externalApplication);
+            }),
         title: const Text("Use contacts outbox relays for feed")));
 
     if (settingProvider.gossip == 1) {
       networkTiles.add(SettingsTile.navigation(
-          leading: Container( margin: const EdgeInsets.only(left:20), child: const Icon(Icons.lan_outlined)),
+          leading: Container(margin: const EdgeInsets.only(left: 20), child: const Icon(Icons.lan_outlined)),
           trailing: Text('${settingProvider.followeesRelayMinCount}'),
           onPressed: (context) async {
             int? old = _settingProvider.followeesRelayMinCount;
@@ -300,15 +303,9 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
       networkTiles.add(
         SettingsTile.navigation(
             onPressed: (context) {
-              if (feedRelaySet != null &&
-                  feedRelaySet!.urls.isNotEmpty &&
-                  !loadingGossipRelays) {
-                List<RelayMetadata> filteredRelays = feedRelaySet!.relaysMap
-                    .entries.map((entry) => RelayMetadata.full(
-                    url: entry.key,
-                    read: false,
-                    write: true,
-                    count: entry.value.length))
+              if (feedRelaySet != null && feedRelaySet!.urls.isNotEmpty && !loadingGossipRelays) {
+                List<RelayMetadata> filteredRelays = feedRelaySet!.relaysMap.entries
+                    .map((entry) => RelayMetadata.full(url: entry.key, read: false, write: true, count: entry.value.length))
                     .toList();
 
                 // List<RelayMetadata> filteredRelays =
@@ -316,19 +313,17 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
                 //   Relay? r = followsNostr!.getRelay(relay.url!);
                 //   return r != null;
                 // }).toList();
-                RouterUtil.router(
-                    context, RouterPath.USER_RELAYS, filteredRelays);
+                RouterUtil.router(context, RouterPath.USER_RELAYS, filteredRelays);
               }
             },
-            leading: Container( margin: const EdgeInsets.only(left:20), child: Text(
-              "Feed Connected / Total relays ",
-              style: TextStyle(color: themeData.disabledColor),
-            )),
-            trailing: loadingGossipRelays
-                ? Container()
-                : Icon(Icons.navigate_next, color: themeData.disabledColor),
-            title: Selector<RelayProvider, String>(
-                builder: (context, relayNum, child) {
+            leading: Container(
+                margin: const EdgeInsets.only(left: 20),
+                child: Text(
+                  "Feed Connected / Total relays ",
+                  style: TextStyle(color: themeData.disabledColor),
+                )),
+            trailing: loadingGossipRelays ? Container() : Icon(Icons.navigate_next, color: themeData.disabledColor),
+            title: Selector<RelayProvider, String>(builder: (context, relayNum, child) {
               if (loadingGossipRelays) {
                 return SpinKitFadingCircle(
                   color: themeData.disabledColor,
@@ -351,14 +346,16 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
           settingProvider.inboxForReactions = value ? 1 : 0;
         },
         initialValue: settingProvider.inboxForReactions == OpenStatus.OPEN,
-        leading: GestureDetector(child: Icon(Icons.info_outline, color: themeData.primaryColor), onTap: () {
-          launchUrl(OUTBOX_MODEL_INFO_URL,mode: LaunchMode.externalApplication);
-        }),
+        leading: GestureDetector(
+            child: Icon(Icons.info_outline, color: themeData.primaryColor),
+            onTap: () {
+              launchUrl(OUTBOX_MODEL_INFO_URL, mode: LaunchMode.externalApplication);
+            }),
         title: const Text("Broadcast reactions to other people's inbox relays")));
 
     if (settingProvider.inboxForReactions == 1) {
       networkTiles.add(SettingsTile.navigation(
-          leading: Container( margin: const EdgeInsets.only(left:20), child: const Icon(Icons.lan_outlined)),
+          leading: Container(margin: const EdgeInsets.only(left: 20), child: const Icon(Icons.lan_outlined)),
           trailing: Text('${settingProvider.broadcastToInboxMaxCount}'),
           onPressed: (context) async {
             int? old = _settingProvider.broadcastToInboxMaxCount;
@@ -368,32 +365,65 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
     }
 
     networkTiles.add(
-      SettingsTile.navigation(
-          onPressed: (context) async {
-            Nip51RelaySet? set = await relayManager.getSingleNip51RelaySet(loggedUserSigner!.getPublicKey(), "blocked");
-            RouterUtil.router(
-                context, RouterPath.USER_RELAYS, set!=null? set.relays.map((url) => RelayMetadata.full(url: url,read: null,write: null,count: 0),).toList(): []);
-          },
-          leading: const Icon(
-            Icons.not_interested,
-          ),
-          trailing: Icon(Icons.navigate_next, color: themeData.disabledColor),
-          title: Text(
-            "Blocked relays",
+        SettingsTile.navigation(
+            onPressed: (context) async {
+              bool finished = false;
+              Future.delayed(const Duration(milliseconds: 500), () {
+                if (!finished) {
+                  EasyLoading.show(status: 'Loading relay list...', maskType: EasyLoadingMaskType.black, dismissOnTap: true);
+                }
+              });
+              Nip51RelaySet? set = await relayManager.getSingleNip51RelaySet(loggedUserSigner!.getPublicKey(), "search");
+              finished = true;
+              EasyLoading.dismiss();
+              RouterUtil.router(context, RouterPath.RELAY_SET, set!=null? set : Nip51RelaySet(pubKey: loggedUserSigner!.getPublicKey(), name: "search", relays: searchRelays, createdAt: Helpers.now));
+            },
+            leading: const Icon(
+              Icons.search,
+            ),
+            trailing: Icon(Icons.navigate_next, color: themeData.disabledColor),
+            title: Selector<RelayProvider, List<String>?>(
+                builder: (context, searchRelays, child) {
+                  return Text(
+                    "${searchRelays!=null? searchRelays.length:0} Search relays",
+                  );
+                }, selector: (context, provider) {
+              return relayProvider.getSearchRelays();
+            })
+        )
+    );
+
+    networkTiles.add(SettingsTile.navigation(
+        onPressed: (context) async {
+          bool finished = false;
+          Future.delayed(const Duration(milliseconds: 500), () {
+            if (!finished) {
+              EasyLoading.show(status: 'Loading relay list...', maskType: EasyLoadingMaskType.black, dismissOnTap: true);
+            }
+          });
+          Nip51RelaySet? set = await relayManager.getSingleNip51RelaySet(loggedUserSigner!.getPublicKey(), "blocked");
+          finished = true;
+          EasyLoading.dismiss();
+
+          RouterUtil.router(context, RouterPath.RELAY_SET,
+              set != null ? set : Nip51RelaySet(pubKey: loggedUserSigner!.getPublicKey(), name: "blocked", relays: [], createdAt: Helpers.now));
+        },
+        leading: const Icon(
+          Icons.not_interested,
+        ),
+        trailing: Icon(Icons.navigate_next, color: themeData.disabledColor),
+        title: Text(
+            "${relayManager.blockedRelaysCount} Blocked relays",
             style: TextStyle(color: themeData.disabledColor),
-          ),
-    )
-  );
+          )));
 
-  List<AbstractSettingsTile> securityTiles = [];
+    List<AbstractSettingsTile> securityTiles = [];
 
-    if (!PlatformUtil.isWeb() &&
-        (PlatformUtil.isIOS() || PlatformUtil.isAndroid())) {
+    if (!PlatformUtil.isWeb() && (PlatformUtil.isIOS() || PlatformUtil.isAndroid())) {
       securityTiles.add(SettingsTile.switchTile(
         activeSwitchColor: themeData.primaryColor,
         onToggle: (value) {
-          authenticate(
-              value, s.Please_authenticate_to_turn_off_the_privacy_lock);
+          authenticate(value, s.Please_authenticate_to_turn_off_the_privacy_lock);
         },
         initialValue: settingProvider.lockOpen == OpenStatus.OPEN,
         leading: const Icon(Icons.lock_open),
@@ -403,16 +433,13 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
 
     List<AbstractSettingsTile> notificationTiles = [];
 
-    if (!PlatformUtil.isWeb() &&
-        (PlatformUtil.isIOS() || PlatformUtil.isAndroid())) {
+    if (!PlatformUtil.isWeb() && (PlatformUtil.isIOS() || PlatformUtil.isAndroid())) {
       notificationTiles.add(SettingsTile.switchTile(
         activeSwitchColor: themeData.primaryColor,
         onToggle: (value) {
           settingProvider.backgroundService = value;
           if (!value && backgroundService != null) {
-            backgroundService!
-                .isRunning()
-                .whenComplete(() => {backgroundService!.invoke('stopService')});
+            backgroundService!.isRunning().whenComplete(() => {backgroundService!.invoke('stopService')});
           }
         },
         initialValue: settingProvider.backgroundService,
@@ -449,15 +476,11 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
 
     List<SettingsSection> sections = [];
 
-    sections
-        .add(SettingsSection(title: Text('Interface'), tiles: interfaceTiles));
+    sections.add(SettingsSection(title: Text('Interface'), tiles: interfaceTiles));
     sections.add(SettingsSection(title: Text('Network'), tiles: networkTiles));
-    if (!PlatformUtil.isWeb() &&
-        (PlatformUtil.isIOS() || PlatformUtil.isAndroid())) {
-      sections.add(SettingsSection(
-          title: Text('Notifications'), tiles: notificationTiles));
-      sections
-          .add(SettingsSection(title: Text('Security'), tiles: securityTiles));
+    if (!PlatformUtil.isWeb() && (PlatformUtil.isIOS() || PlatformUtil.isAndroid())) {
+      sections.add(SettingsSection(title: Text('Notifications'), tiles: notificationTiles));
+      sections.add(SettingsSection(title: Text('Security'), tiles: securityTiles));
     }
     sections.add(SettingsSection(title: Text('Account'), tiles: accountTiles));
 
@@ -561,8 +584,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
   }
 
   Future pickI18N() async {
-    EnumObj? resultEnumObj =
-        await EnumSelectorComponent.show(context, i18nList!);
+    EnumObj? resultEnumObj = await EnumSelectorComponent.show(context, i18nList!);
     if (resultEnumObj != null) {
       if (resultEnumObj.value == "") {
         settingProvider.setI18n(null, null);
@@ -586,8 +608,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
   }
 
   Future pickMinRelays() async {
-    EnumObj? resultEnumObj =
-        await EnumSelectorComponent.show(context, relaysNums!);
+    EnumObj? resultEnumObj = await EnumSelectorComponent.show(context, relaysNums!);
     if (resultEnumObj != null) {
       settingProvider.followeesRelayMinCount = resultEnumObj.value;
       widget.indexReload();
@@ -602,8 +623,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
   }
 
   Future pickMaxRelays() async {
-    EnumObj? resultEnumObj =
-    await EnumSelectorComponent.show(context, relaysNums!);
+    EnumObj? resultEnumObj = await EnumSelectorComponent.show(context, relaysNums!);
     if (resultEnumObj != null) {
       settingProvider.broadcastToInboxMaxCount = resultEnumObj.value;
       // widget.indexReload();
@@ -631,27 +651,23 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
     newLockOpenList.add(openList![1]);
 
     var localAuth = LocalAuthentication();
-    List<BiometricType> availableBiometrics =
-        await localAuth.getAvailableBiometrics();
+    List<BiometricType> availableBiometrics = await localAuth.getAvailableBiometrics();
     if (availableBiometrics.isNotEmpty) {
       newLockOpenList.add(openList![0]);
     }
 
     var s = I18n.of(context);
 
-    EnumObj? resultEnumObj =
-        await EnumSelectorComponent.show(context, newLockOpenList);
+    EnumObj? resultEnumObj = await EnumSelectorComponent.show(context, newLockOpenList);
     if (resultEnumObj != null) {
       if (resultEnumObj.value == OpenStatus.CLOSE) {
-        bool didAuthenticate = await AuthUtil.authenticate(
-            context, s.Please_authenticate_to_turn_off_the_privacy_lock);
+        bool didAuthenticate = await AuthUtil.authenticate(context, s.Please_authenticate_to_turn_off_the_privacy_lock);
         if (didAuthenticate) {
           settingProvider.lockOpen = resultEnumObj.value;
         }
         settingProvider.lockOpen = resultEnumObj.value;
       } else if (resultEnumObj.value == OpenStatus.OPEN) {
-        bool didAuthenticate = await AuthUtil.authenticate(
-            context, s.Please_authenticate_to_turn_on_the_privacy_lock);
+        bool didAuthenticate = await AuthUtil.authenticate(context, s.Please_authenticate_to_turn_on_the_privacy_lock);
         if (didAuthenticate) {
           settingProvider.lockOpen = resultEnumObj.value;
         }
@@ -699,8 +715,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
   }
 
   Future<void> pickThemeStyle() async {
-    EnumObj? resultEnumObj =
-        await EnumSelectorComponent.show(context, themeStyleList!);
+    EnumObj? resultEnumObj = await EnumSelectorComponent.show(context, themeStyleList!);
     if (resultEnumObj != null) {
       settingProvider.themeStyle = resultEnumObj.value;
       widget.indexReload();
@@ -727,8 +742,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
   }
 
   Future pickFontEnum() async {
-    EnumObj? resultEnumObj =
-        await EnumSelectorComponent.show(context, fontEnumList!);
+    EnumObj? resultEnumObj = await EnumSelectorComponent.show(context, fontEnumList!);
     if (resultEnumObj != null) {
       if (resultEnumObj.value == true) {
         pickFont();
@@ -774,8 +788,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
   }
 
   Future<void> pickFontSize() async {
-    EnumObj? resultEnumObj =
-        await EnumSelectorComponent.show(context, fontSizeList);
+    EnumObj? resultEnumObj = await EnumSelectorComponent.show(context, fontSizeList);
     if (resultEnumObj != null) {
       settingProvider.fontSize = resultEnumObj.value;
       widget.indexReload();
@@ -783,16 +796,14 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
   }
 
   Future<void> pickLinkPreview() async {
-    EnumObj? resultEnumObj =
-        await EnumSelectorComponent.show(context, openList!);
+    EnumObj? resultEnumObj = await EnumSelectorComponent.show(context, openList!);
     if (resultEnumObj != null) {
       settingProvider.linkPreview = resultEnumObj.value;
     }
   }
 
   Future<void> pickvideoPreview() async {
-    EnumObj? resultEnumObj =
-        await EnumSelectorComponent.show(context, openList!);
+    EnumObj? resultEnumObj = await EnumSelectorComponent.show(context, openList!);
     if (resultEnumObj != null) {
       settingProvider.videoPreview = resultEnumObj.value;
     }
@@ -803,10 +814,8 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
   void initImageServiceList() {
     if (imageServiceList == null) {
       imageServiceList = [];
-      imageServiceList!
-          .add(EnumObj(ImageServices.NOSTRIMG_COM, ImageServices.NOSTRIMG_COM));
-      imageServiceList!
-          .add(EnumObj(ImageServices.NOSTR_BUILD, ImageServices.NOSTR_BUILD));
+      imageServiceList!.add(EnumObj(ImageServices.NOSTRIMG_COM, ImageServices.NOSTRIMG_COM));
+      imageServiceList!.add(EnumObj(ImageServices.NOSTR_BUILD, ImageServices.NOSTR_BUILD));
     }
   }
 
@@ -820,24 +829,21 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
   }
 
   Future<void> pickImageService() async {
-    EnumObj? resultEnumObj =
-        await EnumSelectorComponent.show(context, imageServiceList!);
+    EnumObj? resultEnumObj = await EnumSelectorComponent.show(context, imageServiceList!);
     if (resultEnumObj != null) {
       settingProvider.imageService = resultEnumObj.value;
     }
   }
 
   pickImagePreview() async {
-    EnumObj? resultEnumObj =
-        await EnumSelectorComponent.show(context, openList!);
+    EnumObj? resultEnumObj = await EnumSelectorComponent.show(context, openList!);
     if (resultEnumObj != null) {
       settingProvider.imagePreview = resultEnumObj.value;
     }
   }
 
   pickVideoPreview() async {
-    EnumObj? resultEnumObj =
-        await EnumSelectorComponent.show(context, openList!);
+    EnumObj? resultEnumObj = await EnumSelectorComponent.show(context, openList!);
     if (resultEnumObj != null) {
       settingProvider.videoPreview = resultEnumObj.value;
     }
@@ -939,8 +945,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
   }
 
   pickOpenTranslate() async {
-    EnumObj? resultEnumObj =
-        await EnumSelectorComponent.show(context, openList!);
+    EnumObj? resultEnumObj = await EnumSelectorComponent.show(context, openList!);
     if (resultEnumObj != null) {
       await handleTranslateModel(openTranslate: resultEnumObj.value);
       settingProvider.openTranslate = resultEnumObj.value;
@@ -956,8 +961,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
         values.add(EnumObj(str, str));
       }
     }
-    List<EnumObj>? resultEnumObjs = await EnumMultiSelectorComponent.show(
-        context, translateLanguages!, values);
+    List<EnumObj>? resultEnumObjs = await EnumMultiSelectorComponent.show(context, translateLanguages!, values);
     if (resultEnumObjs != null) {
       List<String> resultStrs = [];
       for (var value in resultEnumObjs) {
@@ -970,26 +974,19 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
   }
 
   pickTranslateTarget() async {
-    EnumObj? resultEnumObj =
-        await EnumSelectorComponent.show(context, translateLanguages!);
+    EnumObj? resultEnumObj = await EnumSelectorComponent.show(context, translateLanguages!);
     if (resultEnumObj != null) {
       await handleTranslateModel(translateTarget: resultEnumObj.value);
       settingProvider.translateTarget = resultEnumObj.value;
     }
   }
 
-  Future<void> handleTranslateModel(
-      {int? openTranslate,
-      String? translateTarget,
-      String? translateSourceArgs}) async {
+  Future<void> handleTranslateModel({int? openTranslate, String? translateTarget, String? translateSourceArgs}) async {
     openTranslate = openTranslate ?? settingProvider.openTranslate;
     translateTarget = translateTarget ?? settingProvider.translateTarget;
-    translateSourceArgs =
-        translateSourceArgs ?? settingProvider.translateSourceArgs;
+    translateSourceArgs = translateSourceArgs ?? settingProvider.translateSourceArgs;
 
-    if (openTranslate == OpenStatus.OPEN &&
-        StringUtil.isNotBlank(translateTarget) &&
-        StringUtil.isNotBlank(translateSourceArgs)) {
+    if (openTranslate == OpenStatus.OPEN && StringUtil.isNotBlank(translateTarget) && StringUtil.isNotBlank(translateSourceArgs)) {
       List<String> bcpCodes = translateSourceArgs!.split(",");
       bcpCodes.add(translateTarget!);
 
@@ -1006,8 +1003,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
   }
 
   pickBroadcaseWhenBoost() async {
-    EnumObj? resultEnumObj =
-        await EnumSelectorComponent.show(context, openList!);
+    EnumObj? resultEnumObj = await EnumSelectorComponent.show(context, openList!);
     if (resultEnumObj != null) {
       settingProvider.broadcastWhenBoost = resultEnumObj.value;
     }
@@ -1024,16 +1020,14 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
   }
 
   pickAutoOpenSensitive() async {
-    EnumObj? resultEnumObj =
-        await EnumSelectorComponent.show(context, openList!);
+    EnumObj? resultEnumObj = await EnumSelectorComponent.show(context, openList!);
     if (resultEnumObj != null) {
       settingProvider.autoOpenSensitive = resultEnumObj.value;
     }
   }
 
   pickWebviewAppbar() async {
-    EnumObj? resultEnumObj =
-        await EnumSelectorComponent.show(context, openList!);
+    EnumObj? resultEnumObj = await EnumSelectorComponent.show(context, openList!);
     if (resultEnumObj != null) {
       settingProvider.webviewAppbarOpen = resultEnumObj.value;
     }
@@ -1053,8 +1047,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
   }
 
   pickOpenMode() async {
-    EnumObj? resultEnumObj =
-        await EnumSelectorComponent.show(context, openList!);
+    EnumObj? resultEnumObj = await EnumSelectorComponent.show(context, openList!);
     if (resultEnumObj != null) {
       settingProvider.tableMode = resultEnumObj.value;
       widget.indexReload();
@@ -1071,21 +1064,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
     setState(() {
       loadingGossipRelays = true;
     });
-    RelaySet newRelaySet =
-        await relayManager.calculateRelaySet(
-            name: "feed",
-            ownerPubKey: loggedUserSigner!.getPublicKey(),
-            pubKeys: contactListProvider.contacts(),
-            direction: RelayDirection.outbox,
-            relayMinCountPerPubKey: settingProvider.followeesRelayMinCount
-        );
-    if (newRelaySet!=null && newRelaySet.urls.isNotEmpty) {
-      feedRelaySet = newRelaySet;
-      feedRelaySet!.name = "feed";
-      feedRelaySet!.pubKey = loggedUserSigner!.getPublicKey();
-      await relayManager.saveRelaySet(feedRelaySet!);
-      followEventProvider.refreshPosts();
-    }
+    await relayProvider.recalculateFeedRelaySet();
     setState(() {
       loadingGossipRelays = false;
     });

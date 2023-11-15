@@ -12,6 +12,7 @@ import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip01/event_signer.dart';
 import 'package:dart_ndk/nips/nip01/metadata.dart';
 import 'package:dart_ndk/nips/nip02/contact_list.dart';
+import 'package:dart_ndk/nips/nip51/nip51.dart';
 import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
 import 'package:dart_ndk/read_write.dart';
 import 'package:dart_ndk/relay.dart';
@@ -48,6 +49,7 @@ import 'package:yana/router/relays/relay_info_router.dart';
 import 'package:yana/router/search/search_router.dart';
 import 'package:yana/router/user/followed_router.dart';
 import 'package:yana/router/user/followed_tags_list_router.dart';
+import 'package:yana/router/user/relay_set_router.dart';
 import 'package:yana/router/user/user_history_contact_list_router.dart';
 import 'package:yana/router/user/user_zap_list_router.dart';
 import 'package:yana/router/wallet/nwc_router.dart';
@@ -164,6 +166,8 @@ RelaySet? feedRelaySet;
 RelaySet? myInboxRelaySet;
 RelaySet? myOutboxRelaySet;
 
+List<String> searchRelays = [ "wss://relay.nostr.band", "wss://relay.noshere.com"];
+
 bool firstLogin = false;
 
 late PackageInfo packageInfo;
@@ -262,6 +266,14 @@ Future<void> initRelays({bool newKey = false}) async {
   await relayManager.connect();
 
   UserRelayList? userRelayList = !newKey ? await relayManager.getSingleUserRelayList(loggedUserSigner!.getPublicKey()) : null;
+  Nip51RelaySet? blockedRelays = await relayManager.getSingleNip51RelaySet(loggedUserSigner!.getPublicKey(), "blocked");
+  if (blockedRelays!=null) {
+    relayManager.blockedRelays = blockedRelays.relays;
+  }
+  Nip51RelaySet? searchRelaySet = await relayManager.getSingleNip51RelaySet(loggedUserSigner!.getPublicKey(), "search");
+  if (searchRelaySet!=null) {
+    searchRelays = searchRelaySet.relays;
+  }
   if (userRelayList != null) {
     createMyRelaySets(userRelayList);
     await relayManager.connect(urls: userRelayList != null ? userRelayList!.urls : RelayManager.DEFAULT_BOOTSTRAP_RELAYS);
@@ -608,6 +620,7 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
       RouterPath.USER_HISTORY_CONTACT_LIST: (context) => UserHistoryContactListRouter(),
       RouterPath.USER_ZAP_LIST: (context) => const UserZapListRouter(),
       RouterPath.USER_RELAYS: (context) => const UserRelayRouter(),
+      RouterPath.RELAY_SET: (context) => const RelaySetRouter(),
       RouterPath.DM_DETAIL: (context) => const DMDetailRouter(),
       RouterPath.THREAD_DETAIL: (context) => ThreadDetailRouter(),
       RouterPath.EVENT_DETAIL: (context) => const EventDetailRouter(),

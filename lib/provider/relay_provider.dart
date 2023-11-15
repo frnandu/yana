@@ -1,8 +1,11 @@
 import 'dart:io';
 
 import 'package:dart_ndk/models/pubkey_mapping.dart';
+import 'package:dart_ndk/models/relay_set.dart';
 import 'package:dart_ndk/models/user_relay_list.dart';
+import 'package:dart_ndk/nips/nip51/nip51.dart';
 import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
+import 'package:dart_ndk/read_write.dart';
 import 'package:dart_ndk/relay.dart';
 import 'package:dart_ndk/relay_manager.dart';
 import 'package:flutter/material.dart';
@@ -51,6 +54,14 @@ class RelayProvider extends ChangeNotifier {
       return "${relayManager.getConnectedRelays(feedRelaySet!.urls).length}/${feedRelaySet!.urls.length}";
     }
     return "";
+  }
+
+  Nip51RelaySet? getNip51RelaySet(String name) {
+    Nip51RelaySet? r = relayManager.getCachedNip51RelaySet(loggedUserSigner!.getPublicKey(), name);
+    if (r==null) {
+      relayManager.getSingleNip51RelaySet(loggedUserSigner!.getPublicKey(), name);
+    }
+    return r;
   }
 
   void onRelayStatusChange() {
@@ -104,6 +115,34 @@ class RelayProvider extends ChangeNotifier {
   UserRelayList? getUserRelayList(String publicKey) {
     return cacheManager.loadUserRelayList(loggedUserSigner!.getPublicKey());
 //    userRelayList ??= await relayManager.getSingleUserRelayList(loggedUserSigner!.getPublicKey(), forceRefresh: true);
+  }
+
+  Future<RelaySet> recalculateFeedRelaySet() async {
+    RelaySet newRelaySet =
+        await relayManager.calculateRelaySet(
+        name: "feed",
+        ownerPubKey: loggedUserSigner!.getPublicKey(),
+        pubKeys: contactListProvider.contacts(),
+        direction: RelayDirection.outbox,
+        relayMinCountPerPubKey: settingProvider.followeesRelayMinCount
+    );
+    if (newRelaySet.urls.isNotEmpty) {
+      feedRelaySet = newRelaySet;
+      feedRelaySet!.name = "feed";
+      feedRelaySet!.pubKey = loggedUserSigner!.getPublicKey();
+      await relayManager.saveRelaySet(feedRelaySet!);
+      // followEventProvider.refreshPosts();
+      notifyListeners();
+    }
+    return newRelaySet;
+  }
+
+  List<String> getBlockedRelays() {
+    return relayManager.blockedRelays;
+  }
+
+  List<String> getSearchRelays() {
+    return searchRelays;
   }
 
 // Relay genRelay(String relayAddr) {

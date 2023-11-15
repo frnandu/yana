@@ -4,13 +4,14 @@ import 'package:dart_ndk/nips/nip51/nip51.dart';
 import 'package:dart_ndk/relay.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:provider/provider.dart';
 import 'package:yana/main.dart';
 import 'package:yana/provider/relay_provider.dart';
-import 'package:yana/utils/router_path.dart';
 
 import '../../i18n/i18n.dart';
 import '../../nostr/relay_metadata.dart';
+import '../../ui/confirm_dialog.dart';
 import '../../utils/base.dart';
 import '../../utils/router_util.dart';
 
@@ -62,7 +63,7 @@ class _UserRelayRouter extends State<UserRelayRouter>
             color: themeData.appBarTheme.titleTextStyle!.color,
           ),
         ),
-        title: Text(s.Relays),
+        title: Text("${relays!.length} ${s.Relays}"),
       ),
       body: Container(
         margin: const EdgeInsets.only(
@@ -91,6 +92,17 @@ class _UserRelayRouter extends State<UserRelayRouter>
                   return RelayMetadataComponent(
                     relayMetadata: relayMetadata,
                     addAble: (relayMetadata.count == null || relayMetadata.count==0) && addAble,
+                    onBlock: (url) {
+                      relays = feedRelaySet!.relaysMap
+                          .entries.map((entry) => RelayMetadata.full(
+                          url: entry.key,
+                          read: false,
+                          write: true,
+                          count: entry.value.length))
+                          .toList();
+                      setState(() {
+                      });
+                    },
                   );
                 }, selector: (context, provider) {
                   return relayManager.isRelayConnected(relayMetadata.url!);
@@ -122,12 +134,13 @@ class _UserRelayRouter extends State<UserRelayRouter>
 }
 
 class RelayMetadataComponent extends StatelessWidget {
-  RelayMetadata relayMetadata;
+  RelayMetadata? relayMetadata;
 
+  Function(String)? onBlock;
   bool addAble;
 
   RelayMetadataComponent(
-      {super.key, required this.relayMetadata, this.addAble = true});
+      {super.key, required this.relayMetadata, this.addAble = true, this.onBlock});
 
   @override
   Widget build(BuildContext context) {
@@ -136,20 +149,23 @@ class RelayMetadataComponent extends StatelessWidget {
     var cardColor = themeData.cardColor;
     var bodySmallFontSize = themeData.textTheme.labelSmall!.fontSize;
 
+    if (relayMetadata==null) {
+      return Container();
+    }
     Widget leftBtn = Container();
 
     Widget rightBtn = Container();
     if (addAble) {
       rightBtn = GestureDetector(
         onTap: () async {
-          await relayProvider.addRelay(relayMetadata.url!);
+          await relayProvider.addRelay(relayMetadata!.url!);
         },
         child: const Icon(
           Icons.add,
         ),
       );
     } else {
-      if (relayMetadata.count != null) {
+      if (relayMetadata!.count != null) {
         leftBtn = Selector<RelayProvider, int?>(builder: (context, state, client) {
           Color borderLeftColor = Colors.red;
           if (state != null && state == WebSocket.open) {
@@ -170,27 +186,37 @@ class RelayMetadataComponent extends StatelessWidget {
           );
           main;
         }, selector: (context, _provider) {
-          return _provider.getFeedRelayState(relayMetadata.url!);
+          return _provider.getFeedRelayState(relayMetadata!.url!);
         });
-        if (relayMetadata.count!=null && relayMetadata.count! > 0) {
+        if (relayMetadata!.count!=null && relayMetadata!.count! > 0) {
           rightBtn = Row(children: [
-            Text("${relayMetadata.count} ",
+            Text("${relayMetadata!.count} ",
                 style: TextStyle(
                     color: themeData.dividerColor,
                     fontSize: themeData.textTheme.labelLarge!.fontSize)),
             Text(
-              "contact" + ((relayMetadata.count! > 1) ? "s" : ""),
+              "contact" + ((relayMetadata!.count! > 1) ? "s" : ""),
               style: TextStyle(
                   color: themeData.disabledColor,
                   fontSize: themeData.textTheme.labelSmall!.fontSize),
             )
             ,
+
             loggedUserSigner!.canSign() ?
             GestureDetector(onTap: () async {
-              Nip51RelaySet set = await relayManager.broadcastAddNip51Relay(relayMetadata.url!, "blocked", myOutboxRelaySet!.urls, loggedUserSigner!);
-              // TODO recalculate gossip
-              RouterUtil.router(
-                  context, RouterPath.USER_RELAYS, set.relays.map((url) => RelayMetadata.full(url: url,read: null,write: null,count: 0),).toList());
+              bool? result = await ConfirmDialog.show(
+                  context, "Confirm add ${relayMetadata!.url!} to blocked list");
+              if (result != null && result) {
+                EasyLoading.show(status: 'Broadcasting blocked relay list...', maskType: EasyLoadingMaskType.black, dismissOnTap: true);
+                Nip51RelaySet blocked = await relayManager.broadcastAddNip51Relay(relayMetadata!.url!, "blocked", myOutboxRelaySet!.urls, loggedUserSigner!);
+                relayManager.blockedRelays = blocked.relays;
+                EasyLoading.show(status: 'Recalculating feed outbox relays...', maskType: EasyLoadingMaskType.black, dismissOnTap: true);
+                await relayProvider.recalculateFeedRelaySet();
+                EasyLoading.dismiss();
+                if (onBlock!=null) {
+                  onBlock!(relayMetadata!.url!);
+                }
+              }
             }, child: Container(
                 margin: const EdgeInsets.only(
                   left: Base.BASE_PADDING_HALF,
@@ -250,11 +276,11 @@ class RelayMetadataComponent extends StatelessWidget {
                 children: [
                   Container(
                     margin: const EdgeInsets.only(bottom: 2),
-                    child: Text(relayMetadata.url!),
+                    child: Text(relayMetadata!.url!),
                   ),
                   Row(
                     children: [
-                      relayMetadata.read != null && relayMetadata.read!
+                      relayMetadata!.read != null && relayMetadata!.read!
                           ? Container(
                               margin: const EdgeInsets.only(
                                   right: Base.BASE_PADDING),
@@ -267,7 +293,7 @@ class RelayMetadataComponent extends StatelessWidget {
                               ),
                             )
                           : Container(),
-                      relayMetadata.write != null && relayMetadata.write!
+                      relayMetadata!.write != null && relayMetadata!.write!
                           ? Container(
                               margin: const EdgeInsets.only(
                                   right: Base.BASE_PADDING),
