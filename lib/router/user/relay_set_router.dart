@@ -91,29 +91,34 @@ class _RelaySetRouter extends State<RelaySetRouter> with SingleTickerProviderSta
                     decoration: InputDecoration(
                       prefixIcon: const Icon(Icons.lan),
                       hintText: "start typing relay name or URL",
-                      suffixIcon: Relay.clean(controller.text)!=null?
-                        IconButton(
-                        icon: const Icon(Icons.add),
-                        onPressed: () async {
-                          add(controller.text);
-                        },
-                      ) : null,
+                      suffixIcon: Relay.clean(controller.text) != null
+                          ? IconButton(
+                              icon: const Icon(Icons.add),
+                              onPressed: () async {
+                                add(controller.text);
+                              },
+                            )
+                          : null,
                     ),
                   ),
-                  ListView.builder(
-                      physics: const BouncingScrollPhysics(),
-                      shrinkWrap: true,
-                      itemBuilder: (context, index) {
-                        return SearchRelayItemComponent(
-                          url: searchResults[index],
-                          width: 400,
-                          onTap: (url) {
-                            add(url);
-                            //replaceMentionUser(metadata.pubKey);
-                          },
-                        );
-                      },
-                      itemCount: searchResults.length)
+                  searchResults.isNotEmpty
+                      ? SizedBox(
+                          height: 300,
+                          child: ListView.builder(
+                              physics: const BouncingScrollPhysics(),
+                              shrinkWrap: true,
+                              itemBuilder: (context, index) {
+                                return SearchRelayItemComponent(
+                                  url: searchResults[index],
+                                  width: 400,
+                                  onTap: (url) {
+                                    add(url);
+                                    //replaceMentionUser(metadata.pubKey);
+                                  },
+                                );
+                              },
+                              itemCount: searchResults.length))
+                      : Container()
                 ]);
               }
               return RelaySetItemComponent(
@@ -147,17 +152,16 @@ class _RelaySetRouter extends State<RelaySetRouter> with SingleTickerProviderSta
   void onEditingComplete() async {
     List<String> result = await relayProvider.findRelays(controller.text);
     result.forEach((url) {
-      if (relayManager.getRelay(url)==null || relayManager.getRelay(url)!.info==null) {
+      if (relayManager.getRelay(url) == null || relayManager.getRelay(url)!.info == null) {
         relayManager.relays[url] = Relay(url);
         relayManager.getRelayInfo(url).then((value) {
-          setState(() {
-          });
+          setState(() {});
         });
       }
     });
 
     setState(() {
-      searchResults = result ;
+      searchResults = result;
     });
   }
 
@@ -180,12 +184,22 @@ class _RelaySetRouter extends State<RelaySetRouter> with SingleTickerProviderSta
 
   Future<void> add(String url) async {
     String? cleanUrl = Relay.clean(url);
-    if (cleanUrl==null) {
-      EasyLoading.showError("Invalid address wss://<host>:<port> or ws://<host>:<port>", dismissOnTap: true, duration: const Duration(seconds: 5));
+    if (cleanUrl == null) {
+      EasyLoading.showError(
+        "Invalid address wss://<host>:<port> or ws://<host>:<port>",
+        dismissOnTap: true,
+        duration: const Duration(seconds: 5),
+        maskType: EasyLoadingMaskType.black,
+      );
       return;
     }
     if (relaySet!.relays.contains(cleanUrl)) {
-      EasyLoading.showError("Relay already on list", dismissOnTap: true, duration: const Duration(seconds: 5));
+      EasyLoading.showError(
+        "Relay already on list",
+        dismissOnTap: true,
+        duration: const Duration(seconds: 5),
+        maskType: EasyLoadingMaskType.black,
+      );
       return;
     }
     bool? result = await ConfirmDialog.show(context, "Confirm add ${url} to list");
@@ -200,7 +214,7 @@ class _RelaySetRouter extends State<RelaySetRouter> with SingleTickerProviderSta
       relayProvider.notifyListeners();
       EasyLoading.dismiss();
       setState(() {
-        controller.text="";
+        controller.text = "";
       });
     }
   }

@@ -8,7 +8,6 @@ import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:provider/provider.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:widget_size/widget_size.dart';
-import 'package:yana/models/event_reactions.dart';
 import 'package:yana/provider/event_reactions_provider.dart';
 import 'package:yana/provider/single_event_provider.dart';
 

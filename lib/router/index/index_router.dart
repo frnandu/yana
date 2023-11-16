@@ -2,8 +2,8 @@ import 'dart:async';
 
 import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip01/metadata.dart';
+import 'package:dart_ndk/nips/nip11/relay_info.dart';
 import 'package:dart_ndk/relay.dart';
-import 'package:dart_ndk/relay_info.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:protocol_handler/protocol_handler.dart';
