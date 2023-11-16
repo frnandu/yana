@@ -1,4 +1,5 @@
 import 'package:dart_ndk/nips/nip01/helpers.dart';
+import 'package:dart_ndk/nips/nip01/metadata.dart';
 import 'package:dart_ndk/nips/nip51/nip51.dart';
 import 'package:dart_ndk/relay.dart';
 import 'package:flutter/material.dart';
@@ -6,10 +7,13 @@ import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:provider/provider.dart';
 import 'package:yana/main.dart';
 import 'package:yana/provider/relay_provider.dart';
+import 'package:yana/router/user/search_relay_component.dart';
 
 import '../../i18n/i18n.dart';
 import '../../nostr/relay_metadata.dart';
 import '../../ui/confirm_dialog.dart';
+import '../../ui/editor/search_mention_user_component.dart';
+import '../../ui/editor/text_input_and_search_dialog.dart';
 import '../../utils/base.dart';
 import '../../utils/router_util.dart';
 
@@ -26,11 +30,15 @@ class _RelaySetRouter extends State<RelaySetRouter> with SingleTickerProviderSta
   Nip51RelaySet? relaySet;
   late TabController tabController;
   TextEditingController controller = TextEditingController();
+  List<String> searchResults = [];
 
   @override
   void initState() {
     super.initState();
     tabController = TabController(length: 2, vsync: this);
+    controller.addListener(() {
+      onEditingComplete();
+    });
   }
 
   @override
@@ -76,34 +84,37 @@ class _RelaySetRouter extends State<RelaySetRouter> with SingleTickerProviderSta
             itemBuilder: (context, index) {
               int total = relaySet != null ? relaySet!.relays.length : 0;
               if (index == total && loggedUserSigner!.canSign()) {
-                return TextField(
-                  controller: controller,
-                  decoration: InputDecoration(
-                    prefixIcon: const Icon(Icons.lan),
-                    hintText: "start typing relay name or URL",
-                    suffixIcon: IconButton(
-                      icon: const Icon(Icons.add),
-                      onPressed: () async {
-                        String url = controller.text;
-                        bool? result = await ConfirmDialog.show(context, "Confirm add ${url} to list");
-                        if (result != null && result) {
-                          EasyLoading.show(status: 'Broadcasting relay list...', maskType: EasyLoadingMaskType.black, dismissOnTap: true);
-                          relaySet = await relayManager.broadcastAddNip51Relay(url, relaySet!.name, myOutboxRelaySet!.urls, loggedUserSigner!);
-                          if (relaySet!.name == "search") {
-                            searchRelays = relaySet!.relays;
-                          } else if (relaySet!.name == "blocked") {
-                            relayManager.blockedRelays = relaySet!.relays;
-                          }
-                          relayProvider.notifyListeners();
-                          EasyLoading.dismiss();
-                          setState(() {
-
-                          });
-                        }
-                      },
+                return Column(children: [
+                  TextField(
+                    controller: controller,
+                    onEditingComplete: onEditingComplete,
+                    decoration: InputDecoration(
+                      prefixIcon: const Icon(Icons.lan),
+                      hintText: "start typing relay name or URL",
+                      suffixIcon: Relay.clean(controller.text)!=null?
+                        IconButton(
+                        icon: const Icon(Icons.add),
+                        onPressed: () async {
+                          add(controller.text);
+                        },
+                      ) : null,
                     ),
                   ),
-                );
+                  ListView.builder(
+                      physics: const BouncingScrollPhysics(),
+                      shrinkWrap: true,
+                      itemBuilder: (context, index) {
+                        return SearchRelayItemComponent(
+                          url: searchResults[index],
+                          width: 400,
+                          onTap: (url) {
+                            add(url);
+                            //replaceMentionUser(metadata.pubKey);
+                          },
+                        );
+                      },
+                      itemCount: searchResults.length)
+                ]);
               }
               return RelaySetItemComponent(
                 url: relaySet!.relays[index],
@@ -133,6 +144,23 @@ class _RelaySetRouter extends State<RelaySetRouter> with SingleTickerProviderSta
     );
   }
 
+  void onEditingComplete() async {
+    List<String> result = await relayProvider.findRelays(controller.text);
+    result.forEach((url) {
+      if (relayManager.getRelay(url)==null || relayManager.getRelay(url)!.info==null) {
+        relayManager.relays[url] = Relay(url);
+        relayManager.getRelayInfo(url).then((value) {
+          setState(() {
+          });
+        });
+      }
+    });
+
+    setState(() {
+      searchResults = result ;
+    });
+  }
+
   int compareRelays(RelayMetadata r1, RelayMetadata r2) {
     Relay? relay1 = relayManager.getRelay(r1.url!);
     Relay? relay2 = relayManager!.getRelay(r2.url!);
@@ -148,6 +176,33 @@ class _RelaySetRouter extends State<RelaySetRouter> with SingleTickerProviderSta
       return a2 ? (r2.count != null ? r2.count!.compareTo(r1.count!) : 0) : -1;
     }
     return a2 ? 1 : (r2.count != null ? r2.count!.compareTo(r1.count!) : 0);
+  }
+
+  Future<void> add(String url) async {
+    String? cleanUrl = Relay.clean(url);
+    if (cleanUrl==null) {
+      EasyLoading.showError("Invalid address wss://<host>:<port> or ws://<host>:<port>", dismissOnTap: true, duration: const Duration(seconds: 5));
+      return;
+    }
+    if (relaySet!.relays.contains(cleanUrl)) {
+      EasyLoading.showError("Relay already on list", dismissOnTap: true, duration: const Duration(seconds: 5));
+      return;
+    }
+    bool? result = await ConfirmDialog.show(context, "Confirm add ${url} to list");
+    if (result != null && result) {
+      EasyLoading.show(status: 'Broadcasting relay list...', maskType: EasyLoadingMaskType.black, dismissOnTap: true);
+      relaySet = await relayManager.broadcastAddNip51Relay(url, relaySet!.name, myOutboxRelaySet!.urls, loggedUserSigner!);
+      if (relaySet!.name == "search") {
+        searchRelays = relaySet!.relays;
+      } else if (relaySet!.name == "blocked") {
+        relayManager.blockedRelays = relaySet!.relays;
+      }
+      relayProvider.notifyListeners();
+      EasyLoading.dismiss();
+      setState(() {
+        controller.text="";
+      });
+    }
   }
 }
 

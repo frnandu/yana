@@ -1,4 +1,5 @@
 import 'package:auto_size_text_field/auto_size_text_field.dart';
+import 'package:dart_ndk/nips/nip01/helpers.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dart_ndk/nips/nip01/event.dart';
@@ -563,7 +564,7 @@ mixin EditorMixin {
       result = NIP04.encrypt(result, agreement, pubkey!);
       event = Nip01Event(
           pubKey: loggedUserSigner!.getPublicKey(), kind: kind.EventKind.DIRECT_MESSAGE, tags: allTags, content: result,
-          createdAt: createdAt!.millisecondsSinceEpoch ~/ 1000);
+          createdAt: createdAt!=null ? createdAt!.millisecondsSinceEpoch ~/ 1000 : Helpers.now);
     } else if (inputPoll) {
       // poll event
       // get poll tag from PollInputComponentn

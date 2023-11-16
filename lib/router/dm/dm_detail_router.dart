@@ -163,7 +163,7 @@ class _DMDetailRouter extends CustState<DMDetailRouter> with EditorMixin {
             onPressed: send,
             style: const ButtonStyle(),
             child: Text(
-              s.Broadcast,
+              s.Send,
               style: TextStyle(
                 color: textColor,
                 fontSize: 16,

@@ -184,7 +184,20 @@ class _RelayInfoRouter extends State<RelayInfoRouter> {
 
     list.add(RelayInfoItemComponent(
       title: "Soft",
-      child: SelectableText(relayInfo!.software),
+      child: GestureDetector(
+        onTap: () {
+          if (relayInfo!.software.startsWith("http")) {
+            WebViewRouter.open(context, relayInfo!.software);
+          }
+      },
+      child: Text(
+        relayInfo!.software,
+        style: TextStyle(
+          color: relayInfo!.software.startsWith("http") ? themeData.primaryColor : null,
+          // decoration: TextDecoration.underline,
+        ),
+      ),
+    ),
     ));
 
     list.add(RelayInfoItemComponent(
@@ -326,7 +339,7 @@ class NipComponent extends StatelessWidget {
         nipStr,
         style: TextStyle(
           color: mainColor,
-          decoration: TextDecoration.underline,
+          // decoration: TextDecoration.underline,
         ),
       ),
     );

@@ -1,7 +1,5 @@
-import 'package:dart_ndk/models/relay_set.dart';
 import 'package:dart_ndk/nips/nip01/helpers.dart';
 import 'package:dart_ndk/nips/nip51/nip51.dart';
-import 'package:dart_ndk/read_write.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_font_picker/flutter_font_picker.dart';
@@ -370,13 +368,16 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
               bool finished = false;
               Future.delayed(const Duration(milliseconds: 500), () {
                 if (!finished) {
-                  EasyLoading.show(status: 'Loading relay list...', maskType: EasyLoadingMaskType.black, dismissOnTap: true);
+                  EasyLoading.showInfo('Loading relay list...', maskType: EasyLoadingMaskType.black, dismissOnTap: true, duration: const Duration(seconds: 3));
                 }
               });
-              Nip51RelaySet? set = await relayManager.getSingleNip51RelaySet(loggedUserSigner!.getPublicKey(), "search");
-              finished = true;
-              EasyLoading.dismiss();
-              RouterUtil.router(context, RouterPath.RELAY_SET, set!=null? set : Nip51RelaySet(pubKey: loggedUserSigner!.getPublicKey(), name: "search", relays: searchRelays, createdAt: Helpers.now));
+              try {
+                Nip51RelaySet? set = await relayManager.getSingleNip51RelaySet(loggedUserSigner!.getPublicKey(), "search");
+                finished = true;
+                RouterUtil.router(context, RouterPath.RELAY_SET, set!=null? set : Nip51RelaySet(pubKey: loggedUserSigner!.getPublicKey(), name: "search", relays: searchRelays, createdAt: Helpers.now));
+              } finally {
+                EasyLoading.dismiss();
+              }
             },
             leading: const Icon(
               Icons.search,
@@ -398,15 +399,17 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
           bool finished = false;
           Future.delayed(const Duration(milliseconds: 500), () {
             if (!finished) {
-              EasyLoading.show(status: 'Loading relay list...', maskType: EasyLoadingMaskType.black, dismissOnTap: true);
+              EasyLoading.showInfo('Loading relay list...', maskType: EasyLoadingMaskType.black, dismissOnTap: true, duration: const Duration(seconds: 3));
             }
           });
-          Nip51RelaySet? set = await relayManager.getSingleNip51RelaySet(loggedUserSigner!.getPublicKey(), "blocked");
-          finished = true;
-          EasyLoading.dismiss();
-
-          RouterUtil.router(context, RouterPath.RELAY_SET,
-              set != null ? set : Nip51RelaySet(pubKey: loggedUserSigner!.getPublicKey(), name: "blocked", relays: [], createdAt: Helpers.now));
+          try {
+            Nip51RelaySet? set = await relayManager.getSingleNip51RelaySet(loggedUserSigner!.getPublicKey(), "blocked");
+            finished = true;
+            RouterUtil.router(context, RouterPath.RELAY_SET,
+                set != null ? set : Nip51RelaySet(pubKey: loggedUserSigner!.getPublicKey(), name: "blocked", relays: [], createdAt: Helpers.now));
+          } finally {
+            EasyLoading.dismiss();
+          }
         },
         leading: const Icon(
           Icons.not_interested,

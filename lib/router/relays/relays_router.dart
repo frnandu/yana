@@ -129,6 +129,8 @@ class _RelaysRouter extends CustState<RelaysRouter> with WhenStopFunction {
                             url: url,
                             relay: relayManager.getRelay(url)!,
                             marker: marker,
+                            showConnection: true,
+                            showStats: true,
                             onRemove: () async {
                               await loadRelayInfos();
                             },
