@@ -372,7 +372,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
                 }
               });
               try {
-                Nip51RelaySet? set = await relayManager.getSingleNip51RelaySet(loggedUserSigner!.getPublicKey(), "search");
+                Nip51RelaySet? set = await relayManager.getSingleNip51RelaySet("search", loggedUserSigner!);
                 finished = true;
                 RouterUtil.router(context, RouterPath.RELAY_SET, set!=null? set : Nip51RelaySet(pubKey: loggedUserSigner!.getPublicKey(), name: "search", relays: searchRelays, createdAt: Helpers.now));
               } finally {
@@ -403,7 +403,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
             }
           });
           try {
-            Nip51RelaySet? set = await relayManager.getSingleNip51RelaySet(loggedUserSigner!.getPublicKey(), "blocked");
+            Nip51RelaySet? set = await relayManager.getSingleNip51RelaySet("blocked", loggedUserSigner!);
             finished = true;
             RouterUtil.router(context, RouterPath.RELAY_SET,
                 set != null ? set : Nip51RelaySet(pubKey: loggedUserSigner!.getPublicKey(), name: "blocked", relays: [], createdAt: Helpers.now));

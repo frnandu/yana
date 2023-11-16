@@ -1,9 +1,9 @@
 import 'package:dart_ndk/nips/nip01/event.dart';
+import 'package:dart_ndk/nips/nip04/nip04.dart';
 import 'package:flutter/material.dart';
 import 'package:get_time_ago/get_time_ago.dart';
 import 'package:pointycastle/export.dart' as pointycastle;
 import 'package:provider/provider.dart';
-import 'package:yana/nostr/nip04/nip04.dart';
 import 'package:yana/ui/content/content_decoder.dart';
 import 'package:yana/utils/router_path.dart';
 import 'package:yana/utils/router_util.dart';
@@ -59,7 +59,7 @@ class _DMDetailItemComponent extends State<DMDetailItemComponent> {
     String timeStr = GetTimeAgo.parse(
         DateTime.fromMillisecondsSinceEpoch(widget.event.createdAt * 1000));
 
-    var content = NIP04.decrypt(
+    var content = Nip04.decryptWithAgreement(
         widget.event.content, widget.agreement, widget.sessionPubkey);
 
     var contentWidget = Container(

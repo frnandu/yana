@@ -1,5 +1,6 @@
 import 'package:auto_size_text_field/auto_size_text_field.dart';
 import 'package:dart_ndk/nips/nip01/helpers.dart';
+import 'package:dart_ndk/nips/nip04/nip04.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dart_ndk/nips/nip01/event.dart';
@@ -18,7 +19,6 @@ import '../../i18n/i18n.dart';
 import '../../main.dart';
 import '../../models/custom_emoji.dart';
 import '../../nostr/event_kind.dart' as kind;
-import '../../nostr/nip04/nip04.dart';
 import '../../nostr/nip19/nip19.dart';
 import '../../nostr/nip19/nip19_tlv.dart';
 import '../../nostr/upload/uploader.dart';
@@ -561,7 +561,7 @@ mixin EditorMixin {
     Nip01Event? event;
     if (agreement != null && StringUtil.isNotBlank(pubkey)) {
       // dm message
-      result = NIP04.encrypt(result, agreement, pubkey!);
+      result = Nip04.encryptWithAgreement(result, agreement, pubkey!);
       event = Nip01Event(
           pubKey: loggedUserSigner!.getPublicKey(), kind: kind.EventKind.DIRECT_MESSAGE, tags: allTags, content: result,
           createdAt: createdAt!=null ? createdAt!.millisecondsSinceEpoch ~/ 1000 : Helpers.now);

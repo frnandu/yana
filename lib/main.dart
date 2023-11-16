@@ -266,11 +266,11 @@ Future<void> initRelays({bool newKey = false}) async {
   await relayManager.connect();
 
   UserRelayList? userRelayList = !newKey ? await relayManager.getSingleUserRelayList(loggedUserSigner!.getPublicKey()) : null;
-  Nip51RelaySet? blockedRelays = await relayManager.getSingleNip51RelaySet(loggedUserSigner!.getPublicKey(), "blocked");
+  Nip51RelaySet? blockedRelays = await relayManager.getSingleNip51RelaySet("blocked", loggedUserSigner!);
   if (blockedRelays!=null) {
     relayManager.blockedRelays = blockedRelays.relays;
   }
-  Nip51RelaySet? searchRelaySet = await relayManager.getSingleNip51RelaySet(loggedUserSigner!.getPublicKey(), "search");
+  Nip51RelaySet? searchRelaySet = await relayManager.getSingleNip51RelaySet("search", loggedUserSigner!);
   if (searchRelaySet!=null) {
     searchRelays = searchRelaySet.relays;
   }

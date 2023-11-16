@@ -1,3 +1,4 @@
+import 'package:dart_ndk/nips/nip04/nip04.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:dart_ndk/nips/nip01/metadata.dart';
 import 'package:flutter/gestures.dart';
@@ -11,7 +12,6 @@ import 'package:yana/ui/editor/editor_mixin.dart';
 
 import '../../i18n/i18n.dart';
 import '../../main.dart';
-import '../../nostr/nip04/nip04.dart';
 import '../../provider/dm_provider.dart';
 import '../../provider/metadata_provider.dart';
 import '../../ui/editor/custom_emoji_embed_builder.dart';
@@ -75,7 +75,7 @@ class _DMDetailRouter extends CustState<DMDetailRouter> with EditorMixin {
     );
 
     var localPubkey = loggedUserSigner!.getPublicKey();
-    agreement = NIP04.getAgreement(loggedUserSigner!.getPrivateKey()!);
+    agreement = Nip04.getAgreement(loggedUserSigner!.getPrivateKey()!);
 
     List<Widget> list = [];
 

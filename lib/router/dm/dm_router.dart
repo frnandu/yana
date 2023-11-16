@@ -1,8 +1,7 @@
+import 'package:dart_ndk/nips/nip04/nip04.dart';
 import 'package:flutter/material.dart';
 import 'package:yana/router/dm/dm_following_router.dart';
-import 'package:yana/utils/string_util.dart';
 
-import '../../nostr/nip04/nip04.dart';
 import '../../main.dart';
 import '../../provider/index_provider.dart';
 import '../../utils/index_taps.dart';
@@ -23,8 +22,6 @@ class DMRouter extends StatefulWidget {
 
 class _DMRouter extends State<DMRouter> {
 
-
-
   @override
   Widget build(BuildContext context) {
     if (indexProvider.currentTap != IndexTaps.DM) {
@@ -32,7 +29,7 @@ class _DMRouter extends State<DMRouter> {
     }
 
     var themeData = Theme.of(context);
-    var agreement = loggedUserSigner!.canSign() ? NIP04.getAgreement(loggedUserSigner!.getPrivateKey()!) : null;
+    var agreement = loggedUserSigner!.canSign() ? Nip04.getAgreement(loggedUserSigner!.getPrivateKey()!) : null;
     //
     return Container(
       color: themeData.scaffoldBackgroundColor,

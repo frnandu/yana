@@ -31,6 +31,7 @@ class _RelaySetRouter extends State<RelaySetRouter> with SingleTickerProviderSta
   late TabController tabController;
   TextEditingController controller = TextEditingController();
   List<String> searchResults = [];
+  bool disposed = false;
 
   @override
   void initState() {
@@ -39,6 +40,12 @@ class _RelaySetRouter extends State<RelaySetRouter> with SingleTickerProviderSta
     controller.addListener(() {
       onEditingComplete();
     });
+  }
+
+
+  @override
+  void dispose() {
+    disposed = true;
   }
 
   @override
@@ -72,7 +79,7 @@ class _RelaySetRouter extends State<RelaySetRouter> with SingleTickerProviderSta
         ),
         child: RefreshIndicator(
           onRefresh: () async {
-            Nip51RelaySet? refreshedRelaySet = await relayManager.getSingleNip51RelaySet(relaySet!.pubKey, relaySet!.name, forceRefresh: true);
+            Nip51RelaySet? refreshedRelaySet = await relayManager.getSingleNip51RelaySet(relaySet!.name, loggedUserSigner!, forceRefresh: true);
             if (refreshedRelaySet == null) {
               refreshedRelaySet = Nip51RelaySet(pubKey: relaySet!.pubKey, name: relaySet!.name, relays: [], createdAt: Helpers.now);
               setState(() {
@@ -155,7 +162,9 @@ class _RelaySetRouter extends State<RelaySetRouter> with SingleTickerProviderSta
       if (relayManager.getRelay(url) == null || relayManager.getRelay(url)!.info == null) {
         relayManager.relays[url] = Relay(url);
         relayManager.getRelayInfo(url).then((value) {
-          setState(() {});
+          if (!disposed) {
+            setState(() {});
+          }
         });
       }
     });
@@ -164,6 +173,7 @@ class _RelaySetRouter extends State<RelaySetRouter> with SingleTickerProviderSta
       searchResults = result;
     });
   }
+
 
   int compareRelays(RelayMetadata r1, RelayMetadata r2) {
     Relay? relay1 = relayManager.getRelay(r1.url!);

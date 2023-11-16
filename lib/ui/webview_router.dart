@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:dart_ndk/nips/nip04/nip04.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:flutter/material.dart';
@@ -16,7 +17,6 @@ import 'package:yana/provider/webview_provider.dart';
 import 'package:yana/utils/platform_util.dart';
 import 'package:yana/utils/string_util.dart';
 
-import '../nostr/nip04/nip04.dart';
 import '../nostr/nip07/nip07_methods.dart';
 import '../i18n/i18n.dart';
 import '../main.dart';
@@ -150,8 +150,8 @@ class _WebViewRouter extends CustState<WebViewRouter> {
               context, NIP07Methods.nip04_encrypt,
               content: plaintext);
           if (comfirmResult == true) {
-            var agreement = NIP04.getAgreement(loggedUserSigner!.getPrivateKey()!);
-            var resultStr = NIP04.encrypt(plaintext, agreement, pubkey);
+            var agreement = Nip04.getAgreement(loggedUserSigner!.getPrivateKey()!);
+            var resultStr = Nip04.encryptWithAgreement(plaintext, agreement, pubkey);
             var script =
                 "window.nostr.callback(\"$resultId\", \"$resultStr\");";
             _controller.runJavaScript(script);
@@ -175,8 +175,8 @@ class _WebViewRouter extends CustState<WebViewRouter> {
               context, NIP07Methods.nip04_decrypt,
               content: ciphertext);
           if (comfirmResult == true) {
-            var agreement = NIP04.getAgreement(loggedUserSigner!.getPrivateKey()!);
-            var resultStr = NIP04.decrypt(ciphertext, agreement, pubkey);
+            var agreement = Nip04.getAgreement(loggedUserSigner!.getPrivateKey()!);
+            var resultStr = Nip04.decryptWithAgreement(ciphertext, agreement, pubkey);
             var script =
                 "window.nostr.callback(\"$resultId\", \"$resultStr\");";
             _controller.runJavaScript(script);

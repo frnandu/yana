@@ -6,13 +6,13 @@ import 'package:dart_ndk/nips/nip01/bip340_event_signer.dart';
 import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip01/event_signer.dart';
 import 'package:dart_ndk/nips/nip01/filter.dart';
+import 'package:dart_ndk/nips/nip04/nip04.dart';
 import 'package:dart_ndk/request.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 
 import '../main.dart';
 import '../nostr/event_kind.dart';
-import '../nostr/nip04/nip04.dart';
 import '../nostr/nip47/nwc_commands.dart';
 import '../nostr/nip47/nwc_kind.dart';
 import '../utils/string_util.dart';
@@ -130,8 +130,7 @@ class NwcProvider extends ChangeNotifier {
         StringUtil.isNotBlank(secret)) {
       EventSigner nwcSigner = Bip340EventSigner(secret!, getPublicKey(secret!));
 
-      var agreement = NIP04.getAgreement(secret!);
-      var encrypted = NIP04.encrypt('{"method":"${NwcCommand.GET_BALANCE}"}', agreement, walletPubKey!);
+      var encrypted = Nip04.encrypt(secret!,walletPubKey!,  '{"method":"${NwcCommand.GET_BALANCE}"}');
 
       var tags = [
         ["p", walletPubKey]
@@ -164,8 +163,7 @@ class NwcProvider extends ChangeNotifier {
         StringUtil.isNotBlank(event.content) &&
         StringUtil.isNotBlank(secret) &&
         StringUtil.isNotBlank(walletPubKey)) {
-      var agreement = NIP04.getAgreement(secret!);
-      var decrypted = NIP04.decrypt(event.content, agreement, walletPubKey!);
+      var decrypted = Nip04.decrypt(secret!, walletPubKey!, event.content);
       Map<String, dynamic> data;
       data = json.decode(decrypted);
       if (data != null &&
@@ -198,9 +196,8 @@ class NwcProvider extends ChangeNotifier {
 
       payInvoiceEventId = eventId;
 
-      var agreement = NIP04.getAgreement(secret!);
       var encrypted =
-          NIP04.encrypt('{"method":"${NwcCommand.PAY_INVOICE}", "params": { "invoice":"${invoice}"}}', agreement, walletPubKey!);
+        Nip04.encrypt(secret!, walletPubKey!, '{"method":"${NwcCommand.PAY_INVOICE}", "params": { "invoice":"${invoice}"}}');
       var tags = [
         ["p", walletPubKey]
       ];
@@ -228,8 +225,7 @@ class NwcProvider extends ChangeNotifier {
         StringUtil.isNotBlank(event.content) &&
         StringUtil.isNotBlank(secret) &&
         StringUtil.isNotBlank(walletPubKey)) {
-      var agreement = NIP04.getAgreement(secret!);
-      var decrypted = NIP04.decrypt(event.content, agreement, walletPubKey!);
+      var decrypted = Nip04.decrypt(secret!, walletPubKey!, event.content);
       Map<String, dynamic> data;
       data = json.decode(decrypted);
       if (data != null &&

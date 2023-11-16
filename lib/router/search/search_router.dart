@@ -171,7 +171,7 @@ class _SearchRouter extends CustState<SearchRouter>
               EasyLoading.show(status: 'Loading relay list...', maskType: EasyLoadingMaskType.black, dismissOnTap: true);
             }
           });
-          Nip51RelaySet? set = await relayManager.getSingleNip51RelaySet(loggedUserSigner!.getPublicKey(), "search");
+          Nip51RelaySet? set = await relayManager.getSingleNip51RelaySet("search", loggedUserSigner!);
           finished = true;
           EasyLoading.dismiss();
           RouterUtil.router(context, RouterPath.RELAY_SET, set!=null? set : Nip51RelaySet(pubKey: loggedUserSigner!.getPublicKey(), name: "search", relays: searchRelays, createdAt: Helpers.now));

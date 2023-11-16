@@ -57,9 +57,9 @@ class RelayProvider extends ChangeNotifier {
   }
 
   Nip51RelaySet? getNip51RelaySet(String name) {
-    Nip51RelaySet? r = relayManager.getCachedNip51RelaySet(loggedUserSigner!.getPublicKey(), name);
+    Nip51RelaySet? r = relayManager.getCachedNip51RelaySet(name, loggedUserSigner!);
     if (r == null) {
-      relayManager.getSingleNip51RelaySet(loggedUserSigner!.getPublicKey(), name);
+      relayManager.getSingleNip51RelaySet(name, loggedUserSigner!);
     }
     return r;
   }
