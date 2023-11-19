@@ -1,6 +1,7 @@
 import 'package:dart_ndk/db/db_cache_manager.dart';
 import 'package:dart_ndk/nips/nip01/helpers.dart';
 import 'package:dart_ndk/nips/nip01/metadata.dart';
+import 'package:dart_ndk/nips/nip50/nip50.dart';
 import 'package:dart_ndk/nips/nip51/nip51.dart';
 import 'package:dart_ndk/relay.dart';
 import 'package:dart_ndk/relay_manager.dart';
@@ -19,23 +20,21 @@ import '../../ui/editor/text_input_and_search_dialog.dart';
 import '../../utils/base.dart';
 import '../../utils/router_util.dart';
 
-class RelaySetRouter extends StatefulWidget {
-  const RelaySetRouter({super.key});
+class RelayListRouter extends StatefulWidget {
+  const RelayListRouter({super.key});
 
   @override
   State<StatefulWidget> createState() {
-    return _RelaySetRouter();
+    return _RelayListRouter();
   }
 }
 
-class _RelaySetRouter extends State<RelaySetRouter> with SingleTickerProviderStateMixin {
-  Nip51Set? relaySet;
+class _RelayListRouter extends State<RelayListRouter> with SingleTickerProviderStateMixin {
+  Nip51List? relayList;
   late TabController tabController;
   TextEditingController controller = TextEditingController();
   List<String> searchResults = [];
   bool disposed = false;
-  late String selectedList;
-  List<Nip51Set>? list;
 
   @override
   void initState() {
@@ -63,16 +62,11 @@ class _RelaySetRouter extends State<RelaySetRouter> with SingleTickerProviderSta
     var themeData = Theme.of(context);
     var _relayProvider = Provider.of<RelayProvider>(context);
 
-    // if (list==null) {
-    //   return Container();
-    // }
-
     var s = I18n.of(context);
-    if (relaySet == null) {
+    if (relayList == null) {
       var arg = RouterUtil.routerArgs(context);
-      if (arg != null && arg is Nip51Set) {
-        relaySet = arg;
-        selectedList = relaySet!.name;
+      if (arg != null && arg is Nip51List) {
+        relayList = arg;
       }
     }
 
@@ -99,7 +93,8 @@ class _RelaySetRouter extends State<RelaySetRouter> with SingleTickerProviderSta
         //     });
         //   },
       // )
-          Text("${relaySet!.title} (${relaySet!.relays!.length})"),
+
+          Text("${relayList!.displayTitle} (${relayList!.relays!.length})"),
       ),
       body: Container(
         margin: const EdgeInsets.only(
@@ -107,17 +102,21 @@ class _RelaySetRouter extends State<RelaySetRouter> with SingleTickerProviderSta
         ),
         child: RefreshIndicator(
           onRefresh: () async {
-            Nip51Set? refreshedRelaySet = await relayManager.getSingleNip51RelaySet(relaySet!.name, loggedUserSigner!, forceRefresh: true);
-            if (refreshedRelaySet == null) {
-              refreshedRelaySet = Nip51Set(pubKey: relaySet!.pubKey, name: relaySet!.name, createdAt: Helpers.now);
+            // RelayManager relayManager = RelayManager();
+            // await relayManager.connect();
+            // relayManager.cacheManager = cacheManager;
+            // await Future.delayed(const Duration(seconds: 5));
+            Nip51List? refreshedList = await relayManager.getSingleNip51List(relayList!.kind, loggedUserSigner!, forceRefresh: true);
+            if (refreshedList == null) {
+              refreshedList = Nip51List(pubKey: relayList!.pubKey, kind: relayList!.kind, relays: [], createdAt: Helpers.now);
             }
             setState(() {
-              relaySet = refreshedRelaySet;
+              relayList = refreshedList;
             });
           },
           child: ListView.builder(
             itemBuilder: (context, index) {
-              int total = relaySet != null ? relaySet!.relays!.length : 0;
+              int total = relayList != null ? relayList!.relays!.length : 0;
               if (index == total && loggedUserSigner!.canSign()) {
                 return Column(children: [
                   TextField(
@@ -157,14 +156,19 @@ class _RelaySetRouter extends State<RelaySetRouter> with SingleTickerProviderSta
                 ]);
               }
               return RelaySetItemComponent(
-                url: relaySet!.relays![index],
+                url: relayList!.relays![index],
                 removable: loggedUserSigner!.canSign(),
                 onRemove: (url) async {
                   bool? result = await ConfirmDialog.show(context, "Confirm add ${url} to list");
                   if (result != null && result) {
                     EasyLoading.show(status: 'Removing from list and broadcasting...', maskType: EasyLoadingMaskType.black, dismissOnTap: true);
-                    relaySet = await relayManager.broadcastRemoveNip51SetRelay(url, relaySet!.name, myOutboxRelaySet!.urls, loggedUserSigner!,
-                        defaultRelaysIfEmpty: relaySet!.relays);
+                    relayList = await relayManager.broadcastRemoveNip51Relay(relayList!.kind, url, myOutboxRelaySet!.urls, loggedUserSigner!,
+                        defaultRelaysIfEmpty: relayList!.relays);
+                    if (relayList!.kind == Nip51List.SEARCH_RELAYS) {
+                      searchRelays = relayList!.relays!;
+                    } else if (relayList!.kind == Nip51List.BLOCKED_RELAYS) {
+                      relayManager.blockedRelays = relayList!.relays!;
+                    }
                     relayProvider.notifyListeners();
                     EasyLoading.dismiss();
                     setState(() {});
@@ -172,7 +176,7 @@ class _RelaySetRouter extends State<RelaySetRouter> with SingleTickerProviderSta
                 },
               );
             },
-            itemCount: (relaySet != null ? relaySet!.relays!.length : 0) + (loggedUserSigner!.canSign() ? 1 : 0),
+            itemCount: (relayList != null ? relayList!.relays!.length : 0) + (loggedUserSigner!.canSign() ? 1 : 0),
           ),
         ),
       ),
@@ -180,7 +184,7 @@ class _RelaySetRouter extends State<RelaySetRouter> with SingleTickerProviderSta
   }
 
   void onEditingComplete() async {
-    List<String> result = await relayProvider.findRelays(controller.text);
+    List<String> result = await relayProvider.findRelays(controller.text, nip: relayList!.kind == Nip51List.SEARCH_RELAYS? Nip50.NIP : null);
     result.forEach((url) {
       if (relayManager.getRelay(url) == null || relayManager.getRelay(url)!.info == null) {
         relayManager.relays[url] = Relay(url);
@@ -226,7 +230,7 @@ class _RelaySetRouter extends State<RelaySetRouter> with SingleTickerProviderSta
       );
       return;
     }
-    if (relaySet!.relays!.contains(cleanUrl)) {
+    if (relayList!.relays!.contains(cleanUrl)) {
       EasyLoading.showError(
         "Relay already on list",
         dismissOnTap: true,
@@ -238,7 +242,13 @@ class _RelaySetRouter extends State<RelaySetRouter> with SingleTickerProviderSta
     bool? result = await ConfirmDialog.show(context, "Confirm add ${url} to list");
     if (result != null && result) {
       EasyLoading.show(status: 'Broadcasting relay list...', maskType: EasyLoadingMaskType.black, dismissOnTap: true);
-      relaySet = await relayManager.broadcastAddNip51SetRelay(url, relaySet!.name, myOutboxRelaySet!.urls, loggedUserSigner!, private: false);
+      relayList = await relayManager.broadcastAddNip51ListRelay(relayList!.kind, url, myOutboxRelaySet!.urls, loggedUserSigner!, private: false);
+      if (relayList!.kind == Nip51List.SEARCH_RELAYS) {
+        searchRelays = relayList!.relays!;
+        await relayManager.reconnectRelays(searchRelays);
+      } else if (relayList!.kind == Nip51List.BLOCKED_RELAYS) {
+        relayManager.blockedRelays = relayList!.relays!;
+      }
       relayProvider.notifyListeners();
       EasyLoading.dismiss();
       setState(() {

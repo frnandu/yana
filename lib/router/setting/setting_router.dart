@@ -1,3 +1,4 @@
+import 'package:dart_ndk/dart_ndk.dart';
 import 'package:dart_ndk/nips/nip01/helpers.dart';
 import 'package:dart_ndk/nips/nip51/nip51.dart';
 import 'package:flutter/material.dart';
@@ -372,9 +373,10 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
                 }
               });
               try {
-                Nip51RelaySet? set = await relayManager.getSingleNip51RelaySet("search", loggedUserSigner!);
+                Nip51List? list = await relayManager.getSingleNip51List(Nip51List.SEARCH_RELAYS, loggedUserSigner!);
                 finished = true;
-                RouterUtil.router(context, RouterPath.RELAY_SET, set!=null? set : Nip51RelaySet(pubKey: loggedUserSigner!.getPublicKey(), name: "search", relays: searchRelays, createdAt: Helpers.now));
+                RouterUtil.router(context, RouterPath.RELAY_LIST,
+                    list!=null? list : Nip51List(pubKey: loggedUserSigner!.getPublicKey(), kind: Nip51List.SEARCH_RELAYS, relays: searchRelays, createdAt: Helpers.now));
               } finally {
                 EasyLoading.dismiss();
               }
@@ -403,10 +405,10 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
             }
           });
           try {
-            Nip51RelaySet? set = await relayManager.getSingleNip51RelaySet("blocked", loggedUserSigner!);
+            Nip51List? list = await relayManager.getSingleNip51List(Nip51List.BLOCKED_RELAYS, loggedUserSigner!);
             finished = true;
-            RouterUtil.router(context, RouterPath.RELAY_SET,
-                set != null ? set : Nip51RelaySet(pubKey: loggedUserSigner!.getPublicKey(), name: "blocked", relays: [], createdAt: Helpers.now));
+            RouterUtil.router(context, RouterPath.RELAY_LIST,
+                list != null ? list : Nip51List(pubKey: loggedUserSigner!.getPublicKey(), kind: Nip51List.BLOCKED_RELAYS, relays: [], createdAt: Helpers.now));
           } finally {
             EasyLoading.dismiss();
           }

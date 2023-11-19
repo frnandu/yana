@@ -127,8 +127,7 @@ class _RelaysRouter extends CustState<RelaysRouter> with WhenStopFunction {
                           refreshedTimestamp: Helpers.now);
                       return userRelayList == null
                           ? Container()
-                          : ScrollablePositionedList.builder(
-                              itemScrollController: itemScrollController,
+                          : ListView.builder(
                               itemBuilder: (context, index) {
                                 int total = userRelayList!.relays.length;
                                 if (index == total && loggedUserSigner!.canSign()) {
@@ -228,6 +227,7 @@ class _RelaysRouter extends CustState<RelaysRouter> with WhenStopFunction {
 
   @override
   void dispose() {
+    super.dispose();
     disposed = true;
   }
   // Future<void> add(String url) async {

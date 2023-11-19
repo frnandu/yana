@@ -1,15 +1,8 @@
-import 'dart:convert';
-
 import 'package:dart_ndk/models/relay_set.dart';
-import 'package:dart_ndk/nips/nip01/event.dart';
-import 'package:dart_ndk/nips/nip01/filter.dart';
 import 'package:dart_ndk/nips/nip01/helpers.dart';
 import 'package:dart_ndk/nips/nip01/metadata.dart';
 import 'package:dart_ndk/nips/nip05/nip05.dart';
-import 'package:dart_ndk/relay.dart';
-import 'package:dart_ndk/request.dart';
 import 'package:flutter/material.dart';
-import 'package:websocket_universal/websocket_universal.dart';
 
 import '../main.dart';
 import '../utils/later_function.dart';

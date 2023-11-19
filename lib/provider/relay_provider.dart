@@ -56,10 +56,18 @@ class RelayProvider extends ChangeNotifier {
     return "";
   }
 
-  Nip51RelaySet? getNip51RelaySet(String name) {
-    Nip51RelaySet? r = relayManager.getCachedNip51RelaySet(name, loggedUserSigner!);
+  Nip51Set? getNip51RelaySet(String name) {
+    Nip51Set? r = relayManager.getCachedNip51RelaySet(name, loggedUserSigner!);
     if (r == null) {
       relayManager.getSingleNip51RelaySet(name, loggedUserSigner!);
+    }
+    return r;
+  }
+
+  Nip51List? getNip51List(int kind) {
+    Nip51List? r = relayManager.getCachedNip51List(kind, loggedUserSigner!);
+    if (r == null) {
+      relayManager.getSingleNip51List(kind, loggedUserSigner!);
     }
     return r;
   }
@@ -139,6 +147,7 @@ class RelayProvider extends ChangeNotifier {
   }
 
   List<String>? relaysFromApi;
+  Map<int,List<String>?> relaysFromApiByNip = {};
 
   Uri relaysApiUri = Uri.parse("https://api.nostr.watch/v1/online").replace(scheme: 'https');
   
@@ -161,15 +170,44 @@ class RelayProvider extends ChangeNotifier {
     return false;
   }
 
+  Future<List<String>?> fetchRelaysFromApiByNip(int nip) async {
+    try {
+      Uri relaysApiUri = Uri.parse("https://api.nostr.watch/v1/nip/${nip}").replace(scheme: 'https');
+      var response = await http.get(relaysApiUri);
 
-  Future<List<String>> findRelays(String text) async {
+      if (response.body != null) {
+        final data = jsonDecode(
+            utf8.decode(response.bodyBytes)) as List<dynamic>;
+        if (data != null) {
+          return data.map((e) => e.toString(),).toList();
+        }
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print(e);
+      }
+    }
+    return null;
+  }
+
+
+  Future<List<String>> findRelays(String text, {int? nip}) async {
     if (text.trim().isNotEmpty) {
-      if (relaysFromApi == null) {
-        await fetchRelaysFromApi();
+      List<String>? relays;
+      if (nip==null) {
+        if (relaysFromApi == null) {
+          await fetchRelaysFromApi();
+        }
+        relays = relaysFromApi;
+      } else {
+        relays = relaysFromApiByNip[nip];
+        if (relays==null) {
+          relaysFromApiByNip[nip] =  await fetchRelaysFromApiByNip(nip);
+        }
+        relays = relaysFromApiByNip[nip];
       }
       Set<String> set = {};
-      set.addAll(relayManager.relays.keys);
-      set.addAll(relaysFromApi!);
+      set.addAll(relays!);
       return set
           .where((element) =>
               text.length>=3 &&
@@ -181,6 +219,7 @@ class RelayProvider extends ChangeNotifier {
     }
     return [];
   }
+
 
 // Relay genRelay(String relayAddr) {
 //   var relayStatus = relayStatusMap[relayAddr];

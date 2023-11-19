@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:dart_ndk/dart_ndk.dart';
 import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip01/filter.dart';
 import 'package:dart_ndk/nips/nip01/helpers.dart';
@@ -171,10 +172,10 @@ class _SearchRouter extends CustState<SearchRouter>
               EasyLoading.show(status: 'Loading relay list...', maskType: EasyLoadingMaskType.black, dismissOnTap: true);
             }
           });
-          Nip51RelaySet? set = await relayManager.getSingleNip51RelaySet("search", loggedUserSigner!);
+          Nip51List? list = await relayManager.getSingleNip51List(Nip51List.SEARCH_RELAYS, loggedUserSigner!);
           finished = true;
           EasyLoading.dismiss();
-          RouterUtil.router(context, RouterPath.RELAY_SET, set!=null? set : Nip51RelaySet(pubKey: loggedUserSigner!.getPublicKey(), name: "search", relays: searchRelays, createdAt: Helpers.now));
+          RouterUtil.router(context, RouterPath.RELAY_SET, list!=null? list : Nip51List(pubKey: loggedUserSigner!.getPublicKey(), kind: Nip51List.SEARCH_RELAYS, relays: searchRelays, createdAt: Helpers.now));
         },
             title: "⚠ Your search relay list is empty.\nAdd some relays >>");
 //            You have no relays with search capabilities (NIP-50 support).\nConsider adding some (ex.: wss://relay.nostr.band), otherwise ONLY your contacts metadata will be searched.\nClick to relay settings >>");
@@ -283,10 +284,10 @@ class _SearchRouter extends CustState<SearchRouter>
   @override
   void doQuery() {
     preQuery();
-    List<String> relaysWithNip50 = searchRelays!=null? searchRelays.where((url) {
-      Relay? relay = relayManager.getRelay(url);
-      return relay!=null? relay.supportsNip(50) : false;
-    }).toList() : [];
+    List<String> relaysWithNip50 = searchRelays;//!=null? searchRelays.where((url) {
+    //   Relay? relay = relayManager.getRelay(url);
+    //   return relay!=null? relay.supportsNip(50) : false;
+    // }).toList() : [];
 
     if (!eventMemBox.isEmpty()) {
       filterMap!["until"] = eventMemBox.oldestEvent;
@@ -295,9 +296,13 @@ class _SearchRouter extends CustState<SearchRouter>
         filterMap!["until"] = until;
       }
     }
-    relayManager.requestRelays(relaysWithNip50, Filter.fromMap(filterMap!), timeout: 2).then((request) {
-      request.stream.listen((event) {
-        onQueryEvent(event);
+    RelayManager relayManager = RelayManager();
+    relayManager.cacheManager = cacheManager;
+    relayManager.connect(urls: relaysWithNip50).then((value) {
+      relayManager.requestRelays(relaysWithNip50, Filter.fromMap(filterMap!), timeout: 10).then((request) {
+        request.stream.listen((event) {
+          onQueryEvent(event);
+        });
       });
     });
 

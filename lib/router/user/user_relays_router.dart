@@ -208,8 +208,8 @@ class RelayMetadataComponent extends StatelessWidget {
                   context, "Confirm add ${relayMetadata!.url!} to blocked list");
               if (result != null && result) {
                 EasyLoading.show(status: 'Broadcasting blocked relay list...', maskType: EasyLoadingMaskType.black, dismissOnTap: true);
-                Nip51RelaySet blocked = await relayManager.broadcastAddNip51Relay(relayMetadata!.url!, "blocked", myOutboxRelaySet!.urls, loggedUserSigner!);
-                relayManager.blockedRelays = blocked.relays;
+                Nip51List blocked = await relayManager.broadcastAddNip51ListRelay(Nip51List.BLOCKED_RELAYS, relayMetadata!.url!, myOutboxRelaySet!.urls, loggedUserSigner!, private: false);
+                relayManager.blockedRelays = blocked.relays!;
                 EasyLoading.show(status: 'Recalculating feed outbox relays...', maskType: EasyLoadingMaskType.black, dismissOnTap: true);
                 await relayProvider.recalculateFeedRelaySet();
                 EasyLoading.dismiss();

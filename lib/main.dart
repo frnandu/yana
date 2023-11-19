@@ -49,6 +49,7 @@ import 'package:yana/router/relays/relay_info_router.dart';
 import 'package:yana/router/search/search_router.dart';
 import 'package:yana/router/user/followed_router.dart';
 import 'package:yana/router/user/followed_tags_list_router.dart';
+import 'package:yana/router/user/relay_list_router.dart';
 import 'package:yana/router/user/relay_set_router.dart';
 import 'package:yana/router/user/user_history_contact_list_router.dart';
 import 'package:yana/router/user/user_zap_list_router.dart';
@@ -266,13 +267,14 @@ Future<void> initRelays({bool newKey = false}) async {
   await relayManager.connect();
 
   UserRelayList? userRelayList = !newKey ? await relayManager.getSingleUserRelayList(loggedUserSigner!.getPublicKey()) : null;
-  Nip51RelaySet? blockedRelays = await relayManager.getSingleNip51RelaySet("blocked", loggedUserSigner!);
+  Nip51List? blockedRelays = await relayManager.getSingleNip51List(Nip51List.BLOCKED_RELAYS, loggedUserSigner!);
   if (blockedRelays!=null) {
-    relayManager.blockedRelays = blockedRelays.relays;
+    relayManager.blockedRelays = blockedRelays.relays!;
   }
-  Nip51RelaySet? searchRelaySet = await relayManager.getSingleNip51RelaySet("search", loggedUserSigner!);
+  Nip51List? searchRelaySet = await relayManager.getSingleNip51List(Nip51List.SEARCH_RELAYS, loggedUserSigner!);
   if (searchRelaySet!=null) {
-    searchRelays = searchRelaySet.relays;
+    searchRelays = searchRelaySet.relays!;
+    await relayManager.reconnectRelays(searchRelays);
   }
   if (userRelayList != null) {
     createMyRelaySets(userRelayList);
@@ -621,6 +623,7 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
       RouterPath.USER_ZAP_LIST: (context) => const UserZapListRouter(),
       RouterPath.USER_RELAYS: (context) => const UserRelayRouter(),
       RouterPath.RELAY_SET: (context) => const RelaySetRouter(),
+      RouterPath.RELAY_LIST: (context) => const RelayListRouter(),
       RouterPath.DM_DETAIL: (context) => const DMDetailRouter(),
       RouterPath.THREAD_DETAIL: (context) => ThreadDetailRouter(),
       RouterPath.EVENT_DETAIL: (context) => const EventDetailRouter(),
@@ -855,11 +858,11 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
           }
         });
 
-        try {
-          await Future.wait(relayManager.webSockets.values.map((webSocket) => webSocket.disconnect("reconnect")).toList());
-        } catch (e) {
-          print(e);
-        }
+        // try {
+        //   await Future.wait(relayManager.webSockets.values.map((webSocket) => webSocket.disconnect("reconnect")).toList());
+        // } catch (e) {
+        //   print(e);
+        // }
 
         await relayManager.connect(urls: relayManager.bootstrapRelays);
 
