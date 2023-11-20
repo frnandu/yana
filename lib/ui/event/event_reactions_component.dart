@@ -344,7 +344,6 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
     Share.share(share);
   }
 
-
   void onPopupSelected(String value) async {
     if (value == "copyEvent") {
       var text = jsonEncode(widget.event.toJson());

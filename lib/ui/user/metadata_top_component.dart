@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:dart_ndk/models/user_relay_list.dart';
 import 'package:dart_ndk/nips/nip01/bip340_event_signer.dart';
 import 'package:dart_ndk/nips/nip01/metadata.dart';
 import 'package:easy_image_viewer/easy_image_viewer.dart';
@@ -7,9 +8,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:provider/provider.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:yana/i18n/i18n.dart';
 import 'package:yana/main.dart';
+import 'package:yana/nostr/nip19/nip19_tlv.dart';
 import 'package:yana/provider/contact_list_provider.dart';
 import 'package:yana/ui/nip05_valid_component.dart';
 import 'package:yana/ui/qrcode_dialog.dart';
@@ -334,6 +337,7 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
                   value: "login_as",
                   child: Text("Login as ${displayName}"),
                 ),
+                const PopupMenuItem(value:"share", child: Text("Share..."))
               ];
 
               return list;
@@ -357,6 +361,16 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
                 settingProvider.notifyListeners();
                 EasyLoading.dismiss();
                 RouterUtil.back(context);
+              } else if (value == "share") {
+                UserRelayList? userRelayList = cacheManager.loadUserRelayList(widget.pubkey);
+                List<String> relays = relayManager.bootstrapRelays;
+                if (userRelayList!=null && userRelayList.relays!=null) {
+                  relays = userRelayList!.relays!.keys!.toList();
+                }
+                var nevent = Nprofile(pubkey: widget.metadata!.pubKey, relays: relays);
+
+                String share = 'https://njump.me/${NIP19Tlv.encodeNprofile(nevent).replaceAll("nostr:","")}';
+                Share.share(share);
               }
             },
             child: const Icon(
