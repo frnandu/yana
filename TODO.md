@@ -78,6 +78,7 @@
 ===== v0.12
 - nip-51 PRIVATE relay lists!
 - mute list use nip51
+- search: not all contacts loaded
 - use inboxForReactions for broadcasting reactions to inbox relays
 - show in account list, which ones are read-only
 -
@@ -97,6 +98,7 @@
 - WTF nwc needs fresh relayManager for get_info/get_balance??
 
 - ===== v0.13
+- group notification reactions to the same post (similar to amethyst)
 - show used data of background service in KBs
 - after adding follow, recalculate relaySet for gossip
 - better android/ios/linux badges on web version login screen (anchor links to readme.md for IOS/linux)

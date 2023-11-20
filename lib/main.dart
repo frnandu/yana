@@ -219,7 +219,9 @@ void onStart(ServiceInstance service) async {
                 }
               }
               try {
-                await Future.wait(relayManager.webSockets.values.map((webSocket) => webSocket.sink.close()).toList());
+                await Future.wait(relayManager.webSockets.keys.map((url) => relayManager.webSockets[url]!.sink.close().timeout(const Duration(seconds:3), onTimeout: () {
+                  print("timeout while trying to close socket $url");
+                })).toList());
               } catch (e) {
                 print(e);
               }
