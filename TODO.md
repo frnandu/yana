@@ -74,16 +74,15 @@
 - ~~don't load stuff in tabs that are not visible!!!!~~
 - ~~on back from background, reconnect relays + resubscribe to all existing subscriptions~~
 - ~~blacklist for relays (NIP-51 PR)~~
+- ~~nip-51 PRIVATE relay lists!~~
 
 ===== v0.12
-- nip-51 PRIVATE relay lists!
-- mute list use nip51
 - search: not all contacts loaded
+- when empty search relay list, how to use default relays and allow to edit list (add/remove)???
 - use inboxForReactions for broadcasting reactions to inbox relays
 - show in account list, which ones are read-only
 -
 - save notification events to cache DB
-- FIX SOCKETS CONNECTION PROBLEMS!!!!!!!!!!!!!!!
 - NIP07 browser for some web apps!?
 - choose to which relays / lists to broadcast on new note (bounty)
 - make thread detail subscription of new replies work
@@ -98,6 +97,7 @@
 - WTF nwc needs fresh relayManager for get_info/get_balance??
 
 - ===== v0.13
+- mute list use nip51
 - group notification reactions to the same post (similar to amethyst)
 - show used data of background service in KBs
 - after adding follow, recalculate relaySet for gossip
