@@ -61,7 +61,7 @@ dependencies:
   sizer: ^2.0.15
   webview_flutter: ^4.2.1
   screenshot: ^2.1.0
-  share_plus: ^7.0.1
+  share_plus: ^7.2.1
   video_player: ^2.6.1
   image_picker: ^1.0.3
   keframe: ^3.0.0

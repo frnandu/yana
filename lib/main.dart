@@ -207,8 +207,22 @@ void onStart(ServiceInstance service) async {
         AwesomeNotifications().getAppLifeCycle().then((value) {
           if (value.toString() != "NotificationLifeCycle.Foreground" && myInboxRelaySet != null) {
             appState = AppLifecycleState.inactive;
-            relayManager.reconnectRelays(myInboxRelaySet!.urls).then((a) async {
+            relayManager.connect(urls: myInboxRelaySet!.urls).then((a) async {
               await newNotificationsProvider.queryNew();
+              relayManager.allowReconnectRelays=false;
+              List<String> requestIdsToClose = relayManager.nostrRequests.keys.toList();
+              for (var id in requestIdsToClose) {
+                try {
+                  await relayManager.closeNostrRequestById(id);
+                } catch (e) {
+                  print(e);
+                }
+              }
+              try {
+                await Future.wait(relayManager.webSockets.values.map((webSocket) => webSocket.sink.close()).toList());
+              } catch (e) {
+                print(e);
+              }
             });
           }
         });
@@ -337,7 +351,7 @@ Future<Iterable<String>> broadcastUrls(String? pubKey) async {
 
 void createMyRelaySets(UserRelayList userRelayList) {
   print("FROM USER RELAY LIST: ");
-  userRelayList.relays.entries.forEach((entry) { print("  - ${entry.key} : ${entry.value}");});
+  for (var entry in userRelayList.relays.entries) { print("  - ${entry.key} : ${entry.value}");}
 
   Map<String, List<PubkeyMapping>> inbox = {
     for (var item in userRelayList.relays.entries.where((entry) => entry.value.isRead))
@@ -357,9 +371,9 @@ void createMyRelaySets(UserRelayList userRelayList) {
   myOutboxRelaySet =
       RelaySet(name: "outbox", pubKey: userRelayList.pubKey, relayMinCountPerPubkey: outbox.length, direction: RelayDirection.outbox, relaysMap: outbox);
   print("GENERATED INBOX: ");
-  myInboxRelaySet!.relaysMap.entries.forEach((entry) { print("  - ${entry.key} : ${entry.value.first.rwMarker}");});
+  for (var entry in myInboxRelaySet!.relaysMap.entries) { print("  - ${entry.key} : ${entry.value.first.rwMarker}");}
   print("GENERATED OUTBOX: ");
-  myOutboxRelaySet!.relaysMap.entries.forEach((entry) { print("  - ${entry.key} : ${entry.value.first.rwMarker}");});
+  for (var entry in myOutboxRelaySet!.relaysMap.entries) { print("  - ${entry.key} : ${entry.value.first.rwMarker}");}
 }
 
 Future<void> main() async {
@@ -525,7 +539,7 @@ void initBackgroundService(bool startOnBoot) async {
       isForegroundMode: true,
       notificationChannelId: 'yana-service',
       initialNotificationTitle: 'Background service',
-      initialNotificationContent: 'you can hide this: long-press -> settings -> Notification categories',
+      initialNotificationContent: 'Needed for de-googled notifications. You can hide this: long-press -> settings -> Notification categories',
       foregroundServiceNotificationId: 888,
     ),
     iosConfiguration: IosConfiguration(
@@ -849,21 +863,22 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
         if (backgroundService != null && settingProvider.backgroundService) {
           backgroundService!.invoke('stopService');
         }
+        relayManager.allowReconnectRelays=false;
         List<String> requestIdsToClose = relayManager.nostrRequests.keys.toList();
-        requestIdsToClose.forEach((id) async {
+        for (var id in requestIdsToClose) {
           try {
             await relayManager.closeNostrRequestById(id);
           } catch (e) {
             print(e);
           }
-        });
+        }
+        try {
+          await Future.wait(relayManager.webSockets.values.map((webSocket) => webSocket.sink.close()).toList());
+        } catch (e) {
+          print(e);
+        }
 
-        // try {
-        //   await Future.wait(relayManager.webSockets.values.map((webSocket) => webSocket.disconnect("reconnect")).toList());
-        // } catch (e) {
-        //   print(e);
-        // }
-
+        relayManager.allowReconnectRelays=true;
         await relayManager.connect(urls: relayManager.bootstrapRelays);
 
         Set<String> urls = {};
@@ -882,12 +897,36 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
         notificationsProvider.startSubscription();
       }
     }
-    if (newState != AppLifecycleState.paused &&
-        (appState == AppLifecycleState.resumed || appState == AppLifecycleState.hidden || appState == AppLifecycleState.inactive) &&
-        backgroundService != null &&
-        loggedUserSigner != null &&
-        settingProvider.backgroundService) {
-      backgroundService!.startService();
+    if ((newState == AppLifecycleState.paused || newState == AppLifecycleState.hidden || newState == AppLifecycleState.inactive) &&
+        appState == AppLifecycleState.resumed && loggedUserSigner != null) {
+      if (settingProvider.backgroundService) {
+        backgroundService!.startService();
+      }
+      Future.delayed(const Duration(seconds: 5), () {
+        AwesomeNotifications().getAppLifeCycle().then((value) async {
+          if (value.toString() != "NotificationLifeCycle.Foreground") {
+            relayManager.allowReconnectRelays=false;
+            List<String> requestIdsToClose = relayManager.nostrRequests.keys.toList();
+            for (var id in requestIdsToClose) {
+              try {
+                await relayManager.closeNostrRequestById(id);
+              } catch (e) {
+                print(e);
+              }
+            }
+
+            try {
+              await Future.wait(relayManager.webSockets.values.map((webSocket) => webSocket.sink.close()).toList());
+            } catch (e) {
+              print(e);
+            }
+
+            // if (settingProvider.backgroundService) {
+            //   backgroundService!.startService();
+            // }
+          }
+        });
+      });
     }
     appState = newState;
   }

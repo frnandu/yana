@@ -7,6 +7,7 @@ import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:provider/provider.dart';
 import 'package:screenshot/screenshot.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:yana/ui/zap_gen_dialog.dart';
 
 import '../../i18n/i18n.dart';
@@ -15,6 +16,7 @@ import '../../models/event_reactions.dart';
 import '../../nostr/event_kind.dart';
 import '../../nostr/event_relation.dart';
 import '../../nostr/nip19/nip19.dart';
+import '../../nostr/nip19/nip19_tlv.dart';
 import '../../nostr/nip57/zap_action.dart';
 import '../../provider/event_reactions_provider.dart';
 import '../../router/edit/editor_router.dart';
@@ -280,6 +282,10 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
                       ));
                     }
                     list.add(PopupMenuItem(
+                      value: "share",
+                      child: Text(s.Share, style: popFontStyle),
+                    ));
+                    list.add(PopupMenuItem(
                       value: "block",
                       child: Text(s.Block, style: popFontStyle),
                     ));
@@ -331,6 +337,14 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
     );
   }
 
+  void onShareTap() {
+    var nevent = Nevent(
+        id: widget.event.id, relays: widget.event.sources, author: widget.event.pubKey);
+    String share = 'https://njump.me/${NIP19Tlv.encodeNevent(nevent).replaceAll("nostr:","")}';
+    Share.share(share);
+  }
+
+
   void onPopupSelected(String value) async {
     if (value == "copyEvent") {
       var text = jsonEncode(widget.event.toJson());
@@ -341,6 +355,8 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
     } else if (value == "copyId") {
       var text = Nip19.encodeNoteId(widget.event.id);
       _doCopy(text);
+    } else if (value == "share") {
+      onShareTap();
     } else if (value == "detail") {
       RouterUtil.router(context, RouterPath.EVENT_DETAIL, widget.event);
     } else if (value == "star") {
