@@ -59,9 +59,12 @@ class _RelaysRouter extends CustState<RelaysRouter> with WhenStopFunction {
     await Future.wait(userRelayList!.urls.map((url) => relayManager.getRelayInfo(Relay.clean(url)!)));
 
     /// TODO check if widget is not disposed already...
-    setState(() {
-      print("loaded relay infos");
-    });
+
+    if (!disposed) {
+      setState(() {
+        print("loaded relay infos");
+      });
+    }
   }
 
   @override

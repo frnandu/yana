@@ -360,8 +360,8 @@ class FollowEventProvider extends ChangeNotifier with PenddingEventsLaterFunctio
     } else {
       laterTimeMS = 500;
     }
-    onEvents([event]);
-    //later(event, onEvents, null);
+    // onEvents([event]);
+    later(event, onEvents, null);
   }
 
   void onEvents(List<Nip01Event> list, {bool saveToCache = true}) {

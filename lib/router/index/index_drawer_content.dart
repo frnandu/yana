@@ -36,6 +36,7 @@ class _IndexDrawerContentComponnent extends State<IndexDrawerContentComponent> {
   @override
   Widget build(BuildContext context) {
     var _indexProvider = Provider.of<IndexProvider>(context);
+    var _relayProvider = Provider.of<RelayProvider>(context);
 
     var s = I18n.of(context);
     var pubkey = loggedUserSigner!.getPublicKey();

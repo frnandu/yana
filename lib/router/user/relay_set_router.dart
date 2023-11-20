@@ -99,7 +99,7 @@ class _RelaySetRouter extends State<RelaySetRouter> with SingleTickerProviderSta
         //     });
         //   },
       // )
-          Text("${relaySet!.title} (${relaySet!.relays!.length})"),
+          Text("${relaySet!.title} (${relaySet!.allRelays!.length})"),
       ),
       body: Container(
         margin: const EdgeInsets.only(
@@ -117,7 +117,7 @@ class _RelaySetRouter extends State<RelaySetRouter> with SingleTickerProviderSta
           },
           child: ListView.builder(
             itemBuilder: (context, index) {
-              int total = relaySet != null ? relaySet!.relays!.length : 0;
+              int total = relaySet != null ? relaySet!.allRelays!.length : 0;
               if (index == total && loggedUserSigner!.canSign()) {
                 return Column(children: [
                   TextField(
@@ -157,14 +157,14 @@ class _RelaySetRouter extends State<RelaySetRouter> with SingleTickerProviderSta
                 ]);
               }
               return RelaySetItemComponent(
-                url: relaySet!.relays![index],
+                url: relaySet!.allRelays![index],
                 removable: loggedUserSigner!.canSign(),
                 onRemove: (url) async {
                   bool? result = await ConfirmDialog.show(context, "Confirm add ${url} to list");
                   if (result != null && result) {
                     EasyLoading.show(status: 'Removing from list and broadcasting...', maskType: EasyLoadingMaskType.black, dismissOnTap: true);
                     relaySet = await relayManager.broadcastRemoveNip51SetRelay(url, relaySet!.name, myOutboxRelaySet!.urls, loggedUserSigner!,
-                        defaultRelaysIfEmpty: relaySet!.relays);
+                        defaultRelaysIfEmpty: relaySet!.allRelays);
                     relayProvider.notifyListeners();
                     EasyLoading.dismiss();
                     setState(() {});
@@ -172,7 +172,7 @@ class _RelaySetRouter extends State<RelaySetRouter> with SingleTickerProviderSta
                 },
               );
             },
-            itemCount: (relaySet != null ? relaySet!.relays!.length : 0) + (loggedUserSigner!.canSign() ? 1 : 0),
+            itemCount: (relaySet != null ? relaySet!.allRelays!.length : 0) + (loggedUserSigner!.canSign() ? 1 : 0),
           ),
         ),
       ),
@@ -226,7 +226,7 @@ class _RelaySetRouter extends State<RelaySetRouter> with SingleTickerProviderSta
       );
       return;
     }
-    if (relaySet!.relays!.contains(cleanUrl)) {
+    if (relaySet!.allRelays!.contains(cleanUrl)) {
       EasyLoading.showError(
         "Relay already on list",
         dismissOnTap: true,

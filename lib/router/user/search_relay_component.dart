@@ -76,12 +76,15 @@ class SearchRelayItemComponent extends StatelessWidget {
 
   final double width;
 
-  Function(String) onTap;
+  Function(String)? onTap;
+
+  PopupMenuButton? popupMenuButton;
 
   SearchRelayItemComponent({super.key,
     required this.url,
     required this.width,
-    required this.onTap
+    this.onTap,
+    this.popupMenuButton
   });
 
   @override
@@ -182,12 +185,14 @@ class SearchRelayItemComponent extends StatelessWidget {
 
     return GestureDetector(
       onTap: () {
-        onTap(url);
+        if (onTap!=null) {
+          onTap!(url);
+        }
         // RouterUtil.back(context, metadata.pubKey);
       },
-      child: RelaysItemComponent(relay: relay, url: url, showConnection: false, showStats: false, onAdd: (url) {
-        onTap(url);
-      },)
+      child: RelaysItemComponent(relay: relay, url: url, showConnection: false, showStats: false, popupMenuButton: popupMenuButton, onAdd: onTap!=null? (url) {
+        onTap!(url);
+      } : null)
       ,
     );
   }

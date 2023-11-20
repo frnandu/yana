@@ -376,7 +376,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
                 Nip51List? list = await relayManager.getSingleNip51List(Nip51List.SEARCH_RELAYS, loggedUserSigner!);
                 finished = true;
                 RouterUtil.router(context, RouterPath.RELAY_LIST,
-                    list!=null? list : Nip51List(pubKey: loggedUserSigner!.getPublicKey(), kind: Nip51List.SEARCH_RELAYS, relays: searchRelays, createdAt: Helpers.now));
+                    list!=null? list : Nip51List(pubKey: loggedUserSigner!.getPublicKey(), kind: Nip51List.SEARCH_RELAYS, privateRelays: searchRelays, createdAt: Helpers.now));
               } finally {
                 EasyLoading.dismiss();
               }
@@ -408,7 +408,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
             Nip51List? list = await relayManager.getSingleNip51List(Nip51List.BLOCKED_RELAYS, loggedUserSigner!);
             finished = true;
             RouterUtil.router(context, RouterPath.RELAY_LIST,
-                list != null ? list : Nip51List(pubKey: loggedUserSigner!.getPublicKey(), kind: Nip51List.BLOCKED_RELAYS, relays: [], createdAt: Helpers.now));
+                list != null ? list : Nip51List(pubKey: loggedUserSigner!.getPublicKey(), kind: Nip51List.BLOCKED_RELAYS, privateRelays: [], createdAt: Helpers.now));
           } finally {
             EasyLoading.dismiss();
           }

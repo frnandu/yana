@@ -250,13 +250,20 @@ Future<void> initProvidersAndStuff() async {
       // loggedUserSigner = Bip340EventSigner(settingProvider.key!, getPublicKey(settingProvider.key!));
       filterProvider = FilterProvider.getInstance();
       relayManager.eventFilters.add(filterProvider);
+      DbCacheManager dbCacheManager = DbCacheManager();
+      await dbCacheManager.init(directory: PlatformUtil.isWeb() ? isar.Isar.sqliteInMemory : (await getApplicationDocumentsDirectory()).path);
+      cacheManager = dbCacheManager;
+      relayManager.cacheManager = cacheManager;
+      relayManager.eventVerifier = HybridEventVerifier();
 
-      await relayManager.connect();
-      UserRelayList? userRelayList = await relayManager.getSingleUserRelayList(loggedUserSigner!.getPublicKey());
-      if (userRelayList != null) {
-        createMyRelaySets(userRelayList);
+      if (myInboxRelaySet==null) {
+        await relayManager.connect();
+        UserRelayList? userRelayList = await relayManager.getSingleUserRelayList(loggedUserSigner!.getPublicKey());
+        if (userRelayList != null) {
+          createMyRelaySets(userRelayList);
+        }
       }
-      await relayManager.connect(urls: userRelayList != null ? userRelayList.urls : RelayManager.DEFAULT_BOOTSTRAP_RELAYS);
+      // await relayManager.connect(urls: userRelayList != null ? userRelayList.urls : RelayManager.DEFAULT_BOOTSTRAP_RELAYS);
       // await relayProvider!.loadRelays(loggedUserSigner!.getPublicKey(), () {
       //   relayProvider.addRelays(nostr!).then((bla) {
       notificationsProvider = NotificationsProvider();
@@ -276,6 +283,7 @@ Future<void> initProvidersAndStuff() async {
 }
 
 Future<void> initRelays({bool newKey = false}) async {
+
   relayManager.eventFilters.add(filterProvider);
 
   await relayManager.connect();
@@ -283,11 +291,11 @@ Future<void> initRelays({bool newKey = false}) async {
   UserRelayList? userRelayList = !newKey ? await relayManager.getSingleUserRelayList(loggedUserSigner!.getPublicKey()) : null;
   Nip51List? blockedRelays = await relayManager.getSingleNip51List(Nip51List.BLOCKED_RELAYS, loggedUserSigner!);
   if (blockedRelays!=null) {
-    relayManager.blockedRelays = blockedRelays.relays!;
+    relayManager.blockedRelays = blockedRelays.allRelays!;
   }
   Nip51List? searchRelaySet = await relayManager.getSingleNip51List(Nip51List.SEARCH_RELAYS, loggedUserSigner!);
   if (searchRelaySet!=null) {
-    searchRelays = searchRelaySet.relays!;
+    searchRelays = searchRelaySet.allRelays!;
     await relayManager.reconnectRelays(searchRelays);
   }
   if (userRelayList != null) {
@@ -330,6 +338,11 @@ Future<void> initRelays({bool newKey = false}) async {
   notificationsProvider.startSubscription();
   dmProvider.initDMSessions(loggedUserSigner!.getPublicKey());
   metadataProvider.notifyListeners();
+  try {
+    if (PlatformUtil.isAndroid() || PlatformUtil.isIOS()) {
+      initBackgroundService(settingProvider.backgroundService);
+    }
+  } catch (e) {}
 }
 
 Future<Iterable<String>> broadcastUrls(String? pubKey) async {
@@ -463,12 +476,6 @@ Future<void> main() async {
   communityApprovedProvider = CommunityApprovedProvider();
   communityInfoProvider = CommunityInfoProvider();
   nwcProvider = NwcProvider();
-
-  try {
-    if (PlatformUtil.isAndroid() || PlatformUtil.isIOS()) {
-      initBackgroundService(true);
-    }
-  } catch (e) {}
 
   String? key = settingProvider.key;
   if (StringUtil.isNotBlank(key)) {
@@ -873,13 +880,14 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
           }
         }
         try {
-          await Future.wait(relayManager.webSockets.values.map((webSocket) => webSocket.sink.close()).toList());
+          await Future.wait(relayManager.webSockets.keys.map((url) => relayManager.webSockets[url]!.sink.close().timeout(const Duration(seconds:3), onTimeout: () {
+            print("timeout while trying to close socket $url");
+          })).toList());
         } catch (e) {
           print(e);
         }
 
         relayManager.allowReconnectRelays=true;
-        await relayManager.connect(urls: relayManager.bootstrapRelays);
 
         Set<String> urls = {};
         urls.addAll(myInboxRelaySet!.urls);
@@ -888,7 +896,8 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
         }
 
         try {
-          await relayManager.reconnectRelays(urls);
+          await relayManager.connect(urls: urls);
+          // await relayManager.reconnectRelays(urls);
         } catch (e) {
           print(e);
         }

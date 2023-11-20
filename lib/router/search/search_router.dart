@@ -175,7 +175,7 @@ class _SearchRouter extends CustState<SearchRouter>
           Nip51List? list = await relayManager.getSingleNip51List(Nip51List.SEARCH_RELAYS, loggedUserSigner!);
           finished = true;
           EasyLoading.dismiss();
-          RouterUtil.router(context, RouterPath.RELAY_SET, list!=null? list : Nip51List(pubKey: loggedUserSigner!.getPublicKey(), kind: Nip51List.SEARCH_RELAYS, relays: searchRelays, createdAt: Helpers.now));
+          RouterUtil.router(context, RouterPath.RELAY_SET, list!=null? list : Nip51List(pubKey: loggedUserSigner!.getPublicKey(), kind: Nip51List.SEARCH_RELAYS, privateRelays: searchRelays, createdAt: Helpers.now));
         },
             title: "⚠ Your search relay list is empty.\nAdd some relays >>");
 //            You have no relays with search capabilities (NIP-50 support).\nConsider adding some (ex.: wss://relay.nostr.band), otherwise ONLY your contacts metadata will be searched.\nClick to relay settings >>");

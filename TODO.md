@@ -76,8 +76,10 @@
 - ~~blacklist for relays (NIP-51 PR)~~
 
 ===== v0.12
+- nip-51 PRIVATE relay lists!
+- mute list use nip51
 - use inboxForReactions for broadcasting reactions to inbox relays
-- nip-51 PRIVATE relay sets!
+- show in account list, which ones are read-only
 -
 - save notification events to cache DB
 - FIX SOCKETS CONNECTION PROBLEMS!!!!!!!!!!!!!!!

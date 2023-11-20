@@ -1,22 +1,18 @@
-import 'package:dart_ndk/db/db_cache_manager.dart';
 import 'package:dart_ndk/nips/nip01/helpers.dart';
-import 'package:dart_ndk/nips/nip01/metadata.dart';
 import 'package:dart_ndk/nips/nip50/nip50.dart';
 import 'package:dart_ndk/nips/nip51/nip51.dart';
 import 'package:dart_ndk/relay.dart';
-import 'package:dart_ndk/relay_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:provider/provider.dart';
 import 'package:yana/main.dart';
 import 'package:yana/provider/relay_provider.dart';
 import 'package:yana/router/user/search_relay_component.dart';
+import 'package:yana/utils/router_path.dart';
 
 import '../../i18n/i18n.dart';
 import '../../nostr/relay_metadata.dart';
 import '../../ui/confirm_dialog.dart';
-import '../../ui/editor/search_mention_user_component.dart';
-import '../../ui/editor/text_input_and_search_dialog.dart';
 import '../../utils/base.dart';
 import '../../utils/router_util.dart';
 
@@ -50,7 +46,6 @@ class _RelayListRouter extends State<RelayListRouter> with SingleTickerProviderS
     // });
   }
 
-
   @override
   void dispose() {
     super.dispose();
@@ -69,6 +64,16 @@ class _RelayListRouter extends State<RelayListRouter> with SingleTickerProviderS
         relayList = arg;
       }
     }
+    popupItemBuilder(context) {
+      List<PopupMenuEntry<String>> list = [
+        const PopupMenuItem(
+          value: "public",
+          child: Text("Add public"),
+        ),
+        const PopupMenuItem(value: "private", child: Text("Add private"))
+      ];
+      return list;
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -82,19 +87,19 @@ class _RelayListRouter extends State<RelayListRouter> with SingleTickerProviderS
           ),
         ),
         title:
-        // DropdownButton<String>(
-        //   value: selectedList,
-        //   items: list!.map((relaySet) =>DropdownMenuItem(child: Text("${relaySet.title??relaySet.name}" ),value: relaySet.name)).toList(),
-        //   onChanged: (value) {
-        //     print("!!!!!!!!!!!!!! $value");
-        //     setState(() {
-        //       relaySet = relayManager.getCachedNip51RelaySet(value!, loggedUserSigner!);
-        //       selectedList = value!;
-        //     });
-        //   },
-      // )
+            // DropdownButton<String>(
+            //   value: selectedList,
+            //   items: list!.map((relaySet) =>DropdownMenuItem(child: Text("${relaySet.title??relaySet.name}" ),value: relaySet.name)).toList(),
+            //   onChanged: (value) {
+            //     print("!!!!!!!!!!!!!! $value");
+            //     setState(() {
+            //       relaySet = relayManager.getCachedNip51RelaySet(value!, loggedUserSigner!);
+            //       selectedList = value!;
+            //     });
+            //   },
+            // )
 
-          Text("${relayList!.displayTitle} (${relayList!.relays!.length})"),
+            Text("${relayList!.displayTitle} (${relayList!.allRelays!.length})"),
       ),
       body: Container(
         margin: const EdgeInsets.only(
@@ -102,21 +107,15 @@ class _RelayListRouter extends State<RelayListRouter> with SingleTickerProviderS
         ),
         child: RefreshIndicator(
           onRefresh: () async {
-            // RelayManager relayManager = RelayManager();
-            // await relayManager.connect();
-            // relayManager.cacheManager = cacheManager;
-            // await Future.delayed(const Duration(seconds: 5));
             Nip51List? refreshedList = await relayManager.getSingleNip51List(relayList!.kind, loggedUserSigner!, forceRefresh: true);
-            if (refreshedList == null) {
-              refreshedList = Nip51List(pubKey: relayList!.pubKey, kind: relayList!.kind, relays: [], createdAt: Helpers.now);
-            }
+            refreshedList ??= Nip51List(pubKey: relayList!.pubKey, kind: relayList!.kind, privateRelays: [], publicRelays: [], createdAt: Helpers.now);
             setState(() {
               relayList = refreshedList;
             });
           },
           child: ListView.builder(
             itemBuilder: (context, index) {
-              int total = relayList != null ? relayList!.relays!.length : 0;
+              int total = relayList != null ? relayList!.allRelays!.length : 0;
               if (index == total && loggedUserSigner!.canSign()) {
                 return Column(children: [
                   TextField(
@@ -126,12 +125,13 @@ class _RelayListRouter extends State<RelayListRouter> with SingleTickerProviderS
                       prefixIcon: const Icon(Icons.lan),
                       hintText: "start typing relay name or URL",
                       suffixIcon: Relay.clean(controller.text) != null
-                          ? IconButton(
+                          ? PopupMenuButton<String>(
                               icon: const Icon(Icons.add),
-                              onPressed: () async {
-                                add(controller.text);
-                              },
-                            )
+                              tooltip: "more",
+                              itemBuilder: popupItemBuilder,
+                              onSelected: (value) async {
+                                add(controller.text, value == "private" ? true : false);
+                              })
                           : null,
                     ),
                   ),
@@ -143,31 +143,34 @@ class _RelayListRouter extends State<RelayListRouter> with SingleTickerProviderS
                               shrinkWrap: true,
                               itemBuilder: (context, index) {
                                 return SearchRelayItemComponent(
-                                  url: searchResults[index],
-                                  width: 400,
-                                  onTap: (url) {
-                                    add(url);
-                                    //replaceMentionUser(metadata.pubKey);
-                                  },
-                                );
+                                    url: searchResults[index],
+                                    width: 400,
+                                    popupMenuButton: PopupMenuButton<String>(
+                                        icon: const Icon(Icons.add),
+                                        tooltip: "more",
+                                        itemBuilder: popupItemBuilder,
+                                        onSelected: (value) async {
+                                          add(searchResults[index], value == "private" ? true : false);
+                                        }));
                               },
                               itemCount: searchResults.length))
                       : Container()
                 ]);
               }
               return RelaySetItemComponent(
-                url: relayList!.relays![index],
+                private: relayList!.privateRelays != null && relayList!.privateRelays!.contains(relayList!.allRelays![index]),
+                url: relayList!.allRelays![index],
                 removable: loggedUserSigner!.canSign(),
                 onRemove: (url) async {
                   bool? result = await ConfirmDialog.show(context, "Confirm add ${url} to list");
                   if (result != null && result) {
                     EasyLoading.show(status: 'Removing from list and broadcasting...', maskType: EasyLoadingMaskType.black, dismissOnTap: true);
                     relayList = await relayManager.broadcastRemoveNip51Relay(relayList!.kind, url, myOutboxRelaySet!.urls, loggedUserSigner!,
-                        defaultRelaysIfEmpty: relayList!.relays);
+                        defaultRelaysIfEmpty: relayList!.privateRelays);
                     if (relayList!.kind == Nip51List.SEARCH_RELAYS) {
-                      searchRelays = relayList!.relays!;
+                      searchRelays = relayList!.allRelays!;
                     } else if (relayList!.kind == Nip51List.BLOCKED_RELAYS) {
-                      relayManager.blockedRelays = relayList!.relays!;
+                      relayManager.blockedRelays = relayList!.allRelays!;
                     }
                     relayProvider.notifyListeners();
                     EasyLoading.dismiss();
@@ -176,7 +179,7 @@ class _RelayListRouter extends State<RelayListRouter> with SingleTickerProviderS
                 },
               );
             },
-            itemCount: (relayList != null ? relayList!.relays!.length : 0) + (loggedUserSigner!.canSign() ? 1 : 0),
+            itemCount: (relayList != null ? relayList!.allRelays!.length : 0) + (loggedUserSigner!.canSign() ? 1 : 0),
           ),
         ),
       ),
@@ -184,7 +187,7 @@ class _RelayListRouter extends State<RelayListRouter> with SingleTickerProviderS
   }
 
   void onEditingComplete() async {
-    List<String> result = await relayProvider.findRelays(controller.text, nip: relayList!.kind == Nip51List.SEARCH_RELAYS? Nip50.NIP : null);
+    List<String> result = await relayProvider.findRelays(controller.text, nip: relayList!.kind == Nip51List.SEARCH_RELAYS ? Nip50.NIP : null);
     result.forEach((url) {
       if (relayManager.getRelay(url) == null || relayManager.getRelay(url)!.info == null) {
         relayManager.relays[url] = Relay(url);
@@ -200,7 +203,6 @@ class _RelayListRouter extends State<RelayListRouter> with SingleTickerProviderS
       searchResults = result;
     });
   }
-
 
   int compareRelays(RelayMetadata r1, RelayMetadata r2) {
     Relay? relay1 = relayManager.getRelay(r1.url!);
@@ -219,7 +221,7 @@ class _RelayListRouter extends State<RelayListRouter> with SingleTickerProviderS
     return a2 ? 1 : (r2.count != null ? r2.count!.compareTo(r1.count!) : 0);
   }
 
-  Future<void> add(String url) async {
+  Future<void> add(String url, bool private) async {
     String? cleanUrl = Relay.clean(url);
     if (cleanUrl == null) {
       EasyLoading.showError(
@@ -230,7 +232,7 @@ class _RelayListRouter extends State<RelayListRouter> with SingleTickerProviderS
       );
       return;
     }
-    if (relayList!.relays!.contains(cleanUrl)) {
+    if (relayList!.privateRelays!.contains(cleanUrl) || relayList!.publicRelays!.contains(cleanUrl)) {
       EasyLoading.showError(
         "Relay already on list",
         dismissOnTap: true,
@@ -239,15 +241,15 @@ class _RelayListRouter extends State<RelayListRouter> with SingleTickerProviderS
       );
       return;
     }
-    bool? result = await ConfirmDialog.show(context, "Confirm add ${url} to list");
+    bool? result = await ConfirmDialog.show(context, "Confirm add ${private ? "private" : "public"} ${url} to list");
     if (result != null && result) {
       EasyLoading.show(status: 'Broadcasting relay list...', maskType: EasyLoadingMaskType.black, dismissOnTap: true);
-      relayList = await relayManager.broadcastAddNip51ListRelay(relayList!.kind, url, myOutboxRelaySet!.urls, loggedUserSigner!, private: false);
+      relayList = await relayManager.broadcastAddNip51ListRelay(relayList!.kind, url, myOutboxRelaySet!.urls, loggedUserSigner!, private: private);
       if (relayList!.kind == Nip51List.SEARCH_RELAYS) {
-        searchRelays = relayList!.relays!;
+        searchRelays = relayList!.allRelays!;
         await relayManager.reconnectRelays(searchRelays);
       } else if (relayList!.kind == Nip51List.BLOCKED_RELAYS) {
-        relayManager.blockedRelays = relayList!.relays!;
+        relayManager.blockedRelays = relayList!.allRelays!;
       }
       relayProvider.notifyListeners();
       EasyLoading.dismiss();
@@ -261,10 +263,11 @@ class _RelayListRouter extends State<RelayListRouter> with SingleTickerProviderS
 class RelaySetItemComponent extends StatelessWidget {
   String url;
   Function(String)? onRemove;
+  bool private;
 
   bool removable;
 
-  RelaySetItemComponent({super.key, required this.url, this.removable = true, this.onRemove});
+  RelaySetItemComponent({super.key, required this.url, required this.private, this.removable = true, this.onRemove});
 
   @override
   Widget build(BuildContext context) {
@@ -273,7 +276,14 @@ class RelaySetItemComponent extends StatelessWidget {
     var cardColor = themeData.cardColor;
     var bodySmallFontSize = themeData.textTheme.labelSmall!.fontSize;
 
-    Widget leftBtn = Container();
+    Widget leftBtn = GestureDetector(
+        onTap: () async {
+          EasyLoading.showInfo(private ? "Private" : "Public", dismissOnTap: true, duration: const Duration(seconds: 3));
+        },
+        child: Icon(
+          private ? Icons.perm_identity_sharp : Icons.public,
+          color: themeData.disabledColor,
+        ));
 
     Widget rightBtn = Container();
     if (removable && onRemove != null) {
@@ -329,16 +339,31 @@ class RelaySetItemComponent extends StatelessWidget {
           children: [
             leftBtn,
             Expanded(
-              child: Column(
+              child: GestureDetector(
+                onTap: () async {
+                  if (relayManager.getRelay(url) == null || relayManager.getRelay(url)!.info == null) {
+                    relayManager.relays[url] = Relay(url);
+                    EasyLoading.show(status: "Loading relay info...");
+                    relayManager.getRelayInfo(url).then((info) {
+                      EasyLoading.dismiss();
+                      if (info != null) {
+                        RouterUtil.router(context, RouterPath.RELAY_INFO, relayManager.relays[url]);
+                      }
+                    });
+                  } else {
+                    RouterUtil.router(context, RouterPath.RELAY_INFO, relayManager.relays[url]);
+                  }
+                },
+                child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
-                    margin: const EdgeInsets.only(bottom: 2),
-                    child: Text(url),
+                    margin: const EdgeInsets.only(bottom: 2, left: 5),
+                    child: Text(url)
                   ),
                 ],
               ),
-            ),
+            )),
             rightBtn,
           ],
         ),
