@@ -62,12 +62,6 @@ class _SearchRouter extends CustState<SearchRouter>
   Future<void> onReady(BuildContext context) async {
     bindLoadMoreScroll(loadableScrollController);
 
-    ContactList? contactList = await contactListProvider.loadContactList(loggedUserSigner!.getPublicKey());
-    if (contactList!=null) {
-      for (var element in contactList.contacts) {
-        metadataProvider.getMetadata(element);
-      }
-    }
     controller.addListener(() {
       var hasText = StringUtil.isNotBlank(controller.text);
       if (!showSuffix && hasText) {
@@ -278,7 +272,6 @@ class _SearchRouter extends CustState<SearchRouter>
 
   EventMemBox eventMemBox = EventMemBox();
 
-  // Filter? filter;
   Map<String, dynamic>? filterMap;
 
   @override

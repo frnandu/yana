@@ -40,7 +40,6 @@ class MetadataProvider extends ChangeNotifier with LaterFunction {
   }
 
   Metadata? getMetadata(String pubKey) {
-    // relayManager.getSingleMetadata(pubKey);
     var metadata = cacheManager.loadMetadata(pubKey);
     if (metadata != null) {
       return metadata;
@@ -68,21 +67,24 @@ class MetadataProvider extends ChangeNotifier with LaterFunction {
     }
     return null;
   }
+  bool loading=false;
 
   void _loadNeedingUpdateMetadatas() async {
-    if (_needUpdateMetadatas.isEmpty) {
+    if (_needUpdateMetadatas.isEmpty || loading) {
       return;
     }
     RelaySet? relaySet = settingProvider.gossip == 1 && feedRelaySet != null
         ? feedRelaySet
         : myInboxRelaySet;
     if (relaySet != null) {
+      loading=true;
       List<Metadata> loaded = await relayManager.loadMissingMetadatas(
           _needUpdateMetadatas, relaySet,
           splitRequestsByPubKeyMappings: settingProvider.gossip == 1, onLoad: (metadata) {
             notifyListeners();
       });
       _needUpdateMetadatas.clear();
+      loading=false;
 
       if (loaded.isNotEmpty) {
         notifyListeners();

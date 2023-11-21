@@ -77,12 +77,11 @@
 - ~~nip-51 PRIVATE relay lists!~~
 
 ===== v0.12
-- search: not all contacts loaded
 - when empty search relay list, how to use default relays and allow to edit list (add/remove)???
 - use inboxForReactions for broadcasting reactions to inbox relays
 - show in account list, which ones are read-only
--
 - save notification events to cache DB
+- 
 - NIP07 browser for some web apps!?
 - choose to which relays / lists to broadcast on new note (bounty)
 - make thread detail subscription of new replies work
@@ -97,6 +96,7 @@
 - WTF nwc needs fresh relayManager for get_info/get_balance??
 
 - ===== v0.13
+- fix DMS when switching between accounts
 - mute list use nip51
 - group notification reactions to the same post (similar to amethyst)
 - show used data of background service in KBs

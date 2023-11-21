@@ -218,13 +218,7 @@ void onStart(ServiceInstance service) async {
                   print(e);
                 }
               }
-              try {
-                await Future.wait(relayManager.webSockets.keys.map((url) => relayManager.webSockets[url]!.sink.close().timeout(const Duration(seconds:3), onTimeout: () {
-                  print("timeout while trying to close socket $url");
-                })).toList());
-              } catch (e) {
-                print(e);
-              }
+              await relayManager.closeAllSockets();
             });
           }
         });
@@ -291,29 +285,24 @@ Future<void> initRelays({bool newKey = false}) async {
   await relayManager.connect();
 
   UserRelayList? userRelayList = !newKey ? await relayManager.getSingleUserRelayList(loggedUserSigner!.getPublicKey()) : null;
-  Nip51List? blockedRelays = await relayManager.getSingleNip51List(Nip51List.BLOCKED_RELAYS, loggedUserSigner!);
-  if (blockedRelays!=null) {
-    relayManager.blockedRelays = blockedRelays.allRelays!;
-  }
-  Nip51List? searchRelaySet = await relayManager.getSingleNip51List(Nip51List.SEARCH_RELAYS, loggedUserSigner!);
-  if (searchRelaySet!=null) {
-    searchRelays = searchRelaySet.allRelays!;
-    await relayManager.reconnectRelays(searchRelays);
-  }
-  if (userRelayList != null) {
-    createMyRelaySets(userRelayList);
-    await relayManager.connect(urls: userRelayList != null ? userRelayList!.urls : RelayManager.DEFAULT_BOOTSTRAP_RELAYS);
-  } else {
+  if (userRelayList == null) {
     int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-    createMyRelaySets(UserRelayList(
+    userRelayList = UserRelayList(
         pubKey: loggedUserSigner!.getPublicKey(),
         relays: {for (String url in RelayManager.DEFAULT_BOOTSTRAP_RELAYS) url: ReadWriteMarker.readWrite},
         createdAt: now,
-        refreshedTimestamp: now));
+        refreshedTimestamp: now);
   }
+  createMyRelaySets(userRelayList);
+  await relayManager.connect(urls: userRelayList!.urls);
+
   print("Loading contact list...");
   ContactList? contactList = !newKey ? await relayManager.loadContactList(loggedUserSigner!.getPublicKey()) : null;
   if (contactList != null) {
+    for (var element in contactList.contacts) {
+      metadataProvider.getMetadata(element);
+    }
+
     print("Loaded ${contactList.contacts.length} contacts...");
     if (settingProvider.gossip == 1) {
       feedRelaySet = relayManager.getRelaySet("feed", loggedUserSigner!.getPublicKey());
@@ -340,6 +329,17 @@ Future<void> initRelays({bool newKey = false}) async {
   notificationsProvider.startSubscription();
   dmProvider.initDMSessions(loggedUserSigner!.getPublicKey());
   metadataProvider.notifyListeners();
+  relayManager.getSingleNip51List(Nip51List.BLOCKED_RELAYS, loggedUserSigner!).then((blockedRelays) {
+    if (blockedRelays!=null) {
+      relayManager.blockedRelays = blockedRelays.allRelays!;
+    }
+  },);
+  relayManager.getSingleNip51List(Nip51List.SEARCH_RELAYS, loggedUserSigner!).then((searchRelaySet)  {
+    if (searchRelaySet!=null) {
+      searchRelays = searchRelaySet.allRelays!;
+      for (var url in searchRelays) { relayManager.connectRelay(url);}
+    }
+  });
   try {
     if (PlatformUtil.isAndroid() || PlatformUtil.isIOS()) {
       initBackgroundService(settingProvider.backgroundService);
@@ -881,28 +881,22 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
             print(e);
           }
         }
-        try {
-          await Future.wait(relayManager.webSockets.keys.map((url) => relayManager.webSockets[url]!.sink.close().timeout(const Duration(seconds:3), onTimeout: () {
-            print("timeout while trying to close socket $url");
-          })).toList());
-        } catch (e) {
-          print(e);
-        }
+        // await relayManager.closeAllSockets();
 
         relayManager.allowReconnectRelays=true;
 
-        Set<String> urls = {};
-        urls.addAll(myInboxRelaySet!.urls);
-        if (settingProvider.gossip == 1 && feedRelaySet!=null) {
-          urls.addAll(feedRelaySet!.urls);
-        }
-
-        try {
-          await relayManager.connect(urls: urls);
-          // await relayManager.reconnectRelays(urls);
-        } catch (e) {
-          print(e);
-        }
+        // Set<String> urls = {};
+        // urls.addAll(myInboxRelaySet!.urls);
+        // if (settingProvider.gossip == 1 && feedRelaySet!=null) {
+        //   urls.addAll(feedRelaySet!.urls);
+        // }
+        //
+        // try {
+        //   await relayManager.reconnectRelays(urls);
+        //   // await relayManager.reconnectRelays(urls);
+        // } catch (e) {
+        //   print(e);
+        // }
 
         followEventProvider.startSubscriptions();
         notificationsProvider.startSubscription();
@@ -926,11 +920,7 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
               }
             }
 
-            try {
-              await Future.wait(relayManager.webSockets.values.map((webSocket) => webSocket.sink.close()).toList());
-            } catch (e) {
-              print(e);
-            }
+            await relayManager.closeAllSockets();
 
             // if (settingProvider.backgroundService) {
             //   backgroundService!.startService();

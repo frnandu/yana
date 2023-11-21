@@ -294,16 +294,18 @@ class DMProvider extends ChangeNotifier with PenddingEventsLaterFunction {
     // if (kDebugMode) {
     //   EasyLoading.showSuccess("Loaded ${events.length} DM events from relays", duration: const Duration(seconds: 5));
     // }
+    List<Nip01Event> toSave = [];
     for (var event in events) {
       var addResult = _addEvent(localPubkey!, event);
       // save to local
       if (addResult) {
-        cacheManager.saveEvent(event);
+        toSave.add(event);
         updated = true;
       }
     }
 
     if (updated) {
+      cacheManager.saveEvents(toSave);
       _sortDetailList();
       if (updateUI) {
         notifyListeners();
