@@ -1,5 +1,6 @@
 import 'package:dart_ndk/event_filter.dart';
 import 'package:dart_ndk/nips/nip01/event.dart';
+import 'package:dart_ndk/nips/nip51/nip51.dart';
 import 'package:flutter/material.dart';
 import 'package:yana/provider/data_util.dart';
 
@@ -13,7 +14,11 @@ class FilterProvider extends ChangeNotifier implements EventFilter {
 
   List<String> dirtywordList = [];
 
+  Nip51List? muteList;
+
   late TrieTree trieTree;
+
+  int get muteListCount => muteList!=null? muteList!.elements.length : 0;
 
   static FilterProvider getInstance() {
     if (_instance == null) {

@@ -1,9 +1,6 @@
-import 'package:dart_ndk/db/db_cache_manager.dart';
 import 'package:dart_ndk/nips/nip01/helpers.dart';
-import 'package:dart_ndk/nips/nip01/metadata.dart';
 import 'package:dart_ndk/nips/nip51/nip51.dart';
 import 'package:dart_ndk/relay.dart';
-import 'package:dart_ndk/relay_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:provider/provider.dart';
@@ -14,8 +11,6 @@ import 'package:yana/router/user/search_relay_component.dart';
 import '../../i18n/i18n.dart';
 import '../../nostr/relay_metadata.dart';
 import '../../ui/confirm_dialog.dart';
-import '../../ui/editor/search_mention_user_component.dart';
-import '../../ui/editor/text_input_and_search_dialog.dart';
 import '../../utils/base.dart';
 import '../../utils/router_util.dart';
 
@@ -108,9 +103,7 @@ class _RelaySetRouter extends State<RelaySetRouter> with SingleTickerProviderSta
         child: RefreshIndicator(
           onRefresh: () async {
             Nip51Set? refreshedRelaySet = await relayManager.getSingleNip51RelaySet(relaySet!.name, loggedUserSigner!, forceRefresh: true);
-            if (refreshedRelaySet == null) {
-              refreshedRelaySet = Nip51Set(pubKey: relaySet!.pubKey, name: relaySet!.name, createdAt: Helpers.now);
-            }
+            refreshedRelaySet ??= Nip51Set(pubKey: relaySet!.pubKey, name: relaySet!.name, createdAt: Helpers.now, elements: []);
             setState(() {
               relaySet = refreshedRelaySet;
             });

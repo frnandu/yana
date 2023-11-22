@@ -49,6 +49,7 @@ import 'package:yana/router/relays/relay_info_router.dart';
 import 'package:yana/router/search/search_router.dart';
 import 'package:yana/router/user/followed_router.dart';
 import 'package:yana/router/user/followed_tags_list_router.dart';
+import 'package:yana/router/user/mute_list_router.dart';
 import 'package:yana/router/user/relay_list_router.dart';
 import 'package:yana/router/user/relay_set_router.dart';
 import 'package:yana/router/user/user_history_contact_list_router.dart';
@@ -280,8 +281,6 @@ Future<void> initProvidersAndStuff() async {
 
 Future<void> initRelays({bool newKey = false}) async {
 
-  relayManager.eventFilters.add(filterProvider);
-
   await relayManager.connect();
 
   UserRelayList? userRelayList = !newKey ? await relayManager.getSingleUserRelayList(loggedUserSigner!.getPublicKey()) : null;
@@ -295,6 +294,10 @@ Future<void> initRelays({bool newKey = false}) async {
   }
   createMyRelaySets(userRelayList);
   await relayManager.connect(urls: userRelayList!.urls);
+  relayManager.getSingleNip51List(Nip51List.MUTE, loggedUserSigner!).then((list) {
+    filterProvider.muteList = list;
+    relayManager.eventFilters.add(filterProvider);
+  },);
 
   print("Loading contact list...");
   ContactList? contactList = !newKey ? await relayManager.loadContactList(loggedUserSigner!.getPublicKey()) : null;
@@ -656,6 +659,7 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
       RouterPath.USER_RELAYS: (context) => const UserRelayRouter(),
       RouterPath.RELAY_SET: (context) => const RelaySetRouter(),
       RouterPath.RELAY_LIST: (context) => const RelayListRouter(),
+      RouterPath.MUTE_LIST: (context) => const MuteListRouter(),
       RouterPath.DM_DETAIL: (context) => const DMDetailRouter(),
       RouterPath.THREAD_DETAIL: (context) => ThreadDetailRouter(),
       RouterPath.EVENT_DETAIL: (context) => const EventDetailRouter(),

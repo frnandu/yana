@@ -15,6 +15,7 @@ class RouterPath {
   static const String USER_RELAYS = "/userRelays";
   static const String RELAY_SET = "/relaySet";
   static const String RELAY_LIST = "/relayList";
+  static const String MUTE_LIST = "/muteList";
   static const String DM_DETAIL = "/dmDetail";
   static const String THREAD_DETAIL = "/threadDetail";
   static const String EVENT_DETAIL = "/eventDetail";
