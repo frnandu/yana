@@ -158,22 +158,22 @@ class _SearchRouter extends CustState<SearchRouter>
 
     if (StringUtil.isBlank(controller.text)) {
       // bool anyNip50 = myInboxRelaySet!=null && relayManager.getConnectedRelays(myInboxRelaySet!.urls).any((relay) => relay.info!=null && relay.info!.nips!=null && relay.info!.nips.contains(50));
-      if (searchRelays==null || searchRelays.isEmpty) {
-        body = SearchActionItemComponent(onTap: () async {
-          bool finished = false;
-          Future.delayed(const Duration(milliseconds: 500), () {
-            if (!finished) {
-              EasyLoading.show(status: 'Loading relay list...', maskType: EasyLoadingMaskType.black, dismissOnTap: true);
-            }
-          });
-          Nip51List? list = await relayManager.getSingleNip51List(Nip51List.SEARCH_RELAYS, loggedUserSigner!);
-          finished = true;
-          EasyLoading.dismiss();
-          RouterUtil.router(context, RouterPath.RELAY_SET, list!=null? list : Nip51List(pubKey: loggedUserSigner!.getPublicKey(), kind: Nip51List.SEARCH_RELAYS, privateRelays: searchRelays, createdAt: Helpers.now));
-        },
-            title: "⚠ Your search relay list is empty.\nAdd some relays >>");
-//            You have no relays with search capabilities (NIP-50 support).\nConsider adding some (ex.: wss://relay.nostr.band), otherwise ONLY your contacts metadata will be searched.\nClick to relay settings >>");
-      }
+//       if (searchRelays==null || searchRelays.isEmpty) {
+//         body = SearchActionItemComponent(onTap: () async {
+//           bool finished = false;
+//           Future.delayed(const Duration(milliseconds: 500), () {
+//             if (!finished) {
+//               EasyLoading.show(status: 'Loading relay list...', maskType: EasyLoadingMaskType.black, dismissOnTap: true);
+//             }
+//           });
+//           Nip51List? list = await relayManager.getSingleNip51List(Nip51List.SEARCH_RELAYS, loggedUserSigner!);
+//           finished = true;
+//           EasyLoading.dismiss();
+//           RouterUtil.router(context, RouterPath.L, list!=null? list : Nip51List(pubKey: loggedUserSigner!.getPublicKey(), kind: Nip51List.SEARCH_RELAYS, privateRelays: searchRelays, createdAt: Helpers.now));
+//         },
+//             title: "⚠ Your search relay list is empty.\nAdd some relays >>");
+// //            You have no relays with search capabilities (NIP-50 support).\nConsider adding some (ex.: wss://relay.nostr.band), otherwise ONLY your contacts metadata will be searched.\nClick to relay settings >>");
+//       }
     }
 
     // if (searchAction == SearchActions.searchEventFromCache) {
@@ -277,7 +277,7 @@ class _SearchRouter extends CustState<SearchRouter>
   @override
   void doQuery() {
     preQuery();
-    List<String> relaysWithNip50 = searchRelays;//!=null? searchRelays.where((url) {
+    List<String> relaysWithNip50 = searchRelays.isNotEmpty ? searchRelays : ["wss://relay.nostr.band", "wss://relay.noshere.com"];//!=null? searchRelays.where((url) {
     //   Relay? relay = relayManager.getRelay(url);
     //   return relay!=null? relay.supportsNip(50) : false;
     // }).toList() : [];

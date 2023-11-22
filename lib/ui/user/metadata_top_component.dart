@@ -182,8 +182,8 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
                 borderRadius: BorderRadius.circular(20),
               ),
               padding:
-                  const EdgeInsets.only(top: 4, bottom: 4, left: 8, right: 8),
-              margin: const EdgeInsets.only(right: 5, top:8),
+                  const EdgeInsets.only(top: 4, bottom: 4, left: 6, right: 5),
+              margin: const EdgeInsets.only(right: 3, top:8),
               child: Text(
                 "follows you",
                 style: TextStyle(
@@ -544,7 +544,7 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
 
   Widget wrapBtn(Widget child) {
     return Container(
-      margin: const EdgeInsets.only(top: 10, right: 4),
+      margin: const EdgeInsets.only(top: 10, right: 2),
       child: child,
     );
   }
@@ -673,7 +673,7 @@ class MetadataTextBtn extends StatelessWidget {
         child: Text(
           text,
           style: TextStyle(
-            fontSize: Base.BASE_FONT_SIZE + 2,
+            fontSize: Base.BASE_FONT_SIZE - 1,
             // fontWeight: FontWeight.bold,
             color: borderColor,
           ),

@@ -98,6 +98,8 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
             zapColor = Colors.orange;
           }
         }
+        // TODO should reaction if only 1 kind
+        //String? reaction = eventReactions?.reaction;
 
         return Container(
           margin: const EdgeInsets.only(top:10),

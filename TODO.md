@@ -77,7 +77,6 @@
 - ~~nip-51 PRIVATE relay lists!~~
 
 ===== v0.12
-- when empty search relay list, how to use default relays and allow to edit list (add/remove)???
 - use inboxForReactions for broadcasting reactions to inbox relays
 - show in account list, which ones are read-only
 - save notification events to cache DB
@@ -106,7 +105,7 @@
 - animated screen ASAP after splash
 - isar v4 for web
 - load more on big posts
-
+- drafts
 - detect new followers by comparing in background previous followers list and generating new notification
 - login by searching some user by name/displayName
 

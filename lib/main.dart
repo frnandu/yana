@@ -167,7 +167,7 @@ RelaySet? feedRelaySet;
 RelaySet? myInboxRelaySet;
 RelaySet? myOutboxRelaySet;
 
-List<String> searchRelays = [ "wss://relay.nostr.band", "wss://relay.noshere.com"];
+List<String> searchRelays = [];
 
 bool firstLogin = false;
 
@@ -329,15 +329,19 @@ Future<void> initRelays({bool newKey = false}) async {
   notificationsProvider.startSubscription();
   dmProvider.initDMSessions(loggedUserSigner!.getPublicKey());
   metadataProvider.notifyListeners();
+  relayManager.blockedRelays = [];
   relayManager.getSingleNip51List(Nip51List.BLOCKED_RELAYS, loggedUserSigner!).then((blockedRelays) {
     if (blockedRelays!=null) {
       relayManager.blockedRelays = blockedRelays.allRelays!;
+      relayProvider.notifyListeners();
     }
   },);
+  searchRelays = [];
   relayManager.getSingleNip51List(Nip51List.SEARCH_RELAYS, loggedUserSigner!).then((searchRelaySet)  {
     if (searchRelaySet!=null) {
       searchRelays = searchRelaySet.allRelays!;
       for (var url in searchRelays) { relayManager.connectRelay(url);}
+      relayProvider.notifyListeners();
     }
   });
   try {
@@ -402,9 +406,14 @@ Future<void> main() async {
     print(err);
   }
   DbCacheManager dbCacheManager = DbCacheManager();
-  await dbCacheManager.init(directory: PlatformUtil.isWeb() ? isar.Isar.sqliteInMemory : (await getApplicationDocumentsDirectory()).path);
-  cacheManager = dbCacheManager;
-  relayManager.cacheManager = cacheManager;
+  try {
+    await dbCacheManager.init(directory: PlatformUtil.isWeb() ? isar.Isar.sqliteInMemory : (await getApplicationDocumentsDirectory()).path);
+    cacheManager = dbCacheManager;
+    relayManager.cacheManager = cacheManager;
+  } catch (e) {
+    cacheManager = relayManager.cacheManager;
+    print(e);
+  }
   relayManager.eventVerifier = HybridEventVerifier();
 
   if (!PlatformUtil.isWeb() && PlatformUtil.isPC()) {

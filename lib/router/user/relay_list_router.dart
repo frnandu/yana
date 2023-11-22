@@ -162,7 +162,7 @@ class _RelayListRouter extends State<RelayListRouter> with SingleTickerProviderS
                 url: relayList!.allRelays![index],
                 removable: loggedUserSigner!.canSign(),
                 onRemove: (url) async {
-                  bool? result = await ConfirmDialog.show(context, "Confirm add ${url} to list");
+                  bool? result = await ConfirmDialog.show(context, "Confirm remove ${url} from list");
                   if (result != null && result) {
                     EasyLoading.show(status: 'Removing from list and broadcasting...', maskType: EasyLoadingMaskType.black, dismissOnTap: true);
                     relayList = await relayManager.broadcastRemoveNip51Relay(relayList!.kind, url, myOutboxRelaySet!.urls, loggedUserSigner!,
@@ -359,7 +359,7 @@ class RelaySetItemComponent extends StatelessWidget {
                 children: [
                   Container(
                     margin: const EdgeInsets.only(bottom: 2, left: 5),
-                    child: Text(url)
+                    child: Text(url.replaceAll("wss://", "").replaceAll("ws://", ""))
                   ),
                 ],
               ),

@@ -82,7 +82,7 @@ class RelayProvider extends ChangeNotifier {
 
   Future<void> addRelay(String relayAddr) async {
     ReadWriteMarker marker = ReadWriteMarker.readWrite;
-    if (myOutboxRelaySet != null && !myOutboxRelaySet!.urls.contains(relayAddr)) {
+    if (myOutboxRelaySet != null && !myOutboxRelaySet!.urls.contains(relayAddr) && myInboxRelaySet!=null && !myInboxRelaySet!.urls.contains(relayAddr)) {
       UserRelayList userRelayList = await relayManager.broadcastAddNip65Relay(relayAddr, marker, myOutboxRelaySet!.urls, loggedUserSigner!);
       createMyRelaySets(userRelayList);
       await relayManager.saveRelaySet(myOutboxRelaySet!);

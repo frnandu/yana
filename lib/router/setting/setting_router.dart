@@ -366,25 +366,32 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
     networkTiles.add(
         SettingsTile.navigation(
             onPressed: (context) async {
-              bool finished = false;
-              Future.delayed(const Duration(milliseconds: 500), () {
-                if (!finished) {
-                  EasyLoading.showInfo('Loading relay list...', maskType: EasyLoadingMaskType.black, dismissOnTap: true, duration: const Duration(seconds: 3));
+              if (searchRelays.isNotEmpty) {
+                bool finished = false;
+                Future.delayed(const Duration(milliseconds: 500), () {
+                  if (!finished) {
+                    EasyLoading.showInfo(
+                        'Loading relay list...', maskType: EasyLoadingMaskType.black, dismissOnTap: true, duration: const Duration(seconds: 3));
+                  }
+                });
+                try {
+                  Nip51List? list = await relayManager.getSingleNip51List(Nip51List.SEARCH_RELAYS, loggedUserSigner!);
+                  finished = true;
+                  RouterUtil.router(context, RouterPath.RELAY_LIST,
+                      list != null ? list : Nip51List(
+                          pubKey: loggedUserSigner!.getPublicKey(), kind: Nip51List.SEARCH_RELAYS, privateRelays: [], createdAt: Helpers.now));
+                } finally {
+                  EasyLoading.dismiss();
                 }
-              });
-              try {
-                Nip51List? list = await relayManager.getSingleNip51List(Nip51List.SEARCH_RELAYS, loggedUserSigner!);
-                finished = true;
-                RouterUtil.router(context, RouterPath.RELAY_LIST,
-                    list!=null? list : Nip51List(pubKey: loggedUserSigner!.getPublicKey(), kind: Nip51List.SEARCH_RELAYS, privateRelays: searchRelays, createdAt: Helpers.now));
-              } finally {
-                EasyLoading.dismiss();
+              } else {
+                RouterUtil.router(context, RouterPath.RELAY_LIST, Nip51List(
+                        pubKey: loggedUserSigner!.getPublicKey(), kind: Nip51List.SEARCH_RELAYS, privateRelays: [], createdAt: Helpers.now));
               }
             },
             leading: const Icon(
               Icons.search,
             ),
-            trailing: Icon(Icons.navigate_next, color: themeData.disabledColor),
+            trailing: Icon(Icons.navigate_next),
             title: Selector<RelayProvider, List<String>?>(
                 builder: (context, searchRelays, child) {
                   return Text(
@@ -398,28 +405,33 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
 
     networkTiles.add(SettingsTile.navigation(
         onPressed: (context) async {
-          bool finished = false;
-          Future.delayed(const Duration(milliseconds: 500), () {
-            if (!finished) {
-              EasyLoading.showInfo('Loading relay list...', maskType: EasyLoadingMaskType.black, dismissOnTap: true, duration: const Duration(seconds: 3));
+          if (relayManager.blockedRelaysCount>0) {
+            bool finished = false;
+            Future.delayed(const Duration(milliseconds: 500), () {
+              if (!finished) {
+                EasyLoading.showInfo('Loading relay list...', maskType: EasyLoadingMaskType.black, dismissOnTap: true, duration: const Duration(seconds: 3));
+              }
+            });
+            try {
+              Nip51List? list = await relayManager.getSingleNip51List(Nip51List.BLOCKED_RELAYS, loggedUserSigner!);
+              finished = true;
+              RouterUtil.router(context, RouterPath.RELAY_LIST,
+                  list != null ? list : Nip51List(
+                      pubKey: loggedUserSigner!.getPublicKey(), kind: Nip51List.BLOCKED_RELAYS, privateRelays: [], createdAt: Helpers.now));
+            } finally {
+              EasyLoading.dismiss();
             }
-          });
-          try {
-            Nip51List? list = await relayManager.getSingleNip51List(Nip51List.BLOCKED_RELAYS, loggedUserSigner!);
-            finished = true;
-            RouterUtil.router(context, RouterPath.RELAY_LIST,
-                list != null ? list : Nip51List(pubKey: loggedUserSigner!.getPublicKey(), kind: Nip51List.BLOCKED_RELAYS, privateRelays: [], createdAt: Helpers.now));
-          } finally {
-            EasyLoading.dismiss();
+          } else {
+            RouterUtil.router(context, RouterPath.RELAY_LIST, Nip51List(
+                    pubKey: loggedUserSigner!.getPublicKey(), kind: Nip51List.BLOCKED_RELAYS, privateRelays: [], createdAt: Helpers.now));
           }
         },
         leading: const Icon(
           Icons.not_interested,
         ),
-        trailing: Icon(Icons.navigate_next, color: themeData.disabledColor),
+        trailing: Icon(Icons.navigate_next),
         title: Text(
             "${relayManager.blockedRelaysCount} Blocked relays",
-            style: TextStyle(color: themeData.disabledColor),
           )));
 
     List<AbstractSettingsTile> securityTiles = [];

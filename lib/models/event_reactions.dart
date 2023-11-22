@@ -24,6 +24,19 @@ class EventReactions implements FindEventInterface {
 
   List<Nip01Event> likes = [];
 
+  String? get reaction {
+    String? reaction = null;
+    if (likes.isNotEmpty) {
+      for (var reactionEvent in likes) {
+        if (reaction != null && reaction != reactionEvent.content) {
+          return null;
+        }
+        reaction = reactionEvent.content;
+      }
+    }
+    return reaction;
+  }
+
   List<Nip01Event>? myLikeEvents;
 
   bool hasMyReply = false;
