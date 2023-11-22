@@ -674,7 +674,7 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
       RouterPath.FOLLOWED_TAGS_LIST: (context) => const FollowedTagsListRouter(),
       RouterPath.COMMUNITY_DETAIL: (context) => const CommunityDetailRouter(),
       RouterPath.FOLLOWED_COMMUNITIES: (context) => const FollowedCommunitiesRouter(),
-      RouterPath.FOLLOWED: (context) => const FollowedRouter(),
+      RouterPath.FOLLOWED: (context) => FollowedRouter(),
       RouterPath.LOGIN: (context) => const LoginRouter(canGoBack: true),
     };
 

@@ -12,7 +12,13 @@ import '../../utils/router_util.dart';
 import '../../utils/string_util.dart';
 
 class FollowedRouter extends StatefulWidget {
-  const FollowedRouter({super.key});
+
+  List<String>? pubkeys;
+  String? title;
+
+  FollowedRouter({super.key});
+
+  FollowedRouter.withTitle(this.pubkeys, this.title, {super.key});
 
   @override
   State<StatefulWidget> createState() {
@@ -23,19 +29,18 @@ class FollowedRouter extends StatefulWidget {
 class _FollowedRouter extends State<FollowedRouter> {
   ScrollController scrollController = ScrollController();
 
-  List<String>? pubkeys;
 
   @override
   Widget build(BuildContext context) {
     var s = I18n.of(context);
 
-    if (pubkeys == null) {
+    if (widget.pubkeys == null) {
       var arg = RouterUtil.routerArgs(context);
       if (arg != null) {
-        pubkeys = arg as List<String>;
+        widget.pubkeys = arg as List<String>;
       }
     }
-    if (pubkeys == null) {
+    if (widget.pubkeys == null) {
       RouterUtil.back(context);
       return Container();
     }
@@ -45,13 +50,13 @@ class _FollowedRouter extends State<FollowedRouter> {
     var listView = ListView.builder(
       controller: scrollController,
       itemBuilder: (context, index) {
-        var pubkey = pubkeys![index];
+        var pubkey = widget.pubkeys![index];
         if (StringUtil.isBlank(pubkey)) {
           return Container();
         }
 
         return Container(
-          margin: EdgeInsets.only(bottom: Base.BASE_PADDING_HALF),
+          margin: const EdgeInsets.only(bottom: Base.BASE_PADDING_HALF),
           child: Selector<MetadataProvider, Metadata?>(
             builder: (context, metadata, child) {
               return  metadata != null
@@ -74,7 +79,7 @@ class _FollowedRouter extends State<FollowedRouter> {
           ),
         );
       },
-      itemCount: pubkeys!.length,
+      itemCount: widget.pubkeys!.length,
     );
 
     var main = Scaffold(
@@ -89,7 +94,7 @@ class _FollowedRouter extends State<FollowedRouter> {
           ),
         ),
         title: Text(
-          s.Followers,
+          widget.title??s.Followers,
           style: TextStyle(
             fontSize: titleFontSize,
             fontWeight: FontWeight.bold,

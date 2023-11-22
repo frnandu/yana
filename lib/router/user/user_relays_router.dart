@@ -8,11 +8,13 @@ import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:provider/provider.dart';
 import 'package:yana/main.dart';
 import 'package:yana/provider/relay_provider.dart';
+import 'package:yana/router/user/followed_router.dart';
 
 import '../../i18n/i18n.dart';
 import '../../nostr/relay_metadata.dart';
 import '../../ui/confirm_dialog.dart';
 import '../../utils/base.dart';
+import '../../utils/router_path.dart';
 import '../../utils/router_util.dart';
 
 class UserRelayRouter extends StatefulWidget {
@@ -171,10 +173,21 @@ class RelayMetadataComponent extends StatelessWidget {
     }, selector: (context, _provider) {
       return _provider.getFeedRelayState(relayMetadata!.url!);
     });
+
+    String contacts = "contact${(relayMetadata!.count! > 1) ? "s" : ""}";
+
     if (relayMetadata!.count != null && relayMetadata!.count! > 0) {
-      rightButtons.add(Text("${relayMetadata!.count} ", style: TextStyle(color: themeData.dividerColor, fontSize: themeData.textTheme.labelLarge!.fontSize)));
-      rightButtons.add(Text("contact" + ((relayMetadata!.count! > 1) ? "s" : ""),
-          style: TextStyle(color: themeData.disabledColor, fontSize: themeData.textTheme.labelSmall!.fontSize)));
+      rightButtons.add(GestureDetector(onTap: () {
+        RouterUtil.push(context,  MaterialPageRoute(builder: (context) {
+          return FollowedRouter.withTitle(feedRelaySet!.relaysMap[relayMetadata!.url]!.map((e) => e.pubKey).toList(), "${relayMetadata!.count} $contacts");
+        }));
+      }, child: Text("${relayMetadata!.count} ", style: TextStyle(color: themeData.dividerColor, fontSize: themeData.textTheme.labelLarge!.fontSize))));
+      rightButtons.add(GestureDetector(onTap: () {
+        RouterUtil.push(context,  MaterialPageRoute(builder: (context) {
+          return FollowedRouter.withTitle(feedRelaySet!.relaysMap[relayMetadata!.url]!.map((e) => e.pubKey).toList(), "${relayMetadata!.count} $contacts");
+        }));
+      }, child: Text(contacts,
+          style: TextStyle(color: themeData.disabledColor, fontSize: themeData.textTheme.labelSmall!.fontSize))));
     }
     if (loggedUserSigner!.canSign()) {
       if (addAble && relayMetadata!.count==0) {
