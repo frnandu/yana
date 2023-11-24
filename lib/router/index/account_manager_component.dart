@@ -14,6 +14,7 @@ import 'package:yana/ui/point_component.dart';
 import 'package:yana/utils/router_util.dart';
 
 import '../../provider/data_util.dart';
+import '../../ui/confirm_dialog.dart';
 import '../../utils/platform_util.dart';
 import '/js/js_helper.dart' as js;
 import '../../i18n/i18n.dart';
@@ -121,31 +122,6 @@ class AccountsState extends State<AccountsComponent> {
 
   Future<void> addAccount() async {
     RouterUtil.router(context, RouterPath.LOGIN);
-    //
-    // String? key = await TextInputDialog.show(
-    //     context, I18n.of(context).Input_account_private_key,
-    //     valueCheck: addAccountCheck);
-    // if (StringUtil.isNotBlank(key)) {
-    //   if (mounted) {
-    //     var result = await ConfirmDialog.show(
-    //         context, I18n.of(context).Add_account_and_login);
-    //     if (result == true) {
-    //       bool isPublic = Nip19.isPubkey(key!);
-    //       if (isPublic || Nip19.isPrivateKey(key)) {
-    //         key = Nip19.decode(key);
-    //       }
-    //       // logout current and login new
-    //       var oldIndex = settingProvider.privateKeyIndex;
-    //       var newIndex = await settingProvider.addAndChangeKey(key, !isPublic);
-    //       if (oldIndex != newIndex) {
-    //         clearCurrentMemInfo();
-    //         doLogin();
-    //         settingProvider.notifyListeners();
-    //         RouterUtil.back(context);
-    //       }
-    //     }
-    //   }
-    // }
   }
 
   bool addAccountCheck(BuildContext p1, String privateKey) {
@@ -183,12 +159,6 @@ class AccountsState extends State<AccountsComponent> {
     nwcProvider.init();
     settingProvider.notifyListeners();
     EasyLoading.dismiss();
-
-    // UserRelayList? userRelayList = await relayManager!.getSingleUserRelayList(isPrivate ? getPublicKey(key!): key!);
-    // await relayManager!.connect(urls: userRelayList!=null? userRelayList.urls : RelayManager.DEFAULT_BOOTSTRAP_RELAYS);
-    // loggedUserSigner = isPrivate ? Bip340EventSigner(key, getPublicKey(key)) : Nip07EventSigner(await js.getPublicKeyAsync());
-    // nostr = await relayProvider.genNostr(
-    //     privateKey: isPrivate ? key : null, publicKey: isPrivate ? null : key);
   }
 
   void onLoginTap(int index) {
@@ -227,14 +197,6 @@ class AccountsState extends State<AccountsComponent> {
       } else {
         loggedUserSigner = null;
       }
-      // signOut complete
-      // String? key = settingProvider.key;
-      // if (settingProvider.key != null) {
-      //   // use next privateKey to login
-      //   bool isPrivate = settingProvider.isPrivateKey;
-      //   UserRelayList? userRelayList = await relayManager!.getSingleUserRelayList(isPrivate ? getPublicKey(key!): key!);
-      //   await relayManager!.connect(urls: userRelayList!=null? userRelayList.urls : RelayManager.DEFAULT_BOOTSTRAP_RELAYS);
-      // }
     }
 
     settingProvider.notifyListeners();
@@ -358,24 +320,26 @@ class _AccountManagerItemComponent extends State<AccountManagerItemComponent> {
           cacheManager: localCacheManager,
         );
       }
-
       list.add(Container(
         width: 24,
         alignment: Alignment.centerLeft,
         child: Container(
           width: 15,
-          child: widget.isCurrent
-              ? PointComponent(
-                  width: 15,
-                  color: currentColor,
-                )
-              : null,
+          margin: const EdgeInsets.only(right:10),
+          child: widget.isCurrent ? PointComponent(
+            width: 15,
+            color: currentColor,
+          ):
+          GestureDetector(
+            onTap: onLoginTap,
+            child: Icon(Icons.login, color: themeData.disabledColor),
+          )
         ),
       ));
-
       list.add(Container(
         width: IMAGE_WIDTH,
         height: IMAGE_WIDTH,
+        margin: const EdgeInsets.only(left:10),
         clipBehavior: Clip.hardEdge,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(IMAGE_WIDTH / 2),
@@ -385,12 +349,22 @@ class _AccountManagerItemComponent extends State<AccountManagerItemComponent> {
       ));
 
       list.add(Container(
-        margin: EdgeInsets.only(left: 5, right: 5),
+        margin: const EdgeInsets.only(left: 5, right: 5),
         child: NameComponent(
           pubkey: pubkey!,
+          fontColor: widget.isCurrent ? null : themeData.hintColor,
           metadata: metadata,
         ),
       ));
+      if (!settingProvider.isPrivateKeyIndex(widget.index)) {
+        list.add(Container(
+            width: 50,
+            alignment: Alignment.centerLeft,
+            child: const Text("(read only)",
+              style: TextStyle(fontWeight: FontWeight.w100, fontSize: 10),
+            )
+        ));
+      }
       list.add(Expanded(
           child: Container(
         padding: const EdgeInsets.only(
@@ -403,7 +377,8 @@ class _AccountManagerItemComponent extends State<AccountManagerItemComponent> {
           color: cardColor,
           borderRadius: BorderRadius.circular(10),
         ),
-        child: Text(
+        child:
+        Text(
           nip19PubKey!,
           overflow: TextOverflow.ellipsis,
         ),
@@ -412,14 +387,14 @@ class _AccountManagerItemComponent extends State<AccountManagerItemComponent> {
       list.add(GestureDetector(
         onTap: onLogout,
         child: Container(
-          padding: EdgeInsets.only(left: 5),
+          padding: const EdgeInsets.only(left: 5),
           height: LINE_HEIGHT,
-          child: Icon(Icons.logout),
+          child: Icon(Icons.close, color: widget.isCurrent ? null : themeData.disabledColor),
         ),
       ));
 
       return GestureDetector(
-        onTap: onTap,
+        onTap: onLoginTap,
         behavior: HitTestBehavior.translucent,
         child: Container(
           height: LINE_HEIGHT,
@@ -439,13 +414,16 @@ class _AccountManagerItemComponent extends State<AccountManagerItemComponent> {
     });
   }
 
-  void onLogout() {
-    if (widget.onLogoutTap != null) {
-      widget.onLogoutTap!(widget.index);
+  void onLogout() async {
+    bool? result = await ConfirmDialog.show(context, "Confirm remove account");
+    if (result != null && result) {
+      if (widget.onLogoutTap != null) {
+        widget.onLogoutTap!(widget.index);
+      }
     }
   }
 
-  void onTap() {
+  void onLoginTap() {
     if (widget.onLoginTap != null) {
       widget.onLoginTap!(widget.index);
     }

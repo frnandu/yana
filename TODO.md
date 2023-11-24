@@ -77,9 +77,9 @@
 - ~~nip-51 PRIVATE relay lists!~~
 - ~~use inboxForReactions for broadcasting reactions to inbox relays~~
 - ~~when blocking make the note disappear~~
+- ~~show in account list, which ones are read-only~~
 
 ===== v0.12
-- show in account list, which ones are read-only
 - save notification events to cache DB
 - 
 - NIP07 browser for some web apps!?
@@ -95,6 +95,8 @@
 - WTF nwc needs fresh relayManager for get_info/get_balance??
 
 - ===== v0.13
+- lists on profiles
+- import/merge other lists or other peoples public lists
 - fix DMS when switching between accounts
 - mute list use nip51
 - group notification reactions to the same post (similar to amethyst)

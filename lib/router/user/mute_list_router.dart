@@ -4,7 +4,6 @@ import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip01/filter.dart';
 import 'package:dart_ndk/nips/nip01/helpers.dart';
 import 'package:dart_ndk/nips/nip01/metadata.dart';
-import 'package:dart_ndk/nips/nip50/nip50.dart';
 import 'package:dart_ndk/nips/nip51/nip51.dart';
 import 'package:dart_ndk/relay.dart';
 import 'package:flutter/material.dart';
@@ -13,7 +12,6 @@ import 'package:provider/provider.dart';
 import 'package:yana/main.dart';
 import 'package:yana/provider/filter_provider.dart';
 import 'package:yana/provider/relay_provider.dart';
-import 'package:yana/router/user/search_relay_component.dart';
 import 'package:yana/utils/router_path.dart';
 
 import '../../i18n/i18n.dart';

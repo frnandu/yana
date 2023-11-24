@@ -808,16 +808,6 @@ class I18n {
     );
   }
 
-  /// `Filters`
-  String get Filters {
-    return Intl.message(
-      'Security Filters',
-      name: 'Filters',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `Relays`
   String get Relays {
     return Intl.message(

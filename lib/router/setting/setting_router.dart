@@ -267,6 +267,18 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
         initialValue: settingProvider.videoPreview == OpenStatus.OPEN,
         leading: const Icon(Icons.video_collection_outlined),
         title: Text(s.Video_preview)));
+    interfaceTiles.add(SettingsTile.switchTile(
+        activeSwitchColor: themeData.primaryColor,
+        onToggle: (value) {
+          settingProvider.autoOpenSensitive = value ? 1 : 0;
+        },
+        initialValue: settingProvider.autoOpenSensitive == OpenStatus.OPEN,
+        leading: const Icon(Icons.accessibility),
+        title: const Text("Automatically open sensitive content")));
+
+    //   name: s.Auto_Open_Sensitive_Content,
+    //   value: getOpenListDefault(settingProvider.autoOpenSensitive).name,
+    //   onTap: pickAutoOpenSensitive,
 
     List<AbstractSettingsTile> networkTiles = [];
 

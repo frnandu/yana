@@ -6,7 +6,6 @@ class RouterPath {
   static const String WALLET = "/wallet";
   static const String NWC = "/nwc";
   static const String RELAYS = "/relays";
-  static const String FILTER = "/filter";
   static const String USER = "/user";
   static const String PROFILE_EDITOR = "/profileEditor";
   static const String USER_CONTACT_LIST = "/userContactList";

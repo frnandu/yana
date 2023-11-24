@@ -107,6 +107,10 @@ class SettingProvider extends ChangeNotifier {
     return _keyIsPrivateMap[_settingData!.privateKeyIndex.toString()] ?? false;
   }
 
+  bool isPrivateKeyIndex(int index) {
+    return _keyIsPrivateMap[index.toString()] ?? false;
+  }
+
   Future<int> addAndChangeKey(String key, bool isPrivate, {bool updateUI = false}) async {
     int? findIndex;
     var entries = _keyMap.entries;

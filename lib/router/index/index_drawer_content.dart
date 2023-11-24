@@ -192,14 +192,6 @@ class _IndexDrawerContentComponnent extends State<IndexDrawerContentComponent> {
           })),
     );
 
-    list.add(IndexDrawerItem(
-      iconData: Icons.security,
-      name: s.Filters,
-      onTap: () {
-        RouterUtil.router(context, RouterPath.FILTER);
-      },
-    ));
-
     if (loggedUserSigner!.canSign()) {
       list.add(IndexDrawerItem(
         iconData: Icons.key,

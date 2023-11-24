@@ -1,81 +1,129 @@
 import 'package:dart_ndk/event_filter.dart';
 import 'package:dart_ndk/nips/nip01/event.dart';
+import 'package:dart_ndk/nips/nip01/metadata.dart';
+import 'package:dart_ndk/nips/nip25/reactions.dart';
 import 'package:dart_ndk/nips/nip51/nip51.dart';
 import 'package:flutter/material.dart';
-import 'package:yana/provider/data_util.dart';
-
-import '../main.dart';
-import '../utils/dirtywords_util.dart';
 
 class FilterProvider extends ChangeNotifier implements EventFilter {
   static FilterProvider? _instance;
 
-  List<String> dirtywordList = [];
+  Nip51List? _muteList;
+  List<String>? _mutedTags;
 
-  Nip51List? muteList;
+  TrieTree? trieTree;
 
-  late TrieTree trieTree;
+  set muteList(Nip51List? list) {
+    _muteList = list;
+    _mutedTags = list!=null? list.hashtags.map((element) => element.value.trim().toLowerCase()).toList() : [];
+    List<String> words = _muteList!=null? _muteList!.words.map((e) => e.value).toList():[];
+    List<List<int>> treeWords = List.generate(words.length, (index) {
+      var word = words[index];
+      return word.codeUnits;
+    });
+    trieTree = buildTrieTree(treeWords, null);
+  }
 
-  int get muteListCount => muteList!=null? muteList!.elements.length : 0;
+  int get muteListCount => _muteList!=null? _muteList!.elements.length : 0;
 
   static FilterProvider getInstance() {
-    if (_instance == null) {
-      _instance = FilterProvider();
-
-      var dirtywordList =
-          sharedPreferences.getStringList(DataKey.DIRTYWORD_LIST);
-      if (dirtywordList != null && dirtywordList.isNotEmpty) {
-        _instance!.dirtywordList = dirtywordList;
-      }
-
-      var wordsLength = _instance!.dirtywordList.length;
-      List<List<int>> words = List.generate(wordsLength, (index) {
-        var word = _instance!.dirtywordList[index];
-        return word.codeUnits;
-      });
-      _instance!.trieTree = buildTrieTree(words, null);
-    }
-
+    _instance ??= FilterProvider();
     return _instance!;
   }
 
-  bool checkDirtyword(String targetStr) {
-    if (dirtywordList.isEmpty) {
-      return false;
-    }
-    return trieTree.check(targetStr.toLowerCase());
-  }
-
-  void removeDirtyword(String word) {
-    dirtywordList.remove(word);
-    var wordsLength = dirtywordList.length;
-    List<List<int>> words = List.generate(wordsLength, (index) {
-      var word = _instance!.dirtywordList[index];
-      return word.codeUnits;
-    });
-    trieTree = buildTrieTree(words, null);
-
-    _updateDirtyword();
-  }
-
-  void addDirtyword(String word) {
-    dirtywordList.add(word);
-    trieTree.root.insertWord(word.toLowerCase().codeUnits, []);
-
-    _updateDirtyword();
-  }
-
-  void _updateDirtyword() {
-    sharedPreferences.setStringList(DataKey.DIRTYWORD_LIST, dirtywordList);
-    notifyListeners();
+  bool hasMutedWord(String targetStr) {
+    return trieTree!=null && trieTree!.check(targetStr.toLowerCase());
   }
 
   @override
   bool filter(Nip01Event event) {
-    return (muteList==null || !muteList!.elements.any((element) => element.tag == Nip51List.PUB_KEY && element.value == event.pubKey)) && !checkDirtyword(event.content);
+    return (event.kind==Metadata.KIND || !isMutedPubKey(event.pubKey)) && (event.kind==Reaction.KIND || !hasMutedWord(event.content)) && !hasMutedHashtag(event);
   }
 
-  isMutedPubKey(String pubKey) {
-    return muteList!=null && muteList!.elements.any((element) => element.tag == Nip51List.PUB_KEY && element.value==pubKey);
+  bool isMutedPubKey(String pubKey) {
+    return _muteList!=null && _muteList!.pubKeys.any((element) => element.value==pubKey);
+  }
+
+  bool hasMutedHashtag(Nip01Event event) {
+    List<String> tTags = event.tTags;
+    return tTags.isNotEmpty && _mutedTags!=null && tTags.any((tag) => _mutedTags!.contains(tag));
   }
 }
+
+TrieTree buildTrieTree(List<List<int>> words, List<int>? skips) {
+  skips ??= [];
+
+  var tree = TrieTree(TrieNode())..skips = skips;
+
+  for (var word in words) {
+    tree.root.insertWord(word, skips);
+  }
+
+  return tree;
+}
+
+class TrieTree {
+  TrieNode root;
+  List<int>? skips;
+
+  TrieTree(this.root);
+
+  bool check(String targetStr) {
+    var target = targetStr.codeUnits;
+    var index = 0;
+    var length = target.length;
+    for (; index < length;) {
+      var current = root;
+      for (var i = index; i < length; i++) {
+        var char = target[i];
+        var tmpNode = current.find(char);
+        if (tmpNode != null) {
+          current = tmpNode;
+          if (current.done) {
+            return true;
+          }
+        } else {
+          break;
+        }
+      }
+      index++;
+    }
+
+    return false;
+  }
+}
+
+class TrieNode {
+  Map<int, TrieNode> children = {};
+  bool done;
+
+  TrieNode({
+    this.done = false,
+  });
+
+  void insertWord(List<int> word, List<int> skips) {
+    var current = this;
+    for (var char in word) {
+      current = current.findOrCreate(char, skips);
+    }
+    current.done = true;
+  }
+
+  TrieNode? find(int char) {
+    return children[char];
+  }
+
+  TrieNode findOrCreate(int char, List<int> skips) {
+    var child = children[char];
+    if (child == null) {
+      child = TrieNode();
+
+      children[char] = child;
+      for (var skip in skips) {
+        children[skip] = child;
+      }
+    }
+    return child;
+  }
+}
+

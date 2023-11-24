@@ -85,7 +85,6 @@ import 'provider/webview_provider.dart';
 import 'router/community/community_detail_router.dart';
 import 'router/dm/dm_detail_router.dart';
 import 'router/event_detail/event_detail_router.dart';
-import 'router/filter/filter_router.dart';
 import 'router/index/index_router.dart';
 import 'router/keybackup/key_backup_router.dart';
 import 'router/notice/notice_router.dart';
@@ -672,7 +671,6 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
       RouterPath.WALLET: (context) => const WalletRouter(),
       RouterPath.NWC: (context) => const NwcRouter(),
       RouterPath.RELAYS: (context) => const RelaysRouter(),
-      RouterPath.FILTER: (context) => const FilterRouter(),
       RouterPath.PROFILE_EDITOR: (context) => const ProfileEditorRouter(),
       RouterPath.SETTING: (context) => SettingRouter(indexReload: reload),
       RouterPath.QRSCANNER: (context) => const QRScannerRouter(),
