@@ -162,7 +162,7 @@ AppLifecycleState appState = AppLifecycleState.resumed;
 
 EventSigner? loggedUserSigner;
 
-RelayManager relayManager = RelayManager(kIsWeb);
+RelayManager relayManager = RelayManager(isWeb: kIsWeb);
 late CacheManager cacheManager;
 
 RelaySet? feedRelaySet;

@@ -75,10 +75,11 @@
 - ~~on back from background, reconnect relays + resubscribe to all existing subscriptions~~
 - ~~blacklist for relays (NIP-51 PR)~~
 - ~~nip-51 PRIVATE relay lists!~~
+- ~~use inboxForReactions for broadcasting reactions to inbox relays~~
 
 ===== v0.12
-- use inboxForReactions for broadcasting reactions to inbox relays
 - show in account list, which ones are read-only
+- when blocking make the note disappear
 - save notification events to cache DB
 - 
 - NIP07 browser for some web apps!?
@@ -86,7 +87,6 @@
 - make thread detail subscription of new replies work
 - make reactions live again with subscriptions or some other way 
 - show progress of broadcasting note on relays
-- when blocking make the note disappear
 - include relay hints on nevent and stuff (bounty)
 - handle event deletions coming from relays, should delete in cache
 - don't validate signature for events cached on DB

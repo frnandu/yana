@@ -158,15 +158,15 @@ class _RelayListRouter extends State<RelayListRouter> with SingleTickerProviderS
                 ]);
               }
               return RelayListElementComponent(
-                private: relayList!.privateRelays != null && relayList!.privateRelays!.contains(relayList!.allRelays![index]),
-                url: relayList!.allRelays![index],
+                private: relayList!.elements[index]!.private,
+                url: relayList!.elements[index]!.value,
                 removable: loggedUserSigner!.canSign(),
                 onRemove: (url) async {
                   bool? result = await ConfirmDialog.show(context, "Confirm remove ${url} from list");
                   if (result != null && result) {
                     EasyLoading.show(status: 'Removing from list and broadcasting...', maskType: EasyLoadingMaskType.black, dismissOnTap: true);
                     relayList = await relayManager.broadcastRemoveNip51Relay(relayList!.kind, url, myOutboxRelaySet!.urls, loggedUserSigner!,
-                        defaultRelaysIfEmpty: relayList!.privateRelays);
+                        defaultRelaysIfEmpty: relayList!.allRelays);
                     if (relayList!.kind == Nip51List.SEARCH_RELAYS) {
                       searchRelays = relayList!.allRelays!;
                     } else if (relayList!.kind == Nip51List.BLOCKED_RELAYS) {
@@ -232,7 +232,7 @@ class _RelayListRouter extends State<RelayListRouter> with SingleTickerProviderS
       );
       return;
     }
-    if (relayList!.privateRelays!.contains(cleanUrl) || relayList!.publicRelays!.contains(cleanUrl)) {
+    if (relayList!.allRelays!.contains(cleanUrl)) {
       EasyLoading.showError(
         "Relay already on list",
         dismissOnTap: true,

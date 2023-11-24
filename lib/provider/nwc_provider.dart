@@ -82,7 +82,7 @@ class NwcProvider extends ChangeNotifier {
     await settingProvider.setNwc(nwc);
     await settingProvider.setNwcSecret(secret!);
     var filter = Filter(kinds: [NwcKind.INFO_REQUEST], authors: [walletPubKey!]);
-    RelayManager relayManager = RelayManager(kIsWeb);
+    RelayManager relayManager = RelayManager(isWeb: kIsWeb);
     // if (relayManager.webSockets[relay]!=null) {
     //   relayManager.webSockets[relay]!.disconnect("a");
     //   relayManager.webSockets[relay]!.close();

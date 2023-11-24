@@ -69,10 +69,7 @@ class _MuteListRouter extends State<MuteListRouter> with SingleTickerProviderSta
     }
     popupItemBuilder(context) {
       List<PopupMenuEntry<String>> list = [
-        const PopupMenuItem(
-          value: "public",
-          child: Text("Add public"),
-        ),
+        const PopupMenuItem(value: "public",child: Text("Add public")),
         const PopupMenuItem(value: "private", child: Text("Add private"))
       ];
       return list;
@@ -102,7 +99,7 @@ class _MuteListRouter extends State<MuteListRouter> with SingleTickerProviderSta
             //   },
             // )
 
-            Text("${muteList!.displayTitle} (${muteList!.allRelays!.length})"),
+            Text("${muteList!.displayTitle} (${muteList!.elements!.length})"),
       ),
       body: Container(
         margin: const EdgeInsets.only(
@@ -112,6 +109,8 @@ class _MuteListRouter extends State<MuteListRouter> with SingleTickerProviderSta
           onRefresh: () async {
             Nip51List? refreshedList = await relayManager.getSingleNip51List(muteList!.kind, loggedUserSigner!, forceRefresh: true);
             refreshedList ??= Nip51List(pubKey: muteList!.pubKey, kind: muteList!.kind, elements: [], createdAt: Helpers.now);
+            filterProvider.muteList = muteList;
+            filterProvider.notifyListeners();
             setState(() {
               muteList = refreshedList;
             });
@@ -126,7 +125,7 @@ class _MuteListRouter extends State<MuteListRouter> with SingleTickerProviderSta
                     onEditingComplete: onEditingComplete,
                     decoration: InputDecoration(
                       prefixIcon: const Icon(Icons.lan),
-                      hintText: "start typing relay name or URL",
+                      hintText: "profile name, pubkey, hashtag or word",
                       suffixIcon: Relay.clean(controller.text) != null
                           ? PopupMenuButton<String>(
                               icon: const Icon(Icons.add),
@@ -163,25 +162,20 @@ class _MuteListRouter extends State<MuteListRouter> with SingleTickerProviderSta
               return MuteListElementComponent(
                 element: muteList!.elements![index],
                 removable: loggedUserSigner!.canSign(),
-                onRemove: (url) async {
-                  bool? result = await ConfirmDialog.show(context, "Confirm remove ${url} from list");
+                onRemove: (element) async {
+                  bool? result = await ConfirmDialog.show(context, "Confirm remove ${element.value} from list");
                   if (result != null && result) {
                     EasyLoading.show(status: 'Removing from list and broadcasting...', maskType: EasyLoadingMaskType.black, dismissOnTap: true);
-                    muteList = await relayManager.broadcastRemoveNip51Relay(muteList!.kind, url, myOutboxRelaySet!.urls, loggedUserSigner!,
-                        defaultRelaysIfEmpty: muteList!.privateRelays);
-                    if (muteList!.kind == Nip51List.SEARCH_RELAYS) {
-                      searchRelays = muteList!.allRelays!;
-                    } else if (muteList!.kind == Nip51List.BLOCKED_RELAYS) {
-                      relayManager.blockedRelays = muteList!.allRelays!;
-                    }
-                    relayProvider.notifyListeners();
+                    muteList = await relayManager.broadcastRemoveNip51ListElement(muteList!.kind, element.tag, element.value, myOutboxRelaySet!.urls, loggedUserSigner!);
+                    filterProvider.muteList = muteList;
+                    filterProvider.notifyListeners();
                     EasyLoading.dismiss();
                     setState(() {});
                   }
                 },
               );
             },
-            itemCount: (muteList != null ? muteList!.allRelays!.length : 0) + (loggedUserSigner!.canSign() ? 1 : 0),
+            itemCount: (muteList != null ? muteList!.elements!.length : 0) + (loggedUserSigner!.canSign() ? 1 : 0),
           ),
         ),
       ),
@@ -247,13 +241,8 @@ class _MuteListRouter extends State<MuteListRouter> with SingleTickerProviderSta
     if (result != null && result) {
       EasyLoading.show(status: 'Broadcasting relay list...', maskType: EasyLoadingMaskType.black, dismissOnTap: true);
       muteList = await relayManager.broadcastAddNip51ListRelay(muteList!.kind, url, myOutboxRelaySet!.urls, loggedUserSigner!, private: private);
-      if (muteList!.kind == Nip51List.SEARCH_RELAYS) {
-        searchRelays = muteList!.allRelays!;
-        await relayManager.reconnectRelays(searchRelays);
-      } else if (muteList!.kind == Nip51List.BLOCKED_RELAYS) {
-        relayManager.blockedRelays = muteList!.allRelays!;
-      }
-      relayProvider.notifyListeners();
+      filterProvider.muteList = muteList;
+      filterProvider.notifyListeners();
       EasyLoading.dismiss();
       setState(() {
         controller.text = "";
@@ -264,7 +253,7 @@ class _MuteListRouter extends State<MuteListRouter> with SingleTickerProviderSta
 
 class MuteListElementComponent extends StatelessWidget {
   Nip51ListElement element;
-  Function(String)? onRemove;
+  Function(Nip51ListElement)? onRemove;
 
   bool removable;
 
@@ -290,7 +279,7 @@ class MuteListElementComponent extends StatelessWidget {
     if (removable && onRemove != null) {
       rightBtn = GestureDetector(
         onTap: () async {
-          // onRemove!(element);
+          onRemove!(element);
         },
         child: Icon(
           Icons.close,
@@ -362,14 +351,14 @@ class MuteListElementComponent extends StatelessWidget {
                     margin: const EdgeInsets.only(bottom: 2, left: 5),
                     child: element.tag == Nip51List.PUB_KEY ?  Selector<MetadataProvider, Metadata?>(
                       builder: (context, metadata, child) {
-                        return  metadata != null
-                            ? SearchMentionUserItemComponent(
-                            metadata: metadata!,
+                        return
+                            SearchMentionUserItemComponent(
+                            metadata: metadata??Metadata(pubKey: element.value),
                             onTap: (metadata) {
                               RouterUtil.router(context, RouterPath.USER, element.value);
                             },
                             width: 400)
-                            : Container();
+                            ;
                         // MetadataComponent(
                         //   pubKey: pubkey,
                         //   metadata: metadata,

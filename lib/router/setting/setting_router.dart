@@ -10,6 +10,7 @@ import 'package:provider/provider.dart';
 import 'package:settings_ui/settings_ui.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:yana/nostr/relay_metadata.dart';
+import 'package:yana/provider/filter_provider.dart';
 import 'package:yana/router/index/account_manager_component.dart';
 import 'package:yana/utils/platform_util.dart';
 import 'package:yana/utils/router_util.dart';
@@ -54,6 +55,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
     var titleFontSize = themeData.textTheme.bodyLarge!.fontSize;
     var _settingProvider = Provider.of<SettingProvider>(context);
     var _relayProvider = Provider.of<RelayProvider>(context);
+    var _filterProvider = Provider.of<FilterProvider>(context);
 
     var mainColor = themeData.primaryColor;
     var hintColor = themeData.hintColor;
