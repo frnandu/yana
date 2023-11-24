@@ -1,7 +1,7 @@
+import 'package:dart_ndk/nips/nip01/metadata.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../models/metadata.dart';
 import '../../provider/metadata_provider.dart';
 import '../../utils/router_path.dart';
 import '../../utils/router_util.dart';

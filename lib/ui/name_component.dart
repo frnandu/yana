@@ -1,6 +1,6 @@
+import 'package:dart_ndk/nips/nip01/metadata.dart';
 import 'package:flutter/material.dart';
 import 'package:yana/ui/nip05_valid_component.dart';
-import 'package:yana/models/metadata.dart';
 
 import '../nostr/nip19/nip19.dart';
 import '../utils/string_util.dart';
@@ -34,7 +34,8 @@ class _NameComponnet extends State<NameComponent> {
   @override
   Widget build(BuildContext context) {
     var themeData = Theme.of(context);
-    var textSize = themeData.textTheme.bodyMedium!.fontSize;
+    // var textSize = themeData.textTheme.bodyMedium!.fontSize;
+    var textSize = themeData.textTheme.bodyLarge!.fontSize;
     var smallTextSize = themeData.textTheme.bodySmall!.fontSize;
     Color hintColor = themeData.hintColor;
     var metadata = widget.metadata;
@@ -45,7 +46,6 @@ class _NameComponnet extends State<NameComponent> {
       hintColor = widget.fontColor!;
     }
 
-    int nip05Status = -1;
     if (metadata != null) {
       if (StringUtil.isNotBlank(metadata.displayName)) {
         displayName = metadata.displayName!;
@@ -56,12 +56,10 @@ class _NameComponnet extends State<NameComponent> {
         displayName = metadata.name!;
       }
 
-      if (StringUtil.isNotBlank(metadata.nip05)) {
-        nip05Status = 1;
-      }
-      if (metadata.valid != null && metadata.valid! > 0) {
-        nip05Status = 2;
-      }
+      // TODO
+      // if (metadata.valid != null && metadata.valid! > 0) {
+      //   nip05Status = 2;
+      // }
     }
 
     List<InlineSpan> nameList = [];
@@ -78,7 +76,7 @@ class _NameComponnet extends State<NameComponent> {
         overflow: TextOverflow.fade,
       ),
     ));
-    if (StringUtil.isNotBlank(name)) {
+    if (StringUtil.isNotBlank(name) && name.trim().toLowerCase()!=displayName.trim().toLowerCase()) {
       nameList.add(WidgetSpan(
         child: Container(
           margin: EdgeInsets.only(left: 2),
@@ -94,10 +92,10 @@ class _NameComponnet extends State<NameComponent> {
     }
 
     Widget nip05Widget = Container();
-    if (widget.showNip05) {
+    if (metadata!=null && StringUtil.isNotBlank(metadata.nip05) && widget.showNip05) {
       nip05Widget = Container(
-        margin: const EdgeInsets.only(left: 3),
-        child: Nip05ValidComponent(pubkey: widget.pubkey),
+        margin: const EdgeInsets.only(left: 3, bottom:2),
+        child: Nip05ValidComponent(metadata: widget.metadata!),
       );
     }
 

@@ -1,3 +1,4 @@
+import 'package:dart_ndk/nips/nip01/metadata.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -13,7 +14,6 @@ import 'package:yana/utils/theme_style.dart';
 
 import '../../i18n/i18n.dart';
 import '../../main.dart';
-import '../../models/metadata.dart';
 import '../../provider/metadata_provider.dart';
 import '../../provider/relay_provider.dart';
 import '../../utils/index_taps.dart';
@@ -36,9 +36,10 @@ class _IndexDrawerContentComponnent extends State<IndexDrawerContentComponent> {
   @override
   Widget build(BuildContext context) {
     var _indexProvider = Provider.of<IndexProvider>(context);
+    var _relayProvider = Provider.of<RelayProvider>(context);
 
     var s = I18n.of(context);
-    var pubkey = nostr!.publicKey;
+    var pubkey = loggedUserSigner!.getPublicKey();
     var themeData = Theme.of(context);
     var mainColor = themeData.primaryColor;
     var hintColor = themeData.hintColor;
@@ -126,7 +127,7 @@ class _IndexDrawerContentComponnent extends State<IndexDrawerContentComponent> {
       },
     ));
 
-    if (nostr!.privateKey!=null) {
+    if (loggedUserSigner!.canSign()) {
       list.add(IndexDrawerItem(
           iconData: Icons.account_balance_wallet,
           name: s.Wallet,
@@ -199,7 +200,7 @@ class _IndexDrawerContentComponnent extends State<IndexDrawerContentComponent> {
       },
     ));
 
-    if (nostr!.privateKey!=null) {
+    if (loggedUserSigner!.canSign()) {
       list.add(IndexDrawerItem(
         iconData: Icons.key,
         name: s.Key_Backup,

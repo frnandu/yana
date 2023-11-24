@@ -1,17 +1,13 @@
-import 'package:bot_toast/bot_toast.dart';
+import 'package:dart_ndk/models/relay_set.dart';
+import 'package:dart_ndk/nips/nip01/event.dart';
+import 'package:dart_ndk/nips/nip01/filter.dart';
+import 'package:dart_ndk/request.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 
-import '../nostr/event_kind.dart' as kind;
-import '../nostr/event.dart';
-import '../nostr/filter.dart';
-import '../nostr/nip02/contact.dart';
-import '../nostr/nip04/dm_session.dart';
-import '../nostr/nostr.dart';
-import '../models/dm_session_info.dart';
-import '../models/dm_session_info_db.dart';
-import '../models/event_db.dart';
 import '../main.dart';
+import '../models/dm_session_info.dart';
+import '../nostr/event_kind.dart' as kind;
+import '../nostr/nip04/dm_session.dart';
 import '../utils/peddingevents_later_function.dart';
 import '../utils/string_util.dart';
 
@@ -71,16 +67,16 @@ class DMProvider extends ChangeNotifier with PenddingEventsLaterFunction {
       double now = DateTime.now().millisecondsSinceEpoch/1000;
       detail.info!.readedTime = now.toInt();
 
-      if (create || hasNewMessage) {
-        create ? DMSessionInfoDB.insert(detail.info!) : DMSessionInfoDB.update(
-            detail.info!);
-        dmProvider.infoMap[detail.dmSession.pubkey] = detail.info!;
-      }
+      // if (create || hasNewMessage) {
+      //   create ? DMSessionInfoDB.insert(detail.info!) : DMSessionInfoDB.update(
+      //       detail.info!);
+      //   dmProvider.infoMap[detail.dmSession.pubkey] = detail.info!;
+      // }
       notifyListeners();
     }
   }
 
-  void addEventAndUpdateReadedTime(DMSessionDetail detail, Event event) {
+  void addEventAndUpdateReadedTime(DMSessionDetail detail, Nip01Event event) {
     penddingEvents.add(event);
     eventLaterHandle(penddingEvents, updateUI: true);
     updateReadedTime(detail);
@@ -92,7 +88,7 @@ class DMProvider extends ChangeNotifier with PenddingEventsLaterFunction {
     detail.info!.keyIndex = settingProvider.privateKeyIndex!;
     detail.info!.known = 1;
 
-    create ? await DMSessionInfoDB.insert(detail.info!) : await DMSessionInfoDB.update(detail.info!);
+    // create ? await DMSessionInfoDB.insert(detail.info!) : await DMSessionInfoDB.update(detail.info!);
 
     // DMSessionInfo o = DMSessionInfo(pubkey: pubkey);
     // o.keyIndex = keyIndex;
@@ -119,17 +115,19 @@ class DMProvider extends ChangeNotifier with PenddingEventsLaterFunction {
 
     this.localPubkey = localPubkey;
     var keyIndex = settingProvider.privateKeyIndex!;
-    var events = await EventDB.list(
-        keyIndex, kind.EventKind.DIRECT_MESSAGE, 0, 10000000);
+    List<Nip01Event>? events = cacheManager.loadEvents([],[kind.EventKind.DIRECT_MESSAGE]);
+
+    // await EventDB.list(
+    //     keyIndex, kind.EventKind.DIRECT_MESSAGE, 0, 10000000);
+    events.sort((a, b) => b.createdAt.compareTo(a.createdAt));
     if (events.isNotEmpty) {
       // find the newest event, subscribe behind the new newest event
       _initSince = events.first.createdAt;
     }
-    if (kDebugMode) {
-      BotToast.showText(
-          text: "Loaded ${events.length} DM events from DB");
-    }
-    Map<String, List<Event>> eventListMap = {};
+    // if (kDebugMode) {
+    //   EasyLoading.show(status: "Loaded ${events.length} DM events from DB");
+    // }
+    Map<String, List<Nip01Event>> eventListMap = {};
     for (var event in events) {
       // print("dmEvent");
       // print(event.toJson());
@@ -145,10 +143,10 @@ class DMProvider extends ChangeNotifier with PenddingEventsLaterFunction {
     }
 
     infoMap = {};
-    var infos = await DMSessionInfoDB.all(keyIndex);
-    for (var info in infos) {
-      infoMap[info.pubkey!] = info;
-    }
+    // var infos = await DMSessionInfoDB.all(keyIndex);
+    // for (var info in infos) {
+    //   infoMap[info.pubkey!] = info;
+    // }
 
     for (var entry in eventListMap.entries) {
       var pubkey = entry.key;
@@ -161,8 +159,7 @@ class DMProvider extends ChangeNotifier with PenddingEventsLaterFunction {
 
       var info = infoMap[pubkey];
       var detail = DMSessionDetail(session, info: info);
-      Contact? contact = contactListProvider.getContact(pubkey);
-      if (contact!=null) {
+      if (contactListProvider.contacts().contains(pubkey)) {
        _followingList.add(detail);
       } else {
         if (info != null && info.known == 1) {
@@ -172,6 +169,7 @@ class DMProvider extends ChangeNotifier with PenddingEventsLaterFunction {
         }
       }
     }
+    query();
 
     _sortDetailList();
     notifyListeners();
@@ -206,7 +204,7 @@ class DMProvider extends ChangeNotifier with PenddingEventsLaterFunction {
     // return newlist;
   }
 
-  String? _getPubkey(String? localPubkey, Event event) {
+  String? _getPubkey(String? localPubkey, Nip01Event event) {
     if (event.pubKey != localPubkey) {
       return event.pubKey;
     }
@@ -220,7 +218,7 @@ class DMProvider extends ChangeNotifier with PenddingEventsLaterFunction {
     return null;
   }
 
-  bool _addEvent(String localPubkey, Event event) {
+  bool _addEvent(String localPubkey, Nip01Event  event) {
     var pubkey = _getPubkey(localPubkey, event);
     if (StringUtil.isBlank(pubkey)) {
       return false;
@@ -233,8 +231,7 @@ class DMProvider extends ChangeNotifier with PenddingEventsLaterFunction {
       if (this.localPubkey!=null) {
         var detail = DMSessionDetail(session);
         var pubkey = _getPubkey(localPubkey, event);
-        Contact? contact = contactListProvider.getContact(pubkey!);
-        if (contact != null) {
+        if (contactListProvider.contacts().contains(pubkey)) {
           _followingList.add(detail);
         } else {
           _unknownList.add(detail);
@@ -247,58 +244,68 @@ class DMProvider extends ChangeNotifier with PenddingEventsLaterFunction {
       session = session.clone();
       _sessions[pubkey!] = session;
     }
-    _initSince = event.createdAt;
+    if (_initSince < event.createdAt) {
+      _initSince = event.createdAt;
+    }
 
     return addResult;
   }
 
-  void query({Nostr? targetNostr, bool subscribe = false}) {
-    targetNostr ??= nostr;
-    var filter0 = Filter(
-      kinds: [kind.EventKind.DIRECT_MESSAGE],
-      authors: [targetNostr!.publicKey],
-      since: _initSince + 1,
-    );
-    var filter1 = Filter(
-      kinds: [kind.EventKind.DIRECT_MESSAGE],
-      p: [targetNostr.publicKey],
-      since: _initSince + 1,
-    );
+  NostrRequest? subscription;
 
-    // if (!subscribe) {
-    //   targetNostr.addInitQuery([filter0.toJson(), filter1.toJson()], onEvent);
-    // } else {
-      targetNostr.query([filter0.toJson(), filter1.toJson()], onEvent);
-      // targetNostr.subscribe([filter0.toJson(), filter1.toJson()], onEvent);
-    // }
+  void query() {
+    if (!loggedUserSigner!.canSign()) {
+      return;
+    }
+    if (subscription!=null) {
+      relayManager.closeNostrRequest(subscription!);
+    }
+    var sentFilter = Filter(
+      kinds: [kind.EventKind.DIRECT_MESSAGE],
+      authors: [loggedUserSigner!.getPublicKey()],
+      since: _initSince + 1,
+    );
+    var receivedFilter = Filter(
+      kinds: [kind.EventKind.DIRECT_MESSAGE],
+      pTags: [loggedUserSigner!.getPublicKey()],
+      since: _initSince + 1,
+    );
+    RelaySet relaySet = myInboxRelaySet!;
+    relayManager!.subscription(receivedFilter, relaySet).then((request) {
+      subscription = request;
+      subscription!.stream.listen((event) {
+        onEvent(event);
+      });
+    },);
+    relayManager!.query(sentFilter, relaySet).then((request) {
+      request.stream.listen((event) {
+        onEvent(event);
+      });
+    },);
   }
 
-  // void handleEventImmediately(Event event) {
-  //   penddingEvents.add(event);
-  //   eventLaterHandle(penddingEvents);
-  // }
-
-  void onEvent(Event event) {
+  void onEvent(Nip01Event event) {
     later(event, eventLaterHandle, null);
   }
 
-  void eventLaterHandle(List<Event> events, {bool updateUI = true}) {
+  void eventLaterHandle(List<Nip01Event> events, {bool updateUI = true}) {
     bool updated = false;
-    var keyIndex = settingProvider.privateKeyIndex!;
-    if (kDebugMode) {
-      BotToast.showText(
-          text: "Loaded ${events.length} DM events from relays");
-    }
+    // var keyIndex = settingProvider.privateKeyIndex!;
+    // if (kDebugMode) {
+    //   EasyLoading.showSuccess("Loaded ${events.length} DM events from relays", duration: const Duration(seconds: 5));
+    // }
+    List<Nip01Event> toSave = [];
     for (var event in events) {
       var addResult = _addEvent(localPubkey!, event);
       // save to local
       if (addResult) {
+        toSave.add(event);
         updated = true;
-        EventDB.insert(keyIndex, event);
       }
     }
 
     if (updated) {
+      cacheManager.saveEvents(toSave);
       _sortDetailList();
       if (updateUI) {
         notifyListeners();

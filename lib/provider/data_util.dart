@@ -14,11 +14,7 @@ class DataUtil {
 class DataKey {
   static final String SETTING = "setting";
 
-  static final String CONTACT_LISTS = "contactLists";
-
   static final String RELAY_UPDATED_TIME = "relayUpdatedTime";
-
-  static final String BLOCK_LIST = "blockList";
 
   static final String DIRTYWORD_LIST = "dirtywordList";
 
@@ -30,4 +26,9 @@ class DataKey {
 
   static final String NWC_RELAY= "nwcRelay";
 
+  static final String FEED_POSTS_TIMESTAMP= "feedPosts";
+
+  static final String FEED_REPLIES_TIMESTAMP= "feedReplies";
+
+  static final String NOTIFICATIONS_TIMESTAMP= "notificationsTimestamp";
 }

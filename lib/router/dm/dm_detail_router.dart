@@ -1,4 +1,6 @@
-import 'package:bot_toast/bot_toast.dart';
+import 'package:dart_ndk/nips/nip04/nip04.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:dart_ndk/nips/nip01/metadata.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
@@ -10,9 +12,6 @@ import 'package:yana/ui/editor/editor_mixin.dart';
 
 import '../../i18n/i18n.dart';
 import '../../main.dart';
-import '../../models/metadata.dart';
-import '../../nostr/nip02/contact.dart';
-import '../../nostr/nip04/nip04.dart';
 import '../../provider/dm_provider.dart';
 import '../../provider/metadata_provider.dart';
 import '../../ui/editor/custom_emoji_embed_builder.dart';
@@ -24,6 +23,7 @@ import '../../ui/editor/tag_embed_builder.dart';
 import '../../ui/editor/video_embed_builder.dart';
 import '../../ui/name_component.dart';
 import '../../utils/base.dart';
+import '../../utils/router_path.dart';
 import '../../utils/router_util.dart';
 import 'dm_detail_item_component.dart';
 
@@ -65,18 +65,20 @@ class _DMDetailRouter extends CustState<DMDetailRouter> with EditorMixin {
 
     var nameComponnet = Selector<MetadataProvider, Metadata?>(
       builder: (context, metadata, child) {
-        return NameComponent(
+        return GestureDetector(onTap: () {
+          RouterUtil.router(context, RouterPath.USER, detail!.dmSession.pubkey);
+        }, child: NameComponent(
           pubkey: detail!.dmSession.pubkey,
           metadata: metadata,
-        );
+        ));
       },
       selector: (context, _provider) {
         return _provider.getMetadata(detail!.dmSession.pubkey);
       },
     );
 
-    var localPubkey = nostr!.publicKey;
-    agreement = NIP04.getAgreement(nostr!.privateKey!);
+    var localPubkey = loggedUserSigner!.getPublicKey();
+    agreement = Nip04.getAgreement(loggedUserSigner!.getPrivateKey()!);
 
     List<Widget> list = [];
 
@@ -164,7 +166,7 @@ class _DMDetailRouter extends CustState<DMDetailRouter> with EditorMixin {
             onPressed: send,
             style: const ButtonStyle(),
             child: Text(
-              s.Broadcast,
+              s.Send,
               style: TextStyle(
                 color: textColor,
                 fontSize: 16,
@@ -190,8 +192,7 @@ class _DMDetailRouter extends CustState<DMDetailRouter> with EditorMixin {
     );
 
     if (detail!.info == null && detail!.dmSession.newestEvent != null) {
-      Contact? contact = contactListProvider.getContact(detail!.dmSession.pubkey);
-      if (contact==null) {
+      if (!contactListProvider.contacts().contains(detail!.dmSession.pubkey)) {
         main = SizedBox(
           width: double.maxFinite,
           height: double.maxFinite,
@@ -245,18 +246,18 @@ class _DMDetailRouter extends CustState<DMDetailRouter> with EditorMixin {
   }
 
   Future<void> send() async {
-    var cancelFunc = BotToast.showLoading();
+    var cancelFunc = EasyLoading.show(status: "Sending...");
     try {
       var event = await doDocumentSave();
       if (event == null) {
-        BotToast.showText(text: I18n.of(context).Send_fail);
+        EasyLoading.show(status: I18n.of(context).Send_fail);
         return;
       }
       dmProvider.addEventAndUpdateReadedTime(detail!, event);
       editorController.clear();
       setState(() {});
     } finally {
-      cancelFunc.call();
+      EasyLoading.dismiss();
     }
   }
 

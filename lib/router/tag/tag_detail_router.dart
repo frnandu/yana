@@ -1,13 +1,13 @@
+import 'package:dart_ndk/nips/nip01/event.dart';
+import 'package:dart_ndk/nips/nip01/filter.dart';
+import 'package:dart_ndk/request.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:yana/router/tag/topic_map.dart';
+import 'package:yana/main.dart';
 import 'package:yana/ui/event_delete_callback.dart';
 
-import '../../main.dart';
 import '../../models/event_mem_box.dart';
-import '../../nostr/event.dart';
 import '../../nostr/event_kind.dart' as kind;
-import '../../nostr/filter.dart';
 import '../../provider/setting_provider.dart';
 import '../../ui/cust_state.dart';
 import '../../ui/event/event_list_component.dart';
@@ -32,6 +32,8 @@ class _TagDetailRouter extends CustState<TagDetailRouter>
   EventMemBox box = EventMemBox();
 
   ScrollController _controller = ScrollController();
+
+  NostrRequest? subscription;
 
   bool showTitle = false;
 
@@ -146,35 +148,38 @@ class _TagDetailRouter extends CustState<TagDetailRouter>
     );
   }
 
-  var subscribeId = StringUtil.rndNameStr(16);
-
   @override
   Future<void> onReady(BuildContext context) async {
     doQuery();
   }
 
-  void doQuery() {
-    // tag query
-    // https://github.com/nostr-protocol/nips/blob/master/12.md
+  void doQuery() async {
+    if (subscription!=null) {
+      await relayManager.closeNostrRequest(subscription!);
+    }
+    var plainTag = tag!.replaceFirst("#", "");
     var filter = Filter(kinds: [
-      kind.EventKind.TEXT_NOTE,
+      Nip01Event.TEXT_NODE_KIND,
       kind.EventKind.LONG_FORM,
       kind.EventKind.FILE_HEADER,
       kind.EventKind.POLL,
-    ], limit: 100);
-    var queryArg = filter.toJson();
-    var plainTag = tag!.replaceFirst("#", "");
+    ],
+        tTags: [plainTag],
+        limit: 100);
     // this place set #t not #r ???
-    var list = TopicMap.getList(plainTag);
-    if (list != null) {
-      queryArg["#t"] = list;
-    } else {
-      queryArg["#t"] = [plainTag];
-    }
-    nostr!.query([queryArg], onEvent, id: subscribeId);
+    // var list = TopicMap.getList(plainTag);
+    // if (list != null) {
+    //   queryArg["#t"] = list;
+    // } else {
+    //   queryArg["#t"] = [plainTag];
+    // }
+    subscription = await relayManager.subscription(filter, myInboxRelaySet!);
+    subscription!.stream.listen((event) {
+      onEvent(event);
+    });
   }
 
-  void onEvent(Event event) {
+  void onEvent(Nip01Event event) {
     later(event, (list) {
       box.addList(list);
       setState(() {});
@@ -187,11 +192,13 @@ class _TagDetailRouter extends CustState<TagDetailRouter>
     disposeLater();
 
     try {
-      nostr!.unsubscribe(subscribeId);
-    } catch (e) {}
+      relayManager.closeNostrRequest(subscription!);
+    } catch (e) {
+      print(e);
+    }
   }
 
-  onDeleteCallback(Event event) {
+  onDeleteCallback(Nip01Event event) {
     box.delete(event.id);
     setState(() {});
   }

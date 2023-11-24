@@ -1,19 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:yana/ui/keep_alive_cust_state.dart';
-import 'package:yana/models/event_mem_box.dart';
+import 'package:visibility_detector/visibility_detector.dart';
 import 'package:yana/main.dart';
+import 'package:yana/models/event_mem_box.dart';
 import 'package:yana/provider/follow_event_provider.dart';
+import 'package:yana/ui/keep_alive_cust_state.dart';
 import 'package:yana/utils/platform_util.dart';
 
 import '../../i18n/i18n.dart';
+import '../../provider/follow_new_event_provider.dart';
+import '../../provider/setting_provider.dart';
 import '../../ui/event/event_list_component.dart';
 import '../../ui/new_notes_updated_component.dart';
 import '../../ui/placeholder/event_list_placeholder.dart';
 import '../../utils/base.dart';
 import '../../utils/base_consts.dart';
-import '../../provider/follow_new_event_provider.dart';
-import '../../provider/setting_provider.dart';
 import '../../utils/load_more_event.dart';
 
 class FollowPostsAndRepliesRouter extends StatefulWidget {
@@ -31,6 +32,22 @@ class _FollowPostsAndRepliesRouter
   void initState() {
     super.initState();
     bindLoadMoreScroll(_controller);
+    _controller.addListener(() {
+      followEventProvider.setRepliesTimestampToNewestAndSave();
+    });
+
+  }
+
+  @override
+  void deactivate() {
+    super.deactivate();
+    followEventProvider.setRepliesTimestampToNewestAndSave();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    followEventProvider.setRepliesTimestampToNewestAndSave();
   }
 
   @override
@@ -50,24 +67,24 @@ class _FollowPostsAndRepliesRouter
     indexProvider.setFollowScrollController(_controller);
     preBuild();
 
-    var main = ListView.builder(
-      controller: _controller,
-      itemBuilder: (BuildContext context, int index) {
-        // var event = events[index];
-        // return FrameSeparateWidget(
-        //   index: index,
-        //   child: EventListComponent(
-        //     event: event,
-        //   ),
-        // );
-        var event = events[index];
-        return EventListComponent(
-          event: event,
-          showVideo: _settingProvider.videoPreview == OpenStatus.OPEN,
-        );
-      },
-      itemCount: events.length,
-    );
+    var main = VisibilityDetector(
+        key: const Key('feed-replies'),
+        onVisibilityChanged: (visibilityInfo) {
+          if (visibilityInfo.visibleFraction == 0.0) {
+            followEventProvider.setRepliesTimestampToNewestAndSave;
+          }
+        },
+        child: ListView.builder(
+          controller: _controller,
+          itemBuilder: (BuildContext context, int index) {
+            var event = events[index];
+            return EventListComponent(
+              event: event,
+              showVideo: _settingProvider.videoPreview == OpenStatus.OPEN,
+            );
+          },
+          itemCount: events.length,
+        ));
 
     Widget ri = RefreshIndicator(
       onRefresh: () async {
@@ -116,15 +133,17 @@ class _FollowPostsAndRepliesRouter
         //   color: Colors.white,
         // ),
         child: Stack(
-          alignment: Alignment.center,
-          children: stackList,
-        ));
+      alignment: Alignment.center,
+      children: stackList,
+    ));
   }
 
   @override
   void doQuery() {
     preQuery();
-    followEventProvider.doQuery(until: until, forceUserLimit: forceUserLimit);
+    if (until != null) {
+      followEventProvider.queryOlder(until: until!);
+    }
   }
 
   @override

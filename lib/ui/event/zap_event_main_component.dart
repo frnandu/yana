@@ -1,9 +1,9 @@
 import 'dart:convert';
 import 'dart:developer';
 
+import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:flutter/material.dart';
 
-import '../../nostr/event.dart';
 import '../../nostr/event_relation.dart';
 import '../../nostr/nip57/zap_num_util.dart';
 import '../../utils/number_format_util.dart';
@@ -13,7 +13,7 @@ import 'event_quote_component.dart';
 import 'reaction_event_item_component.dart';
 
 class ZapEventMainComponent extends StatefulWidget {
-  Event event;
+  Nip01Event event;
 
   ZapEventMainComponent({super.key, required this.event});
 
@@ -50,7 +50,7 @@ class _ZapEventMainComponent extends State<ZapEventMainComponent> {
     if (StringUtil.isNotBlank(zapRequestEventStr)) {
       try {
         var eventJson = jsonDecode(zapRequestEventStr!);
-        var zapRequestEvent = Event.fromJson(eventJson);
+        var zapRequestEvent = Nip01Event.fromJson(eventJson);
         senderPubkey = zapRequestEvent.pubKey;
       } catch (e) {
         log("jsonDecode zapRequest error ${e.toString()}");
@@ -77,7 +77,7 @@ class _ZapEventMainComponent extends State<ZapEventMainComponent> {
       text: TextSpan(
         style: DefaultTextStyle.of(context).style, // default text style
         children: <TextSpan>[
-          TextSpan(text: ' zapped ', style: DefaultTextStyle.of(context).style),
+          TextSpan(text: ' zapped '/*, style: DefaultTextStyle.of(context).style*/),
           TextSpan(
             text: zapNumStr.toString(),
             style: const TextStyle(

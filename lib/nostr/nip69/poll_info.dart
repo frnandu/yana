@@ -1,4 +1,4 @@
-import '../event.dart';
+import 'package:dart_ndk/nips/nip01/event.dart';
 
 class PollInfo {
   List<List<String>> pollOptions = [];
@@ -11,7 +11,7 @@ class PollInfo {
 
   int? closedAt;
 
-  PollInfo.fromEvent(Event event) {
+  PollInfo.fromEvent(Nip01Event event) {
     var length = event.tags.length;
     for (var i = 0; i < length; i++) {
       var tag = event.tags[i];

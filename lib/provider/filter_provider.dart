@@ -1,27 +1,26 @@
+import 'package:dart_ndk/event_filter.dart';
+import 'package:dart_ndk/nips/nip01/event.dart';
+import 'package:dart_ndk/nips/nip51/nip51.dart';
 import 'package:flutter/material.dart';
 import 'package:yana/provider/data_util.dart';
 
 import '../main.dart';
 import '../utils/dirtywords_util.dart';
 
-class FilterProvider extends ChangeNotifier {
+class FilterProvider extends ChangeNotifier implements EventFilter {
   static FilterProvider? _instance;
-
-  Map<String, int> blocks = {};
 
   List<String> dirtywordList = [];
 
+  Nip51List? muteList;
+
   late TrieTree trieTree;
+
+  int get muteListCount => muteList!=null? muteList!.elements.length : 0;
 
   static FilterProvider getInstance() {
     if (_instance == null) {
       _instance = FilterProvider();
-      var blockList = sharedPreferences.getStringList(DataKey.BLOCK_LIST);
-      if (blockList != null && blockList.isNotEmpty) {
-        for (var block in blockList) {
-          _instance!.blocks[block] = 1;
-        }
-      }
 
       var dirtywordList =
           sharedPreferences.getStringList(DataKey.DIRTYWORD_LIST);
@@ -71,23 +70,12 @@ class FilterProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  bool checkBlock(String pubkey) {
-    return blocks[pubkey] != null;
+  @override
+  bool filter(Nip01Event event) {
+    return (muteList==null || !muteList!.elements.any((element) => element.tag == Nip51List.PUB_KEY && element.value == event.pubKey)) && !checkDirtyword(event.content);
   }
 
-  void addBlock(String pubkey) {
-    blocks[pubkey] = 1;
-    _updateBlock();
-  }
-
-  void removeBlock(String pubkey) {
-    blocks.remove(pubkey);
-    _updateBlock();
-  }
-
-  void _updateBlock() {
-    var list = blocks.keys.toList();
-    sharedPreferences.setStringList(DataKey.BLOCK_LIST, list);
-    notifyListeners();
+  isMutedPubKey(String pubKey) {
+    return muteList!=null && muteList!.elements.any((element) => element.tag == Nip51List.PUB_KEY && element.value==pubKey);
   }
 }

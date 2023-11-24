@@ -1,17 +1,18 @@
+import 'package:dart_ndk/nips/nip01/event.dart';
+import 'package:dart_ndk/nips/nip25/reactions.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:widget_size/widget_size.dart';
 
-import '../../nostr/event.dart';
+import '../../i18n/i18n.dart';
+import '../../models/event_reactions.dart';
 import '../../nostr/event_kind.dart' as kind;
+import '../../provider/event_reactions_provider.dart';
+import '../../provider/single_event_provider.dart';
 import '../../ui/event/event_list_component.dart';
 import '../../ui/event/event_load_list_component.dart';
 import '../../ui/event/reaction_event_list_component.dart';
 import '../../ui/event/zap_event_list_component.dart';
-import '../../models/event_reactions.dart';
-import '../../i18n/i18n.dart';
-import '../../provider/event_reactions_provider.dart';
-import '../../provider/single_event_provider.dart';
 import '../../utils/platform_util.dart';
 import '../../utils/router_util.dart';
 import '../thread/thread_detail_router.dart';
@@ -28,7 +29,7 @@ class EventDetailRouter extends StatefulWidget {
 class _EventDetailRouter extends State<EventDetailRouter> {
   String? eventId;
 
-  Event? event;
+  Nip01Event? event;
 
   bool showTitle = false;
 
@@ -58,7 +59,7 @@ class _EventDetailRouter extends State<EventDetailRouter> {
 
     var arg = RouterUtil.routerArgs(context);
     if (arg != null) {
-      if (arg is Event) {
+      if (arg is Nip01Event) {
         event = arg;
         eventId = event!.id;
       } else if (arg is String) {
@@ -85,7 +86,7 @@ class _EventDetailRouter extends State<EventDetailRouter> {
         showDetailBtn: false,
       );
     } else if (eventId != null) {
-      mainEventWidget = Selector<SingleEventProvider, Event?>(
+      mainEventWidget = Selector<SingleEventProvider, Nip01Event?>(
         builder: (context, _event, child) {
           if (_event == null) {
             return EventLoadListComponent();
@@ -110,7 +111,7 @@ class _EventDetailRouter extends State<EventDetailRouter> {
           return mainEventWidget!;
         }
 
-        List<Event> allEvent = [];
+        List<Nip01Event> allEvent = [];
         allEvent.addAll(eventReactions.replies);
         allEvent.addAll(eventReactions.reposts);
         allEvent.addAll(eventReactions.likes);
@@ -132,14 +133,14 @@ class _EventDetailRouter extends State<EventDetailRouter> {
             }
 
             var event = allEvent[index - 1];
-            if (event.kind == kind.EventKind.ZAP) {
+            if (event.kind == kind.EventKind.ZAP_RECEIPT) {
               return ZapEventListComponent(event: event);
-            } else if (event.kind == kind.EventKind.TEXT_NOTE) {
+            } else if (event.kind == Nip01Event.TEXT_NODE_KIND) {
               return ReactionEventListComponent(event: event, text: i18n.replied);
             } else if (event.kind == kind.EventKind.REPOST ||
                 event.kind == kind.EventKind.GENERIC_REPOST) {
               return ReactionEventListComponent(event: event, text: i18n.boosted);
-            } else if (event.kind == kind.EventKind.REACTION) {
+            } else if (event.kind == Reaction.KIND) {
               return ReactionEventListComponent(event: event, text: i18n.liked);
             }
 
@@ -161,7 +162,7 @@ class _EventDetailRouter extends State<EventDetailRouter> {
         return main;
       },
       selector: (context, _provider) {
-        return _provider.get(eventId!);
+        return event!=null? _provider.get(event!.id, pubKey: event!.pubKey) : null;
       },
       shouldRebuild: (previous, next) {
         if ((previous == null && next != null) ||

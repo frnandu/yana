@@ -1,14 +1,17 @@
 import 'package:awesome_notifications/awesome_notifications.dart';
-import 'package:bot_toast/bot_toast.dart';
+import 'package:dart_ndk/nips/nip01/event.dart';
+import 'package:dart_ndk/nips/nip01/filter.dart';
+import 'package:dart_ndk/nips/nip01/metadata.dart';
+import 'package:dart_ndk/nips/nip25/reactions.dart';
 import 'package:flutter/foundation.dart';
+import 'package:yana/nostr/event_kind.dart';
+import 'package:yana/nostr/event_relation.dart';
 import 'package:yana/utils/index_taps.dart';
 
 import '../main.dart';
 import '../models/event_mem_box.dart';
-import '../nostr/event.dart';
-import '../nostr/filter.dart';
+import '../nostr/nip57/zap_num_util.dart';
 import '../utils/peddingevents_later_function.dart';
-import '../utils/string_util.dart';
 
 class NewNotificationsProvider extends ChangeNotifier
     with PenddingEventsLaterFunction {
@@ -16,26 +19,15 @@ class NewNotificationsProvider extends ChangeNotifier
 
   int? _localSince;
 
-  String? subscribeId;
-
   @pragma("vm:entry-point")
   static Future<void> onActionReceivedMethod(
       ReceivedAction receivedAction) async {
-    if (kDebugMode) {
-      BotToast.showText(
-          text: "Received notification " + receivedAction.payload.toString());
-    }
     newNotificationsProvider.queryNew();
-    Future.delayed(Duration(seconds: 1), () {
+    Future.delayed(const Duration(seconds: 1), () {
       notificationsProvider.mergeNewEvent();
     });
 
     indexProvider.setCurrentTap(IndexTaps.NOTIFICATIONS);
-    //
-    // // Navigate into pages, avoiding to open the notification details page over another details page already opened
-    // MyApp.navigatorKey.currentState?.pushNamedAndRemoveUntil('/notification-page',
-    //         (route) => (route.settings.name != '/notification-page') || route.isFirst,
-    //     arguments: receivedAction);
   }
 
   /// Use this method to detect when a new notification or a schedule is created
@@ -46,14 +38,9 @@ class NewNotificationsProvider extends ChangeNotifier
   }
 
   @pragma('vm:entry-point')
-  void queryNew() {
+  Future<void> queryNew() async {
     if (kDebugMode) {
       print('!!!!!!!!!!!!!!! New notifications queryNew');
-    }
-    if (subscribeId != null) {
-      try {
-        nostr!.unsubscribe(subscribeId!);
-      } catch (e) {}
     }
 
     _localSince =
@@ -61,60 +48,83 @@ class NewNotificationsProvider extends ChangeNotifier
             ? notificationsProvider.lastTime()
             : _localSince;
 
-    subscribeId = StringUtil.rndNameStr(12);
     var filter = Filter(
       since: _localSince!,
       kinds: notificationsProvider.queryEventKinds(),
-      p: [nostr!.publicKey],
+      pTags: [loggedUserSigner!.getPublicKey()],
     );
-    nostr!.query([filter.toJson()], (event) {
-      later(event, handleEvents, null);
-    }, id: subscribeId);
+    await for (final event in (await relayManager!.query(filter, myInboxRelaySet!)).stream) {
+        handleEvent(event, await relayManager.getSingleMetadata(event.pubKey));
+    }
   }
 
-  handleEvents(List<Event> events) {
+  handleEvent(Nip01Event event, Metadata? metadata) {
     int previousCount = eventMemBox.length();
-    // BotToast.showText(
-    //     text: "Received ${events.length} notification events");
-    events =
-        events.where((event) => event.pubKey != nostr?.publicKey && !notificationsProvider.eventBox.containsId(event.id)).toList();
-    if (events.isEmpty) {
-      return;
-    }
-    eventMemBox.addList(events);
-    _localSince = eventMemBox.newestEvent!.createdAt;
-    if (eventMemBox.length() > previousCount) {
-      AwesomeNotifications().getAppLifeCycle().then((value) {
-        if (value.toString() != "NotificationLifeCycle.Foreground") {
-          metadataProvider.getMostRecentMetadata(events.first.pubKey, (metadata) {
-            AwesomeNotifications().createNotification(
-              content: NotificationContent(
-                  id: events.first.id.hashCode,
-                  channelKey: 'yana',
-                  largeIcon: metadata?.picture,
-                  title: "${metadata != null
-                      ? metadata.getName()
-                      : "??"}: ${events
-                      .first.content.replaceAll('+', '❤')}",
-                  payload: {"name": "new notification"},
-                  badge:
-                  eventMemBox.length()
-                // +
-                //     dmProvider.howManyNewDMSessionsWithNewMessages(
-                //         dmProvider.followingList) +
-                //     dmProvider
-                //         .howManyNewDMSessionsWithNewMessages(
-                //         dmProvider.knownList) +
-                //     dmProvider
-                //         .howManyNewDMSessionsWithNewMessages(
-                //         dmProvider.unknownList)
-              ),
-            );
+    if (event.pubKey != loggedUserSigner?.getPublicKey() && !notificationsProvider.eventBox.containsId(event.id)) {
+      if (eventMemBox.add(event, returnTrueOnNewSources: false)) {
+        _localSince = eventMemBox.newestEvent!.createdAt;
+        if (eventMemBox.length() > previousCount) {
+          print("Received 1 notification event");
+          AwesomeNotifications().getAppLifeCycle().then((value) async {
+            if (value.toString() != "NotificationLifeCycle.Foreground") {
+              String title = "";
+              String? body;
+              EventRelation eventRelation = EventRelation.fromEvent(event);
+              Nip01Event? otherEvent;
+              print("event.tags: ${event.tags}");
+              if (eventRelation.replyId != null) {
+                await for (final event in (await relayManager.query(Filter(ids: [eventRelation.replyId!]), myInboxRelaySet!)).stream) {
+                  otherEvent = event;
+                }
+              } else if (eventRelation.tagEList.isNotEmpty) {
+                await for (final event in (await relayManager.query(Filter(ids: [eventRelation.tagEList.first!]), myInboxRelaySet!)).stream) {
+                  otherEvent = event;
+                }
+              }
+              String name = metadata!=null? metadata.getName() : event.pubKey;
+              if (event.kind == Reaction.KIND) {
+                title = "$name reacted ${event.content.replaceAll('+', '❤')}";
+                if (otherEvent != null) {
+                  body = otherEvent.content;
+                }
+              } else if (event.kind == EventKind.ZAP_RECEIPT) {
+                var zapNum = ZapNumUtil.getNumFromZapEvent(event);
+                title = "$name zapped $zapNum sats";
+                if (otherEvent != null) {
+                  body = otherEvent.content;
+                }
+              } else {
+                title = "$name replied ";
+                body = event.content;
+              }
+              print("title: $title body: $body metadata:${metadata}");
+              AwesomeNotifications().createNotification(
+                content: NotificationContent(
+                    id: event.id.hashCode,
+                    channelKey: 'yana',
+                    largeIcon: metadata?.picture,
+                    title: title,
+                    body: body,
+                    payload: {"name": "new notification"},
+                    badge:
+                    eventMemBox.length()
+                  // +
+                  //     dmProvider.howManyNewDMSessionsWithNewMessages(
+                  //         dmProvider.followingList) +
+                  //     dmProvider
+                  //         .howManyNewDMSessionsWithNewMessages(
+                  //         dmProvider.knownList) +
+                  //     dmProvider
+                  //         .howManyNewDMSessionsWithNewMessages(
+                  //         dmProvider.unknownList)
+                ),
+              );
+            }
           });
         }
-      });
+        notifyListeners();
+      }
     }
-    notifyListeners();
   }
 
   void clear() {

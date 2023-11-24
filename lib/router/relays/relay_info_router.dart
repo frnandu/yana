@@ -1,16 +1,17 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:dart_ndk/nips/nip01/metadata.dart';
+import 'package:dart_ndk/relay.dart';
+import 'package:dart_ndk/nips/nip11/relay_info.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:yana/main.dart';
-import 'package:yana/models/metadata.dart';
-import 'package:yana/nostr/relay.dart';
 import 'package:yana/provider/metadata_provider.dart';
 import 'package:yana/ui/name_component.dart';
 import 'package:yana/utils/base.dart';
 import 'package:yana/utils/router_path.dart';
 
-import '../../nostr/client_utils/keys.dart';
 import '../../ui/webview_router.dart';
+import '../../utils/hash_util.dart';
 import '../../utils/router_util.dart';
 import '../../utils/string_util.dart';
 
@@ -26,6 +27,8 @@ class RelayInfoRouter extends StatefulWidget {
 class _RelayInfoRouter extends State<RelayInfoRouter> {
   double IMAGE_WIDTH = 45;
 
+  RelayInfo? relayInfo;
+
   @override
   Widget build(BuildContext context) {
     var themeData = Theme.of(context);
@@ -38,24 +41,42 @@ class _RelayInfoRouter extends State<RelayInfoRouter> {
     }
 
     var relay = relayItf as Relay;
-    var relayInfo = relay.info!;
+
+    if (relayInfo==null) {
+      if (relay.info == null) {
+        RelayInfo.get(relay.url).then((info) {
+          setState(() {
+            relayInfo = info;
+            relay.info = info;
+          });
+        });
+      } else {
+        relayInfo = relay.info;
+      }
+    }
+    // relayInfo = relay.info;
+    if (relayInfo == null) {
+      //RouterUtil.back(context);
+      return Container();
+    }
 
     List<Widget> list = [];
     Widget imageWidget;
-    String? url = relay != null &&
-            relay.info != null &&
-            StringUtil.isNotBlank(relay.info!.icon)
-        ? relay.info!.icon
-        : StringUtil.robohash(getRandomHexString());
-
+    String? icon;
+    if (relay.url.startsWith("wss://relay.damus.io")) {
+      icon = "https://damus.io/img/logo.png";
+    } else if (relay.url.startsWith("wss://relay.snort.social")) {
+      icon = "https://snort.social/favicon.ico";
+    } else {
+      icon = relay != null && relay.info != null && StringUtil.isNotBlank(relay.info!.icon) ? relay.info!.icon : StringUtil.robohash(HashUtil.md5(relay!.url));
+    }
     imageWidget = CachedNetworkImage(
-      imageUrl: url,
+      imageUrl: icon,
       width: 50,
       height: 50,
       fit: BoxFit.cover,
       placeholder: (context, url) => const CircularProgressIndicator(),
-      errorWidget: (context, url, error) =>
-          CachedNetworkImage(imageUrl: StringUtil.robohash(relay.info!.name)),
+      errorWidget: (context, url, error) => CachedNetworkImage(imageUrl: StringUtil.robohash(HashUtil.md5(relay!.url))),
       cacheManager: localCacheManager,
     );
 
@@ -75,12 +96,9 @@ class _RelayInfoRouter extends State<RelayInfoRouter> {
           child: imageWidget),
       Column(children: [
         Container(
-          margin: const EdgeInsets.only(
-              top: Base.BASE_PADDING,
-              bottom: Base.BASE_PADDING,
-              left: Base.BASE_PADDING),
+          margin: const EdgeInsets.only(top: Base.BASE_PADDING, bottom: Base.BASE_PADDING, left: Base.BASE_PADDING),
           child: Text(
-            relayInfo.name,
+            relayInfo!.name,
             style: TextStyle(
               fontSize: titleFontSize,
               fontWeight: FontWeight.bold,
@@ -93,10 +111,9 @@ class _RelayInfoRouter extends State<RelayInfoRouter> {
     list.add(iconAndNameRow);
 
     list.add(Container(
-      margin: const EdgeInsets.only(
-          bottom: Base.BASE_PADDING, top: Base.BASE_PADDING),
+      margin: const EdgeInsets.only(bottom: Base.BASE_PADDING, top: Base.BASE_PADDING),
       child: Text(
-        relayInfo.description,
+        relayInfo!.description,
         maxLines: 3,
       ),
     ));
@@ -106,75 +123,90 @@ class _RelayInfoRouter extends State<RelayInfoRouter> {
       child: SelectableText(relay.url),
     ));
 
-    list.add(RelayInfoItemComponent(
-      title: "Owner",
-      child: Selector<MetadataProvider, Metadata?>(
-        builder: (context, metadata, child) {
-          List<Widget> list = [];
+    if (StringUtil.isNotBlank(relayInfo!.pubKey)) {
+      list.add(RelayInfoItemComponent(
+        title: "Owner",
+        child: Selector<MetadataProvider, Metadata?>(
+          builder: (context, metadata, child) {
+            List<Widget> list = [];
 
-          Widget? imageWidget;
-          if (metadata != null) {
-            imageWidget = CachedNetworkImage(
-              imageUrl: metadata.picture!,
-              width: IMAGE_WIDTH,
+            Widget? imageWidget;
+            if (metadata != null) {
+              imageWidget = CachedNetworkImage(
+                imageUrl: metadata.picture!,
+                width: IMAGE_WIDTH,
+                height: IMAGE_WIDTH,
+                fit: BoxFit.cover,
+                placeholder: (context, url) => const CircularProgressIndicator(),
+                errorWidget: (context, url, error) => const Icon(Icons.error),
+                cacheManager: localCacheManager,
+              );
+            }
+            list.add(Container(
               height: IMAGE_WIDTH,
-              fit: BoxFit.cover,
-              placeholder: (context, url) => const CircularProgressIndicator(),
-              errorWidget: (context, url, error) => const Icon(Icons.error),
-              cacheManager: localCacheManager,
+              width: IMAGE_WIDTH,
+              clipBehavior: Clip.hardEdge,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(IMAGE_WIDTH),
+                color: Colors.grey,
+              ),
+              child: imageWidget,
+            ));
+
+            list.add(Container(
+              margin: const EdgeInsets.only(left: Base.BASE_PADDING),
+              child: NameComponent(
+                pubkey: relayInfo!.pubKey,
+                metadata: metadata,
+              ),
+            ));
+
+            return GestureDetector(
+              onTap: () {
+                RouterUtil.router(context, RouterPath.USER, relayInfo!.pubKey);
+              },
+              child: Row(
+                children: list,
+              ),
             );
-          }
-          list.add(Container(
-            height: IMAGE_WIDTH,
-            width: IMAGE_WIDTH,
-            clipBehavior: Clip.hardEdge,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(IMAGE_WIDTH),
-              color: Colors.grey,
-            ),
-            child: imageWidget,
-          ));
-
-          list.add(Container(
-            margin: const EdgeInsets.only(left: Base.BASE_PADDING),
-            child: NameComponent(
-              pubkey: relayInfo.pubKey,
-              metadata: metadata,
-            ),
-          ));
-
-          return GestureDetector(
-            onTap: () {
-              RouterUtil.router(context, RouterPath.USER, relayInfo.pubKey);
-            },
-            child: Row(
-              children: list,
-            ),
-          );
-        },
-        selector: (context, _provider) {
-          return _provider.getMetadata(relayInfo.pubKey);
-        },
-      ),
-    ));
+          },
+          selector: (context, _provider) {
+            return _provider.getMetadata(relayInfo!.pubKey);
+          },
+        ),
+      ));
+    }
 
     list.add(RelayInfoItemComponent(
       title: "Contact",
-      child: SelectableText(relayInfo.contact),
+      child: SelectableText(relayInfo!.contact),
     ));
 
     list.add(RelayInfoItemComponent(
       title: "Soft",
-      child: SelectableText(relayInfo.software),
+      child: GestureDetector(
+        onTap: () {
+          if (relayInfo!.software.startsWith("http")) {
+            WebViewRouter.open(context, relayInfo!.software);
+          }
+      },
+      child: Text(
+        relayInfo!.software,
+        style: TextStyle(
+          color: relayInfo!.software.startsWith("http") ? themeData.primaryColor : null,
+          // decoration: TextDecoration.underline,
+        ),
+      ),
+    ),
     ));
 
     list.add(RelayInfoItemComponent(
       title: "Version",
-      child: SelectableText(relayInfo.version),
+      child: SelectableText(relayInfo!.version),
     ));
 
     List<Widget> nipWidgets = [];
-    for (var nip in relayInfo.nips) {
+    for (var nip in relayInfo!.nips) {
       nipWidgets.add(NipComponent(nip: nip));
     }
     list.add(RelayInfoItemComponent(
@@ -300,15 +332,14 @@ class NipComponent extends StatelessWidget {
 
     return GestureDetector(
       onTap: () {
-        var url =
-            "https://github.com/nostr-protocol/nips/blob/master/$nipStr.md";
+        var url = "https://github.com/nostr-protocol/nips/blob/master/$nipStr.md";
         WebViewRouter.open(context, url);
       },
       child: Text(
         nipStr,
         style: TextStyle(
           color: mainColor,
-          decoration: TextDecoration.underline,
+          // decoration: TextDecoration.underline,
         ),
       ),
     );

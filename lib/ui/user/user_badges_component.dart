@@ -1,13 +1,12 @@
+import 'package:dart_ndk/nips/nip01/filter.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../nostr/event_kind.dart' as kind;
-import '../../nostr/filter.dart';
-import '../../nostr/nip58/badge_definition.dart';
-import '../../utils/base.dart';
 import '../../models/event_mem_box.dart';
-import '../../main.dart';
+import '../../nostr/event_kind.dart' as kind;
+import '../../nostr/nip58/badge_definition.dart';
 import '../../provider/badge_definition_provider.dart';
+import '../../utils/base.dart';
 import '../../utils/later_function.dart';
 import '../../utils/string_util.dart';
 import '../badge_component.dart';
@@ -95,20 +94,21 @@ class _UserBadgesComponent extends CustState<UserBadgesComponent>
   Future<void> onReady(BuildContext context) async {
     var filter =
         Filter(authors: [widget.pubkey], kinds: [kind.EventKind.BADGE_ACCEPT]);
-    nostr!.query([filter.toJson()], (event) {
-      var result = eventMemBox.add(event);
-      if (result) {
-        later(() {
-          setState(() {});
-        }, null);
-      }
-    });
+    // TODO use dart_ndk
+    // nostr!.query([filter.toMap()], (event) {
+    //   var result = eventMemBox.add(event);
+    //   if (result) {
+    //     later(() {
+    //       setState(() {});
+    //     }, null);
+    //   }
+    // });
   }
 
   @override
   void dispose() {
     super.dispose();
-    nostr!.unsubscribe(subscribeId);
+    // nostr!.unsubscribe(subscribeId);
     disposeLater();
   }
 }

@@ -1,12 +1,19 @@
 import 'dart:convert';
 
-import 'package:bot_toast/bot_toast.dart';
+import 'package:dart_ndk/dart_ndk.dart';
+import 'package:dart_ndk/nips/nip01/event.dart';
+import 'package:dart_ndk/nips/nip01/filter.dart';
+import 'package:dart_ndk/nips/nip01/helpers.dart';
+import 'package:dart_ndk/nips/nip01/metadata.dart';
+import 'package:dart_ndk/nips/nip02/contact_list.dart';
+import 'package:dart_ndk/nips/nip51/nip51.dart';
+import 'package:dart_ndk/relay.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:yana/models/event_find_util.dart';
-import 'package:yana/models/metadata.dart';
 import 'package:yana/router/search/search_action_item_component.dart';
 import 'package:yana/router/search/search_actions.dart';
 import 'package:yana/utils/when_stop_function.dart';
@@ -14,10 +21,7 @@ import 'package:yana/utils/when_stop_function.dart';
 import '../../i18n/i18n.dart';
 import '../../main.dart';
 import '../../models/event_mem_box.dart';
-import '../../nostr/client_utils/keys.dart';
-import '../../nostr/event.dart';
 import '../../nostr/event_kind.dart' as kind;
-import '../../nostr/filter.dart';
 import '../../nostr/nip19/nip19.dart';
 import '../../nostr/nip19/nip19_tlv.dart';
 import '../../provider/relay_provider.dart';
@@ -120,16 +124,17 @@ class _SearchRouter extends CustState<SearchRouter>
             metadata = metadatasFromSearch[index - metadatasFromCache.length];
           } else {
             var event = events[index - metadatasFromCache.length - metadatasFromSearch.length];
-            if (event.kind == kind.EventKind.METADATA) {
-              var jsonObj = jsonDecode(event.content);
-              metadata = Metadata.fromJson(jsonObj);
-              metadata.pubKey = event.pubKey;
-              bool inMetadatasAlready = metadatasFromCache.any((element) =>
-              element.pubKey == metadata!.pubKey);
-              if (!metadata.matchesSearch(controller.text) ||
-                  inMetadatasAlready) {
-                metadata = null;
-              }
+            if (event.kind == Metadata.KIND) {
+              /// TODO use dart_ndk
+              // var jsonObj = jsonDecode(event.content);
+              // metadata = Metadata.fromJson(jsonObj);
+              // metadata.pubKey = event.pubKey;
+              // bool inMetadatasAlready = metadatasFromCache.any((element) =>
+              // element.pubKey == metadata!.pubKey);
+              // if (!metadata.matchesSearch(controller.text) ||
+              //     inMetadatasAlready) {
+              //   metadata = null;
+              // }
             } else {
               return EventListComponent(
                           event: event,
@@ -152,13 +157,23 @@ class _SearchRouter extends CustState<SearchRouter>
         itemCount: metadatasFromCache.length + metadatasFromSearch.length + events.length);
 
     if (StringUtil.isBlank(controller.text)) {
-      bool anyNip50 = nostr!.activeRelays().any((relay) => relay.info!=null && relay.info!.nips!=null && relay.info!.nips.contains(50));
-      if (!anyNip50) {
-        body = SearchActionItemComponent(onTap: () {
-          RouterUtil.router(context, RouterPath.RELAYS);
-        },
-            title: "⚠ You have no relays with search capabilities (NIP-50 support).\nConsider adding some (ex.: wss://relay.nostr.band), otherwise ONLY your contacts metadata will be searched.\nClick to relay settings >>");
-      }
+      // bool anyNip50 = myInboxRelaySet!=null && relayManager.getConnectedRelays(myInboxRelaySet!.urls).any((relay) => relay.info!=null && relay.info!.nips!=null && relay.info!.nips.contains(50));
+//       if (searchRelays==null || searchRelays.isEmpty) {
+//         body = SearchActionItemComponent(onTap: () async {
+//           bool finished = false;
+//           Future.delayed(const Duration(milliseconds: 500), () {
+//             if (!finished) {
+//               EasyLoading.show(status: 'Loading relay list...', maskType: EasyLoadingMaskType.black, dismissOnTap: true);
+//             }
+//           });
+//           Nip51List? list = await relayManager.getSingleNip51List(Nip51List.SEARCH_RELAYS, loggedUserSigner!);
+//           finished = true;
+//           EasyLoading.dismiss();
+//           RouterUtil.router(context, RouterPath.L, list!=null? list : Nip51List(pubKey: loggedUserSigner!.getPublicKey(), kind: Nip51List.SEARCH_RELAYS, privateRelays: searchRelays, createdAt: Helpers.now));
+//         },
+//             title: "⚠ Your search relay list is empty.\nAdd some relays >>");
+// //            You have no relays with search capabilities (NIP-50 support).\nConsider adding some (ex.: wss://relay.nostr.band), otherwise ONLY your contacts metadata will be searched.\nClick to relay settings >>");
+//       }
     }
 
     // if (searchAction == SearchActions.searchEventFromCache) {
@@ -245,61 +260,52 @@ class _SearchRouter extends CustState<SearchRouter>
   }
 
   List<int> searchEventKinds = [
-    kind.EventKind.TEXT_NOTE,
+    Nip01Event.TEXT_NODE_KIND,
     kind.EventKind.REPOST,
     kind.EventKind.GENERIC_REPOST,
     kind.EventKind.LONG_FORM,
     kind.EventKind.FILE_HEADER,
     kind.EventKind.POLL,
-    kind.EventKind.METADATA
+    Metadata.KIND,
+    kind.EventKind.COMMUNITY_DEFINITION
   ];
-
-  String? subscribeId;
 
   EventMemBox eventMemBox = EventMemBox();
 
-  // Filter? filter;
   Map<String, dynamic>? filterMap;
 
   @override
   void doQuery() {
     preQuery();
-
-    if (subscribeId != null) {
-      unSubscribe();
-    }
-    subscribeId = generatePrivateKey();
+    List<String> relaysWithNip50 = searchRelays.isNotEmpty ? searchRelays : ["wss://relay.nostr.band", "wss://relay.noshere.com"];//!=null? searchRelays.where((url) {
+    //   Relay? relay = relayManager.getRelay(url);
+    //   return relay!=null? relay.supportsNip(50) : false;
+    // }).toList() : [];
 
     if (!eventMemBox.isEmpty()) {
-      var activeRelays = nostr!.activeRelays();
-      var oldestCreatedAts = eventMemBox.oldestCreatedAtByRelay(activeRelays);
-      Map<String, List<Map<String, dynamic>>> filtersMap = {};
-      for (var relay in activeRelays) {
-        var oldestCreatedAt = oldestCreatedAts.createdAtMap[relay.url];
-        if (oldestCreatedAt != null) {
-          filterMap!["until"] = oldestCreatedAt;
-        }
-        Map<String, dynamic> fm = {};
-        for (var entry in filterMap!.entries) {
-          fm[entry.key] = entry.value;
-        }
-        filtersMap[relay.url] = [fm];
-      }
-      nostr!.queryByFilters(filtersMap, onQueryEvent, id: subscribeId);
+      filterMap!["until"] = eventMemBox.oldestEvent;
     } else {
       if (until != null) {
         filterMap!["until"] = until;
       }
-      nostr!.query([filterMap!], onQueryEvent, id: subscribeId);
     }
+    // RelayManager relayManager = RelayManager();
+    // relayManager.cacheManager = cacheManager;
+    // relayManager.connect(urls: relaysWithNip50).then((value) {
+      relayManager.requestRelays(relaysWithNip50, Filter.fromMap(filterMap!), timeout: 10).then((request) {
+        request.stream.listen((event) {
+          onQueryEvent(event);
+        });
+      });
+    // });
+
   }
 
-  void onQueryEvent(Event event) {
-    if (event.kind == kind.EventKind.METADATA) {
+  void onQueryEvent(Nip01Event event) {
+    if (event.kind == Metadata.KIND) {
       var jsonObj = jsonDecode(event.content);
       Metadata metadata = Metadata.fromJson(jsonObj);
       metadata.pubKey = event.pubKey;
-      metadatasFromSearch.add(metadata);
     } else {
       later(event, (list) {
         var addResult = eventMemBox.addList(list);
@@ -311,8 +317,8 @@ class _SearchRouter extends CustState<SearchRouter>
   }
 
   void unSubscribe() {
-    nostr!.unsubscribe(subscribeId!);
-    subscribeId = null;
+    // nostr!.unsubscribe(subscribeId!);
+    // subscribeId = null;
   }
 
   void onEditingComplete() {
@@ -322,30 +328,28 @@ class _SearchRouter extends CustState<SearchRouter>
     var value = controller.text;
     value = value.trim();
     // if (StringUtil.isBlank(value)) {
-    //   BotToast.showText(text: S.of(context).Empty_text_may_be_ban_by_relays);
+    //   EasyLoading.show(status: S.of(context).Empty_text_may_be_ban_by_relays);
     // }
 
-    List<String>? authors;
-    if (StringUtil.isNotBlank(value) && value.indexOf("npub") == 0) {
-      try {
-        var result = Nip19.decode(value);
-        authors = [result];
-      } catch (e) {
-        print(e.toString());
-        // TODO handle error
-        return;
-      }
-    } else {
-      if (StringUtil.isNotBlank(value)) {
-        authors = [value];
-      }
-    }
+    // List<String>? authors;
+    // if (StringUtil.isNotBlank(value) && value.indexOf("npub") == 0) {
+    //   try {
+    //     var result = Nip19.decode(value);
+    //     authors = [result];
+    //   } catch (e) {
+    //     print(e.toString());
+    //     // TODO handle error
+    //     return;
+    //   }
+    // } else {
+    //   if (StringUtil.isNotBlank(value)) {
+    //     authors = [value];
+    //   }
+    // }
 
     eventMemBox = EventMemBox();
     until = null;
-    filterMap =
-        Filter(kinds: searchEventKinds, authors: authors, limit: queryLimit)
-            .toJson();
+    filterMap = Filter(kinds: searchEventKinds, limit: queryLimit).toMap();
     filterMap!.remove("search");
     penddingEvents.clear;
     doQuery();
@@ -370,9 +374,9 @@ class _SearchRouter extends CustState<SearchRouter>
     disposeWhenStop();
   }
 
-  static const int searchMemLimit = 20;
+  static const int searchCacheLimit = 20;
 
-  onDeletedCallback(Event event) {
+  onDeletedCallback(Nip01Event event) {
     eventMemBox.delete(event.id);
     setState(() {});
   }
@@ -413,17 +417,16 @@ class _SearchRouter extends CustState<SearchRouter>
 
     var text = controller.text;
     if (StringUtil.isNotBlank(text)) {
-      var list = metadataProvider.findUser(text, limit: searchMemLimit);
-
+      var list = cacheManager.searchMetadatas(text, searchCacheLimit);
       setState(() {
-        metadatasFromCache = list;
+        metadatasFromCache = list.toList();
       });
     } else {
       setState(() {});
     }
   }
 
-  List<Event> events = [];
+  List<Nip01Event> events = [];
 
   searchEventFromCache() {
     hideKeyBoard();
@@ -432,7 +435,7 @@ class _SearchRouter extends CustState<SearchRouter>
 
     var text = controller.text;
     if (StringUtil.isNotBlank(text)) {
-      var list = EventFindUtil.findEvent(text, limit: searchMemLimit);
+      var list = EventFindUtil.findEvent(text, limit: searchCacheLimit);
       setState(() {
         events = list;
       });
@@ -459,28 +462,38 @@ class _SearchRouter extends CustState<SearchRouter>
 
     if (StringUtil.isNotBlank(text)) {
       searchMetadataFromCache();
-      if (text.trim().length>=3 && metadatasFromCache.length < 20) {
-        searchNoteContent();
-      }
       if (Nip19.isPubkey(text)) {
         searchAbles.add(SearchActions.openPubkey);
+        metadatasFromSearch.clear();
+
+        relayManager.getSingleMetadata(Nip19.decode(text)).then((metadata) {
+          setState(() {
+            if (metadata!=null) {
+              metadatasFromSearch = [metadata];
+            }
+          });
+        });
       }
       if (Nip19.isNoteId(text)) {
         searchAbles.add(SearchActions.openNoteId);
       }
-      searchAbles.add(SearchActions.searchMetadataFromCache);
-      searchAbles.add(SearchActions.searchEventFromCache);
-      searchAbles.add(SearchActions.searchPubkeyEvent);
-      searchAbles.add(SearchActions.searchNoteContent);
+      if (text.trim().length>=3 && metadatasFromCache.length < 20) {
+        searchNoteContent();
+      }
+      // searchAbles.add(SearchActions.searchMetadataFromCache);
+      // searchAbles.add(SearchActions.searchEventFromCache);
+      // searchAbles.add(SearchActions.searchPubkeyEvent);
+      // searchAbles.add(SearchActions.searchNoteContent);
     }
 
     lastText = text;
-    setState(() {});
+    // setState(() {});
   }
 
   Future<void> handleScanner() async {
-    var result = await RouterUtil.router(context, RouterPath.QRSCANNER);
+    String result = await RouterUtil.router(context, RouterPath.QRSCANNER);
     if (StringUtil.isNotBlank(result)) {
+      result = result.replaceAll("nostr:","");
       if (Nip19.isPubkey(result)) {
         var pubkey = Nip19.decode(result);
         RouterUtil.router(context, RouterPath.USER, pubkey);
@@ -511,7 +524,7 @@ class _SearchRouter extends CustState<SearchRouter>
         // WebViewRouter.open(context, result);
       } else {
         Clipboard.setData(ClipboardData(text: result)).then((_) {
-          BotToast.showText(text: I18n.of(context).Copy_success);
+          EasyLoading.show(status: I18n.of(context).Copy_success);
         });
       }
     }
@@ -524,13 +537,13 @@ class _SearchRouter extends CustState<SearchRouter>
     var value = controller.text;
     value = value.trim();
     // if (StringUtil.isBlank(value)) {
-    //   BotToast.showText(text: S.of(context).Empty_text_may_be_ban_by_relays);
+    //   EasyLoading.show(status: S.of(context).Empty_text_may_be_ban_by_relays);
     // }
 
     eventMemBox = EventMemBox();
     until = null;
-    filterMap = Filter(kinds: searchEventKinds, limit: queryLimit).toJson();
-    filterMap!.remove("authors");
+    filterMap = Filter(kinds: searchEventKinds, limit: queryLimit).toMap();
+    // filterMap!.remove("authors");
     filterMap!["search"] = value;
     penddingEvents.clear;
     doQuery();

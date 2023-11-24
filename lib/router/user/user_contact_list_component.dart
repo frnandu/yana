@@ -1,15 +1,13 @@
+import 'package:dart_ndk/nips/nip01/metadata.dart';
+import 'package:dart_ndk/nips/nip02/contact_list.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../nostr/nip02/contact.dart';
-import '../../nostr/nip02/contact_list.dart';
-import '../../ui/editor/search_mention_user_component.dart';
-import '../../ui/user/metadata_component.dart';
-import '../../utils/base.dart';
-import '../../utils/router_path.dart';
-import '../../models/metadata.dart';
 import '../../provider/metadata_provider.dart';
+import '../../ui/editor/search_mention_user_component.dart';
+import '../../utils/base.dart';
 import '../../utils/platform_util.dart';
+import '../../utils/router_path.dart';
 import '../../utils/router_util.dart';
 
 class UserContactListComponent extends StatefulWidget {
@@ -26,11 +24,11 @@ class UserContactListComponent extends StatefulWidget {
 class _UserContactListComponent extends State<UserContactListComponent> {
   ScrollController _controller = ScrollController();
 
-  List<Contact>? list;
+  List<String>? list;
 
   @override
   Widget build(BuildContext context) {
-    list ??= widget.contactList.list().toList();
+    list ??= widget.contactList.contacts;
 
     Widget main = ListView.builder(
       controller: _controller,
@@ -55,7 +53,7 @@ class _UserContactListComponent extends State<UserContactListComponent> {
                   // ),
             },
             selector: (context, _provider) {
-              return _provider.getMetadata(contact.publicKey!);
+              return _provider.getMetadata(contact);
             },
           ),
         );

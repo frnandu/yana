@@ -1,27 +1,43 @@
 import 'dart:convert';
 
+import 'package:dart_ndk/nips/nip01/event.dart';
+import 'package:dart_ndk/nips/nip25/reactions.dart';
+
 import '../main.dart';
-import '../nostr/event.dart';
 import '../nostr/event_kind.dart' as kind;
 import '../nostr/nip57/zap_num_util.dart';
 import '../utils/find_event_interface.dart';
 
+/// TODO cache in DB
 class EventReactions implements FindEventInterface {
   String id;
 
   int replyNum = 0;
 
-  List<Event> replies = [];
+  List<Nip01Event> replies = [];
 
   int repostNum = 0;
 
-  List<Event> reposts = [];
+  List<Nip01Event> reposts = [];
 
   int likeNum = 0;
 
-  List<Event> likes = [];
+  List<Nip01Event> likes = [];
 
-  List<Event>? myLikeEvents;
+  String? get reaction {
+    String? reaction = null;
+    if (likes.isNotEmpty) {
+      for (var reactionEvent in likes) {
+        if (reaction != null && reaction != reactionEvent.content) {
+          return null;
+        }
+        reaction = reactionEvent.content;
+      }
+    }
+    return reaction;
+  }
+
+  List<Nip01Event>? myLikeEvents;
 
   bool hasMyReply = false;
   bool hasMyRepost = false;
@@ -29,7 +45,7 @@ class EventReactions implements FindEventInterface {
 
   int zapNum = 0;
 
-  List<Event> zaps = [];
+  List<Nip01Event> zaps = [];
 
   Map<String, int> eventIdMap = {};
 
@@ -59,8 +75,8 @@ class EventReactions implements FindEventInterface {
   }
 
   @override
-  List<Event> findEvent(String str, {int? limit = 5}) {
-    List<Event> list = [];
+  List<Nip01Event> findEvent(String str, {int? limit = 5}) {
+    List<Nip01Event> list = [];
     for (var event in replies) {
       if (event.content.contains(str)) {
         list.add(event);
@@ -77,43 +93,43 @@ class EventReactions implements FindEventInterface {
     accessTime = t;
   }
 
-  bool onEvent(Event event) {
+  bool onEvent(Nip01Event event) {
     dataTime = DateTime.now();
 
     var id = event.id;
     if (eventIdMap[id] == null) {
       eventIdMap[id] = 1;
 
-      if (event.kind == kind.EventKind.TEXT_NOTE) {
-        if (event.pubKey == nostr!.publicKey) {
+      if (event.kind == Nip01Event.TEXT_NODE_KIND) {
+        if (event.pubKey == loggedUserSigner!.getPublicKey()) {
           hasMyReply = true;
         }
         replyNum++;
         replies.add(event);
       } else if (event.kind == kind.EventKind.REPOST ||
           event.kind == kind.EventKind.GENERIC_REPOST) {
-        if (event.pubKey == nostr!.publicKey) {
+        if (event.pubKey == loggedUserSigner!.getPublicKey()) {
           hasMyRepost = true;
         }
         repostNum++;
         reposts.add(event);
-      } else if (event.kind == kind.EventKind.REACTION) {
+      } else if (event.kind == Reaction.KIND) {
         if (event.content == "-") {
           likeNum--;
         } else {
           likeNum++;
           likes.add(event);
-          if (event.pubKey == nostr!.publicKey) {
+          if (event.pubKey == loggedUserSigner!.getPublicKey()) {
             myLikeEvents ??= [];
             myLikeEvents!.add(event);
           }
         }
-      } else if (event.kind == kind.EventKind.ZAP) {
+      } else if (event.kind == kind.EventKind.ZAP_RECEIPT) {
         zapNum += ZapNumUtil.getNumFromZapEvent(event);
         zaps.add(event);
 
         // if (StringUtil.isNotBlank(event.content)) {
-          if (event.pubKey == nostr!.publicKey) {
+          if (event.pubKey == loggedUserSigner!.getPublicKey()) {
             hasMyZap = true;
           } else {
             var tagLength = event.tags.length;
@@ -124,7 +140,7 @@ class EventReactions implements FindEventInterface {
                 var value = tag[1];
                 if (key == "description") {
                   var description = json.decode(value);
-                  if (description['pubkey'] == nostr!.publicKey) {
+                  if (description['pubkey'] == loggedUserSigner!.getPublicKey()) {
                     hasMyZap = true;
                     break;
                   }
@@ -132,8 +148,8 @@ class EventReactions implements FindEventInterface {
               }
             }
           }
-          replyNum++;
-          replies.add(event);
+          // replyNum++;
+          // replies.add(event);
         // }
       }
 

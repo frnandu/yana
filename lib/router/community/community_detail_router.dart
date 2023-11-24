@@ -1,25 +1,28 @@
+import 'dart:async';
+
+import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:dart_ndk/nips/nip01/event.dart';
+import 'package:dart_ndk/nips/nip01/filter.dart';
+import 'package:dart_ndk/request.dart';
 import 'package:flutter/material.dart';
-import 'package:yana/ui/community_info_component.dart';
-import 'package:yana/utils/base.dart';
-import 'package:yana/provider/community_info_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:widget_size/widget_size.dart';
+import 'package:yana/provider/community_info_provider.dart';
+import 'package:yana/ui/community_info_component.dart';
+import 'package:yana/utils/base.dart';
 
-import '../../nostr/event.dart';
-import '../../nostr/filter.dart';
+import '../../main.dart';
+import '../../models/event_mem_box.dart';
+import '../../nostr/event_kind.dart' as kind;
 import '../../nostr/nip172/community_id.dart';
 import '../../nostr/nip172/community_info.dart';
+import '../../provider/setting_provider.dart';
 import '../../ui/cust_state.dart';
 import '../../ui/event/event_list_component.dart';
 import '../../ui/event_delete_callback.dart';
 import '../../utils/base_consts.dart';
-import '../../models/event_mem_box.dart';
-import '../../main.dart';
-import '../../provider/setting_provider.dart';
 import '../../utils/peddingevents_later_function.dart';
 import '../../utils/router_util.dart';
-import '../../nostr/event_kind.dart' as kind;
-import '../../utils/string_util.dart';
 import '../edit/editor_router.dart';
 
 class CommunityDetailRouter extends StatefulWidget {
@@ -31,8 +34,7 @@ class CommunityDetailRouter extends StatefulWidget {
   }
 }
 
-class _CommunityDetailRouter extends CustState<CommunityDetailRouter>
-    with PenddingEventsLaterFunction {
+class _CommunityDetailRouter extends CustState<CommunityDetailRouter> with PenddingEventsLaterFunction {
   EventMemBox box = EventMemBox();
 
   CommunityId? communityId;
@@ -92,8 +94,7 @@ class _CommunityDetailRouter extends CustState<CommunityDetailRouter>
         controller: _controller,
         itemBuilder: (context, index) {
           if (index == 0) {
-            return Selector<CommunityInfoProvider, CommunityInfo?>(
-                builder: (context, info, child) {
+            return Selector<CommunityInfoProvider, CommunityInfo?>(builder: (context, info, child) {
               if (info == null) {
                 return Container();
               }
@@ -113,7 +114,6 @@ class _CommunityDetailRouter extends CustState<CommunityDetailRouter>
           if (event == null) {
             return null;
           }
-
           return EventListComponent(
             event: event,
             showVideo: _settingProvider.videoPreview == OpenStatus.OPEN,
@@ -156,51 +156,38 @@ class _CommunityDetailRouter extends CustState<CommunityDetailRouter>
     );
   }
 
-  var infoSubscribeId = StringUtil.rndNameStr(16);
-
-  var subscribeId = StringUtil.rndNameStr(16);
-
-  // CommunityInfo? communityInfo;
-
   @override
   Future<void> onReady(BuildContext context) async {
     if (communityId != null) {
-      // {
-      //   var filter = Filter(kinds: [
-      //     kind.EventKind.COMMUNITY_DEFINITION,
-      //   ], authors: [
-      //     communityId!.pubkey
-      //   ], limit: 1);
-      //   var queryArg = filter.toJson();
-      //   queryArg["#d"] = [communityId!.title];
-      //   nostr!.query([queryArg], (e) {
-      //     if (communityInfo == null || communityInfo!.createdAt < e.createdAt) {
-      //       var ci = CommunityInfo.fromEvent(e);
-      //       if (ci != null) {
-      //         setState(() {
-      //           communityInfo = ci;
-      //         });
-      //       }
-      //     }
-      //   }, id: infoSubscribeId);
-      // }
       queryEvents();
     }
   }
 
+  NostrRequest? subscription;
+
   void queryEvents() {
+    if (subscription!=null) {
+      relayManager.closeNostrRequest(subscription!);
+    }
     var filter = Filter(kinds: [
-      kind.EventKind.TEXT_NOTE,
+      Nip01Event.TEXT_NODE_KIND,
       kind.EventKind.LONG_FORM,
       kind.EventKind.FILE_HEADER,
       kind.EventKind.POLL,
+    ], aTags: [
+      communityId!.toAString()
     ], limit: 100);
-    var queryArg = filter.toJson();
-    queryArg["#a"] = [communityId!.toAString()];
-    nostr!.query([queryArg], onEvent, id: subscribeId);
+
+    relayManager.subscription(filter, myInboxRelaySet!).then((request) {
+      subscription = request;
+      subscription!.stream.listen((event) {
+        onEvent(event);
+      });
+    },);
+
   }
 
-  void onEvent(Event event) {
+  void onEvent(Nip01Event event) {
     later(event, (list) {
       box.addList(list);
       setState(() {});
@@ -212,12 +199,12 @@ class _CommunityDetailRouter extends CustState<CommunityDetailRouter>
     super.dispose();
     disposeLater();
 
-    try {
-      nostr!.unsubscribe(subscribeId);
-    } catch (e) {}
+    if (subscription!=null) {
+      relayManager.closeNostrRequest(subscription!);
+    }
   }
 
-  onDeleteCallback(Event event) {
+  onDeleteCallback(Nip01Event event) {
     box.delete(event.id);
     setState(() {});
   }
@@ -225,8 +212,8 @@ class _CommunityDetailRouter extends CustState<CommunityDetailRouter>
   Future<void> addToCommunity() async {
     if (communityId != null) {
       List<String> aTag = ["a", communityId!.toAString()];
-      if (relayProvider.relayAddrs.isNotEmpty) {
-        aTag.add(relayProvider.relayAddrs[0]);
+      if (myOutboxRelaySet != null && myOutboxRelaySet!.urls.isNotEmpty) {
+        aTag.add(myOutboxRelaySet!.urls.first);
       }
 
       var event = await EditorRouter.open(context, tags: [aTag]);

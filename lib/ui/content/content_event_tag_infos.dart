@@ -1,9 +1,9 @@
-import 'package:yana/nostr/event.dart';
+import 'package:dart_ndk/nips/nip01/event.dart';
 
 class ContentEventTagInfos {
   Map<String, String> emojiMap = {};
 
-  ContentEventTagInfos.fromEvent(Event event) {
+  ContentEventTagInfos.fromEvent(Nip01Event event) {
     for (var tag in event.tags) {
       if (tag is List<dynamic> && tag.length > 1) {
         var key = tag[0];

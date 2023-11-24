@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:flutter/material.dart';
 import 'package:yana/main.dart';
 import 'package:yana/provider/community_approved_provider.dart';
@@ -8,7 +9,6 @@ import 'package:provider/provider.dart';
 import 'package:screenshot/screenshot.dart';
 
 import '../../nostr/event_kind.dart' as kind;
-import '../../nostr/event.dart';
 import '../../nostr/event_relation.dart';
 import '../../nostr/nip57/zap_num_util.dart';
 import '../../utils/base.dart';
@@ -19,7 +19,7 @@ import 'event_bitcoin_icon_component.dart';
 import 'event_main_component.dart';
 
 class EventListComponent extends StatefulWidget {
-  Event event;
+  Nip01Event event;
 
   String? pagePubkey;
 
@@ -68,15 +68,17 @@ class _EventListComponent extends State<EventListComponent> {
     var eventRelation = EventRelation.fromEvent(widget.event);
 
     Widget main =
-    // Screenshot(
-    //   controller: screenshotController,
-    //   child:
+    // Text(widget.event.content);
+
+    Screenshot(
+      controller: screenshotController,
+      child:
       Container(
         color: cardColor,
         margin: const EdgeInsets.only(bottom: 1),
-        padding: const EdgeInsets.only(
-          top: Base.BASE_PADDING,
-        ),
+        // padding: const EdgeInsets.only(
+        //   top: Base.BASE_PADDING,
+        // ),
         child: EventMainComponent(
           screenshotController: screenshotController,
           event: widget.event,
@@ -90,10 +92,10 @@ class _EventListComponent extends State<EventListComponent> {
           showCommunity: widget.showCommunity,
           eventRelation: eventRelation,
         ),
-      // ),
+      ),
     );
 
-    if (widget.event.kind == kind.EventKind.ZAP) {
+    if (widget.event.kind == kind.EventKind.ZAP_RECEIPT) {
       var zapNum = ZapNumUtil.getNumFromZapEvent(widget.event);
       String zapNumStr = NumberFormatUtil.format(zapNum);
 
@@ -130,25 +132,25 @@ class _EventListComponent extends State<EventListComponent> {
       );
     }
 
-    Widget approvedWrap = Selector<CommunityApprovedProvider, bool>(
-        builder: (context, approved, child) {
-      if (approved) {
-        return main;
-      }
-
-      return Container();
-    }, selector: (context, _provider) {
-      return _provider.check(widget.event.pubKey, widget.event.id,
-          communityId: eventRelation.communityId);
-    });
+    // Widget approvedWrap = Selector<CommunityApprovedProvider, bool>(
+    //     builder: (context, approved, child) {
+    //   if (approved) {
+    //     return main;
+    //   }
+    //
+    //   return Container();
+    // }, selector: (context, _provider) {
+    //   return _provider.check(widget.event.pubKey, widget.event.id,
+    //       communityId: eventRelation.communityId);
+    // });
 
     if (widget.jumpable) {
       return GestureDetector(
         onTap: jumpToThread,
-        child: approvedWrap,
+        child: main,
       );
     } else {
-      return approvedWrap;
+      return main;
     }
   }
 
@@ -158,7 +160,7 @@ class _EventListComponent extends State<EventListComponent> {
       if (widget.event.content.contains("\"pubkey\"")) {
         try {
           var jsonMap = jsonDecode(widget.event.content);
-          var repostEvent = Event.fromJson(jsonMap);
+          var repostEvent = Nip01Event.fromJson(jsonMap);
           RouterUtil.router(context, RouterPath.THREAD_DETAIL, repostEvent);
           return;
         } catch (e) {

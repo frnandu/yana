@@ -1,10 +1,10 @@
+import 'package:dart_ndk/nips/nip02/contact_list.dart';
 import 'package:flutter/material.dart';
 import 'package:yana/nostr/nip172/community_id.dart';
 import 'package:yana/utils/router_path.dart';
 import 'package:yana/provider/contact_list_provider.dart';
 import 'package:provider/provider.dart';
 
-import '../../nostr/nip02/contact_list.dart';
 import '../../utils/base.dart';
 import '../../i18n/i18n.dart';
 import '../../main.dart';
@@ -40,7 +40,7 @@ class _FollowedCommunitiesRouter extends State<FollowedCommunitiesRouter> {
     var titleFontSize = themeData.textTheme.bodyLarge!.fontSize;
     var hintColor = themeData.hintColor;
 
-    var communitiesList = contactList!.followedCommunitiesList().toList();
+    var communitiesList = contactList!.followedCommunities;
 
     var main = ListView.builder(
       itemBuilder: (context, index) {
@@ -95,7 +95,7 @@ class _FollowedCommunitiesRouter extends State<FollowedCommunitiesRouter> {
                     ),
                   );
                 }, selector: (context, _provider) {
-                  return _provider.containCommunity(id.toAString());
+                  return _provider.followsCommunity(id.toAString());
                 })
               ])),
         );

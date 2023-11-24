@@ -21,27 +21,8 @@ class NwcRouter extends StatefulWidget {
   }
 }
 
-class _NwcRouter extends State<NwcRouter> with ProtocolListener {
+class _NwcRouter extends State<NwcRouter> {
   TextEditingController controller = TextEditingController();
-
-  @override
-  void onProtocolUrlReceived(String url) {
-    // String log = 'Url received: $url)';
-    // print(log);
-    if (StringUtil.isNotBlank(url)) {
-      Future.delayed(const Duration(microseconds: 1), () async {
-        await nwcProvider.connect(url);
-        var route = ModalRoute.of(context);
-        if (route != null &&
-            route!.settings.name != null &&
-            route!.settings.name! == RouterPath.NWC) {
-          RouterUtil.back(context);
-        } else {
-          RouterUtil.router(context, RouterPath.WALLET);
-        }
-      });
-    }
-  }
 
   @override
   void initState() {
@@ -49,7 +30,6 @@ class _NwcRouter extends State<NwcRouter> with ProtocolListener {
     if (StringUtil.isNotBlank(uri)) {
       controller.text = uri!;
     }
-    protocolHandler.addListener(this);
     // controller.addListener(() async {
     //   if (uri == null || uri != controller.text) {
     //     uri = controller.text;

@@ -1,30 +1,45 @@
-import 'package:flutter/material.dart';
+import 'dart:async';
 
-import '../nostr/event_kind.dart' as kind;
-import '../nostr/event.dart';
-import '../nostr/filter.dart';
-import '../nostr/nostr.dart';
-import '../models/event_mem_box.dart';
+import 'package:dart_ndk/nips/nip01/event.dart';
+import 'package:dart_ndk/nips/nip01/filter.dart';
+import 'package:dart_ndk/nips/nip25/reactions.dart';
+import 'package:dart_ndk/request.dart';
+import 'package:flutter/material.dart';
+import 'package:yana/provider/data_util.dart';
+
 import '../main.dart';
+import '../models/event_mem_box.dart';
+import '../nostr/event_kind.dart' as kind;
 import '../utils/peddingevents_later_function.dart';
-import '../utils/string_util.dart';
 
 class NotificationsProvider extends ChangeNotifier
     with PenddingEventsLaterFunction {
   late int _initTime;
 
+  int? timestamp;
   late EventMemBox eventBox;
 
   NotificationsProvider() {
     _initTime = DateTime.now().millisecondsSinceEpoch ~/ 1000;
     eventBox = EventMemBox();
+    timestamp = sharedPreferences.getInt(DataKey.NOTIFICATIONS_TIMESTAMP);
+  }
+
+  void setTimestampToNewestAndSave() {
+    if (eventBox.newestEvent!=null) {
+      timestamp = eventBox.newestEvent!.createdAt;
+      sharedPreferences.setInt(
+          DataKey.NOTIFICATIONS_TIMESTAMP, timestamp!);
+      // DateTime a = DateTime.fromMillisecondsSinceEpoch(timestamp!*1000);
+      // print("NOTIFICATION WRITTEN TIMESTAMP: $a");
+    }
   }
 
   void refresh() {
     _initTime = DateTime.now().millisecondsSinceEpoch ~/ 1000;
     eventBox.clear();
-    doQuery();
-
+    startSubscription();
+    sharedPreferences.remove(DataKey.NOTIFICATIONS_TIMESTAMP);
     newNotificationsProvider.clear();
   }
 
@@ -41,69 +56,54 @@ class NotificationsProvider extends ChangeNotifier
 
   List<int> queryEventKinds() {
     return [
-      kind.EventKind.TEXT_NOTE,
-      kind.EventKind.REACTION,
+      Nip01Event.TEXT_NODE_KIND,
+      Reaction.KIND,
       kind.EventKind.REPOST,
       kind.EventKind.GENERIC_REPOST,
-      kind.EventKind.ZAP,
+      kind.EventKind.ZAP_RECEIPT,
       kind.EventKind.LONG_FORM,
     ];
   }
 
-  String? subscribeId;
+  NostrRequest? subscription;
 
-  void doQuery({Nostr? targetNostr, bool initQuery = false, int? until}) {
-    targetNostr ??= nostr!;
-    var filter = Filter(
-      kinds: queryEventKinds(),
-      until: until ?? _initTime,
-      limit: 50,
-      p: [targetNostr.publicKey],
-    );
-
-    if (subscribeId != null) {
-      try {
-        targetNostr.unsubscribe(subscribeId!);
-      } catch (e) {}
+  void startSubscription() async {
+    if (subscription != null) {
+      await relayManager.closeNostrRequest(subscription!);
     }
 
-    subscribeId = _doQueryFunc(targetNostr, filter, initQuery: initQuery);
+    if (myInboxRelaySet!=null) {
+      var filter = Filter(
+          kinds: queryEventKinds(),
+          pTags: [loggedUserSigner!.getPublicKey()],
+          limit: 100);
+
+      await relayManager.reconnectRelays(myInboxRelaySet!.urls);
+
+      subscription = await relayManager!.subscription(
+          filter, myInboxRelaySet!);
+      subscription!.stream.listen((event) {
+        onEvent(event);
+      });
+    }
   }
 
-  String _doQueryFunc(Nostr targetNostr, Filter filter,
-      {bool initQuery = false}) {
-    var subscribeId = StringUtil.rndNameStr(12);
-    if (initQuery) {
-      // targetNostr.pool.subscribe([filter.toJson()], onEvent, subscribeId);
-      targetNostr.addInitQuery([filter.toJson()], onEvent, id: subscribeId);
-    } else {
-      if (!eventBox.isEmpty()) {
-        var activeRelays = targetNostr.activeRelays();
-        var oldestCreatedAts =
-            eventBox.oldestCreatedAtByRelay(activeRelays, _initTime);
-        Map<String, List<Map<String, dynamic>>> filtersMap = {};
-        for (var relay in activeRelays) {
-          var oldestCreatedAt = oldestCreatedAts.createdAtMap[relay.url];
-          if (oldestCreatedAt != null) {
-            filter.until = oldestCreatedAt;
-            filtersMap[relay.url] = [filter.toJson()];
+  void onEvent(Nip01Event event) {
+    later(event, (list) {
+      list = list
+          .where(
+              (element) => element.pubKey != loggedUserSigner?.getPublicKey())
+          .toList();
+      list.forEach((event) {
+        if (timestamp!=null && event.createdAt > timestamp!) {
+          newNotificationsProvider.handleEvent(event, null);
+        } else {
+          var result = eventBox.addList([event]);
+          if (result) {
+            notifyListeners();
           }
         }
-        targetNostr.queryByFilters(filtersMap, onEvent, id: subscribeId);
-      } else {
-        targetNostr.query([filter.toJson()], onEvent, id: subscribeId);
-      }
-    }
-    return subscribeId;
-  }
-
-  void onEvent(Event event) {
-    later(event, (list) {
-      list = list.where((element) => element.pubKey != nostr?.publicKey).toList();
-      var result = eventBox.addList(list);
-      if (result) {
-        notifyListeners();
-      }
+      });
     }, null);
   }
 
@@ -121,7 +121,7 @@ class NotificationsProvider extends ChangeNotifier
     eventBox.sort();
 
     newNotificationsProvider.clear();
-
+    notificationsProvider.setTimestampToNewestAndSave();
     // update ui
     notifyListeners();
   }

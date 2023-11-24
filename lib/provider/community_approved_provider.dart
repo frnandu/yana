@@ -1,8 +1,9 @@
+import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:flutter/material.dart';
-import 'package:yana/nostr/event.dart';
-import 'package:yana/nostr/nip172/community_id.dart';
 import 'package:yana/main.dart';
+import 'package:yana/nostr/nip172/community_id.dart';
 import 'package:yana/utils/later_function.dart';
+
 import '../nostr/event_kind.dart' as kind;
 
 class CommunityApprovedProvider extends ChangeNotifier with LaterFunction {
@@ -10,15 +11,15 @@ class CommunityApprovedProvider extends ChangeNotifier with LaterFunction {
 
   List<String> eids = [];
 
-  List<Event> penddingEvents = [];
+  List<Nip01Event> penddingEvents = [];
 
   bool check(String pubkey, String eid, {CommunityId? communityId}) {
     if (_approvedMap[eid] != null || communityId == null) {
       return true;
     }
 
-    if (contactListProvider.getContact(pubkey) != null ||
-        pubkey == nostr!.publicKey) {
+    if (contactListProvider.contacts().contains(pubkey) ||
+        pubkey == loggedUserSigner!.getPublicKey()) {
       return true;
     }
 
@@ -38,7 +39,8 @@ class CommunityApprovedProvider extends ChangeNotifier with LaterFunction {
       ids.addAll(eids);
       filter["#e"] = ids;
       eids.clear();
-      nostr!.query([filter], onEvent);
+      /// TODO use dart_ndk
+      // nostr!.query([filter], onEvent);
     }
 
     if (penddingEvents.isNotEmpty) {
@@ -63,7 +65,7 @@ class CommunityApprovedProvider extends ChangeNotifier with LaterFunction {
     }
   }
 
-  void onEvent(Event e) {
+  void onEvent(Nip01Event e) {
     penddingEvents.add(e);
     later(laterFunction, null);
   }

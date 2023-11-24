@@ -1,6 +1,7 @@
 import 'dart:convert';
 
-import 'package:bot_toast/bot_toast.dart';
+import 'package:dart_ndk/nips/nip01/event.dart';
+import 'package:dart_ndk/nips/nip51/nip51.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
@@ -8,23 +9,21 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:provider/provider.dart';
 import 'package:screenshot/screenshot.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:yana/ui/enum_selector_component.dart';
 import 'package:yana/ui/zap_gen_dialog.dart';
 
 import '../../i18n/i18n.dart';
 import '../../main.dart';
 import '../../models/event_reactions.dart';
-import '../../nostr/event.dart';
+import '../../nostr/event_kind.dart';
 import '../../nostr/event_relation.dart';
 import '../../nostr/nip19/nip19.dart';
+import '../../nostr/nip19/nip19_tlv.dart';
 import '../../nostr/nip57/zap_action.dart';
 import '../../provider/event_reactions_provider.dart';
 import '../../router/edit/editor_router.dart';
-import '../../utils/base_consts.dart';
 import '../../utils/number_format_util.dart';
 import '../../utils/router_path.dart';
 import '../../utils/router_util.dart';
-import '../../utils/store_util.dart';
 import '../../utils/string_util.dart';
 import '../editor/cust_embed_types.dart';
 import '../event_delete_callback.dart';
@@ -33,9 +32,11 @@ import '../event_reply_callback.dart';
 class EventReactionsComponent extends StatefulWidget {
   ScreenshotController screenshotController;
 
-  Event event;
+  Nip01Event event;
 
   EventRelation eventRelation;
+
+  Function? onMuteProfile;
 
   bool showDetailBtn;
 
@@ -44,6 +45,7 @@ class EventReactionsComponent extends StatefulWidget {
     required this.event,
     required this.eventRelation,
     this.showDetailBtn = true,
+    this.onMuteProfile
   });
 
   @override
@@ -55,6 +57,7 @@ class EventReactionsComponent extends StatefulWidget {
 class _EventReactionsComponent extends State<EventReactionsComponent> {
   EventReactions? eventReactions;
   bool zapping = false;
+  bool muting = false;
 
   @override
   Widget build(BuildContext context) {
@@ -78,7 +81,7 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
         Color repostColor = themeData.hintColor;
         Color replyColor = themeData.hintColor;
         Color zapColor = themeData.hintColor;
-        // && widget.event.pubKey == nostr!.publicKey
+        // && widget.event.pubKey == loggedUserSigner!.getPublicKey()
 
         if (eventReactions != null) {
           replyNum = eventReactions.replies.length;
@@ -100,8 +103,11 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
             zapColor = Colors.orange;
           }
         }
+        // TODO should reaction if only 1 kind
+        //String? reaction = eventReactions?.reaction;
 
         return Container(
+          margin: const EdgeInsets.only(top:10),
           height: 40,
           child: Row(
             children: [
@@ -248,7 +254,11 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
                         ),
                 ),
               ),
-              Expanded(
+              muting
+                  ? SpinKitFadingCircle(
+                color: themeData.disabledColor,
+                size: 20.0,
+              ): Container(
                 child: PopupMenuButton<String>(
                   tooltip: s.More,
                   itemBuilder: (context) {
@@ -275,25 +285,27 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
                       ));
                     }
 
+                    list.add(PopupMenuDivider());
+                    if (widget.eventRelation.pubkey == loggedUserSigner!.getPublicKey()) {
+                      list.add(PopupMenuItem(
+                        value: "broadcast",
+                        child: Text(s.Broadcast, style: popFontStyle),
+                      ));
+                    }
                     list.add(PopupMenuItem(
                       value: "share",
                       child: Text(s.Share, style: popFontStyle),
                     ));
-                    list.add(PopupMenuDivider());
                     list.add(PopupMenuItem(
-                      value: "source",
-                      child: Text(s.Source, style: popFontStyle),
+                      value: "mute-public",
+                      child: Text("Mute profile (public)", style: popFontStyle),
                     ));
                     list.add(PopupMenuItem(
-                      value: "broadcase",
-                      child: Text(s.Broadcast, style: popFontStyle),
-                    ));
-                    list.add(PopupMenuItem(
-                      value: "block",
-                      child: Text(s.Block, style: popFontStyle),
+                      value: "mute-private",
+                      child: Text("Mute profile (private)", style: popFontStyle),
                     ));
 
-                    if (widget.event.pubKey == nostr!.publicKey) {
+                    if (widget.event.pubKey == loggedUserSigner!.getPublicKey()) {
                       list.add(PopupMenuDivider());
                       list.add(PopupMenuItem(
                         value: "delete",
@@ -311,7 +323,7 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
                   },
                   onSelected: onPopupSelected,
                   child: Icon(
-                    Icons.more_vert,
+                    Icons.more_horiz,
                     size: 16,
                     color: themeData.disabledColor,
                   ),
@@ -322,7 +334,7 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
         );
       },
       selector: (context, _provider) {
-        return _provider.get(widget.event.id);
+        return _provider.get(widget.event.id, pubKey: widget.event.pubKey);
       },
       shouldRebuild: (previous, next) {
         if ((previous == null && next != null) ||
@@ -340,7 +352,14 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
     );
   }
 
-  void onPopupSelected(String value) {
+  void onShareTap() {
+    var nevent = Nevent(
+        id: widget.event.id, relays: widget.event.sources, author: widget.event.pubKey);
+    String share = 'https://njump.me/${NIP19Tlv.encodeNevent(nevent).replaceAll("nostr:","")}';
+    Share.share(share);
+  }
+
+  void onPopupSelected(String value) async {
     if (value == "copyEvent") {
       var text = jsonEncode(widget.event.toJson());
       _doCopy(text);
@@ -350,37 +369,50 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
     } else if (value == "copyId") {
       var text = Nip19.encodeNoteId(widget.event.id);
       _doCopy(text);
-    } else if (value == "detail") {
-      RouterUtil.router(context, RouterPath.EVENT_DETAIL, widget.event);
     } else if (value == "share") {
       onShareTap();
+    } else if (value == "detail") {
+      RouterUtil.router(context, RouterPath.EVENT_DETAIL, widget.event);
     } else if (value == "star") {
       // TODO star event
-    } else if (value == "broadcase") {
-      nostr!.broadcase(widget.event);
-    } else if (value == "source") {
-      List<EnumObj> list = [];
-      for (var source in widget.event.sources) {
-        list.add(EnumObj(source, source));
+    } else if (value == "broadcast") {
+      await relayManager.broadcastEvent(widget.event, myOutboxRelaySet!.urls, loggedUserSigner!);
+    } else if (value.startsWith("mute-")) {
+      setState(() {
+        muting = true;
+      });
+      Nip51List muteList = await relayManager.broadcastAddNip51ListElement(Nip51List.MUTE, Nip51List.PUB_KEY, widget.event.pubKey, myOutboxRelaySet!.urls, loggedUserSigner!, private: value=="mute-private");
+      filterProvider.muteList = muteList;
+      filterProvider.notifyListeners();
+      setState(() {
+        muting = false;
+      });
+      if (widget.onMuteProfile!=null) {
+        widget.onMuteProfile!();
       }
-      EnumSelectorComponent.show(context, list);
-    } else if (value == "block") {
-      filterProvider.addBlock(widget.event.pubKey);
+      // TODO how to make this event dissapear??
     } else if (value == "delete") {
-      nostr!.deleteEvent(widget.event.id);
+
+      Set<String> urlsToBroadcast = (await broadcastUrls(widget.event.pubKey)).toSet()..addAll(widget.event.sources);
+      await relayManager.reconnectRelays(urlsToBroadcast);
+      await relayManager!.broadcastDeletion(widget.event.id, urlsToBroadcast, loggedUserSigner!);
+
       followEventProvider.deleteEvent(widget.event.id);
       notificationsProvider.deleteEvent(widget.event.id);
+
       var deleteCallback = EventDeleteCallback.of(context);
       if (deleteCallback != null) {
         deleteCallback.onDelete(widget.event);
       }
-      // BotToast.showText(text: "Delete success!");
+      setState(() {
+
+      });
     }
   }
 
   void _doCopy(String text) {
     Clipboard.setData(ClipboardData(text: text)).then((_) {
-      BotToast.showText(text: I18n.of(context).Copy_success);
+      // EasyLoading.show(status: I18n.of(context).Copy_success);
     });
   }
 
@@ -389,6 +421,20 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
     super.dispose();
     var id = widget.event.id;
     eventReactionsProvider.removePendding(id);
+  }
+
+  @override
+  void deactivate() {
+    super.deactivate();
+    var id = widget.event.id;
+    eventReactionsProvider.removePendding(id);
+  }
+
+  @override
+  void activate() {
+    super.activate();
+    var id = widget.event.id;
+    // eventReactionsProvider.removePendding(id);
   }
 
   Future<void> onCommmentTap() async {
@@ -422,7 +468,7 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
 
     // TODO reply maybe change the placeholder in editor router.
     var event = await EditorRouter.open(context,
-        tags: tags, tagsAddedWhenSend: tagsAddedWhenSend, tagPs: tagPs);
+        tags: tags, tagsAddedWhenSend: tagsAddedWhenSend, tagPs: tagPs, pubkey:widget.event.pubKey);
     if (event != null) {
       eventReactionsProvider.addEventAndHandle(event);
       var callback = EventReplyCallback.of(context);
@@ -433,40 +479,62 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
   }
 
   Future<void> onRepostTap(String value) async {
-    if (value == "boost") {
-      String? relayAddr;
-      if (widget.event.sources.isNotEmpty) {
-        relayAddr = widget.event.sources[0];
-      }
-      var content = jsonEncode(widget.event.toJson());
-      nostr!
-          .sendRepost(widget.event.id, relayAddr: relayAddr, content: content);
-      eventReactionsProvider.addRepost(widget.event.id);
+    if (loggedUserSigner!.canSign()) {
+      if (value == "boost") {
+        String? relayAddr;
+        if (widget.event.sources.isNotEmpty) {
+          relayAddr = widget.event.sources[0];
+        }
+        var content = jsonEncode(widget.event.toJson());
 
-      if (settingProvider.broadcaseWhenBoost == OpenStatus.OPEN) {
-        nostr!.broadcase(widget.event);
+        List<dynamic> tag = ["e", widget.event.id];
+        if (StringUtil.isNotBlank(relayAddr)) {
+          tag.add(relayAddr);
+        }
+        Nip01Event event = Nip01Event(
+            pubKey: loggedUserSigner!.getPublicKey(),
+            kind: EventKind.REPOST,
+            tags: [tag],
+            content: content,
+            createdAt: DateTime
+                .now()
+                .millisecondsSinceEpoch ~/ 1000);
+        Iterable<String> urlsToBroadcast = await broadcastUrls(widget.event.pubKey);
+        await relayManager.reconnectRelays(urlsToBroadcast);
+
+        await relayManager.broadcastEvent(
+            event, urlsToBroadcast, loggedUserSigner!);
+
+        eventReactionsProvider.addRepost(widget.event.id);
+
+      } else if (value == "quote") {
+        var event = await EditorRouter.open(context, initEmbeds: [
+          quill.CustomBlockEmbed(CustEmbedTypes.mention_event, widget.event.id)
+        ]);
       }
-    } else if (value == "quote") {
-      var event = await EditorRouter.open(context, initEmbeds: [
-        quill.CustomBlockEmbed(CustEmbedTypes.mention_event, widget.event.id)
-      ]);
     }
   }
 
   void onLikeTap() async {
-    if (eventReactions?.myLikeEvents == null ||
-        eventReactions!.myLikeEvents!.isEmpty) {
-      // like
-      var likeEvent = await nostr!.sendLike(widget.event.id);
-      if (likeEvent != null) {
-        eventReactionsProvider.addLike(widget.event.id, likeEvent);
+    if (loggedUserSigner!.canSign()) {
+      Iterable<String> urlsToBroadcast = await broadcastUrls(widget.event.pubKey);
+      await relayManager.reconnectRelays(urlsToBroadcast);
+
+      if (eventReactions?.myLikeEvents == null ||
+          eventReactions!.myLikeEvents!.isEmpty) {
+        // like
+        Nip01Event likeEvent = await relayManager!.broadcastReaction(
+            widget.event.id, urlsToBroadcast, loggedUserSigner!);
+        if (likeEvent != null) {
+          eventReactionsProvider.addLike(widget.event.id, likeEvent);
+        }
+      } else {
+        for (var event in eventReactions!.myLikeEvents!) {
+          await relayManager!.broadcastDeletion(
+              event.id, urlsToBroadcast, loggedUserSigner!);
+        }
+        eventReactionsProvider.deleteLike(widget.event.id);
       }
-    } else {
-      // delete like
-      for (var event in eventReactions!.myLikeEvents!) {
-        nostr!.deleteEvent(event.id);
-      }
-      eventReactionsProvider.deleteLike(widget.event.id);
     }
   }
 
@@ -484,22 +552,6 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
             });
           });
     }
-  }
-
-  void onShareTap() {
-    widget.screenshotController.capture().then((Uint8List? imageData) async {
-      if (imageData != null) {
-        if (imageData != null) {
-          var tempFile = await StoreUtil.saveBS2TempFile(
-            "png",
-            imageData,
-          );
-          Share.shareXFiles([XFile(tempFile)]);
-        }
-      }
-    }).catchError((onError) {
-      print(onError);
-    });
   }
 
   void genZap() {
@@ -524,7 +576,7 @@ class EventReactionNumComponent extends StatelessWidget {
 
   double fontSize;
 
-  EventReactionNumComponent({
+  EventReactionNumComponent({super.key,
     required this.iconData,
     required this.num,
     this.onTap,

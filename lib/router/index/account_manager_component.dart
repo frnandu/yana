@@ -1,25 +1,28 @@
 import 'dart:developer';
 
-import 'package:bot_toast/bot_toast.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:dart_ndk/nips/nip01/bip340_event_signer.dart';
+import 'package:dart_ndk/nips/nip01/event_signer.dart';
+import 'package:dart_ndk/nips/nip01/metadata.dart';
 import 'package:flutter/material.dart';
-import 'package:yana/ui/editor/text_input_dialog.dart';
-import 'package:yana/ui/name_component.dart';
-import 'package:yana/ui/point_component.dart';
-import 'package:yana/models/metadata.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:provider/provider.dart';
 import 'package:yana/provider/metadata_provider.dart';
 import 'package:yana/provider/setting_provider.dart';
+import 'package:yana/ui/name_component.dart';
+import 'package:yana/ui/point_component.dart';
 import 'package:yana/utils/router_util.dart';
-import 'package:provider/provider.dart';
 
-import '../../nostr/client_utils/keys.dart';
-import '../../nostr/nip19/nip19.dart';
-import '../../ui/confirm_dialog.dart';
-import '../../utils/base.dart';
-import '../../models/dm_session_info_db.dart';
-import '../../models/event_db.dart';
+import '../../provider/data_util.dart';
+import '../../utils/platform_util.dart';
+import '/js/js_helper.dart' as js;
 import '../../i18n/i18n.dart';
 import '../../main.dart';
+import '../../nostr/client_utils/keys.dart';
+import '../../nostr/nip07/extension_event_signer.dart';
+import '../../nostr/nip19/nip19.dart';
+import '../../utils/base.dart';
+import '../../utils/router_path.dart';
 import '../../utils/string_util.dart';
 import 'index_drawer_content.dart';
 
@@ -76,7 +79,7 @@ class AccountsState extends State<AccountsComponent> {
         isCurrent: _settingProvider.privateKeyIndex == index,
         onLoginTap: onLoginTap,
         onLogoutTap: (index) {
-          onLogoutTap(index, context: context);
+          AccountsState.onLogoutTap(index, context: context);
         },
       ));
     });
@@ -117,30 +120,32 @@ class AccountsState extends State<AccountsComponent> {
   }
 
   Future<void> addAccount() async {
-    String? key = await TextInputDialog.show(
-        context, I18n.of(context).Input_account_private_key,
-        valueCheck: addAccountCheck);
-    if (StringUtil.isNotBlank(key)) {
-      if (mounted) {
-        var result = await ConfirmDialog.show(
-            context, I18n.of(context).Add_account_and_login);
-        if (result == true) {
-          bool isPublic = Nip19.isPubkey(key!);
-          if (isPublic || Nip19.isPrivateKey(key)) {
-            key = Nip19.decode(key);
-          }
-          // logout current and login new
-          var oldIndex = settingProvider.privateKeyIndex;
-          var newIndex = await settingProvider.addAndChangeKey(key, !isPublic);
-          if (oldIndex != newIndex) {
-            clearCurrentMemInfo();
-            doLogin();
-            settingProvider.notifyListeners();
-            RouterUtil.back(context);
-          }
-        }
-      }
-    }
+    RouterUtil.router(context, RouterPath.LOGIN);
+    //
+    // String? key = await TextInputDialog.show(
+    //     context, I18n.of(context).Input_account_private_key,
+    //     valueCheck: addAccountCheck);
+    // if (StringUtil.isNotBlank(key)) {
+    //   if (mounted) {
+    //     var result = await ConfirmDialog.show(
+    //         context, I18n.of(context).Add_account_and_login);
+    //     if (result == true) {
+    //       bool isPublic = Nip19.isPubkey(key!);
+    //       if (isPublic || Nip19.isPrivateKey(key)) {
+    //         key = Nip19.decode(key);
+    //       }
+    //       // logout current and login new
+    //       var oldIndex = settingProvider.privateKeyIndex;
+    //       var newIndex = await settingProvider.addAndChangeKey(key, !isPublic);
+    //       if (oldIndex != newIndex) {
+    //         clearCurrentMemInfo();
+    //         doLogin();
+    //         settingProvider.notifyListeners();
+    //         RouterUtil.back(context);
+    //       }
+    //     }
+    //   }
+    // }
   }
 
   bool addAccountCheck(BuildContext p1, String privateKey) {
@@ -153,7 +158,7 @@ class AccountsState extends State<AccountsComponent> {
       try {
         getPublicKey(privateKey);
       } catch (e) {
-        BotToast.showText(text: I18n.of(context).Wrong_Private_Key_format);
+        EasyLoading.show(status: I18n.of(context).Wrong_Private_Key_format, maskType: EasyLoadingMaskType.black);
         return false;
       }
     }
@@ -161,18 +166,36 @@ class AccountsState extends State<AccountsComponent> {
     return true;
   }
 
-  void doLogin() async {
+  static void doLogin() async {
+    EasyLoading.show(status: "Logging in...",maskType: EasyLoadingMaskType.black);
+
     String? key = settingProvider.key;
     bool isPrivate = settingProvider.isPrivateKey;
-    nostr = await relayProvider.genNostr(
-        privateKey: isPrivate ? key : null, publicKey: isPrivate ? null : key);
+    String publicKey = isPrivate ? getPublicKey(key!) : key!;
+    loggedUserSigner = isPrivate || !PlatformUtil.isWeb()
+        ? Bip340EventSigner(isPrivate ? key : null, publicKey)
+        : Nip07EventSigner(await js.getPublicKeyAsync());
+
+    await initRelays(newKey: false);
+
+    followEventProvider.loadCachedFeed();
+    notificationsProvider.notifyListeners();
+    nwcProvider.init();
+    settingProvider.notifyListeners();
+    EasyLoading.dismiss();
+
+    // UserRelayList? userRelayList = await relayManager!.getSingleUserRelayList(isPrivate ? getPublicKey(key!): key!);
+    // await relayManager!.connect(urls: userRelayList!=null? userRelayList.urls : RelayManager.DEFAULT_BOOTSTRAP_RELAYS);
+    // loggedUserSigner = isPrivate ? Bip340EventSigner(key, getPublicKey(key)) : Nip07EventSigner(await js.getPublicKeyAsync());
+    // nostr = await relayProvider.genNostr(
+    //     privateKey: isPrivate ? key : null, publicKey: isPrivate ? null : key);
   }
 
   void onLoginTap(int index) {
     if (settingProvider.privateKeyIndex != index) {
+      EasyLoading.show(status: "Logging out...",maskType: EasyLoadingMaskType.black);
       clearCurrentMemInfo();
-      nostr!.close();
-      nostr = null;
+      loggedUserSigner = null;
 
       settingProvider.privateKeyIndex = index;
 
@@ -187,24 +210,31 @@ class AccountsState extends State<AccountsComponent> {
   }
 
   static void onLogoutTap(int index,
-      {bool routerBack = true, BuildContext? context}) async {
+      {bool routerBack = true, required BuildContext context}) {
     var oldIndex = settingProvider.privateKeyIndex;
     clearLocalData(index);
 
     if (oldIndex == index) {
       clearCurrentMemInfo();
-      nostr!.close();
-      nostr = null;
-
-      // signOut complete
-      String? key = settingProvider.key;
-      if (settingProvider.key != null) {
-        // use next privateKey to login
-        bool isPrivate = settingProvider.isPrivateKey;
-        nostr = await relayProvider.genNostr(
-            privateKey: isPrivate ? key : null,
-            publicKey: isPrivate ? null : key);
+      if (settingProvider.keyMap.isNotEmpty) {
+        settingProvider.privateKeyIndex = int.tryParse(settingProvider.keyMap.keys.first);
+        if (settingProvider.key != null) {
+          // use next privateKey to login
+          doLogin();
+          settingProvider.notifyListeners();
+          RouterUtil.back(context);
+        }
+      } else {
+        loggedUserSigner = null;
       }
+      // signOut complete
+      // String? key = settingProvider.key;
+      // if (settingProvider.key != null) {
+      //   // use next privateKey to login
+      //   bool isPrivate = settingProvider.isPrivateKey;
+      //   UserRelayList? userRelayList = await relayManager!.getSingleUserRelayList(isPrivate ? getPublicKey(key!): key!);
+      //   await relayManager!.connect(urls: userRelayList!=null? userRelayList.urls : RelayManager.DEFAULT_BOOTSTRAP_RELAYS);
+      // }
     }
 
     settingProvider.notifyListeners();
@@ -214,23 +244,29 @@ class AccountsState extends State<AccountsComponent> {
   }
 
   static void clearCurrentMemInfo() {
+    sharedPreferences.remove(DataKey.NOTIFICATIONS_TIMESTAMP);
+    sharedPreferences.remove(DataKey.FEED_POSTS_TIMESTAMP);
+    sharedPreferences.remove(DataKey.FEED_REPLIES_TIMESTAMP);
     notificationsProvider.clear();
+    newNotificationsProvider.clear();
     followEventProvider.clear();
+    followNewEventProvider.clear();
     dmProvider.clear();
     noticeProvider.clear();
     contactListProvider.clear();
+    cacheManager.removeAllEvents();
 
     eventReactionsProvider.clear();
     linkPreviewDataProvider.clear();
-    relayProvider.clear();
   }
 
   static void clearLocalData(int index) {
     // remove private key
     settingProvider.removeKey(index);
+    // cacheManager.removeAllEvents();
     // clear local db
-    DMSessionInfoDB.deleteAll(index);
-    EventDB.deleteAll(index);
+    // DMSessionInfoDB.deleteAll(index);
+    // EventDB.deleteAll(index);
     // MetadataDB.deleteAll(); // MetadataDB don't delete here, but delete in setting
   }
 }
@@ -268,15 +304,19 @@ class _AccountManagerItemComponent extends State<AccountManagerItemComponent> {
 
   static const double LINE_HEIGHT = 44;
 
-  late String pubkey;
+  String? pubkey;
 
   @override
   void initState() {
     super.initState();
-    pubkey = StringUtil.isBlank(widget.publicKey) &&
-            StringUtil.isNotBlank(widget.privateKey)
-        ? getPublicKey(widget.privateKey!)
-        : widget.publicKey!;
+    try {
+      pubkey = StringUtil.isBlank(widget.publicKey) &&
+          StringUtil.isNotBlank(widget.privateKey)
+          ? getPublicKey(widget.privateKey!)
+          : widget.publicKey!;
+    } catch (e) {
+      print(e);
+    }
   }
 
   @override
@@ -291,14 +331,21 @@ class _AccountManagerItemComponent extends State<AccountManagerItemComponent> {
         builder: (context, metadata, child) {
       Color currentColor = Colors.green;
       List<Widget> list = [];
-
-      var nip19PubKey = Nip19.encodePubKey(pubkey);
+      // if (metadata==null) {
+      //   return Container();
+      // }
+      String? nip19PubKey;
+      try {
+        nip19PubKey = pubkey != null ? Nip19.encodePubKey(pubkey!) : null;
+      } catch (e) {
+        return Container();
+      }
 
       Widget? imageWidget;
 
       String? url = metadata != null && StringUtil.isNotBlank(metadata.picture)
           ? metadata.picture
-          : StringUtil.robohash(pubkey);
+          : StringUtil.robohash(pubkey!);
 
       if (url != null) {
         imageWidget = CachedNetworkImage(
@@ -340,11 +387,10 @@ class _AccountManagerItemComponent extends State<AccountManagerItemComponent> {
       list.add(Container(
         margin: EdgeInsets.only(left: 5, right: 5),
         child: NameComponent(
-          pubkey: pubkey,
+          pubkey: pubkey!,
           metadata: metadata,
         ),
       ));
-
       list.add(Expanded(
           child: Container(
         padding: const EdgeInsets.only(
@@ -358,7 +404,7 @@ class _AccountManagerItemComponent extends State<AccountManagerItemComponent> {
           borderRadius: BorderRadius.circular(10),
         ),
         child: Text(
-          nip19PubKey,
+          nip19PubKey!,
           overflow: TextOverflow.ellipsis,
         ),
       )));
@@ -389,7 +435,7 @@ class _AccountManagerItemComponent extends State<AccountManagerItemComponent> {
         ),
       );
     }, selector: (context, _provider) {
-      return _provider.getMetadata(pubkey);
+      return pubkey!=null ? _provider.getMetadata(pubkey!) : null;
     });
   }
 

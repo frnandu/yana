@@ -1,22 +1,27 @@
+import 'dart:async';
+
+import 'package:dart_ndk/nips/nip01/event.dart';
+import 'package:dart_ndk/nips/nip01/filter.dart';
+import 'package:dart_ndk/nips/nip02/contact_list.dart';
+import 'package:dart_ndk/request.dart';
 import 'package:flutter/foundation.dart';
+import 'package:yana/provider/data_util.dart';
 
 import '../main.dart';
 import '../models/event_mem_box.dart';
-import '../nostr/event.dart';
 import '../nostr/event_kind.dart' as kind;
-import '../nostr/filter.dart';
-import '../nostr/nip02/contact.dart';
-import '../nostr/nip02/contact_list.dart';
-import '../nostr/nostr.dart';
-import '../router/tag/topic_map.dart';
 import '../utils/find_event_interface.dart';
 import '../utils/peddingevents_later_function.dart';
-import '../utils/string_util.dart';
 
-class FollowEventProvider extends ChangeNotifier
-    with PenddingEventsLaterFunction
-    implements FindEventInterface {
+class FollowEventProvider extends ChangeNotifier with PenddingEventsLaterFunction implements FindEventInterface {
   late int _initTime;
+  NostrRequest? subscription;
+  NostrRequest? subscriptionTags;
+  NostrRequest? subscriptionCommunities;
+  NostrRequest? subscriptionEvents;
+
+  int? postsTimestamp;
+  int? repliesTimestamp;
 
   late EventMemBox postsAndRepliesBox; // posts and replies
   late EventMemBox postsBox;
@@ -25,29 +30,75 @@ class FollowEventProvider extends ChangeNotifier
     _initTime = DateTime.now().millisecondsSinceEpoch ~/ 1000;
     postsAndRepliesBox = EventMemBox(sortAfterAdd: false); // sortAfterAdd by call
     postsBox = EventMemBox(sortAfterAdd: false);
+    postsTimestamp = sharedPreferences.getInt(DataKey.FEED_POSTS_TIMESTAMP);
+    repliesTimestamp = sharedPreferences.getInt(DataKey.FEED_REPLIES_TIMESTAMP);
+    // DateTime? a = postsTimestamp!=null ? DateTime.fromMillisecondsSinceEpoch(postsTimestamp!*1000) : null;
+    // print("POSTS READ TIMESTAMP: $a");
+    // DateTime? b = repliesTimestamp!=null ? DateTime.fromMillisecondsSinceEpoch(repliesTimestamp!*1000) : null;
+    // print("REPLIES READ TIMESTAMP: $b");
+  }
+
+  void loadCachedFeed() async {
+    List<String> contactsForFeed = contactListProvider.contacts();
+    List<Nip01Event>? cachedEvents = cacheManager.loadEvents(contactsForFeed, queryEventKinds());
+    print("FOLLOW loaded ${cachedEvents.length} events from cache DB");
+    onEvents(cachedEvents, saveToCache: false);
+    if (postsBox.newestEvent != null) {
+      DateTime? a = DateTime.fromMillisecondsSinceEpoch(postsBox.newestEvent!.createdAt * 1000);
+      print("   newest POST date is $a");
+    }
+    if (postsAndRepliesBox.newestEvent != null) {
+      DateTime? a = DateTime.fromMillisecondsSinceEpoch(postsAndRepliesBox.newestEvent!.createdAt * 1000);
+      print("   newest REPLY date is $a");
+    }
+  }
+
+  Future<void> startSubscriptions() async {
+    int? since;
+    var newestPost = postsBox.newestEvent;
+    if (newestPost != null) {
+      since = newestPost!.createdAt;
+    }
+    var newestReply = postsAndRepliesBox.newestEvent;
+    if (newestReply != null && (since == null || newestReply!.createdAt > since)) {
+      since = newestReply!.createdAt;
+    }
+    // await contactListProvider.loadContactList(loggedUserSigner!.getPublicKey());
+    subscribe(since: since, fallbackTags: followEventProvider.FALLBACK_TAGS_FOR_EMPTY_CONTACT_LIST);
   }
 
   @override
-  List<Event> findEvent(String str, {int? limit = 5}) {
+  List<Nip01Event> findEvent(String str, {int? limit = 5}) {
     return postsAndRepliesBox.findEvent(str, limit: limit);
   }
 
-  List<Event> eventsByPubkey(String pubkey) {
+  List<Nip01Event> eventsByPubkey(String pubkey) {
     return postsAndRepliesBox.listByPubkey(pubkey);
   }
+
+  List<String> FALLBACK_TAGS_FOR_EMPTY_CONTACT_LIST = ["grownostr", "plebchain", "welcome", "introductions", "cofeechain", "photography"];
 
   void refreshPosts() {
     _initTime = DateTime.now().millisecondsSinceEpoch ~/ 1000;
     postsBox.clear();
-    doQuery();
+    postsAndRepliesBox.clear();
+    postsTimestamp = null;
+    sharedPreferences.remove(DataKey.FEED_POSTS_TIMESTAMP);
+    cacheManager.removeAllEvents();
+    subscribe(fallbackTags: FALLBACK_TAGS_FOR_EMPTY_CONTACT_LIST);
 
     followNewEventProvider.clearPosts();
   }
 
   void refreshReplies() {
     _initTime = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+    postsBox.clear();
     postsAndRepliesBox.clear();
-    doQuery();
+    repliesTimestamp = null;
+    sharedPreferences.remove(DataKey.FEED_REPLIES_TIMESTAMP);
+
+    cacheManager.removeAllEvents();
+    subscribe(fallbackTags: FALLBACK_TAGS_FOR_EMPTY_CONTACT_LIST);
 
     followNewEventProvider.clearReplies();
   }
@@ -55,8 +106,6 @@ class FollowEventProvider extends ChangeNotifier
   int lastTime() {
     return _initTime;
   }
-
-  List<String> _subscribeIds = [];
 
   void deleteEvent(String id) {
     postsBox.delete(id);
@@ -68,7 +117,7 @@ class FollowEventProvider extends ChangeNotifier
 
   List<int> queryEventKinds() {
     return [
-      kind.EventKind.TEXT_NOTE,
+      Nip01Event.TEXT_NODE_KIND,
       kind.EventKind.REPOST,
       kind.EventKind.GENERIC_REPOST,
       kind.EventKind.LONG_FORM,
@@ -77,176 +126,185 @@ class FollowEventProvider extends ChangeNotifier
     ];
   }
 
-  void doQuery(
-      {bool initQuery = false,
-      int? until,
-      bool forceUserLimit = false}) {
+  // void doQuery(
+  //     {int? until,
+  //     List<String>? fallbackContacts,
+  //     List<String>? fallbackTags }) {
+  //   if (until != null) {
+  //     loadMore(until: until, fallbackTags: fallbackTags ?? FALLBACK_TAGS_FOR_EMPTY_CONTACT_LIST);
+  //   } else {
+  //     load(fallbackContacts: fallbackContacts, fallbackTags: fallbackTags ?? FALLBACK_TAGS_FOR_EMPTY_CONTACT_LIST);
+  //   }
+  // }
+
+  void subscribe({int? since, List<String>? fallbackContacts, List<String>? fallbackTags}) async {
+    doUnscribe();
+
+    ContactList? contactList = contactListProvider.getContactList(loggedUserSigner!.getPublicKey());
+    List<String> contactsForFeed = contactList != null ? contactList.contacts : [];
+
     var filter = Filter(
       kinds: queryEventKinds(),
-      until: until ?? _initTime,
-      limit: 20,
+      since: since,
+      // tTags: contactList?.followedTags,
+      // aTags: contactList?.followedCommunities,
+      // eTags: contactList?.followedEvents,
+      authors: contactsForFeed, //..add(loggedUserSigner!.getPublicKey()),
+      limit: since != null ? null : 100,
     );
-    Nostr? targetNostr;
-    if (settingProvider.gossip == 1) {
-      if (followsNostr==null) {
-        return;
-      }
-      targetNostr = followsNostr;
-    } else {
-      targetNostr = nostr;
-    }
 
-    bool queriedTags = false;
-
-    doUnscribe(targetNostr!);
-
-    List<String> subscribeIds = [];
-    List<Contact>? contactList = contactListProvider.list();
-
-    if (contactList==null) {
+    if (contactsForFeed == null || contactsForFeed.isEmpty) {
       if (kDebugMode) {
         print("CONTACT LIST empty, can not get follow content");
       }
-      return;
-    }
-    var contactListLength = contactList!.length;
-    List<String> ids = [];
-    // timeline pull my events too.
-    int maxQueryIdsNum = 400;
-    if (contactListLength > maxQueryIdsNum) {
-      var times = (contactListLength / maxQueryIdsNum).ceil();
-      maxQueryIdsNum = (contactListLength / times).ceil();
-    }
-    maxQueryIdsNum += 2;
-
-    ids.add(targetNostr!.publicKey);
-    for (Contact contact in contactList) {
-      ids.add(contact.publicKey!);
-      if (ids.length > maxQueryIdsNum) {
-        filter.authors = ids;
-
-        var subscribeId = _doQueryFunc(targetNostr!, filter,
-            initQuery: initQuery,
-            forceUserLimit: forceUserLimit,
-            queriyTags: !queriedTags);
-        subscribeIds.add(subscribeId);
-        ids = [];
-        queriedTags = true;
-      }
-    }
-    if (ids.isNotEmpty) {
-      filter.authors = ids;
-      var subscribeId = _doQueryFunc(targetNostr!, filter,
-          initQuery: initQuery,
-          forceUserLimit: forceUserLimit,
-          queriyTags: !queriedTags);
-      subscribeIds.add(subscribeId);
-    }
-
-    if (!initQuery) {
-      _subscribeIds = subscribeIds;
-    }
-  }
-
-  void doUnscribe(Nostr targetNostr) {
-    if (_subscribeIds.isNotEmpty) {
-      for (var subscribeId in _subscribeIds) {
-        try {
-          targetNostr.unsubscribe(subscribeId);
-        } catch (e) {}
-      }
-      _subscribeIds.clear();
-    }
-  }
-
-  String _doQueryFunc(Nostr targetNostr, Filter filter,
-      {bool initQuery = false,
-      bool forceUserLimit = false,
-      bool queriyTags = false}) {
-    var subscribeId = StringUtil.rndNameStr(12);
-    if (initQuery) {
-      // tags query can't query by size! if will make timeline xxxx
-      // targetNostr.addInitQuery(
-      //     addTagFilter([filter.toJson()], queriyTags), onEvent,
-      //     id: subscribeId);
-      targetNostr.addInitQuery([filter.toJson()], onEvent, id: subscribeId);
-    } else {
-      if (!postsAndRepliesBox.isEmpty()) {
-        var activeRelays = targetNostr.activeRelays();
-        var oldestCreatedAts =
-            postsAndRepliesBox.oldestCreatedAtByRelay(activeRelays, _initTime);
-        Map<String, List<Map<String, dynamic>>> filtersMap = {};
-        for (var relay in activeRelays) {
-          var oldestCreatedAt = oldestCreatedAts.createdAtMap[relay.url];
-          if (oldestCreatedAt != null) {
-            filter.until = oldestCreatedAt;
-            if (!forceUserLimit) {
-              filter.limit = null;
-              if (filter.until! < oldestCreatedAts.avCreatedAt - 60 * 60 * 18) {
-                filter.since = oldestCreatedAt - 60 * 60 * 12;
-              } else if (filter.until! >
-                  oldestCreatedAts.avCreatedAt - 60 * 60 * 6) {
-                filter.since = oldestCreatedAt - 60 * 60 * 36;
-              } else {
-                filter.since = oldestCreatedAt - 60 * 60 * 24;
-              }
-            }
-            filtersMap[relay.url] =
-                addTagCommunityFilter([filter.toJson()], queriyTags);
-          }
-        }
-        targetNostr.queryByFilters(filtersMap, onEvent, id: subscribeId);
+      filter.authors = null;
+      if (fallbackContacts != null && fallbackContacts.isNotEmpty) {
+        filter.authors = fallbackContacts;
+      } else if (fallbackTags != null && fallbackTags.isNotEmpty) {
+        filter.tTags = fallbackTags;
       } else {
-        // this maybe refresh
-        targetNostr.query(
-            addTagCommunityFilter([filter.toJson()], queriyTags), onEvent,
-            id: subscribeId);
+        return;
       }
     }
-    return subscribeId;
+    // List<String> tags = contactListProvider.followedTags();
+    // if (tags.isNotEmpty) {
+    //   filter.tTags = tags;
+    // }
+    // List<String> communities = contactListProvider.followedCommunities();
+    // if (communities.isNotEmpty) {
+    //   filter.aTags = communities;
+    // }
+    if (settingProvider.gossip == 1 && feedRelaySet != null) {
+      await relayManager.reconnectRelays(feedRelaySet!.urls);
+    } else {
+      await relayManager.reconnectRelays(myInboxRelaySet!.urls);
+    }
+    subscription = await relayManager!.subscription(filter, (feedRelaySet != null && settingProvider.gossip == 1) ? feedRelaySet! : myInboxRelaySet!,
+        splitRequestsByPubKeyMappings: settingProvider.gossip == 1);
+    subscription!.stream.listen((event) {
+      onEvent(event);
+    });
+
+    // if (contactList != null) {
+    //   if (contactList.followedTags.isNotEmpty) {
+    //     subscriptionTags = await relayManager!.subscription(
+    //         Filter(
+    //           kinds: queryEventKinds(),
+    //           since: since,
+    //           tTags: contactList?.followedTags,
+    //           limit: since != null ? null : 100,
+    //         ),
+    //         myInboxRelaySet!,
+    //         splitRequestsByPubKeyMappings: false);
+    //     subscriptionTags!.stream.listen((event) {
+    //       onEvent(event);
+    //     });
+    //   }
+    //   if (contactList.followedCommunities.isNotEmpty) {
+    //     subscriptionCommunities = await relayManager!.subscription(
+    //         Filter(
+    //           kinds: queryEventKinds(),
+    //           since: since,
+    //           aTags: contactList?.followedCommunities,
+    //           limit: since != null ? null : 100,
+    //         ),
+    //         myInboxRelaySet!,
+    //         splitRequestsByPubKeyMappings: false);
+    //     subscriptionCommunities!.stream.listen((event) {
+    //       onEvent(event);
+    //     });
+    //   }
+    //   if (contactList.followedEvents.isNotEmpty) {
+    //     subscriptionEvents = await relayManager!.subscription(
+    //         Filter(
+    //           kinds: queryEventKinds(),
+    //           since: since,
+    //           eTags: contactList?.followedEvents,
+    //           limit: since != null ? null : 100,
+    //         ),
+    //         myInboxRelaySet!,
+    //         splitRequestsByPubKeyMappings: false);
+    //     subscriptionEvents!.stream.listen((event) {
+    //       onEvent(event);
+    //     });
+    //   }
+    // }
   }
 
-  static List<Map<String, dynamic>> addTagCommunityFilter(
-      List<Map<String, dynamic>> filters, bool queriyTags) {
-    if (queriyTags && filters.isNotEmpty) {
-      var filter = filters[0];
-      // tags filter
-      {
-        var tagFilter = Map<String, dynamic>.from(filter);
-        tagFilter.remove("authors");
-        // handle tag with TopicMap
-        var tagList = contactListProvider.tagList().toList();
-        List<String> queryTagList = [];
-        for (var tag in tagList) {
-          var list = TopicMap.getList(tag);
-          if (list != null) {
-            queryTagList.addAll(list);
-          } else {
-            queryTagList.add(tag);
-          }
-        }
-        if (queryTagList.isNotEmpty) {
-          tagFilter["#t"] = queryTagList;
-          filters.add(tagFilter);
-        }
+  void queryOlder({required int until, List<String>? fallbackTags}) async {
+    ContactList? contactList = contactListProvider.getContactList(loggedUserSigner!.getPublicKey());
+    List<String> contactsForFeed = contactListProvider.contacts();
+    var filter = Filter(
+      kinds: queryEventKinds(),
+      authors: contactsForFeed, //..add(loggedUserSigner!.getPublicKey()),
+      until: until,
+      limit: 100,
+    );
+
+    if (contactsForFeed == null || contactsForFeed.isEmpty) {
+      if (kDebugMode) {
+        print("CONTACT LIST empty, can not get follow content");
       }
-      // community filter
-      {
-        var communityFilter = Map<String, dynamic>.from(filter);
-        communityFilter.remove("authors");
-        var communityList =
-            contactListProvider.followedCommunitiesList().toList();
-        if (communityList.isNotEmpty) {
-          communityFilter["#a"] = communityList;
-          filters.add(communityFilter);
-        }
+      filter.authors = null;
+      if (fallbackTags != null && fallbackTags.isNotEmpty) {
+        filter.tTags = fallbackTags;
+      } else {
+        return;
       }
     }
-    return filters;
+
+    if (!postsAndRepliesBox.isEmpty()) {
+      Nip01Event? event = postsAndRepliesBox.oldestEvent;
+      if (event != null) {
+        filter.until = event.createdAt;
+        filter.since = event.createdAt - 60 * 60 * 24;
+      }
+    }
+    if (settingProvider.gossip == 1 && feedRelaySet != null) {
+      await relayManager.reconnectRelays(feedRelaySet!.urls);
+    } else {
+      await relayManager.reconnectRelays(myInboxRelaySet!.urls);
+    }
+
+    NostrRequest request = await relayManager!.query(filter, (feedRelaySet != null && settingProvider.gossip == 1) ? feedRelaySet! : myInboxRelaySet!);
+    request!.stream.listen((event) {
+      onEvent(event);
+    });
+
+    (await relayManager!.query(Filter(kinds: queryEventKinds(), tTags: contactList?.followedTags, until: until, limit: 100), myInboxRelaySet!))
+        .stream
+        .listen((event) {
+      onEvent(event);
+    });
+    (await relayManager!.query(Filter(kinds: queryEventKinds(), aTags: contactList?.followedCommunities, until: until, limit: 100), myInboxRelaySet!))
+        .stream
+        .listen((event) {
+      onEvent(event);
+    });
+    (await relayManager!.query(Filter(kinds: queryEventKinds(), eTags: contactList?.followedEvents, until: until, limit: 100), myInboxRelaySet!))
+        .stream
+        .listen((event) {
+      onEvent(event);
+    });
+  }
+
+  void doUnscribe() {
+    if (subscription != null) {
+      relayManager.closeNostrRequest(subscription!);
+    }
+    if (subscriptionTags != null) {
+      relayManager.closeNostrRequest(subscriptionTags!);
+    }
+    if (subscriptionCommunities != null) {
+      relayManager.closeNostrRequest(subscriptionCommunities!);
+    }
+    if (subscriptionEvents != null) {
+      relayManager.closeNostrRequest(subscriptionEvents!);
+    }
   }
 
   // check if is posts (no tag e and not Mentions, TODO handle NIP27)
-  static bool eventIsPost(Event event) {
+  static bool eventIsPost(Nip01Event event) {
     bool isPosts = true;
     var tagLength = event.tags.length;
     for (var i = 0; i < tagLength; i++) {
@@ -271,6 +329,8 @@ class FollowEventProvider extends ChangeNotifier
 
     // sort
     postsAndRepliesBox.sort();
+    repliesTimestamp = null;
+    setRepliesTimestampToNewestAndSave();
 
     followNewEventProvider.clearReplies();
 
@@ -287,65 +347,86 @@ class FollowEventProvider extends ChangeNotifier
     postsBox.sort();
 
     followNewEventProvider.clearPosts();
+    postsTimestamp = null;
+    setPostsTimestampToNewestAndSave();
 
     // update ui
     notifyListeners();
   }
 
-  void onEvent(Event event) {
+  void onEvent(Nip01Event event) {
     if (postsAndRepliesBox.isEmpty()) {
       laterTimeMS = 200;
     } else {
       laterTimeMS = 500;
     }
-    later(event, (list) {
-    // var e = event;
-      bool addedPosts = false;
-      bool addedReplies = false;
-      for (var e in list) {
-        bool isPosts = eventIsPost(e);
-        if (!isPosts) {
-          addedReplies = postsAndRepliesBox.add(e);
-        } else {
-          addedPosts = postsBox.add(e);
-        }
-      }
-      if (addedReplies) {
-        postsAndRepliesBox.sort();
-      }
-      if (addedPosts) {
-        postsBox.sort();
-      }
+    onEvents([event]);
+    // later(event, onEvents, null);
+  }
 
-      if (addedPosts || addedReplies) {
-        notifyListeners();
+  void onEvents(List<Nip01Event> list, {bool saveToCache = true}) {
+    // var e = event;
+    bool addedPosts = false;
+    bool addedReplies = false;
+    List<Nip01Event> toSave = [];
+    for (var e in list) {
+      bool isPosts = eventIsPost(e);
+      if (!isPosts) {
+        if (repliesTimestamp != null && e.createdAt > repliesTimestamp!) {
+          followNewEventProvider.handleEvents([e]);
+          return;
+        }
+        addedReplies = postsAndRepliesBox.add(e);
+      } else {
+        if (postsTimestamp != null && e.createdAt > postsTimestamp!) {
+          followNewEventProvider.handleEvents([e]);
+          return;
+        }
+        addedPosts = postsBox.add(e);
       }
-    }, null);
+      if (saveToCache && (addedReplies || addedPosts)) {
+        toSave.add(e);
+      }
+    }
+    if (addedReplies) {
+      // print("Received ${list.length} events FROM ${saveToCache ? "RELAYS" : "CACHE"}, some new replies");
+      postsAndRepliesBox.sort();
+    }
+    if (addedPosts) {
+      // print("Received ${list.length} events FROM ${saveToCache ? "RELAYS" : "CACHE"}, some new posts");
+      postsBox.sort();
+    }
+
+    if (addedPosts || addedReplies) {
+      if (toSave.isNotEmpty) {
+        cacheManager.saveEvents(toSave);
+      }
+      notifyListeners();
+    }
+  }
+
+  void setPostsTimestampToNewestAndSave() {
+    if (postsTimestamp == null && postsBox.newestEvent != null) {
+      postsTimestamp = postsBox.newestEvent!.createdAt;
+      sharedPreferences.setInt(DataKey.FEED_POSTS_TIMESTAMP, postsTimestamp!);
+      DateTime a = DateTime.fromMillisecondsSinceEpoch(postsTimestamp! * 1000);
+      print("POSTS WRITTEN TIMESTAMP: $a");
+    }
+  }
+
+  void setRepliesTimestampToNewestAndSave() {
+    if (repliesTimestamp == null && postsAndRepliesBox.newestEvent != null) {
+      repliesTimestamp = postsAndRepliesBox.newestEvent!.createdAt;
+      sharedPreferences.setInt(DataKey.FEED_REPLIES_TIMESTAMP, repliesTimestamp!);
+      DateTime a = DateTime.fromMillisecondsSinceEpoch(repliesTimestamp! * 1000);
+      print("REPLIES WRITTEN TIMESTAMP: $a");
+    }
   }
 
   void clear() {
     postsAndRepliesBox.clear();
     postsBox.clear();
-
-    doUnscribe(nostr!);
-
-    if (followsNostr!=null) {
-      doUnscribe(followsNostr!);
-    }
-
+    doUnscribe();
     notifyListeners();
-  }
-
-  void metadataUpdatedCallback(ContactList? _contactList) {
-    if (firstLogin ||
-        (postsAndRepliesBox.isEmpty() &&
-            _contactList != null &&
-            !_contactList.isEmpty())) {
-      doQuery();
-    }
-
-    if (firstLogin && _contactList != null && _contactList.list().length > 10) {
-      firstLogin = false;
-    }
   }
 }

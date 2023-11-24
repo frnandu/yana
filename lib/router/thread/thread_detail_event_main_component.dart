@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:yana/ui/event/event_main_component.dart';
+import 'package:screenshot/screenshot.dart';
 import 'package:yana/main.dart';
 import 'package:yana/router/thread/thread_detail_event.dart';
-import 'package:screenshot/screenshot.dart';
+import 'package:yana/ui/event/event_main_component.dart';
 
 import '../../utils/base.dart';
 
 class ThreadDetailItemMainComponent extends StatefulWidget {
-  static double BORDER_LEFT_WIDTH = 1;
+  static double BORDER_LEFT_WIDTH = 2;
 
   static double EVENT_MAIN_MIN_WIDTH = 200;
 
@@ -32,99 +32,62 @@ class ThreadDetailItemMainComponent extends StatefulWidget {
   }
 }
 
-class _ThreadDetailItemMainComponent
-    extends State<ThreadDetailItemMainComponent> {
+class _ThreadDetailItemMainComponent extends State<ThreadDetailItemMainComponent> {
   ScreenshotController screenshotController = ScreenshotController();
+
+
+  @override
+  void initState() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (widget.sourceEventId == widget.item.event.id) {
+        Scrollable.ensureVisible(context);
+      }
+    });
+  }
+
+  Widget getContainer(Widget w, int level, Color color) {
+    if (level == 0) {
+      return w;
+    }
+    return Container(
+        margin: EdgeInsets.only(left: ThreadDetailItemMainComponent.BORDER_LEFT_WIDTH+1),
+        decoration: BoxDecoration(
+          border: Border(
+            left: BorderSide(
+              width: ThreadDetailItemMainComponent.BORDER_LEFT_WIDTH,
+              color: color,
+            ),
+          ),
+        ),
+        child: getContainer(w, level - 1, color)
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     var themeData = Theme.of(context);
     var hintColor = themeData.hintColor;
-    var cardColor = themeData.cardColor;
 
     var currentMainEvent = EventMainComponent(
       screenshotController: screenshotController,
       event: widget.item.event,
       showReplying: false,
+      highlight: widget.sourceEventId == widget.item.event.id,
       showVideo: true,
       imageListMode: false,
       showSubject: false,
     );
-
-    List<Widget> list = [];
-    var currentWidth = mediaDataCache.size.width;
-    var leftWidth = (widget.item.currentLevel - 1) *
-        (Base.BASE_PADDING_HALF + ThreadDetailItemMainComponent.BORDER_LEFT_WIDTH);
-    currentWidth = mediaDataCache.size.width - leftWidth;
-    if (currentWidth < ThreadDetailItemMainComponent.EVENT_MAIN_MIN_WIDTH) {
-      currentWidth = ThreadDetailItemMainComponent.EVENT_MAIN_MIN_WIDTH;
-    }
-    list.add(Container(
-      alignment: Alignment.centerLeft,
-      width: currentWidth,
-      child: currentMainEvent,
-    ));
-
-    if (widget.item.subItems != null && widget.item.subItems.isNotEmpty) {
-      List<Widget> subWidgets = [];
-      for (var subItem in widget.item.subItems) {
-        Key? currentEventKey;
-        if (subItem.event.id == widget.sourceEventId) {
-          currentEventKey = widget.sourceEventKey;
-        }
-
-        subWidgets.add(
-          ThreadDetailItemMainComponent(
-            key: currentEventKey,
-            item: subItem,
-            totalMaxWidth: widget.totalMaxWidth,
-            sourceEventId: widget.sourceEventId,
-            sourceEventKey: widget.sourceEventKey,
-          ),
-        );
-      }
-      list.add(Container(
-        alignment: Alignment.centerLeft,
-        margin: const EdgeInsets.only(
-          bottom: Base.BASE_PADDING,
-          left: Base.BASE_PADDING_HALF,
-        ),
-        decoration: BoxDecoration(
-          border: Border(
-            left: BorderSide(
-              width: ThreadDetailItemMainComponent.BORDER_LEFT_WIDTH,
-              color: hintColor,
-            ),
-          ),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: subWidgets,
-        ),
-      ));
-    }
-
-    Key? currentEventKey;
-    if (widget.item.event.id == widget.sourceEventId) {
-      currentEventKey = widget.sourceEventKey;
-    }
-
     return
       // Screenshot(
       // controller: screenshotController,
       // child:
       Container(
-        key: currentEventKey,
-        padding: const EdgeInsets.only(
-          top: Base.BASE_PADDING,
-        ),
-        color: cardColor,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: list,
+          children: [getContainer(currentMainEvent, widget.item.currentLevel, widget.sourceEventId == widget.item.event.id ? themeData.primaryColor : hintColor)],
         ),
-      // ),
-    );
+        // ),
+      );
   }
 }

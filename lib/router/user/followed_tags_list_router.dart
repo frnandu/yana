@@ -1,8 +1,8 @@
+import 'package:dart_ndk/nips/nip02/contact_list.dart';
 import 'package:flutter/material.dart';
 import 'package:yana/ui/tag_info_component.dart';
 import 'package:yana/utils/base.dart';
 
-import '../../nostr/nip02/contact_list.dart';
 import '../../i18n/i18n.dart';
 import '../../utils/router_util.dart';
 
@@ -35,7 +35,7 @@ class _FollowedTagsListRouter extends State<FollowedTagsListRouter> {
     var themeData = Theme.of(context);
     var titleFontSize = themeData.textTheme.bodyLarge!.fontSize;
 
-    var tagList = contactList!.tagList().toList();
+    var tagList = contactList!.followedTags;
 
     return Scaffold(
       appBar: AppBar(

@@ -1,16 +1,17 @@
+import 'package:dart_ndk/nips/nip01/event.dart';
+
 import '../main.dart';
-import '../nostr/event.dart';
 
 mixin PenddingEventsLaterFunction {
   int laterTimeMS = 200;
 
   bool latering = false;
 
-  List<Event> penddingEvents = [];
+  List<Nip01Event> penddingEvents = [];
 
   bool _running = true;
 
-  void later(Event event, Function(List<Event>) func, Function? completeFunc) {
+  void later(Nip01Event event, Function(List<Nip01Event>) func, Function? completeFunc) {
     penddingEvents.add(event);
     if (latering) {
       return;
@@ -18,7 +19,7 @@ mixin PenddingEventsLaterFunction {
 
     latering = true;
     Future.delayed(Duration(milliseconds: laterTimeMS), () {
-      if (!_running || nostr==null) {
+      if (!_running || loggedUserSigner==null) {
         return;
       }
 

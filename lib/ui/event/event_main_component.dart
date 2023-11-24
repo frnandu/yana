@@ -1,18 +1,18 @@
 import 'dart:convert';
 
+import 'package:dart_ndk/nips/nip01/event.dart';
+import 'package:dart_ndk/nips/nip01/metadata.dart';
+import 'package:dart_ndk/nips/nip25/reactions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:provider/provider.dart';
 import 'package:screenshot/screenshot.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:yana/ui/content/content_video_component.dart';
-import 'package:yana/ui/content/markdown/markdown_mention_event_element_builder.dart';
 import 'package:yana/utils/platform_util.dart';
 
 import '../../i18n/i18n.dart';
 import '../../main.dart';
-import '../../models/metadata.dart';
-import '../../nostr/event.dart';
 import '../../nostr/event_kind.dart' as kind;
 import '../../nostr/event_relation.dart';
 import '../../nostr/nip19/nip19.dart';
@@ -31,11 +31,9 @@ import '../content/content_image_component.dart';
 import '../content/content_link_component.dart';
 import '../content/content_tag_component.dart';
 import '../content/markdown/markdown_mention_event_inline_syntax.dart';
-import '../content/markdown/markdown_mention_user_element_builder.dart';
 import '../content/markdown/markdown_mention_user_inline_syntax.dart';
 import '../content/markdown/markdown_nevent_inline_syntax.dart';
 import '../content/markdown/markdown_nprofile_inline_syntax.dart';
-import '../content/markdown/markdown_nrelay_element_builder.dart';
 import '../content/markdown/markdown_nrelay_inline_syntax copy.dart';
 import 'event_poll_component.dart';
 import 'event_quote_component.dart';
@@ -45,7 +43,7 @@ import 'event_top_component.dart';
 class EventMainComponent extends StatefulWidget {
   ScreenshotController screenshotController;
 
-  Event event;
+  Nip01Event event;
 
   String? pagePubkey;
 
@@ -67,12 +65,19 @@ class EventMainComponent extends StatefulWidget {
 
   bool showCommunity;
 
+  bool addDivider;
+
+  bool highlight;
+
+  bool mutedProfile=false;
+
   EventRelation? eventRelation;
 
   EventMainComponent({
     super.key,
     required this.screenshotController,
     required this.event,
+
     this.pagePubkey,
     this.showReplying = true,
     this.textOnTap,
@@ -84,6 +89,8 @@ class EventMainComponent extends StatefulWidget {
     this.showSubject = true,
     this.showCommunity = true,
     this.eventRelation,
+    this.addDivider = true,
+    this.highlight = false,
   });
 
   @override
@@ -96,6 +103,7 @@ class _EventMainComponent extends State<EventMainComponent> {
   bool showWarning = false;
 
   late EventRelation eventRelation;
+
 
   @override
   void initState() {
@@ -112,7 +120,7 @@ class _EventMainComponent extends State<EventMainComponent> {
     var s = I18n.of(context);
     var _settingProvider = Provider.of<SettingProvider>(context);
     if (eventRelation.id != widget.event.id) {
-      // change when thead root load lazy
+      // change when thread root load lazy
       eventRelation = EventRelation.fromEvent(widget.event);
     }
 
@@ -133,14 +141,17 @@ class _EventMainComponent extends State<EventMainComponent> {
     if (contentCardColor == Colors.white) {
       contentCardColor = Colors.grey[300];
     }
+    // if (widget.highlight) {
+    //   contentCardColor = Colors.grey[600];
+    // }
 
-    Event? repostEvent;
+    Nip01Event? repostEvent;
     if ((widget.event.kind == kind.EventKind.REPOST ||
             widget.event.kind == kind.EventKind.GENERIC_REPOST) &&
         widget.event.content.contains("\"pubkey\"")) {
       try {
         var jsonMap = jsonDecode(widget.event.content);
-        repostEvent = Event.fromJson(jsonMap);
+        repostEvent = Nip01Event.fromJson(jsonMap);
 
         // set source to repost event
         if (repostEvent.id == eventRelation.rootId &&
@@ -157,6 +168,9 @@ class _EventMainComponent extends State<EventMainComponent> {
 
     if (_settingProvider.autoOpenSensitive == OpenStatus.OPEN) {
       showWarning = true;
+    }
+    if (widget.mutedProfile || !relayManager.filterEvent(widget.event)) {
+      return Container();
     }
 
     List<Widget> list = [];
@@ -237,13 +251,13 @@ class _EventMainComponent extends State<EventMainComponent> {
             child: RepaintBoundary(child: markdownWidget),
           ));
         }
-
         if (widget.showReactions) {
           list.add(EventReactionsComponent(
             screenshotController: widget.screenshotController,
             event: widget.event,
             eventRelation: eventRelation,
             showDetailBtn: widget.showDetailBtn,
+            onMuteProfile: onMuteProfile,
           ));
         }
       } else if (widget.event.kind == kind.EventKind.REPOST ||
@@ -255,13 +269,13 @@ class _EventMainComponent extends State<EventMainComponent> {
         if (repostEvent != null) {
           list.add(EventQuoteComponent(
             event: repostEvent,
-            showReactions:  widget.showReactions,
+            showReactions: widget.showReactions,
             showVideo: widget.showVideo,
           ));
         } else if (StringUtil.isNotBlank(eventRelation.rootId)) {
           list.add(EventQuoteComponent(
             id: eventRelation.rootId,
-            showReactions:  widget.showReactions,
+            showReactions: widget.showReactions,
             showVideo: widget.showVideo,
           ));
         } else {
@@ -270,44 +284,64 @@ class _EventMainComponent extends State<EventMainComponent> {
           );
         }
       } else {
-        if (widget.showReplying && eventRelation.tagPList.isNotEmpty) {
-          var textStyle = TextStyle(
-            color: hintColor,
-            fontSize: smallTextSize,
-          );
-          List<Widget> replyingList = [];
-          var length = eventRelation.tagPList.length;
-          replyingList.add(Text(
-            "${s.Replying}: ",
-            style: textStyle,
-          ));
-          for (var index = 0; index < length; index++) {
-            var p = eventRelation.tagPList[index];
-            var isLast = index < length - 1 ? false : true;
-            replyingList.add(EventReplyingcomponent(pubkey: p));
-            if (!isLast) {
-              replyingList.add(Text(
-                " & ",
-                style: textStyle,
+        if (widget.showReplying && eventRelation.tagPList.isNotEmpty && eventRelation.tagEList.isNotEmpty) {
+          if (widget.event.kind!=Reaction.KIND) {
+            var textStyle = TextStyle(
+              color: hintColor,
+              fontSize: smallTextSize,
+            );
+            List<Widget> replyingList = [];
+            var length = eventRelation.tagPList.length;
+            replyingList.add(Text(
+              "${s.Replying}: ",
+              style: textStyle,
+            ));
+            for (var index = 0; index < length; index++) {
+              var p = eventRelation.tagPList[index];
+              var isLast = index < length - 1 ? false : true;
+              replyingList.add(EventReplyingcomponent(pubkey: p));
+              if (!isLast) {
+                replyingList.add(Text(
+                  " & ",
+                  style: textStyle,
+                ));
+              }
+            }
+            list.add(Container(
+              width: double.maxFinite,
+              padding: const EdgeInsets.only(
+                bottom: Base.BASE_PADDING_HALF,
+              ),
+              child: Wrap(
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: replyingList,
+              ),
+            ));
+
+            if (eventRelation.replyId != null) {
+              list.add(EventQuoteComponent(
+                id: eventRelation.replyId,
+                showReactions: false,//widget.showReactions,
+                showVideo: widget.showVideo,
+              ));
+            } else if (eventRelation.rootId != null) {
+              list.add(EventQuoteComponent(
+                id: eventRelation.rootId,
+                showReactions: false,//widget.showReactions,
+                showVideo: widget.showVideo,
               ));
             }
-          }
-          list.add(Container(
-            width: double.maxFinite,
-            padding: const EdgeInsets.only(
-              bottom: Base.BASE_PADDING_HALF,
-            ),
-            child: Wrap(
-              crossAxisAlignment: WrapCrossAlignment.center,
-              children: replyingList,
-            ),
-          ));
-          if (eventRelation.replyId!=null) {
-            list.add(EventQuoteComponent(
-              id: eventRelation.replyId,
-              showReactions:  widget.showReactions,
-              showVideo: widget.showVideo,
-            ));
+          } else {
+            list.add(
+              buildContentWidget(_settingProvider, imagePreview, videoPreview),
+            );
+            if (eventRelation.rootId != null) {
+              list.add(EventQuoteComponent(
+                id: eventRelation.rootId,
+                showReactions: false,//widget.showReactions,
+                showVideo: widget.showVideo,
+              ));
+            }
           }
         } else {
           // hide the reply note subject!
@@ -330,8 +364,7 @@ class _EventMainComponent extends State<EventMainComponent> {
           }
         }
 
-
-        if (widget.event.kind != kind.EventKind.METADATA) {
+        if (widget.event.kind != Metadata.KIND && widget.event.kind != Reaction.KIND) {
           list.add(
             buildContentWidget(_settingProvider, imagePreview, videoPreview),
           );
@@ -387,13 +420,13 @@ class _EventMainComponent extends State<EventMainComponent> {
             }
           }
         }
-
-        if (widget.event.kind != kind.EventKind.ZAP && widget.showReactions) {
+        if (widget.event.kind != kind.EventKind.ZAP_RECEIPT && widget.showReactions) {
           list.add(EventReactionsComponent(
             screenshotController: widget.screenshotController,
             event: widget.event,
             eventRelation: eventRelation,
             showDetailBtn: widget.showDetailBtn,
+            onMuteProfile: onMuteProfile
           ));
         } else {
           list.add(Container(
@@ -416,7 +449,7 @@ class _EventMainComponent extends State<EventMainComponent> {
             color: hintColor,
           ),
           Container(
-            margin: EdgeInsets.only(
+            margin: const EdgeInsets.only(
               left: Base.BASE_PADDING_HALF,
               right: 3,
             ),
@@ -434,7 +467,7 @@ class _EventMainComponent extends State<EventMainComponent> {
                   eventRelation.communityId);
             },
             child: Text(
-              "${eventRelation.communityId!.title}",
+              eventRelation.communityId!.title,
               style: TextStyle(
                 fontSize: smallTextSize,
                 fontWeight: FontWeight.bold,
@@ -445,6 +478,7 @@ class _EventMainComponent extends State<EventMainComponent> {
       );
 
       eventAllList.add(Container(
+        // color: contentCardColor,
         padding: const EdgeInsets.only(
           left: Base.BASE_PADDING + 4,
           right: Base.BASE_PADDING + 4,
@@ -453,13 +487,21 @@ class _EventMainComponent extends State<EventMainComponent> {
         child: communityTitle,
       ));
     }
+    eventAllList.add(Container(
+      // color: contentCardColor,
+      padding: const EdgeInsets.only(
+        top: Base.BASE_PADDING,
+      ),
+    ));
 
     eventAllList.add(EventTopComponent(
+      // color: contentCardColor,
       event: widget.event,
       pagePubkey: widget.pagePubkey,
     ));
 
     eventAllList.add(Container(
+      // color: contentCardColor,
       width: double.maxFinite,
       padding: const EdgeInsets.only(
         left: Base.BASE_PADDING,
@@ -470,6 +512,10 @@ class _EventMainComponent extends State<EventMainComponent> {
         children: list,
       ),
     ));
+
+    if (widget.addDivider) {
+      eventAllList.add(Container(color: themeData.disabledColor, padding: const EdgeInsets.only(bottom: 1),));
+    }
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -494,7 +540,7 @@ class _EventMainComponent extends State<EventMainComponent> {
       imageListMode: widget.imageListMode,
     );
 
-    var main = Container(
+    var main = SizedBox(
       width: double.maxFinite,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -532,13 +578,13 @@ class _EventMainComponent extends State<EventMainComponent> {
     return MarkdownBody(
       data: content,
       selectable: true,
-      builders: {
-        MarkdownMentionUserElementBuilder.TAG:
-            MarkdownMentionUserElementBuilder(),
-        MarkdownMentionEventElementBuilder.TAG:
-            MarkdownMentionEventElementBuilder(),
-        MarkdownNrelayElementBuilder.TAG: MarkdownNrelayElementBuilder(),
-      },
+      // builders: {
+      //   MarkdownMentionUserElementBuilder.TAG:
+      //       MarkdownMentionUserElementBuilder(),
+      //   MarkdownMentionEventElementBuilder.TAG:
+      //       MarkdownMentionEventElementBuilder(),
+      //   MarkdownNrelayElementBuilder.TAG: MarkdownNrelayElementBuilder(),
+      // },
       blockSyntaxes: [],
       inlineSyntaxes: [
         MarkdownMentionEventInlineSyntax(),
@@ -642,7 +688,7 @@ class _EventMainComponent extends State<EventMainComponent> {
               });
             },
             child: Container(
-              margin: EdgeInsets.only(top: Base.BASE_PADDING_HALF),
+              margin: const EdgeInsets.only(top: Base.BASE_PADDING_HALF),
               padding: const EdgeInsets.only(
                 top: 4,
                 bottom: 4,
@@ -655,13 +701,19 @@ class _EventMainComponent extends State<EventMainComponent> {
               ),
               child: Text(
                 s.Show,
-                style: TextStyle(color: Colors.white),
+                style: const TextStyle(color: Colors.white),
               ),
             ),
           ),
         ],
       ),
     );
+  }
+
+  onMuteProfile() {
+    setState(() {
+      widget.mutedProfile=true;
+    });
   }
 }
 

@@ -1,9 +1,10 @@
-import 'dart:convert';
-import 'dart:developer';
-
 import 'package:auto_size_text_field/auto_size_text_field.dart';
-import 'package:bot_toast/bot_toast.dart';
+import 'package:dart_ndk/nips/nip01/helpers.dart';
+import 'package:dart_ndk/nips/nip04/nip04.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:dart_ndk/nips/nip01/event.dart';
+import 'package:dart_ndk/nips/nip01/metadata.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
@@ -11,22 +12,19 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:pointycastle/ecc/api.dart';
 import 'package:provider/provider.dart';
-import 'package:yana/models/metadata.dart';
-import 'package:yana/ui/datetime_picker_component.dart';
 import 'package:yana/provider/custom_emoji_provider.dart';
+import 'package:yana/ui/datetime_picker_component.dart';
 
-import '../../nostr/event.dart';
+import '../../i18n/i18n.dart';
+import '../../main.dart';
+import '../../models/custom_emoji.dart';
 import '../../nostr/event_kind.dart' as kind;
-import '../../nostr/nip04/nip04.dart';
 import '../../nostr/nip19/nip19.dart';
 import '../../nostr/nip19/nip19_tlv.dart';
 import '../../nostr/upload/uploader.dart';
-import '../../utils/base.dart';
-import '../../models/custom_emoji.dart';
-import '../../i18n/i18n.dart';
-import '../../main.dart';
 import '../../router/edit/poll_input_component.dart';
 import '../../router/index/index_app_bar.dart';
+import '../../utils/base.dart';
 import '../../utils/platform_util.dart';
 import '../../utils/string_util.dart';
 import '../content/content_decoder.dart';
@@ -148,7 +146,7 @@ mixin EditorMixin {
         quill.QuillIconButton(
           onPressed: selectedTime,
           icon: Icon(Icons.timer_outlined,
-              color: publishAt != null ? mainColor : null),
+              color: createdAt != null ? mainColor : null),
         )
       ]);
     }
@@ -391,11 +389,11 @@ mixin EditorMixin {
 
   bool baseInputCheck(BuildContext context, String value) {
     if (value.contains(" ")) {
-      BotToast.showText(text: I18n.of(context).Text_can_t_contain_blank_space);
+      EasyLoading.show(status: I18n.of(context).Text_can_t_contain_blank_space);
       return false;
     }
     if (value.contains("\n")) {
-      BotToast.showText(text: I18n.of(context).Text_can_t_contain_new_line);
+      EasyLoading.show(status: I18n.of(context).Text_can_t_contain_new_line);
       return false;
     }
     return true;
@@ -415,7 +413,7 @@ mixin EditorMixin {
     }
   }
 
-  Future<Event?> doDocumentSave() async {
+  Future<Nip01Event?> doDocumentSave() async {
     var context = getContext();
     // dm agreement
     var agreement = getAgreement();
@@ -455,7 +453,7 @@ mixin EditorMixin {
               if (StringUtil.isNotBlank(imagePath)) {
                 value = imagePath;
               } else {
-                BotToast.showText(text: I18n.of(context).Upload_fail);
+                EasyLoading.show(status: I18n.of(context).Upload_fail);
                 return null;
               }
             }
@@ -560,35 +558,31 @@ mixin EditorMixin {
       allTags.add(["content-warning", ""]);
     }
 
-    Event? event;
+    Nip01Event? event;
     if (agreement != null && StringUtil.isNotBlank(pubkey)) {
       // dm message
-      result = NIP04.encrypt(result, agreement, pubkey!);
-      event = Event(
-          nostr!.publicKey, kind.EventKind.DIRECT_MESSAGE, allTags, result,
-          publishAt: publishAt);
+      result = Nip04.encryptWithAgreement(result, agreement, pubkey!);
+      event = Nip01Event(
+          pubKey: loggedUserSigner!.getPublicKey(), kind: kind.EventKind.DIRECT_MESSAGE, tags: allTags, content: result,
+          createdAt: createdAt!=null ? createdAt!.millisecondsSinceEpoch ~/ 1000 : Helpers.now);
     } else if (inputPoll) {
       // poll event
       // get poll tag from PollInputComponentn
       var pollTags = pollInputController.getTags();
       allTags.addAll(pollTags);
-      event = Event(nostr!.publicKey, kind.EventKind.POLL, allTags, result,
-          publishAt: publishAt);
+      event = Nip01Event(pubKey: loggedUserSigner!.getPublicKey(), kind: kind.EventKind.POLL, tags: allTags, content: result,
+          createdAt: createdAt!=null? createdAt!.millisecondsSinceEpoch ~/ 1000: 0);
     } else {
       // text note
-      event = Event(nostr!.publicKey, kind.EventKind.TEXT_NOTE, allTags, result,
-          publishAt: publishAt);
+      event = Nip01Event(pubKey: loggedUserSigner!.getPublicKey(), kind: Nip01Event.TEXT_NODE_KIND, tags: allTags, content:result,
+          createdAt: createdAt!=null ? createdAt!.millisecondsSinceEpoch ~/ 1000: 0);
     }
+    // TODO what about more people that might take part in the thread conversation?
+    Iterable<String> urlsToBroadcast = await broadcastUrls(getPubkey());
+    await relayManager.reconnectRelays(urlsToBroadcast);
 
-    // if (publishAt != null) {
-    //   nostr!.signEvent(event);
-    //   return event;
-    // } else {
-      var e = nostr!.sendEvent(event);
-      log(jsonEncode(event.toJson()));
-
-      return e;
-    // }
+    await relayManager.broadcastEvent(event, urlsToBroadcast,loggedUserSigner!);
+    return event;
   }
 
   String handleInlineValue(String result, String value) {
@@ -772,12 +766,12 @@ mixin EditorMixin {
     );
   }
 
-  DateTime? publishAt;
+  DateTime? createdAt;
 
   Future<void> selectedTime() async {
     var dt = await DatetimePickerComponent.show(getContext(),
-        dateTime: publishAt != null ? publishAt : DateTime.now());
-    publishAt = dt;
+        dateTime: createdAt != null ? createdAt : DateTime.now());
+    createdAt = dt;
     updateUI();
   }
 }

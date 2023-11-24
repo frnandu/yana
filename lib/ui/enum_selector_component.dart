@@ -121,7 +121,7 @@ class EnumSelectorItemComponent extends StatelessWidget {
     Widget main = Container(
       padding: const EdgeInsets.only(
           left: Base.BASE_PADDING + 5, right: Base.BASE_PADDING + 5),
-      child: Text(enumObj.name),
+      child: enumObj.widget,
     );
 
     return GestureDetector(

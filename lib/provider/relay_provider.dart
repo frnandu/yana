@@ -1,367 +1,79 @@
 import 'dart:convert';
-import 'dart:developer';
 import 'dart:io';
 
+import 'package:dart_ndk/models/pubkey_mapping.dart';
+import 'package:dart_ndk/models/relay_set.dart';
+import 'package:dart_ndk/models/user_relay_list.dart';
+import 'package:dart_ndk/nips/nip51/nip51.dart';
+import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
+import 'package:dart_ndk/read_write.dart';
+import 'package:dart_ndk/relay.dart';
+import 'package:dart_ndk/relay_manager.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:yana/models/relay_list.dart';
-import 'package:yana/nostr/nip02/contact_list.dart';
-import 'package:yana/nostr/relay_metadata.dart';
-import 'package:yana/provider/setting_provider.dart';
+import 'package:http/http.dart' as http;
 
 import '../main.dart';
-import '../models/relay_status.dart';
-import '../nostr/event.dart';
-import '../nostr/event_kind.dart' as kind;
-import '../nostr/filter.dart';
-import '../nostr/nip02/contact.dart';
-import '../nostr/nostr.dart';
-import '../nostr/relay.dart';
-import '../utils/string_util.dart';
-import 'data_util.dart';
 
 class RelayProvider extends ChangeNotifier {
   static RelayProvider? _relayProvider;
-
-  // TODO make mechanism for reloading if cached/DB list is too old
-  static int RELOAD_RELAY_LIST_AFTER_THIS_SECONDS = 604800;
-
-  List<String> relayAddrs = [];
-
-  static const List<String> STATIC_RELAY_ADDRS = [
-    "wss://relay.damus.io",
-    "wss://purplepag.es",
-    "wss://nos.lol",
-    "wss://nostr.wine",
-    "wss://atlas.nostr.land",
-    "wss://relay.orangepill.dev",
-    "wss://relay.snort.social",
-    "wss://relay.nostr.band", // for search (NIP-50)
-  ];
-
-  Map<String, RelayStatus> relayStatusMap = {};
 
   static RelayProvider getInstance() {
     _relayProvider ??= RelayProvider();
     return _relayProvider!;
   }
 
-  Future<void> getRelays(String pubKey, Function(List<RelayMetadata>) onRelays,
-      {bool forceWriteToDB = false, int? timeoutSeconds}) async {
-    List<RelayMetadata>? relays = await RelayList.loadFromDB(pubKey);
-    bool loaded = false;
-    if (relays == null || relays.isEmpty) {
-      await loadRelayAndContactList(pubKey, forceWriteToDB: forceWriteToDB,
-          onRelays: (relays) {
-        if (!loaded) {
-          loaded = true;
-          onRelays(relays);
-        }
-      });
-      if (timeoutSeconds != null) {
-        Future.delayed(Duration(seconds: timeoutSeconds), () {
-          if (!loaded) {
-            loaded = true;
-            onRelays([]);
-          }
-        });
-      }
-    } else {
-      onRelays(relays);
+  int? getFeedRelayState(String url) {
+    String? cleanedUrl = Relay.clean(url);
+    if (cleanedUrl == null) {
+      return WebSocket.closed;
     }
-  }
-
-  Future<void> getContacts(String pubKey, Function(ContactList) onContacts,
-      {int? timeoutSeconds}) async {
-    ContactList? contactList = await ContactList.loadFromDB(pubKey);
-    bool loaded = false;
-    if (contactList == null) {
-      await loadRelayAndContactList(pubKey, onContacts: (list) {
-        if (!loaded) {
-          loaded = true;
-          onContacts(list);
-        }
-      });
-      if (timeoutSeconds != null) {
-        Future.delayed(Duration(seconds: timeoutSeconds), () {
-          if (!loaded) {
-            loaded = true;
-            onContacts(ContactList());
-          }
-        });
-      }
-    } else {
-      onContacts(contactList);
-    }
-  }
-
-  Future<void> loadRelays(String? pubKey, Function onComplete) async {
-    print("Loading relays for logged user...");
-    bool loading = false;
-    if (pubKey != null) {
-      await relayProvider.getRelays(pubKey, forceWriteToDB: true,
-          (relays) async {
-        if (!loading) {
-          loading = true;
-          relayAddrs.clear();
-          if (relays != null) {
-            relayAddrs.addAll(relays.map(
-              (e) => e.addr!,
-            ));
-          }
-
-          if (relayAddrs.isEmpty) {
-            // init relays
-            relayAddrs = List<String>.from(STATIC_RELAY_ADDRS);
-          }
-          print("Loaded ${relays.length} relays for logged user...");
-          onComplete();
-        }
-      });
-    }
-  }
-
-  bool loadingGossipRelays = false;
-
-  Future<void> buildNostrFromContactsRelays(
-      String pubKey,
-      ContactList contactList,
-      int takeCountForEachContact,
-      Function(Nostr) onComplete) async {
-    int i = 0;
-    Map<String, Set<String>> pubKeysByRelayUrl = {};
-    Map<String, List<RelayMetadata>> nip65s = {};
-    bool canLoadRelays = true;
-    for (Contact contact in contactList.list()) {
-      await relayProvider
-          .getRelays(timeoutSeconds: 3, contact.publicKey!, (relays) async {
-            if (canLoadRelays) {
-              relays
-                  .where((element) =>
-              (element.write == null || element.write!) &&
-                  element.isValidWss)
-                  .map((e) => e.addr)
-                  .forEach((r) {
-                String? adr = Relay.clean(r!);
-                if (adr == null) {
-                  return;
-                }
-                ;
-                if (pubKeysByRelayUrl[adr] == null) {
-                  pubKeysByRelayUrl[adr] = {};
-                }
-                pubKeysByRelayUrl[adr]!.add(contact.publicKey!);
-                nip65s[contact.publicKey!] = relays;
-              });
-              print(
-                  "Loaded ${relays.length} relays for contact ${contact
-                      .publicKey} $i/${contactList
-                      .list()
-                      .length}");
-            }
-          })
-          .timeout(const Duration(seconds: 10))
-          .onError((error, stackTrace) async {
-            print(
-                "Couldn't get relays for ${contact.publicKey!} in 3 seconds....");
-          });
-    }
-    canLoadRelays = false;
-
-    onComplete(await createNostrFromFollowRelaysMap(
-        contactList, pubKey, pubKeysByRelayUrl, nip65s));
-  }
-
-  Future<Nostr> createNostrFromFollowRelaysMap(
-      ContactList contactList,
-      String pubKey,
-      Map<String, Set<String>> pubKeysByRelayUrl,
-      Map<String, List<RelayMetadata>> nip65s) async {
-    Nostr buildingNostr = Nostr(privateKey: null, publicKey: pubKey);
-    Map<String, Set<String>> pubKeyRelaysMap = {};
-    int i = 0;
-    int min = settingProvider.followeesRelayMinCount;
-    for (String url in pubKeysByRelayUrl.keys) {
-      i++;
-      if (!pubKeysByRelayUrl[url]!.any((pub_key) =>
-          pubKeyRelaysMap[pub_key] == null ||
-          pubKeyRelaysMap[pub_key]!.length < min)) {
-        continue;
-      }
-      print(" Relay ${i} / ${pubKeysByRelayUrl.length}");
-      Relay relay = Relay(
-        url,
-        RelayStatus(url),
-        access: WriteAccess.readWrite,
-      );
-      bool connected = await buildingNostr!
-          .addRelay(relay, connect: true, checkInfo: false)
-          .onError((error, stackTrace) => false);
-      if (connected && relay.isActive()) {
-        print(
-            "+++++ Relay ${url} with ${pubKeysByRelayUrl[url]!.length} pubKeys is connected...");
-        for (String pubKey in pubKeysByRelayUrl[url]!) {
-          Set<String>? relays = pubKeyRelaysMap[pubKey];
-          if (relays == null) {
-            relays = {};
-            pubKeyRelaysMap[pubKey] = relays;
-          }
-          relays.add(url);
-        }
-        print(
-            "Contacts filled ${pubKeyRelaysMap.length}/ ${contactList.list().length}");
-      } else {
-        buildingNostr.removeRelay(url);
-        print(
-            "----- Relay ${url} with ${pubKeysByRelayUrl[url]!.length} pubKeys is NOT connected...");
-      }
-    }
-
-    for (Contact contact in contactList.list()) {
-      int relays = pubKeyRelaysMap[contact.publicKey] != null
-          ? pubKeyRelaysMap[contact.publicKey]!.length
-          : 0;
-      if (relays == 0) {
-        print("contact ${contact.publicKey} has $relays connected relays !!!");
-        if (nip65s[contact.publicKey] != null) {
-          nip65s[contact.publicKey]!.forEach((metadata) {
-            Relay? r = buildingNostr.getRelay(metadata.addr!);
-            print(
-                "    relay ${metadata.addr} active = ${r!=null? r.isActive(): false}");
-          });
-        }
-      }
-    }
-
-    List<MapEntry<String, Set<String>>> sortedEntries =
-        pubKeysByRelayUrl!.entries.toList();
-
-    sortedEntries.sort((a, b) => b.value.length.compareTo(a.value.length));
-
-    followRelays = [];
-
-    for (var entry in sortedEntries) {
-      followRelays!
-          .add(RelayMetadata.full(addr: entry.key, count: entry.value.length));
-    }
-    return buildingNostr;
-  }
-
-  RelayStatus? getRelayStatus(String addr) {
-    return relayStatusMap[addr];
-  }
-
-  int? getFollowRelayState(String addr) {
-    if (followsNostr != null) {
-      Relay? r = followsNostr!.getRelay(addr);
-      if (r == null) {
-        return null;
-      }
-      return r!.webSocket != null
-          ? r!.webSocket!.readyState
-          : (r.relayStatus.connecting
-              ? WebSocket.connecting
-              : WebSocket.closed);
-    }
-    return null;
+    return relayManager.isRelayConnecting(cleanedUrl)
+        ? WebSocket.connecting
+        : relayManager.isRelayConnected(cleanedUrl)
+            ? WebSocket.open
+            : WebSocket.closed;
   }
 
   String relayNumStr() {
-    String result =
-        "${nostr!.activeRelays().length}/${nostr!.allRelays().length}";
-    if (settingProvider.gossip == 1 && followsNostr != null) {
-      result += " (feed ${followRelayNumStr()})";
+    Set<String> set = {};
+    if (myInboxRelaySet!=null) {
+      set.addAll(myInboxRelaySet!.urls);
+    }
+    if (myOutboxRelaySet!=null) {
+      set.addAll(myOutboxRelaySet!.urls);
+    }
+    String result = "${relayManager.getConnectedRelays(set).length}/${set.length}";
+    // result +=",${relayManager.webSockets.keys.where((element) => relayManager.isWebSocketOpen(element)).length}";
+    // String result =
+    //     "${nostr!.activeRelays().length}/${nostr!.allRelays().length}";
+    if (settingProvider.gossip == 1 && feedRelaySet != null && feedRelaySet!.urls.isNotEmpty) {
+      result += " (feed ${feedRelaysNumStr()})";
     }
     return result;
   }
 
-  String followRelayNumStr() {
-    if (followsNostr != null) {
-      return "${followsNostr!.activeRelays().length}/${followsNostr!.allRelays().length}";
+  String feedRelaysNumStr() {
+    if (feedRelaySet != null) {
+      return "${relayManager.getConnectedRelays(feedRelaySet!.urls).length}/${feedRelaySet!.urls.length}";
     }
     return "";
   }
 
-  int total() {
-    return relayAddrs.length;
-  }
-
-  Future<Object> addRelays(Nostr nostr) async {
-    List<Future<bool>> futures = [];
-    for (var relayAddr in relayAddrs) {
-      print("addRelays going for genRelay($relayAddr)....");
-      var custRelay = genRelay(relayAddr);
-      try {
-        print("addRelays going for addRelay($relayAddr)....");
-        futures.add(nostr.addRelay(custRelay, init: false, checkInfo: true));
-      } catch (e) {
-        log("relay $relayAddr add to pool error ${e.toString()}");
-      }
+  Nip51Set? getNip51RelaySet(String name) {
+    Nip51Set? r = relayManager.getCachedNip51RelaySet(name, loggedUserSigner!);
+    if (r == null) {
+      relayManager.getSingleNip51RelaySet(name, loggedUserSigner!);
     }
-    final startTime = DateTime.now();
-    await Future.wait(futures).onError((error, stackTrace) => List.of([]));
-    final endTime = DateTime.now();
-    final duration = endTime.difference(startTime);
-    print(
-        "addRelays for ${relayAddrs.length} parallel Future.wait(futures) took:${duration.inMilliseconds} ms");
-    return Object();
+    return r;
   }
 
-  Future<Nostr> genNostr({String? privateKey, String? publicKey}) async {
-    var loggedUserNostr = Nostr(privateKey: privateKey, publicKey: publicKey);
-    print("getNostr going for addRelays....");
-    await addRelays(loggedUserNostr);
-
-    print("getNostr going for getContacts....");
-    await getContacts(loggedUserNostr.publicKey, (contactList) async {
-      print("getNostr GOT ${contactList.contacts!.length} contacts....");
-      contactListProvider.set(contactList);
-      if (settingProvider.gossip == 1) {
-        print("getNostr going for buildNostrFromContactsRelays....");
-        await buildNostrFromContactsRelays(
-          loggedUserNostr.publicKey,
-          contactList,
-          settingProvider.followeesRelayMinCount ??
-              SettingProvider.DEFAULT_FOLLOWEES_RELAY_MIN_COUNT,
-          (builtNostr) {
-            if (followsNostr == null) {
-              followsNostr = builtNostr;
-              // add logged user's configured read relays
-              // loggedUserNostr!
-              //     .activeRelays()
-              //     .where((relay) => relay.access != WriteAccess.writeOnly)
-              //     .forEach((relay) {
-              //   followsNostr!.addRelay(relay, connect: true);
-              // });
-              print(
-                  "getNostr going for followEventProvider.doQuery() with followNostr SET....");
-              followEventProvider.doQuery();
-            }
-          },
-        );
-      } else {
-        print(
-            "getNostr going for followEventProvider.doQuery() with nostr....");
-        nostr = loggedUserNostr;
-        followEventProvider.doQuery();
-      }
-    });
-    // add initQuery
-    // contactListProvider.query(targetNostr: _nostr);
-    // contactListProvider.reload(targetNostr: _nostr);
-    notificationsProvider.doQuery(
-        targetNostr: loggedUserNostr, initQuery: true);
-    // Future.delayed(
-    //     const Duration(seconds: 3),
-    //     () => {
-    //           dmProvider.initDMSessions(loggedUserNostr.publicKey).then((_) {
-    //             // dmProvider.query(targetNostr: _nostr, subscribe: false);
-    //           })
-    //         });
-    // .then((_) {
-    //   dmProvider.query(targetNostr: _nostr, subscribe: true);
-    // })
-    // ;
-    return loggedUserNostr;
+  Nip51List? getNip51List(int kind) {
+    Nip51List? r = relayManager.getCachedNip51List(kind, loggedUserSigner!);
+    if (r == null) {
+      relayManager.getSingleNip51List(kind, loggedUserSigner!);
+    }
+    return r;
   }
 
   void onRelayStatusChange() {
@@ -369,268 +81,187 @@ class RelayProvider extends ChangeNotifier {
   }
 
   Future<void> addRelay(String relayAddr) async {
-    if (!relayAddrs.contains(relayAddr)) {
-      relayAddrs.add(relayAddr);
-      await _doAddRelay(relayAddr);
-      await _updateRelayToData();
+    ReadWriteMarker marker = ReadWriteMarker.readWrite;
+    if (myOutboxRelaySet != null && !myOutboxRelaySet!.urls.contains(relayAddr) && myInboxRelaySet!=null && !myInboxRelaySet!.urls.contains(relayAddr)) {
+      UserRelayList userRelayList = await relayManager.broadcastAddNip65Relay(relayAddr, marker, myOutboxRelaySet!.urls, loggedUserSigner!);
+      createMyRelaySets(userRelayList);
+      await relayManager.saveRelaySet(myOutboxRelaySet!);
+      await relayManager.saveRelaySet(myInboxRelaySet!);
+      await relayManager.connect(urls: userRelayList.urls);
+      notifyListeners();
     }
   }
 
-  Future<void> _doAddRelay(String relayAddr, {bool init = false}) async {
-    var custRelay = genRelay(relayAddr);
-    log("begin to init $relayAddr");
-    await nostr!.addRelay(custRelay, autoSubscribe: true, init: init);
-  }
-
-  Future<void> removeRelay(String relayAddr) async {
-    if (relayAddrs.contains(relayAddr)) {
-      relayAddrs.remove(relayAddr);
-      relayStatusMap.remove(relayAddr);
-      nostr!.removeRelay(relayAddr);
-
-      await _updateRelayToData();
+  Future<void> removeRelay(String url) async {
+    UserRelayList? userRelayList = await relayManager.broadcastRemoveNip65Relay(url, myOutboxRelaySet!.urls, loggedUserSigner!);
+    if (userRelayList != null) {
+      createMyRelaySets(userRelayList);
+      await cacheManager.saveRelaySet(myOutboxRelaySet!);
+      await cacheManager.saveRelaySet(myInboxRelaySet!);
+      await relayManager.connect(urls: userRelayList.urls);
+      notifyListeners();
     }
   }
 
-  bool containRelay(String relayAddr) {
-    return relayAddrs.contains(relayAddr);
+  Future<void> updateMarker(String url, ReadWriteMarker marker) async {
+    Set<String> relays = {};
+    relays.addAll(RelayManager.DEFAULT_BOOTSTRAP_RELAYS);
+    relays.addAll(myOutboxRelaySet!.urls);
+
+    UserRelayList? userRelayList = await relayManager.broadcastUpdateNip65RelayMarker(url, marker, relays, loggedUserSigner!);
+
+    if (userRelayList != null) {
+      createMyRelaySets(userRelayList);
+
+      await cacheManager.saveRelaySet(myOutboxRelaySet!);
+      await cacheManager.saveRelaySet(myInboxRelaySet!);
+      notifyListeners();
+    }
   }
 
-  int? updatedTime() {
-    return sharedPreferences.getInt(DataKey.RELAY_UPDATED_TIME);
+  UserRelayList? getUserRelayList(String publicKey) {
+    return cacheManager.loadUserRelayList(loggedUserSigner!.getPublicKey());
+//    userRelayList ??= await relayManager.getSingleUserRelayList(loggedUserSigner!.getPublicKey(), forceRefresh: true);
   }
 
-  Future<void> _updateRelayToData(
-      {bool upload = true,
-      List<String> broadcastToRelays = STATIC_RELAY_ADDRS}) async {
-    sharedPreferences.setInt(DataKey.RELAY_UPDATED_TIME,
-        DateTime.now().millisecondsSinceEpoch ~/ 1000);
+  Future<RelaySet> recalculateFeedRelaySet() async {
+    RelaySet newRelaySet = await relayManager.calculateRelaySet(
+        name: "feed",
+        ownerPubKey: loggedUserSigner!.getPublicKey(),
+        pubKeys: contactListProvider.contacts(),
+        direction: RelayDirection.outbox,
+        relayMinCountPerPubKey: settingProvider.followeesRelayMinCount);
+    if (newRelaySet.urls.isNotEmpty) {
+      feedRelaySet = newRelaySet;
+      feedRelaySet!.name = "feed";
+      feedRelaySet!.pubKey = loggedUserSigner!.getPublicKey();
+      await relayManager.saveRelaySet(feedRelaySet!);
+      // followEventProvider.refreshPosts();
+      notifyListeners();
+    }
+    return newRelaySet;
+  }
 
-    List<RelayMetadata> relays = [];
-    // update to relay
-    if (upload) {
-      List<dynamic> tags = [];
-      for (var addr in relayAddrs) {
-        tags.add(["r", addr, ""]);
-        relays.add(RelayMetadata.full(addr: addr, read: true, write: true));
-      }
+  List<String> getBlockedRelays() {
+    return relayManager.blockedRelays;
+  }
 
-      Set<String> uniqueRelays = Set<String>.from(broadcastToRelays);
-      uniqueRelays.addAll(relayAddrs);
-      var tempNostr =
-          Nostr(privateKey: nostr!.privateKey, publicKey: nostr!.publicKey);
+  List<String> getSearchRelays() {
+    return searchRelays;
+  }
 
-      uniqueRelays.forEach((relayAddr) {
-        Relay r = Relay(
-          relayAddr,
-          RelayStatus(relayAddr),
-          access: WriteAccess.readWrite,
-        );
-        try {
-          tempNostr.addRelay(r, checkInfo: false);
-        } catch (e) {
-          log("relay $relayAddr add to temp nostr for broadcasting of nip065 relay list: ${e.toString()}");
+  List<String>? relaysFromApi;
+  Map<int,List<String>?> relaysFromApiByNip = {};
+
+  Uri relaysApiUri = Uri.parse("https://api.nostr.watch/v1/online").replace(scheme: 'https');
+  
+  Future<bool> fetchRelaysFromApi() async {
+    try {
+      var response = await http.get(relaysApiUri);
+
+      if (response.body != null) {
+        final data = jsonDecode(
+            utf8.decode(response.bodyBytes)) as List<dynamic>;
+        if (data != null) {
+          relaysFromApi = data.map((e) => e.toString(),).toList();
         }
-      });
-
-      var event = Event(
-          tempNostr!.publicKey, kind.EventKind.RELAY_LIST_METADATA, tags, "");
-      tempNostr!.sendEvent(event);
-      int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-      try {
-        await RelayList.writeToDB(nostr!.publicKey, relays, now);
-      } catch (e) {
+      }
+    } catch (e) {
+      if (kDebugMode) {
         print(e);
       }
     }
+    return false;
   }
 
-  Relay genRelay(String relayAddr) {
-    var relayStatus = relayStatusMap[relayAddr];
-    if (relayStatus == null) {
-      relayStatus = RelayStatus(relayAddr);
-      relayStatusMap[relayAddr] = relayStatus;
-    }
+  Future<List<String>?> fetchRelaysFromApiByNip(int nip) async {
+    try {
+      Uri relaysApiUri = Uri.parse("https://api.nostr.watch/v1/nip/${nip}").replace(scheme: 'https');
+      var response = await http.get(relaysApiUri);
 
-    return Relay(
-      relayAddr,
-      relayStatus,
-      access: WriteAccess.readWrite,
-    )..relayStatusCallback = onRelayStatusChange;
-  }
-
-  Future<void> setRelayListAndUpdate(
-      List<String> addrs, String? privKey) async {
-    relayStatusMap.clear();
-
-    relayAddrs.clear();
-    relayAddrs.addAll(addrs);
-    _updateRelayToData(upload: false);
-
-    if (StringUtil.isNotBlank(privKey)) {
-      if (nostr != null) {
-        nostr!.close();
-      }
-      nostr = Nostr(privateKey: privKey);
-
-      // reconnect all client
-      for (var relayAddr in relayAddrs) {
-        var custRelay = genRelay(relayAddr);
-        try {
-          await nostr!.addRelay(custRelay, autoSubscribe: true);
-        } catch (e) {
-          log("relay $relayAddr add to pool error ${e.toString()}");
+      if (response.body != null) {
+        final data = jsonDecode(
+            utf8.decode(response.bodyBytes)) as List<dynamic>;
+        if (data != null) {
+          return data.map((e) => e.toString(),).toList();
         }
       }
-    }
-  }
-
-  void clear() {
-    relayStatusMap.clear();
-    if (staticForRelaysAndMetadataNostr != null) {
-      staticForRelaysAndMetadataNostr!.close();
-      staticForRelaysAndMetadataNostr = null;
-    }
-  }
-
-  Future<void> initStaticForRelaysAndMetadataNostr(String pubKey) async {
-    if (staticForRelaysAndMetadataNostr == null) {
-      List<Future<bool>> futures = [];
-      Set<String> uniqueRelays =
-          Set<String>.from(RelayProvider.STATIC_RELAY_ADDRS);
-      uniqueRelays.addAll(relayProvider.relayAddrs);
-      staticForRelaysAndMetadataNostr = Nostr(publicKey: pubKey);
-
-      for (String relayAddr in uniqueRelays) {
-        Relay r = Relay(
-          relayAddr,
-          RelayStatus(relayAddr),
-          access: WriteAccess.readWrite,
-        );
-        try {
-          futures.add(
-              staticForRelaysAndMetadataNostr!.addRelay(r, checkInfo: false));
-        } catch (e) {
-          log("relay $relayAddr add to temp nostr for getting nip065 relay list: ${e.toString()}");
-        }
+    } catch (e) {
+      if (kDebugMode) {
+        print(e);
       }
-      final startTime = DateTime.now();
-      await Future.wait(futures).onError((error, stackTrace) => List.of([]));
-      final endTime = DateTime.now();
-      final duration = endTime.difference(startTime);
-      print(
-          "initStaticForRelaysAndMetadataNostr addRelays for ${relayAddrs.length} parallel Future.wait(futures) took:${duration.inMilliseconds} ms");
     }
+    return null;
   }
 
-  Future<void> loadRelayAndContactList(String pubKey,
-      {Function(List<RelayMetadata>)? onRelays,
-      Function(ContactList)? onContacts,
-      bool forceWriteToDB = false}) async {
-    await initStaticForRelaysAndMetadataNostr(pubKey);
-    var filter = Filter(
-        authors: [pubKey],
-        limit: 2,
-        kinds: [
-          kind.EventKind.RELAY_LIST_METADATA,
-          kind.EventKind.CONTACT_LIST
-        ]);
-    List<Future> futures = staticForRelaysAndMetadataNostr!
-        .allRelays()
-        .map(
-          (e) => e.future!,
-        )
-        .toList();
 
-    await Future.wait(futures).onError((error, stackTrace) {
-      return List.of([]);
-    }).then((sockets) {
-      Event? relaysEvent;
-      Event? contactsEvent;
-      print(
-          "loading from staticForRelaysAndMetadataNostr: $staticForRelaysAndMetadataNostr, contacts and relays for $pubKey");
-      staticForRelaysAndMetadataNostr!.query(
-          id: StringUtil.rndNameStr(16), [filter.toJson()], (event) async {
-        // print(
-        //     "RECEIVED event kind ${event.kind} going to process, staticForRelaysAndMetadataNostr: $staticForRelaysAndMetadataNostr");
-
-        if (staticForRelaysAndMetadataNostr == null) {
-          return;
+  Future<List<String>> findRelays(String text, {int? nip}) async {
+    if (text.trim().isNotEmpty) {
+      List<String>? relays;
+      if (nip==null) {
+        if (relaysFromApi == null) {
+          await fetchRelaysFromApi();
         }
-        if ((relaysEvent != null && event.createdAt > relaysEvent!.createdAt) ||
-            relaysEvent == null) {
-          List<RelayMetadata>? relays = [];
-          if (event.kind == kind.EventKind.RELAY_LIST_METADATA) {
-            relaysEvent = event;
-            for (var tag in relaysEvent!.tags) {
-              if (tag is List<dynamic>) {
-                var length = tag.length;
-                bool write = true;
-                bool read = true;
-                if (length > 1) {
-                  var name = tag[0];
-                  var value = tag[1];
-                  if (name == "r") {
-                    if (length > 2) {
-                      var operType = tag[2];
-                      if (operType == "read") {
-                        write = false;
-                      } else if (operType == "write") {
-                        read = false;
-                      }
-                    }
-                    relays!.add(RelayMetadata.full(
-                        addr: value, read: read, write: write));
-                  }
-                }
-              }
-            }
-          } else {
-            if (StringUtil.isNotBlank(event.content)) {
-              try {
-                Map<String, dynamic> json = jsonDecode(event.content);
-                if (json.entries.isNotEmpty) {
-                  relaysEvent = event;
-                  for (var entry in json.entries) {
-                    bool write = true;
-                    bool read = true;
-                    write = entry.value["write"];
-                    read = entry.value["read"];
-                    relays!.add(RelayMetadata.full(
-                        addr: entry.key.toString(), read: read, write: write));
-                  }
-                }
-              } catch (e) {
-                print(e);
-              }
-            }
-          }
-          if (relays != null && relays.isNotEmpty) {
-            try {
-              await RelayList.writeToDB(pubKey, relays, relaysEvent!.createdAt,
-                  forceWrite: forceWriteToDB);
-            } catch (e) {
-              print(e);
-            }
-            if (onRelays != null) {
-              onRelays(relays);
-            }
-          }
+        relays = relaysFromApi;
+      } else {
+        relays = relaysFromApiByNip[nip];
+        if (relays==null) {
+          relaysFromApiByNip[nip] =  await fetchRelaysFromApiByNip(nip);
         }
-        if (event.kind == kind.EventKind.CONTACT_LIST &&
-            ((contactsEvent != null &&
-                    event.createdAt > contactsEvent!.createdAt) ||
-                contactsEvent == null)) {
-          contactsEvent = event;
-          ContactList contactList = ContactList.fromJson(event.tags);
-          contactList.pub_key = event.pubKey;
-          contactList.timestamp = event.createdAt;
-          await ContactList.writeToDB(contactList);
-          if (onContacts != null) {
-            onContacts(contactList);
-          }
-        }
-      });
-    });
+        relays = relaysFromApiByNip[nip];
+      }
+      Set<String> set = {};
+      set.addAll(relays!);
+      return set
+          .where((element) =>
+              text.length>=3 &&
+              element.replaceAll("wss://", "").replaceAll("ws://", "").contains(text) || 
+                  element.replaceAll("wss://", "").replaceAll("ws://", "").startsWith(text) ||
+                  element.startsWith(text)
+      )
+          .toList();
+    }
+    return [];
   }
+
+
+// Relay genRelay(String relayAddr) {
+//   var relayStatus = relayStatusMap[relayAddr];
+//   if (relayStatus == null) {
+//     relayStatus = RelayStatus(relayAddr);
+//     relayStatusMap[relayAddr] = relayStatus;
+//   }
+//
+//   return Relay(
+//     relayAddr,
+//     relayStatus,
+//     access: WriteAccess.readWrite,
+//   )..relayStatusCallback = onRelayStatusChange;
+// }
+
+// Future<void> setRelayListAndUpdate(
+//     List<String> addrs, String? privKey) async {
+//   relayStatusMap.clear();
+//
+//   relayAddrs.clear();
+//   relayAddrs.addAll(addrs);
+//   _updateRelayToData(upload: false);
+//
+//   if (StringUtil.isNotBlank(privKey)) {
+//     if (nostr != null) {
+//       nostr!.close();
+//     }
+//     nostr = Nostr(privateKey: privKey);
+//
+//     // reconnect all client
+//     for (var relayAddr in relayAddrs) {
+//       var custRelay = genRelay(relayAddr);
+//       try {
+//         await nostr!.addRelay(custRelay, autoSubscribe: true);
+//       } catch (e) {
+//         log("relay $relayAddr add to pool error ${e.toString()}");
+//       }
+//     }
+//   }
+// }
 }

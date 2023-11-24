@@ -1,9 +1,14 @@
+import 'dart:async';
+
+import 'package:dart_ndk/models/relay_set.dart';
+import 'package:dart_ndk/nips/nip01/event.dart';
+import 'package:dart_ndk/nips/nip01/filter.dart';
+import 'package:dart_ndk/read_write.dart';
+import 'package:dart_ndk/request.dart';
 import 'package:flutter/material.dart';
 
-import '../nostr/event.dart';
-import '../nostr/filter.dart';
-import '../models/event_reactions.dart';
 import '../main.dart';
+import '../models/event_reactions.dart';
 import '../utils/later_function.dart';
 import '../utils/when_stop_function.dart';
 
@@ -12,6 +17,8 @@ class EventReactionsProvider extends ChangeNotifier
   int update_time = 1000 * 60 * 10;
 
   Map<String, EventReactions> _eventReactionsMap = {};
+  Map<String, List<Nip01Event>> _repliesMap = {};
+  Map<String, NostrRequest> requests = {};
 
   EventReactionsProvider() {
     laterTimeMS = 2000;
@@ -32,7 +39,7 @@ class EventReactionsProvider extends ChangeNotifier
     }
   }
 
-  void addLike(String id, Event likeEvent) {
+  void addLike(String id, Nip01Event likeEvent) {
     var er = _eventReactionsMap[id];
     if (er != null) {
       er = er.clone();
@@ -58,25 +65,99 @@ class EventReactionsProvider extends ChangeNotifier
     }
   }
 
-  void update(String id, int? kind) {
-    var filter = kind!=null ? Filter(e: [id], kinds: [kind]) : Filter(e: [id]);
-    nostr!.query([filter.toJson()], _handleSingleEvent2, onComplete: () {
-      notifyListeners();
-    });
+  Future<List<Nip01Event>> getThreadReplies(String id, {bool force=false}) async {
+    var replies = _repliesMap[id];
+    /// TODO refresh after some time
+    if (replies==null || force) {
+      /// TODO use other relaySet if gossip
+      NostrRequest request = await relayManager!.query(Filter(eTags: [id], kinds: [Nip01Event.TEXT_NODE_KIND]), myInboxRelaySet!,
+          splitRequestsByPubKeyMappings: false, idleTimeout: 1);
+      Map<String, Nip01Event> map = {};
+      await for (final event in request.stream) {
+        if (map[event.id] == null || map[event.id]!.createdAt < event.createdAt) {
+          map[event.id] = event;
+        }
+      }
+      replies = map.values.toList();
+      _repliesMap[id] = replies;
+      if (_eventReactionsMap[id]!=null) {
+        _eventReactionsMap[id]!.replies = replies;
+      }
+    }
+    return replies;
   }
 
-  EventReactions? get(String id) {
+  void addZap(String id, Nip01Event zapReceipt) {
+    var er = _eventReactionsMap[id];
+    if (er != null) {
+      er = er.clone();
+      er.onEvent(zapReceipt);
+      _eventReactionsMap[id] = er;
+      notifyListeners();
+    }
+  }
+
+  void addReply(String id, Nip01Event reply) {
+    if (_repliesMap[id]!=null) {
+      _repliesMap[id]!.add(reply);
+    }
+  }
+
+  Future<void> subscription(String eventId, String? pubKey, List<int>? kinds) async {
+    var filter = kinds != null
+        ? Filter(eTags: [eventId], kinds: kinds)
+        : Filter(eTags: [eventId]);
+
+    RelaySet? relaySet;
+
+    if (settingProvider.gossip == 1 && pubKey!=null) {
+      relaySet = await relayManager.calculateRelaySet(
+          name: "reactions-feed",
+          ownerPubKey: pubKey!,
+          pubKeys: [pubKey!],
+          direction: RelayDirection.inbox,
+          relayMinCountPerPubKey: 5);
+      if (myInboxRelaySet!=null) {
+        relaySet.addMoreRelays(myInboxRelaySet!.relaysMap);
+      }
+    } else {
+      relaySet = myInboxRelaySet;
+    }
+    if (relaySet==null) {
+      return;
+    }
+    print(
+        "---------------- reactions subscriptions: ${requests.length}");
+    NostrRequest request = await relayManager!.query(filter, relaySet!,
+        splitRequestsByPubKeyMappings: settingProvider.gossip == 1, idleTimeout: 10);
+    requests[eventId] = request;
+
+    request.stream.listen((event) {
+      _handleSingleEvent2(event);
+    });
+    // TODO should use other relays inbox for pubKey....
+  }
+
+  EventReactions? get(String id, {String? pubKey, bool forceSubscription = false, List<int>? kinds}) {
     var er = _eventReactionsMap[id];
     if (er == null) {
       // plan to pull
-      update(id, null);
+      // subscription(event.id, event.pubKey, null);
       // _penddingIds[id] = 1;
       // // later(laterFunc, null);
       // whenStop(laterFunc);
       // // set a empty er to avoid pull many times
       er = EventReactions(id);
       _eventReactionsMap[id] = er;
+      subscription(id, pubKey, kinds);
+      return er;
     } else {
+      // if (requests[id] == null) {
+      //   subscription(id, pubKey, kinds);
+      // }
+      // if (forceSubscription && requests[event.id] == null) {
+      //   subscription(event.id, event.pubKey, null);
+      // }
       var now = DateTime.now();
       // check dataTime if need to update
       // if (now.millisecondsSinceEpoch - er.dataTime.millisecondsSinceEpoch >
@@ -107,25 +188,26 @@ class EventReactionsProvider extends ChangeNotifier
       return;
     }
 
-    var filter = Filter(e: _penddingIds.keys.toList());
+    var filter = Filter(eTags: _penddingIds.keys.toList());
     _penddingIds.clear();
-    nostr!.query([filter.toJson()], onEvent);
+// TODO use dart_ndk
+//    nostr!.query([filter.toMap()], onEvent);
   }
 
-  void addEventAndHandle(Event event) {
+  void addEventAndHandle(Nip01Event event) {
     onEvent(event);
     laterFunc();
   }
 
-  void onEvent(Event event) {
+  void onEvent(Nip01Event event) {
     _penddingEvents.add(event);
   }
 
-  void onEvents(List<Event> events) {
+  void onEvents(List<Nip01Event> events) {
     _penddingEvents.addAll(events);
   }
 
-  List<Event> _penddingEvents = [];
+  List<Nip01Event> _penddingEvents = [];
 
   void _handleEvent() {
     bool updated = false;
@@ -140,7 +222,7 @@ class EventReactionsProvider extends ChangeNotifier
     }
   }
 
-  bool _handleSingleEvent(Event event) {
+  bool _handleSingleEvent(Nip01Event event) {
     bool updated = false;
     for (var tag in event.tags) {
       if (tag.length > 1) {
@@ -165,7 +247,7 @@ class EventReactionsProvider extends ChangeNotifier
     return updated;
   }
 
-  bool _handleSingleEvent2(Event event) {
+  bool _handleSingleEvent2(Nip01Event event) {
     bool updated = false;
     for (var tag in event.tags) {
       if (tag.length > 1) {
@@ -193,8 +275,12 @@ class EventReactionsProvider extends ChangeNotifier
     return updated;
   }
 
-  void removePendding(String id) {
-    _penddingIds.remove(id);
+  void removePendding(String eventId) async {
+    // _penddingIds.remove(eventId);
+    if (requests[eventId] != null) {
+      await relayManager.closeNostrRequest(requests[eventId]!);
+      requests.remove(eventId);
+    }
   }
 
   void clear() {

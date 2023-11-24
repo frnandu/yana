@@ -1,19 +1,18 @@
-import 'dart:developer';
+import 'dart:async';
 
+import 'package:dart_ndk/models/relay_set.dart';
+import 'package:dart_ndk/nips/nip01/event.dart';
+import 'package:dart_ndk/nips/nip01/filter.dart';
+import 'package:dart_ndk/nips/nip01/metadata.dart';
+import 'package:dart_ndk/request.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:yana/nostr/relay_metadata.dart';
+import 'package:yana/provider/filter_provider.dart';
 
 import '../../main.dart';
 import '../../models/event_mem_box.dart';
-import '../../models/metadata.dart';
-import '../../models/relay_status.dart';
 import '../../nostr/event_kind.dart' as kind;
-import '../../nostr/filter.dart';
-import '../../nostr/nip02/contact.dart';
 import '../../nostr/nip19/nip19.dart';
-import '../../nostr/nostr.dart';
-import '../../nostr/relay.dart';
 import '../../provider/metadata_provider.dart';
 import '../../provider/setting_provider.dart';
 import '../../ui/appbar4stack.dart';
@@ -28,7 +27,8 @@ import '../../utils/string_util.dart';
 import 'user_statistics_component.dart';
 
 class UserRouter extends StatefulWidget {
-  const UserRouter({super.key});
+  String? pubKey;
+  UserRouter({super.key, this.pubKey});
 
   @override
   State<StatefulWidget> createState() {
@@ -41,10 +41,11 @@ class _UserRouter extends CustState<UserRouter>
   final GlobalKey<NestedScrollViewState> globalKey = GlobalKey();
 
   ScrollController _controller = ScrollController();
+  NostrRequest? subscription;
 
   String? pubkey;
 
-  Nostr? userNostr;
+  bool disposed = false;
 
   bool showTitle = false;
 
@@ -59,7 +60,6 @@ class _UserRouter extends CustState<UserRouter>
     super.initState();
 
     queryLimit = 100;
-
     _controller.addListener(() {
       var _showTitle = false;
       var _showAppbarBG = false;
@@ -90,16 +90,20 @@ class _UserRouter extends CustState<UserRouter>
   @override
   Widget doBuild(BuildContext context) {
     var _settingProvider = Provider.of<SettingProvider>(context);
-    if (StringUtil.isBlank(pubkey)) {
+    var _metadataProvider = Provider.of<MetadataProvider>(context);
+    var _filterProvider = Provider.of<FilterProvider>(context);
+
+    if (StringUtil.isBlank(pubkey) || subscription == null) {
       pubkey = RouterUtil.routerArgs(context) as String?;
       if (StringUtil.isBlank(pubkey)) {
         RouterUtil.back(context);
         return Container();
       }
-      var events = followEventProvider.eventsByPubkey(pubkey!);
-      if (events != null && events.isNotEmpty) {
-        box.addList(events);
-      }
+      doQuery();
+      // var events = followEventProvider.eventsByPubkey(pubkey!);
+      // if (events != null && events.isNotEmpty) {
+      //   box.addList(events);
+      // }
     } else {
       var arg = RouterUtil.routerArgs(context);
       if (arg != null && arg is String) {
@@ -141,15 +145,15 @@ class _UserRouter extends CustState<UserRouter>
           String nip19Name = Nip19.encodeSimplePubKey(pubkey!);
           String displayName = nip19Name;
           if (metadata != null) {
-            if (StringUtil.isNotBlank(metadata.displayName)) {
-              displayName = metadata.displayName!;
+            if (StringUtil.isNotBlank(metadata.getName())) {
+              displayName = metadata.getName()!;
             }
 
             appbarTitle = Container(
               alignment: Alignment.center,
               child: Text(
                 displayName,
-                style: TextStyle(
+                style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 16,
                 ),
@@ -192,19 +196,18 @@ class _UserRouter extends CustState<UserRouter>
               SliverToBoxAdapter(
                 child: SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
-                  child: userNostr!=null ? UserStatisticsComponent(
+                  child: UserStatisticsComponent(
                     pubkey: pubkey!,
-                    userNostr: userNostr,
+                    // userNostr: userNostr,
                     onContactListLoaded: (contactList) {
-                      Contact? c = contactList.getContact(nostr!.publicKey);
-                      if (nostr != null &&
-                          contactList.getContact(nostr!.publicKey) != null) {
+                      if (!disposed && loggedUserSigner != null &&
+                          contactList.contacts.contains(loggedUserSigner!.getPublicKey())) {
                         setState(() {
                           followsYou = true;
                         });
                       }
                     },
-                  ) : Container(),
+                  ),
                 ),
               ),
             ];
@@ -229,6 +232,7 @@ class _UserRouter extends CustState<UserRouter>
         );
 
         return Scaffold(
+            backgroundColor: themeData.scaffoldBackgroundColor,
             body: Stack(
           children: [
             main,
@@ -247,106 +251,77 @@ class _UserRouter extends CustState<UserRouter>
 
   String? subscribeId;
 
-  List<RelayMetadata> relays = [];
-
   @override
   Future<void> onReady(BuildContext context) async {
-    await relayProvider.getRelays(timeoutSeconds: 3, pubkey!, (relays) async {
-      if (userNostr == null) {
-        if (pubkey != nostr!.publicKey) {
-          // use relays for user where he/she writes
-          await buildUserNostrFromRelays(relays);
-        }
-        userNostr ??= nostr;
-      }
-      doQuery();
-    });
-
     if (globalKey.currentState != null) {
       var controller = globalKey.currentState!.innerController;
       controller.addListener(() {
         loadMoreScrollCallback(controller);
       });
     }
-
-    metadataProvider.update(pubkey!);
   }
 
-  Future<void> buildUserNostrFromRelays(List<RelayMetadata> relays) async {
-    if (!relays.isEmpty) {
-      Set<String> uniqueRelays = Set<String>.from(relays
-          .where((element) => element.write != null && element.write!)
-          .map((e) => e.addr));
-      userNostr =
-          Nostr(
-              privateKey: nostr!.privateKey, publicKey: nostr!.publicKey);
-
-      List<Future<bool>> futures = [];
-
-      uniqueRelays.forEach((adr) async {
-        String? relayAddr = Relay.clean(adr);
-        if (relayAddr == null) {
-          return;
-        }
-
-        Relay r = Relay(
-          relayAddr,
-          RelayStatus(relayAddr),
-          access: WriteAccess.readWrite,
-        );
-        try {
-          futures.add(userNostr!.addRelay(r, checkInfo: false));
-          // await userNostr!.addRelay(r, checkInfo: false, connect: true);
-        } catch (e) {
-          log(
-              "relay $relayAddr add to temp nostr for broadcasting of nip065 relay list: ${e
-                  .toString()}");
-        }
-      });
-      final startTime = DateTime.now();
-      await Future.wait(futures).onError((error, stackTrace) =>
-          List.of([]));
-      final endTime = DateTime.now();
-      final duration = endTime.difference(startTime);
-      print("addRelays for ${uniqueRelays
-          .length} parallel Future.wait(futures) took:${duration
-          .inMilliseconds} ms");
+  void onEvent(Nip01Event event, {bool saveToCache = false}) {
+    if (event.pubKey!=pubkey) {
+      print("WTF $event");
     }
-  }
-
-  void onEvent(event) {
     later(event, (list) {
-      box.addList(list);
+      bool added = box.addList(list);
+      if (saveToCache && added) {
+        cacheManager.saveEvents(list);
+      }
       setState(() {});
     }, null);
+  }
+
+
+  @override
+  void deactivate() {
+    if (subscription!=null) {
+      relayManager.closeNostrRequest(subscription!);
+    }
   }
 
   @override
   void dispose() {
     super.dispose();
-    disposeLater();
-
-    if (userNostr != null && userNostr!.publicKey != nostr!.publicKey) {
-      if (StringUtil.isNotBlank(subscribeId)) {
-        try {
-          userNostr!.unsubscribe(subscribeId!);
-        } catch (e) {}
-      }
-      try {
-        userNostr!.close();
-      } catch (e) {}
+    disposed = true;
+    if (subscription!=null) {
+      relayManager.closeNostrRequest(subscription!);
     }
+    disposeLater();
   }
 
   void unSubscribe() {
-    if (userNostr != null) {
-      userNostr!.unsubscribe(subscribeId!);
-    }
-    subscribeId = null;
+    // if (userNostr != null) {
+    //   userNostr!.unsubscribe(subscribeId!);
+    // }
+    // subscribeId = null;
+  }
+  List<int> queryEventKinds() {
+    return [
+      Nip01Event.TEXT_NODE_KIND,
+      kind.EventKind.REPOST,
+      kind.EventKind.GENERIC_REPOST,
+      kind.EventKind.LONG_FORM,
+      kind.EventKind.FILE_HEADER,
+      kind.EventKind.POLL,
+    ];
   }
 
   @override
   void doQuery() {
+    if (box.isEmpty()) {
+      List<Nip01Event>? cachedEvents = cacheManager.loadEvents([pubkey!], [1]);// queryEventKinds());
+      print("USER loaded ${cachedEvents.length} events from cache DB");
+      for (var event in cachedEvents) {
+        onEvent(event, saveToCache: false);
+      }
+    }
+
+    if (myInboxRelaySet==null || myOutboxRelaySet==null) {
+      return;
+    }
     preQuery();
     if (StringUtil.isNotBlank(subscribeId)) {
       unSubscribe();
@@ -354,35 +329,25 @@ class _UserRouter extends CustState<UserRouter>
 
     // load event from relay
     var filter = Filter(
-      kinds: [
-        kind.EventKind.TEXT_NOTE,
-        kind.EventKind.REPOST,
-        kind.EventKind.GENERIC_REPOST,
-        kind.EventKind.LONG_FORM,
-        kind.EventKind.FILE_HEADER,
-        kind.EventKind.POLL,
-      ],
+      kinds: queryEventKinds(),
       until: until,
       authors: [pubkey!],
       limit: queryLimit,
     );
-    subscribeId = StringUtil.rndNameStr(16);
-
-    var activeRelays = userNostr!.activeRelays();
-    if (!box.isEmpty() && activeRelays.isNotEmpty) {
-      var oldestCreatedAts = box.oldestCreatedAtByRelay(
-        activeRelays,
-      );
-      Map<String, List<Map<String, dynamic>>> filtersMap = {};
-      for (var relay in activeRelays) {
-        var oldestCreatedAt = oldestCreatedAts.createdAtMap[relay.url];
-        filter.until = oldestCreatedAt;
-        filtersMap[relay.url] = [filter.toJson()];
-      }
-      userNostr!.queryByFilters(filtersMap, onEvent, id: subscribeId);
-    } else {
-      userNostr!.query([filter.toJson()], onEvent, id: subscribeId);
+    RelaySet relaySet = myInboxRelaySet!;
+    if (pubkey == loggedUserSigner!.getPublicKey()) {
+      relaySet = myOutboxRelaySet!;
+    } else
+      if (feedRelaySet!=null && settingProvider.gossip==1) {
+      relaySet = feedRelaySet!;
     }
+    relayManager!.subscription(
+        filter, relaySet).then((request) {
+          subscription = request;
+          subscription!.stream.listen((event) {
+        onEvent(event, saveToCache: pubkey == loggedUserSigner!.getPublicKey());
+      });
+    },);
   }
 
   @override

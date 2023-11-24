@@ -25,7 +25,7 @@ AndroidOptions _getAndroidOptions() => const AndroidOptions(
 class SettingProvider extends ChangeNotifier {
   static SettingProvider? _settingProvider;
   static const int DEFAULT_FOLLOWEES_RELAY_MIN_COUNT = 2;
-
+  static const int DEFAULT_BROADCAST_TO_INBOX_MAX_COUNT = 10;
 
   SharedPreferences? _sharedPreferences;
 
@@ -203,7 +203,11 @@ class SettingProvider extends ChangeNotifier {
 
   int? get gossip => _settingData!.gossip ?? OpenStatus.CLOSE;
 
+  int? get inboxForReactions => _settingData!.inboxForReactions ?? OpenStatus.CLOSE;
+
   int get followeesRelayMinCount => _settingData!.followeesRelayMinCount ?? DEFAULT_FOLLOWEES_RELAY_MIN_COUNT;
+
+  int get broadcastToInboxMaxCount => _settingData!.broadcastToInboxMaxCount ?? DEFAULT_BROADCAST_TO_INBOX_MAX_COUNT;
 
   /// i18n
   String? get i18n => _settingData!.i18n;
@@ -255,8 +259,8 @@ class SettingProvider extends ChangeNotifier {
     return _translateSourceArgsMap[str] != null;
   }
 
-  int? get broadcaseWhenBoost =>
-      _settingData!.broadcaseWhenBoost ?? OpenStatus.OPEN;
+  int? get broadcastWhenBoost =>
+      _settingData!.broadcastWhenBoost ?? OpenStatus.OPEN;
 
   double get fontSize =>
       _settingData!.fontSize ??
@@ -378,8 +382,18 @@ class SettingProvider extends ChangeNotifier {
     saveAndNotifyListeners();
   }
 
+  set inboxForReactions(int? o) {
+    _settingData!.inboxForReactions = o;
+    saveAndNotifyListeners();
+  }
+
   set followeesRelayMinCount(int? o) {
     _settingData!.followeesRelayMinCount = o;
+    saveAndNotifyListeners();
+  }
+
+  set broadcastToInboxMaxCount(int? o) {
+    _settingData!.broadcastToInboxMaxCount = o;
     saveAndNotifyListeners();
   }
 
@@ -393,8 +407,8 @@ class SettingProvider extends ChangeNotifier {
     saveAndNotifyListeners();
   }
 
-  set broadcaseWhenBoost(int? o) {
-    _settingData!.broadcaseWhenBoost = o;
+  set broadcastWhenBoost(int? o) {
+    _settingData!.broadcastWhenBoost = o;
     saveAndNotifyListeners();
   }
 
@@ -452,7 +466,10 @@ class SettingData {
 
   int? gossip;
 
+  int? inboxForReactions;
+
   int? followeesRelayMinCount;
+  int? broadcastToInboxMaxCount;
 
   String? network;
 
@@ -485,7 +502,7 @@ class SettingData {
 
   String? translateSourceArgs;
 
-  int? broadcaseWhenBoost;
+  int? broadcastWhenBoost;
 
   double? fontSize;
 
@@ -512,6 +529,7 @@ class SettingData {
     this.imagePreview,
     this.gossip,
     this.followeesRelayMinCount = SettingProvider.DEFAULT_FOLLOWEES_RELAY_MIN_COUNT,
+    this.broadcastToInboxMaxCount = SettingProvider.DEFAULT_BROADCAST_TO_INBOX_MAX_COUNT,
     this.i18n,
     this.i18nCC,
     this.imgCompress = 50,
@@ -521,7 +539,7 @@ class SettingData {
     this.openTranslate,
     this.translateTarget,
     this.translateSourceArgs,
-    this.broadcaseWhenBoost,
+    this.broadcastWhenBoost,
     this.fontSize,
     this.webviewAppbarOpen = OpenStatus.OPEN,
     this.tableMode,
@@ -559,10 +577,20 @@ class SettingData {
     } else {
       gossip = 0;
     }
-    if (json['followeesRelayMaxCount']!=null) {
+    if (json['inboxForReactions'] != null) {
+      inboxForReactions = json['inboxForReactions'];
+    } else {
+      inboxForReactions = 0;
+    }
+    if (json['followeesRelayMinCount']!=null) {
       followeesRelayMinCount = json['followeesRelayMinCount'];
     } else {
       followeesRelayMinCount = SettingProvider.DEFAULT_FOLLOWEES_RELAY_MIN_COUNT;
+    }
+    if (json['broadcastToInboxMaxCount']!=null) {
+      broadcastToInboxMaxCount = json['broadcastToInboxMaxCount'];
+    } else {
+      broadcastToInboxMaxCount = SettingProvider.DEFAULT_BROADCAST_TO_INBOX_MAX_COUNT;
     }
     if (json['themeStyle'] != null) {
       themeStyle = json['themeStyle'];
@@ -573,7 +601,7 @@ class SettingData {
     openTranslate = json['openTranslate'];
     translateTarget = json['translateTarget'];
     translateSourceArgs = json['translateSourceArgs'];
-    broadcaseWhenBoost = json['broadcaseWhenBoost'];
+    broadcastWhenBoost = json['broadcaseWhenBoost'];
     fontSize = json['fontSize'];
     webviewAppbarOpen = json['webviewAppbarOpen'] != null
         ? json['webviewAppbarOpen']
@@ -605,7 +633,9 @@ class SettingData {
     data['i18n'] = this.i18n;
     data['i18nCC'] = this.i18nCC;
     data['gossip'] = this.gossip;
+    data['inboxForReactions'] = this.inboxForReactions;
     data['followeesRelayMinCount'] = this.followeesRelayMinCount;
+    data['broadcastToInboxMaxCount'] = this.broadcastToInboxMaxCount;
     data['imgCompress'] = this.imgCompress;
     data['themeStyle'] = this.themeStyle;
     data['themeColor'] = this.themeColor;
@@ -613,7 +643,7 @@ class SettingData {
     data['openTranslate'] = this.openTranslate;
     data['translateTarget'] = this.translateTarget;
     data['translateSourceArgs'] = this.translateSourceArgs;
-    data['broadcaseWhenBoost'] = this.broadcaseWhenBoost;
+    data['broadcastWhenBoost'] = this.broadcastWhenBoost;
     data['fontSize'] = this.fontSize;
     data['webviewAppbarOpen'] = this.webviewAppbarOpen;
     data['tableMode'] = this.tableMode;

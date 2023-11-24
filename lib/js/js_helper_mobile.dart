@@ -1,10 +1,10 @@
-import '../nostr/event.dart';
+import 'package:dart_ndk/nips/nip01/event.dart';
 
 Future<String> getPublicKeyAsync() {
   return Future.value("");
 }
 
-Future<Event> signEventAsync(Event event) {
+Future<Nip01Event> signEventAsync(Nip01Event event) {
   return Future.value(null);
 }
 

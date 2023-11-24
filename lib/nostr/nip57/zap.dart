@@ -2,13 +2,13 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:bech32/bech32.dart';
+import 'package:dart_ndk/nips/nip01/event.dart';
+import 'package:dart_ndk/nips/nip01/event_signer.dart';
 
 import '../../utils/dio_util.dart';
 import '../../utils/string_util.dart';
-import '../event.dart';
 import '../event_kind.dart' as kind;
 import '../nip19/nip19.dart';
-import '../nostr.dart';
 import 'lnurl_response.dart';
 
 class Zap {
@@ -58,8 +58,8 @@ class Zap {
     required int sats,
     required String recipientPubkey,
     String? eventId,
-    required Nostr targetNostr,
-    required List<String> relays,
+    required EventSigner signer,
+    required Iterable<String> relays,
     String? pollOption,
     String? comment,
   }) async {
@@ -103,9 +103,8 @@ class Zap {
     if (StringUtil.isNotBlank(pollOption)) {
       tags.add(["poll_option", pollOption!]);
     }
-    var event = Event(
-        targetNostr.publicKey, kind.EventKind.ZAP_REQUEST, tags, eventContent);
-    event.sign(targetNostr.privateKey!);
+    var event = Nip01Event(pubKey: signer.getPublicKey(), kind: kind.EventKind.ZAP_REQUEST, tags: tags, content: eventContent);
+    signer.sign(event);
     log(jsonEncode(event));
     var eventStr = Uri.encodeQueryComponent(jsonEncode(event));
     callback += "&nostr=$eventStr";

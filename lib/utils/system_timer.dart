@@ -7,7 +7,6 @@ import 'package:yana/provider/notifications_provider.dart';
 import 'package:yana/provider/relay_provider.dart';
 import 'package:yana/utils/string_util.dart';
 
-import '../nostr/nostr.dart';
 import '../provider/data_util.dart';
 import '../provider/filter_provider.dart';
 import '../provider/new_notifications_provider.dart';
@@ -34,22 +33,22 @@ class SystemTimer {
 
   static void runTask() {
     // log("SystemTimer runTask");
-    if (nostr != null) {
+    if (loggedUserSigner != null) {
       AwesomeNotifications().getAppLifeCycle().then((value) async {
         if (value.toString() == "NotificationLifeCycle.Foreground") {
           // if (kDebugMode) {
           //   print('!!!!!!!!!!!!!!! SystemTimer.runTask');
           // }
-          await nostr!.checkAndReconnectRelays();
-          newNotificationsProvider.queryNew();
+          // await nostr!.checkAndReconnectRelays();
+          // newNotificationsProvider.queryNew();
           // dmProvider.query(subscribe: false);
           if (counter % 2 == 0) {
             if (settingProvider.gossip == 1) {
-              if (followsNostr != null && !reloadingFollowNostr) {
+              // if (followsNostr != null && !reloadingFollowNostr) {
                 //await followsNostr!.checkAndReconnectRelays();
-              }
+              // }
             }
-            followNewEventProvider.queryNew();
+            // followNewEventProvider.queryNew();
           }
         }
       });

@@ -1,6 +1,6 @@
+import 'package:dart_ndk/nips/nip01/metadata.dart';
 import 'package:flutter/material.dart';
 import 'package:yana/nostr/nip19/nip19.dart';
-import 'package:yana/models/metadata.dart';
 import 'package:yana/provider/metadata_provider.dart';
 import 'package:yana/utils/string_util.dart';
 import 'package:provider/provider.dart';

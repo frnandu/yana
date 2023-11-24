@@ -1,18 +1,18 @@
+import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:screenshot/screenshot.dart';
 
-import '../../nostr/event.dart';
-import '../../utils/base.dart';
-import '../../utils/router_path.dart';
 import '../../i18n/i18n.dart';
 import '../../provider/single_event_provider.dart';
+import '../../utils/base.dart';
+import '../../utils/router_path.dart';
 import '../../utils/router_util.dart';
 import '../cust_state.dart';
 import 'event_main_component.dart';
 
 class EventQuoteComponent extends StatefulWidget {
-  Event? event;
+  Nip01Event? event;
 
   String? id;
 
@@ -20,7 +20,7 @@ class EventQuoteComponent extends StatefulWidget {
 
   bool showReactions;
 
-  EventQuoteComponent({
+  EventQuoteComponent({super.key,
     this.event,
     this.id,
     this.showReactions = false,
@@ -38,15 +38,18 @@ class _EventQuoteComponent extends CustState<EventQuoteComponent> {
 
   @override
   Widget doBuild(BuildContext context) {
+    var _singleEventProvider = Provider.of<SingleEventProvider>(context);
+
     var themeData = Theme.of(context);
     var cardColor = themeData.cardColor;
     var boxDecoration = BoxDecoration(
-      color: cardColor,
+      borderRadius: BorderRadius.circular(10),
+      color: themeData.focusColor,
       boxShadow: [
         BoxShadow(
-          color: Colors.black.withOpacity(0.2),
+          color: themeData.dividerColor.withOpacity(0.05),
           offset: const Offset(0, 0),
-          blurRadius: 10,
+          blurRadius: 15,
           spreadRadius: 0,
         ),
       ],
@@ -56,7 +59,7 @@ class _EventQuoteComponent extends CustState<EventQuoteComponent> {
       return buildEventWidget(widget.event!, cardColor, boxDecoration);
     }
 
-    return Selector<SingleEventProvider, Event?>(
+    return Selector<SingleEventProvider, Nip01Event?>(
       builder: (context, event, child) {
         if (event == null) {
           return buildBlankWidget(boxDecoration);
@@ -71,14 +74,14 @@ class _EventQuoteComponent extends CustState<EventQuoteComponent> {
   }
 
   Widget buildEventWidget(
-      Event event, Color cardColor, BoxDecoration boxDecoration) {
+      Nip01Event event, Color cardColor, BoxDecoration boxDecoration) {
     return
       // Screenshot(
       // controller: screenshotController,
       // child:
       Container(
-        padding: const EdgeInsets.only(top: Base.BASE_PADDING),
-        margin: const EdgeInsets.all(Base.BASE_PADDING),
+        // padding: const EdgeInsets.only(top: Base.BASE_PADDING),
+        margin: const EdgeInsets.only(top: Base.BASE_PADDING, bottom: Base.BASE_PADDING),
         decoration: boxDecoration,
         child: GestureDetector(
           onTap: () {
@@ -88,6 +91,7 @@ class _EventQuoteComponent extends CustState<EventQuoteComponent> {
           child: EventMainComponent(
             screenshotController: screenshotController,
             event: event,
+            addDivider: false,
             showReactions: widget.showReactions,
             showReplying: false,
             textOnTap: () {
@@ -110,7 +114,7 @@ class _EventQuoteComponent extends CustState<EventQuoteComponent> {
     );
   }
 
-  void jumpToThread(Event event) {
+  void jumpToThread(Nip01Event event) {
     RouterUtil.router(context, RouterPath.THREAD_DETAIL, event);
   }
 

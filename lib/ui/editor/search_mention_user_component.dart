@@ -1,11 +1,9 @@
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:dart_ndk/nips/nip01/metadata.dart';
 import 'package:flutter/material.dart';
 
 import '../../main.dart';
-import '../../models/metadata.dart';
 import '../../nostr/nip19/nip19.dart';
 import '../../utils/base.dart';
-import '../../utils/router_util.dart';
 import '../../utils/string_util.dart';
 import '../../utils/when_stop_function.dart';
 import '../name_component.dart';
@@ -72,7 +70,7 @@ class _SearchMentionUserComponent extends State<SearchMentionUserComponent>
     metadatas.clear();
 
     if (StringUtil.isNotBlank(text)) {
-      var list = metadataProvider.findUser(text!, limit: searchMemLimit);
+      var list = cacheManager.searchMetadatas(text!, searchMemLimit).toList();
       metadatas = list;
     }
 
@@ -89,10 +87,13 @@ class SearchMentionUserItemComponent extends StatelessWidget {
 
   Function(Metadata) onTap;
 
+  PopupMenuButton? popupMenuButton;
+
   SearchMentionUserItemComponent({super.key,
     required this.metadata,
     required this.width,
-    required this.onTap
+    required this.onTap,
+    this.popupMenuButton
   });
 
   @override
@@ -171,18 +172,20 @@ class SearchMentionUserItemComponent extends StatelessWidget {
                   //   overflow: TextOverflow.ellipsis,
                   // ),
                   ,
+                  StringUtil.isNotBlank(metadata.nip05)?
                   Text(
-                    name,
+                    metadata.cleanNip05!,
                     style: TextStyle(
                       fontSize: 12,
                       color: hintColor,
                     ),
                     overflow: TextOverflow.ellipsis,
-                  ),
+                  ):Container(),
                 ],
               ),
             ),
           ),
+          popupMenuButton!=null? popupMenuButton! : Container()
         ],
       ),
     );

@@ -1,4 +1,4 @@
-import 'package:bot_toast/bot_toast.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:yana/nostr/nip19/nip19.dart';
@@ -175,7 +175,7 @@ class _KeyBackupRouter extends State<KeyBackupRouter> {
   bool checkTips() {
     for (var item in checkboxItems!) {
       if (!item.value) {
-        BotToast.showText(text: I18n.of(context).Please_check_the_tips);
+        EasyLoading.show(status: I18n.of(context).Please_check_the_tips);
         return false;
       }
     }
@@ -195,15 +195,16 @@ class _KeyBackupRouter extends State<KeyBackupRouter> {
     // if (!checkTips()) {
     //   return;
     // }
-
-    var pk = nostr!.privateKey;
-    var nip19Key = Nip19.encodePrivateKey(pk!);
-    doCopy(nip19Key);
+    if (loggedUserSigner!.getPrivateKey()!=null) {
+      var pk = loggedUserSigner!.getPrivateKey();
+      var nip19Key = Nip19.encodePrivateKey(pk!);
+      doCopy(nip19Key);
+    }
   }
 
   void doCopy(String key) {
     Clipboard.setData(ClipboardData(text: key)).then((_) {
-      BotToast.showText(text: I18n.of(context).key_has_been_copy);
+      EasyLoading.show(status: I18n.of(context).key_has_been_copy);
     });
   }
 }

@@ -1,12 +1,12 @@
-import 'package:bot_toast/bot_toast.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:convert/convert.dart';
+import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../i18n/i18n.dart';
 import '../../main.dart';
 import '../../models/event_reactions.dart';
-import '../../nostr/event.dart';
 import '../../nostr/nip57/zap_action.dart';
 import '../../nostr/nip57/zap_num_util.dart';
 import '../../nostr/nip69/poll_info.dart';
@@ -19,7 +19,7 @@ import '../content/content_decoder.dart';
 import '../editor/text_input_dialog.dart';
 
 class EventPollComponent extends StatefulWidget {
-  Event event;
+  Nip01Event event;
 
   EventPollComponent({required this.event});
 
@@ -72,7 +72,7 @@ class _EventPollComponent extends State<EventPollComponent> {
             if (num > 0 && StringUtil.isNotBlank(selectKey)) {
               total += num;
 
-              if (senderPubkey == nostr!.publicKey) {
+              if (senderPubkey == loggedUserSigner!.getPublicKey()) {
                 myNum += num;
               }
 
@@ -217,7 +217,7 @@ class _EventPollComponent extends State<EventPollComponent> {
         );
       },
       selector: (context, _provider) {
-        return _provider.get(widget.event.id);
+        return _provider.get(widget.event.id, pubKey: widget.event.pubKey);
       },
     );
   }
@@ -242,28 +242,26 @@ class _EventPollComponent extends State<EventPollComponent> {
 
   bool inputCheck(BuildContext context, String value) {
     if (StringUtil.isBlank(value)) {
-      BotToast.showText(text: I18n.of(context).Input_can_not_be_null);
+      EasyLoading.show(status: I18n.of(context).Input_can_not_be_null);
       return false;
     }
 
     var num = int.tryParse(value);
     if (num == null) {
-      BotToast.showText(text: I18n.of(context).Input_parse_error);
+      EasyLoading.show(status: I18n.of(context).Input_parse_error);
       return false;
     } else {
       if (pollInfo != null &&
           pollInfo!.valueMinimum != null &&
           pollInfo!.valueMinimum! > num) {
-        BotToast.showText(
-            text:
+        EasyLoading.show(status:
                 "${I18n.of(context).Zap_num_can_not_smaller_then} ${pollInfo!.valueMinimum!}");
         return false;
       }
       if (pollInfo != null &&
           pollInfo!.valueMaximum != null &&
           pollInfo!.valueMaximum! < num) {
-        BotToast.showText(
-            text:
+        EasyLoading.show(status:
                 "${I18n.of(context).Zap_num_can_not_bigger_then} ${pollInfo!.valueMaximum!}");
         return false;
       }

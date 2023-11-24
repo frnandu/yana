@@ -1,84 +1,16 @@
+import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
-import '../nostr/event.dart';
-import '../nostr/filter.dart';
-import '../nostr/nip02/contact.dart';
-import '../models/event_mem_box.dart';
 import '../main.dart';
+import '../models/event_mem_box.dart';
 import '../utils/peddingevents_later_function.dart';
-import '../utils/string_util.dart';
 import 'follow_event_provider.dart';
 
 class FollowNewEventProvider extends ChangeNotifier
     with PenddingEventsLaterFunction {
   EventMemBox eventPostsMemBox = EventMemBox(sortAfterAdd: false);
   EventMemBox eventPostsAndRepliesMemBox = EventMemBox();
-
-  int? _localSince;
-
-  List<String> _subscribeIds = [];
-
-  void doUnscribe() {
-    if (_subscribeIds.isNotEmpty) {
-      for (var subscribeId in _subscribeIds) {
-        try {
-          (settingProvider.gossip == 1 && followsNostr!=null ? followsNostr:nostr)!.unsubscribe(subscribeId);
-        } catch (e) {}
-      }
-      _subscribeIds.clear();
-    }
-  }
-
-  void queryNew() {
-    doUnscribe();
-
-    bool queriedTags = false;
-    _localSince =
-        _localSince == null || followEventProvider.lastTime() > _localSince!
-            ? followEventProvider.lastTime()
-            : _localSince;
-    var filter = Filter(
-        since: _localSince! + 1, kinds: followEventProvider.queryEventKinds());
-
-    List<String> subscribeIds = [];
-    List<Contact>? contactList = contactListProvider.list();
-    if (contactList==null) {
-      if (kDebugMode) {
-        print("CONTACT LIST empty, can not get follow content");
-      }
-      return;
-    }
-
-    List<String> ids = [];
-    for (Contact contact in contactList) {
-      ids.add(contact.publicKey!);
-      if (ids.length > 100) {
-        filter.authors = ids;
-        var subscribeId = _doQueryFunc(filter, queriyTags: queriedTags);
-        subscribeIds.add(subscribeId);
-        ids = [];
-        queriedTags = true;
-      }
-    }
-    if (ids.isNotEmpty) {
-      filter.authors = ids;
-      var subscribeId = _doQueryFunc(filter, queriyTags: queriedTags);
-      subscribeIds.add(subscribeId);
-    }
-
-    _subscribeIds = subscribeIds;
-  }
-
-  String _doQueryFunc(Filter filter, {bool queriyTags = false}) {
-    var subscribeId = StringUtil.rndNameStr(12);
-    (settingProvider.gossip == 1 && followsNostr!=null ? followsNostr:nostr)!.query(
-        FollowEventProvider.addTagCommunityFilter(
-            [filter.toJson()], queriyTags), (event) {
-      later(event, handleEvents, null);
-    }, id: subscribeId);
-    return subscribeId;
-  }
 
   void clear() {
     eventPostsMemBox.clear();
@@ -97,10 +29,7 @@ class FollowNewEventProvider extends ChangeNotifier
     notifyListeners();
   }
 
-  handleEvents(List<Event> events) {
-    if (eventPostsAndRepliesMemBox.newestEvent != null) {
-      _localSince = eventPostsAndRepliesMemBox.newestEvent!.createdAt;
-    }
+  handleEvents(List<Nip01Event> events) {
 
     for (var event in events) {
       bool isPosts = FollowEventProvider.eventIsPost(event);

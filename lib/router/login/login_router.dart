@@ -1,47 +1,34 @@
-import 'package:bot_toast/bot_toast.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:dart_ndk/models/user_relay_list.dart';
+import 'package:dart_ndk/nips/nip01/bip340_event_signer.dart';
+import 'package:dart_ndk/relay_manager.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:yana/utils/platform_util.dart';
 
+import '../../nostr/nip07/extension_event_signer.dart';
+import '../../provider/data_util.dart';
+import '../../utils/router_util.dart';
 import '/js/js_helper.dart' as js;
 import '../../i18n/i18n.dart';
 import '../../main.dart';
 import '../../nostr/client_utils/keys.dart';
-import '../../nostr/event.dart';
 import '../../nostr/nip19/nip19.dart';
 import '../../utils/base.dart';
 import '../../utils/index_taps.dart';
 import '../../utils/string_util.dart';
 
 class LoginRouter extends StatefulWidget {
-  const LoginRouter({super.key});
+
+  final bool canGoBack;
+
+  const LoginRouter({super.key, required this.canGoBack});
 
   @override
   State<StatefulWidget> createState() {
     return _LoginRouter();
-  }
-
-  @Deprecated("use new method")
-  static Future<void> handleRemoteRelays(
-      Event? remoteRelayEvent, String privKey) async {
-    var relaysUpdatedTime = relayProvider.updatedTime();
-    if (remoteRelayEvent != null &&
-        (relaysUpdatedTime == null ||
-            remoteRelayEvent!.createdAt - relaysUpdatedTime > 60 * 5)) {
-      List<String> list = [];
-      for (var tag in remoteRelayEvent!.tags) {
-        if (tag.length > 1) {
-          var key = tag[0];
-          var value = tag[1];
-          if (key == "r") {
-            list.add(value);
-          }
-        }
-      }
-      await relayProvider.setRelayListAndUpdate(list, privKey);
-    }
   }
 }
 
@@ -72,11 +59,8 @@ class _LoginRouter extends State<LoginRouter>
       }
     }
 
-    var logoWidget = Image.asset(
-      "assets/imgs/logo/logo-with-name.png",
-      width: 200,
-      height: 200,
-    );
+    var logoWidget = Image.asset("assets/imgs/logo/logo-with-name.png",
+        width: 200, height: 200, isAntiAlias: true);
 
     // var logoWidget = SvgPicture.asset(
     //   width: 200,
@@ -165,12 +149,12 @@ class _LoginRouter extends State<LoginRouter>
             var pubKey = await js.getPublicKeyAsync();
             if (StringUtil.isNotBlank(pubKey)) {
               if (kDebugMode) {
-                BotToast.showText(text: pubKey);
+                EasyLoading.show(status: pubKey);
                 print("PUBLIC KEY: " + pubKey);
               }
               await doLogin(pubKey, true, false);
             } else {
-              BotToast.showText(text: "Invalid public key");
+              EasyLoading.show(status: "Invalid public key");
             }
           },
           child: Container(
@@ -215,6 +199,31 @@ class _LoginRouter extends State<LoginRouter>
         ),
       ),
     ));
+    if (widget.canGoBack) {
+      list.add(Container(
+        margin: const EdgeInsets.all(Base.BASE_PADDING),
+        child: InkWell(
+          onTap: () async {
+            RouterUtil.back(context);
+          },
+          child: Container(
+            height: 40,
+            color: Colors.grey,
+            alignment: Alignment.center,
+            child: Text(
+              "<< cancel",
+              style: const TextStyle(
+                fontFamily: 'Montserrat',
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ),
+      ));
+
+    }
     //
     // mainList.add(Container(
     //   margin: const EdgeInsets.only(bottom: 100),
@@ -230,7 +239,27 @@ class _LoginRouter extends State<LoginRouter>
     //   ),
     // ));
     if (PlatformUtil.isWeb()) {
-      var github = Image.asset("assets/imgs/github.png", width: 200);
+      // // list.add(Row(children: [
+      // //   MouseRegion(
+      // //       cursor: SystemMouseCursors.click,
+      // //       child: GestureDetector(
+      // //           onTap: () {
+      // //             var url = Uri.parse("https://github.com/frnandu/yana/releases");
+      // //             launchUrl(url, mode: LaunchMode.externalApplication);
+      // //           },
+      // //           child: Image.asset("assets/imgs/android.png", width: 100, isAntiAlias:true, filterQuality: FilterQuality.medium))),
+      // //   MouseRegion(
+      // //       cursor: SystemMouseCursors.click,
+      // //       child: GestureDetector(
+      // //           onTap: () {
+      // //             var url = Uri.parse("https://github.com/frnandu/yana/releases");
+      // //             launchUrl(url, mode: LaunchMode.externalApplication);
+      // //           },
+      // //           child: Image.asset("assets/imgs/ios.png", width: 100, isAntiAlias:true))),
+      // //
+      // ],));
+      var github =
+          Image.asset("assets/imgs/github.png", width: 200, isAntiAlias: true);
       list.add(MouseRegion(
           cursor: SystemMouseCursors.click,
           child: GestureDetector(
@@ -240,7 +269,8 @@ class _LoginRouter extends State<LoginRouter>
               },
               child: github)));
 
-      var obtainium = Image.asset("assets/imgs/obtainium.png", width: 200);
+      var obtainium = Image.asset("assets/imgs/obtainium.png",
+          width: 200, isAntiAlias: true);
       list.add(MouseRegion(
           cursor: SystemMouseCursors.click,
           child: GestureDetector(
@@ -311,48 +341,46 @@ class _LoginRouter extends State<LoginRouter>
 
   Future<void> doLogin(String key, bool pubOnly, bool newKey) async {
     if (StringUtil.isBlank(key)) {
-      BotToast.showText(text: I18n.of(context).Private_key_is_null);
+      EasyLoading.show(status: I18n.of(context).Private_key_is_null);
       return;
     }
-    showLoaderDialog(context);
-
     try {
       bool isPublic = pubOnly || Nip19.isPubkey(key);
       if (Nip19.isPubkey(key) || Nip19.isPrivateKey(key)) {
         key = Nip19.decode(key);
       }
+      sharedPreferences.remove(DataKey.NOTIFICATIONS_TIMESTAMP);
+      sharedPreferences.remove(DataKey.FEED_POSTS_TIMESTAMP);
+      sharedPreferences.remove(DataKey.FEED_REPLIES_TIMESTAMP);
+      notificationsProvider.clear();
+      newNotificationsProvider.clear();
+      followEventProvider.clear();
+      followEventProvider.clear();
       await settingProvider.addAndChangeKey(key, !isPublic, updateUI: false);
-      if (!newKey) {
-        var alreadyClosed = false;
-        await relayProvider.getRelays(isPublic ? key : getPublicKey(key),
-            (relays) async {
-          alreadyClosed = true;
-          await relayProvider.setRelayListAndUpdate(
-              relays.map((e) => e.addr!).toList(), null);
-          getNostrAndClose(false, key, !isPublic);
-        });
-        Future.delayed(const Duration(seconds: 20), () {
-          getNostrAndClose(alreadyClosed, key, !isPublic);
-        });
-      } else {
-        getNostrAndClose(false, key, !isPublic);
-      }
+      bool isPrivate = !isPublic;
+      String publicKey = isPrivate ? getPublicKey(key!) : key!;
+      loggedUserSigner = isPrivate || !PlatformUtil.isWeb()
+          ? Bip340EventSigner(isPrivate ? key : null, publicKey)
+          : Nip07EventSigner(await js.getPublicKeyAsync());
+
+      await initRelayManager(isPublic ? key : getPublicKey(key), newKey);
     } catch (e) {
-      BotToast.showText(text: e.toString());
-      Navigator.of(context, rootNavigator: true).pop();
+      EasyLoading.showError(e.toString(), duration: const Duration(seconds: 5));
     }
   }
 
-  void getNostrAndClose(bool alreadyClosed, String key, bool isPrivate) async {
-    if (!alreadyClosed) {
-      nostr = await relayProvider.genNostr(
-          privateKey: isPrivate ? key : null,
-          publicKey: isPrivate ? null : key);
-      Navigator.of(context, rootNavigator: true).pop();
-      settingProvider.notifyListeners();
+  Future<void> initRelayManager( String publicKey, bool newKey) async {
+    EasyLoading.showToast("Relaying other stuff...", dismissOnTap: true,  duration: const Duration(seconds: 5), maskType: EasyLoadingMaskType.black);
+    await initRelays(newKey: newKey);
+    followEventProvider.loadCachedFeed();
+    nwcProvider.init();
+    settingProvider.notifyListeners();
+    EasyLoading.dismiss();
 
-      firstLogin = true;
-      indexProvider.setCurrentTap(IndexTaps.FOLLOW);
+    firstLogin = true;
+    indexProvider.setCurrentTap(IndexTaps.FOLLOW);
+    if (widget.canGoBack) {
+      RouterUtil.back(context);
     }
   }
 }

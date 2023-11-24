@@ -1,11 +1,13 @@
+import 'package:dart_ndk/nips/nip01/event.dart';
+import 'package:dart_ndk/nips/nip01/filter.dart';
+import 'package:dart_ndk/request.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:yana/nostr/nip172/community_id.dart';
-import '../nostr/event.dart';
-import '../nostr/event_kind.dart' as kind;
 import 'package:yana/nostr/nip172/community_info.dart';
 
-import '../nostr/filter.dart';
 import '../main.dart';
+import '../nostr/event_kind.dart' as kind;
 import '../utils/later_function.dart';
 import '../utils/string_util.dart';
 
@@ -16,7 +18,7 @@ class CommunityInfoProvider extends ChangeNotifier with LaterFunction {
 
   List<String> _needPullIds = [];
 
-  List<Event> _penddingEvents = [];
+  List<Nip01Event> _penddingEvents = [];
 
   CommunityInfo? getCommunity(String aid) {
     var ci = _cache[aid];
@@ -25,7 +27,7 @@ class CommunityInfoProvider extends ChangeNotifier with LaterFunction {
     }
 
     // add to query
-    if (!_handingIds.containsKey(aid) && !_needPullIds.contains(aid)) {
+    if (!_needPullIds.contains(aid)) {
       _needPullIds.add(aid);
     }
     later(_laterCallback, null);
@@ -44,22 +46,29 @@ class CommunityInfoProvider extends ChangeNotifier with LaterFunction {
   }
 
   void _laterSearch() {
-    List<Map<String, dynamic>> filters = [];
+    List<CommunityId> ids = [];
     for (var idStr in _needPullIds) {
       var communityId = CommunityId.fromString(idStr);
-      if (communityId == null) {
-        continue;
+      if (communityId!=null) {
+        ids.add(communityId);
       }
 
-      var filter = Filter(
-          kinds: [kind.EventKind.COMMUNITY_DEFINITION],
-          authors: [communityId.pubkey]);
-      var queryArg = filter.toJson();
-      queryArg["#d"] = [communityId.title];
-      filters.add(queryArg);
+      // var filter = Filter(
+      //     kinds: [kind.EventKind.COMMUNITY_DEFINITION],
+      //     authors: [communityId.pubkey]);
+      // var queryArg = filter.toMap();
+      // queryArg["#d"] = [communityId.title];
+      // filters.add(queryArg);
     }
-    var subscriptId = StringUtil.rndNameStr(16);
-    nostr!.query(filters, _onEvent, id: subscriptId);
+
+    var filter = Filter(kinds: [
+      kind.EventKind.COMMUNITY_DEFINITION,
+    ], authors: ids.map((e) => e.pubkey).toList());
+    relayManager.query(filter, myInboxRelaySet!).then((request) {
+      request.stream.listen((event) {
+        _onEvent(event);
+      });
+    });
 
     for (var pubkey in _needPullIds) {
       _handingIds[pubkey] = 1;
@@ -67,7 +76,7 @@ class CommunityInfoProvider extends ChangeNotifier with LaterFunction {
     _needPullIds.clear();
   }
 
-  void _onEvent(Event event) {
+  void _onEvent(Nip01Event event) {
     _penddingEvents.add(event);
     later(_laterCallback, null);
   }

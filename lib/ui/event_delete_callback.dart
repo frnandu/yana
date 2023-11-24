@@ -1,9 +1,8 @@
+import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:flutter/material.dart';
 
-import '../nostr/event.dart';
-
 class EventDeleteCallback extends InheritedWidget {
-  Function(Event) onDeleteCallback;
+  Function(Nip01Event) onDeleteCallback;
 
   EventDeleteCallback({
     super.key,
@@ -20,7 +19,7 @@ class EventDeleteCallback extends InheritedWidget {
     return false;
   }
 
-  void onDelete(Event event) {
+  void onDelete(Nip01Event event) {
     onDeleteCallback(event);
   }
 }

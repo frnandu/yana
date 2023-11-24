@@ -1,13 +1,13 @@
 import 'dart:developer';
 
-import 'package:bot_toast/bot_toast.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:dart_ndk/nips/nip01/metadata.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../nostr/nip57/zap_action.dart';
 import '../../utils/base.dart';
 import '../../utils/router_path.dart';
-import '../../models/metadata.dart';
 import '../../i18n/i18n.dart';
 import '../../main.dart';
 import '../../provider/metadata_provider.dart';
@@ -63,7 +63,7 @@ class _GenLnbcComponent extends State<GenLnbcComponent> {
                       onTap: () async {
                         await RouterUtil.router(
                             context, RouterPath.PROFILE_EDITOR, metadata);
-                        metadataProvider.update(nostr!.publicKey);
+                        metadataProvider.update(loggedUserSigner!.getPublicKey());
                       },
                     ),
                   )
@@ -158,7 +158,7 @@ class _GenLnbcComponent extends State<GenLnbcComponent> {
         return main;
       },
       selector: (context, _provider) {
-        return _provider.getMetadata(nostr!.publicKey);
+        return _provider.getMetadata(loggedUserSigner!.getPublicKey());
       },
     );
   }
@@ -167,7 +167,7 @@ class _GenLnbcComponent extends State<GenLnbcComponent> {
     var text = controller.text;
     var num = int.tryParse(text);
     if (num == null) {
-      BotToast.showText(text: I18n.of(context).Number_parse_error);
+      EasyLoading.show(status: I18n.of(context).Number_parse_error);
       return;
     }
 

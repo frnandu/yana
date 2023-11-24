@@ -1,10 +1,9 @@
+import 'package:dart_ndk/nips/nip01/event.dart';
+import 'package:dart_ndk/nips/nip01/filter.dart';
 import 'package:flutter/material.dart';
 
-import '../nostr/event.dart';
 import '../nostr/event_kind.dart' as kind;
-import '../nostr/filter.dart';
 import '../nostr/nip58/badge_definition.dart';
-import '../main.dart';
 import '../utils/later_function.dart';
 import '../utils/string_util.dart';
 
@@ -29,7 +28,7 @@ class BadgeDefinitionProvider extends ChangeNotifier with LaterFunction {
   List<String> _needUpdatePubKeys = [];
 
   // one user contains multi bedge defintion, here may not works
-  List<Event> _penddingEvents = [];
+  List<Nip01Event> _penddingEvents = [];
 
   void _laterCallback() {
     if (_needUpdatePubKeys.isNotEmpty) {
@@ -46,11 +45,12 @@ class BadgeDefinitionProvider extends ChangeNotifier with LaterFunction {
     for (var pubkey in _needUpdatePubKeys) {
       var filter =
           Filter(kinds: [kind.EventKind.BADGE_DEFINITION], authors: [pubkey]);
-      filters.add(filter.toJson());
+      filters.add(filter.toMap());
     }
     var subscriptId = StringUtil.rndNameStr(16);
     // use query and close after EOSE
-    nostr!.query(filters, _onEvent, id: subscriptId);
+    /// TODO use dart_ndk
+    //nostr!.query(filters, _onEvent, id: subscriptId);
 
     for (var pubkey in _needUpdatePubKeys) {
       _handingPubkeys[pubkey] = 1;
@@ -58,7 +58,7 @@ class BadgeDefinitionProvider extends ChangeNotifier with LaterFunction {
     _needUpdatePubKeys.clear();
   }
 
-  void _onEvent(Event event) {
+  void _onEvent(Nip01Event event) {
     _penddingEvents.add(event);
     later(_laterCallback, null);
   }

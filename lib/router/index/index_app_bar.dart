@@ -35,7 +35,7 @@ class _IndexAppBar extends State<IndexAppBar> {
           Scaffold.of(context).openDrawer();
         },
         child: UserPicComponent(
-          pubkey: nostr!.publicKey,
+          pubkey: loggedUserSigner!.getPublicKey(),
           width: picHeight,
         ),
       );

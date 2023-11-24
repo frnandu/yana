@@ -1,21 +1,20 @@
-import 'package:bot_toast/bot_toast.dart';
+import 'dart:async';
+
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:convert/convert.dart';
+import 'package:dart_ndk/models/user_relay_list.dart';
+import 'package:dart_ndk/nips/nip01/event.dart';
+import 'package:dart_ndk/nips/nip01/filter.dart';
+import 'package:dart_ndk/nips/nip02/contact_list.dart';
+import 'package:dart_ndk/request.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:yana/provider/contact_list_provider.dart';
-import 'package:yana/provider/relay_provider.dart';
-import 'package:yana/ui/enum_selector_component.dart';
 import 'package:yana/utils/base_consts.dart';
 
 import '../../i18n/i18n.dart';
 import '../../main.dart';
 import '../../models/event_mem_box.dart';
-import '../../nostr/event.dart';
-import '../../nostr/event_kind.dart' as kind;
-import '../../nostr/filter.dart';
-import '../../nostr/nip02/contact_list.dart';
+import '../../nostr/event_kind.dart';
 import '../../nostr/nip57/zap_num_util.dart';
-import '../../nostr/nostr.dart';
 import '../../nostr/relay_metadata.dart';
 import '../../ui/cust_state.dart';
 import '../../utils/base.dart';
@@ -27,15 +26,10 @@ import '../../utils/string_util.dart';
 class UserStatisticsComponent extends StatefulWidget {
   String pubkey;
 
-  Nostr? userNostr;
-
   Function(ContactList)? onContactListLoaded;
 
   UserStatisticsComponent(
-      {super.key,
-      required this.pubkey,
-      this.userNostr,
-      this.onContactListLoaded});
+      {super.key, required this.pubkey, this.onContactListLoaded});
 
   @override
   State<StatefulWidget> createState() {
@@ -44,86 +38,98 @@ class UserStatisticsComponent extends StatefulWidget {
 }
 
 class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
-  Event? contactListEvent;
-
-  ContactList? contactList;
-
-  Event? relaysEvent;
-
-  List<RelayMetadata>? relays;
+  static const Duration REFRESH_METADATA_DURATION = Duration(minutes: 10);
 
   EventMemBox? zapEventBox;
+  UserRelayList? userRelayList;
+  ContactList? contactList;
 
   // followedMap
-  Map<String, Event>? followedMap;
+  Map<String, Nip01Event>? followedMap;
 
   int length = 0;
   int relaysNum = 0;
-  int followedTagsLength = 0;
-  int followedCommunitiesLength = 0;
   int? zapNum;
   int? followedNum;
 
   bool isLocal = false;
 
-  String? pubkey;
-
   @override
   void initState() {
-    isLocal = widget.pubkey == nostr!.publicKey;
-    if (isLocal && widget.userNostr == null) {
-      widget.userNostr = nostr;
-    }
+    isLocal = widget.pubkey == loggedUserSigner!.getPublicKey();
+    // if (isLocal && widget.userNostr == null) {
+    //   widget.userNostr = nostr;
+    // }
     // if (!isLocal && widget.userNostr != null) {
     //   loadContactList(widget.userNostr!);
     // }
+    load();
+  }
+
+  void load() async {
+    refreshContactListIfNeededAsync(widget.pubkey);
+    await relayManager.loadMissingRelayListsFromNip65OrNip02([widget.pubkey]).then(
+      (value) {
+        userRelayList = cacheManager.loadUserRelayList(widget.pubkey);
+        contactList = cacheManager.loadContactList(widget.pubkey);
+        if (!_disposed) {
+          setState(() {
+            if (widget.onContactListLoaded != null && contactList != null) {
+              widget.onContactListLoaded!(contactList!);
+            }
+          });
+        }
+      },
+    );
+    queryFollowers();
+    queryZaps();
+  }
+
+  void refreshContactListIfNeededAsync(String pubkey) {
+    contactList = cacheManager.loadContactList(pubkey);
+    int sometimeAgo = DateTime.now()
+            .subtract(REFRESH_METADATA_DURATION)
+            .millisecondsSinceEpoch ~/
+        1000;
+    if (contactList == null ||
+        contactList!.loadedTimestamp == null ||
+        contactList!.loadedTimestamp! < sometimeAgo) {
+      relayManager.loadContactList(pubkey!, forceRefresh: true).then(
+        (newContactList) {
+          if (newContactList != null &&
+              (contactList == null ||
+                  (contactList!.createdAt < newContactList.createdAt))) {
+            if (widget.onContactListLoaded != null && newContactList != null) {
+              widget.onContactListLoaded!(newContactList!);
+            }
+            if (!_disposed) {
+              setState(() {
+                contactList = newContactList;
+              });
+            }
+          }
+        },
+      );
+    } else {
+      if (!_disposed) {
+        setState(() {
+        });
+      }
+    }
   }
 
   @override
   Widget doBuild(BuildContext context) {
     var s = I18n.of(context);
-    // if (widget.userNostr == null || relays == null) {
-    //   return Container();
-    // }
-    if (pubkey != null && pubkey != widget.pubkey) {
-      // arg changed! reset
-      contactListEvent = null;
-      contactList = null;
-      relays = null;
-      zapEventBox = null;
-      followedMap = null;
-
-      length = 0;
-      relaysNum = 0;
-      followedTagsLength = 0;
-      followedCommunitiesLength = 0;
-      zapNum = null;
-      followedNum = null;
-    }
-    pubkey = widget.pubkey;
 
     List<Widget> list = [];
 
-    if (isLocal) {
-      list.add(
-          Selector<ContactListProvider, int>(builder: (context, num, child) {
-        return UserStatisticsItemComponent(
-          num: num,
-          name: s.Following,
-          onTap: onFollowingTap,
-          onLongPressStart: onLongPressStart,
-          onLongPressEnd: onLongPressEnd,
-        );
-      }, selector: (context, _provider) {
-        return _provider.total();
-      }));
-    } else {
-      if (contactList != null) {
-        length = contactList!.list().length;
-      }
-      list.add(UserStatisticsItemComponent(
-          num: length, name: s.Following, onTap: onFollowingTap));
+    if (contactList != null) {
+      length = contactList!.contacts.length;
     }
+    list.add(UserStatisticsItemComponent(
+        num: length, name: s.Following, onTap: onFollowingTap));
+    // }
 
     list.add(UserStatisticsItemComponent(
       num: followedNum ?? 0,
@@ -150,63 +156,18 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
       formatNum: true,
     ));
 
-    if (isLocal) {
-      list.add(Selector<RelayProvider, int>(builder: (context, num, child) {
-        return UserStatisticsItemComponent(
-            num: num, name: s.Relays, onTap: onRelaysTap);
-      }, selector: (context, _provider) {
-        return _provider.total();
-      }));
-    } else {
-      if (relays != null) {
-        relaysNum = relays!.length;
-      }
-      list.add(UserStatisticsItemComponent(
-          num: relaysNum, name: s.Relays, onTap: onRelaysTap));
-    }
+    list.add(UserStatisticsItemComponent(
+        num: userRelayList!=null? userRelayList!.relays.length:0, name: s.Relays, onTap: onRelaysTap));
 
-    if (isLocal) {
-      list.add(
-          Selector<ContactListProvider, int>(builder: (context, num, child) {
-        return UserStatisticsItemComponent(
-          num: num,
-          name: s.Followed_Tags,
-          onTap: onFollowedTagsTap,
-        );
-      }, selector: (context, _provider) {
-        return _provider.totalFollowedTags();
-      }));
-    } else {
-      if (contactList != null) {
-        followedTagsLength = contactList!.tagList().length;
-      }
-      list.add(UserStatisticsItemComponent(
-          num: followedTagsLength,
-          name: s.Followed_Tags,
-          onTap: onFollowedTagsTap));
-    }
+    list.add(UserStatisticsItemComponent(
+        num: contactList != null && contactList!.followedTags!=null? contactList!.followedTags!.length : 0,
+        name: s.Followed_Tags,
+        onTap: onFollowedTagsTap));
 
-    if (isLocal) {
-      list.add(
-          Selector<ContactListProvider, int>(builder: (context, num, child) {
-        return UserStatisticsItemComponent(
-          num: num,
-          name: s.Followed_Communities,
-          onTap: onFollowedCommunitiesTap,
-        );
-      }, selector: (context, _provider) {
-        return _provider.totalfollowedCommunities();
-      }));
-    } else {
-      if (contactList != null) {
-        followedCommunitiesLength =
-            contactList!.followedCommunitiesList().length;
-      }
-      list.add(UserStatisticsItemComponent(
-          num: followedCommunitiesLength,
-          name: s.Followed_Communities,
-          onTap: onFollowedCommunitiesTap));
-    }
+    list.add(UserStatisticsItemComponent(
+        num: contactList != null && contactList!.followedCommunities!=null ? contactList!.followedCommunities!.length : 0,
+        name: s.Followed_Communities,
+        onTap: onFollowedCommunitiesTap));
 
     return Container(
       margin: const EdgeInsets.only(bottom: Base.BASE_PADDING),
@@ -225,18 +186,19 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
     if (fetchLocalContactsId == null) {
       fetchLocalContactsId = StringUtil.rndNameStr(16);
       localContactBox = EventMemBox(sortAfterAdd: false);
-      var filter = Filter(
-          authors: [widget.pubkey], kinds: [kind.EventKind.CONTACT_LIST]);
-      widget.userNostr!.query([filter.toJson()], (event) {
-        localContactBox!.add(event);
-      }, id: fetchLocalContactsId);
-      BotToast.showText(text: I18n.of(context).Begin_to_load_Contact_History);
+      // var filter = Filter(
+      //     authors: [widget.pubkey], kinds: [kind.EventKind.CONTACT_LIST]);
+      // TODO use dart_ndk
+      // widget.userNostr!.query([filter.toMap()], (event) {
+      //   localContactBox!.add(event);
+      // }, id: fetchLocalContactsId);
+      EasyLoading.show(status: I18n.of(context).Begin_to_load_Contact_History);
     }
   }
 
   Future<void> onLongPressEnd(LongPressEndDetails d) async {
     if (fetchLocalContactsId != null) {
-      widget.userNostr!.unsubscribe(fetchLocalContactsId!);
+      // widget.userNostr!.unsubscribe(fetchLocalContactsId!);
       fetchLocalContactsId = null;
 
       var format = FixedDateTimeFormatter("YYYY-MM-DD hh:mm:ss");
@@ -245,20 +207,20 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
       var list = localContactBox!.all();
 
       List<EnumObj> enumList = [];
-      for (var event in list) {
-        var _contactList = ContactList.fromJson(event.tags);
-        var dt = DateTime.fromMillisecondsSinceEpoch(event.createdAt * 1000);
-        enumList.add(
-            EnumObj(event, "${format.encode(dt)} (${_contactList.total()})"));
-      }
-
-      var result = await EnumSelectorComponent.show(context, enumList);
-      if (result != null) {
-        var event = result.value as Event;
-        var _contactList = ContactList.fromJson(event.tags);
-        RouterUtil.router(
-            context, RouterPath.USER_HISTORY_CONTACT_LIST, _contactList);
-      }
+      // for (var event in list) {
+      //   var _contactList = ContactList.fromJson(event.tags);
+      //   var dt = DateTime.fromMillisecondsSinceEpoch(event.createdAt * 1000);
+      //   enumList.add(
+      //       EnumObj(event, "${format.encode(dt)} (${_contactList.total()})"));
+      // }
+      //
+      // var result = await EnumSelectorComponent.show(context, enumList);
+      // if (result != null) {
+      //   var event = result.value as Event;
+      //   var _contactList = ContactList.fromJson(event.tags);
+      //   RouterUtil.router(
+      //       context, RouterPath.USER_HISTORY_CONTACT_LIST, _contactList);
+      // }
     }
   }
 
@@ -268,67 +230,15 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
 
   @override
   Future<void> onReady(BuildContext context) async {
-    // if (!isLocal) {
-    relayProvider.initStaticForRelaysAndMetadataNostr(widget.pubkey);
-    List<Future> futures = staticForRelaysAndMetadataNostr!.allRelays().map((e) => e.future!,).toList();
-
-    await Future.wait(futures).onError((error, stackTrace) {return List.of([]);}).then((sockets) async {
-      await relayProvider.getRelays(widget.pubkey, (relays) async {
-        if (!_disposed) {
-          await relayProvider.getContacts(widget.pubkey, (contacts) {
-            if (!_disposed) {
-              if (widget.onContactListLoaded != null && contacts != null) {
-                widget.onContactListLoaded!(contacts!);
-              }
-              setState(() {
-                contactList = contacts;
-                this.relays = relays;
-                relaysNum = relays.length;
-              });
-              onFollowedTap();
-              onZapTap();
-            }
-          });
-        }
-      });
-    });
-    // loadContactList(widget.userNostr ?? nostr!);
-    // }
   }
-
-  // void loadContactList(Nostr targetNostr) {
-  //   queryId = StringUtil.rndNameStr(16);
-  //   var filter = Filter(
-  //       authors: [widget.pubkey],
-  //       limit: 1,
-  //       kinds: [kind.EventKind.CONTACT_LIST]);
-  //   targetNostr.query([filter.toJson()], (event) {
-  //     // BotToast.showText(text: "loaded contact list from "+event.sources.toString()+" with ${event.tags.length} contacts");
-  //
-  //     if (((contactListEvent != null &&
-  //                 event.createdAt > contactListEvent!.createdAt) ||
-  //             contactListEvent == null) &&
-  //         !_disposed) {
-  //       setState(() {
-  //         contactListEvent = event;
-  //         contactList = CustContactList.fromJson(contactListEvent!.tags);
-  //         if (widget.onContactListLoaded != null && contactList != null) {
-  //           widget.onContactListLoaded!(contactList!);
-  //         }
-  //       });
-  //       onFollowedTap();
-  //       onZapTap();
-  //     }
-  //   }, id: queryId, onComplete: () {});
-  // }
 
   onFollowingTap() {
     if (contactList != null) {
-      RouterUtil.router(context, RouterPath.USER_CONTACT_LIST, contactList);
+      RouterUtil.router(context, RouterPath.USER_CONTACT_LIST, widget.pubkey);
     } else if (isLocal) {
-      var cl = contactListProvider.contactList;
+      var cl = contactListProvider.getContactList(loggedUserSigner!.getPublicKey());
       if (cl != null) {
-        RouterUtil.router(context, RouterPath.USER_CONTACT_LIST, cl);
+        RouterUtil.router(context, RouterPath.USER_CONTACT_LIST, widget.pubkey);
       }
     }
   }
@@ -337,7 +247,7 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
     if (contactList != null) {
       RouterUtil.router(context, RouterPath.FOLLOWED_TAGS_LIST, contactList);
     } else if (isLocal) {
-      var cl = contactListProvider.contactList;
+      var cl = contactListProvider.getContactList(loggedUserSigner!.getPublicKey());
       if (cl != null) {
         RouterUtil.router(context, RouterPath.FOLLOWED_TAGS_LIST, cl);
       }
@@ -346,57 +256,76 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
 
   String followedSubscribeId = "";
 
-  onFollowedTap() {
+  NostrRequest? _followersSubscription;
+  NostrRequest? _zapsSubscription;
+
+  queryFollowers() async {
     if (followedMap == null) {
-      // load data
       followedMap = {};
-      // pull zap event
-      Map<String, dynamic> filter = {};
-      filter["kinds"] = [kind.EventKind.CONTACT_LIST];
-      filter["#p"] = [widget.pubkey];
-      followedSubscribeId = StringUtil.rndNameStr(12);
-      staticForRelaysAndMetadataNostr!.query([filter], (e) {
-        var oldEvent = followedMap![e.pubKey];
-        if (oldEvent == null || e.createdAt > oldEvent.createdAt) {
-          followedMap![e.pubKey] = e;
+
+      Filter filter =
+          Filter(kinds: [ContactList.KIND], pTags: [widget.pubkey]);
+
+      _followersSubscription = await relayManager.query(
+          // relayManager.bootstrapRelays.toList()
+          //   ..addAll(myInboxRelaySet!.urls),
+          filter,
+          myInboxRelaySet!,
+          idleTimeout: 20
+      );
+      _followersSubscription!.stream.listen((event) {
+        var oldEvent = followedMap![event.pubKey];
+        if (oldEvent == null || event.createdAt > oldEvent.createdAt) {
+          followedMap![event.pubKey] = event;
           if (!_disposed) {
             setState(() {
               followedNum = followedMap!.length;
             });
           }
         }
-      }, id: followedSubscribeId);
+      });
 
       followedNum = 0;
     }
   }
 
   onRelaysTap() {
-    if (relays != null && relays!.isNotEmpty) {
+    if (userRelayList!=null && userRelayList!.relays.isNotEmpty) {
+      List<RelayMetadata> relays = userRelayList!.relays
+          .entries.map((entry) => RelayMetadata.full(
+              url: entry.key,
+              read: entry.value.isRead,
+              write: entry.value.isWrite,
+              count: 0))
+          .toList();
       RouterUtil.router(context, RouterPath.USER_RELAYS, relays);
     } else if (isLocal) {
       RouterUtil.router(context, RouterPath.RELAYS);
     }
   }
 
-  String zapSubscribeId = "";
-
-  onZapTap() {
+  queryZaps() async {
     if (zapEventBox == null) {
       zapEventBox = EventMemBox(sortAfterAdd: false);
       // pull zap event
-      var filter = Filter(kinds: [kind.EventKind.ZAP], p: [widget.pubkey]);
-      zapSubscribeId = StringUtil.rndNameStr(12);
-      // print(filter);
-      staticForRelaysAndMetadataNostr!.query([filter.toJson()], (event) {
-        if (event.kind == kind.EventKind.ZAP && zapEventBox!.add(event)) {
-          if (!_disposed) {
-            setState(() {
-              zapNum = zapNum! + ZapNumUtil.getNumFromZapEvent(event);
-            });
+      _zapsSubscription = await relayManager.query(
+          // relayManager.bootstrapRelays.toList()
+          //   ..addAll(myInboxRelaySet!.urls),
+          Filter(kinds: [EventKind.ZAP_RECEIPT], pTags: [widget.pubkey]),
+          myInboxRelaySet!,
+        idleTimeout: 20
+      );
+      _zapsSubscription!.stream.listen(
+        (event) {
+          if (event.kind == EventKind.ZAP_RECEIPT && zapEventBox!.add(event, returnTrueOnNewSources: false)) {
+            if (!_disposed) {
+              setState(() {
+                zapNum = zapNum! + ZapNumUtil.getNumFromZapEvent(event);
+              });
+            }
           }
-        }
-      }, id: zapSubscribeId);
+        },
+      );
 
       zapNum = 0;
     } else {
@@ -405,22 +334,30 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
   }
 
   @override
-  void dispose() {
-    super.dispose();
-
-    _disposed = true;
-    checkAndUnsubscribe(queryId);
-    checkAndUnsubscribe(queryId2);
-    checkAndUnsubscribe(zapSubscribeId);
-    checkAndUnsubscribe(followedSubscribeId);
+  void deactivate() {
+    super.deactivate();
+    if (_followersSubscription != null) {
+      relayManager.closeNostrRequest(_followersSubscription!);
+      _followersSubscription=null;
+    }
+    if (_zapsSubscription != null) {
+      relayManager.closeNostrRequest(_zapsSubscription!);
+      _zapsSubscription=null;
+    }
   }
 
-  void checkAndUnsubscribe(String queryId) {
-    if (StringUtil.isNotBlank(queryId) && widget.userNostr != null) {
-      try {
-        widget.userNostr!.unsubscribe(queryId);
-      } catch (e) {}
+  @override
+  void dispose() {
+    super.dispose();
+    if (_followersSubscription != null) {
+      relayManager.closeNostrRequest(_followersSubscription!);
+      _followersSubscription=null;
     }
+    if (_zapsSubscription != null) {
+      relayManager.closeNostrRequest(_zapsSubscription!);
+      _zapsSubscription=null;
+    }
+    _disposed = true;
   }
 
   bool _disposed = false;
@@ -429,7 +366,7 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
     if (contactList != null) {
       RouterUtil.router(context, RouterPath.FOLLOWED_COMMUNITIES, contactList);
     } else if (isLocal) {
-      var cl = contactListProvider.contactList;
+      var cl = contactListProvider.getContactList(loggedUserSigner!.getPublicKey());
       if (cl != null) {
         RouterUtil.router(context, RouterPath.FOLLOWED_COMMUNITIES, cl);
       }

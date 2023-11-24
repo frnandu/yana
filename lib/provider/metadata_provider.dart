@@ -1,210 +1,123 @@
-import 'dart:convert';
-
+import 'package:dart_ndk/models/relay_set.dart';
+import 'package:dart_ndk/nips/nip01/helpers.dart';
+import 'package:dart_ndk/nips/nip01/metadata.dart';
+import 'package:dart_ndk/nips/nip05/nip05.dart';
 import 'package:flutter/material.dart';
-import 'package:yana/nostr/nip05/nip05_validor.dart';
-import 'package:yana/utils/nip05status.dart';
 
 import '../main.dart';
-import '../models/metadata.dart';
-import '../nostr/event.dart';
-import '../nostr/event_kind.dart' as kind;
-import '../nostr/filter.dart';
 import '../utils/later_function.dart';
 import '../utils/string_util.dart';
 
 class MetadataProvider extends ChangeNotifier with LaterFunction {
-  Map<String, Metadata> _metadataCache = {};
-
-  Map<String, int> _handingPubkeys = {};
-
   static MetadataProvider? _metadataProvider;
 
   static Future<MetadataProvider> getInstance() async {
     if (_metadataProvider == null) {
       _metadataProvider = MetadataProvider();
-
-      var list = await Metadata.loadAllFromDB();
-      for (var md in list) {
-        if (md.valid == Nip05Status.NIP05_NOT_VALIDED) {
-          md.valid = null;
-        }
-        _metadataProvider!._metadataCache[md.pubKey!] = md;
-      }
-      // lazyTimeMS begin bigger and request less
       _metadataProvider!.laterTimeMS = 500;
     }
 
     return _metadataProvider!;
   }
 
-  List<Metadata> findUser(String str, {int? limit = 5}) {
-    List<Metadata> list = [];
-    if (StringUtil.isNotBlank(str)) {
-      var values = _metadataCache.values;
-      for (var metadata in values) {
-        if (metadata.matchesSearch(str)) {
-          list.add(metadata);
-
-          if (limit != null && list.length >= limit) {
-            break;
-          }
-        }
-      }
-    }
-    return list;
-  }
-
   void _laterCallback() {
-    if (_needUpdatePubKeys.isNotEmpty) {
-      _laterSearch();
+    if (_needUpdateMetadatas.isNotEmpty) {
+      _loadNeedingUpdateMetadatas();
     }
-
-    if (_penddingEvents.isNotEmpty) {
-      _handlePenddingEvents();
+    if (_needUpdateNip05s.isNotEmpty) {
+      _loadNeedingUpdateNip05s();
     }
   }
 
-  List<String> _needUpdatePubKeys = [];
+  List<String> _needUpdateMetadatas = [];
+  List<Metadata> _needUpdateNip05s = [];
 
   void update(String pubkey) {
-    if (!_needUpdatePubKeys.contains(pubkey)) {
-      _needUpdatePubKeys.add(pubkey);
+    if (!_needUpdateMetadatas.contains(pubkey)) {
+      _needUpdateMetadatas.add(pubkey);
     }
     later(_laterCallback, null);
   }
 
-  Metadata? getMetadata(String pubkey) {
-    var metadata = _metadataCache[pubkey];
+  Metadata? getMetadata(String pubKey) {
+    var metadata = cacheManager.loadMetadata(pubKey);
     if (metadata != null) {
       return metadata;
     }
-
-    if (!_needUpdatePubKeys.contains(pubkey) &&
-        !_handingPubkeys.containsKey(pubkey)) {
-      _needUpdatePubKeys.add(pubkey);
+    if (!_needUpdateMetadatas.contains(pubKey)) {
+      _needUpdateMetadatas.add(pubKey);
     }
     later(_laterCallback, null);
     return null;
   }
 
-  void getMostRecentMetadata(String pubkey, Function(Metadata) onEvent) {
-    var metadata = _metadataCache[pubkey];
-    if (metadata != null) {
-      onEvent(metadata);
-    } else {
-      nostr!.query([
-        Filter(kinds: [kind.EventKind.METADATA], authors: [pubkey], limit: 1)
-            .toJson()
-      ], (event) {
-        var existing = _metadataCache[event.pubKey];
-        if (existing == null ||
-            existing.updated_at == null ||
-            existing.updated_at! < event.createdAt) {
-          handleEvent(event);
+  static const NIP05_NEEDS_UPDATE_DURATION = const Duration(days: 7);
+
+  bool? isNip05Valid(Metadata metadata) {
+    if (StringUtil.isNotBlank(metadata.nip05)) {
+      Nip05? nip05 = cacheManager.loadNip05(metadata.pubKey);
+      if (nip05 == null || nip05.needsUpdate(NIP05_NEEDS_UPDATE_DURATION)) {
+        if (!_needUpdateNip05s.contains(metadata)) {
+          _needUpdateNip05s.add(metadata);
+          later(_laterCallback, null);
+          return null;
         }
-      }, onComplete: () {
-        var metadata = _metadataCache[pubkey];
-        if (metadata != null) {
-          onEvent(metadata);
-        }
-      });
-    }
-  }
-
-  int getNip05Status(String pubkey) {
-    var metadata = getMetadata(pubkey);
-    if (metadata == null) {
-      return Nip05Status.METADATA_NOT_FOUND;
-    } else if (StringUtil.isBlank(metadata.nip05)) {
-      return Nip05Status.NIP05_NOT_FOUND;
-    } else if (metadata.valid == null) {
-      Nip05Validor.valid(metadata.nip05!, pubkey).then((valid) async {
-        if (valid != null) {
-          if (valid) {
-            metadata.valid = Nip05Status.NIP05_VALIDED;
-            await Metadata.writeToDB(metadata);
-          } else {
-            // only update cache, next open app vill valid again
-            metadata.valid = Nip05Status.NIP05_NOT_VALIDED;
-          }
-          notifyListeners();
-        }
-      });
-
-      return Nip05Status.NIP05_NOT_VALIDED;
-    } else if (metadata.valid! == Nip05Status.NIP05_VALIDED) {
-      return Nip05Status.NIP05_VALIDED;
-    }
-    return Nip05Status.NIP05_NOT_FOUND;
-  }
-
-  List<Event> _penddingEvents = [];
-
-  void _handlePenddingEvents() {
-    for (var event in _penddingEvents) {
-      if (StringUtil.isBlank(event.content)) {
-        continue;
       }
-      _handingPubkeys.remove(event.pubKey);
-
-      var jsonObj = jsonDecode(event.content);
-      var md = Metadata.fromJson(jsonObj);
-      md.pubKey = event.pubKey;
-      md.updated_at = event.createdAt;
-
-      Metadata.writeToDB(md);
-      _metadataCache[md.pubKey!] = md;
+      return nip05?.valid;
     }
-    _penddingEvents.clear();
+    return null;
+  }
+  bool loading=false;
 
+  void _loadNeedingUpdateMetadatas() async {
+    if (_needUpdateMetadatas.isEmpty || loading) {
+      return;
+    }
+    RelaySet? relaySet = settingProvider.gossip == 1 && feedRelaySet != null
+        ? feedRelaySet
+        : myInboxRelaySet;
+    if (relaySet != null) {
+      loading=true;
+      List<Metadata> loaded = await relayManager.loadMissingMetadatas(
+          _needUpdateMetadatas, relaySet,
+          splitRequestsByPubKeyMappings: settingProvider.gossip == 1, onLoad: (metadata) {
+            notifyListeners();
+      });
+      _needUpdateMetadatas.clear();
+      loading=false;
+
+      if (loaded.isNotEmpty) {
+        notifyListeners();
+      }
+    }
+  }
+
+  void _loadNeedingUpdateNip05s() async {
+    if (_needUpdateNip05s.isEmpty) {
+      return;
+    }
+    List<Nip05> toSave = [];
+
+    List<Metadata> doCheck = List.of(_needUpdateNip05s);
+    for (var metadata in doCheck) {
+      Nip05? nip05 = cacheManager.loadNip05(metadata.pubKey);
+      bool valid = await Nip05.check(metadata.nip05!, metadata.pubKey);
+      nip05 ??= Nip05(
+          pubKey: metadata.pubKey,
+          nip05: metadata.nip05!,
+          valid: valid,
+          updatedAt: Helpers.now);
+      nip05.valid = valid;
+      nip05.updatedAt = Helpers.now;
+      toSave.add(nip05);
+    }
+    await cacheManager.saveNip05s(toSave);
+    _needUpdateNip05s.clear();
     notifyListeners();
   }
 
-  void _onEvent(Event event) {
-    _penddingEvents.add(event);
-    later(_laterCallback, null);
-  }
-
-  void _laterSearch() {
-    if (_needUpdatePubKeys.isEmpty) {
-      return;
-    }
-
-    List<Map<String, dynamic>> filters = [];
-    for (var pubkey in _needUpdatePubKeys) {
-      var filter =
-          Filter(kinds: [kind.EventKind.METADATA], authors: [pubkey], limit: 1);
-      filters.add(filter.toJson());
-      if (filters.length > 11) {
-        nostr!.query(filters, _onEvent);
-        filters.clear();
-      }
-    }
-    if (filters.isNotEmpty) {
-      nostr!.query(filters, _onEvent);
-    }
-
-    for (var pubkey in _needUpdatePubKeys) {
-      _handingPubkeys[pubkey] = 1;
-    }
-    _needUpdatePubKeys.clear();
-  }
-
   void clear() {
-    _metadataCache.clear();
-    Metadata.deleteAllFromDB();
-  }
-
-  Metadata handleEvent(Event event) {
-    _handingPubkeys.remove(event.pubKey);
-
-    var jsonObj = jsonDecode(event.content);
-    var md = Metadata.fromJson(jsonObj);
-    md.pubKey = event.pubKey;
-    md.updated_at = event.createdAt;
-
-    Metadata.writeToDB(md);
-    _metadataCache[md.pubKey!] = md;
-    return md;
+    cacheManager.removeAllMetadatas();
+    cacheManager.removeAllNip05s();
   }
 }

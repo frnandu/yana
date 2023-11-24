@@ -1,13 +1,13 @@
+import 'package:dart_ndk/nips/nip01/metadata.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../utils/nip05status.dart';
 import '../provider/metadata_provider.dart';
 
 class Nip05ValidComponent extends StatefulWidget {
-  String pubkey;
+  Metadata metadata;
 
-  Nip05ValidComponent({required this.pubkey});
+  Nip05ValidComponent({required this.metadata});
 
   @override
   State<StatefulWidget> createState() {
@@ -19,22 +19,20 @@ class _Nip05ValidComponent extends State<Nip05ValidComponent> {
   @override
   Widget build(BuildContext context) {
     var themeData = Theme.of(context);
-    var mainColor = themeData.primaryColor;
     var smallTextSize = themeData.textTheme.bodySmall!.fontSize;
 
-    return Selector<MetadataProvider, int>(
-        builder: (context, nip05Status, child) {
-      var iconData = Icons.check_circle;
-      if (nip05Status == Nip05Status.NIP05_NOT_FOUND || nip05Status == Nip05Status.METADATA_NOT_FOUND) {
-        // iconData = Icons.error;
-        return Container(width: 0,height: 0,);
-      }
-
+    return Container(
+        margin: const EdgeInsets.only(top:2),
+        child: Selector<MetadataProvider, bool?>(
+        builder: (context, valid, child) {
       Color iconColor = Colors.red;
-      if (nip05Status == Nip05Status.NIP05_NOT_VALIDED) {
+      var iconData = Icons.warning_amber_outlined;
+      if (valid==null) {
         iconColor = Colors.yellow;
-      } else if (nip05Status == Nip05Status.NIP05_VALIDED) {
-        iconColor = mainColor;
+        iconData = Icons.downloading;
+      } else if (valid) {
+        iconColor = Colors.grey ;
+        iconData = Icons.verified;
       }
 
       return Icon(
@@ -43,7 +41,7 @@ class _Nip05ValidComponent extends State<Nip05ValidComponent> {
         size: smallTextSize,
       );
     }, selector: (context, _provider) {
-      return _provider.getNip05Status(widget.pubkey);
-    });
+      return _provider.isNip05Valid(widget.metadata);
+    }));
   }
 }

@@ -8,7 +8,7 @@ class CacheManagerBuilder {
   static const key = 'cachedImageData';
 
   static CacheManager build() {
-    var config = Config(key);
+    var config = Config(key, maxNrOfCacheObjects: 10000);
     var store = CacheStore(config);
 
     return CacheManager.custom(config,

@@ -1,4 +1,4 @@
-import '../event.dart';
+import 'package:dart_ndk/nips/nip01/event.dart';
 
 class LongFormInfo {
   String? title;
@@ -13,7 +13,7 @@ class LongFormInfo {
 
   List<String> as = [];
 
-  LongFormInfo.fromEvent(Event event) {
+  LongFormInfo.fromEvent(Nip01Event event) {
     var length = event.tags.length;
     for (var i = 0; i < length; i++) {
       var tag = event.tags[i];

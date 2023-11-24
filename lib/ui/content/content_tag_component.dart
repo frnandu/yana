@@ -12,6 +12,7 @@ class ContentTagComponent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // return SelectableText.rich(TextSpan(text: "$tag "));
     return ContentStrLinkComponent(
       str: tag,
       onTap: () {

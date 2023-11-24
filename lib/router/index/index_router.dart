@@ -1,9 +1,13 @@
 import 'dart:async';
 
+import 'package:dart_ndk/nips/nip01/event.dart';
+import 'package:dart_ndk/nips/nip01/metadata.dart';
+import 'package:dart_ndk/nips/nip11/relay_info.dart';
+import 'package:dart_ndk/relay.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:protocol_handler/protocol_handler.dart';
 import 'package:provider/provider.dart';
-import 'package:sizer/sizer.dart';
 import 'package:yana/provider/dm_provider.dart';
 import 'package:yana/provider/pc_router_fake_provider.dart';
 import 'package:yana/router/follow/notifications_router.dart';
@@ -17,12 +21,16 @@ import 'package:yana/utils/string_util.dart';
 import '../../i18n/i18n.dart';
 import '../../main.dart';
 import '../../models/event_mem_box.dart';
+import '../../nostr/nip19/nip19.dart';
+import '../../nostr/nip19/nip19_tlv.dart';
 import '../../provider/follow_event_provider.dart';
 import '../../provider/follow_new_event_provider.dart';
 import '../../provider/index_provider.dart';
 import '../../provider/setting_provider.dart';
 import '../../utils/auth_util.dart';
 import '../../utils/base.dart';
+import '../../utils/router_path.dart';
+import '../../utils/router_util.dart';
 import '../dm/dm_router.dart';
 import '../edit/editor_router.dart';
 import '../follow/follow_index_router.dart';
@@ -44,10 +52,8 @@ class IndexRouter extends StatefulWidget {
 }
 
 class _IndexRouter extends CustState<IndexRouter>
-    with TickerProviderStateMixin {
-  static double PC_MAX_COLUMN_0 = 280;
-
-  static double PC_MAX_COLUMN_1 = 550;
+    with TickerProviderStateMixin, ProtocolListener{
+  static double DRAWER_WIDTH = 300;
 
   late TabController followTabController;
 
@@ -60,6 +66,7 @@ class _IndexRouter extends CustState<IndexRouter>
     super.initState();
     int followInitTab = 0;
     int globalsInitTab = 0;
+    protocolHandler.addListener(this);
 
     if (settingProvider.defaultTab != null) {
       if (settingProvider.defaultIndex == 1) {
@@ -73,6 +80,83 @@ class _IndexRouter extends CustState<IndexRouter>
         TabController(initialIndex: followInitTab, length: 3, vsync: this);
     dmTabController = TabController(length: 3, vsync: this);
   }
+  @override
+  void onProtocolUrlReceived(String url) async {
+    // String log = 'Url received: $url)';
+    // print(log);
+    if (StringUtil.isNotBlank(url)) {
+      if (url.startsWith("nostr+walletconnect://")) {
+        Future.delayed(const Duration(microseconds: 1), () async {
+          await nwcProvider.connect(url);
+          bool canPop = Navigator.canPop(context);
+          // var route = ModalRoute.of(context);
+          // if (route != null && route!.settings.name != null && route!.settings.name! == RouterPath.NWC) {
+          if (canPop) {
+            RouterUtil.back(context);
+          } else {
+            RouterUtil.router(context, RouterPath.WALLET);
+          }
+        });
+      } else if (url.startsWith("nostr:")) {
+        RegExpMatch? match = Nip19.nip19regex.firstMatch(url);
+
+        if (match != null) {
+          var key = match.group(2)! + match.group(3)!;
+          String? otherStr;
+
+          if (Nip19.isPubkey(key)) {
+            // inline
+            // mention user
+            if (key.length > Nip19.NPUB_LENGTH) {
+              otherStr = key.substring(Nip19.NPUB_LENGTH);
+              key = key.substring(0, Nip19.NPUB_LENGTH);
+            }
+            key = Nip19.decode(key);
+            RouterUtil.router(context, RouterPath.USER, key);
+          } else if (Nip19.isNoteId(key)) {
+            // block
+            if (key.length > Nip19.NOTEID_LENGTH) {
+              otherStr = key.substring(Nip19.NOTEID_LENGTH);
+              key = key.substring(0, Nip19.NOTEID_LENGTH);
+            }
+            key = Nip19.decode(key);
+            RouterUtil.router(context, RouterPath.THREAD_DETAIL, key);
+          } else if (NIP19Tlv.isNprofile(key)) {
+            var nprofile = NIP19Tlv.decodeNprofile(key);
+            if (nprofile != null) {
+              // inline
+              // mention user
+              RouterUtil.router(context, RouterPath.USER, nprofile.pubkey);
+            }
+          } else if (NIP19Tlv.isNrelay(key)) {
+            var nrelay = NIP19Tlv.decodeNrelay(key);
+            String? url = nrelay != null ? Relay.clean(nrelay.addr) : null;
+            if (url != null) {
+              // inline
+              Relay relay = Relay(url);
+              relay.info = await RelayInfo.get(url);
+              RouterUtil.router(context, RouterPath.RELAY_INFO, relay);
+            }
+          } else if (NIP19Tlv.isNevent(key)) {
+            var nevent = NIP19Tlv.decodeNevent(key);
+            if (nevent != null) {
+              RouterUtil.router(context, RouterPath.THREAD_DETAIL, nevent.id);
+            }
+          } else if (NIP19Tlv.isNaddr(key)) {
+            var naddr = NIP19Tlv.decodeNaddr(key);
+            if (naddr != null) {
+              if (StringUtil.isNotBlank(naddr.id) && naddr.kind == Nip01Event.TEXT_NODE_KIND) {
+                RouterUtil.router(context, RouterPath.THREAD_DETAIL, naddr.id);
+              } else if (StringUtil.isNotBlank(naddr.author) && naddr.kind == Metadata.KIND) {
+                RouterUtil.router(context, RouterPath.USER, naddr.author);
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
 
   @override
   Future<void> onReady(BuildContext context) async {
@@ -90,20 +174,21 @@ class _IndexRouter extends CustState<IndexRouter>
 
   @override
   Widget doBuild(BuildContext context) {
+    var _settingProvider = Provider.of<SettingProvider>(context);
+
     mediaDataCache.update(context);
     var s = I18n.of(context);
 
-    var _settingProvider = Provider.of<SettingProvider>(context);
+    if (loggedUserSigner == null) {
+      return LoginRouter(canGoBack: false,);
+    }
     var _followEventProvider = Provider.of<FollowEventProvider>(context);
     var _followEventNewProvider = Provider.of<FollowNewEventProvider>(context);
     var _indexProvider = Provider.of<IndexProvider>(context);
 
-    if (nostr == null) {
-      return LoginRouter();
-    }
 
     if (!unlock) {
-      return Scaffold();
+      return const Scaffold();
     }
 
     _indexProvider.setFollowTabController(followTabController);
@@ -307,10 +392,10 @@ class _IndexRouter extends CustState<IndexRouter>
     }
 
     var addBtn = FloatingActionButton(
-      shape: CircleBorder(
+      shape: const CircleBorder(
       ),
       backgroundColor: themeData.primaryColor,
-      child: Icon(Icons.add),
+      child: const Icon(Icons.add),
       onPressed: () {
         EditorRouter.open(context);
       },
@@ -353,42 +438,38 @@ class _IndexRouter extends CustState<IndexRouter>
     );
 
     if (PlatformUtil.isTableMode()) {
-      var maxWidth = mediaDataCache.size.width;
-      double column0Width = (maxWidth * 1) / 5;
-      double column1Width = (maxWidth * 2) / 5;
-      if (column0Width > PC_MAX_COLUMN_0) {
-        column0Width = PC_MAX_COLUMN_0;
-      }
-      if (column0Width < 280) {
-        column0Width = 280;
-      }
-      if (column1Width > PC_MAX_COLUMN_1) {
-        column1Width = PC_MAX_COLUMN_1;
-      }
-
-      print("$column0Width + $column1Width + ${maxWidth - column0Width - column1Width} = $maxWidth");
+      // var maxWidth = mediaDataCache.size.width;
+      // double column0Width = (maxWidth * 1) / 5;
+      // if (column0Width > DRAWER_WIDTH) {
+      //   column0Width = DRAWER_WIDTH;
+      // }
+      // if (column0Width < 280) {
+      //   column0Width = 280;
+      // }
+      //
+      // print("$column0Width + ${maxWidth - column0Width } = $maxWidth");
       return Scaffold(
         extendBody: true,
         floatingActionButton: addBtn,
         floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
         body: Row(children: [
           SizedBox(
-            width: column0Width,
+            width: 350,
             child: IndexDrawerContentComponent(reload: widget.reload),
           ),
-          Container(
-            width: column1Width,
-            margin: const EdgeInsets.only(
-              // left: 1,
-              right: 1,
-            ),
-            child: mainIndex,
-          ),
+          // Container(
+          //   width: column1Width,
+          //   margin: const EdgeInsets.only(
+          //     // left: 1,
+          //     right: 1,
+          //   ),
+          //   child: mainIndex,
+          // ),
           Expanded(
             child: Selector<PcRouterFakeProvider, List<RouterFakeInfo>>(
               builder: (context, infos, child) {
                 if (infos.isEmpty) {
-                  return const Center();
+                  return mainIndex;
                 }
 
                 List<Widget> pages = [];
@@ -432,7 +513,7 @@ class _IndexRouter extends CustState<IndexRouter>
       return Scaffold(
           body: mainIndex,
           extendBody: true,
-          floatingActionButton:  nostr!.privateKey!=null ? AnimatedOpacity(
+          floatingActionButton:  loggedUserSigner!=null && loggedUserSigner!.canSign() ? AnimatedOpacity(
             opacity: _scrollingDown ? 0 : 1,
             curve: Curves.fastOutSlowIn,
             duration: const Duration(milliseconds: 400),
@@ -478,4 +559,5 @@ class _IndexRouter extends CustState<IndexRouter>
       }
     });
   }
+
 }

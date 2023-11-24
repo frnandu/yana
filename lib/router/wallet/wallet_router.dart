@@ -25,7 +25,7 @@ class _WalletRouter extends State<WalletRouter> {
 
   @override
   void initState() {
-    nwcProvider.reload();
+    // nwcProvider.reload();
   }
 
   @override
@@ -239,6 +239,37 @@ class _WalletRouter extends State<WalletRouter> {
                             fontSize: 12))
                   ]))),
             )),
+          ]));
+          list.add(Row(children: [
+            Expanded(
+                child: MouseRegion(
+                  cursor: SystemMouseCursors.click,
+                  child: Container(
+                      margin: const EdgeInsets.only(top: Base.BASE_PADDING * 2),
+                      padding: const EdgeInsets.all(Base.BASE_PADDING),
+                      height: 60.0,
+                      decoration: const BoxDecoration(
+                          gradient: LinearGradient(
+                              colors: [Color(0xff0f0f0f), Color(0xff0f0f0f)]),
+                          borderRadius: BorderRadius.all(Radius.circular(20.0))),
+                      child: Center(
+                          child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Container(
+                                    margin: const EdgeInsets.only(right: Base.BASE_PADDING),
+                                    child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(5.0),
+                                        child: Image.asset("assets/imgs/greenlight.png"))),
+                                const Text('',
+                                    style: TextStyle(color: Colors.white)),
+                                Text('  (soon)',
+                                    style: TextStyle(
+                                        color: themeData.hintColor,
+                                        fontFamily: "Montserrat",
+                                        fontSize: 12))
+                              ]))),
+                )),
           ]));
 
           // TODO Lndhub wallet connect

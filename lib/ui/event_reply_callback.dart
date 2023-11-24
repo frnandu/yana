@@ -1,9 +1,8 @@
+import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:flutter/material.dart';
 
-import '../nostr/event.dart';
-
 class EventReplyCallback extends InheritedWidget {
-  Function(Event) onReplyCallback;
+  Function(Nip01Event) onReplyCallback;
 
   EventReplyCallback({
     super.key,
@@ -20,7 +19,7 @@ class EventReplyCallback extends InheritedWidget {
     return false;
   }
 
-  void onReply(Event event) {
+  void onReply(Nip01Event event) {
     onReplyCallback(event);
   }
 }

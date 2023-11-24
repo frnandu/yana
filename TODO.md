@@ -50,21 +50,63 @@
 - ~~mention livesearch editor without popup~~
 - ~~STOP followers/zaps events from blocking the relay, when navigate away from that profile~~
 
+- ~~proper formating of text / newlines ??~~
+- ~~fix bad fonting after some @ mentions~~
+- ~~exchange sqflite with isar DB?~~
+- ~~use dart_ndk lib~~
+- ~~gossip/outbox model for feed~~
+- ~~show in which relays a note was loaded from~~
+- ~~user Follow feed relays write to DB to improve startup time in outbox model~~
+- ~~register nostr: in android so that nostr links give yana option as an app to open~~
+  - ~~handle nostr:nevent1 (need to somehow load the event)~~
+- ~~check why some replies appear on posts~~
+- ~~sign verify~~
+- ~~nip05~~
+- ~~relay setting of read/write~~
+- ~~https://docs.flutter.dev/ui/navigation/deep-linking~~
+- ~~subscription on profile/DMS/notifications should be kept open to receive updates from WS - REFACTOR logic of later loading & caching metadata~~
+- ~~verify signature ASYNC!?!?!?!~~
+- ~~notifications FIX UI/UX~~
+- ~~new posts/replies appear in layered popup with avatars~~
+- ~~persist notes from feed for faster startup~~
+- ~~include tags/communities in feed filter?!~~
+- ~~FIX LOGOUT/SWITCH accounts screens~~!
+- ~~don't load stuff in tabs that are not visible!!!!~~
+- ~~on back from background, reconnect relays + resubscribe to all existing subscriptions~~
+- ~~blacklist for relays (NIP-51 PR)~~
+- ~~nip-51 PRIVATE relay lists!~~
+- ~~use inboxForReactions for broadcasting reactions to inbox relays~~
+- ~~when blocking make the note disappear~~
 
-v0.12
-- gossip
-  - blacklist for relays
-  - lib 
-- ~~try exchange sqflite with isar DB?~~
-- isar v4 for web
+===== v0.12
+- show in account list, which ones are read-only
+- save notification events to cache DB
+- 
+- NIP07 browser for some web apps!?
+- choose to which relays / lists to broadcast on new note (bounty)
+- make thread detail subscription of new replies work
+- make reactions live again with subscriptions or some other way 
+- show progress of broadcasting note on relays
+- include relay hints on nevent and stuff (bounty)
+- handle event deletions coming from relays, should delete in cache
+- don't validate signature for events cached on DB
+- when following someone new and gossip=1, ask confirmation for that user's relay list acceptance, and eventual blocking some relays
+- too much notifications of reactions to replies of replies of post where you're tagged
+- WTF nwc needs fresh relayManager for get_info/get_balance??
 
-- user Follow feed relays write to DB to improve startup time in outbox model
-- register nostr: in android so that nostr links give yana option as an app to open
-- persist notes from feed for faster startup
+- ===== v0.13
+- fix DMS when switching between accounts
+- mute list use nip51
+- group notification reactions to the same post (similar to amethyst)
+- show used data of background service in KBs
+- after adding follow, recalculate relaySet for gossip
 - better android/ios/linux badges on web version login screen (anchor links to readme.md for IOS/linux)
-
-v0.13
-
+- garbage collection of webSockets not used since X (for reactions)
+- animated screen ASAP after splash
+- isar v4 for web
+- load more on big posts
+- drafts
+- detect new followers by comparing in background previous followers list and generating new notification
 - login by searching some user by name/displayName
 
 - broadcast NIP-65 kind=10002 to as many as possible
@@ -79,9 +121,9 @@ v0.13
 - Mutiny NWC Wallet
 - Current.io NWC Wallet
 - LndHub Wallet
+- greenlight LN NODE
 
 - WebLN for web: https://github.com/aniketambore/flutter_webln
-
 
 - nip19 nprofile
 - custom zap amounts
@@ -93,17 +135,11 @@ v0.13
 - update service check for new release from github
 - login with nip05
 - login with mnemonic
-- 
 - remember eventMemBox for Posts/Replies on DB (on just timestamp lastRead) so badge counter persists between app restarts
-- 
 - get notifications in background for all accounts
-- make sure background service starts after device reboot
 - floating icon (+) on DMS sends new msg to CHOOSE
-- subscription on profile/DMS/notifications should be kept open to receive updates from WS - REFACTOR logic of later loading & caching metadata
 - optimize zaps/followed downloading (caching on db) on background 
-- relay setting of read/write
 - Auto-Translate/detect language note contents using something else than google services 
-- https://docs.flutter.dev/ui/navigation/deep-linking
 - mark all DMs as read feature
 - submit to f-droid
 - badges also on drawer when in tablet mode
@@ -113,7 +149,6 @@ v0.13
 - show common followers/followees
 - try to load images using Isolate and compute, so that feed scrolling does not freeze while loading images
 - add SystemMouseCursors.click to everything that is clickable for web version
-- move reposts from replies to posts? maybe new tab only for reposts?
 - https://pub.dev/packages/objectbox
 - integration with https://github.com/greenart7c3/Amber
 - long posts should be cut and have "show more"
@@ -126,4 +161,14 @@ v0.13
 - umbrel store package with web client
 - when new user with no following, suggest jack, fiatjaf and others
 - make it work on iOS/MacOS
-- try https://pub.dev/packages/flutter_rust_bridge for background loading of new events
+
+
+- make promo video:
+  - music https://soundcloud.com/ben-murray-smith/spectrum
+  - “It's very attractive to the libertarian viewpoint if we can explain it properly. I'm better with code than with words though.” ― Satoshi Nakamoto
+  - free Ross
+  - "We the Cypherpunks are dedicated to building anonymous systems"
+  - free Assange
+  - "...but now I work for the public" - Snowden
+  - "Is this the official nostr channel? No, nothing is official - Fiatjaf"
+  - "WikiLeaks has kicked the hornet’s nest, and the swarm is headed towards us." ― Satoshi Nakamoto

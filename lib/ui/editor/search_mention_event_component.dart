@@ -1,6 +1,6 @@
+import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:flutter/material.dart';
 
-import '../../nostr/event.dart';
 import '../../utils/base.dart';
 import '../../models/event_find_util.dart';
 import '../../utils/router_util.dart';
@@ -52,7 +52,7 @@ class _SearchMentionEventComponent extends State<SearchMentionEventComponent>
 
   static const int searchMemLimit = 100;
 
-  List<Event> events = [];
+  List<Nip01Event> events = [];
 
   void handleSearch(String? text) {
     events.clear();

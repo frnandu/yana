@@ -1,27 +1,25 @@
+import 'package:dart_ndk/nips/nip01/event.dart';
+import 'package:dart_ndk/nips/nip01/filter.dart';
+import 'package:dart_ndk/request.dart';
 import 'package:flutter/material.dart';
 
 import '../main.dart';
-import '../nostr/event.dart';
-import '../nostr/filter.dart';
 import '../utils/later_function.dart';
-import '../utils/string_util.dart';
 
 class SingleEventProvider extends ChangeNotifier with LaterFunction {
-  Map<String, Event> _eventsMap = {};
+  Map<String, Nip01Event> _eventsMap = {};
 
   List<String> _needUpdateIds = [];
 
-  Map<String, int> _handingIds = {};
+  List<Nip01Event> _penddingEvents = [];
 
-  List<Event> _penddingEvents = [];
-
-  Event? getEvent(String id) {
+  Nip01Event? getEvent(String id) {
     var event = _eventsMap[id];
     if (event != null) {
       return event;
     }
 
-    if (!_needUpdateIds.contains(id) && _handingIds[id] == null) {
+    if (!_needUpdateIds.contains(id)) {
       _needUpdateIds.add(id);
     }
     later(_laterCallback, null);
@@ -51,35 +49,57 @@ class SingleEventProvider extends ChangeNotifier with LaterFunction {
         _eventsMap[event.id] = event;
       }
 
-      _handingIds.remove(event.id);
     }
-    _penddingEvents.clear;
+    _penddingEvents.clear();
     notifyListeners();
   }
 
-  void _onEvent(Event event) {
+  void _onEvent(Nip01Event event) {
     _penddingEvents.add(event);
     later(_laterCallback, null);
   }
 
-  void _laterSearch() {
-    if (_needUpdateIds.isEmpty || nostr==null) {
+  void _laterSearch() async {
+    if (_needUpdateIds.isEmpty || loggedUserSigner==null) {
       return;
     }
 
     var filter = Filter(ids: _needUpdateIds);
-    var subscriptId = StringUtil.rndNameStr(16);
     List<String> tempIds = [];
     tempIds.addAll(_needUpdateIds);
-    nostr!.query([filter.toJson()], _onEvent, id: subscriptId, onComplete: () {
-      // log("singleEventProvider onComplete $tempIds");
-      for (var id in tempIds) {
-        _handingIds.remove(id);
-      }
-    });
 
-    for (var id in _needUpdateIds) {
-      _handingIds[id] = 1;
+    // const connectionOptions = SocketConnectionOptions(
+    //   timeoutConnectionMs: 30000, // connection fail timeout after 4000 ms
+    //   skipPingMessages: true,
+    //   pingRestrictionForce: true,
+    // );
+    // final textSocketHandler = IWebSocketHandler<String, String>.createClient(
+    //   "wss://relay.damus.io", // Postman echo ws server
+    //   SocketSimpleTextProcessor(),
+    //   connectionOptions: connectionOptions
+    // );
+    //
+    // textSocketHandler.incomingMessagesStream.listen((message) {
+    //   List<dynamic> eventJson = json.decode(message);
+    //   if (eventJson[0] == 'EVENT') {
+    //     // print('> webSocket  got text message from server: "$message" ');
+    //     Nip01Event event = Nip01Event.fromJson(eventJson[2]);
+    //     _onEvent(event);
+    //     textSocketHandler.disconnect("");
+    //     textSocketHandler.close();
+    //   }
+    // });
+    // await textSocketHandler.connect();
+    // List<dynamic> request = ["REQ", Helpers.getRandomString(10), filter.toMap()];
+    // final encoded = jsonEncode(request);
+    // textSocketHandler.sendMessage(encoded);
+
+    if (myInboxRelaySet!=null) {
+      NostrRequest request = await relayManager.requestRelays(
+          myInboxRelaySet!.urls, filter, timeout: 2);
+      request.stream.listen((event) {
+        _onEvent(event);
+      });
     }
     _needUpdateIds.clear();
   }

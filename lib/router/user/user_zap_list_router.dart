@@ -1,6 +1,6 @@
+import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:flutter/material.dart';
 
-import '../../nostr/event.dart';
 import '../../ui/event/zap_event_list_component.dart';
 import '../../utils/router_util.dart';
 
@@ -14,7 +14,7 @@ class UserZapListRouter extends StatefulWidget {
 }
 
 class _UserZapListRouter extends State<UserZapListRouter> {
-  List<Event>? zapList;
+  List<Nip01Event>? zapList;
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +22,7 @@ class _UserZapListRouter extends State<UserZapListRouter> {
     if (zapList == null) {
       var arg = RouterUtil.routerArgs(context);
       if (arg != null) {
-        zapList = arg as List<Event>;
+        zapList = arg as List<Nip01Event>;
       }
     }
     if (zapList == null) {

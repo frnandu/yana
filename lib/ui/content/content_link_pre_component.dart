@@ -47,9 +47,12 @@ class _ContentLinkPreComponent extends State<ContentLinkPreComponent> {
               // Save preview data
               linkPreviewDataProvider.set(widget.link, data);
             },
+            linkStyle: TextStyle(decoration: TextDecoration.none, fontSize: themeData.textTheme.labelSmall!.fontSize),
             previewData: data,
             text: widget.link,
             width: mediaDataCache.size.width,
+            openOnPreviewImageTap: true,
+            openOnPreviewTitleTap: true,
             onLinkPressed: (link) {
               launchUrl(Uri.parse(link), mode: LaunchMode.externalApplication);
               // WebViewRouter.open(context, link);

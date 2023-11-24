@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:yana/utils/router_path.dart';
 import 'package:yana/main.dart';
 import 'package:yana/provider/contact_list_provider.dart';
@@ -14,7 +15,7 @@ class TagInfoComponent extends StatefulWidget {
 
   bool jumpable;
 
-  TagInfoComponent({
+  TagInfoComponent({super.key,
     required this.tag,
     this.height = 80,
     this.jumpable = false,
@@ -37,7 +38,7 @@ class _TagInfoComponent extends State<TagInfoComponent> {
       height: widget.height,
       color: cardColor,
       alignment: Alignment.center,
-      margin: EdgeInsets.only(bottom: Base.BASE_PADDING_HALF),
+      margin: const EdgeInsets.only(bottom: Base.BASE_PADDING_HALF),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -53,15 +54,23 @@ class _TagInfoComponent extends State<TagInfoComponent> {
             Color? color;
             if (exist) {
               iconData = Icons.star;
-              color = Colors.yellow;
+              color = themeData.primaryColor;
             }
             return GestureDetector(
               onTap: () async {
+                bool finished = false;
+                Future.delayed(const Duration(seconds: 1),() {
+                  if (!finished) {
+                    EasyLoading.show(status: "Refreshing from relays before action...", maskType: EasyLoadingMaskType.black);
+                  }
+                });
                 if (exist) {
                   await contactListProvider.removeTag(widget.tag);
                 } else {
-                  contactListProvider.addTag(widget.tag);
+                  await contactListProvider.addTag(widget.tag);
                 }
+                finished = true;
+                EasyLoading.dismiss();
               },
               child: Container(
                 margin: const EdgeInsets.only(left: Base.BASE_PADDING_HALF),

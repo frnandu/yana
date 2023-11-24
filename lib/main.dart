@@ -2,47 +2,69 @@ import 'dart:async';
 import 'dart:ui';
 
 import 'package:awesome_notifications/awesome_notifications.dart';
-import 'package:bip340/bip340.dart';
-import 'package:bot_toast/bot_toast.dart';
+import 'package:dart_ndk/cache_manager.dart';
+import 'package:dart_ndk/db/db_cache_manager.dart';
+import 'package:dart_ndk/models/pubkey_mapping.dart';
+import 'package:dart_ndk/models/relay_set.dart';
+import 'package:dart_ndk/models/user_relay_list.dart';
+import 'package:dart_ndk/nips/nip01/bip340_event_signer.dart';
+import 'package:dart_ndk/nips/nip01/event.dart';
+import 'package:dart_ndk/nips/nip01/event_signer.dart';
+import 'package:dart_ndk/nips/nip01/metadata.dart';
+import 'package:dart_ndk/nips/nip02/contact_list.dart';
+import 'package:dart_ndk/nips/nip51/nip51.dart';
+import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
+import 'package:dart_ndk/read_write.dart';
+import 'package:dart_ndk/relay.dart';
 import 'package:dart_ndk/relay_manager.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_background_service_android/flutter_background_service_android.dart';
-import 'package:flutter_cache_manager/flutter_cache_manager.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart' as FlutterCacheManager;
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:get_time_ago/get_time_ago.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:isar/isar.dart' as isar;
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:protocol_handler/protocol_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sizer/sizer.dart';
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
-import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
 import 'package:window_manager/window_manager.dart';
-import 'package:yana/nostr/nostr.dart';
+import 'package:yana/hybrid_event_verifier.dart';
+import 'package:yana/nostr/nip07/extension_event_signer.dart';
 import 'package:yana/provider/badge_definition_provider.dart';
 import 'package:yana/provider/community_info_provider.dart';
 import 'package:yana/provider/custom_emoji_provider.dart';
 import 'package:yana/provider/follow_new_event_provider.dart';
 import 'package:yana/provider/new_notifications_provider.dart';
 import 'package:yana/provider/nwc_provider.dart';
+import 'package:yana/router/login/login_router.dart';
 import 'package:yana/router/relays/relay_info_router.dart';
 import 'package:yana/router/search/search_router.dart';
 import 'package:yana/router/user/followed_router.dart';
 import 'package:yana/router/user/followed_tags_list_router.dart';
+import 'package:yana/router/user/mute_list_router.dart';
+import 'package:yana/router/user/relay_list_router.dart';
+import 'package:yana/router/user/relay_set_router.dart';
 import 'package:yana/router/user/user_history_contact_list_router.dart';
 import 'package:yana/router/user/user_zap_list_router.dart';
 import 'package:yana/router/wallet/nwc_router.dart';
 import 'package:yana/router/wallet/wallet_router.dart';
+import 'package:yana/utils/image/cache_manager_builder.dart';
 import 'package:yana/utils/platform_util.dart';
 
+import '/js/js_helper.dart' as js;
 import 'i18n/i18n.dart';
-import 'models/db.dart';
-import 'nostr/relay_metadata.dart';
+import 'nostr/client_utils/keys.dart';
+import 'nostr/nip19/nip19.dart';
+import 'nostr/nip19/nip19_tlv.dart';
 import 'provider/community_approved_provider.dart';
 import 'provider/contact_list_provider.dart';
 import 'provider/data_util.dart';
@@ -78,12 +100,10 @@ import 'router/user/user_contact_list_router.dart';
 import 'router/user/user_relays_router.dart';
 import 'router/user/user_router.dart';
 import 'ui/home_component.dart';
-import 'utils/image/cache_manager_builder.dart';
 import 'utils/locale_util.dart';
 import 'utils/media_data_cache.dart';
 import 'utils/router_path.dart';
 import 'utils/string_util.dart';
-import 'utils/system_timer.dart';
 import 'utils/theme_style.dart';
 
 late SharedPreferences sharedPreferences;
@@ -122,7 +142,7 @@ late BadgeDefinitionProvider badgeDefinitionProvider;
 
 late MediaDataCache mediaDataCache;
 
-late CacheManager localCacheManager;
+late FlutterCacheManager.CacheManager localCacheManager;
 
 late PcRouterFakeProvider pcRouterFakeProvider;
 
@@ -140,17 +160,16 @@ late NwcProvider nwcProvider;
 
 AppLifecycleState appState = AppLifecycleState.resumed;
 
-Nostr? nostr;
+EventSigner? loggedUserSigner;
 
-Nostr? followsNostr;
+RelayManager relayManager = RelayManager(isWeb: kIsWeb);
+late CacheManager cacheManager;
 
-bool reloadingFollowNostr = false;
+RelaySet? feedRelaySet;
+RelaySet? myInboxRelaySet;
+RelaySet? myOutboxRelaySet;
 
-List<RelayMetadata>? followRelays;
-
-late RelayManager relayManager;
-
-Nostr? staticForRelaysAndMetadataNostr;
+List<String> searchRelays = [];
 
 bool firstLogin = false;
 
@@ -180,19 +199,28 @@ void onStart(ServiceInstance service) async {
     service.stopSelf();
   });
 
-  initProvidersAndStuff();
+  await initProvidersAndStuff();
   SettingProvider ss = await SettingProvider.getInstance();
   if (!ss.backgroundService) {
     service.stopSelf();
   } else {
-    Timer.periodic(const Duration(seconds: 60), (timer) async {
+    Timer.periodic(const Duration(seconds: 60), (timer) {
       if (service is AndroidServiceInstance) {
         AwesomeNotifications().getAppLifeCycle().then((value) {
-          if (value.toString() != "NotificationLifeCycle.Foreground" &&
-              nostr != null) {
+          if (value.toString() != "NotificationLifeCycle.Foreground" && myInboxRelaySet != null) {
             appState = AppLifecycleState.inactive;
-            nostr!.checkAndReconnectRelays().then((a) {
-              newNotificationsProvider.queryNew();
+            relayManager.connect(urls: myInboxRelaySet!.urls).then((a) async {
+              await newNotificationsProvider.queryNew();
+              relayManager.allowReconnectRelays=false;
+              List<String> requestIdsToClose = relayManager.nostrRequests.keys.toList();
+              for (var id in requestIdsToClose) {
+                try {
+                  await relayManager.closeNostrRequestById(id);
+                } catch (e) {
+                  print(e);
+                }
+              }
+              await relayManager.closeAllSockets();
             });
           }
         });
@@ -201,7 +229,7 @@ void onStart(ServiceInstance service) async {
   }
 }
 
-void initProvidersAndStuff() async {
+Future<void> initProvidersAndStuff() async {
   sharedPreferences = await DataUtil.getInstance();
   metadataProvider = await MetadataProvider.getInstance();
   relayProvider = RelayProvider.getInstance();
@@ -209,23 +237,167 @@ void initProvidersAndStuff() async {
   settingProvider = await SettingProvider.getInstance();
   if (StringUtil.isNotBlank(settingProvider.key)) {
     try {
-      nostr = Nostr(privateKey: settingProvider.key);
-      await relayProvider!.loadRelays(nostr!.publicKey, () {
-        relayProvider.addRelays(nostr!).then((bla) {
-          filterProvider = FilterProvider.getInstance();
-          notificationsProvider = NotificationsProvider();
-          dmProvider = DMProvider();
-          newNotificationsProvider = NewNotificationsProvider();
-        });
-      });
+
+      String? key = settingProvider.key;
+      if (StringUtil.isNotBlank(key)) {
+        bool isPrivate = settingProvider.isPrivateKey;
+        String publicKey = isPrivate ? getPublicKey(key!) : key!;
+        loggedUserSigner = isPrivate || !PlatformUtil.isWeb()? Bip340EventSigner(isPrivate? key:null, publicKey) : Nip07EventSigner(await js.getPublicKeyAsync());
+      }
+      //
+      // loggedUserSigner = Bip340EventSigner(settingProvider.key!, getPublicKey(settingProvider.key!));
+      filterProvider = FilterProvider.getInstance();
+      relayManager.eventFilters.add(filterProvider);
+      DbCacheManager dbCacheManager = DbCacheManager();
+      await dbCacheManager.init(directory: PlatformUtil.isWeb() ? isar.Isar.sqliteInMemory : (await getApplicationDocumentsDirectory()).path);
+      cacheManager = dbCacheManager;
+      dbCacheManager.eventFilter = filterProvider;
+      relayManager.cacheManager = cacheManager;
+      relayManager.eventVerifier = HybridEventVerifier();
+
+      if (myInboxRelaySet==null) {
+        await relayManager.connect();
+        UserRelayList? userRelayList = await relayManager.getSingleUserRelayList(loggedUserSigner!.getPublicKey());
+        if (userRelayList != null) {
+          createMyRelaySets(userRelayList);
+        }
+      }
+      // await relayManager.connect(urls: userRelayList != null ? userRelayList.urls : RelayManager.DEFAULT_BOOTSTRAP_RELAYS);
+      // await relayProvider!.loadRelays(loggedUserSigner!.getPublicKey(), () {
+      //   relayProvider.addRelays(nostr!).then((bla) {
+      notificationsProvider = NotificationsProvider();
+      dmProvider = DMProvider();
+      newNotificationsProvider = NewNotificationsProvider();
+      //   });
+      // });
       // log("nostr init over");
     } catch (e) {
-      var index = settingProvider.privateKeyIndex;
-      if (index != null) {
-        settingProvider.removeKey(index);
+      print(e);
+      // var index = settingProvider.privateKeyIndex;
+      // if (index != null) {
+      //   settingProvider.removeKey(index);
+      // }
+    }
+  }
+}
+
+Future<void> initRelays({bool newKey = false}) async {
+
+  await relayManager.connect();
+
+  UserRelayList? userRelayList = !newKey ? await relayManager.getSingleUserRelayList(loggedUserSigner!.getPublicKey()) : null;
+  if (userRelayList == null) {
+    int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+    userRelayList = UserRelayList(
+        pubKey: loggedUserSigner!.getPublicKey(),
+        relays: {for (String url in RelayManager.DEFAULT_BOOTSTRAP_RELAYS) url: ReadWriteMarker.readWrite},
+        createdAt: now,
+        refreshedTimestamp: now);
+  }
+  createMyRelaySets(userRelayList);
+  await relayManager.connect(urls: userRelayList!.urls);
+  relayManager.getSingleNip51List(Nip51List.MUTE, loggedUserSigner!).then((list) {
+    filterProvider.muteList = list;
+    relayManager.eventFilters.add(filterProvider);
+  },);
+
+  print("Loading contact list...");
+  ContactList? contactList = !newKey ? await relayManager.loadContactList(loggedUserSigner!.getPublicKey()) : null;
+  if (contactList != null) {
+    for (var element in contactList.contacts) {
+      metadataProvider.getMetadata(element);
+    }
+
+    print("Loaded ${contactList.contacts.length} contacts...");
+    if (settingProvider.gossip == 1) {
+      feedRelaySet = relayManager.getRelaySet("feed", loggedUserSigner!.getPublicKey());
+      if (feedRelaySet == null) {
+        feedRelaySet = await relayManager.calculateRelaySet(
+            name: "feed",
+            ownerPubKey: loggedUserSigner!.getPublicKey(),
+            pubKeys: contactList.contacts,
+            direction: RelayDirection.outbox,
+            relayMinCountPerPubKey: settingProvider.followeesRelayMinCount);
+        await relayManager.saveRelaySet(feedRelaySet!);
+      } else {
+        final startTime = DateTime.now();
+        print("connecting ${feedRelaySet!.relaysMap.length} relays");
+        List<bool> connected = await Future.wait(feedRelaySet!.relaysMap.keys.map((url) => relayManager.connectRelay(url)));
+        final endTime = DateTime.now();
+        final duration = endTime.difference(startTime);
+        print(
+            "CONNECTED ${connected.where((element) => element).length} , ${connected.where((element) => !element).length} FAILED took ${duration.inMilliseconds} ms");
       }
     }
   }
+  followEventProvider.startSubscriptions();
+  notificationsProvider.startSubscription();
+  dmProvider.initDMSessions(loggedUserSigner!.getPublicKey());
+  metadataProvider.notifyListeners();
+  relayManager.blockedRelays = [];
+  relayManager.getSingleNip51List(Nip51List.BLOCKED_RELAYS, loggedUserSigner!).then((blockedRelays) {
+    if (blockedRelays!=null) {
+      relayManager.blockedRelays = blockedRelays.allRelays!;
+      relayProvider.notifyListeners();
+    }
+  },);
+  searchRelays = [];
+  relayManager.getSingleNip51List(Nip51List.SEARCH_RELAYS, loggedUserSigner!).then((searchRelaySet)  {
+    if (searchRelaySet!=null) {
+      searchRelays = searchRelaySet.allRelays!;
+      for (var url in searchRelays) { relayManager.connectRelay(url);}
+      relayProvider.notifyListeners();
+    }
+  });
+  try {
+    if (PlatformUtil.isAndroid() || PlatformUtil.isIOS()) {
+      initBackgroundService(settingProvider.backgroundService);
+    }
+  } catch (e) {}
+}
+
+Future<Iterable<String>> broadcastUrls(String? pubKey) async {
+  Iterable<String> urlsToBroadcast = [];
+  if (settingProvider.inboxForReactions == 1 && pubKey!=null) {
+    UserRelayList? userRelayList = await relayManager.getSingleUserRelayList(pubKey!);
+    if (userRelayList!=null) {
+      urlsToBroadcast = userRelayList.readUrls;
+      if (urlsToBroadcast.length > settingProvider.broadcastToInboxMaxCount) {
+        urlsToBroadcast = urlsToBroadcast.take(settingProvider.broadcastToInboxMaxCount);
+      }
+    }
+  }
+  if (urlsToBroadcast.isEmpty) {
+    urlsToBroadcast = myOutboxRelaySet!.urls;
+  }
+  return urlsToBroadcast;
+}
+
+void createMyRelaySets(UserRelayList userRelayList) {
+  print("FROM USER RELAY LIST: ");
+  for (var entry in userRelayList.relays.entries) { print("  - ${entry.key} : ${entry.value}");}
+
+  Map<String, List<PubkeyMapping>> inbox = {
+    for (var item in userRelayList.relays.entries.where((entry) => entry.value.isRead))
+      Relay.clean(item.key) ?? item.key: [PubkeyMapping(pubKey: userRelayList.pubKey, rwMarker: item.value)]
+  };
+  Map<String, List<PubkeyMapping>> outbox = {
+    for (var item in userRelayList.relays.entries.where((entry) => entry.value.isWrite))
+      Relay.clean(item.key) ?? item.key: [PubkeyMapping(pubKey: userRelayList.pubKey, rwMarker: item.value)]
+  };
+  myInboxRelaySet = RelaySet(
+      name: "inbox",
+      pubKey: userRelayList.pubKey,
+      relayMinCountPerPubkey: inbox.length,
+      direction: RelayDirection.inbox,
+      relaysMap: inbox,
+      notCoveredPubkeys: []);
+  myOutboxRelaySet =
+      RelaySet(name: "outbox", pubKey: userRelayList.pubKey, relayMinCountPerPubkey: outbox.length, direction: RelayDirection.outbox, relaysMap: outbox);
+  print("GENERATED INBOX: ");
+  for (var entry in myInboxRelaySet!.relaysMap.entries) { print("  - ${entry.key} : ${entry.value.first.rwMarker}");}
+  print("GENERATED OUTBOX: ");
+  for (var entry in myOutboxRelaySet!.relaysMap.entries) { print("  - ${entry.key} : ${entry.value.first.rwMarker}");}
 }
 
 Future<void> main() async {
@@ -234,9 +406,20 @@ Future<void> main() async {
   try {
     await protocolHandler.register('nostr+walletconnect');
     await protocolHandler.register('yana');
-  }  catch(err) {
+    await protocolHandler.register('nostr');
+  } catch (err) {
     print(err);
   }
+  DbCacheManager dbCacheManager = DbCacheManager();
+  try {
+    await dbCacheManager.init(directory: PlatformUtil.isWeb() ? isar.Isar.sqliteInMemory : (await getApplicationDocumentsDirectory()).path);
+    cacheManager = dbCacheManager;
+    relayManager.cacheManager = cacheManager;
+  } catch (e) {
+    cacheManager = relayManager.cacheManager;
+    print(e);
+  }
+  relayManager.eventVerifier = HybridEventVerifier();
 
   if (!PlatformUtil.isWeb() && PlatformUtil.isPC()) {
     await windowManager.ensureInitialized();
@@ -254,28 +437,31 @@ Future<void> main() async {
       await windowManager.focus();
     });
   }
-
-  if (PlatformUtil.isWeb()) {
-    databaseFactory = databaseFactoryFfiWeb;
-  } else if (PlatformUtil.isWindowsOrLinux()) {
-    // Initialize FFI
-    sqfliteFfiInit();
-    // Change the default factory
-    databaseFactory = databaseFactoryFfi;
+  if(!PlatformUtil.isTableModeWithoutSetting()) {
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
   }
-
+  // if (PlatformUtil.isWeb()) {
+  //   databaseFactory = databaseFactoryFfiWeb;
+  // } else if (PlatformUtil.isWindowsOrLinux()) {
+  //   // Initialize FFI
+  //   sqfliteFfiInit();
+  //   // Change the default factory
+  //   databaseFactory = databaseFactoryFfi;
+  // }
+  //
   try {
     // SystemChrome.setEnabledSystemUIOverlays([SystemUiOverlay.top]);
-    await SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
-        overlays: [SystemUiOverlay.top, SystemUiOverlay.bottom]);
+    await SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.top, SystemUiOverlay.bottom]);
   } catch (e) {
     print(e);
   }
 
-  var dbInitTask = DB.getCurrentDatabase();
   var dataUtilTask = DataUtil.getInstance();
-  var dataFutureResultList = await Future.wait([dbInitTask, dataUtilTask]);
-  sharedPreferences = dataFutureResultList[1] as SharedPreferences;
+  var dataFutureResultList = await Future.wait([dataUtilTask]);
+  sharedPreferences = dataFutureResultList[0] as SharedPreferences;
 
   var settingTask = SettingProvider.getInstance();
   var metadataTask = MetadataProvider.getInstance();
@@ -285,7 +471,6 @@ Future<void> main() async {
   contactListProvider = ContactListProvider.getInstance();
   followEventProvider = FollowEventProvider();
   followNewEventProvider = FollowNewEventProvider();
-  notificationsProvider = NotificationsProvider();
   notificationsProvider = NotificationsProvider();
   newNotificationsProvider = NewNotificationsProvider();
   dmProvider = DMProvider();
@@ -306,37 +491,21 @@ Future<void> main() async {
   customEmojiProvider = CustomEmojiProvider.load();
   communityApprovedProvider = CommunityApprovedProvider();
   communityInfoProvider = CommunityInfoProvider();
-
-  nwcProvider = await NwcProvider.getInstance();
-
-  // FlutterNativeSplash.remove();
-  try {
-    if (PlatformUtil.isAndroid() || PlatformUtil.isIOS()) {
-      initBackgroundService(true);
-    }
-  } catch (e) {}
+  nwcProvider = NwcProvider();
 
   String? key = settingProvider.key;
   if (StringUtil.isNotBlank(key)) {
     bool isPrivate = settingProvider.isPrivateKey;
     String publicKey = isPrivate ? getPublicKey(key!) : key!;
-    // nostr = Nostr(privateKey: isPrivate ? key : null,publicKey: publicKey);
-    await relayProvider.loadRelays(publicKey,() async {
-      try {
-        nostr = await relayProvider.genNostr(privateKey: isPrivate ? key : null,
-            publicKey: publicKey);
-
-        runApp(MyApp());
-      } catch (e) {
-        var index = settingProvider.privateKeyIndex;
-        if (index != null) {
-          settingProvider.removeKey(index);
-        }
-      }
-    });
-  } else {
-    runApp(MyApp());
+    loggedUserSigner = isPrivate || !PlatformUtil.isWeb()? Bip340EventSigner(isPrivate? key:null, publicKey) : Nip07EventSigner(await js.getPublicKeyAsync());
   }
+
+  if (loggedUserSigner != null) {
+    followEventProvider.loadCachedFeed();
+    initRelays();
+    nwcProvider.init();
+  }
+  runApp(MyApp());
 }
 
 void initBackgroundService(bool startOnBoot) async {
@@ -346,8 +515,7 @@ void initBackgroundService(bool startOnBoot) async {
 
   AwesomeNotifications().isNotificationAllowed().then((isAllowed) async {
     if (!isAllowed) {
-      await AwesomeNotifications()
-          .requestPermissionToSendNotifications(permissions: [
+      await AwesomeNotifications().requestPermissionToSendNotifications(permissions: [
         NotificationPermission.Vibration,
         NotificationPermission.Badge,
         NotificationPermission.Light,
@@ -368,8 +536,7 @@ void initBackgroundService(bool startOnBoot) async {
   ]);
   AwesomeNotifications().setListeners(
     onActionReceivedMethod: NewNotificationsProvider.onActionReceivedMethod,
-    onNotificationCreatedMethod:
-    NewNotificationsProvider.onNotificationCreatedMethod,
+    onNotificationCreatedMethod: NewNotificationsProvider.onNotificationCreatedMethod,
   );
 
   /// OPTIONAL, using custom notification channel id
@@ -377,38 +544,34 @@ void initBackgroundService(bool startOnBoot) async {
     'yana-service', // id
     'Background service (can be hidden)', // title
     showBadge: false,
-    description:
-    'This channel is needed to be running in order for the system not to kill all used for important notifications.',
+    description: 'This channel is needed to be running in order for the system not to kill all used for important notifications.',
     // description
     importance: Importance.low, // importance must be at low or higher level
   );
 
   flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
   // if (startOnBoot) {
-    backgroundService = FlutterBackgroundService();
-    await flutterLocalNotificationsPlugin
-        .resolvePlatformSpecificImplementation<
-        AndroidFlutterLocalNotificationsPlugin>()
-        ?.createNotificationChannel(channel);
+  backgroundService = FlutterBackgroundService();
+  await flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()?.createNotificationChannel(channel);
 
-    await backgroundService!.configure(
-      androidConfiguration: AndroidConfiguration(
-        onStart: onStart,
-        autoStart: false,
-        autoStartOnBoot: startOnBoot,
-        isForegroundMode: true,
-        notificationChannelId: 'yana-service',
-        initialNotificationTitle: 'Yana notifications service',
-        initialNotificationContent: 'this notification can be hidden',
-        foregroundServiceNotificationId: 888,
-      ),
-      iosConfiguration: IosConfiguration(
-        autoStart: false,
-        onForeground: onStart,
-        // you have to enable background fetch capability on xcode project
-        // onBackground: onIosBackground,
-      ),
-    );
+  await backgroundService!.configure(
+    androidConfiguration: AndroidConfiguration(
+      onStart: onStart,
+      autoStart: false,
+      autoStartOnBoot: startOnBoot,
+      isForegroundMode: true,
+      notificationChannelId: 'yana-service',
+      initialNotificationTitle: 'Background service',
+      initialNotificationContent: 'Needed for de-googled notifications. You can hide this: long-press -> settings -> Notification categories',
+      foregroundServiceNotificationId: 888,
+    ),
+    iosConfiguration: IosConfiguration(
+      autoStart: false,
+      onForeground: onStart,
+      // you have to enable background fetch capability on xcode project
+      // onBackground: onIosBackground,
+    ),
+  );
   // } else {
   //   if (backgroundService!=null) {
   //     backgroundService!.invoke('stopService');
@@ -453,15 +616,13 @@ void initBackgroundService(bool startOnBoot) async {
 // }
 
 class MyApp extends StatefulWidget {
-
   @override
   State<StatefulWidget> createState() {
     return _MyApp();
   }
 }
 
-class _MyApp extends State<MyApp> with WidgetsBindingObserver{
-
+class _MyApp extends State<MyApp> with WidgetsBindingObserver {
   reload() {
     setState(() {});
   }
@@ -471,15 +632,13 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver{
     Locale? _locale;
     if (StringUtil.isNotBlank(settingProvider.i18n)) {
       for (var item in I18n.delegate.supportedLocales) {
-        if (item.languageCode == settingProvider.i18n &&
-            item.countryCode == settingProvider.i18nCC) {
+        if (item.languageCode == settingProvider.i18n && item.countryCode == settingProvider.i18nCC) {
           _locale = Locale(settingProvider.i18n!, settingProvider.i18nCC);
           break;
         }
       }
     }
     setGetTimeAgoDefaultLocale(_locale);
-
     var lightTheme = getLightTheme();
     var darkTheme = getDarkTheme();
     ThemeData defaultTheme;
@@ -495,14 +654,16 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver{
 
     routes = {
       RouterPath.INDEX: (context) => IndexRouter(reload: reload),
-      RouterPath.USER: (context) => const UserRouter(),
+      RouterPath.USER: (context) => UserRouter(),
       RouterPath.USER_CONTACT_LIST: (context) => const UserContactListRouter(),
-      RouterPath.USER_HISTORY_CONTACT_LIST: (context) =>
-          UserHistoryContactListRouter(),
+      RouterPath.USER_HISTORY_CONTACT_LIST: (context) => UserHistoryContactListRouter(),
       RouterPath.USER_ZAP_LIST: (context) => const UserZapListRouter(),
       RouterPath.USER_RELAYS: (context) => const UserRelayRouter(),
+      RouterPath.RELAY_SET: (context) => const RelaySetRouter(),
+      RouterPath.RELAY_LIST: (context) => const RelayListRouter(),
+      RouterPath.MUTE_LIST: (context) => const MuteListRouter(),
       RouterPath.DM_DETAIL: (context) => const DMDetailRouter(),
-      RouterPath.THREAD_DETAIL: (context) => const ThreadDetailRouter(),
+      RouterPath.THREAD_DETAIL: (context) => ThreadDetailRouter(),
       RouterPath.EVENT_DETAIL: (context) => const EventDetailRouter(),
       RouterPath.TAG_DETAIL: (context) => const TagDetailRouter(),
       RouterPath.NOTICES: (context) => const NoticeRouter(),
@@ -516,12 +677,11 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver{
       RouterPath.SETTING: (context) => SettingRouter(indexReload: reload),
       RouterPath.QRSCANNER: (context) => const QRScannerRouter(),
       RouterPath.RELAY_INFO: (context) => const RelayInfoRouter(),
-      RouterPath.FOLLOWED_TAGS_LIST: (context) =>
-      const FollowedTagsListRouter(),
+      RouterPath.FOLLOWED_TAGS_LIST: (context) => const FollowedTagsListRouter(),
       RouterPath.COMMUNITY_DETAIL: (context) => const CommunityDetailRouter(),
-      RouterPath.FOLLOWED_COMMUNITIES: (context) =>
-      const FollowedCommunitiesRouter(),
-      RouterPath.FOLLOWED: (context) => const FollowedRouter(),
+      RouterPath.FOLLOWED_COMMUNITIES: (context) => const FollowedCommunitiesRouter(),
+      RouterPath.FOLLOWED: (context) => FollowedRouter(),
+      RouterPath.LOGIN: (context) => const LoginRouter(canGoBack: true),
     };
 
     return MultiProvider(
@@ -599,8 +759,11 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver{
           child: Sizer(
             builder: (context, orientation, deviceType) {
               return MaterialApp(
-                builder: BotToastInit(),
-                navigatorObservers: [BotToastNavigatorObserver()],
+                builder: EasyLoading.init(),
+                // builder: BotToastInit(),
+                // navigatorObservers: [
+                //   BotToastNavigatorObserver(),
+                // ],
                 locale: _locale,
                 title: packageInfo.appName,
                 localizationsDelegates: const [
@@ -612,56 +775,174 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver{
                 supportedLocales: I18n.delegate.supportedLocales,
                 theme: defaultTheme,
                 darkTheme: defaultDarkTheme,
-                initialRoute: RouterPath.INDEX,
+                onGenerateInitialRoutes: (initialRoute) {
+                  MaterialPageRoute? jump;
+                  if (initialRoute!.startsWith("nostr:")) {
+                    RegExpMatch? match = Nip19.nip19regex.firstMatch(initialRoute!);
+
+                    if (match != null) {
+                      var key = match.group(2)! + match.group(3)!;
+                      String? otherStr;
+
+                      if (Nip19.isPubkey(key)) {
+                        // inline
+                        // mention user
+                        if (key.length > Nip19.NPUB_LENGTH) {
+                          otherStr = key.substring(Nip19.NPUB_LENGTH);
+                          key = key.substring(0, Nip19.NPUB_LENGTH);
+                        }
+                        key = Nip19.decode(key);
+                        jump = MaterialPageRoute(settings: RouteSettings(name: RouterPath.USER, arguments: key), builder: (context) => UserRouter());
+                      } else if (Nip19.isNoteId(key)) {
+                        // block
+                        if (key.length > Nip19.NOTEID_LENGTH) {
+                          otherStr = key.substring(Nip19.NOTEID_LENGTH);
+                          key = key.substring(0, Nip19.NOTEID_LENGTH);
+                        }
+                        key = Nip19.decode(key);
+                        // var filter = Filter(ids: [key]);
+                        // relayManager.requestRelays(relayManager.bootstrapRelays, filter, idleTimeout: 20).then((stream) {
+                        //   stream.listen((event) {
+                        //     RouterUtil.router(context, RouterPath.THREAD_DETAIL, event);
+                        //   });
+                        // },);
+
+                        jump = MaterialPageRoute(settings: RouteSettings(name: RouterPath.THREAD_DETAIL, arguments: key), builder: (context) => ThreadDetailRouter(eventId: key));
+                        // RouterUtil.router(context, RouterPath.THREAD_DETAIL, event);
+                      } else if (NIP19Tlv.isNprofile(key)) {
+                        var nprofile = NIP19Tlv.decodeNprofile(key);
+                        if (nprofile != null) {
+                          // inline
+                          // mention user
+                          jump = MaterialPageRoute(settings: RouteSettings(name: RouterPath.USER, arguments: nprofile.pubkey), builder: (context) => UserRouter());
+                        }
+                      } else if (NIP19Tlv.isNrelay(key)) {
+                        var nrelay = NIP19Tlv.decodeNrelay(key);
+                        String? url = nrelay != null ? Relay.clean(nrelay.addr) : null;
+                        if (url != null) {
+                          // inline
+                          Relay relay = Relay(url);
+                          jump = MaterialPageRoute(settings: RouteSettings(name: RouterPath.RELAY_INFO, arguments: relay), builder: (context) => const RelayInfoRouter());
+                        }
+                      } else if (NIP19Tlv.isNevent(key)) {
+                        var nevent = NIP19Tlv.decodeNevent(key);
+                        if (nevent != null) {
+                          jump = MaterialPageRoute(settings: RouteSettings(name: RouterPath.THREAD_DETAIL, arguments: nevent.id), builder: (context) => ThreadDetailRouter(eventId: nevent.id,));
+                        }
+                      } else if (NIP19Tlv.isNaddr(key)) {
+                        var naddr = NIP19Tlv.decodeNaddr(key);
+                        if (naddr != null) {
+                          if (StringUtil.isNotBlank(naddr.id) && naddr.kind == Nip01Event.TEXT_NODE_KIND) {
+                            jump = MaterialPageRoute(settings: RouteSettings(name: RouterPath.THREAD_DETAIL, arguments: naddr.id), builder: (context) => ThreadDetailRouter(eventId: naddr.id,));
+                          } else if (StringUtil.isNotBlank(naddr.author) && naddr.kind == Metadata.KIND) {
+                            jump = MaterialPageRoute(settings: RouteSettings(name: RouterPath.USER, arguments: naddr.author), builder: (context) => UserRouter());
+                          }
+                        }
+                      }
+                    }
+                  }
+                  if (jump!=null) {
+                    return [
+                      MaterialPageRoute(builder: (context) => IndexRouter(reload: reload)),
+                      jump
+                    ];
+                  }
+                  return [
+                    MaterialPageRoute(builder: (context) => IndexRouter(reload: reload)),
+                    // MaterialPageRoute(
+                    //     settings: RouteSettings(name: RouterPath.USER, arguments: "30782a8323b7c98b172c5a2af7206bb8283c655be6ddce11133611a03d5f1177"),
+                    //     builder: (context) => UserRouter())
+                  ];
+                },
+                // initialRoute: RouterPath.INDEX,
                 routes: routes,
               );
             },
           ),
-        )
-    );
+        ));
   }
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance!.addObserver(this);
-    SystemTimer.run();
+    // SystemTimer.run();
   }
 
   @override
   void dispose() {
     super.dispose();
-    SystemTimer.stopTask();
+    // SystemTimer.stopTask();
     WidgetsBinding.instance!.removeObserver(this);
   }
 
   @override
-  void didChangeAppLifecycleState(AppLifecycleState newState) {
+  void didChangeAppLifecycleState(AppLifecycleState newState) async {
     super.didChangeAppLifecycleState(newState);
 
     if (newState == AppLifecycleState.resumed &&
-        (appState == AppLifecycleState.paused ||
-            appState == AppLifecycleState.hidden ||
-            appState == AppLifecycleState.inactive)) {
+        (appState == AppLifecycleState.paused || appState == AppLifecycleState.hidden || appState == AppLifecycleState.inactive)) {
       //now you know that your app went to the background and is back to the foreground
-      if (nostr != null) {
+      if (loggedUserSigner != null) {
         if (backgroundService != null && settingProvider.backgroundService) {
           backgroundService!.invoke('stopService');
         }
-        nostr!.checkAndReconnectRelays().then((a) {
-          newNotificationsProvider.queryNew();
-          followNewEventProvider.queryNew();
-        });
+        relayManager.allowReconnectRelays=false;
+        List<String> requestIdsToClose = relayManager.nostrRequests.keys.toList();
+        for (var id in requestIdsToClose) {
+          try {
+            await relayManager.closeNostrRequestById(id);
+          } catch (e) {
+            print(e);
+          }
+        }
+        // await relayManager.closeAllSockets();
+
+        relayManager.allowReconnectRelays=true;
+
+        // Set<String> urls = {};
+        // urls.addAll(myInboxRelaySet!.urls);
+        // if (settingProvider.gossip == 1 && feedRelaySet!=null) {
+        //   urls.addAll(feedRelaySet!.urls);
+        // }
+        //
+        // try {
+        //   await relayManager.reconnectRelays(urls);
+        //   // await relayManager.reconnectRelays(urls);
+        // } catch (e) {
+        //   print(e);
+        // }
+
+        followEventProvider.startSubscriptions();
+        notificationsProvider.startSubscription();
       }
     }
-    if (newState != AppLifecycleState.paused &&
-        (appState == AppLifecycleState.resumed ||
-            appState == AppLifecycleState.hidden ||
-            appState == AppLifecycleState.inactive) &&
-        backgroundService != null && nostr != null && !nostr!.isEmpty()! &&
-        settingProvider.backgroundService
-    ) {
-      backgroundService!.startService();
+    if ((newState == AppLifecycleState.paused || newState == AppLifecycleState.hidden || newState == AppLifecycleState.inactive) &&
+        appState == AppLifecycleState.resumed && loggedUserSigner != null) {
+      if (backgroundService!=null && settingProvider.backgroundService) {
+        backgroundService!.startService();
+      }
+      Future.delayed(const Duration(seconds: 5), () {
+        AwesomeNotifications().getAppLifeCycle().then((value) async {
+          if (value.toString() != "NotificationLifeCycle.Foreground") {
+            relayManager.allowReconnectRelays=false;
+            List<String> requestIdsToClose = relayManager.nostrRequests.keys.toList();
+            for (var id in requestIdsToClose) {
+              try {
+                await relayManager.closeNostrRequestById(id);
+              } catch (e) {
+                print(e);
+              }
+            }
+
+            await relayManager.closeAllSockets();
+
+            // if (settingProvider.backgroundService) {
+            //   backgroundService!.startService();
+            // }
+          }
+        });
+      });
     }
     appState = newState;
   }
@@ -687,35 +968,25 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver{
     );
 
     // Color? mainTextColor;
+    Color? topFontColor = Colors.white;
     Color hintColor = Colors.grey;
     var scaffoldBackgroundColor = background;
 
     double baseFontSize = settingProvider.fontSize;
 
     var textTheme = TextTheme(
-      displaySmall: TextStyle(
-          fontSize: baseFontSize - 2, fontFamily: 'Montserrat'),
-      displayMedium: TextStyle(
-          fontSize: baseFontSize, fontFamily: 'Montserrat'),
-      displayLarge: TextStyle(
-          fontSize: baseFontSize + 2, fontFamily: 'Montserrat'),
-      headlineSmall: TextStyle(
-          fontSize: baseFontSize - 2, fontFamily: 'Montserrat'),
-      headlineMedium: TextStyle(
-          fontSize: baseFontSize, fontFamily: 'Montserrat'),
-      headlineLarge: TextStyle(
-          fontSize: baseFontSize + 2, fontFamily: 'Montserrat'),
-      titleSmall: TextStyle(
-          fontSize: baseFontSize - 2, fontFamily: 'Montserrat'),
+      displaySmall: TextStyle(fontSize: baseFontSize - 2, fontFamily: 'Montserrat'),
+      displayMedium: TextStyle(fontSize: baseFontSize, fontFamily: 'Montserrat'),
+      displayLarge: TextStyle(fontSize: baseFontSize + 2, fontFamily: 'Montserrat'),
+      headlineSmall: TextStyle(fontSize: baseFontSize - 2, fontFamily: 'Montserrat'),
+      headlineMedium: TextStyle(fontSize: baseFontSize, fontFamily: 'Montserrat'),
+      headlineLarge: TextStyle(fontSize: baseFontSize + 2, fontFamily: 'Montserrat'),
+      titleSmall: TextStyle(fontSize: baseFontSize - 2, fontFamily: 'Montserrat'),
       titleMedium: TextStyle(fontSize: baseFontSize, fontFamily: 'Montserrat'),
-      titleLarge: TextStyle(
-          fontSize: baseFontSize + 2, fontFamily: 'Montserrat'),
-      labelSmall: TextStyle(
-          fontSize: baseFontSize - 2, fontFamily: 'Montserrat'),
+      titleLarge: TextStyle(fontSize: baseFontSize + 2, fontFamily: 'Montserrat'),
+      labelSmall: TextStyle(fontSize: baseFontSize - 2, fontFamily: 'Montserrat'),
       labelMedium: TextStyle(fontSize: baseFontSize, fontFamily: 'Montserrat'),
-      labelLarge: TextStyle(
-          fontSize: baseFontSize + 2, fontFamily: 'Montserrat'),
-
+      labelLarge: TextStyle(fontSize: baseFontSize + 2, fontFamily: 'Montserrat'),
       bodyLarge: TextStyle(fontSize: baseFontSize + 2, height: 1.4),
       bodyMedium: TextStyle(fontSize: baseFontSize, height: 1.4),
       bodySmall: TextStyle(fontSize: baseFontSize - 2, height: 1.4),
@@ -725,10 +996,8 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver{
     );
 
     if (settingProvider.fontFamily != null) {
-      textTheme =
-          GoogleFonts.getTextTheme(settingProvider.fontFamily!, textTheme);
-      titleTextStyle = GoogleFonts.getFont(settingProvider.fontFamily!,
-          textStyle: titleTextStyle);
+      textTheme = GoogleFonts.getTextTheme(settingProvider.fontFamily!, textTheme);
+      titleTextStyle = GoogleFonts.getFont(settingProvider.fontFamily!, textStyle: titleTextStyle);
     }
 
     return ThemeData(
@@ -751,6 +1020,7 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver{
       // dividerColor: Colors.grey,
       cardColor: Colors.white,
       dividerColor: Colors.black,
+
       // indicatorColor: ColorsUtil.hexToColor("#818181"),
       textTheme: textTheme,
       hintColor: hintColor,
@@ -785,28 +1055,18 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver{
     double baseFontSize = settingProvider.fontSize;
 
     var textTheme = TextTheme(
-      displaySmall: TextStyle(
-          fontSize: baseFontSize - 2, fontFamily: 'Montserrat'),
-      displayMedium: TextStyle(
-          fontSize: baseFontSize, fontFamily: 'Montserrat'),
-      displayLarge: TextStyle(
-          fontSize: baseFontSize + 2, fontFamily: 'Montserrat'),
-      headlineSmall: TextStyle(
-          fontSize: baseFontSize - 2, fontFamily: 'Montserrat'),
-      headlineMedium: TextStyle(
-          fontSize: baseFontSize, fontFamily: 'Montserrat'),
-      headlineLarge: TextStyle(
-          fontSize: baseFontSize + 2, fontFamily: 'Montserrat'),
-      titleSmall: TextStyle(
-          fontSize: baseFontSize - 2, fontFamily: 'Montserrat'),
+      displaySmall: TextStyle(fontSize: baseFontSize - 2, fontFamily: 'Montserrat'),
+      displayMedium: TextStyle(fontSize: baseFontSize, fontFamily: 'Montserrat'),
+      displayLarge: TextStyle(fontSize: baseFontSize + 2, fontFamily: 'Montserrat'),
+      headlineSmall: TextStyle(fontSize: baseFontSize - 2, fontFamily: 'Montserrat'),
+      headlineMedium: TextStyle(fontSize: baseFontSize, fontFamily: 'Montserrat'),
+      headlineLarge: TextStyle(fontSize: baseFontSize + 2, fontFamily: 'Montserrat'),
+      titleSmall: TextStyle(fontSize: baseFontSize - 2, fontFamily: 'Montserrat'),
       titleMedium: TextStyle(fontSize: baseFontSize, fontFamily: 'Montserrat'),
-      titleLarge: TextStyle(
-          fontSize: baseFontSize + 2, fontFamily: 'Montserrat'),
-      labelSmall: TextStyle(
-          fontSize: baseFontSize - 2, fontFamily: 'Montserrat'),
+      titleLarge: TextStyle(fontSize: baseFontSize + 2, fontFamily: 'Montserrat'),
+      labelSmall: TextStyle(fontSize: baseFontSize - 2, fontFamily: 'Montserrat'),
       labelMedium: TextStyle(fontSize: baseFontSize, fontFamily: 'Montserrat'),
-      labelLarge: TextStyle(
-          fontSize: baseFontSize + 2, fontFamily: 'Montserrat'),
+      labelLarge: TextStyle(fontSize: baseFontSize + 2, fontFamily: 'Montserrat'),
       bodyLarge: TextStyle(fontSize: baseFontSize + 2, height: 1.4),
       bodyMedium: TextStyle(fontSize: baseFontSize, height: 1.4),
       bodySmall: TextStyle(fontSize: baseFontSize - 2, height: 1.4),
@@ -817,10 +1077,8 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver{
     );
 
     if (settingProvider.fontFamily != null) {
-      textTheme =
-          GoogleFonts.getTextTheme(settingProvider.fontFamily!, textTheme);
-      titleTextStyle = GoogleFonts.getFont(settingProvider.fontFamily!,
-          textStyle: titleTextStyle);
+      textTheme = GoogleFonts.getTextTheme(settingProvider.fontFamily!, textTheme);
+      titleTextStyle = GoogleFonts.getFont(settingProvider.fontFamily!, textStyle: titleTextStyle);
     }
 
     return ThemeData(
@@ -828,8 +1086,7 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver{
       brightness: Brightness.dark,
       platform: TargetPlatform.iOS,
       primarySwatch: themeColor,
-      // scaffoldBackgroundColor: Base.SCAFFOLD_BACKGROUND_COLOR,
-      scaffoldBackgroundColor: Colors.black,
+      scaffoldBackgroundColor: Colors.grey[900],
       primaryColor: themeColor[500],
       appBarTheme: AppBarTheme(
         // color: Base.APPBAR_COLOR,
@@ -838,7 +1095,8 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver{
         elevation: 0,
       ),
       dividerColor: Colors.grey[200],
-      cardColor: Colors.grey[900],
+      cardColor: Colors.black,
+      canvasColor: Colors.grey[900],
       // indicatorColor: ColorsUtil.hexToColor("#818181"),
       textTheme: textTheme,
       hintColor: hintColor,

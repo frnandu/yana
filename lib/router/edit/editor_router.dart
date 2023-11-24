@@ -1,5 +1,8 @@
-import 'package:bot_toast/bot_toast.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:dart_ndk/nips/nip01/event.dart';
+import 'package:dart_ndk/nips/nip01/metadata.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:intl/intl.dart';
 import 'package:pointycastle/ecc/api.dart';
@@ -17,8 +20,6 @@ import 'package:yana/utils/base.dart';
 import 'package:yana/utils/router_util.dart';
 
 import '../../i18n/i18n.dart';
-import '../../models/metadata.dart';
-import '../../nostr/event.dart';
 import '../../ui/cust_state.dart';
 import '../../ui/editor/cust_embed_types.dart';
 import '../../ui/editor/custom_emoji_embed_builder.dart';
@@ -56,7 +57,7 @@ class EditorRouter extends StatefulWidget {
     this.initEmbeds,
   });
 
-  static Future<Event?> open(
+  static Future<Nip01Event?> open(
     BuildContext context, {
     List<dynamic>? tags,
     List<dynamic>? tagsAddedWhenSend,
@@ -200,7 +201,7 @@ class _EditorRouter extends CustState<EditorRouter> with EditorMixin {
       list.add(buildTitleWidget());
     }
 
-    if (publishAt != null) {
+    if (createdAt != null) {
       var dateFormate = DateFormat("yyyy-MM-dd HH:mm");
 
       list.add(GestureDetector(
@@ -214,7 +215,7 @@ class _EditorRouter extends CustState<EditorRouter> with EditorMixin {
               Container(
                 margin: EdgeInsets.only(left: 4),
                 child: Text(
-                  dateFormate.format(publishAt!),
+                  dateFormate.format(createdAt!),
                 ),
               ),
             ],
@@ -407,8 +408,7 @@ class _EditorRouter extends CustState<EditorRouter> with EditorMixin {
             if (word != null && (word[0] == "@" || word[1] == "@")) {
               widget.mentionWordEditingStart = value.selection.baseOffset - word!.length;
               widget.mentionWordEditingEnd = value.selection.baseOffset;
-              list = metadataProvider.findUser(word.replaceAll("@", "")!,
-                  limit: 100);
+              list = cacheManager.searchMetadatas(word.replaceAll("@", ""), 100).toList();
             } else {
               widget.mentionWordEditingStart = null;
               widget.mentionWordEditingEnd = null;
@@ -461,16 +461,19 @@ class _EditorRouter extends CustState<EditorRouter> with EditorMixin {
   }
 
   Future<void> documentSave() async {
-    var cancelFunc = BotToast.showLoading();
+    EasyLoading.show(status: 'Broadcasting to relays...', maskType: EasyLoadingMaskType.black);
+    // var cancelFunc = BotToast.showLoading();
     try {
       var event = await doDocumentSave();
       if (event == null) {
-        BotToast.showText(text: I18n.of(context).Send_fail);
+        // EasyLoading.show(status: I18n.of(context).Send_fail);
+        EasyLoading.showError('Failed...');
         return;
       }
+      EasyLoading.showSuccess('Success!');
       RouterUtil.back(context, event);
     } finally {
-      cancelFunc.call();
+      EasyLoading.dismiss();
     }
   }
 
