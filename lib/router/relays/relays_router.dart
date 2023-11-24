@@ -1,4 +1,3 @@
-import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:dart_ndk/models/user_relay_list.dart';
 import 'package:dart_ndk/nips/nip01/helpers.dart';
 import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
@@ -16,7 +15,6 @@ import '../../ui/confirm_dialog.dart';
 import '../../ui/cust_state.dart';
 import '../../utils/base.dart';
 import '../../utils/router_util.dart';
-import '../../utils/string_util.dart';
 import '../user/search_relay_component.dart';
 import 'relays_item_component.dart';
 

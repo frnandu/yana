@@ -115,7 +115,7 @@ class DMProvider extends ChangeNotifier with PenddingEventsLaterFunction {
 
     this.localPubkey = localPubkey;
     var keyIndex = settingProvider.privateKeyIndex!;
-    List<Nip01Event>? events = cacheManager.loadEvents([],[kind.EventKind.DIRECT_MESSAGE]);
+    List<Nip01Event>? events = cacheManager.loadEvents(kinds: [kind.EventKind.DIRECT_MESSAGE]);
 
     // await EventDB.list(
     //     keyIndex, kind.EventKind.DIRECT_MESSAGE, 0, 10000000);

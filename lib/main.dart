@@ -330,7 +330,9 @@ Future<void> initRelays({bool newKey = false}) async {
     }
   }
   followEventProvider.startSubscriptions();
-  notificationsProvider.startSubscription();
+  notificationsProvider.loadCached().then((value) {
+    notificationsProvider.startSubscription();
+  },);
   dmProvider.initDMSessions(loggedUserSigner!.getPublicKey());
   metadataProvider.notifyListeners();
   relayManager.blockedRelays = [];

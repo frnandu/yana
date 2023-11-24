@@ -249,8 +249,6 @@ class _UserRouter extends CustState<UserRouter>
     );
   }
 
-  String? subscribeId;
-
   @override
   Future<void> onReady(BuildContext context) async {
     if (globalKey.currentState != null) {
@@ -277,27 +275,23 @@ class _UserRouter extends CustState<UserRouter>
 
   @override
   void deactivate() {
-    if (subscription!=null) {
-      relayManager.closeNostrRequest(subscription!);
-    }
+    unSubscribe();
   }
 
   @override
   void dispose() {
     super.dispose();
     disposed = true;
-    if (subscription!=null) {
-      relayManager.closeNostrRequest(subscription!);
-    }
+    unSubscribe();
     disposeLater();
   }
 
   void unSubscribe() {
-    // if (userNostr != null) {
-    //   userNostr!.unsubscribe(subscribeId!);
-    // }
-    // subscribeId = null;
+    if (subscription!=null) {
+      relayManager.closeNostrRequest(subscription!);
+    }
   }
+
   List<int> queryEventKinds() {
     return [
       Nip01Event.TEXT_NODE_KIND,
@@ -312,7 +306,14 @@ class _UserRouter extends CustState<UserRouter>
   @override
   void doQuery() {
     if (box.isEmpty()) {
-      List<Nip01Event>? cachedEvents = cacheManager.loadEvents([pubkey!], [1]);// queryEventKinds());
+      List<Nip01Event>? cachedEvents = cacheManager.loadEvents(pubKeys: [pubkey!],kinds: [
+        Nip01Event.TEXT_NODE_KIND,
+        // kind.EventKind.REPOST,
+        // kind.EventKind.GENERIC_REPOST,
+        // kind.EventKind.LONG_FORM,
+        // kind.EventKind.FILE_HEADER,
+        // kind.EventKind.POLL,
+      ]);//queryEventKinds());
       print("USER loaded ${cachedEvents.length} events from cache DB");
       for (var event in cachedEvents) {
         onEvent(event, saveToCache: false);
@@ -323,9 +324,7 @@ class _UserRouter extends CustState<UserRouter>
       return;
     }
     preQuery();
-    if (StringUtil.isNotBlank(subscribeId)) {
-      unSubscribe();
-    }
+    unSubscribe();
 
     // load event from relay
     var filter = Filter(

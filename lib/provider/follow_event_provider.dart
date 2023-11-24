@@ -38,19 +38,19 @@ class FollowEventProvider extends ChangeNotifier with PenddingEventsLaterFunctio
     // print("REPLIES READ TIMESTAMP: $b");
   }
 
-  void loadCachedFeed() async {
+  Future<void> loadCachedFeed() async {
     List<String> contactsForFeed = contactListProvider.contacts();
-    List<Nip01Event>? cachedEvents = cacheManager.loadEvents(contactsForFeed, queryEventKinds());
+    List<Nip01Event>? cachedEvents = cacheManager.loadEvents(pubKeys: contactsForFeed, kinds: queryEventKinds());
     print("FOLLOW loaded ${cachedEvents.length} events from cache DB");
     onEvents(cachedEvents, saveToCache: false);
-    if (postsBox.newestEvent != null) {
-      DateTime? a = DateTime.fromMillisecondsSinceEpoch(postsBox.newestEvent!.createdAt * 1000);
-      print("   newest POST date is $a");
-    }
-    if (postsAndRepliesBox.newestEvent != null) {
-      DateTime? a = DateTime.fromMillisecondsSinceEpoch(postsAndRepliesBox.newestEvent!.createdAt * 1000);
-      print("   newest REPLY date is $a");
-    }
+    // if (postsBox.newestEvent != null) {
+    //   DateTime? a = DateTime.fromMillisecondsSinceEpoch(postsBox.newestEvent!.createdAt * 1000);
+    //   print("   newest POST date is $a");
+    // }
+    // if (postsAndRepliesBox.newestEvent != null) {
+    //   DateTime? a = DateTime.fromMillisecondsSinceEpoch(postsAndRepliesBox.newestEvent!.createdAt * 1000);
+    //   print("   newest REPLY date is $a");
+    // }
   }
 
   Future<void> startSubscriptions() async {
@@ -125,17 +125,6 @@ class FollowEventProvider extends ChangeNotifier with PenddingEventsLaterFunctio
       kind.EventKind.POLL,
     ];
   }
-
-  // void doQuery(
-  //     {int? until,
-  //     List<String>? fallbackContacts,
-  //     List<String>? fallbackTags }) {
-  //   if (until != null) {
-  //     loadMore(until: until, fallbackTags: fallbackTags ?? FALLBACK_TAGS_FOR_EMPTY_CONTACT_LIST);
-  //   } else {
-  //     load(fallbackContacts: fallbackContacts, fallbackTags: fallbackTags ?? FALLBACK_TAGS_FOR_EMPTY_CONTACT_LIST);
-  //   }
-  // }
 
   void subscribe({int? since, List<String>? fallbackContacts, List<String>? fallbackTags}) async {
     doUnscribe();

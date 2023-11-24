@@ -78,11 +78,9 @@
 - ~~use inboxForReactions for broadcasting reactions to inbox relays~~
 - ~~when blocking make the note disappear~~
 - ~~show in account list, which ones are read-only~~
+- ~~save notification events to cache DB~~
 
 ===== v0.12
-- save notification events to cache DB
-- 
-- NIP07 browser for some web apps!?
 - choose to which relays / lists to broadcast on new note (bounty)
 - make thread detail subscription of new replies work
 - make reactions live again with subscriptions or some other way 
@@ -96,6 +94,7 @@
 
 - ===== v0.13
 - lists on profiles
+- custom lists/sets nip51
 - import/merge other lists or other peoples public lists
 - fix DMS when switching between accounts
 - mute list use nip51
@@ -104,6 +103,7 @@
 - after adding follow, recalculate relaySet for gossip
 - better android/ios/linux badges on web version login screen (anchor links to readme.md for IOS/linux)
 - garbage collection of webSockets not used since X (for reactions)
+- NIP07 browser for some web apps!?
 - animated screen ASAP after splash
 - isar v4 for web
 - load more on big posts

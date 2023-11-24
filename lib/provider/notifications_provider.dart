@@ -35,6 +35,12 @@ class NotificationsProvider extends ChangeNotifier
     }
   }
 
+  Future<void> loadCached() async {
+    List<Nip01Event>? cachedEvents = cacheManager.loadEvents(pTag: loggedUserSigner!.getPublicKey());
+    print("NOTIFICATIONS loaded ${cachedEvents.length} events from cache DB");
+    onEvents(cachedEvents, saveToCache: false);
+  }
+
   void refresh() {
     _initTime = DateTime.now().millisecondsSinceEpoch ~/ 1000;
     eventBox.clear();
@@ -71,10 +77,16 @@ class NotificationsProvider extends ChangeNotifier
     if (subscription != null) {
       await relayManager.closeNostrRequest(subscription!);
     }
+    int? since;
+    var newestPost = eventBox.newestEvent;
+    if (newestPost != null) {
+      since = newestPost!.createdAt;
+    }
 
     if (myInboxRelaySet!=null) {
       var filter = Filter(
           kinds: queryEventKinds(),
+          since: since,
           pTags: [loggedUserSigner!.getPublicKey()],
           limit: 100);
 
@@ -90,21 +102,32 @@ class NotificationsProvider extends ChangeNotifier
 
   void onEvent(Nip01Event event) {
     later(event, (list) {
-      list = list
-          .where(
-              (element) => element.pubKey != loggedUserSigner?.getPublicKey())
-          .toList();
-      list.forEach((event) {
-        if (timestamp!=null && event.createdAt > timestamp!) {
-          newNotificationsProvider.handleEvent(event, null);
-        } else {
-          var result = eventBox.addList([event]);
-          if (result) {
-            notifyListeners();
-          }
-        }
-      });
+      onEvents(list, saveToCache: true);
     }, null);
+  }
+
+  void onEvents(list, {bool saveToCache=true}) {
+    list = list
+        .where(
+            (element) => element.pubKey != loggedUserSigner?.getPublicKey())
+        .toList();
+    List<Nip01Event> toSave = [];
+    for (var event in list) {
+      if (timestamp!=null && event.createdAt > timestamp!) {
+        newNotificationsProvider.handleEvent(event, null);
+      } else {
+        var result = eventBox.addList([event]);
+        if (result) {
+          toSave.add(event);
+        }
+      }
+    }
+    if (toSave.isNotEmpty) {
+      if (saveToCache) {
+        cacheManager.saveEvents(toSave);
+      }
+      notifyListeners();
+    }
   }
 
   void clear() {
