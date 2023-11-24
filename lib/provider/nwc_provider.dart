@@ -8,6 +8,7 @@ import 'package:dart_ndk/nips/nip01/event_signer.dart';
 import 'package:dart_ndk/nips/nip01/filter.dart';
 import 'package:dart_ndk/nips/nip04/nip04.dart';
 import 'package:dart_ndk/request.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 
@@ -81,7 +82,7 @@ class NwcProvider extends ChangeNotifier {
     await settingProvider.setNwc(nwc);
     await settingProvider.setNwcSecret(secret!);
     var filter = Filter(kinds: [NwcKind.INFO_REQUEST], authors: [walletPubKey!]);
-    RelayManager relayManager = RelayManager();
+    RelayManager relayManager = RelayManager(kIsWeb);
     // if (relayManager.webSockets[relay]!=null) {
     //   relayManager.webSockets[relay]!.disconnect("a");
     //   relayManager.webSockets[relay]!.close();

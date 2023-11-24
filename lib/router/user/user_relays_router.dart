@@ -16,6 +16,8 @@ import '../../ui/confirm_dialog.dart';
 import '../../utils/base.dart';
 import '../../utils/router_path.dart';
 import '../../utils/router_util.dart';
+import '../../utils/store_util.dart';
+import '../relays/relays_item_component.dart';
 
 class UserRelayRouter extends StatefulWidget {
   const UserRelayRouter({super.key});
@@ -256,6 +258,7 @@ class RelayMetadataComponent extends StatelessWidget {
     //   ],
     // ),
     //
+    Relay? relay = relayManager.getRelay(relayMetadata!.url!);
 
     return Container(
       margin: const EdgeInsets.only(
@@ -296,6 +299,44 @@ class RelayMetadataComponent extends StatelessWidget {
                     margin: const EdgeInsets.only(bottom: 2),
                     child: Text(relayMetadata!.url!.replaceAll("wss://", "").replaceAll("ws://", "")),
                   ),
+                  relay != null && (relayMetadata!.count==null || relayMetadata!.count==0)
+                      ? Row(
+                    children: [
+                      Container(
+                        margin: const EdgeInsets.only(right: Base.BASE_PADDING_HALF),
+                        child: RelaysItemNumComponent(
+                            iconData: Icons.mail,
+                            textColor: themeData.disabledColor,
+                            iconColor: themeData.disabledColor,
+                            num: "${relay!.stats.getTotalEventsRead()}"),
+                      ),
+                      Container(
+                          margin: const EdgeInsets.only(right: Base.BASE_PADDING_HALF),
+                          child: RelaysItemNumComponent(
+                            iconColor: Colors.lightGreen,
+                            textColor: Colors.lightGreen,
+                            iconData: Icons.lan_outlined,
+                            num: "${relay!.stats.connections}",
+                          )),
+                      Container(
+                          margin: const EdgeInsets.only(right: Base.BASE_PADDING_HALF),
+                          child: RelaysItemNumComponent(
+                            iconColor: relay!.stats.connectionErrors > 0 ? Colors.red : themeData.disabledColor,
+                            textColor: relay!.stats.connectionErrors > 0 ? Colors.red : themeData.disabledColor,
+                            iconData: Icons.error_outline,
+                            num: "${relay!.stats.connectionErrors}",
+                          )),
+                      Container(
+                          margin: const EdgeInsets.only(right: Base.BASE_PADDING_HALF),
+                          child: RelaysItemNumComponent(
+                            iconColor: themeData.disabledColor,
+                            textColor: themeData.disabledColor,
+                            iconData: Icons.network_check,
+                            num: StoreUtil.bytesToShowStr(relay!.stats.getTotalBytesRead()),
+                          )),
+                    ],
+                  )
+                  :
                   Row(
                     children: [
                       relayMetadata!.read != null && relayMetadata!.read!

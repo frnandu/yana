@@ -23,6 +23,7 @@ import '../../ui/editor/tag_embed_builder.dart';
 import '../../ui/editor/video_embed_builder.dart';
 import '../../ui/name_component.dart';
 import '../../utils/base.dart';
+import '../../utils/router_path.dart';
 import '../../utils/router_util.dart';
 import 'dm_detail_item_component.dart';
 
@@ -64,10 +65,12 @@ class _DMDetailRouter extends CustState<DMDetailRouter> with EditorMixin {
 
     var nameComponnet = Selector<MetadataProvider, Metadata?>(
       builder: (context, metadata, child) {
-        return NameComponent(
+        return GestureDetector(onTap: () {
+          RouterUtil.router(context, RouterPath.USER, detail!.dmSession.pubkey);
+        }, child: NameComponent(
           pubkey: detail!.dmSession.pubkey,
           metadata: metadata,
-        );
+        ));
       },
       selector: (context, _provider) {
         return _provider.getMetadata(detail!.dmSession.pubkey);

@@ -17,6 +17,7 @@ import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
 import 'package:dart_ndk/read_write.dart';
 import 'package:dart_ndk/relay.dart';
 import 'package:dart_ndk/relay_manager.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
@@ -161,7 +162,7 @@ AppLifecycleState appState = AppLifecycleState.resumed;
 
 EventSigner? loggedUserSigner;
 
-RelayManager relayManager = RelayManager();
+RelayManager relayManager = RelayManager(kIsWeb);
 late CacheManager cacheManager;
 
 RelaySet? feedRelaySet;
@@ -917,7 +918,7 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
     }
     if ((newState == AppLifecycleState.paused || newState == AppLifecycleState.hidden || newState == AppLifecycleState.inactive) &&
         appState == AppLifecycleState.resumed && loggedUserSigner != null) {
-      if (settingProvider.backgroundService) {
+      if (backgroundService!=null && settingProvider.backgroundService) {
         backgroundService!.startService();
       }
       Future.delayed(const Duration(seconds: 5), () {

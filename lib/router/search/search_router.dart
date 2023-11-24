@@ -289,15 +289,15 @@ class _SearchRouter extends CustState<SearchRouter>
         filterMap!["until"] = until;
       }
     }
-    RelayManager relayManager = RelayManager();
-    relayManager.cacheManager = cacheManager;
-    relayManager.connect(urls: relaysWithNip50).then((value) {
+    // RelayManager relayManager = RelayManager();
+    // relayManager.cacheManager = cacheManager;
+    // relayManager.connect(urls: relaysWithNip50).then((value) {
       relayManager.requestRelays(relaysWithNip50, Filter.fromMap(filterMap!), timeout: 10).then((request) {
         request.stream.listen((event) {
           onQueryEvent(event);
         });
       });
-    });
+    // });
 
   }
 
