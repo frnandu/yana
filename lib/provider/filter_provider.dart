@@ -10,8 +10,6 @@ import '../utils/dirtywords_util.dart';
 class FilterProvider extends ChangeNotifier implements EventFilter {
   static FilterProvider? _instance;
 
-  Map<String, int> blocks = {};
-
   List<String> dirtywordList = [];
 
   Nip51List? muteList;
@@ -23,12 +21,6 @@ class FilterProvider extends ChangeNotifier implements EventFilter {
   static FilterProvider getInstance() {
     if (_instance == null) {
       _instance = FilterProvider();
-      var blockList = sharedPreferences.getStringList(DataKey.BLOCK_LIST);
-      if (blockList != null && blockList.isNotEmpty) {
-        for (var block in blockList) {
-          _instance!.blocks[block] = 1;
-        }
-      }
 
       var dirtywordList =
           sharedPreferences.getStringList(DataKey.DIRTYWORD_LIST);
@@ -78,28 +70,12 @@ class FilterProvider extends ChangeNotifier implements EventFilter {
     notifyListeners();
   }
 
-  bool checkBlock(String pubkey) {
-    return blocks[pubkey] != null;
-  }
-
-  void addBlock(String pubkey) {
-    blocks[pubkey] = 1;
-    _updateBlock();
-  }
-
-  void removeBlock(String pubkey) {
-    blocks.remove(pubkey);
-    _updateBlock();
-  }
-
-  void _updateBlock() {
-    var list = blocks.keys.toList();
-    sharedPreferences.setStringList(DataKey.BLOCK_LIST, list);
-    notifyListeners();
-  }
-
   @override
   bool filter(Nip01Event event) {
-    return !blocks.keys.contains(event.pubKey) && !checkDirtyword(event.content);
+    return (muteList==null || !muteList!.elements.any((element) => element.tag == Nip51List.PUB_KEY && element.value == event.pubKey)) && !checkDirtyword(event.content);
+  }
+
+  isMutedPubKey(String pubKey) {
+    return muteList!=null && muteList!.elements.any((element) => element.tag == Nip51List.PUB_KEY && element.value==pubKey);
   }
 }

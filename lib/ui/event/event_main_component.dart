@@ -69,6 +69,8 @@ class EventMainComponent extends StatefulWidget {
 
   bool highlight;
 
+  bool mutedProfile=false;
+
   EventRelation? eventRelation;
 
   EventMainComponent({
@@ -167,6 +169,9 @@ class _EventMainComponent extends State<EventMainComponent> {
     if (_settingProvider.autoOpenSensitive == OpenStatus.OPEN) {
       showWarning = true;
     }
+    if (widget.mutedProfile || !relayManager.filterEvent(widget.event)) {
+      return Container();
+    }
 
     List<Widget> list = [];
     if (showWarning || !eventRelation.warning) {
@@ -252,6 +257,7 @@ class _EventMainComponent extends State<EventMainComponent> {
             event: widget.event,
             eventRelation: eventRelation,
             showDetailBtn: widget.showDetailBtn,
+            onMuteProfile: onMuteProfile,
           ));
         }
       } else if (widget.event.kind == kind.EventKind.REPOST ||
@@ -420,6 +426,7 @@ class _EventMainComponent extends State<EventMainComponent> {
             event: widget.event,
             eventRelation: eventRelation,
             showDetailBtn: widget.showDetailBtn,
+            onMuteProfile: onMuteProfile
           ));
         } else {
           list.add(Container(
@@ -701,6 +708,12 @@ class _EventMainComponent extends State<EventMainComponent> {
         ],
       ),
     );
+  }
+
+  onMuteProfile() {
+    setState(() {
+      widget.mutedProfile=true;
+    });
   }
 }
 

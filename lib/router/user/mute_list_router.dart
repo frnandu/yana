@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:provider/provider.dart';
 import 'package:yana/main.dart';
+import 'package:yana/provider/filter_provider.dart';
 import 'package:yana/provider/relay_provider.dart';
 import 'package:yana/router/user/search_relay_component.dart';
 import 'package:yana/utils/router_path.dart';
@@ -59,6 +60,8 @@ class _MuteListRouter extends State<MuteListRouter> with SingleTickerProviderSta
   Widget build(BuildContext context) {
     var themeData = Theme.of(context);
     var _relayProvider = Provider.of<RelayProvider>(context);
+    var _filterProvider = Provider.of<FilterProvider>(context);
+
 
     var s = I18n.of(context);
     if (muteList == null) {
@@ -109,7 +112,7 @@ class _MuteListRouter extends State<MuteListRouter> with SingleTickerProviderSta
           onRefresh: () async {
             Nip51List? refreshedList = await relayManager.getSingleNip51List(muteList!.kind, loggedUserSigner!, forceRefresh: true);
             refreshedList ??= Nip51List(pubKey: muteList!.pubKey, kind: muteList!.kind, elements: [], createdAt: Helpers.now);
-            filterProvider.muteList = muteList;
+            filterProvider.muteList = refreshedList;
             filterProvider.notifyListeners();
             setState(() {
               muteList = refreshedList;
@@ -240,13 +243,14 @@ class _MuteListRouter extends State<MuteListRouter> with SingleTickerProviderSta
     bool? result = await ConfirmDialog.show(context, "Confirm add ${private ? "private" : "public"} ${url} to list");
     if (result != null && result) {
       EasyLoading.show(status: 'Broadcasting relay list...', maskType: EasyLoadingMaskType.black, dismissOnTap: true);
-      muteList = await relayManager.broadcastAddNip51ListRelay(muteList!.kind, url, myOutboxRelaySet!.urls, loggedUserSigner!, private: private);
-      filterProvider.muteList = muteList;
-      filterProvider.notifyListeners();
-      EasyLoading.dismiss();
-      setState(() {
-        controller.text = "";
-      });
+      /// TODO
+      // muteList = await relayManager.broadcastAddNip51ListElement(muteList!.kind, "Tag", "Value", myOutboxRelaySet!.urls, loggedUserSigner!, private: private);
+      // filterProvider.muteList = muteList;
+      // filterProvider.notifyListeners();
+      // EasyLoading.dismiss();
+      // setState(() {
+      //   controller.text = "";
+      // });
     }
   }
 }

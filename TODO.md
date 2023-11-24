@@ -76,10 +76,10 @@
 - ~~blacklist for relays (NIP-51 PR)~~
 - ~~nip-51 PRIVATE relay lists!~~
 - ~~use inboxForReactions for broadcasting reactions to inbox relays~~
+- ~~when blocking make the note disappear~~
 
 ===== v0.12
 - show in account list, which ones are read-only
-- when blocking make the note disappear
 - save notification events to cache DB
 - 
 - NIP07 browser for some web apps!?

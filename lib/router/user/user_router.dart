@@ -7,6 +7,7 @@ import 'package:dart_ndk/nips/nip01/metadata.dart';
 import 'package:dart_ndk/request.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:yana/provider/filter_provider.dart';
 
 import '../../main.dart';
 import '../../models/event_mem_box.dart';
@@ -90,6 +91,7 @@ class _UserRouter extends CustState<UserRouter>
   Widget doBuild(BuildContext context) {
     var _settingProvider = Provider.of<SettingProvider>(context);
     var _metadataProvider = Provider.of<MetadataProvider>(context);
+    var _filterProvider = Provider.of<FilterProvider>(context);
 
     if (StringUtil.isBlank(pubkey) || subscription == null) {
       pubkey = RouterUtil.routerArgs(context) as String?;

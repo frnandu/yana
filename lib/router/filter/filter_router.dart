@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:yana/router/filter/filter_block_component.dart';
 import 'package:yana/router/filter/filter_dirtyword_component.dart';
 
 import '../../i18n/i18n.dart';
@@ -64,14 +63,6 @@ class _FilterRouter extends State<FilterRouter>
                 style: titleTextStyle,
               ),
             ),
-            Container(
-              height: IndexAppBar.height,
-              alignment: Alignment.center,
-              child: Text(
-                s.Blocked_Profiles,
-                style: titleTextStyle,
-              ),
-            )
           ],
         ),
         actions: [
@@ -84,9 +75,8 @@ class _FilterRouter extends State<FilterRouter>
       ),
       body: TabBarView(
         controller: tabController,
-        children: [
+        children: const [
           BlockedWordsComponent(),
-          BlockedProfilesComponent(),
         ],
       ),
     );

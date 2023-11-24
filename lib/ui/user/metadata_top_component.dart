@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dart_ndk/models/user_relay_list.dart';
 import 'package:dart_ndk/nips/nip01/bip340_event_signer.dart';
 import 'package:dart_ndk/nips/nip01/metadata.dart';
+import 'package:dart_ndk/nips/nip51/nip51.dart';
 import 'package:easy_image_viewer/easy_image_viewer.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -14,6 +15,7 @@ import 'package:yana/i18n/i18n.dart';
 import 'package:yana/main.dart';
 import 'package:yana/nostr/nip19/nip19_tlv.dart';
 import 'package:yana/provider/contact_list_provider.dart';
+import 'package:yana/provider/filter_provider.dart';
 import 'package:yana/ui/nip05_valid_component.dart';
 import 'package:yana/ui/qrcode_dialog.dart';
 import 'package:yana/ui/zap_gen_dialog.dart';
@@ -90,6 +92,7 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
     var maxWidth = mediaDataCache.size.width;
     var largeFontSize = themeData.textTheme.bodyLarge!.fontSize;
     var fontSize = themeData.textTheme.bodyMedium!.fontSize;
+    var _filterProvider = Provider.of<FilterProvider>(context);
     var bannerHeight = maxWidth / 3;
     if (PlatformUtil.isTableMode()) {
       bannerHeight =
@@ -337,9 +340,13 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
                   value: "login_as",
                   child: Text("Login as ${displayName}"),
                 ),
-                const PopupMenuItem(value:"share", child: Text("Share..."))
-              ];
-
+                const PopupMenuItem(value:"share", child: Text("Share..."))];
+              if (filterProvider.isMutedPubKey(widget.pubkey)) {
+                list.add(const PopupMenuItem(value:"unmute", child: Text("Unmute profile")));
+              } else {
+                list.add(const PopupMenuItem(value:"mute-public", child: Text("Mute profile (public)")));
+                list.add(const PopupMenuItem(value:"mute-private", child: Text("Mute profile (private)")));
+              }
               return list;
             },
             onSelected: (value) async {
@@ -352,8 +359,8 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
                 newNotificationsProvider.clear();
                 followEventProvider.clear();
                 followEventProvider.clear();
-                settingProvider.addAndChangeKey(widget.metadata!.pubKey, false, updateUI: true);
-                String publicKey = widget.metadata!.pubKey;
+                settingProvider.addAndChangeKey(widget.pubkey, false, updateUI: true);
+                String publicKey = widget.pubkey;
                 loggedUserSigner = Bip340EventSigner(null, publicKey);
                 await initRelays(newKey: false);
                 followEventProvider.loadCachedFeed();
@@ -367,10 +374,23 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
                 if (userRelayList!=null && userRelayList.relays!=null) {
                   relays = userRelayList!.relays!.keys!.toList();
                 }
-                var nevent = Nprofile(pubkey: widget.metadata!.pubKey, relays: relays);
+                var nevent = Nprofile(pubkey: widget.pubkey, relays: relays);
 
                 String share = 'https://njump.me/${NIP19Tlv.encodeNprofile(nevent).replaceAll("nostr:","")}';
                 Share.share(share);
+              } else if (value.startsWith("mute-")) {
+                Nip51List muteList = await relayManager.broadcastAddNip51ListElement(Nip51List.MUTE, Nip51List.PUB_KEY, widget.pubkey, myOutboxRelaySet!.urls, loggedUserSigner!, private: value=="mute-private");
+                filterProvider.muteList = muteList;
+                filterProvider.notifyListeners();
+                setState(() {
+                });
+              } else if (value == "unmute") {
+                Nip51List? muteList = await relayManager.broadcastRemoveNip51ListElement(Nip51List.MUTE, Nip51List.PUB_KEY, widget.pubkey, myOutboxRelaySet!.urls, loggedUserSigner!);
+                if (muteList!=null) {
+                  filterProvider.muteList = muteList;
+                  filterProvider.notifyListeners();
+                  setState(() {});
+                }
               }
             },
             child: const Icon(

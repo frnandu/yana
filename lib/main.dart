@@ -251,6 +251,7 @@ Future<void> initProvidersAndStuff() async {
       DbCacheManager dbCacheManager = DbCacheManager();
       await dbCacheManager.init(directory: PlatformUtil.isWeb() ? isar.Isar.sqliteInMemory : (await getApplicationDocumentsDirectory()).path);
       cacheManager = dbCacheManager;
+      dbCacheManager.eventFilter = filterProvider;
       relayManager.cacheManager = cacheManager;
       relayManager.eventVerifier = HybridEventVerifier();
 

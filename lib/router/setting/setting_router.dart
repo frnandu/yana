@@ -394,8 +394,15 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
           Icons.volume_mute,
         ),
         trailing: Icon(Icons.navigate_next),
-        title: Text(
-          "${filterProvider.muteListCount} Mute",
+        title: Selector<FilterProvider, int>(
+          builder: (context, count, child) {
+            return Text(
+              "${count} Mute",
+            );
+          },
+          selector: (p0, filterProvider) {
+            return filterProvider.muteListCount;
+          },
         )));
 
     listsTiles.add(SettingsTile.navigation(

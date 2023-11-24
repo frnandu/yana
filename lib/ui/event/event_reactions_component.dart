@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:dart_ndk/nips/nip01/event.dart';
+import 'package:dart_ndk/nips/nip51/nip51.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
@@ -35,6 +36,8 @@ class EventReactionsComponent extends StatefulWidget {
 
   EventRelation eventRelation;
 
+  Function? onMuteProfile;
+
   bool showDetailBtn;
 
   EventReactionsComponent({
@@ -42,6 +45,7 @@ class EventReactionsComponent extends StatefulWidget {
     required this.event,
     required this.eventRelation,
     this.showDetailBtn = true,
+    this.onMuteProfile
   });
 
   @override
@@ -53,6 +57,7 @@ class EventReactionsComponent extends StatefulWidget {
 class _EventReactionsComponent extends State<EventReactionsComponent> {
   EventReactions? eventReactions;
   bool zapping = false;
+  bool muting = false;
 
   @override
   Widget build(BuildContext context) {
@@ -249,7 +254,11 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
                         ),
                 ),
               ),
-              Container(
+              muting
+                  ? SpinKitFadingCircle(
+                color: themeData.disabledColor,
+                size: 20.0,
+              ): Container(
                 child: PopupMenuButton<String>(
                   tooltip: s.More,
                   itemBuilder: (context) {
@@ -288,8 +297,12 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
                       child: Text(s.Share, style: popFontStyle),
                     ));
                     list.add(PopupMenuItem(
-                      value: "block",
-                      child: Text(s.Block, style: popFontStyle),
+                      value: "mute-public",
+                      child: Text("Mute profile (public)", style: popFontStyle),
+                    ));
+                    list.add(PopupMenuItem(
+                      value: "mute-private",
+                      child: Text("Mute profile (private)", style: popFontStyle),
                     ));
 
                     if (widget.event.pubKey == loggedUserSigner!.getPublicKey()) {
@@ -312,7 +325,7 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
                   child: Icon(
                     Icons.more_horiz,
                     size: 16,
-                    color: themeData.scaffoldBackgroundColor,
+                    color: themeData.disabledColor,
                   ),
                 ),
               ),
@@ -364,8 +377,20 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
       // TODO star event
     } else if (value == "broadcast") {
       await relayManager.broadcastEvent(widget.event, myOutboxRelaySet!.urls, loggedUserSigner!);
-    } else if (value == "block") {
-      filterProvider.addBlock(widget.event.pubKey);
+    } else if (value.startsWith("mute-")) {
+      setState(() {
+        muting = true;
+      });
+      Nip51List muteList = await relayManager.broadcastAddNip51ListElement(Nip51List.MUTE, Nip51List.PUB_KEY, widget.event.pubKey, myOutboxRelaySet!.urls, loggedUserSigner!, private: value=="mute-private");
+      filterProvider.muteList = muteList;
+      filterProvider.notifyListeners();
+      setState(() {
+        muting = false;
+      });
+      if (widget.onMuteProfile!=null) {
+        widget.onMuteProfile!();
+      }
+      // TODO how to make this event dissapear??
     } else if (value == "delete") {
 
       Set<String> urlsToBroadcast = (await broadcastUrls(widget.event.pubKey)).toSet()..addAll(widget.event.sources);
