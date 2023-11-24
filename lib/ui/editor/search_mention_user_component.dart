@@ -87,10 +87,13 @@ class SearchMentionUserItemComponent extends StatelessWidget {
 
   Function(Metadata) onTap;
 
+  PopupMenuButton? popupMenuButton;
+
   SearchMentionUserItemComponent({super.key,
     required this.metadata,
     required this.width,
-    required this.onTap
+    required this.onTap,
+    this.popupMenuButton
   });
 
   @override
@@ -182,6 +185,7 @@ class SearchMentionUserItemComponent extends StatelessWidget {
               ),
             ),
           ),
+          popupMenuButton!=null? popupMenuButton! : Container()
         ],
       ),
     );

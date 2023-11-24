@@ -1,3 +1,7 @@
+import 'dart:convert';
+
+import 'package:dart_ndk/nips/nip01/event.dart';
+import 'package:dart_ndk/nips/nip01/filter.dart';
 import 'package:dart_ndk/nips/nip01/helpers.dart';
 import 'package:dart_ndk/nips/nip01/metadata.dart';
 import 'package:dart_ndk/nips/nip50/nip50.dart';
@@ -13,6 +17,7 @@ import 'package:yana/router/user/search_relay_component.dart';
 import 'package:yana/utils/router_path.dart';
 
 import '../../i18n/i18n.dart';
+import '../../nostr/nip19/nip19.dart';
 import '../../nostr/relay_metadata.dart';
 import '../../provider/metadata_provider.dart';
 import '../../ui/confirm_dialog.dart';
@@ -33,7 +38,7 @@ class _MuteListRouter extends State<MuteListRouter> with SingleTickerProviderSta
   Nip51List? muteList;
   late TabController tabController;
   TextEditingController controller = TextEditingController();
-  List<String> searchResults = [];
+  List<Nip51ListElement> searchResults = [];
   bool disposed = false;
 
   @override
@@ -43,11 +48,6 @@ class _MuteListRouter extends State<MuteListRouter> with SingleTickerProviderSta
     controller.addListener(() {
       onEditingComplete();
     });
-    // relayManager.getNip51RelaySets(loggedUserSigner!).then((value) {
-    //   setState(() {
-    //     list = value;
-    //   });
-    // });
   }
 
   @override
@@ -62,7 +62,6 @@ class _MuteListRouter extends State<MuteListRouter> with SingleTickerProviderSta
     var _relayProvider = Provider.of<RelayProvider>(context);
     var _filterProvider = Provider.of<FilterProvider>(context);
 
-
     var s = I18n.of(context);
     if (muteList == null) {
       var arg = RouterUtil.routerArgs(context);
@@ -72,7 +71,7 @@ class _MuteListRouter extends State<MuteListRouter> with SingleTickerProviderSta
     }
     popupItemBuilder(context) {
       List<PopupMenuEntry<String>> list = [
-        const PopupMenuItem(value: "public",child: Text("Add public")),
+        const PopupMenuItem(value: "public", child: Text("Add public")),
         const PopupMenuItem(value: "private", child: Text("Add private"))
       ];
       return list;
@@ -135,7 +134,7 @@ class _MuteListRouter extends State<MuteListRouter> with SingleTickerProviderSta
                               tooltip: "more",
                               itemBuilder: popupItemBuilder,
                               onSelected: (value) async {
-                                add(controller.text, value == "private" ? true : false);
+                                //add(controller.text, value == "private" ? true : false);
                               })
                           : null,
                     ),
@@ -147,16 +146,37 @@ class _MuteListRouter extends State<MuteListRouter> with SingleTickerProviderSta
                               physics: const BouncingScrollPhysics(),
                               shrinkWrap: true,
                               itemBuilder: (context, index) {
-                                return SearchRelayItemComponent(
-                                    url: searchResults[index],
-                                    width: 400,
-                                    popupMenuButton: PopupMenuButton<String>(
-                                        icon: const Icon(Icons.add),
-                                        tooltip: "more",
-                                        itemBuilder: popupItemBuilder,
-                                        onSelected: (value) async {
-                                          add(searchResults[index], value == "private" ? true : false);
-                                        }));
+                                if (searchResults[index].tag == Nip51List.PUB_KEY) {
+                                  Metadata? metadata = metadataProvider.getMetadata(searchResults[index].value);
+                                  if (metadata != null) {
+                                    return SearchMentionUserItemComponent(
+                                      metadata: metadata,
+                                      width: 400,
+                                      onTap: (metadata) {
+                                      },
+                                      popupMenuButton:
+                                        PopupMenuButton<String>(
+                                            icon: const Icon(Icons.add),
+                                            tooltip: "more",
+                                            itemBuilder: popupItemBuilder,
+                                            onSelected: (value) async {
+                                              add(searchResults[index], value == "private" ? true : false);
+                                            })
+                                    );
+                                  }
+                                }
+                                return Nip51ListElementSearchComponent(
+                                  element: searchResults[index],
+                                  width: 400,
+                                  onTap: (element) {},
+                                  popupMenuButton: PopupMenuButton<String>(
+                                      icon: const Icon(Icons.add),
+                                      tooltip: "more",
+                                      itemBuilder: popupItemBuilder,
+                                      onSelected: (value) async {
+                                        add(searchResults[index], value == "private" ? true : false);
+                                      }),
+                                );
                               },
                               itemCount: searchResults.length))
                       : Container()
@@ -169,7 +189,8 @@ class _MuteListRouter extends State<MuteListRouter> with SingleTickerProviderSta
                   bool? result = await ConfirmDialog.show(context, "Confirm remove ${element.value} from list");
                   if (result != null && result) {
                     EasyLoading.show(status: 'Removing from list and broadcasting...', maskType: EasyLoadingMaskType.black, dismissOnTap: true);
-                    muteList = await relayManager.broadcastRemoveNip51ListElement(muteList!.kind, element.tag, element.value, myOutboxRelaySet!.urls, loggedUserSigner!);
+                    muteList = await relayManager.broadcastRemoveNip51ListElement(
+                        muteList!.kind, element.tag, element.value, myOutboxRelaySet!.urls, loggedUserSigner!);
                     filterProvider.muteList = muteList;
                     filterProvider.notifyListeners();
                     EasyLoading.dismiss();
@@ -186,21 +207,51 @@ class _MuteListRouter extends State<MuteListRouter> with SingleTickerProviderSta
   }
 
   void onEditingComplete() async {
-    List<String> result = await relayProvider.findRelays(controller.text, nip: muteList!.kind == Nip51List.SEARCH_RELAYS ? Nip50.NIP : null);
-    result.forEach((url) {
-      if (relayManager.getRelay(url) == null || relayManager.getRelay(url)!.info == null) {
-        relayManager.relays[url] = Relay(url);
-        relayManager.getRelayInfo(url).then((value) {
-          if (!disposed) {
-            setState(() {});
-          }
-        });
+    searchResults = [];
+    String search = controller.text.trim();
+    if (search.isNotEmpty) {
+      if (search.indexOf("npub") == 0) {
+        try {
+          var result = Nip19.decode(search);
+          searchResults.add(Nip51ListElement(tag: Nip51List.PUB_KEY, value: result, private: true));
+        } catch (e) {}
+      } else if (search.startsWith("#")) {
+        String hashtag = search.replaceAll("#", "").trim();
+        if (hashtag.isNotEmpty) {
+          searchResults.add(Nip51ListElement(tag: Nip51List.HASHTAG, value: hashtag, private: true));
+        }
+      } else {
+        searchResults.add(Nip51ListElement(tag: Nip51List.WORD, value: search, private: true));
+        Iterable<Metadata> searchMetadatas = cacheManager.searchMetadatas(search, 10);
+        searchResults.addAll(searchMetadatas.map((metadata) => Nip51ListElement(tag: Nip51List.PUB_KEY, value: metadata.pubKey, private: true)));
+        if (searchResults.length < 3) {
+          Map<String, dynamic>? filterMap;
+          filterMap = Filter(kinds: [Metadata.KIND], limit: 10).toMap();
+          filterMap!["search"] = search;
+          List<String> relaysWithNip50 = searchRelays.isNotEmpty ? searchRelays : ["wss://relay.nostr.band", "wss://relay.noshere.com"];
+          relayManager.requestRelays(relaysWithNip50, Filter.fromMap(filterMap!), timeout: 10).then((request) {
+            request.stream.listen((event) {
+              onQueryEvent(search, event);
+            });
+          });
+          // });
+        }
       }
-    });
+    }
+    setState(() {});
+  }
 
-    setState(() {
-      searchResults = result;
-    });
+  void onQueryEvent(String searched, Nip01Event event) {
+    if (event.kind == Metadata.KIND && controller.text.trim() == searched && !disposed && !contactListProvider.contacts().contains(event.pubKey)) {
+      var jsonObj = jsonDecode(event.content);
+      Metadata metadata = Metadata.fromJson(jsonObj);
+      metadata.pubKey = event.pubKey;
+      metadataProvider.getMetadata(event.pubKey);
+      searchResults.add(Nip51ListElement(tag: Nip51List.PUB_KEY, value: event.pubKey, private: true));
+      setState(() {
+
+      });
+    }
   }
 
   int compareRelays(RelayMetadata r1, RelayMetadata r2) {
@@ -220,37 +271,27 @@ class _MuteListRouter extends State<MuteListRouter> with SingleTickerProviderSta
     return a2 ? 1 : (r2.count != null ? r2.count!.compareTo(r1.count!) : 0);
   }
 
-  Future<void> add(String url, bool private) async {
-    String? cleanUrl = Relay.clean(url);
-    if (cleanUrl == null) {
+  Future<void> add(Nip51ListElement element, bool private) async {
+    if (muteList!.elements!.any((e) => element.tag == e.tag && element.value == e.value,)) {
       EasyLoading.showError(
-        "Invalid address wss://<host>:<port> or ws://<host>:<port>",
+        "Position already on list",
         dismissOnTap: true,
         duration: const Duration(seconds: 5),
         maskType: EasyLoadingMaskType.black,
       );
       return;
     }
-    if (muteList!.privateRelays!.contains(cleanUrl) || muteList!.publicRelays!.contains(cleanUrl)) {
-      EasyLoading.showError(
-        "Relay already on list",
-        dismissOnTap: true,
-        duration: const Duration(seconds: 5),
-        maskType: EasyLoadingMaskType.black,
-      );
-      return;
-    }
-    bool? result = await ConfirmDialog.show(context, "Confirm add ${private ? "private" : "public"} ${url} to list");
+    bool? result = await ConfirmDialog.show(context, "Confirm add ${private ? "private" : "public"} ${element.tag} ${element.value} to list");
     if (result != null && result) {
-      EasyLoading.show(status: 'Broadcasting relay list...', maskType: EasyLoadingMaskType.black, dismissOnTap: true);
-      /// TODO
-      // muteList = await relayManager.broadcastAddNip51ListElement(muteList!.kind, "Tag", "Value", myOutboxRelaySet!.urls, loggedUserSigner!, private: private);
-      // filterProvider.muteList = muteList;
-      // filterProvider.notifyListeners();
-      // EasyLoading.dismiss();
-      // setState(() {
-      //   controller.text = "";
-      // });
+      EasyLoading.show(status: 'Broadcasting mute list...', maskType: EasyLoadingMaskType.black, dismissOnTap: true);
+
+      muteList = await relayManager.broadcastAddNip51ListElement(muteList!.kind, element.tag, element.value, myOutboxRelaySet!.urls, loggedUserSigner!, private: private);
+      filterProvider.muteList = muteList;
+      filterProvider.notifyListeners();
+      EasyLoading.dismiss();
+      setState(() {
+        controller.text = "";
+      });
     }
   }
 }
@@ -272,7 +313,7 @@ class MuteListElementComponent extends StatelessWidget {
 
     Widget leftBtn = GestureDetector(
         onTap: () async {
-          // EasyLoading.showInfo(private ? "Private" : "Public", dismissOnTap: true, duration: const Duration(seconds: 3));
+          EasyLoading.showInfo(element.private ? "Private" : "Public", dismissOnTap: true, duration: const Duration(seconds: 3));
         },
         child: Icon(
           element.private ? Icons.perm_identity_sharp : Icons.public,
@@ -314,8 +355,8 @@ class MuteListElementComponent extends StatelessWidget {
       ),
       child: Container(
         padding: const EdgeInsets.only(
-          top: Base.BASE_PADDING,
-          bottom: Base.BASE_PADDING,
+          top: Base.BASE_PADDING_HALF,
+          bottom: Base.BASE_PADDING_HALF,
           left: Base.BASE_PADDING,
           right: Base.BASE_PADDING,
         ),
@@ -333,54 +374,106 @@ class MuteListElementComponent extends StatelessWidget {
           children: [
             leftBtn,
             Expanded(
-              child: GestureDetector(
-                onTap: () async {
-                  // if (relayManager.getRelay(element) == null || relayManager.getRelay(element)!.info == null) {
-                  //   relayManager.relays[element] = Relay(element);
-                  //   EasyLoading.show(status: "Loading relay info...");
-                  //   relayManager.getRelayInfo(element).then((info) {
-                  //     EasyLoading.dismiss();
-                  //     if (info != null) {
-                  //       RouterUtil.router(context, RouterPath.RELAY_INFO, relayManager.relays[element]);
-                  //     }
-                  //   });
-                  // } else {
-                  //   RouterUtil.router(context, RouterPath.RELAY_INFO, relayManager.relays[element]);
-                  // }
-                },
                 child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
                     margin: const EdgeInsets.only(bottom: 2, left: 5),
-                    child: element.tag == Nip51List.PUB_KEY ?  Selector<MetadataProvider, Metadata?>(
-                      builder: (context, metadata, child) {
-                        return
-                            SearchMentionUserItemComponent(
-                            metadata: metadata??Metadata(pubKey: element.value),
-                            onTap: (metadata) {
-                              RouterUtil.router(context, RouterPath.USER, element.value);
+                    child: element.tag == Nip51List.PUB_KEY
+                        ? Selector<MetadataProvider, Metadata?>(
+                            builder: (context, metadata, child) {
+                              return SearchMentionUserItemComponent(
+                                  metadata: metadata ?? Metadata(pubKey: element.value),
+                                  onTap: (metadata) {
+                                    RouterUtil.router(context, RouterPath.USER, element.value);
+                                  },
+                                  width: 400);
                             },
-                            width: 400)
-                            ;
-                        // MetadataComponent(
-                        //   pubKey: pubkey,
-                        //   metadata: metadata,
-                        //   jumpable: true,
-                        // ),
-                      },
-                      selector: (context, _provider) {
-                        return _provider.getMetadata(element.value);
-                      },
-                    ) : Text(element.value),
+                            selector: (context, _provider) {
+                              return _provider.getMetadata(element.value);
+                            },
+                          )
+                        : Nip51ListElementSearchComponent(element: element, width: 400, onTap: (element) {},)
                   ),
                 ],
               ),
-            )),
+            ),
             rightBtn,
           ],
         ),
       ),
+    );
+  }
+}
+
+class Nip51ListElementSearchComponent extends StatelessWidget {
+  static const double IMAGE_WIDTH = 50;
+
+  final Nip51ListElement element;
+
+  final double width;
+
+  Function(Nip51ListElement) onTap;
+
+  PopupMenuButton? popupMenuButton;
+
+  Nip51ListElementSearchComponent({super.key, required this.element, required this.width, required this.onTap, this.popupMenuButton});
+
+  @override
+  Widget build(BuildContext context) {
+    var themeData = Theme.of(context);
+    var mainColor = themeData.primaryColor;
+    var cardColor = themeData.cardColor;
+    Color hintColor = themeData.hintColor;
+
+    var main = Container(
+      width: width,
+      color: cardColor,
+      padding: const EdgeInsets.all(Base.BASE_PADDING_HALF),
+      child:  GestureDetector(
+        onTap: () async {
+          if (element.tag == Nip51List.HASHTAG) {
+            var plainTag = element.value.replaceFirst("#", "");
+            RouterUtil.router(context, RouterPath.TAG_DETAIL, plainTag);
+          }
+        },
+        child: Row(
+        children: [
+          Icon(
+            element.tag == Nip51List.HASHTAG?
+            Icons.tag : Icons.format_color_text,
+            color: themeData.appBarTheme.titleTextStyle!.color,
+          ),
+          Expanded(
+            child: Container(
+              padding: const EdgeInsets.only(left: Base.BASE_PADDING_HALF),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                      padding: const EdgeInsets.all(Base.BASE_PADDING_HALF),
+                      child: Text(
+                        element.value,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      )),
+                ],
+              ),
+            ),
+          ),
+          popupMenuButton!=null? popupMenuButton! : Container()
+        ],
+      )),
+    );
+
+    return GestureDetector(
+      onTap: () {
+        onTap(element);
+        // RouterUtil.back(context, metadata.pubKey);
+      },
+      child: main,
     );
   }
 }
