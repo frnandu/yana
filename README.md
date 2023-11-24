@@ -92,7 +92,6 @@ or install deb file from releases:
 - [x] Private Messages ([NIP-04](https://github.com/nostr-protocol/nips/blob/master/04.md))
 - [x] User Profiles (edit/follow/unfollow - [NIP-02](https://github.com/nostr-protocol/nips/blob/master/02.md))
 - [x] Bech Encoding support ([NIP-19](https://github.com/nostr-protocol/nips/blob/master/19.md))
-- [x] Reporting ([NIP-56](https://github.com/nostr-protocol/nips/blob/master/56.md))
 - [x] Block/Hide User
 - [x] User/Note Tagging ([NIP-08](https://github.com/nostr-protocol/nips/blob/master/08.md), [NIP-10](https://github.com/nostr-protocol/nips/blob/master/10.md))
 - [x] Zaps (private, public, anon, non-zap) ([NIP-57](https://github.com/nostr-protocol/nips/blob/master/57.md))
