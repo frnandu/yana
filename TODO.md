@@ -79,6 +79,7 @@
 - ~~when blocking make the note disappear~~
 - ~~show in account list, which ones are read-only~~
 - ~~save notification events to cache DB~~
+- ~~fix zooming of pictures and X position~~
 
 ===== v0.12
 - choose to which relays / lists to broadcast on new note (bounty)
@@ -159,7 +160,6 @@
 - sort following/followers list by most recent
 - add search to following/followers
 - only use tablet second view if horizontal tablet
-- fix zooming of pictures and X position
 - umbrel store package with web client
 - when new user with no following, suggest jack, fiatjaf and others
 - make it work on iOS/MacOS

@@ -67,7 +67,7 @@ dependencies:
   keframe: ^3.0.0
   pretty_qr_code: ^2.0.3
   flutter_link_previewer: ^3.2.1
-  easy_image_viewer: ^1.2.0
+  easy_image_viewer: ^1.2.1
   android_intent_plus: ^4.0.1
   url_launcher: ^6.1.11
   flutter_placeholder_textlines: ^1.2.0

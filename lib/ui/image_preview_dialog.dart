@@ -155,13 +155,14 @@ class _ImagePreviewDialog extends State<ImagePreviewDialog> {
                     easyImageProvider: widget.imageProvider,
                     pageController: _pageController,
                     doubleTapZoomable: widget.doubleTapZoomable,
-                    onScaleChanged: (scale) {
-                      setState(() {
-                        _dismissDirection = scale <= 1.0
-                            ? DismissDirection.down
-                            : DismissDirection.none;
-                      });
-                    }),
+                    // onScaleChanged: (scale) {
+                    //   setState(() {
+                    //     _dismissDirection = scale <= 1.0
+                    //         ? DismissDirection.down
+                    //         : DismissDirection.none;
+                    //   });
+                    // }
+                    ),
                 Positioned(
                     top: 20,
                     right: 5,
@@ -195,23 +196,23 @@ class _ImagePreviewDialog extends State<ImagePreviewDialog> {
       child: main,
     );
 
-    if (widget.swipeDismissible) {
-      return Dismissible(
-          direction: _dismissDirection,
-          resizeDuration: null,
-          confirmDismiss: (dir) async {
-            return true;
-          },
-          onDismissed: (_) {
-            Navigator.of(context).pop();
-
-            _handleDismissal();
-          },
-          key: const Key('dismissible_easy_image_viewer_dialog'),
-          child: popScopeAwareDialog);
-    } else {
+    // if (widget.swipeDismissible) {
+    //   return Dismissible(
+    //       direction: _dismissDirection,
+    //       resizeDuration: null,
+    //       confirmDismiss: (dir) async {
+    //         return true;
+    //       },
+    //       onDismissed: (_) {
+    //         Navigator.of(context).pop();
+    //
+    //         _handleDismissal();
+    //       },
+    //       key: const Key('dismissible_easy_image_viewer_dialog'),
+    //       child: popScopeAwareDialog);
+    // } else {
       return popScopeAwareDialog;
-    }
+    // }
   }
 
   Future<void> saveImage() async {

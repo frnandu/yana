@@ -1,20 +1,14 @@
 import 'dart:convert';
 
-import 'package:dart_ndk/dart_ndk.dart';
 import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip01/filter.dart';
-import 'package:dart_ndk/nips/nip01/helpers.dart';
 import 'package:dart_ndk/nips/nip01/metadata.dart';
-import 'package:dart_ndk/nips/nip02/contact_list.dart';
-import 'package:dart_ndk/nips/nip51/nip51.dart';
-import 'package:dart_ndk/relay.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:yana/models/event_find_util.dart';
-import 'package:yana/router/search/search_action_item_component.dart';
 import 'package:yana/router/search/search_actions.dart';
 import 'package:yana/utils/when_stop_function.dart';
 
@@ -292,9 +286,12 @@ class _SearchRouter extends CustState<SearchRouter>
     // RelayManager relayManager = RelayManager();
     // relayManager.cacheManager = cacheManager;
     // relayManager.connect(urls: relaysWithNip50).then((value) {
+    var search = filterMap!["search"];
       relayManager.requestRelays(relaysWithNip50, Filter.fromMap(filterMap!), timeout: 10).then((request) {
         request.stream.listen((event) {
-          onQueryEvent(event);
+          if (search == controller.text.trim()) {
+            onQueryEvent(event);
+          }
         });
       });
     // });
@@ -534,8 +531,8 @@ class _SearchRouter extends CustState<SearchRouter>
     // hideKeyBoard();
     searchAction = SearchActions.searchPubkeyEvent;
 
-    var value = controller.text;
-    value = value.trim();
+    var value = controller.text.trim();
+    // value = value.trim();
     // if (StringUtil.isBlank(value)) {
     //   EasyLoading.show(status: S.of(context).Empty_text_may_be_ban_by_relays);
     // }

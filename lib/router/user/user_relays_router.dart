@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:dart_ndk/models/pubkey_mapping.dart';
 import 'package:dart_ndk/nips/nip51/nip51.dart';
 import 'package:dart_ndk/relay.dart';
 import 'package:flutter/foundation.dart';
@@ -171,7 +172,7 @@ class RelayMetadataComponent extends StatelessWidget {
     var cardColor = themeData.cardColor;
     var bodySmallFontSize = themeData.textTheme.labelSmall!.fontSize;
 
-    if (relayMetadata == null) {
+    if (relayMetadata == null || relayMetadata!.url==null) {
       return Container();
     }
     Widget leftBtn = Container();
@@ -213,6 +214,7 @@ class RelayMetadataComponent extends StatelessWidget {
     });
 
     String contacts = "contact${(relayMetadata!.count! > 1) ? "s" : ""}";
+    String uses = "use${(relayMetadata!.count! > 1) ? "" : "s"}";
 
     if (relayMetadata!.count != null && relayMetadata!.count! > 0) {
       rightButtons.add(GestureDetector(
@@ -231,12 +233,13 @@ class RelayMetadataComponent extends StatelessWidget {
                   fontSize: themeData.textTheme.labelLarge!.fontSize))));
       rightButtons.add(GestureDetector(
           onTap: () {
+            List<PubkeyMapping>? aa = feedRelaySet!.relaysMap[relayMetadata!.url];
             RouterUtil.push(context, MaterialPageRoute(builder: (context) {
               return FollowedRouter.withTitle(
-                  feedRelaySet!.relaysMap[relayMetadata!.url]!
-                      .map((e) => e.pubKey)
-                      .toList(),
-                  "${relayMetadata!.count} $contacts");
+                  aa!=null?
+                      aa.map((e) => e.pubKey)
+                      .toList():[],
+                  "${relayMetadata!.count} $contacts ${uses} ${relayMetadata!.url}");
             }));
           },
           child: Text(contacts,
