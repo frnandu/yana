@@ -937,8 +937,8 @@ blockquote {
 }
 
 .testimonial img {
-    max-height: 120px;
-    border-radius: 250em;
+	height: 700px; 
+	width: 528px; 
 }
 
 .testimonial footer {
@@ -948,8 +948,8 @@ blockquote {
 /* Style Classic - Avatar above Testimonial */
 
 .testimonial.classic img {
-    display: inline-block;
-    margin-bottom: 25px;
+	display: inline-block;
+	margin-top: 0px;
 }
 
 .testimonial.classic q {
@@ -1149,7 +1149,7 @@ blockquote {
 }
 
 /* handling phones and small screens */
-@media only screen and (max-width: 1024px) {
+@media (height:900px) and (width:528px){
     .featherlight .featherlight-content {
         /* dimensions: maximize lightbox with for small screens */
         margin-left: 10px;
@@ -2215,7 +2215,8 @@ blockquote {
     }
 
     .col-1, .col-2, .col-5, .col-7, .col-9, .col-11, .col-2-3, .col-3-4, .col-61, .col-38, .row {
-        width: 100%;
+	width: 100%;
+	height: 0px;
     }
 
     .col-3, .col-4, .col-6, .col-8, .col-10, .col-12 {
