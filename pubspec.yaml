@@ -46,8 +46,8 @@ dependencies:
   string_validator: ^1.0.0
   http: ^1.1.0
   get_time_ago: ^1.2.2
-  cached_network_image: ^3.3.0
-  photo_manager: ^2.8.1
+  cached_network_image: ^3.2.3
+  #photo_manager: ^2.8.1
   # flutter_launcher_icons: ^0.12.0
   flutter_native_splash: ^2.3.2
   flutter_animate: ^4.1.1+1
