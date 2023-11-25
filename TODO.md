@@ -80,6 +80,7 @@
 - ~~show in account list, which ones are read-only~~
 - ~~save notification events to cache DB~~
 - ~~fix zooming of pictures and X position~~
+- ~~mute list use nip51~~
 
 ===== v0.12
 - choose to which relays / lists to broadcast on new note (bounty)
@@ -98,7 +99,6 @@
 - custom lists/sets nip51
 - import/merge other lists or other peoples public lists
 - fix DMS when switching between accounts
-- mute list use nip51
 - group notification reactions to the same post (similar to amethyst)
 - show used data of background service in KBs
 - after adding follow, recalculate relaySet for gossip
