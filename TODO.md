@@ -108,7 +108,7 @@
 - animated screen ASAP after splash
 - isar v4 for web
 - load more on big posts
-- drafts
+- drafts and scheduled posting
 - detect new followers by comparing in background previous followers list and generating new notification
 - login by searching some user by name/displayName
 
