@@ -94,7 +94,7 @@
 - too much notifications of reactions to replies of replies of post where you're tagged
 - WTF nwc needs fresh relayManager for get_info/get_balance??
 
-- ===== v0.13
+===== v0.13
 - lists on profiles
 - custom lists/sets nip51
 - import/merge other lists or other peoples public lists
