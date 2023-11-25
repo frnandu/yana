@@ -432,8 +432,7 @@ class RelayMetadataComponent extends StatelessWidget {
                             style: themeData.textTheme.titleLarge,
                             overflow: TextOverflow.ellipsis),
                       )),
-                  relay != null
-                      // && (relayMetadata!.count==null || relayMetadata!.count==0)
+                  relay != null && (relayMetadata!.count!=null && relayMetadata!.count!>0)
                       ? Row(
                           children: [
                             Container(

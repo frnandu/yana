@@ -392,6 +392,9 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
       }
       // TODO how to make this event dissapear??
     } else if (value == "delete") {
+      setState(() {
+        muting = true;
+      });
 
       Set<String> urlsToBroadcast = (await broadcastUrls(widget.event.pubKey)).toSet()..addAll(widget.event.sources);
       await relayManager.reconnectRelays(urlsToBroadcast);
@@ -404,8 +407,11 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
       if (deleteCallback != null) {
         deleteCallback.onDelete(widget.event);
       }
+      if (widget.onMuteProfile!=null) {
+        widget.onMuteProfile!();
+      }
       setState(() {
-
+        muting = false;
       });
     }
   }

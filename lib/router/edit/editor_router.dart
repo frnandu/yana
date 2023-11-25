@@ -1,3 +1,5 @@
+import 'package:dart_ndk/models/relay_set.dart';
+import 'package:dart_ndk/read_write.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip01/metadata.dart';
@@ -10,6 +12,7 @@ import 'package:yana/main.dart';
 import 'package:yana/nostr/nip172/community_id.dart';
 import 'package:yana/router/edit/poll_input_component.dart';
 import 'package:yana/router/index/index_app_bar.dart';
+import 'package:yana/ui/confirm_dialog.dart';
 import 'package:yana/ui/editor/lnbc_embed_builder.dart';
 import 'package:yana/ui/editor/mention_event_embed_builder.dart';
 import 'package:yana/ui/editor/mention_user_embed_builder.dart';
@@ -48,7 +51,7 @@ class EditorRouter extends StatefulWidget {
 
   List<quill.BlockEmbed>? initEmbeds;
 
-  EditorRouter({
+  EditorRouter({super.key,
     required this.tags,
     required this.tagsAddedWhenSend,
     required this.tagPs,
@@ -323,7 +326,45 @@ class _EditorRouter extends CustState<EditorRouter> with EditorMixin {
         ),
         actions: [
           TextButton(
-            onPressed: documentSave,
+            onPressed: () async {
+              Set<String> relays = {};
+              relays.addAll(myOutboxRelaySet!.urls.toList());
+              if (settingProvider.inboxForReactions == 1) {
+                List<String> pubKeys = Nip01Event.getTags(widget.tagPs, "p");
+                if (pubKeys.length == 1) {
+                  relays.addAll(await getInboxRelays(pubKeys.first));
+                } else if (pubKeys.isNotEmpty) {
+                  EasyLoading.show(status: 'Calculating inbox relays of participants...', maskType: EasyLoadingMaskType.black, dismissOnTap: true);
+                  RelaySet inboxRelaySet = await relayManager
+                      .calculateRelaySet(
+                      name: "replyInboxRelaySet",
+                      ownerPubKey: loggedUserSigner!.getPublicKey(),
+                      pubKeys: pubKeys,
+                      direction: RelayDirection.inbox,
+                      relayMinCountPerPubKey: settingProvider
+                          .broadcastToInboxMaxCount);
+                  relays.addAll(inboxRelaySet.urls.toSet());
+                  relays.removeWhere((element) => relayManager.blockedRelays.contains(element));
+                  EasyLoading.dismiss();
+                }
+              }
+              List<String>? results = await showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return MultiSelect(items: relays!.toList(), selectedItems: relays!.toList().take(myOutboxRelaySet!.urls.length+settingProvider
+                      .broadcastToInboxMaxCount).toList(), sending: false,);
+                },
+              );
+              if (results!=null && results.isNotEmpty) {
+                // await showDialog(
+                //   context: context,
+                //   builder: (BuildContext context) {
+                //     return MultiSelect(items: results!, selectedItems: [], sending: true,);
+                //   },
+                // );
+                documentSave(broadcastRelays: results);
+              }
+            },
             style: const ButtonStyle(),
             child: Text(
               s.Broadcast,
@@ -333,6 +374,14 @@ class _EditorRouter extends CustState<EditorRouter> with EditorMixin {
               ),
             ),
           ),
+          // PopupMenuButton<String>(
+          //     icon: const Icon(Icons.more_horiz_outlined),
+          //     tooltip: "more",
+          //     itemBuilder: (context) => [
+          //       const PopupMenuItem(value: "choose", child: Text("Choose relays...")),
+          //     ],
+          //     onSelected: (value) async {
+          //     })
         ],
       ),
       body: Column(
@@ -460,21 +509,44 @@ class _EditorRouter extends CustState<EditorRouter> with EditorMixin {
     return inputString.substring(start, end);
   }
 
-  Future<void> documentSave() async {
-    EasyLoading.show(status: 'Broadcasting to relays...', maskType: EasyLoadingMaskType.black);
-    // var cancelFunc = BotToast.showLoading();
-    try {
-      var event = await doDocumentSave();
-      if (event == null) {
-        // EasyLoading.show(status: I18n.of(context).Send_fail);
-        EasyLoading.showError('Failed...');
-        return;
+  bool isReply() {
+    for (var tag in getTags()) {
+      if (tag.length > 1) {
+        var key = tag[0];
+        var value = tag[1];
+
+        if (key == "e") {
+          return true;
+        }
       }
-      EasyLoading.showSuccess('Success!');
-      RouterUtil.back(context, event);
-    } finally {
-      EasyLoading.dismiss();
     }
+    return false;
+  }
+
+  Future<void> documentSave({List<String>? broadcastRelays}) async {
+    bool reply = isReply();
+    if (broadcastRelays==null) {
+      if (reply) {
+        broadcastRelays = await broadcastUrls(getPubkey());
+      }
+    }
+    broadcastRelays ??= myOutboxRelaySet!.urls.toList();
+    // bool? result = await ConfirmDialog.show(context, "Confirm broadcast to ${broadcastRelays.length} outbox relays");
+    // if (result != null && result) {
+      EasyLoading.show(status: 'Broadcasting to ${broadcastRelays.length} outbox relays...',
+          maskType: EasyLoadingMaskType.black);
+      try {
+        var event = await doDocumentSave(broadcastRelays: broadcastRelays);
+        if (event == null) {
+          EasyLoading.showError('Failed...');
+          return;
+        }
+        EasyLoading.showSuccess('Success!');
+        RouterUtil.back(context, event);
+      } finally {
+        EasyLoading.dismiss();
+      }
+    // }
   }
 
   @override
@@ -529,5 +601,80 @@ class _EditorRouter extends CustState<EditorRouter> with EditorMixin {
     }
 
     return list;
+  }
+}
+
+class MultiSelect extends StatefulWidget {
+  final List<String> items;
+  final List<String> selectedItems;
+  final bool sending;
+  const MultiSelect({Key? key, required this.items, required this.selectedItems, required this.sending}) : super(key: key);
+
+  @override
+  State<StatefulWidget> createState() => _MultiSelectState();
+}
+
+class _MultiSelectState extends State<MultiSelect> {
+  // this variable holds the selected items
+  List<String> _selectedItems = [];
+  bool finished = false;
+
+  @override
+  void initState() {
+    _selectedItems = widget.selectedItems;
+  }
+  // This function is triggered when a checkbox is checked or unchecked
+  void _itemChange(String itemValue, bool isSelected) {
+    setState(() {
+      if (isSelected) {
+        _selectedItems.add(itemValue);
+      } else {
+        _selectedItems.remove(itemValue);
+      }
+    });
+  }
+
+  // this function is called when the Cancel button is pressed
+  void _cancel() {
+    Navigator.pop(context);
+  }
+
+// this function is called when the Submit button is tapped
+  void _submit() {
+    Navigator.pop(context, _selectedItems);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: !widget.sending? const Text('Choose Relays & confirm'): const Text("Broadcasting..."),
+      content: SizedBox(height:!widget.sending?400: null, child:SingleChildScrollView(
+        child: ListBody(
+          children: !widget.sending? widget.items
+              .map((item) => CheckboxListTile(
+            value: _selectedItems.contains(item),
+            title: Text(item.replaceAll("ws://", "").replaceAll("wss://", ""), style: const TextStyle(fontWeight: FontWeight.w200, fontSize: 14)),
+            controlAffinity: ListTileControlAffinity.leading,
+            onChanged: (isChecked) => _itemChange(item, isChecked!),
+          ))
+              .toList()
+          : widget.items.map((item) => Text(item.replaceAll("ws://", "").replaceAll("wss://", ""))).toList()
+        ),
+      )),
+      actions: !widget.sending ? [
+        TextButton(
+          onPressed: _cancel,
+          child: const Text('Cancel'),
+        ),
+        ElevatedButton(
+          onPressed: _submit,
+          child: const Text('Broadcast'),
+        ),
+      ] :
+      [
+        Text("Sending 1/10")
+      ]
+      ,
+    );
   }
 }

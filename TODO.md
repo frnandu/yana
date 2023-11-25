@@ -81,23 +81,27 @@
 - ~~save notification events to cache DB~~
 - ~~fix zooming of pictures and X position~~
 - ~~mute list use nip51~~
+- ~~not your relay list - improve looks with icons and stuff (not so easy)~~
+- ~~in thread view handle better zaps instead of some weird bitcoin component~~
+- ~~choose to which relays / lists to broadcast on new note/reply~~
+- ~~when replying using gossip inbox model, should find best relay set for inbox all people involved in conversation~~
 
 ===== v0.12
-- choose to which relays / lists to broadcast on new note (bounty)
+
+===== v0.13
 - make thread detail subscription of new replies work
 - make reactions live again with subscriptions or some other way 
-- show progress of broadcasting note on relays
-- include relay hints on nevent and stuff (bounty)
+- show progress of broadcasting note on relays with retry if some fail
 - handle event deletions coming from relays, should delete in cache
 - don't validate signature for events cached on DB
 - when following someone new and gossip=1, ask confirmation for that user's relay list acceptance, and eventual blocking some relays
 - too much notifications of reactions to replies of replies of post where you're tagged
 - WTF nwc needs fresh relayManager for get_info/get_balance??
-
-===== v0.13
+- include relay hints on nevent and stuff
 - lists on profiles
 - custom lists/sets nip51
 - import/merge other lists or other peoples public lists
+- long posts should be cut and have "show more"
 - fix DMS when switching between accounts
 - group notification reactions to the same post (similar to amethyst)
 - show used data of background service in KBs
@@ -130,15 +134,12 @@
 
 - nip19 nprofile
 - custom zap amounts
-=======================
-- reply position on thread when linking from outside is wrong
 - fast secp256k1 verify signature for web JS
 - NIP-78 preferences and messages read state
 - separate posts from replies on profile
 - update service check for new release from github
 - login with nip05
 - login with mnemonic
-- remember eventMemBox for Posts/Replies on DB (on just timestamp lastRead) so badge counter persists between app restarts
 - get notifications in background for all accounts
 - floating icon (+) on DMS sends new msg to CHOOSE
 - optimize zaps/followed downloading (caching on db) on background 
@@ -147,21 +148,15 @@
 - submit to f-droid
 - badges also on drawer when in tablet mode
 - add signing keys to google app store using non-KYC method
-- not your relay list - improve looks with icons and stuff (not so easy)
-- in thread view handle better zaps instead of some weird bitcoin component
 - show common followers/followees
 - try to load images using Isolate and compute, so that feed scrolling does not freeze while loading images
 - add SystemMouseCursors.click to everything that is clickable for web version
 - https://pub.dev/packages/objectbox
 - integration with https://github.com/greenart7c3/Amber
-- long posts should be cut and have "show more"
-- followers/following list more condensed
-- Database offline check
 - sort following/followers list by most recent
 - add search to following/followers
 - only use tablet second view if horizontal tablet
 - umbrel store package with web client
-- when new user with no following, suggest jack, fiatjaf and others
 - make it work on iOS/MacOS
 
 

@@ -357,19 +357,26 @@ Future<void> initRelays({bool newKey = false}) async {
   } catch (e) {}
 }
 
-Future<Iterable<String>> broadcastUrls(String? pubKey) async {
-  Iterable<String> urlsToBroadcast = [];
-  if (settingProvider.inboxForReactions == 1 && pubKey!=null) {
-    UserRelayList? userRelayList = await relayManager.getSingleUserRelayList(pubKey!);
-    if (userRelayList!=null) {
-      urlsToBroadcast = userRelayList.readUrls;
-      if (urlsToBroadcast.length > settingProvider.broadcastToInboxMaxCount) {
-        urlsToBroadcast = urlsToBroadcast.take(settingProvider.broadcastToInboxMaxCount);
-      }
+Future<List<String>> getInboxRelays(String pubKey) async {
+  List<String> urlsToBroadcast = [];
+  UserRelayList? userRelayList = await relayManager.getSingleUserRelayList(
+      pubKey!);
+  if (userRelayList != null) {
+    urlsToBroadcast = userRelayList.readUrls.toList();
+  }
+  return urlsToBroadcast;
+}
+
+Future<List<String>> broadcastUrls(String? reactionInboxPubKey) async {
+  List<String> urlsToBroadcast = [];
+  if (settingProvider.inboxForReactions == 1 && reactionInboxPubKey!=null) {
+    urlsToBroadcast = await getInboxRelays(reactionInboxPubKey);
+    if (urlsToBroadcast.length > settingProvider.broadcastToInboxMaxCount) {
+      urlsToBroadcast = urlsToBroadcast.take(settingProvider.broadcastToInboxMaxCount).toList();
     }
   }
   if (urlsToBroadcast.isEmpty) {
-    urlsToBroadcast = myOutboxRelaySet!.urls;
+    urlsToBroadcast = myOutboxRelaySet!.urls.toList();
   }
   return urlsToBroadcast;
 }

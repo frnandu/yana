@@ -364,7 +364,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
             onTap: () {
               launchUrl(OUTBOX_MODEL_INFO_URL, mode: LaunchMode.externalApplication);
             }),
-        title: const Text("Broadcast reactions to other people's inbox relays")));
+        title: const Text("Broadcast reactions & replies to inbox relays of participants")));
 
     if (settingProvider.inboxForReactions == 1) {
       networkTiles.add(SettingsTile.navigation(
