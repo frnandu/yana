@@ -940,8 +940,8 @@ blockquote q {
 }
 
 .testimonial img {
-	height: 700px;
-/*	width: 350px;*/
+/*	height: 600px; */
+	width: 300px;
 }
 
 .testimonial footer {
@@ -952,7 +952,7 @@ blockquote q {
 
 .testimonial.classic img {
 	display: inline-block;
-	margin-top: 20px;
+	margin-top: 0;
 	margin-bottom: 30px;
 
 }

@@ -258,28 +258,28 @@ class _LoginRouter extends State<LoginRouter>
       // //           child: Image.asset("assets/imgs/ios.png", width: 100, isAntiAlias:true))),
       // //
       // ],));
-      var github =
-          Image.asset("assets/imgs/github.png", width: 200, isAntiAlias: true);
-      list.add(MouseRegion(
-          cursor: SystemMouseCursors.click,
-          child: GestureDetector(
-              onTap: () {
-                var url = Uri.parse("https://github.com/frnandu/yana/releases");
-                launchUrl(url, mode: LaunchMode.externalApplication);
-              },
-              child: github)));
-
-      var obtainium = Image.asset("assets/imgs/obtainium.png",
-          width: 200, isAntiAlias: true);
-      list.add(MouseRegion(
-          cursor: SystemMouseCursors.click,
-          child: GestureDetector(
-              onTap: () {
-                var url = Uri.parse("https://github.com/ImranR98/Obtainium");
-                launchUrl(url, mode: LaunchMode.externalApplication);
-              },
-              child: obtainium)));
-
+      // var github =
+      //     Image.asset("assets/imgs/github.png", width: 200, isAntiAlias: true);
+      // list.add(MouseRegion(
+      //     cursor: SystemMouseCursors.click,
+      //     child: GestureDetector(
+      //         onTap: () {
+      //           var url = Uri.parse("https://github.com/frnandu/yana/releases");
+      //           launchUrl(url, mode: LaunchMode.externalApplication);
+      //         },
+      //         child: github)));
+      //
+      // var obtainium = Image.asset("assets/imgs/obtainium.png",
+      //     width: 200, isAntiAlias: true);
+      // list.add(MouseRegion(
+      //     cursor: SystemMouseCursors.click,
+      //     child: GestureDetector(
+      //         onTap: () {
+      //           var url = Uri.parse("https://github.com/ImranR98/Obtainium");
+      //           launchUrl(url, mode: LaunchMode.externalApplication);
+      //         },
+      //         child: obtainium)));
+      //
       // var f_droid = Image.asset(
       //   "assets/imgs/f-droid.png",
       //     width: 200

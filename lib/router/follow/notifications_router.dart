@@ -153,6 +153,7 @@ class _NotificationsRouter extends KeepAliveCustState<NotificationsRouter>
 
   @override
   void dispose() {
+    super.dispose();
     notificationsProvider.setTimestampToNewestAndSave();
   }
 
