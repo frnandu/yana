@@ -2174,17 +2174,6 @@ blockquote q {
         height: 270px !important;
     }
 
-    /* Footer */
-    #landing-footer #copyright {
-        float: left;
-        width: 50%;
-    }
-
-    #landing-footer .social-icons {
-        float: right;
-        width: 50%;
-    }
-
     /*-----------------Typography-----------------*/
     h1 {
         font-size: 38px;
@@ -2273,12 +2262,12 @@ blockquote q {
     /* Footer */
     #landing-footer #copyright {
         float: left;
-        width: 50%;
+        width: 80%;
     }
 
     #landing-footer .social-icons {
         float: right;
-        width: 50%;
+        width: 20%;
     }
 
 }

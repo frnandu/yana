@@ -22,17 +22,17 @@ body {
 /* Default Link Color */
 
 a, .la-ball-triangle-path {
-    color:#d2b356;
+    color:AA529D;
 }
 
 a:hover, #header.nav-solid nav a:hover {
-    color:#d2b356;
+    color:#AA529D;
 }
 
 /* Default Icon Color */
 
 .icon i {
-    color:#d2b356;
+    color:#AA529D;
 }
 
 /* Border Color */
@@ -164,7 +164,7 @@ body {
 
 #banner h1 {
 	font-family: "Open Sans", sans-serif, Arial, Helvetica;
-	font-size: 62px;
+	font-size: 56px;
 	line-height: 60px;
 	font-weight: 800;
 	color: #FFFFFF;
