@@ -380,7 +380,6 @@ section {
 /*Style*/
 
 .button {
-    font-size: 16px;
     margin: 35px 0;
     padding: 11px 16px;
     -webkit-transition: all .3s linear;
@@ -936,9 +935,13 @@ blockquote {
     position: relative;
 }
 
+blockquote q {
+    color: white !important;
+}
+
 .testimonial img {
-/*	height: 700px;*/
-	width: 528px; 
+	height: 700px;
+/*	width: 350px;*/
 }
 
 .testimonial footer {
@@ -949,7 +952,9 @@ blockquote {
 
 .testimonial.classic img {
 	display: inline-block;
-	margin-top: 0px;
+	margin-top: 20px;
+	margin-bottom: 30px;
+
 }
 
 .testimonial.classic q {
