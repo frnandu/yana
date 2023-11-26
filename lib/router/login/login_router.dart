@@ -90,7 +90,7 @@ class _LoginRouter extends State<LoginRouter>
     //   child: Text(
     //     packageInfo.appName,
     //     style: const TextStyle(
-    //       fontFamily: 'Montserrat',
+    //       fontFamily: 'Geist',
     //       color: Colors.white,
     //       fontSize: 30,
     //       fontWeight: FontWeight.bold,
@@ -131,7 +131,7 @@ class _LoginRouter extends State<LoginRouter>
           child: Text(
             s.Login,
             style: const TextStyle(
-              fontFamily: 'Montserrat',
+              fontFamily: 'Geist',
               color: Colors.white,
               fontSize: 16,
               fontWeight: FontWeight.bold,
@@ -164,7 +164,7 @@ class _LoginRouter extends State<LoginRouter>
             child: const Text(
               "Login with Extension",
               style: TextStyle(
-                fontFamily: 'Montserrat',
+                fontFamily: 'Geist',
                 color: Colors.white,
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
@@ -190,7 +190,7 @@ class _LoginRouter extends State<LoginRouter>
           child: Text(
             s.Generate_a_new_private_key,
             style: const TextStyle(
-              fontFamily: 'Montserrat',
+              fontFamily: 'Geist',
               color: Colors.white,
               fontSize: 16,
               fontWeight: FontWeight.bold,
@@ -213,7 +213,7 @@ class _LoginRouter extends State<LoginRouter>
             child: Text(
               "<< cancel",
               style: const TextStyle(
-                fontFamily: 'Montserrat',
+                fontFamily: 'Geist',
                 color: Colors.white,
                 fontSize: 16,
                 fontWeight: FontWeight.bold,

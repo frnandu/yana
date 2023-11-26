@@ -52,7 +52,7 @@ class _ProfileEditorRouter extends CustState<ProfileEditorRouter> {
           Text(text,
               style: TextStyle(color: themeData.textTheme.bodyMedium!.color,
                   decoration: TextDecoration.none,
-                  fontFamily: 'Montserrat',
+                  fontFamily: 'Geist',
                   fontWeight: FontWeight.normal,
                   fontSize: 20)),
           const SizedBox(height: 50),

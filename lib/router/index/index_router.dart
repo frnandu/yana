@@ -214,7 +214,7 @@ class _IndexRouter extends CustState<IndexRouter>
     var themeData = Theme.of(context);
     var titleTextColor = themeData.appBarTheme.titleTextStyle!.color;
     var titleTextStyle = TextStyle(
-      fontFamily: 'Montserrat',
+      fontFamily: 'Geist',
       fontWeight: FontWeight.w600,
       fontSize: 14,
       color: titleTextColor,

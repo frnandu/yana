@@ -50,7 +50,7 @@ class _WalletRouter extends State<WalletRouter> {
               title,
               style: const TextStyle(
                 fontWeight: FontWeight.bold,
-                fontFamily: "Montserrat",
+                fontFamily: "Geist",
                 fontSize: 20,
               ),
             ),
@@ -235,7 +235,7 @@ class _WalletRouter extends State<WalletRouter> {
                     Text('  (soon)',
                         style: TextStyle(
                             color: themeData.hintColor,
-                            fontFamily: "Montserrat",
+                            fontFamily: "Geist",
                             fontSize: 12))
                   ]))),
             )),
@@ -266,7 +266,7 @@ class _WalletRouter extends State<WalletRouter> {
                                 Text('  (soon)',
                                     style: TextStyle(
                                         color: themeData.hintColor,
-                                        fontFamily: "Montserrat",
+                                        fontFamily: "Geist",
                                         fontSize: 12))
                               ]))),
                 )),

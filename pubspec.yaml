@@ -221,6 +221,26 @@ flutter:
         - asset: assets/fonts/Montserrat/Montserrat-BlackItalic.ttf
           style: italic
           weight: 900
+    - family: Geist
+      fonts:
+        - asset: assets/fonts/Geist/Geist-Black.otf
+          weight: 800
+        - asset: assets/fonts/Geist/Geist-Bold.otf
+          weight: 700
+        - asset: assets/fonts/Geist/Geist-Light.otf
+          weight: 300
+        - asset: assets/fonts/Geist/Geist-Medium.otf
+          weight: 500
+        - asset: assets/fonts/Geist/Geist-Regular.otf
+          weight: 400
+        - asset: assets/fonts/Geist/Geist-SemiBold.otf
+          weight: 600
+        - asset: assets/fonts/Geist/Geist-Thin.otf
+          weight: 200
+        - asset: assets/fonts/Geist/Geist-UltraBlack.otf
+          weight: 900
+        - asset: assets/fonts/Geist/Geist-UltraLight.otf
+          weight: 100
     # w100 Thin, the least thick
     # w200 Extra-light
     # w300 Light

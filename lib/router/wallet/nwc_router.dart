@@ -63,7 +63,7 @@ class _NwcRouter extends State<NwcRouter> {
           "Nostr Wallet Connect",
           style: TextStyle(
             fontWeight: FontWeight.bold,
-            fontFamily: "Montserrat",
+            fontFamily: "Geist",
             fontSize: 20,
           ),
         ),
@@ -125,7 +125,7 @@ class _NwcRouter extends State<NwcRouter> {
                   Text('  (soon)',
                       style: TextStyle(
                           color: themeData.hintColor,
-                          fontFamily: "Montserrat",
+                          fontFamily: "Geist",
                           fontSize: 12))
                 ])))));
     if (!PlatformUtil.isWeb()) {

@@ -348,7 +348,7 @@ class IndexDrawerItem extends StatelessWidget {
             style: TextStyle(
                 color: color,
                 fontSize: Base.BASE_FONT_SIZE + 3,
-                fontFamily: "Montserrat"))));
+                fontFamily: "Geist"))));
 
     if (rightWidget != null) {
       list.add(MouseRegion(
