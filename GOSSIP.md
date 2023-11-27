@@ -68,6 +68,3 @@ A value of 5-15 is usually good.
 ### DMS
 - TODO (still uses personal read relays)
 
-### Global
-- TODO (still uses personal read relays)
-
