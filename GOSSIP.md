@@ -15,6 +15,7 @@ A good graphical explanation from Mike is this:
 <img src="https://mikedilger.com/gossip-model/gossip-model.png" style="width:400px; height:400px"/>
 
 # Yana
+We believe that by using a good gossip model it helps increase nostr decentralization and censorship resistance.
 
 So how does Yana implement specifically these models?
 
