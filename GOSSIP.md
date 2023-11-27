@@ -45,9 +45,6 @@ By changing the minimal amount you are able to better adjust for either less dat
 The more relays you load notes from for a given contact, the better the chance you have of avoiding potential censorship by a bad behaving relay.\
 A value somewhere between 2-5 is usually a good compromise.
 
-### Profile notes
-- It will load notes for a specific profile from their declared relays, both write (outbox for new posts) as well as read (inbox for replies).
-
 ### Reactions
 - When adding a reaction (likes, replies, reposts) it will calculate a similar relay set as described above for outbox feed, but instead it will take into consideration inbox (read) relays of *all the people* involved in the conversation plus your own personal write (outbox) relays.
 - To increase reach and probability of being seen by as much people as possible you can adjust the maximum amount of relays to which to broadcast (setting "Max amount of relays per reaction")
@@ -60,6 +57,10 @@ A value of 5-15 is usually good.
 
 ### Notifications
 - It uses your configured personal read (inbox) relays
+
+### Profile notes
+- It will use inbox relays for given profile if it is a contact, or default personal inbox relays otherwise.
+- TODO - use all declared relays for given profile, both write (outbox for new posts) as well as read (inbox for replies).
 
 ### Thread view
 - TODO (still uses personal read relays) 
