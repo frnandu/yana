@@ -26,7 +26,7 @@ The currently implemented features in the lib are:
 It will try to find each contact relay list using your personal inbox relays merged with a pre-defined bootstrap relays known to have these lists, like for example wss://purplepag.es relay.
 
 Sources are, sorted by priority:
-- from [NIP-65](https://github.com/nostr-protocol/nips/blob/master/65.md)
+- from [NIP-65](https://github.com/nostr-protocol/nips/blob/master/65.md) write (outbox) marked
 - from kind3 content (Contact lists NIP-02).
 
 It doesn't merge lists, if it finds a nip-65 it will not use kind3 list.
