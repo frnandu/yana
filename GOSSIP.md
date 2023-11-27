@@ -1,7 +1,8 @@
 # What is the Gossip model, a.k.a. inbox/outbox model?
 
-As [Mike Dilger](https://mikedilger.com/gossip-model/) puts it:
-"The simplest characterization of the gossip model is just this: reading the posts of people you follow from the relays that they wrote them to."
+As [Mike Dilger](https://mikedilger.com/) puts it:
+"The simplest characterization of the gossip model is just this:\
+reading the posts of people you follow from the relays that they wrote them to."
 
 If you want to know more in detailed about the original idea from mike please read his good explaination of it [here](https://mikedilger.com/gossip-model/).
 
