@@ -41,8 +41,8 @@ It doesn't merge lists, if it finds a nip-65 it will not use kind3 list.
   - It's not on the blocked relay list (NIP-51 kind 10006)
 - It will start from the relays that have the most amount of contacts as declared the relay as write (outbox), and go down the list until every contact has at least the minimal amount satisfied.
 
-By changing the minimal amount you are able to better adjust for either less data usage, or more censorship resistance. The more relays you load notes from for a given contact, the better the chance you have of avoiding potential censorship by a bad behaving relay.
-
+By changing the minimal amount you are able to better adjust for either less data usage, or more censorship resistance.\
+The more relays you load notes from for a given contact, the better the chance you have of avoiding potential censorship by a bad behaving relay.\
 A value somewhere between 2-5 is usually a good compromise.
 
 ### Profile notes
