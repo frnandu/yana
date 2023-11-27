@@ -23,7 +23,7 @@ Yana uses https://github.com/relaystr/dart_ndk lib for nostr interaction and rel
 
 The currently implemented features in the lib are:
 
-## Load your followed contacts relay lists
+### Load your followed contacts relay lists
 It will try to find each contact relay list using your personal inbox relays merged with a pre-defined bootstrap relays known to have these lists, like for example wss://purplepag.es relay.
 
 Sources are, sorted by priority:
@@ -34,7 +34,7 @@ It doesn't merge lists, if it finds a nip-65 it will not use kind3 list.
 
 (in future will also fetch from NIP-05 list as a fallback)
 
-## Calculate a relay set for outbox feed
+### Calculate a relay set for outbox feed
 - The set should contain the minimal amount of relays for fetching notes for everybody from *at least* a configurable amount (setting "Minimal amount of relays per contact").
 - It will consider a relay valid to be included in the set if:
   - It can connect to it (or already connected)
@@ -45,25 +45,25 @@ By changing the minimal amount you are able to better adjust for either less dat
 
 A value somewhere between 2-5 is usually a good compromise.
 
-## Profile notes
+### Profile notes
 - It will load notes for a specific profile from their declared relays, both write (outbox for new posts) as well as read (inbox for replies).
 
-## Reactions
+### Reactions
 - When adding a reaction (likes, replies, reposts) it will calculate a similar relay set as described above for outbox feed, but instead it will take into consideration inbox (read) relays of *all the people* involved in the conversation plus your own personal write (outbox) relays.
 - To increase reach and probability of being seen by as much people as possible you can adjust the maximum amount of relays to which to broadcast (setting "Max amount of relays per reaction")
 - You can choose precisely which relays to broadcast as a confirmation step on replies. Likes and reposts will use the configured default values.
 
 A value of 5-15 is usually good.
 
-## New posts
+### New posts
 - It just uses your configured personal write (outbox) relays
 
-## Notifications
+### Notifications
 - It uses your configured personal read (inbox) relays
 
-## Thread view
+### Thread view
 - TODO (still uses personal read relays) 
 
-## Global
+### Global
 - TODO (still uses personal read relays)
 
