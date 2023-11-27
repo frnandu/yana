@@ -87,6 +87,24 @@
 - ~~when replying using gossip inbox model, should find best relay set for inbox all people involved in conversation~~
 - ~~write Gossip.md to explain in simple terms and link from the app and landing page~~
 
+make poll about which next feature should we concentrate on:
+- Data Vending Machins (NIP-90)
+- Amber signing
+- zap splits
+- Calendar Events (NIP-52)
+- Badges (NIP-58)
+- Bookmarks and custom lists (NIP-51)
+- Automatic translations of notes
+- interface translation into other languages
+- Relay Authentication (NIP-42)
+- Live Activities & Live Chats - Nostrnests/zap.stream (NIP-53)
+- User Statuses (NIP-315)
+- custom reactions
+- other wallets integration (mutiny, lndhub, greenlight)
+- marketplace (NIP-15)
+- Public Chats (NIP-28)
+- nsecbunker
+
 ===== v0.13
 - make thread detail subscription of new replies work
 - make reactions live again with subscriptions or some other way 
