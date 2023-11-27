@@ -42,10 +42,21 @@ jobs:
       - name: pub get
         run: flutter pub get
 
-      - name: build apk
+      - name: build apk-split
         run: flutter build apk --split-per-abi
+      - name: build apk
+        run: flutter build apk
 
       # APK
+      - name: Upload APK to release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.release.outputs.upload_url }}
+          asset_path: build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
+          asset_name: yana-android-${{ github.ref_name }}-arm64-v8a.apk
+          asset_content_type: application/zip
       - name: Upload APK to release
         uses: actions/upload-release-asset@v1
         env:

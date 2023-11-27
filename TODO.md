@@ -85,10 +85,8 @@
 - ~~in thread view handle better zaps instead of some weird bitcoin component~~
 - ~~choose to which relays / lists to broadcast on new note/reply~~
 - ~~when replying using gossip inbox model, should find best relay set for inbox all people involved in conversation~~
+- ~~write Gossip.md to explain in simple terms and link from the app and landing page~~
 
-===== v0.12
-- write Gossip.md to explain in simple terms and link from the app and landing page
-- 
 ===== v0.13
 - make thread detail subscription of new replies work
 - make reactions live again with subscriptions or some other way 
