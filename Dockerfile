@@ -25,7 +25,7 @@ RUN mkdir /app/
 COPY . /app/
 WORKDIR /app/
 RUN flutter pub get
-RUN dart run sqflite_common_ffi_web:setup
+#RUN dart run sqflite_common_ffi_web:setup
 RUN flutter build web
 
 # Stage 2 - Create the run-time image
