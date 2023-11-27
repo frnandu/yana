@@ -47,7 +47,7 @@ class SettingRouter extends StatefulWidget {
 class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
   bool loadingGossipRelays = false;
 
-  Uri OUTBOX_MODEL_INFO_URL = Uri.parse("https://mikedilger.com/gossip-model/");
+  Uri OUTBOX_MODEL_INFO_URL = Uri.parse("https://github.com/frnandu/yana/blob/master/GOSSIP.md");
 
   @override
   Widget build(BuildContext context) {
