@@ -35,7 +35,7 @@ It doesn't merge lists, if it finds a nip-65 it will not use kind3 list.
 (in future will also fetch from NIP-05 list as a fallback)
 
 ### Calculate a relay set for outbox feed
-- The set should contain the minimal amount of relays for fetching notes for everybody from *at least* a configurable amount (setting "Minimal amount of relays per contact").
+- The calculated set will contain the minimal amount of relays for fetching notes for everybody from *at least* a configurable amount (setting "Minimal amount of relays per contact").
 - It will consider a relay valid to be included in the set if:
   - It can connect to it (or already connected)
   - It's not on the blocked relay list (NIP-51 kind 10006)
