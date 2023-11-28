@@ -10,9 +10,9 @@
 Why yet another client/app when there are so many already being developed?
 
 Current mobile native nostr clients suffer from one of the following:
-- UI not responsive enough in older than 1-2 years phones (Amethyst, Plebstr, Nostros, Plasma)
-- lack of a true FOSS community with lots of contributors being welcomed and encouraged to participate (Primal)
-- not multi-platform (Damus, Nozzle, Amethyst, Nostur)
+- UI not responsive enough in older than 1-2 years phones.
+- Lack of a true FOSS community with lots of contributors being welcomed and encouraged to participate.
+- Not multi-platform.
 
 <img src="https://miro.medium.com/v2/resize:fit:1400/1*ikIM4VRMIlRKawtAbY7bzw.png"/>
 
