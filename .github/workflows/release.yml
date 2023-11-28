@@ -55,7 +55,7 @@ jobs:
         with:
           upload_url: ${{ needs.release.outputs.upload_url }}
           asset_path: build/app/outputs/flutter-apk/app-release.apk
-          asset_name: yana-v${{ github.ref_name }}-android-universal.apk
+          asset_name: yana-${{ github.ref_name }}-android-universal.apk
           asset_content_type: application/zip
       - name: Upload APK to release
         uses: actions/upload-release-asset@v1
@@ -64,7 +64,7 @@ jobs:
         with:
           upload_url: ${{ needs.release.outputs.upload_url }}
           asset_path: build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
-          asset_name: yana-v${{ github.ref_name }}-android-arm64-v8a.apk
+          asset_name: yana-${{ github.ref_name }}-android-arm64-v8a.apk
           asset_content_type: application/zip
       - name: Upload APK to release
         uses: actions/upload-release-asset@v1
@@ -73,7 +73,7 @@ jobs:
         with:
           upload_url: ${{ needs.release.outputs.upload_url }}
           asset_path: build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk
-          asset_name: yana-v${{ github.ref_name }}-android-armeabi-v7a.apk
+          asset_name: yana-${{ github.ref_name }}-android-armeabi-v7a.apk
           asset_content_type: application/zip
       - name: Upload APK to release
         uses: actions/upload-release-asset@v1
@@ -82,7 +82,7 @@ jobs:
         with:
           upload_url: ${{ needs.release.outputs.upload_url }}
           asset_path: build/app/outputs/flutter-apk/app-x86_64-release.apk
-          asset_name: yana-v${{ github.ref_name }}-android-x86_64.apk
+          asset_name: yana-${{ github.ref_name }}-android-x86_64.apk
           asset_content_type: application/zip
 
 #      - name: flutter build appbundle
@@ -115,7 +115,7 @@ jobs:
       - run: flutter build linux
       - run: dart pub global activate flutter_distributor
       - run: flutter_distributor package --platform linux --targets deb
-      - run: cp dist/*/*.deb yana-linux-x86_64-${{ github.ref_name }}.deb
+      - run: cp dist/*/*.deb yana-${{ github.ref_name }}-linux-x86_64.deb
       #- run: flutter_distributor package --platform linux --targets appimage
 
       - run: wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
@@ -133,7 +133,7 @@ jobs:
         with:
           upload_url: ${{ needs.release.outputs.upload_url }}
           asset_path: Yana-x86_64.AppImage
-          asset_name: yana-linux-x86_64-${{ github.ref_name }}.AppImage
+          asset_name: yana-${{ github.ref_name }}-linux-x86_64-.AppImage
           asset_content_type: application/zip
       # LINUX DEB
       - name: Upload deb to release
@@ -143,8 +143,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ needs.release.outputs.upload_url }}
-          asset_path: yana-linux-x86_64-${{ github.ref_name }}.deb
-          asset_name: yana-linux-x86_64-${{ github.ref_name }}.deb
+          asset_path: yana-${{ github.ref_name }}-linux-x86_64.deb
+          asset_name: yana-${{ github.ref_name }}-linux-x86_64.deb
           asset_content_type: application/zip
 
 
