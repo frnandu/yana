@@ -369,7 +369,7 @@ class RelayMetadataComponent extends StatelessWidget {
             strokeWidth: 2,
           ),
           errorWidget: (context, url, error) => CachedNetworkImage(
-              imageUrl: StringUtil.robohash(HashUtil.md5(relay!.url))),
+              imageUrl: StringUtil.robohash(HashUtil.md5(relayMetadata!.url!))),
           cacheManager: localCacheManager,
         ));
 

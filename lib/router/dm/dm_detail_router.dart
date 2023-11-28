@@ -4,6 +4,7 @@ import 'package:dart_ndk/nips/nip01/metadata.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
+import 'package:flutter_quill/flutter_quill.dart';
 import 'package:pointycastle/ecc/api.dart';
 import 'package:provider/provider.dart';
 import 'package:yana/nostr/nip04/dm_session.dart';
@@ -65,12 +66,14 @@ class _DMDetailRouter extends CustState<DMDetailRouter> with EditorMixin {
 
     var nameComponnet = Selector<MetadataProvider, Metadata?>(
       builder: (context, metadata, child) {
-        return GestureDetector(onTap: () {
-          RouterUtil.router(context, RouterPath.USER, detail!.dmSession.pubkey);
-        }, child: NameComponent(
-          pubkey: detail!.dmSession.pubkey,
-          metadata: metadata,
-        ));
+        return GestureDetector(
+            onTap: () {
+              RouterUtil.router(context, RouterPath.USER, detail!.dmSession.pubkey);
+            },
+            child: NameComponent(
+              pubkey: detail!.dmSession.pubkey,
+              metadata: metadata,
+            ));
       },
       selector: (context, _provider) {
         return _provider.getMetadata(detail!.dmSession.pubkey);
@@ -136,32 +139,48 @@ class _DMDetailRouter extends CustState<DMDetailRouter> with EditorMixin {
       child: Row(
         children: [
           Expanded(
-            child: quill.QuillEditor(
-              placeholder: s.What_s_happening,
-              controller: editorController,
-              scrollController: ScrollController(),
-              focusNode: focusNode,
-              readOnly: false,
-              embedBuilders: [
-                MentionUserEmbedBuilder(),
-                MentionEventEmbedBuilder(),
-                PicEmbedBuilder(),
-                VideoEmbedBuilder(),
-                LnbcEmbedBuilder(),
-                TagEmbedBuilder(),
-                CustomEmojiEmbedBuilder(),
-              ],
-              scrollable: true,
-              autoFocus: false,
-              expands: false,
-              // padding: EdgeInsets.zero,
-              padding: const EdgeInsets.only(
-                left: Base.BASE_PADDING,
-                right: Base.BASE_PADDING,
+              child: quill.QuillProvider(
+                  configurations: quill.QuillConfigurations(
+                    controller: editorController,
+                  ),
+                  child: quill.QuillEditor.basic(
+                      focusNode: focusNode,
+                      scrollController: ScrollController(),
+                      configurations: quill.QuillEditorConfigurations(placeholder: s.What_s_happening, embedBuilders: [
+                        MentionUserEmbedBuilder(),
+                        MentionEventEmbedBuilder(),
+                        PicEmbedBuilder(),
+                        VideoEmbedBuilder(),
+                        LnbcEmbedBuilder(),
+                        TagEmbedBuilder(),
+                        CustomEmojiEmbedBuilder(),
+                      ])))
+              // child: quill.QuillEditor(
+              //   placeholder: s.What_s_happening,
+              //   controller: editorController,
+              //   scrollController: ScrollController(),
+              //   focusNode: focusNode,
+              //   readOnly: false,
+              //   embedBuilders: [
+              //     MentionUserEmbedBuilder(),
+              //     MentionEventEmbedBuilder(),
+              //     PicEmbedBuilder(),
+              //     VideoEmbedBuilder(),
+              //     LnbcEmbedBuilder(),
+              //     TagEmbedBuilder(),
+              //     CustomEmojiEmbedBuilder(),
+              //   ],
+              //   scrollable: true,
+              //   autoFocus: false,
+              //   expands: false,
+              //   // padding: EdgeInsets.zero,
+              //   padding: const EdgeInsets.only(
+              //     left: Base.BASE_PADDING,
+              //     right: Base.BASE_PADDING,
+              //   ),
+              //   maxHeight: 300,
+              // ),
               ),
-              maxHeight: 300,
-            ),
-          ),
           TextButton(
             onPressed: send,
             style: const ButtonStyle(),

@@ -82,68 +82,68 @@ mixin EditorMixin {
 
     List<Widget> inputBtnList = [];
     if (!PlatformUtil.isWeb()) {
-      inputBtnList.add(quill.QuillIconButton(
+      inputBtnList.add(quill.QuillToolbarIconButton(
         onPressed: pickImage,
-        icon: Icon(Icons.image),
+        icon: const Icon(Icons.image),
       ));
     }
     if (!PlatformUtil.isPC() && !PlatformUtil.isWeb()) {
-      inputBtnList.add(quill.QuillIconButton(
+      inputBtnList.add(quill.QuillToolbarIconButton(
         onPressed: takeAPhoto,
-        icon: Icon(Icons.camera),
+        icon: const Icon(Icons.camera),
       ));
-      inputBtnList.add(quill.QuillIconButton(
+      inputBtnList.add(quill.QuillToolbarIconButton(
         onPressed: tackAVideo,
-        icon: Icon(Icons.video_call),
+        icon: const Icon(Icons.video_call),
       ));
     }
     if (getAgreement() == null &&
         getTags().isEmpty &&
         getTagsAddedWhenSend().isEmpty) {
-      inputBtnList.add(quill.QuillIconButton(
+      inputBtnList.add(quill.QuillToolbarIconButton(
         onPressed: _inputPoll,
-        icon: Icon(Icons.poll),
+        icon: const Icon(Icons.poll),
       ));
     }
     inputBtnList.addAll([
-      quill.QuillIconButton(
+      quill.QuillToolbarIconButton(
         onPressed: _inputLnbc,
-        icon: Icon(Icons.bolt),
+        icon: const Icon(Icons.bolt),
       ),
-      quill.QuillIconButton(
+      quill.QuillToolbarIconButton(
         onPressed: customEmojiSelect,
-        icon: Icon(Icons.add_reaction_outlined),
+        icon: const Icon(Icons.add_reaction_outlined),
       ),
-      quill.QuillIconButton(
+      quill.QuillToolbarIconButton(
         onPressed: emojiBeginToSelect,
-        icon: Icon(Icons.tag_faces),
+        icon: const Icon(Icons.tag_faces),
       ),
       // quill.QuillIconButton(
       //   onPressed: _inputMentionUser,
       //   icon: Icon(Icons.alternate_email_sharp),
       // ),
-      quill.QuillIconButton(
+      quill.QuillToolbarIconButton(
         onPressed: _inputMentionEvent,
-        icon: Icon(Icons.format_quote),
+        icon: const Icon(Icons.format_quote),
       ),
-      quill.QuillIconButton(
+      quill.QuillToolbarIconButton(
         onPressed: _inputTag,
-        icon: Icon(Icons.tag),
+        icon: const Icon(Icons.tag),
       ),
       // Expanded(child: Container())
     ]);
 
     if (getAgreement() == null) {
       inputBtnList.addAll([
-        quill.QuillIconButton(
+        quill.QuillToolbarIconButton(
           onPressed: _addWarning,
           icon: Icon(Icons.warning, color: showWarning ? Colors.red : null),
         ),
-        quill.QuillIconButton(
+        quill.QuillToolbarIconButton(
           onPressed: _addTitle,
           icon: Icon(Icons.title, color: showTitle ? mainColor : null),
         ),
-        quill.QuillIconButton(
+        quill.QuillToolbarIconButton(
           onPressed: selectedTime,
           icon: Icon(Icons.timer_outlined,
               color: createdAt != null ? mainColor : null),

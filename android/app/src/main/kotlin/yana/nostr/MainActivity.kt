@@ -37,4 +37,18 @@ class MainActivity : FlutterFragmentActivity() {
 
         result.success(secp256k1.verifySchnorr(sig!!, hash!!, pubKey!!));
     }
+
+//    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+//        super.onActivityResult(requestCode, resultCode, data)
+//        if (requestCode == REQUEST_CODE) {
+//            if (resultCode == Activity.RESULT_OK) {
+//                // Handle the result from the other app here
+//                val resultData = data?.getStringExtra("signature")
+//                // Send the result back to Flutter
+//                myResult.success(resultData)
+//            } else {
+//                myResult.success(null)
+//            }
+//        }
+//    }
 }

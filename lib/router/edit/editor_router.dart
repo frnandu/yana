@@ -227,33 +227,50 @@ class _EditorRouter extends CustState<EditorRouter> with EditorMixin {
       ));
     }
 
-    Widget quillWidget = quill.QuillEditor(
-      placeholder: s.What_s_happening,
-      controller: editorController,
-      scrollController: ScrollController(),
-      focusNode: focusNode,
-      readOnly: false,
-      embedBuilders: [
-        MentionUserEmbedBuilder(),
-        MentionEventEmbedBuilder(),
-        PicEmbedBuilder(),
-        VideoEmbedBuilder(),
-        LnbcEmbedBuilder(),
-        TagEmbedBuilder(),
-        CustomEmojiEmbedBuilder(),
-      ],
-      scrollable: true,
-      autoFocus: false,
-      expands: false,
-      // padding: EdgeInsets.zero,
-      padding: const EdgeInsets.only(
-        left: Base.BASE_PADDING,
-        right: Base.BASE_PADDING,
-      ),
-    );
+    Widget quillWidget = quill.QuillProvider(
+        configurations: quill.QuillConfigurations(
+          controller: editorController,
+        ),
+        child: quill.QuillEditor.basic(
+            focusNode: focusNode,
+            scrollController: ScrollController(),
+            configurations: quill.QuillEditorConfigurations(placeholder: s.What_s_happening, embedBuilders: [
+              MentionUserEmbedBuilder(),
+              MentionEventEmbedBuilder(),
+              PicEmbedBuilder(),
+              VideoEmbedBuilder(),
+              LnbcEmbedBuilder(),
+              TagEmbedBuilder(),
+              CustomEmojiEmbedBuilder(),
+            ])));
+
+    // Widget quillWidget = quill.QuillEditor(
+    //   placeholder: s.What_s_happening,
+    //   controller: editorController,
+    //   scrollController: ScrollController(),
+    //   focusNode: focusNode,
+    //   readOnly: false,
+    //   embedBuilders: [
+    //     MentionUserEmbedBuilder(),
+    //     MentionEventEmbedBuilder(),
+    //     PicEmbedBuilder(),
+    //     VideoEmbedBuilder(),
+    //     LnbcEmbedBuilder(),
+    //     TagEmbedBuilder(),
+    //     CustomEmojiEmbedBuilder(),
+    //   ],
+    //   scrollable: true,
+    //   autoFocus: false,
+    //   expands: false,
+    //   // padding: EdgeInsets.zero,
+    //   padding: const EdgeInsets.only(
+    //     left: Base.BASE_PADDING,
+    //     right: Base.BASE_PADDING,
+    //   ),
+    // );
     List<Widget> editorList = [];
     var editorInputWidget = Container(
-      margin: EdgeInsets.only(bottom: Base.BASE_PADDING),
+      margin: const EdgeInsets.only(bottom: Base.BASE_PADDING),
       child: quillWidget,
     );
     editorList.add(editorInputWidget);
@@ -454,7 +471,7 @@ class _EditorRouter extends CustState<EditorRouter> with EditorMixin {
           } else if (operation.data is String) {
             String word =
                 findPreviousWord(value.text, value.selection.baseOffset);
-            if (word != null && (word[0] == "@" || word[1] == "@")) {
+            if (word != null && (word[0] == "@" || word.length>1 && word[1] == "@")) {
               widget.mentionWordEditingStart = value.selection.baseOffset - word!.length;
               widget.mentionWordEditingEnd = value.selection.baseOffset;
               list = cacheManager.searchMetadatas(word.replaceAll("@", ""), 100).toList();

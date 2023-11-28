@@ -1,3 +1,5 @@
+// ignore_for_file: null_argument_to_non_null_type
+
 import 'package:dart_ndk/nips/nip01/event.dart';
 
 Future<String> getPublicKeyAsync() {

@@ -24,7 +24,6 @@ import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_background_service_android/flutter_background_service_android.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart' as FlutterCacheManager;
 import 'package:flutter_easyloading/flutter_easyloading.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:get_time_ago/get_time_ago.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -176,7 +175,7 @@ late PackageInfo packageInfo;
 
 FlutterBackgroundService? backgroundService;
 
-late FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
+// late FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
 
 int c = 0;
 
@@ -548,19 +547,19 @@ void initBackgroundService(bool startOnBoot) async {
   );
 
   /// OPTIONAL, using custom notification channel id
-  const AndroidNotificationChannel channel = AndroidNotificationChannel(
-    'yana-service', // id
-    'Background service (can be hidden)', // title
-    showBadge: false,
-    description: 'This channel is needed to be running in order for the system not to kill all used for important notifications.',
-    // description
-    importance: Importance.low, // importance must be at low or higher level
-  );
+  // const AndroidNotificationChannel channel = AndroidNotificationChannel(
+  //   'yana-service', // id
+  //   'Background service (can be hidden)', // title
+  //   showBadge: false,
+  //   description: 'This channel is needed to be running in order for the system not to kill all used for important notifications.',
+  //   // description
+  //   importance: Importance.low, // importance must be at low or higher level
+  // );
 
-  flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+  // flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
   // if (startOnBoot) {
   backgroundService = FlutterBackgroundService();
-  await flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()?.createNotificationChannel(channel);
+  // await flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()?.createNotificationChannel(channel);
 
   await backgroundService!.configure(
     androidConfiguration: AndroidConfiguration(
