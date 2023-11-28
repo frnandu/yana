@@ -301,10 +301,10 @@ packages:
     dependency: "direct main"
     description:
       name: dart_ndk
-      sha256: c9fd1f3d8fcb06bd9da747ea3ca303639378266a957e4298a750c6f538da8360
+      sha256: "3f8c50eefc4423b464b80c27bb253a195585e39007c630872f4f3f325a5135b4"
       url: "https://pub.dev"
     source: hosted
-    version: "0.1.0-dev2"
+    version: "0.1.0-dev3"
   dart_style:
     dependency: transitive
     description:
@@ -498,34 +498,34 @@ packages:
     dependency: "direct main"
     description:
       name: flutter_background_service
-      sha256: cc91b619821fbca8c97b861b439cc1755236c9a8850c76a7f952faccd958f43e
+      sha256: d3c6cb7916b70b73da30740237e1e3cf41f81eba32c9cb6bca3a33d49ad4a144
       url: "https://pub.dev"
     source: hosted
-    version: "5.0.4"
+    version: "4.0.0"
   flutter_background_service_android:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: flutter_background_service_android
-      sha256: "51fac41c2c77e0053b0108a8722bfd4ee3e6e9bf3e53363a305b18753708f32f"
+      sha256: "98a5352399ed77d65fa8301b0f14b5c3b5b52ab7fe104e7c83fdf1b6f5861826"
       url: "https://pub.dev"
     source: hosted
-    version: "6.2.1"
+    version: "5.0.0"
   flutter_background_service_ios:
     dependency: transitive
     description:
       name: flutter_background_service_ios
-      sha256: ab73657535876e16abc89e40f924df3e92ad3dee83f64d187081417e824709ed
+      sha256: fc793ba580b43b50aa53f3a0a146faf8da5eb875c3fa58ee2dc8af35a3c8e910
       url: "https://pub.dev"
     source: hosted
-    version: "5.0.0"
+    version: "4.0.0"
   flutter_background_service_platform_interface:
     dependency: transitive
     description:
       name: flutter_background_service_platform_interface
-      sha256: cd5720ff5b051d551a4734fae16683aace779bd0425e8d3f15d84a0cdcc2d8d9
+      sha256: "3521274bc6b8b045a82c7fdcd4c3a0aea18e612f223c24c3a08d305db900a5bb"
       url: "https://pub.dev"
     source: hosted
-    version: "5.0.0"
+    version: "4.0.0"
   flutter_cache_manager:
     dependency: transitive
     description:

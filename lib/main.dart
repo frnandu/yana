@@ -204,22 +204,22 @@ void onStart(ServiceInstance service) async {
   } else {
     Timer.periodic(const Duration(seconds: 60), (timer) {
       if (service is AndroidServiceInstance) {
-        AwesomeNotifications().getAppLifeCycle().then((value) {
+        AwesomeNotifications().getAppLifeCycle().then((value) async {
           if (value.toString() != "NotificationLifeCycle.Foreground" && myInboxRelaySet != null) {
             appState = AppLifecycleState.inactive;
-            relayManager.connect(urls: myInboxRelaySet!.urls).then((a) async {
-              await newNotificationsProvider.queryNew();
-              relayManager.allowReconnectRelays=false;
-              List<String> requestIdsToClose = relayManager.nostrRequests.keys.toList();
-              for (var id in requestIdsToClose) {
-                try {
-                  await relayManager.closeNostrRequestById(id);
-                } catch (e) {
-                  print(e);
-                }
+            relayManager.allowReconnectRelays=true;
+            await relayManager.connect(urls: myInboxRelaySet!.urls);
+            await newNotificationsProvider.queryNew();
+            relayManager.allowReconnectRelays=false;
+            List<String> requestIdsToClose = relayManager.nostrRequests.keys.toList();
+            for (var id in requestIdsToClose) {
+              try {
+                await relayManager.closeNostrRequestById(id);
+              } catch (e) {
+                print(e);
               }
-              await relayManager.closeAllSockets();
-            });
+            }
+            await relayManager.closeAllSockets();
           }
         });
       }

@@ -101,8 +101,7 @@ dependencies:
   awesome_notifications_core: ^0.8.0
   awesome_notifications: any
   workmanager: ^0.5.1
-  flutter_background_service: ^5.0.4
-  flutter_background_service_android: ^6.0.1
+  flutter_background_service: ^4.0.0
   flutter_local_notifications: ^16.2.0
   flutter_isolate: ^2.0.4
 #  secp256k1: ^0.3.0
@@ -121,7 +120,7 @@ dependencies:
 #    git:
 #      url: https://github.com/relaystr/dart_ndk.git
 #      ref: master
-  dart_ndk: 0.1.0-dev2
+  dart_ndk: 0.1.0-dev3
 #    path: ../dart_ndk
 
 dev_dependencies:
