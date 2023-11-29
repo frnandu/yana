@@ -138,7 +138,7 @@ class NwcProvider extends ChangeNotifier {
       var filter = Filter(
           kinds: [NwcKind.RESPONSE], authors: [walletPubKey!], eTags: [event.id]);
       // RelayManager relayManager = RelayManager();
-      await relayManager.reconnectRelay(relay);
+      await relayManager.reconnectRelay(relay, force: true);
 
       NostrRequest balanceSubscription = await relayManager.requestRelays([relay!], filter, closeOnEOSE: false);
       balanceSubscription.stream.listen((event) async {
