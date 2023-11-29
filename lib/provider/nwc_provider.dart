@@ -87,12 +87,9 @@ class NwcProvider extends ChangeNotifier {
     //   relayManager.webSockets[relay]!.disconnect("a");
     //   relayManager.webSockets[relay]!.close();
     // }
-    relayManager.reconnectRelay(relay, force: true).then((connected) async {
-      if (connected) {
-        (await relayManager.requestRelays([relay!], filter)).stream.listen((event) async {
-          await onEventInfo.call(event);
-        });
-      }
+    await relayManager.reconnectRelay(relay, force: true);
+    (await relayManager.requestRelays([relay!], filter)).stream.listen((event) async {
+      await onEventInfo.call(event);
     });
   }
 

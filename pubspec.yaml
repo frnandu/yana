@@ -120,7 +120,7 @@ dependencies:
 #    git:
 #      url: https://github.com/relaystr/dart_ndk.git
 #      ref: master
-  dart_ndk: 0.1.0-dev3
+  dart_ndk: 0.1.0-dev4
 #    path: ../dart_ndk
 
 dev_dependencies:
