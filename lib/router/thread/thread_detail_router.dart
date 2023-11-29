@@ -192,6 +192,7 @@ class _ThreadDetailRouter extends CustState<ThreadDetailRouter> with PenddingEve
     if (sourceEvent == null) {
       if (loadedEvent != null) {
         sourceEvent = loadedEvent;
+        initFromArgs();
       } else {
         var obj = RouterUtil.routerArgs(context);
         if (obj != null && obj is Nip01Event) {
@@ -374,7 +375,9 @@ class _ThreadDetailRouter extends CustState<ThreadDetailRouter> with PenddingEve
 
   @override
   Future<void> onReady(BuildContext context) async {
-    initFromArgs();
+    if (sourceEvent!=null) {
+      initFromArgs();
+    }
   }
 
   String? rootId;

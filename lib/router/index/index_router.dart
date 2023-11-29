@@ -140,6 +140,10 @@ class _IndexRouter extends CustState<IndexRouter>
           } else if (NIP19Tlv.isNevent(key)) {
             var nevent = NIP19Tlv.decodeNevent(key);
             if (nevent != null) {
+              if (nevent.relays!=null && nevent.relays!.isNotEmpty) {
+                // TODO allowReconnectRelays is false, WTF?
+                // await relayManager.reconnectRelays(nevent.relays!);
+              }
               RouterUtil.router(context, RouterPath.THREAD_DETAIL, nevent.id);
             }
           } else if (NIP19Tlv.isNaddr(key)) {
