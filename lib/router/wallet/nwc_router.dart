@@ -121,7 +121,7 @@ class _NwcRouter extends State<NwcRouter> {
                     child: Image.asset("assets/imgs/mutiny.png",
                         width: 30, height: 30),
                   ),
-                  const Text("Connect with Mutiny wallet"),
+                  const Text("Connect with Mutiny wallet", style: TextStyle(color: Colors.white)),
                   Text('  (soon)',
                       style: TextStyle(
                           color: themeData.hintColor,
