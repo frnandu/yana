@@ -580,8 +580,10 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
     sections.add(SettingsSection(title: Text('Interface'), tiles: interfaceTiles));
     sections.add(SettingsSection(title: Text('Network'), tiles: networkTiles));
     sections.add(SettingsSection(title: Text('Lists'), tiles: listsTiles));
-    if (!PlatformUtil.isWeb() && (PlatformUtil.isIOS() || PlatformUtil.isAndroid())) {
+    if (notificationTiles.isNotEmpty) {
       sections.add(SettingsSection(title: Text('Notifications'), tiles: notificationTiles));
+    }
+    if (!PlatformUtil.isWeb() && (PlatformUtil.isIOS() || PlatformUtil.isAndroid())) {
       sections.add(SettingsSection(title: Text('Security'), tiles: securityTiles));
     }
     sections.add(SettingsSection(title: Text('Account'), tiles: accountTiles));
