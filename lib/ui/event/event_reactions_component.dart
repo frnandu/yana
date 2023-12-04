@@ -1,9 +1,12 @@
 import 'dart:convert';
 
+import 'package:dart_ndk/models/relay_set.dart';
 import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip51/nip51.dart';
+import 'package:dart_ndk/read_write.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:provider/provider.dart';
@@ -289,7 +292,7 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
                     if (widget.eventRelation.pubkey == loggedUserSigner!.getPublicKey()) {
                       list.add(PopupMenuItem(
                         value: "broadcast",
-                        child: Text(s.Broadcast, style: popFontStyle),
+                        child: Text("Re-Broadcast", style: popFontStyle),
                       ));
                     }
                     list.add(PopupMenuItem(
@@ -376,7 +379,46 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
     } else if (value == "star") {
       // TODO star event
     } else if (value == "broadcast") {
-      await relayManager.broadcastEvent(widget.event, myOutboxRelaySet!.urls, loggedUserSigner!);
+      Set<String> relays = {};
+      relays.addAll(myOutboxRelaySet!.urls.toList());
+      if (settingProvider.inboxForReactions == 1) {
+        List<String> pubKeys = widget.event.pTags;
+        if (pubKeys.length == 1) {
+          relays.addAll(await getInboxRelays(pubKeys.first));
+        } else if (pubKeys.isNotEmpty) {
+          EasyLoading.show(status: 'Calculating inbox relays of participants...', maskType: EasyLoadingMaskType.black, dismissOnTap: true);
+          RelaySet inboxRelaySet = await relayManager
+              .calculateRelaySet(
+              name: "replyInboxRelaySet",
+              ownerPubKey: loggedUserSigner!.getPublicKey(),
+              pubKeys: pubKeys,
+              direction: RelayDirection.inbox,
+              relayMinCountPerPubKey: settingProvider
+                  .broadcastToInboxMaxCount);
+          relays.addAll(inboxRelaySet.urls.toSet());
+          relays.removeWhere((element) => relayManager.blockedRelays.contains(element));
+          EasyLoading.dismiss();
+        }
+      }
+      List<String>? results = await showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return MultiSelect(items: relays!.toList(), selectedItems: relays!.toList().take(myOutboxRelaySet!.urls.length+settingProvider
+              .broadcastToInboxMaxCount).toList(), sending: false,);
+        },
+      );
+      if (results!=null && results.isNotEmpty) {
+        // await showDialog(
+        //   context: context,
+        //   builder: (BuildContext context) {
+        //     return MultiSelect(items: results!, selectedItems: [], sending: true,);
+        //   },
+        // );
+        await relayManager.broadcastEvent(widget.event, results, loggedUserSigner!);
+        widget.event.sources.addAll(results);
+        cacheManager.saveEvent(widget.event);
+      }
+
     } else if (value.startsWith("mute-")) {
       setState(() {
         muting = true;

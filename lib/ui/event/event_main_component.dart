@@ -296,15 +296,24 @@ class _EventMainComponent extends State<EventMainComponent> {
               "${s.Replying}: ",
               style: textStyle,
             ));
+            int maxPTags = 20;
             for (var index = 0; index < length; index++) {
-              var p = eventRelation.tagPList[index];
-              var isLast = index < length - 1 ? false : true;
-              replyingList.add(EventReplyingcomponent(pubkey: p));
-              if (!isLast) {
+              if (index < maxPTags) {
+                var p = eventRelation.tagPList[index];
+                var isLast = index < length - 1 ? false : true;
+                replyingList.add(EventReplyingcomponent(pubkey: p));
+                if (!isLast) {
+                  replyingList.add(Text(
+                    " & ",
+                    style: textStyle,
+                  ));
+                }
+              } else {
                 replyingList.add(Text(
-                  " & ",
+                  " ${length - 20} more",
                   style: textStyle,
                 ));
+                break;
               }
             }
             list.add(Container(
