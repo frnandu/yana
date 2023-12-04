@@ -10,7 +10,7 @@ packages:
     source: hosted
     version: "64.0.0"
   amberflutter:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: amberflutter
       sha256: c1dccf905042cf55ab53ec22aeb4baf93e9638ba95ad1e5c0247505aca38b4c4
@@ -308,11 +308,12 @@ packages:
   dart_ndk:
     dependency: "direct main"
     description:
-      name: dart_ndk
-      sha256: f880c8fe0486d2609a8d2a0eb2b5057674820ea681a1136af8b7cd70f6a47c1a
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.1.0-dev4"
+      path: "."
+      ref: amber-signer
+      resolved-ref: "4d63a9c933baa71240dd1bafa801b813efae2f63"
+      url: "https://github.com/relaystr/dart_ndk.git"
+    source: git
+    version: "0.1.0-dev5"
   dart_style:
     dependency: transitive
     description:

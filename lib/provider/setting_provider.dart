@@ -37,8 +37,11 @@ class SettingProvider extends ChangeNotifier {
 
   Map<String, bool> _keyIsPrivateMap = {};
 
+  Map<String, bool> _keyIsExternalSignerMap = {};
+
   final String KEYS_MAP = "private_keys_map";
   final String IS_PRIVATE_MAP = "keys_is_private_map";
+  final String IS_EXTERNAL_SIGNER_MAP = "keys_is_external_map";
   final String NWC_URI = "nwc_uri";
   final String NWC_SECRET = "nwc_secret";
 
@@ -63,14 +66,17 @@ class SettingProvider extends ChangeNotifier {
 
         String? keyMapJson = await secureStorage.read(key: KEYS_MAP);
         String? keyIsPrivateMapJson= await secureStorage.read(key: IS_PRIVATE_MAP);
+        String? keyIsExternalSignerMapJson = await secureStorage.read(key: IS_EXTERNAL_SIGNER_MAP);
         if (StringUtil.isNotBlank(keyMapJson)) {
           try {
             var jsonKeyMap = jsonDecode(keyMapJson!);
             var isPrivateJsonKeyMap = keyIsPrivateMapJson!=null?jsonDecode(keyIsPrivateMapJson!):null;
+            var isExternalJsonKeyMap = keyIsExternalSignerMapJson != null ? jsonDecode(keyIsExternalSignerMapJson) : null;
             if (jsonKeyMap != null) {
               for (var entry in (jsonKeyMap as Map<String, dynamic>).entries) {
                 _keyMap[entry.key] = entry.value;
                 _keyIsPrivateMap[entry.key] = isPrivateJsonKeyMap!=null && isPrivateJsonKeyMap[entry.key];
+                _keyIsExternalSignerMap[entry.key] = isExternalJsonKeyMap != null && isExternalJsonKeyMap[entry.key];
               }
             }
           } catch (e) {
@@ -102,7 +108,11 @@ class SettingProvider extends ChangeNotifier {
     }
     return null;
   }
-  
+
+  bool get isExternalSignerKey {
+    return _keyIsExternalSignerMap[_settingData!.privateKeyIndex.toString()] ?? false;
+  }
+
   bool get isPrivateKey {
     return _keyIsPrivateMap[_settingData!.privateKeyIndex.toString()] ?? false;
   }
@@ -111,7 +121,7 @@ class SettingProvider extends ChangeNotifier {
     return _keyIsPrivateMap[index.toString()] ?? false;
   }
 
-  Future<int> addAndChangeKey(String key, bool isPrivate, {bool updateUI = false}) async {
+  Future<int> addAndChangeKey(String key, bool isPrivate, bool isExternalSigner, {bool updateUI = false}) async {
     int? findIndex;
     var entries = _keyMap.entries;
     for (var entry in entries) {
@@ -131,11 +141,13 @@ class SettingProvider extends ChangeNotifier {
       if (_pk == null) {
         _keyMap[index] = key;
         _keyIsPrivateMap[index] = isPrivate;
+        _keyIsExternalSignerMap[index] = isExternalSigner;
 
         _settingData!.privateKeyIndex = i;
 
         await secureStorage.write(key: KEYS_MAP,value: json.encode(_keyMap));
         await secureStorage.write(key: IS_PRIVATE_MAP,value: json.encode(_keyIsPrivateMap));
+        await secureStorage.write(key: IS_EXTERNAL_SIGNER_MAP,value: json.encode(_keyIsExternalSignerMap));
         saveAndNotifyListeners(updateUI: updateUI);
 
         return i;

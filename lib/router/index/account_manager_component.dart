@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:dart_ndk/nips/nip01/amber_event_signer.dart';
 import 'package:dart_ndk/nips/nip01/bip340_event_signer.dart';
 import 'package:dart_ndk/nips/nip01/event_signer.dart';
 import 'package:dart_ndk/nips/nip01/metadata.dart';
@@ -148,7 +149,7 @@ class AccountsState extends State<AccountsComponent> {
     String? key = settingProvider.key;
     bool isPrivate = settingProvider.isPrivateKey;
     String publicKey = isPrivate ? getPublicKey(key!) : key!;
-    loggedUserSigner = isPrivate || !PlatformUtil.isWeb()
+    loggedUserSigner = settingProvider.isExternalSignerKey ? AmberEventSigner(publicKey) : isPrivate || !PlatformUtil.isWeb()
         ? Bip340EventSigner(isPrivate ? key : null, publicKey)
         : Nip07EventSigner(await js.getPublicKeyAsync());
 

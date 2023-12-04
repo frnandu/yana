@@ -1,4 +1,5 @@
 import 'package:amberflutter/amberflutter.dart';
+import 'package:dart_ndk/nips/nip01/amber_event_signer.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:dart_ndk/models/user_relay_list.dart';
 import 'package:dart_ndk/nips/nip01/bip340_event_signer.dart';
@@ -123,7 +124,7 @@ class _LoginRouter extends State<LoginRouter>
       margin: const EdgeInsets.all(Base.BASE_PADDING),
       child: InkWell(
         onTap: () async {
-          await doLogin(controller.text, false, false);
+          await doLogin(controller.text, false, false, false);
         },
         child: Container(
           height: 36,
@@ -178,7 +179,7 @@ class _LoginRouter extends State<LoginRouter>
                 EasyLoading.show(status: pubKey);
                 print("PUBLIC KEY: " + pubKey);
               }
-              await doLogin(pubKey, true, false);
+              await doLogin(pubKey, true, false, false);
             } else {
               EasyLoading.show(status: "Invalid public key");
             }
@@ -207,7 +208,7 @@ class _LoginRouter extends State<LoginRouter>
       child: InkWell(
         onTap: () async {
           generatePK();
-          await doLogin(controller.text, false, true);
+          await doLogin(controller.text, false, true, false);
         },
         child: Container(
           height: 40,
@@ -365,7 +366,7 @@ class _LoginRouter extends State<LoginRouter>
     );
   }
 
-  Future<void> doLogin(String key, bool pubOnly, bool newKey) async {
+  Future<void> doLogin(String key, bool pubOnly, bool newKey, bool isExternalSigner) async {
     if (StringUtil.isBlank(key)) {
       EasyLoading.show(status: I18n.of(context).Private_key_is_null);
       return;
@@ -382,10 +383,10 @@ class _LoginRouter extends State<LoginRouter>
       newNotificationsProvider.clear();
       followEventProvider.clear();
       followEventProvider.clear();
-      await settingProvider.addAndChangeKey(key, !isPublic, updateUI: false);
+      await settingProvider.addAndChangeKey(key, !isPublic, isExternalSigner, updateUI: false);
       bool isPrivate = !isPublic;
       String publicKey = isPrivate ? getPublicKey(key!) : key!;
-      loggedUserSigner = isPrivate || !PlatformUtil.isWeb()
+      loggedUserSigner = settingProvider.isExternalSignerKey ? AmberEventSigner(publicKey) : isPrivate || !PlatformUtil.isWeb()
           ? Bip340EventSigner(isPrivate ? key : null, publicKey)
           : Nip07EventSigner(await js.getPublicKeyAsync());
 
@@ -400,7 +401,7 @@ class _LoginRouter extends State<LoginRouter>
     final key = await amber.getPublicKey();
     if (key == null) return;
 
-    print(key);
+    doLogin(key, true, true, true);
   }
 
   Future<void> initRelayManager( String publicKey, bool newKey) async {
