@@ -518,6 +518,36 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
         title: const Text("Use background service"),
       ));
     }
+    notificationTiles.add(SettingsTile.switchTile(
+      activeSwitchColor: themeData.primaryColor,
+      onToggle: (value) {
+        settingProvider.notificationsReactions = value;
+        notificationsProvider.refresh();
+      },
+      initialValue: settingProvider.notificationsReactions,
+      leading: const Icon(Icons.favorite_border),
+      title: const Text("Include reactions"),
+    ));
+    notificationTiles.add(SettingsTile.switchTile(
+      activeSwitchColor: themeData.primaryColor,
+      onToggle: (value) {
+        settingProvider.notificationsReposts = value;
+        notificationsProvider.refresh();
+      },
+      initialValue: settingProvider.notificationsReposts,
+      leading: const Icon(Icons.repeat),
+      title: const Text("Include reposts"),
+    ));
+    notificationTiles.add(SettingsTile.switchTile(
+      activeSwitchColor: themeData.primaryColor,
+      onToggle: (value) {
+        settingProvider.notificationsZaps = value;
+        notificationsProvider.refresh();
+      },
+      initialValue: settingProvider.notificationsZaps,
+      leading: const Icon(Icons.bolt),
+      title: const Text("Include zaps"),
+    ));
 
     List<AbstractSettingsTile> accountTiles = [];
 

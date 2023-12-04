@@ -129,12 +129,12 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
               // )),
               Expanded(
                 child: PopupMenuButton<String>(
-                  tooltip: s.Boost,
+                  tooltip: s.Repost,
                   itemBuilder: (context) {
                     return [
                       PopupMenuItem(
-                        value: "boost",
-                        child: Text(s.Boost),
+                        value: "repost",
+                        child: Text(s.Repost),
                       ),
                       PopupMenuItem(
                         value: "quote",
@@ -486,7 +486,7 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
 
   Future<void> onRepostTap(String value) async {
     if (loggedUserSigner!.canSign()) {
-      if (value == "boost") {
+      if (value == "repost") {
         String? relayAddr;
         if (widget.event.sources.isNotEmpty) {
           relayAddr = widget.event.sources[0];
