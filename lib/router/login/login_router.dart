@@ -1,3 +1,4 @@
+import 'package:amberflutter/amberflutter.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:dart_ndk/models/user_relay_list.dart';
 import 'package:dart_ndk/nips/nip01/bip340_event_signer.dart';
@@ -140,6 +141,31 @@ class _LoginRouter extends State<LoginRouter>
         ),
       ),
     ));
+
+    if (PlatformUtil.isAndroid()) {
+      list.add(Container(
+        margin: const EdgeInsets.all(Base.BASE_PADDING),
+        child: InkWell(
+          onTap: () async {
+            await doLoginExternalSigner();
+          },
+          child: Container(
+            height: 36,
+            color: themeData.primaryColor,
+            alignment: Alignment.center,
+            child: Text(
+              s.LoginWithExternalSigner,
+              style: const TextStyle(
+                fontFamily: 'Geist',
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ),
+      ));
+    }
 
     if (PlatformUtil.isWeb()) {
       list.add(Container(
@@ -367,6 +393,14 @@ class _LoginRouter extends State<LoginRouter>
     } catch (e) {
       EasyLoading.showError(e.toString(), duration: const Duration(seconds: 5));
     }
+  }
+
+  Future<void> doLoginExternalSigner() async {
+    final amber = Amberflutter();
+    final key = await amber.getPublicKey();
+    if (key == null) return;
+
+    print(key);
   }
 
   Future<void> initRelayManager( String publicKey, bool newKey) async {
