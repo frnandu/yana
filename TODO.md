@@ -105,7 +105,8 @@ make poll about which next feature should we concentrate on:
 - Public Chats (NIP-28)
 - nsecbunker
 
-===== v0.13
+===== v0.14
+- action buttons (follow/zap/...) gray when logged in read-only
 - make thread detail subscription of new replies work
 - make reactions live again with subscriptions or some other way 
 - show progress of broadcasting note on relays with retry if some fail
