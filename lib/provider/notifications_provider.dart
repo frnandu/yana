@@ -44,6 +44,7 @@ class NotificationsProvider extends ChangeNotifier
   void refresh() {
     _initTime = DateTime.now().millisecondsSinceEpoch ~/ 1000;
     eventBox.clear();
+    timestamp = null;
     startSubscription();
     sharedPreferences.remove(DataKey.NOTIFICATIONS_TIMESTAMP);
     newNotificationsProvider.clear();
@@ -61,26 +62,35 @@ class NotificationsProvider extends ChangeNotifier
   }
 
   List<int> queryEventKinds() {
-    return [
+    List<int> kinds = [
       Nip01Event.TEXT_NODE_KIND,
-      Reaction.KIND,
-      kind.EventKind.REPOST,
-      kind.EventKind.GENERIC_REPOST,
-      kind.EventKind.ZAP_RECEIPT,
       kind.EventKind.LONG_FORM,
     ];
+    if (settingProvider.notificationsReactions) {
+      kinds.add(Reaction.KIND);
+    }
+    if (settingProvider.notificationsReposts) {
+      kinds.add(kind.EventKind.REPOST);
+      kinds.add(kind.EventKind.GENERIC_REPOST);
+    }
+    if (settingProvider.notificationsZaps) {
+      kinds.add(kind.EventKind.ZAP_RECEIPT);
+    }
+    return kinds;
   }
 
   NostrRequest? subscription;
 
-  void startSubscription() async {
+  void startSubscription({bool refreshed=false}) async {
     if (subscription != null) {
       await relayManager.closeNostrRequest(subscription!);
     }
     int? since;
-    var newestPost = eventBox.newestEvent;
-    if (newestPost != null) {
-      since = newestPost!.createdAt;
+    if (!refreshed) {
+      var newestPost = eventBox.newestEvent;
+      if (newestPost != null) {
+        since = newestPost!.createdAt;
+      }
     }
 
     if (myInboxRelaySet!=null) {
@@ -144,7 +154,7 @@ class NotificationsProvider extends ChangeNotifier
     eventBox.sort();
 
     newNotificationsProvider.clear();
-    notificationsProvider.setTimestampToNewestAndSave();
+    setTimestampToNewestAndSave();
     // update ui
     notifyListeners();
   }

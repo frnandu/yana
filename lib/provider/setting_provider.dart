@@ -205,6 +205,12 @@ class SettingProvider extends ChangeNotifier {
 
   bool get backgroundService => _settingData!.backgroundService ?? true;
 
+  bool get notificationsReactions => _settingData!.notificationsReactions ?? true;
+
+  bool get notificationsReposts => _settingData!.notificationsReposts ?? true;
+
+  bool get notificationsZaps => _settingData!.notificationsZaps ?? true;
+
   int get linkPreview => _settingData!.linkPreview != null
       ? _settingData!.linkPreview!
       : OpenStatus.OPEN;
@@ -352,6 +358,21 @@ class SettingProvider extends ChangeNotifier {
     initBackgroundService(backgroundService);
   }
 
+  set notificationsReactions(bool? o) {
+    _settingData!.notificationsReactions = o;
+    saveAndNotifyListeners();
+  }
+
+  set notificationsReposts(bool? o) {
+    _settingData!.notificationsReposts = o;
+    saveAndNotifyListeners();
+  }
+
+  set notificationsZaps(bool? o) {
+    _settingData!.notificationsZaps = o;
+    saveAndNotifyListeners();
+  }
+
   /// i18n
   set i18n(String? o) {
     _settingData!.i18n = o;
@@ -491,6 +512,10 @@ class SettingData {
 
   bool? backgroundService;
 
+  bool? notificationsReactions;
+  bool? notificationsReposts;
+  bool? notificationsZaps;
+
   String? imageService;
 
   int? imagePreview;
@@ -541,6 +566,9 @@ class SettingData {
     this.videoPreview,
     this.network,
     this.backgroundService,
+    this.notificationsReactions,
+    this.notificationsReposts,
+    this.notificationsZaps,
     this.imageService,
     this.imagePreview,
     this.gossip,
@@ -573,6 +601,9 @@ class SettingData {
       lockOpen = OpenStatus.CLOSE;
     }
     backgroundService = json['backgroundService'];
+    notificationsReactions = json['notificationsReactions'];
+    notificationsReposts = json['notificationsReposts'];
+    notificationsZaps = json['notificationsZaps'];
     defaultIndex = json['defaultIndex'];
     defaultTab = json['defaultTab'];
     linkPreview = json['linkPreview'];
@@ -643,6 +674,8 @@ class SettingData {
     data['videoPreview'] = this.videoPreview;
     data['network'] = this.network;
     data['backgroundService'] = this.backgroundService;
+    data['notificationsReactions'] = this.notificationsReactions;
+    data['notificationsReposts'] = this.notificationsReactions;
     data['imageService'] = this.imageService;
     data['videoPreview'] = this.videoPreview;
     data['imagePreview'] = this.imagePreview;

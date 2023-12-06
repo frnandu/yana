@@ -1219,10 +1219,10 @@ class I18n {
   }
 
   /// `Boost`
-  String get Boost {
+  String get Repost {
     return Intl.message(
-      'Boost',
-      name: 'Boost',
+      'Repost',
+      name: 'Repost',
       desc: '',
       args: [],
     );
