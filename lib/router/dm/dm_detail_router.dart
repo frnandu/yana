@@ -1,3 +1,4 @@
+import 'package:dart_ndk/nips/nip01/amber_event_signer.dart';
 import 'package:dart_ndk/nips/nip04/nip04.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:dart_ndk/nips/nip01/metadata.dart';
@@ -42,6 +43,8 @@ class _DMDetailRouter extends CustState<DMDetailRouter> with EditorMixin {
 
   ECDHBasicAgreement? agreement;
 
+  String content = '';
+
   @override
   void initState() {
     super.initState();
@@ -81,7 +84,6 @@ class _DMDetailRouter extends CustState<DMDetailRouter> with EditorMixin {
     );
 
     var localPubkey = loggedUserSigner!.getPublicKey();
-    agreement = Nip04.getAgreement(loggedUserSigner!.getPrivateKey()!);
 
     List<Widget> list = [];
 
@@ -102,7 +104,6 @@ class _DMDetailRouter extends CustState<DMDetailRouter> with EditorMixin {
               sessionPubkey: detail!.dmSession.pubkey,
               event: event,
               isLocal: localPubkey == event.pubKey,
-              agreement: agreement!,
             );
           },
           reverse: true,

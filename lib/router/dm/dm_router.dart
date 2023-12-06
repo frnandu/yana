@@ -1,3 +1,4 @@
+import 'package:dart_ndk/nips/nip01/amber_event_signer.dart';
 import 'package:dart_ndk/nips/nip04/nip04.dart';
 import 'package:flutter/material.dart';
 import 'package:yana/router/dm/dm_following_router.dart';
@@ -29,7 +30,7 @@ class _DMRouter extends State<DMRouter> {
     }
 
     var themeData = Theme.of(context);
-    var agreement = loggedUserSigner!.canSign() ? Nip04.getAgreement(loggedUserSigner!.getPrivateKey()!) : null;
+    var agreement = loggedUserSigner!.canSign() && loggedUserSigner is! AmberEventSigner ? Nip04.getAgreement(loggedUserSigner!.getPrivateKey()!) : null;
     //
     return Container(
       color: themeData.scaffoldBackgroundColor,

@@ -1,3 +1,4 @@
+import 'package:dart_ndk/nips/nip01/amber_event_signer.dart';
 import 'package:dart_ndk/nips/nip01/metadata.dart';
 import 'package:dart_ndk/nips/nip04/nip04.dart';
 import 'package:flutter/material.dart';
@@ -38,8 +39,21 @@ class _DMSessionListItemComponent extends State<DMSessionListItemComponent> {
 
   String? content;
 
+  Future<void> decryptWithExternalSigner() async {
+    content = await loggedUserSigner!.decrypt(widget.detail.dmSession.newestEvent!.content, widget.detail.dmSession.pubkey);
+    setState(() {
+      if (content != null) {
+        content = content!.replaceAll("\r", " ");
+        content = content!.replaceAll("\n", " ");
+      }
+    });
+  }
+
   @override
   void initState() {
+    if (loggedUserSigner is AmberEventSigner) {
+      decryptWithExternalSigner();  
+    }
     if (widget.agreement != null) {
       content = Nip04.decryptWithAgreement(widget.detail.dmSession.newestEvent!.content,
           widget.agreement!, widget.detail.dmSession.pubkey);
@@ -48,7 +62,6 @@ class _DMSessionListItemComponent extends State<DMSessionListItemComponent> {
       content = content!.replaceAll("\r", " ");
       content = content!.replaceAll("\n", " ");
     }
-
   }
 
   @override

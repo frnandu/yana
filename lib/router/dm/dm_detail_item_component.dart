@@ -1,9 +1,11 @@
+import 'package:dart_ndk/nips/nip01/amber_event_signer.dart';
 import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip04/nip04.dart';
 import 'package:flutter/material.dart';
 import 'package:get_time_ago/get_time_ago.dart';
 import 'package:pointycastle/export.dart' as pointycastle;
 import 'package:provider/provider.dart';
+import 'package:yana/main.dart';
 import 'package:yana/ui/content/content_decoder.dart';
 import 'package:yana/utils/router_path.dart';
 import 'package:yana/utils/router_util.dart';
@@ -20,13 +22,10 @@ class DMDetailItemComponent extends StatefulWidget {
 
   bool isLocal;
 
-  pointycastle.ECDHBasicAgreement agreement;
-
   DMDetailItemComponent({
     required this.sessionPubkey,
     required this.event,
     required this.isLocal,
-    required this.agreement,
   });
 
   @override
@@ -39,6 +38,15 @@ class _DMDetailItemComponent extends State<DMDetailItemComponent> {
   static const double IMAGE_WIDTH = 34;
 
   static const double BLANK_WIDTH = 50;
+
+  String content = '';
+
+  Future<void> decryptWithExternalSigner() async {
+    if (content.contains('iv=')) {
+      content = await loggedUserSigner!.decrypt(widget.event.content, widget.sessionPubkey) ?? '';
+      setState(() {});
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -59,8 +67,16 @@ class _DMDetailItemComponent extends State<DMDetailItemComponent> {
     String timeStr = GetTimeAgo.parse(
         DateTime.fromMillisecondsSinceEpoch(widget.event.createdAt * 1000));
 
-    var content = Nip04.decryptWithAgreement(
-        widget.event.content, widget.agreement, widget.sessionPubkey);
+    if (content.isEmpty) {
+      content = widget.event.content;
+    }
+
+    if (loggedUserSigner is AmberEventSigner) {
+      decryptWithExternalSigner();
+    } else {
+      final agreement = Nip04.getAgreement(loggedUserSigner!.getPrivateKey()!);
+      content = Nip04.decryptWithAgreement(widget.event.content, agreement, widget.sessionPubkey);
+    }
 
     var contentWidget = Container(
       margin: const EdgeInsets.only(
