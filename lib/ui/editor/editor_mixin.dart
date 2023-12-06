@@ -1,4 +1,5 @@
 import 'package:auto_size_text_field/auto_size_text_field.dart';
+import 'package:dart_ndk/nips/nip01/amber_event_signer.dart';
 import 'package:dart_ndk/nips/nip01/helpers.dart';
 import 'package:dart_ndk/nips/nip04/nip04.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
@@ -559,9 +560,17 @@ mixin EditorMixin {
     }
 
     Nip01Event? event;
-    if (agreement != null && StringUtil.isNotBlank(pubkey)) {
+    if ((agreement != null || loggedUserSigner is AmberEventSigner) && StringUtil.isNotBlank(pubkey)) {
       // dm message
-      result = Nip04.encryptWithAgreement(result, agreement, pubkey!);
+      if (agreement != null) {
+        result = Nip04.encryptWithAgreement(result, agreement, pubkey!);
+      } else {
+        final encrypedText = await loggedUserSigner!.encrypt(result, pubkey!);
+        if (encrypedText == null) return null;
+
+        result = encrypedText;
+      }
+      
       event = Nip01Event(
           pubKey: loggedUserSigner!.getPublicKey(), kind: kind.EventKind.DIRECT_MESSAGE, tags: allTags, content: result,
           createdAt: createdAt!=null ? createdAt!.millisecondsSinceEpoch ~/ 1000 : Helpers.now);
