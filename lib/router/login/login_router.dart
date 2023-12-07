@@ -152,7 +152,7 @@ class _LoginRouter extends State<LoginRouter>
           },
           child: Container(
             height: 36,
-            color: themeData.primaryColor,
+            color: Colors.orange,
             alignment: Alignment.center,
             child: Text(
               s.LoginWithExternalSigner,
@@ -401,7 +401,7 @@ class _LoginRouter extends State<LoginRouter>
     final key = await amber.getPublicKey();
     if (key == null) return;
 
-    doLogin(key, true, true, true);
+    doLogin(key['signature'], true, true, true);
   }
 
   Future<void> initRelayManager( String publicKey, bool newKey) async {

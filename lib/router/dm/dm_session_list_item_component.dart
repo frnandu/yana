@@ -20,12 +20,11 @@ import '../../utils/string_util.dart';
 class DMSessionListItemComponent extends StatefulWidget {
   DMSessionDetail detail;
 
-  pointycastle.ECDHBasicAgreement? agreement;
+  bool decrypted = false;
 
   DMSessionListItemComponent({
     super.key,
     required this.detail,
-    this.agreement,
   });
 
   @override
@@ -39,7 +38,7 @@ class _DMSessionListItemComponent extends State<DMSessionListItemComponent> {
 
   String? content;
 
-  Future<void> decryptWithExternalSigner() async {
+  Future<void> decryptContent() async {
     content = await loggedUserSigner!.decrypt(widget.detail.dmSession.newestEvent!.content, widget.detail.dmSession.pubkey);
     setState(() {
       if (content != null) {
@@ -51,13 +50,16 @@ class _DMSessionListItemComponent extends State<DMSessionListItemComponent> {
 
   @override
   void initState() {
-    if (loggedUserSigner is AmberEventSigner) {
-      decryptWithExternalSigner();  
+    if (!widget.decrypted) {
+      decryptContent();
     }
-    if (widget.agreement != null) {
-      content = Nip04.decryptWithAgreement(widget.detail.dmSession.newestEvent!.content,
-          widget.agreement!, widget.detail.dmSession.pubkey);
-    }
+
+    // if (loggedUserSigner is AmberEventSigner) {
+    // }
+    // if (widget.agreement != null) {
+    //   content = Nip04.decryptWithAgreement(widget.detail.dmSession.newestEvent!.content,
+    //       widget.agreement!, widget.detail.dmSession.pubkey);
+    // }
     if (content != null) {
       content = content!.replaceAll("\r", " ");
       content = content!.replaceAll("\n", " ");

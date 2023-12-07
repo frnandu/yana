@@ -13,10 +13,10 @@ packages:
     dependency: transitive
     description:
       name: amberflutter
-      sha256: c1dccf905042cf55ab53ec22aeb4baf93e9638ba95ad1e5c0247505aca38b4c4
+      sha256: "97d4845b76297d24ed09808a389de938584a5888bb47182689aa99c0a81ec6e7"
       url: "https://pub.dev"
     source: hosted
-    version: "0.0.5"
+    version: "0.0.7"
   analyzer:
     dependency: transitive
     description:
@@ -308,11 +308,9 @@ packages:
   dart_ndk:
     dependency: "direct main"
     description:
-      path: "."
-      ref: amber-signer
-      resolved-ref: "4d63a9c933baa71240dd1bafa801b813efae2f63"
-      url: "https://github.com/relaystr/dart_ndk.git"
-    source: git
+      path: "../dart_ndk"
+      relative: true
+    source: path
     version: "0.1.0-dev5"
   dart_style:
     dependency: transitive

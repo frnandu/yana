@@ -30,16 +30,16 @@ class _DMRouter extends State<DMRouter> {
     }
 
     var themeData = Theme.of(context);
-    var agreement = loggedUserSigner!.canSign() && loggedUserSigner is! AmberEventSigner ? Nip04.getAgreement(loggedUserSigner!.getPrivateKey()!) : null;
+    // var agreement = loggedUserSigner!.canSign() && loggedUserSigner is! AmberEventSigner ? Nip04.getAgreement(loggedUserSigner!.getPrivateKey()!) : null;
     //
     return Container(
       color: themeData.scaffoldBackgroundColor,
       child: TabBarView(
         controller: widget.tabController,
         children: [
-          DMFollowingRouter(agreement: agreement, scrollCallback: widget.scrollCallback),
-          DMKnownListRouter(agreement: agreement, scrollCallback: widget.scrollCallback),
-          DMUnknownListRouter(agreement: agreement, scrollCallback: widget.scrollCallback),
+          DMFollowingRouter(scrollCallback: widget.scrollCallback),
+          DMKnownListRouter(scrollCallback: widget.scrollCallback),
+          DMUnknownListRouter(scrollCallback: widget.scrollCallback),
         ],
       ),
     );

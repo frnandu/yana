@@ -41,7 +41,7 @@ class _DMDetailItemComponent extends State<DMDetailItemComponent> {
 
   String content = '';
 
-  Future<void> decryptWithExternalSigner() async {
+  Future<void> decryptContent() async {
     if (content.contains('iv=')) {
       content = await loggedUserSigner!.decrypt(widget.event.content, widget.sessionPubkey) ?? '';
       setState(() {});
@@ -71,12 +71,12 @@ class _DMDetailItemComponent extends State<DMDetailItemComponent> {
       content = widget.event.content;
     }
 
-    if (loggedUserSigner is AmberEventSigner) {
-      decryptWithExternalSigner();
-    } else {
-      final agreement = Nip04.getAgreement(loggedUserSigner!.getPrivateKey()!);
-      content = Nip04.decryptWithAgreement(widget.event.content, agreement, widget.sessionPubkey);
-    }
+    decryptContent();
+    // if (loggedUserSigner is AmberEventSigner) {
+    // } else {
+    //   final agreement = Nip04.getAgreement(loggedUserSigner!.getPrivateKey()!);
+    //   content = await loggedUserSigner.decrypt(widget.event.content, agreement, widget.sessionPubkey);
+    // }
 
     var contentWidget = Container(
       margin: const EdgeInsets.only(

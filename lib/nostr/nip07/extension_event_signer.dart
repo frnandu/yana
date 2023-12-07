@@ -35,11 +35,6 @@ class Nip07EventSigner extends EventSigner {
   }
 
   @override
-  String? getPrivateKey() {
-    throw UnimplementedError();
-  }
-
-  @override
   Future<String?> encrypt(String msg, String destPubKey) {
     // TODO: implement encrypt
     throw UnimplementedError();
