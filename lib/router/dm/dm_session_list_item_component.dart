@@ -39,7 +39,8 @@ class _DMSessionListItemComponent extends State<DMSessionListItemComponent> {
   String? content;
 
   Future<void> decryptContent() async {
-    content = await loggedUserSigner!.decrypt(widget.detail.dmSession.newestEvent!.content, widget.detail.dmSession.pubkey);
+    content = "empty TODO";//await loggedUserSigner!.decrypt(widget.detail.dmSession.newestEvent!.content, widget.detail.dmSession.pubkey);
+    widget.decrypted=true;
     setState(() {
       if (content != null) {
         content = content!.replaceAll("\r", " ");
@@ -60,10 +61,10 @@ class _DMSessionListItemComponent extends State<DMSessionListItemComponent> {
     //   content = Nip04.decryptWithAgreement(widget.detail.dmSession.newestEvent!.content,
     //       widget.agreement!, widget.detail.dmSession.pubkey);
     // }
-    if (content != null) {
-      content = content!.replaceAll("\r", " ");
-      content = content!.replaceAll("\n", " ");
-    }
+    // if (content != null) {
+    //   content = content!.replaceAll("\r", " ");
+    //   content = content!.replaceAll("\n", " ");
+    // }
   }
 
   @override

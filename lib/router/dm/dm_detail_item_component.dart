@@ -43,10 +43,11 @@ class _DMDetailItemComponent extends State<DMDetailItemComponent> {
 
   Future<void> decryptContent() async {
     if (content.contains('iv=')) {
-      content = await loggedUserSigner!.decrypt(widget.event.content, widget.sessionPubkey) ?? '';
+      content = "empty TODO";//await loggedUserSigner!.decrypt(widget.event.content, widget.sessionPubkey) ?? '';
       setState(() {});
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
