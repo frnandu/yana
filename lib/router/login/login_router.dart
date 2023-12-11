@@ -398,8 +398,13 @@ class _LoginRouter extends State<LoginRouter>
 
   Future<void> doLoginExternalSigner() async {
     final amber = Amberflutter();
-    final key = await amber.getPublicKey();
-    if (key == null) return;
+    final key = await amber.getPublicKey(
+      permissions: const [
+        Permission(type: 'nip04_encrypt'),
+        Permission(type: 'nip04_decrypt'),
+      ],
+    );
+    if (key['signature'] == null) return;
 
     doLogin(key['signature'], true, true, true);
   }
