@@ -1,8 +1,7 @@
 import 'package:dart_ndk/models/relay_set.dart';
-import 'package:dart_ndk/read_write.dart';
-import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip01/metadata.dart';
+import 'package:dart_ndk/read_write.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
@@ -12,7 +11,6 @@ import 'package:yana/main.dart';
 import 'package:yana/nostr/nip172/community_id.dart';
 import 'package:yana/router/edit/poll_input_component.dart';
 import 'package:yana/router/index/index_app_bar.dart';
-import 'package:yana/ui/confirm_dialog.dart';
 import 'package:yana/ui/editor/lnbc_embed_builder.dart';
 import 'package:yana/ui/editor/mention_event_embed_builder.dart';
 import 'package:yana/ui/editor/mention_user_embed_builder.dart';
@@ -550,8 +548,8 @@ class _EditorRouter extends CustState<EditorRouter> with EditorMixin {
     broadcastRelays ??= myOutboxRelaySet!.urls.toList();
     // bool? result = await ConfirmDialog.show(context, "Confirm broadcast to ${broadcastRelays.length} outbox relays");
     // if (result != null && result) {
-      EasyLoading.show(status: 'Broadcasting to ${broadcastRelays.length} outbox relays...',
-          maskType: EasyLoadingMaskType.black);
+      EasyLoading.showSuccess('Broadcasting to ${broadcastRelays.length} outbox relays...',
+          maskType: EasyLoadingMaskType.black, dismissOnTap: true, duration: const Duration(seconds: 5));
       try {
         var event = await doDocumentSave(broadcastRelays: broadcastRelays);
         if (event == null) {
