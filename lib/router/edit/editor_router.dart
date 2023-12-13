@@ -270,7 +270,7 @@ class _EditorRouter extends CustState<EditorRouter> with EditorMixin {
     // );
     List<Widget> editorList = [];
     var editorInputWidget = Container(
-      margin: const EdgeInsets.only(bottom: Base.BASE_PADDING),
+      margin: const EdgeInsets.only(bottom: Base.BASE_PADDING, left: Base.BASE_PADDING, right: Base.BASE_PADDING ),
       child: quillWidget,
     );
     editorList.add(editorInputWidget);
