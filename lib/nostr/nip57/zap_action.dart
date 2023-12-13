@@ -1,6 +1,5 @@
 import 'package:dart_ndk/models/relay_set.dart';
 import 'package:dart_ndk/read_write.dart';
-import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 
@@ -8,7 +7,6 @@ import '../../i18n/i18n.dart';
 import '../../main.dart';
 import '../../utils/lightning_util.dart';
 import '../../utils/string_util.dart';
-import '../event_kind.dart';
 import 'zap.dart';
 
 class ZapAction {
