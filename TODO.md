@@ -42,7 +42,7 @@
 - ~~text color on light theme login screen YANA + input is dark~~
 - ~~signEvent~~
 - ~~Nostr Wallet Connect with balance~~
-   ~~input URI (textfield | QR SCANNER)~~
+  ~~input URI (textfield | QR SCANNER)~~
   ~~show balance~~
   ~~alby new nwc -> deep linking~~
   ~~pay_invoice~~
@@ -87,28 +87,14 @@
 - ~~when replying using gossip inbox model, should find best relay set for inbox all people involved in conversation~~
 - ~~write Gossip.md to explain in simple terms and link from the app and landing page~~
 
-make poll about which next feature should we concentrate on:
-- Data Vending Machins (NIP-90)
-- Amber signing
-- zap splits
-- Calendar Events (NIP-52)
-- Badges (NIP-58)
-- Bookmarks and custom lists (NIP-51)
-- Automatic translations of notes
-- interface translation into other languages
-- Relay Authentication (NIP-42)
-- Live Activities & Live Chats - Nostrnests/zap.stream (NIP-53)
-- User Statuses (NIP-315)
-- custom reactions
-- other wallets integration (mutiny, lndhub, greenlight)
-- marketplace (NIP-15)
-- Public Chats (NIP-28)
-- nsecbunker
-
 ===== v0.14
-- action buttons (follow/zap/...) gray when logged in read-only
+- add support for external signer https://github.com/greenart7c3/Amber
+- added margins to post editor
+- add conversation participants relays for zaps when using inbox model
+
+===== v0.15
 - make thread detail subscription of new replies work
-- make reactions live again with subscriptions or some other way 
+- make reactions live again with subscriptions or some other way
 - show progress of broadcasting note on relays with retry if some fail
 - handle event deletions coming from relays, should delete in cache
 - don't validate signature for events cached on DB
@@ -140,7 +126,7 @@ make poll about which next feature should we concentrate on:
 - solve floating icon in tablet mode above buttons
 - i18n crowdin.com using github actions
 
-- Wallet list of transactions    
+- Wallet list of transactions
 - Wallet balance in FIAT (choose currency) from coingecko/kraken?
 
 - Mutiny NWC Wallet
@@ -160,8 +146,8 @@ make poll about which next feature should we concentrate on:
 - login with mnemonic
 - get notifications in background for all accounts
 - floating icon (+) on DMS sends new msg to CHOOSE
-- optimize zaps/followed downloading (caching on db) on background 
-- Auto-Translate/detect language note contents using something else than google services 
+- optimize zaps/followed downloading (caching on db) on background
+- Auto-Translate/detect language note contents using something else than google services
 - mark all DMs as read feature
 - submit to f-droid
 - badges also on drawer when in tablet mode
@@ -170,12 +156,29 @@ make poll about which next feature should we concentrate on:
 - try to load images using Isolate and compute, so that feed scrolling does not freeze while loading images
 - add SystemMouseCursors.click to everything that is clickable for web version
 - https://pub.dev/packages/objectbox
-- integration with https://github.com/greenart7c3/Amber
 - sort following/followers list by most recent
 - add search to following/followers
 - only use tablet second view if horizontal tablet
 - umbrel store package with web client
 - make it work on iOS/MacOS
+
+make poll about which next feature should we concentrate on:
+- Data Vending Machins (NIP-90)
+- zap splits
+- Calendar Events (NIP-52)
+- Badges (NIP-58)
+- Bookmarks and custom lists (NIP-51)
+- Automatic translations of notes
+- interface translation into other languages
+- Relay Authentication (NIP-42)
+- Live Activities & Live Chats - Nostrnests/zap.stream (NIP-53)
+- User Statuses (NIP-315)
+- custom reactions
+- other wallets integration (mutiny, lndhub, greenlight)
+- marketplace (NIP-15)
+- Public Chats (NIP-28)
+- nsecbunker
+
 
 
 - make promo video:
