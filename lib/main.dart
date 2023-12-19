@@ -37,7 +37,6 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sizer/sizer.dart';
 import 'package:window_manager/window_manager.dart';
-import 'package:yana/hybrid_event_verifier.dart';
 import 'package:yana/nostr/nip07/extension_event_signer.dart';
 import 'package:yana/provider/badge_definition_provider.dart';
 import 'package:yana/provider/community_info_provider.dart';
@@ -176,7 +175,7 @@ late PackageInfo packageInfo;
 
 FlutterBackgroundService? backgroundService;
 
-late FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
+// late FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
 
 int c = 0;
 
@@ -252,7 +251,7 @@ Future<void> initProvidersAndStuff() async {
       cacheManager = dbCacheManager;
       dbCacheManager.eventFilter = filterProvider;
       relayManager.cacheManager = cacheManager;
-      relayManager.eventVerifier = HybridEventVerifier();
+      // relayManager.eventVerifier = HybridEventVerifier();
 
       if (myInboxRelaySet==null) {
         await relayManager.connect();
@@ -427,7 +426,7 @@ Future<void> main() async {
     cacheManager = relayManager.cacheManager;
     print(e);
   }
-  relayManager.eventVerifier = HybridEventVerifier();
+  // relayManager.eventVerifier = HybridEventVerifier();
 
   if (!PlatformUtil.isWeb() && PlatformUtil.isPC()) {
     await windowManager.ensureInitialized();
@@ -557,7 +556,7 @@ void initBackgroundService(bool startOnBoot) async {
     importance: Importance.low, // importance must be at low or higher level
   );
 
-  flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+  var flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
   // if (startOnBoot) {
   backgroundService = FlutterBackgroundService();
   await flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()?.createNotificationChannel(channel);
