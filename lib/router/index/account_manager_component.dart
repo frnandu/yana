@@ -3,7 +3,6 @@ import 'dart:developer';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dart_ndk/nips/nip01/amber_event_signer.dart';
 import 'package:dart_ndk/nips/nip01/bip340_event_signer.dart';
-import 'package:dart_ndk/nips/nip01/event_signer.dart';
 import 'package:dart_ndk/nips/nip01/metadata.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
@@ -14,18 +13,18 @@ import 'package:yana/ui/name_component.dart';
 import 'package:yana/ui/point_component.dart';
 import 'package:yana/utils/router_util.dart';
 
-import '../../provider/data_util.dart';
-import '../../ui/confirm_dialog.dart';
-import '../../utils/platform_util.dart';
-import '/js/js_helper.dart' as js;
 import '../../i18n/i18n.dart';
 import '../../main.dart';
 import '../../nostr/client_utils/keys.dart';
 import '../../nostr/nip07/extension_event_signer.dart';
 import '../../nostr/nip19/nip19.dart';
+import '../../provider/data_util.dart';
+import '../../ui/confirm_dialog.dart';
 import '../../utils/base.dart';
+import '../../utils/platform_util.dart';
 import '../../utils/router_path.dart';
 import '../../utils/string_util.dart';
+import '/js/js_helper.dart' as js;
 import 'index_drawer_content.dart';
 
 class AccountsComponent extends StatefulWidget {
@@ -357,14 +356,23 @@ class _AccountManagerItemComponent extends State<AccountManagerItemComponent> {
           metadata: metadata,
         ),
       ));
-      if (!settingProvider.isPrivateKeyIndex(widget.index)) {
+      if (settingProvider.isExternalSignerKeyIndex(widget.index)) {
         list.add(Container(
             width: 50,
             alignment: Alignment.centerLeft,
-            child: const Text("(read only)",
+            child: const Text(
+              "(external)",
               style: TextStyle(fontWeight: FontWeight.w100, fontSize: 10),
-            )
-        ));
+            )));
+
+      } else if (!settingProvider.isPrivateKeyIndex(widget.index)) {
+        list.add(Container(
+            width: 50,
+            alignment: Alignment.centerLeft,
+            child: const Text(
+              "(read only)",
+              style: TextStyle(fontWeight: FontWeight.w100, fontSize: 10),
+            )));
       }
       list.add(Expanded(
           child: Container(
