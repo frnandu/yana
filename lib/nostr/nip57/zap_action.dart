@@ -1,4 +1,5 @@
-import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:dart_ndk/models/relay_set.dart';
+import 'package:dart_ndk/read_write.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 
@@ -6,7 +7,6 @@ import '../../i18n/i18n.dart';
 import '../../main.dart';
 import '../../utils/lightning_util.dart';
 import '../../utils/string_util.dart';
-import '../event_kind.dart';
 import 'zap.dart';
 
 class ZapAction {
@@ -88,13 +88,28 @@ class ZapAction {
       }
     }
 
+    Set<String> relays = {};
+    relays.addAll(myOutboxRelaySet!.urls.toList());
+    if (settingProvider.inboxForReactions == 1) {
+      RelaySet inboxRelaySet = await relayManager
+          .calculateRelaySet(
+          name: "replyInboxRelaySet",
+          ownerPubKey: loggedUserSigner!.getPublicKey(),
+          pubKeys: [pubkey],
+          direction: RelayDirection.inbox,
+          relayMinCountPerPubKey: settingProvider
+              .broadcastToInboxMaxCount);
+      relays.addAll(inboxRelaySet.urls.toSet());
+      relays.removeWhere((element) => relayManager.blockedRelays.contains(element));
+    }
+
     return await Zap.getInvoiceCode(
       lnurl: lnurl!,
       lud16Link: lud16Link!,
       sats: sats,
       recipientPubkey: pubkey,
       signer: loggedUserSigner!,
-      relays: myOutboxRelaySet!.urls,
+      relays: relays,
       eventId: eventId,
       pollOption: pollOption,
       comment: comment,

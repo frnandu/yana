@@ -176,7 +176,7 @@ late PackageInfo packageInfo;
 
 FlutterBackgroundService? backgroundService;
 
-late FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
+// late FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
 
 int c = 0;
 
@@ -557,7 +557,7 @@ void initBackgroundService(bool startOnBoot) async {
     importance: Importance.low, // importance must be at low or higher level
   );
 
-  flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+  var flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
   // if (startOnBoot) {
   backgroundService = FlutterBackgroundService();
   await flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()?.createNotificationChannel(channel);
