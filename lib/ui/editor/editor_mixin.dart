@@ -49,7 +49,7 @@ mixin EditorMixin {
   List<Metadata> mentionResults = [];
 
   // dm arg
-  ECDHBasicAgreement? getAgreement();
+  bool isDM();
 
   // dm arg
   String? getPubkey();
@@ -98,7 +98,7 @@ mixin EditorMixin {
         icon: const Icon(Icons.video_call),
       ));
     }
-    if (getAgreement() == null &&
+    if (!isDM() &&
         getTags().isEmpty &&
         getTagsAddedWhenSend().isEmpty) {
       inputBtnList.add(quill.QuillToolbarIconButton(
@@ -134,7 +134,7 @@ mixin EditorMixin {
       // Expanded(child: Container())
     ]);
 
-    if (getAgreement() == null) {
+    if (!isDM()) {
       inputBtnList.addAll([
         quill.QuillToolbarIconButton(
           onPressed: _addWarning,
@@ -416,8 +416,6 @@ mixin EditorMixin {
 
   Future<Nip01Event?> doDocumentSave({List<String>? broadcastRelays}) async {
     var context = getContext();
-    // dm agreement
-    var agreement = getAgreement();
     // dm pubkey
     var pubkey = getPubkey();
 
@@ -560,17 +558,13 @@ mixin EditorMixin {
     }
 
     Nip01Event? event;
-    if ((agreement != null || loggedUserSigner is AmberEventSigner) && StringUtil.isNotBlank(pubkey)) {
+    if (isDM() && StringUtil.isNotBlank(pubkey)) {
       // dm message
-      if (agreement != null) {
-        result = Nip04.encryptWithAgreement(result, agreement, pubkey!);
-      } else {
-        final encrypedText = await loggedUserSigner!.encrypt(result, pubkey!);
-        if (encrypedText == null) return null;
+      final encrypedText = await loggedUserSigner!.encrypt(result, pubkey!);
+      if (encrypedText == null) return null;
 
-        result = encrypedText;
-      }
-      
+      result = encrypedText;
+
       event = Nip01Event(
           pubKey: loggedUserSigner!.getPublicKey(), kind: kind.EventKind.DIRECT_MESSAGE, tags: allTags, content: result,
           createdAt: createdAt!=null ? createdAt!.millisecondsSinceEpoch ~/ 1000 : Helpers.now);

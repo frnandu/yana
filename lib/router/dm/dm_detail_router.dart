@@ -41,8 +41,6 @@ class DMDetailRouter extends StatefulWidget {
 class _DMDetailRouter extends CustState<DMDetailRouter> with EditorMixin {
   DMSessionDetail? detail;
 
-  ECDHBasicAgreement? agreement;
-
   String content = '';
 
   @override
@@ -318,11 +316,6 @@ class _DMDetailRouter extends CustState<DMDetailRouter> with EditorMixin {
   // }
 
   @override
-  ECDHBasicAgreement? getAgreement() {
-    return agreement;
-  }
-
-  @override
   BuildContext getContext() {
     return context;
   }
@@ -349,5 +342,10 @@ class _DMDetailRouter extends CustState<DMDetailRouter> with EditorMixin {
   @override
   void updateUI() {
     setState(() {});
+  }
+
+  @override
+  bool isDM() {
+    return true;
   }
 }

@@ -1,26 +1,22 @@
 import 'package:amberflutter/amberflutter.dart';
 import 'package:dart_ndk/nips/nip01/amber_event_signer.dart';
-import 'package:flutter_easyloading/flutter_easyloading.dart';
-import 'package:dart_ndk/models/user_relay_list.dart';
 import 'package:dart_ndk/nips/nip01/bip340_event_signer.dart';
-import 'package:dart_ndk/relay_manager.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:yana/utils/platform_util.dart';
 
-import '../../nostr/nip07/extension_event_signer.dart';
-import '../../provider/data_util.dart';
-import '../../utils/router_util.dart';
-import '/js/js_helper.dart' as js;
 import '../../i18n/i18n.dart';
 import '../../main.dart';
 import '../../nostr/client_utils/keys.dart';
+import '../../nostr/nip07/extension_event_signer.dart';
 import '../../nostr/nip19/nip19.dart';
+import '../../provider/data_util.dart';
 import '../../utils/base.dart';
 import '../../utils/index_taps.dart';
+import '../../utils/router_util.dart';
 import '../../utils/string_util.dart';
+import '/js/js_helper.dart' as js;
 
 class LoginRouter extends StatefulWidget {
 
@@ -400,7 +396,6 @@ class _LoginRouter extends State<LoginRouter>
     final amber = Amberflutter();
     final key = await amber.getPublicKey(
       permissions: const [
-        Permission(type: 'nip04_encrypt'),
         Permission(type: 'nip04_decrypt'),
       ],
     );

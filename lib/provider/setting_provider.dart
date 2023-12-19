@@ -112,6 +112,9 @@ class SettingProvider extends ChangeNotifier {
   bool get isExternalSignerKey {
     return _keyIsExternalSignerMap[_settingData!.privateKeyIndex.toString()] ?? false;
   }
+  bool isExternalSignerKeyIndex(int index) {
+    return _keyIsExternalSignerMap[index.toString()] ?? false;
+  }
 
   bool get isPrivateKey {
     return _keyIsPrivateMap[_settingData!.privateKeyIndex.toString()] ?? false;

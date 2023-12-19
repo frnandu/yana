@@ -10,6 +10,7 @@ import 'package:yana/ui/content/content_decoder.dart';
 import 'package:yana/utils/router_path.dart';
 import 'package:yana/utils/router_util.dart';
 
+import '../../provider/dm_provider.dart';
 import '../../provider/setting_provider.dart';
 import '../../ui/user_pic_component.dart';
 import '../../utils/base.dart';
@@ -38,19 +39,24 @@ class _DMDetailItemComponent extends State<DMDetailItemComponent> {
   static const double IMAGE_WIDTH = 34;
 
   static const double BLANK_WIDTH = 50;
+  late DMProvider provider;
 
   String content = '';
 
   Future<void> decryptContent() async {
-    if (content.contains('iv=')) {
-      content = "empty TODO";//await loggedUserSigner!.decrypt(widget.event.content, widget.sessionPubkey) ?? '';
-      setState(() {});
+    if (content == null && content.contains('iv=')) {
+      var a = await provider.decrypt(widget.event.content, widget.sessionPubkey);
+      if (a != null) {
+        setState(() {
+          content = a;
+        });
+      }
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
+    provider = Provider.of<DMProvider>(context, listen: false);
     var _settingProvider = Provider.of<SettingProvider>(context);
     var themeData = Theme.of(context);
     var mainColor = themeData.primaryColor;
@@ -65,8 +71,7 @@ class _DMDetailItemComponent extends State<DMDetailItemComponent> {
     var smallTextSize = themeData.textTheme.bodySmall!.fontSize;
     var hintColor = themeData.hintColor;
 
-    String timeStr = GetTimeAgo.parse(
-        DateTime.fromMillisecondsSinceEpoch(widget.event.createdAt * 1000));
+    String timeStr = GetTimeAgo.parse(DateTime.fromMillisecondsSinceEpoch(widget.event.createdAt * 1000));
 
     if (content.isEmpty) {
       content = widget.event.content;
@@ -85,8 +90,7 @@ class _DMDetailItemComponent extends State<DMDetailItemComponent> {
         right: Base.BASE_PADDING_HALF,
       ),
       child: Column(
-        crossAxisAlignment:
-            !widget.isLocal ? CrossAxisAlignment.start : CrossAxisAlignment.end,
+        crossAxisAlignment: !widget.isLocal ? CrossAxisAlignment.start : CrossAxisAlignment.end,
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
@@ -108,16 +112,13 @@ class _DMDetailItemComponent extends State<DMDetailItemComponent> {
             ),
             // child: SelectableText(content),
             child: Column(
-              crossAxisAlignment: widget.isLocal
-                  ? CrossAxisAlignment.end
-                  : CrossAxisAlignment.start,
+              crossAxisAlignment: widget.isLocal ? CrossAxisAlignment.end : CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: ContentDecoder.decode(
                 context,
                 content,
                 widget.event,
-                showLinkPreview:
-                    _settingProvider.linkPreview == OpenStatus.OPEN,
+                showLinkPreview: _settingProvider.linkPreview == OpenStatus.OPEN,
               ),
             ),
           ),

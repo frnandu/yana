@@ -321,6 +321,10 @@ class DMProvider extends ChangeNotifier with PenddingEventsLaterFunction {
 
     notifyListeners();
   }
+
+  Future<String?> decrypt(String content, String pubkey) async {
+    return await loggedUserSigner!.decrypt(content,pubkey);
+  }
 }
 
 class DMSessionDetail {

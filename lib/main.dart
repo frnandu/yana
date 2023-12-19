@@ -38,7 +38,6 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sizer/sizer.dart';
 import 'package:window_manager/window_manager.dart';
-import 'package:yana/hybrid_event_verifier.dart';
 import 'package:yana/nostr/nip07/extension_event_signer.dart';
 import 'package:yana/provider/badge_definition_provider.dart';
 import 'package:yana/provider/community_info_provider.dart';
@@ -253,7 +252,7 @@ Future<void> initProvidersAndStuff() async {
       cacheManager = dbCacheManager;
       dbCacheManager.eventFilter = filterProvider;
       relayManager.cacheManager = cacheManager;
-      relayManager.eventVerifier = HybridEventVerifier();
+      // relayManager.eventVerifier = HybridEventVerifier();
 
       if (myInboxRelaySet==null) {
         await relayManager.connect();
@@ -428,7 +427,7 @@ Future<void> main() async {
     cacheManager = relayManager.cacheManager;
     print(e);
   }
-  relayManager.eventVerifier = HybridEventVerifier();
+  // relayManager.eventVerifier = HybridEventVerifier();
 
   if (!PlatformUtil.isWeb() && PlatformUtil.isPC()) {
     await windowManager.ensureInitialized();

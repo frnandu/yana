@@ -1,11 +1,7 @@
-import 'package:dart_ndk/nips/nip01/amber_event_signer.dart';
 import 'package:dart_ndk/nips/nip01/metadata.dart';
-import 'package:dart_ndk/nips/nip04/nip04.dart';
 import 'package:flutter/material.dart';
 import 'package:get_time_ago/get_time_ago.dart';
-import 'package:pointycastle/export.dart' as pointycastle;
 import 'package:provider/provider.dart';
-import 'package:yana/main.dart';
 import 'package:yana/provider/dm_provider.dart';
 import 'package:yana/provider/metadata_provider.dart';
 import 'package:yana/ui/name_component.dart';
@@ -20,8 +16,6 @@ import '../../utils/string_util.dart';
 class DMSessionListItemComponent extends StatefulWidget {
   DMSessionDetail detail;
 
-  bool decrypted = false;
-
   DMSessionListItemComponent({
     super.key,
     required this.detail,
@@ -35,36 +29,20 @@ class DMSessionListItemComponent extends StatefulWidget {
 
 class _DMSessionListItemComponent extends State<DMSessionListItemComponent> {
   static const double IMAGE_WIDTH = 34;
+  late DMProvider provider;
 
   String? content;
 
   Future<void> decryptContent() async {
-    content = "empty TODO";//await loggedUserSigner!.decrypt(widget.detail.dmSession.newestEvent!.content, widget.detail.dmSession.pubkey);
-    widget.decrypted=true;
-    setState(() {
+    if (content == null) {
+      content = await provider.decrypt(widget.detail.dmSession.newestEvent!.content, widget.detail.dmSession.pubkey);
       if (content != null) {
-        content = content!.replaceAll("\r", " ");
-        content = content!.replaceAll("\n", " ");
+        setState(() {
+          content = content!.replaceAll("\r", " ");
+          content = content!.replaceAll("\n", " ");
+        });
       }
-    });
-  }
-
-  @override
-  void initState() {
-    if (!widget.decrypted) {
-      decryptContent();
     }
-
-    // if (loggedUserSigner is AmberEventSigner) {
-    // }
-    // if (widget.agreement != null) {
-    //   content = Nip04.decryptWithAgreement(widget.detail.dmSession.newestEvent!.content,
-    //       widget.agreement!, widget.detail.dmSession.pubkey);
-    // }
-    // if (content != null) {
-    //   content = content!.replaceAll("\r", " ");
-    //   content = content!.replaceAll("\n", " ");
-    // }
   }
 
   @override
@@ -73,6 +51,7 @@ class _DMSessionListItemComponent extends State<DMSessionListItemComponent> {
     var mainColor = themeData.primaryColor;
     var hintColor = themeData.hintColor;
     var smallTextSize = themeData.textTheme.bodySmall!.fontSize;
+    provider = Provider.of<DMProvider>(context, listen: false);
 
     var dmSession = widget.detail.dmSession;
 
@@ -85,6 +64,7 @@ class _DMSessionListItemComponent extends State<DMSessionListItemComponent> {
     );
 
     var lastEvent = dmSession.newestEvent!;
+   decryptContent();
 
     bool hasNewMessage = widget.detail.hasNewMessage();
 
