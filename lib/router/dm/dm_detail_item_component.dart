@@ -1,5 +1,6 @@
 import 'package:dart_ndk/nips/nip01/amber_event_signer.dart';
 import 'package:dart_ndk/nips/nip01/event.dart';
+import 'package:dart_ndk/nips/nip01/helpers.dart';
 import 'package:dart_ndk/nips/nip04/nip04.dart';
 import 'package:flutter/material.dart';
 import 'package:get_time_ago/get_time_ago.dart';
@@ -44,7 +45,7 @@ class _DMDetailItemComponent extends State<DMDetailItemComponent> {
   String content = '';
 
   Future<void> decryptContent() async {
-    if (content==null && widget.event.content.contains('iv=')) {
+    if (Helpers.isBlank(content) && widget.event.content.contains('iv=')) {
       var a = await provider.decrypt(widget.event.content, widget.sessionPubkey);
       if (a != null) {
         setState(() {
