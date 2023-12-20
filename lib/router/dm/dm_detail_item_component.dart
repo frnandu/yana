@@ -44,7 +44,7 @@ class _DMDetailItemComponent extends State<DMDetailItemComponent> {
   String content = '';
 
   Future<void> decryptContent() async {
-    if (content.contains('iv=')) {
+    if (content==null && widget.event.content.contains('iv=')) {
       var a = await provider.decrypt(widget.event.content, widget.sessionPubkey);
       if (a != null) {
         setState(() {
