@@ -42,10 +42,10 @@ class _DMDetailItemComponent extends State<DMDetailItemComponent> {
   static const double BLANK_WIDTH = 50;
   late DMProvider provider;
 
-  String content = '';
+  String? content;
 
   Future<void> decryptContent() async {
-    if (Helpers.isBlank(content) && widget.event.content.contains('iv=')) {
+    if (content==null && widget.event.content.contains('iv=')) {
       var a = await provider.decrypt(widget.event.content, widget.sessionPubkey);
       if (a != null) {
         setState(() {
@@ -113,7 +113,7 @@ class _DMDetailItemComponent extends State<DMDetailItemComponent> {
               mainAxisSize: MainAxisSize.min,
               children: ContentDecoder.decode(
                 context,
-                content,
+                content??widget.event.content,
                 widget.event,
                 showLinkPreview: _settingProvider.linkPreview == OpenStatus.OPEN,
               ),
