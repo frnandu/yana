@@ -73,10 +73,6 @@ class _DMDetailItemComponent extends State<DMDetailItemComponent> {
 
     String timeStr = GetTimeAgo.parse(DateTime.fromMillisecondsSinceEpoch(widget.event.createdAt * 1000));
 
-    if (content.isEmpty) {
-      content = widget.event.content;
-    }
-
     decryptContent();
     // if (loggedUserSigner is AmberEventSigner) {
     // } else {
