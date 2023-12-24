@@ -560,12 +560,13 @@ class ContentDecoder {
     }
 
     var strs = path.split("?");
-    var index = strs[0].lastIndexOf(".");
-    if (index == -1) {
+    var strs2 = strs[0].split("#");
+    var index = strs2[0].lastIndexOf(".");
+    if (index ==  -1) {
       return null;
     }
 
-    path = strs[0];
+    path = strs2[0];
     var n = path.substring(index);
     n = n.toLowerCase();
 
