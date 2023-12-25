@@ -3,9 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:yana/main.dart';
 import 'package:yana/provider/nwc_provider.dart';
 import 'package:yana/utils/base.dart';
-import 'package:yana/utils/string_util.dart';
 
-import '../../../i18n/i18n.dart';
 import '../../../ui/appbar4stack.dart';
 import '../../utils/number_format_util.dart';
 import '../../utils/router_path.dart';
@@ -27,6 +25,10 @@ class _WalletRouter extends State<WalletRouter> {
   void initState() {
     // nwcProvider.reload();
   }
+  ScrollController scrollController = ScrollController();
+  // scrollController.addListener(() {
+  // widget.scrollCallback.call(scrollController.position.userScrollDirection);
+  // });
 
   @override
   Widget build(BuildContext context) {
@@ -72,7 +74,7 @@ class _WalletRouter extends State<WalletRouter> {
               if (balance != null) {
                 return Expanded(
                     child: Container(
-                        margin: EdgeInsets.only(left: Base.BASE_PADDING),
+                        margin: const EdgeInsets.only(left: Base.BASE_PADDING),
                         alignment: Alignment.center,
                         child: Row(children: [
                           const Icon(
@@ -102,8 +104,27 @@ class _WalletRouter extends State<WalletRouter> {
             },
           );
           list.add(balance);
-          list.add(Text(
-              "One-tap Zaps will now be sent from this wallet, no confirmation will be asked."));
+
+
+          if (nwcProvider.canListTransaction) {
+            list.add(RefreshIndicator(
+              onRefresh: () async {
+                nwcProvider.requestListTransactions();
+              },
+              child: Selector<NwcProvider, List<String>>(
+                builder: (context, transactions, child) {
+                  return transactions!=null && transactions.isNotEmpty ? Column(
+                    children: transactions.map((e) => Text(e)).toList(),
+                  ) : Container();
+                },
+              selector: (context, _provider) {
+                return _provider.transactions;
+              }
+            )));
+          }
+
+          // list.add(Text(
+          //     "One-tap Zaps will now be sent from this wallet, no confirmation will be asked."));
 
           // list.add(Row(children: [
           //   Expanded(
