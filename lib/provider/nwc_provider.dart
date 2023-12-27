@@ -13,6 +13,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:get_time_ago/get_time_ago.dart';
 import 'package:intl/intl.dart';
+import 'package:yana/models/wallet_transaction.dart';
 
 import '../main.dart';
 import '../nostr/event_kind.dart';
@@ -33,7 +34,7 @@ class NwcProvider extends ChangeNotifier {
   String? payInvoiceEventId;
 
   List<String> permissions = [];
-  List<String> transactions = [];
+  List<WalletTransaction> transactions = [];
 
   Future<void> init() async {
     // TODO make this multi account aware
@@ -201,7 +202,7 @@ class NwcProvider extends ChangeNotifier {
         StringUtil.isNotBlank(secret)) {
       EventSigner nwcSigner = Bip340EventSigner(secret!, getPublicKey(secret!));
 
-      var content = '{"method":"${NwcCommand.LIST_TRANSACTIONS}", "params":{ "limit": 10, "offset":0, "type":"" }}';
+      var content = '{"method":"${NwcCommand.LIST_TRANSACTIONS}", "params":{ "limit": 50, "offset":0, "unpaid":false }}';
       var encrypted = Nip04.encrypt(secret!,walletPubKey!, content );
 
       var tags = [
@@ -246,18 +247,19 @@ class NwcProvider extends ChangeNotifier {
         transactions = [];
         if (list!=null) {
           for (var t in list) {
-            bool outgoing = t["type"] == "outgoing";
-            var time = "";
-            try {
-              time = GetTimeAgo.parse(
-                  DateFormat("yyyy-MM-ddTHH:mm:ss.SSSSSSSSZ").parseUtc(
-                      t["settled_at"]));
-              // 2023-12-21T01:36:39.97766341Z
-            } catch (e) {}
-            transactions.add(
-                "${outgoing ? "↑" : "↓"} ${t["description"]} ${outgoing
-                    ? "-"
-                    : "+"}${(t["amount"] / 1000).toInt()} ${time}");
+            transactions.add(WalletTransaction.fromJson(t));
+            // bool outgoing = t["type"] == "outgoing";
+            // var time = "";
+            // try {
+            //   time = GetTimeAgo.parse(
+            //       DateFormat("yyyy-MM-ddTHH:mm:ss.SSSSSSSSZ").parseUtc(
+            //           t["settled_at"]));
+            //   // 2023-12-21T01:36:39.97766341Z
+            // } catch (e) {}
+            //   transactions.add(
+            //       "${outgoing ? "↑" : "↓"} ${t["description"]} ${outgoing
+            //           ? "-"
+            //           : "+"}${(t["amount"] / 1000).toInt()} ${time}");
           }
           // TODO set transactions
           notifyListeners();

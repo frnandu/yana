@@ -1,6 +1,10 @@
+import 'package:dart_ndk/nips/nip01/helpers.dart';
 import 'package:flutter/material.dart';
+import 'package:get_time_ago/get_time_ago.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:yana/main.dart';
+import 'package:yana/models/wallet_transaction.dart';
 import 'package:yana/provider/nwc_provider.dart';
 import 'package:yana/utils/base.dart';
 
@@ -111,10 +115,24 @@ class _WalletRouter extends State<WalletRouter> {
               onRefresh: () async {
                 nwcProvider.requestListTransactions();
               },
-              child: Selector<NwcProvider, List<String>>(
+              child: Selector<NwcProvider, List<WalletTransaction>>(
                 builder: (context, transactions, child) {
                   return transactions!=null && transactions.isNotEmpty ? Column(
-                    children: transactions.map((e) => Text(e)).toList(),
+                    children: transactions.take(10).map((t) {
+                      bool outgoing = t.type == "outgoing";
+                      var time = "";
+                      try {
+                        time = t.settled_at!=null?GetTimeAgo.parse(
+                            DateFormat("yyyy-MM-ddTHH:mm:ss.SSSSSSSSZ").parseUtc(t.settled_at!)):"";
+                        // 2023-12-21T01:36:39.97766341Z
+                      } catch (e) {}
+                      return Row(children: [
+                        Text(outgoing ? ' ↑ ' : ' ↓ ', style: TextStyle(color: outgoing? Colors.red:Colors.green),),
+                        Text(Helpers.isNotBlank(t.description)?t.description!:(outgoing?" Sent ":" Received ")),
+                        Text(" ${outgoing? "-": "+"}${(t.amount / 1000).toInt()} ", style: TextStyle(color: outgoing? Colors.red:Colors.green)),
+                        Text("${time}")
+                      ]);
+                    }).toList(),
                   ) : Container();
                 },
               selector: (context, _provider) {
@@ -122,6 +140,32 @@ class _WalletRouter extends State<WalletRouter> {
               }
             )));
           }
+          list.add(GestureDetector(
+              onTap: () {
+                RouterUtil.router(context, RouterPath.WALLET_TRANSACTIONS);
+              },
+              // child:
+              // Expanded(
+              child: MouseRegion(
+                  cursor: SystemMouseCursors.click,
+                  child: Container(
+                    margin: const EdgeInsets.only(top: Base.BASE_PADDING),
+                    padding: const EdgeInsets.all(Base.BASE_PADDING),
+                    height: 60.0,
+                    // decoration: const BoxDecoration(
+                    //     gradient: LinearGradient(
+                    //         colors: [Color(0xffFFDE6E), Colors.orange]),
+                    //     borderRadius: BorderRadius.all(Radius.circular(20.0))),
+                    child: const Center(
+                        child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text('List all transactions >>',
+                                  style: TextStyle(color: Colors.white))
+                            ])),
+                  ))
+            // ),
+          ));
 
           // list.add(Text(
           //     "One-tap Zaps will now be sent from this wallet, no confirmation will be asked."));

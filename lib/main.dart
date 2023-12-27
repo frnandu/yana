@@ -55,6 +55,7 @@ import 'package:yana/router/user/relay_set_router.dart';
 import 'package:yana/router/user/user_history_contact_list_router.dart';
 import 'package:yana/router/user/user_zap_list_router.dart';
 import 'package:yana/router/wallet/nwc_router.dart';
+import 'package:yana/router/wallet/transactions_router.dart';
 import 'package:yana/router/wallet/wallet_router.dart';
 import 'package:yana/utils/image/cache_manager_builder.dart';
 import 'package:yana/utils/platform_util.dart';
@@ -677,6 +678,7 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
       RouterPath.SEARCH: (context) => const SearchRouter(),
       RouterPath.KEY_BACKUP: (context) => const KeyBackupRouter(),
       RouterPath.WALLET: (context) => const WalletRouter(),
+      RouterPath.WALLET_TRANSACTIONS: (context) => const TransactionsRouter(),
       RouterPath.NWC: (context) => const NwcRouter(),
       RouterPath.RELAYS: (context) => const RelaysRouter(),
       RouterPath.PROFILE_EDITOR: (context) => const ProfileEditorRouter(),
