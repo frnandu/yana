@@ -298,6 +298,21 @@ Future<void> initRelays({bool newKey = false}) async {
   relayManager.getSingleNip51List(Nip51List.MUTE, loggedUserSigner!).then((list) {
     filterProvider.muteList = list;
     relayManager.eventFilters.add(filterProvider);
+    relayManager.blockedRelays = [];
+    relayManager.getSingleNip51List(Nip51List.BLOCKED_RELAYS, loggedUserSigner!).then((blockedRelays) {
+      if (blockedRelays!=null) {
+        relayManager.blockedRelays = blockedRelays.allRelays!;
+        relayProvider.notifyListeners();
+      }
+      searchRelays = [];
+      relayManager.getSingleNip51List(Nip51List.SEARCH_RELAYS, loggedUserSigner!).then((searchRelaySet)  {
+        if (searchRelaySet!=null) {
+          searchRelays = searchRelaySet.allRelays!;
+          for (var url in searchRelays) { relayManager.connectRelay(url);}
+          relayProvider.notifyListeners();
+        }
+      });
+    },);
   },);
 
   print("Loading contact list...");
@@ -335,21 +350,6 @@ Future<void> initRelays({bool newKey = false}) async {
   },);
   dmProvider.initDMSessions(loggedUserSigner!.getPublicKey());
   metadataProvider.notifyListeners();
-  relayManager.blockedRelays = [];
-  relayManager.getSingleNip51List(Nip51List.BLOCKED_RELAYS, loggedUserSigner!).then((blockedRelays) {
-    if (blockedRelays!=null) {
-      relayManager.blockedRelays = blockedRelays.allRelays!;
-      relayProvider.notifyListeners();
-    }
-  },);
-  searchRelays = [];
-  relayManager.getSingleNip51List(Nip51List.SEARCH_RELAYS, loggedUserSigner!).then((searchRelaySet)  {
-    if (searchRelaySet!=null) {
-      searchRelays = searchRelaySet.allRelays!;
-      for (var url in searchRelays) { relayManager.connectRelay(url);}
-      relayProvider.notifyListeners();
-    }
-  });
   try {
     if (PlatformUtil.isAndroid() || PlatformUtil.isIOS()) {
       initBackgroundService(settingProvider.backgroundService);
@@ -890,65 +890,67 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
     if (newState == AppLifecycleState.resumed &&
         (appState == AppLifecycleState.paused || appState == AppLifecycleState.hidden || appState == AppLifecycleState.inactive)) {
       //now you know that your app went to the background and is back to the foreground
-      if (loggedUserSigner != null) {
-        if (backgroundService != null && settingProvider.backgroundService) {
-          backgroundService!.invoke('stopService');
-        }
-        relayManager.allowReconnectRelays=false;
-        List<String> requestIdsToClose = relayManager.nostrRequests.keys.toList();
-        for (var id in requestIdsToClose) {
-          try {
-            await relayManager.closeNostrRequestById(id);
-          } catch (e) {
-            print(e);
+      if (loggedUserSigner != null)  {
+        if (relayManager.allowReconnectRelays==false) {
+          if (backgroundService != null && settingProvider.backgroundService) {
+            backgroundService!.invoke('stopService');
           }
+          relayManager.allowReconnectRelays = false;
+          List<String> requestIdsToClose = relayManager.nostrRequests.keys
+              .toList();
+          for (var id in requestIdsToClose) {
+            try {
+              await relayManager.closeNostrRequestById(id);
+            } catch (e) {
+              print(e);
+            }
+          }
+          // await relayManager.closeAllSockets();
+
+          relayManager.allowReconnectRelays = true;
+
+          // Set<String> urls = {};
+          // urls.addAll(myInboxRelaySet!.urls);
+          // if (settingProvider.gossip == 1 && feedRelaySet!=null) {
+          //   urls.addAll(feedRelaySet!.urls);
+          // }
+          //
+          // try {
+          //   await relayManager.reconnectRelays(urls);
+          //   // await relayManager.reconnectRelays(urls);
+          // } catch (e) {
+          //   print(e);
+          // }
+
+          followEventProvider.startSubscriptions();
+          notificationsProvider.startSubscription();
         }
-        // await relayManager.closeAllSockets();
-
-        relayManager.allowReconnectRelays=true;
-
-        // Set<String> urls = {};
-        // urls.addAll(myInboxRelaySet!.urls);
-        // if (settingProvider.gossip == 1 && feedRelaySet!=null) {
-        //   urls.addAll(feedRelaySet!.urls);
-        // }
-        //
-        // try {
-        //   await relayManager.reconnectRelays(urls);
-        //   // await relayManager.reconnectRelays(urls);
-        // } catch (e) {
-        //   print(e);
-        // }
-
-        followEventProvider.startSubscriptions();
-        notificationsProvider.startSubscription();
       }
     }
     if ((newState == AppLifecycleState.paused || newState == AppLifecycleState.hidden || newState == AppLifecycleState.inactive) &&
         appState == AppLifecycleState.resumed && loggedUserSigner != null) {
-      if (backgroundService!=null && settingProvider.backgroundService) {
-        backgroundService!.startService();
-      }
-      Future.delayed(const Duration(seconds: 5), () {
-        AwesomeNotifications().getAppLifeCycle().then((value) async {
-          if (value.toString() != "NotificationLifeCycle.Foreground") {
-            relayManager.allowReconnectRelays=false;
-            List<String> requestIdsToClose = relayManager.nostrRequests.keys.toList();
-            for (var id in requestIdsToClose) {
-              try {
-                await relayManager.closeNostrRequestById(id);
-              } catch (e) {
-                print(e);
-              }
-            }
-
-            await relayManager.closeAllSockets();
-
-            // if (settingProvider.backgroundService) {
-            //   backgroundService!.startService();
-            // }
+      Future.delayed(const Duration(seconds: 5), () async {
+        NotificationLifeCycle value = await AwesomeNotifications().getAppLifeCycle();
+        if (value.toString() != "NotificationLifeCycle.Foreground") {
+          if (backgroundService!=null && settingProvider.backgroundService) {
+            backgroundService!.startService();
           }
-        });
+          relayManager.allowReconnectRelays=false;
+          List<String> requestIdsToClose = relayManager.nostrRequests.keys.toList();
+          for (var id in requestIdsToClose) {
+            try {
+              await relayManager.closeNostrRequestById(id);
+            } catch (e) {
+              print(e);
+            }
+          }
+
+          await relayManager.closeAllSockets();
+
+          // if (settingProvider.backgroundService) {
+          //   backgroundService!.startService();
+          // }
+        }
       });
     }
     appState = newState;

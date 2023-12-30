@@ -16,6 +16,7 @@ import '../../utils/base.dart';
 import '../../utils/index_taps.dart';
 import '../../utils/router_util.dart';
 import '../../utils/string_util.dart';
+import '../index/account_manager_component.dart';
 import '/js/js_helper.dart' as js;
 
 class LoginRouter extends StatefulWidget {
@@ -117,13 +118,13 @@ class _LoginRouter extends State<LoginRouter>
     ));
 
     list.add(Container(
-      margin: const EdgeInsets.all(Base.BASE_PADDING),
+      margin: const EdgeInsets.all(Base.BASE_PADDING_HALF),
       child: InkWell(
         onTap: () async {
           await doLogin(controller.text, false, false, false);
         },
         child: Container(
-          height: 36,
+          height: 42,
           color: themeData.primaryColor,
           alignment: Alignment.center,
           child: Text(
@@ -131,7 +132,7 @@ class _LoginRouter extends State<LoginRouter>
             style: const TextStyle(
               fontFamily: 'Geist',
               color: Colors.white,
-              fontSize: 16,
+              fontSize: 18,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -141,13 +142,13 @@ class _LoginRouter extends State<LoginRouter>
 
     if (PlatformUtil.isAndroid()) {
       list.add(Container(
-        margin: const EdgeInsets.all(Base.BASE_PADDING),
+        margin: const EdgeInsets.all(Base.BASE_PADDING_HALF),
         child: InkWell(
           onTap: () async {
             await doLoginExternalSigner();
           },
           child: Container(
-            height: 36,
+            height: 42,
             color: Colors.orange,
             alignment: Alignment.center,
             child: Text(
@@ -155,7 +156,7 @@ class _LoginRouter extends State<LoginRouter>
               style: const TextStyle(
                 fontFamily: 'Geist',
                 color: Colors.white,
-                fontSize: 16,
+                fontSize: 18,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -166,7 +167,7 @@ class _LoginRouter extends State<LoginRouter>
 
     if (PlatformUtil.isWeb()) {
       list.add(Container(
-        margin: const EdgeInsets.all(Base.BASE_PADDING),
+        margin: const EdgeInsets.all(Base.BASE_PADDING_HALF),
         child: InkWell(
           onTap: () async {
             var pubKey = await js.getPublicKeyAsync();
@@ -181,7 +182,7 @@ class _LoginRouter extends State<LoginRouter>
             }
           },
           child: Container(
-            height: 36,
+            height: 42,
             color: themeData.primaryColor,
             alignment: Alignment.center,
             child: const Text(
@@ -189,7 +190,7 @@ class _LoginRouter extends State<LoginRouter>
               style: TextStyle(
                 fontFamily: 'Geist',
                 color: Colors.white,
-                fontSize: 16,
+                fontSize: 18,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -200,14 +201,14 @@ class _LoginRouter extends State<LoginRouter>
 
     // list.add(Divider());
     list.add(Container(
-      margin: const EdgeInsets.all(Base.BASE_PADDING),
+      margin: const EdgeInsets.all(Base.BASE_PADDING_HALF),
       child: InkWell(
         onTap: () async {
           generatePK();
           await doLogin(controller.text, false, true, false);
         },
         child: Container(
-          height: 40,
+          height: 42,
           color: Colors.deepPurple,
           alignment: Alignment.center,
           child: Text(
@@ -215,7 +216,7 @@ class _LoginRouter extends State<LoginRouter>
             style: const TextStyle(
               fontFamily: 'Geist',
               color: Colors.white,
-              fontSize: 16,
+              fontSize: 18,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -400,8 +401,9 @@ class _LoginRouter extends State<LoginRouter>
       ],
     );
     if (key['signature'] == null) return;
+    AccountsState.clearCurrentMemInfo();
 
-    doLogin(key['signature'], true, true, true);
+    doLogin(key['signature'], true, false, true);
   }
 
   Future<void> initRelayManager( String publicKey, bool newKey) async {

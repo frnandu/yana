@@ -10,13 +10,12 @@ packages:
     source: hosted
     version: "64.0.0"
   amberflutter:
-    dependency: "direct main"
+    dependency: transitive
     description:
-      path: "."
-      ref: HEAD
-      resolved-ref: "268213cc44c2783eca1b632881f49d3de91c2053"
-      url: "https://github.com/greenart7c3/amberflutter"
-    source: git
+      name: amberflutter
+      sha256: "6f8976345fb8e6598f07150f4b63ac16c85e0b21d5d5aeced3c62daacc5a168c"
+      url: "https://pub.dev"
+    source: hosted
     version: "0.0.8"
   analyzer:
     dependency: transitive
@@ -309,9 +308,10 @@ packages:
   dart_ndk:
     dependency: "direct main"
     description:
-      path: "../dart_ndk"
-      relative: true
-    source: path
+      name: dart_ndk
+      sha256: a46176b6aef76c45c79c699053a925df26c6ae481d3ac971eff40687a91215bf
+      url: "https://pub.dev"
+    source: hosted
     version: "0.1.0-dev7"
   dart_style:
     dependency: transitive

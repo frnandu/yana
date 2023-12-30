@@ -110,13 +110,17 @@ class DMProvider extends ChangeNotifier with PenddingEventsLaterFunction {
 
   Future<void> initDMSessions(String localPubkey) async {
     _sessions.clear();
+    _followingList.clear();
     _knownList.clear();
     _unknownList.clear();
+    infoMap.clear();
+    _initSince = 0;
 
     this.localPubkey = localPubkey;
-    var keyIndex = settingProvider.privateKeyIndex!;
+    // var keyIndex = settingProvider.privateKeyIndex!;
     List<Nip01Event>? events = cacheManager.loadEvents(kinds: [kind.EventKind.DIRECT_MESSAGE]);
 
+    events = events.where((element) => element.pubKey == localPubkey || element.pTags.contains(localPubkey)).toList();
     // await EventDB.list(
     //     keyIndex, kind.EventKind.DIRECT_MESSAGE, 0, 10000000);
     events.sort((a, b) => b.createdAt.compareTo(a.createdAt));
@@ -263,12 +267,12 @@ class DMProvider extends ChangeNotifier with PenddingEventsLaterFunction {
     var sentFilter = Filter(
       kinds: [kind.EventKind.DIRECT_MESSAGE],
       authors: [loggedUserSigner!.getPublicKey()],
-      since: _initSince + 1,
+      since: _initSince!=0? _initSince + 1 : null,
     );
     var receivedFilter = Filter(
       kinds: [kind.EventKind.DIRECT_MESSAGE],
       pTags: [loggedUserSigner!.getPublicKey()],
-      since: _initSince + 1,
+      since: _initSince!=0? _initSince + 1 : null,
     );
     RelaySet relaySet = myInboxRelaySet!;
     relayManager!.subscription(receivedFilter, relaySet).then((request) {
