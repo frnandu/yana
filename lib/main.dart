@@ -59,6 +59,8 @@ import 'package:yana/router/wallet/nwc_router.dart';
 import 'package:yana/router/wallet/wallet_router.dart';
 import 'package:yana/utils/image/cache_manager_builder.dart';
 import 'package:yana/utils/platform_util.dart';
+import 'package:amberflutter/amberflutter.dart';
+
 
 import '/js/js_helper.dart' as js;
 import 'i18n/i18n.dart';
@@ -163,6 +165,8 @@ EventSigner? loggedUserSigner;
 
 RelayManager relayManager = RelayManager(isWeb: kIsWeb);
 late CacheManager cacheManager;
+
+late bool isExternalSignerInstalled;
 
 RelaySet? feedRelaySet;
 RelaySet? myInboxRelaySet;
@@ -501,11 +505,20 @@ Future<void> main() async {
   communityInfoProvider = CommunityInfoProvider();
   nwcProvider = NwcProvider();
 
+  final amber = Amberflutter();
+  isExternalSignerInstalled = await amber.isAppInstalled();
+
   String? key = settingProvider.key;
   if (StringUtil.isNotBlank(key)) {
     bool isPrivate = settingProvider.isPrivateKey;
     String publicKey = isPrivate ? getPublicKey(key!) : key!;
-    loggedUserSigner = settingProvider.isExternalSignerKey ? AmberEventSigner(publicKey) : isPrivate || !PlatformUtil.isWeb()? Bip340EventSigner(isPrivate? key:null, publicKey) : Nip07EventSigner(await js.getPublicKeyAsync());
+    if (settingProvider.isExternalSignerKey && isExternalSignerInstalled) {
+      loggedUserSigner = AmberEventSigner(publicKey);
+    } else {
+      loggedUserSigner = isPrivate || !PlatformUtil.isWeb() ? Bip340EventSigner(
+          isPrivate ? key : null, publicKey) : Nip07EventSigner(
+          await js.getPublicKeyAsync());
+    }
   }
 
   if (loggedUserSigner != null) {

@@ -4,6 +4,7 @@ import 'package:dart_ndk/nips/nip01/bip340_event_signer.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:yana/utils/platform_util.dart';
 
 import '../../i18n/i18n.dart';
@@ -145,7 +146,14 @@ class _LoginRouter extends State<LoginRouter>
         margin: const EdgeInsets.all(Base.BASE_PADDING_HALF),
         child: InkWell(
           onTap: () async {
-            await doLoginExternalSigner();
+            if (isExternalSignerInstalled) {
+              await doLoginExternalSigner();
+            } else {
+              var url = Uri.parse(
+                  "https://github.com/greenart7c3/Amber");
+              launchUrl(url,
+                  mode: LaunchMode.externalApplication);
+            }
           },
           child: Container(
             height: 42,
