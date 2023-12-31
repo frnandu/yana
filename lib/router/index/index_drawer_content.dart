@@ -1,3 +1,4 @@
+import 'package:dart_ndk/nips/nip01/amber_event_signer.dart';
 import 'package:dart_ndk/nips/nip01/metadata.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -192,7 +193,7 @@ class _IndexDrawerContentComponnent extends State<IndexDrawerContentComponent> {
           })),
     );
 
-    if (loggedUserSigner!.canSign()) {
+    if (loggedUserSigner!.canSign() && loggedUserSigner is! AmberEventSigner) {
       list.add(IndexDrawerItem(
         iconData: Icons.key,
         name: s.Key_Backup,

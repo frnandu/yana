@@ -150,8 +150,7 @@ class _WebViewRouter extends CustState<WebViewRouter> {
               context, NIP07Methods.nip04_encrypt,
               content: plaintext);
           if (comfirmResult == true) {
-            var agreement = Nip04.getAgreement(loggedUserSigner!.getPrivateKey()!);
-            var resultStr = Nip04.encryptWithAgreement(plaintext, agreement, pubkey);
+            var resultStr = await loggedUserSigner!.encrypt(plaintext, pubkey);
             var script =
                 "window.nostr.callback(\"$resultId\", \"$resultStr\");";
             _controller.runJavaScript(script);
@@ -175,8 +174,7 @@ class _WebViewRouter extends CustState<WebViewRouter> {
               context, NIP07Methods.nip04_decrypt,
               content: ciphertext);
           if (comfirmResult == true) {
-            var agreement = Nip04.getAgreement(loggedUserSigner!.getPrivateKey()!);
-            var resultStr = Nip04.decryptWithAgreement(ciphertext, agreement, pubkey);
+            var resultStr = await loggedUserSigner!.decrypt(ciphertext, pubkey);
             var script =
                 "window.nostr.callback(\"$resultId\", \"$resultStr\");";
             _controller.runJavaScript(script);

@@ -1,13 +1,12 @@
 package yana.nostr
 import io.flutter.embedding.android.FlutterActivity
-//import io.flutter.embedding.android.FlutterFragmentActivity
 
 class MainActivity: FlutterActivity() {
 //class MainActivity : FlutterFragmentActivity() {
 //    private val CHANNEL = "flutter.native/helper"
-
+//
 //    private val secp256k1 = Secp256k1.get()
-
+//
 //    @ExperimentalStdlibApi
 //    override fun configureFlutterEngine(@NonNull flutterEngine: FlutterEngine) {
 //        super.configureFlutterEngine(flutterEngine);
@@ -31,7 +30,7 @@ class MainActivity: FlutterActivity() {
 //
 //        result.success(secp256k1.verifySchnorr(sig!!, hash!!, pubKey!!));
 //    }
-
+//
 //    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
 //        super.onActivityResult(requestCode, resultCode, data)
 //        if (requestCode == REQUEST_CODE) {

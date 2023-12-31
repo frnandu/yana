@@ -928,6 +928,16 @@ class I18n {
     );
   }
 
+  /// `Login with external signer`
+  String get LoginWithExternalSigner {
+    return Intl.message(
+      'Login with external signer',
+      name: 'Login with external signer',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Generate a new private key`
   String get Generate_a_new_private_key {
     return Intl.message(

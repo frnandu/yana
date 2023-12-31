@@ -1,24 +1,24 @@
-import 'package:flutter_easyloading/flutter_easyloading.dart';
-import 'package:dart_ndk/models/user_relay_list.dart';
+import 'package:amberflutter/amberflutter.dart';
+import 'package:dart_ndk/nips/nip01/amber_event_signer.dart';
 import 'package:dart_ndk/nips/nip01/bip340_event_signer.dart';
-import 'package:dart_ndk/relay_manager.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:yana/utils/platform_util.dart';
 
-import '../../nostr/nip07/extension_event_signer.dart';
-import '../../provider/data_util.dart';
-import '../../utils/router_util.dart';
-import '/js/js_helper.dart' as js;
 import '../../i18n/i18n.dart';
 import '../../main.dart';
 import '../../nostr/client_utils/keys.dart';
+import '../../nostr/nip07/extension_event_signer.dart';
 import '../../nostr/nip19/nip19.dart';
+import '../../provider/data_util.dart';
 import '../../utils/base.dart';
 import '../../utils/index_taps.dart';
+import '../../utils/router_util.dart';
 import '../../utils/string_util.dart';
+import '../index/account_manager_component.dart';
+import '/js/js_helper.dart' as js;
 
 class LoginRouter extends StatefulWidget {
 
@@ -119,13 +119,13 @@ class _LoginRouter extends State<LoginRouter>
     ));
 
     list.add(Container(
-      margin: const EdgeInsets.all(Base.BASE_PADDING),
+      margin: const EdgeInsets.all(Base.BASE_PADDING_HALF),
       child: InkWell(
         onTap: () async {
-          await doLogin(controller.text, false, false);
+          await doLogin(controller.text, false, false, false);
         },
         child: Container(
-          height: 36,
+          height: 42,
           color: themeData.primaryColor,
           alignment: Alignment.center,
           child: Text(
@@ -133,7 +133,7 @@ class _LoginRouter extends State<LoginRouter>
             style: const TextStyle(
               fontFamily: 'Geist',
               color: Colors.white,
-              fontSize: 16,
+              fontSize: 18,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -141,9 +141,41 @@ class _LoginRouter extends State<LoginRouter>
       ),
     ));
 
+    if (PlatformUtil.isAndroid()) {
+      list.add(Container(
+        margin: const EdgeInsets.all(Base.BASE_PADDING_HALF),
+        child: InkWell(
+          onTap: () async {
+            if (isExternalSignerInstalled) {
+              await doLoginExternalSigner();
+            } else {
+              var url = Uri.parse(
+                  "https://github.com/greenart7c3/Amber");
+              launchUrl(url,
+                  mode: LaunchMode.externalApplication);
+            }
+          },
+          child: Container(
+            height: 42,
+            color: Colors.orange,
+            alignment: Alignment.center,
+            child: Text(
+              s.LoginWithExternalSigner,
+              style: const TextStyle(
+                fontFamily: 'Geist',
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ),
+      ));
+    }
+
     if (PlatformUtil.isWeb()) {
       list.add(Container(
-        margin: const EdgeInsets.all(Base.BASE_PADDING),
+        margin: const EdgeInsets.all(Base.BASE_PADDING_HALF),
         child: InkWell(
           onTap: () async {
             var pubKey = await js.getPublicKeyAsync();
@@ -152,13 +184,13 @@ class _LoginRouter extends State<LoginRouter>
                 EasyLoading.show(status: pubKey);
                 print("PUBLIC KEY: " + pubKey);
               }
-              await doLogin(pubKey, true, false);
+              await doLogin(pubKey, true, false, false);
             } else {
               EasyLoading.show(status: "Invalid public key");
             }
           },
           child: Container(
-            height: 36,
+            height: 42,
             color: themeData.primaryColor,
             alignment: Alignment.center,
             child: const Text(
@@ -166,7 +198,7 @@ class _LoginRouter extends State<LoginRouter>
               style: TextStyle(
                 fontFamily: 'Geist',
                 color: Colors.white,
-                fontSize: 16,
+                fontSize: 18,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -177,14 +209,14 @@ class _LoginRouter extends State<LoginRouter>
 
     // list.add(Divider());
     list.add(Container(
-      margin: const EdgeInsets.all(Base.BASE_PADDING),
+      margin: const EdgeInsets.all(Base.BASE_PADDING_HALF),
       child: InkWell(
         onTap: () async {
           generatePK();
-          await doLogin(controller.text, false, true);
+          await doLogin(controller.text, false, true, false);
         },
         child: Container(
-          height: 40,
+          height: 42,
           color: Colors.deepPurple,
           alignment: Alignment.center,
           child: Text(
@@ -192,7 +224,7 @@ class _LoginRouter extends State<LoginRouter>
             style: const TextStyle(
               fontFamily: 'Geist',
               color: Colors.white,
-              fontSize: 16,
+              fontSize: 18,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -339,7 +371,7 @@ class _LoginRouter extends State<LoginRouter>
     );
   }
 
-  Future<void> doLogin(String key, bool pubOnly, bool newKey) async {
+  Future<void> doLogin(String key, bool pubOnly, bool newKey, bool isExternalSigner) async {
     if (StringUtil.isBlank(key)) {
       EasyLoading.show(status: I18n.of(context).Private_key_is_null);
       return;
@@ -356,10 +388,10 @@ class _LoginRouter extends State<LoginRouter>
       newNotificationsProvider.clear();
       followEventProvider.clear();
       followEventProvider.clear();
-      await settingProvider.addAndChangeKey(key, !isPublic, updateUI: false);
+      await settingProvider.addAndChangeKey(key, !isPublic, isExternalSigner, updateUI: false);
       bool isPrivate = !isPublic;
       String publicKey = isPrivate ? getPublicKey(key!) : key!;
-      loggedUserSigner = isPrivate || !PlatformUtil.isWeb()
+      loggedUserSigner = settingProvider.isExternalSignerKey ? AmberEventSigner(publicKey) : isPrivate || !PlatformUtil.isWeb()
           ? Bip340EventSigner(isPrivate ? key : null, publicKey)
           : Nip07EventSigner(await js.getPublicKeyAsync());
 
@@ -367,6 +399,19 @@ class _LoginRouter extends State<LoginRouter>
     } catch (e) {
       EasyLoading.showError(e.toString(), duration: const Duration(seconds: 5));
     }
+  }
+
+  Future<void> doLoginExternalSigner() async {
+    final amber = Amberflutter();
+    final key = await amber.getPublicKey(
+      permissions: const [
+        Permission(type: 'nip04_decrypt'),
+      ],
+    );
+    if (key['signature'] == null) return;
+    AccountsState.clearCurrentMemInfo();
+
+    doLogin(key['signature'], true, false, true);
   }
 
   Future<void> initRelayManager( String publicKey, bool newKey) async {

@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
-import 'package:yana/provider/notice_provider.dart';
 import 'package:pointycastle/ecc/api.dart';
 import 'package:provider/provider.dart';
+import 'package:yana/provider/notice_provider.dart';
 
 import '../../provider/dm_provider.dart';
 import '../../provider/index_provider.dart';
@@ -10,10 +9,9 @@ import 'dm_notice_item_component.dart';
 import 'dm_session_list_item_component.dart';
 
 class DMKnownListRouter extends StatefulWidget {
-  ECDHBasicAgreement? agreement;
   ScrollDirectionCallback scrollCallback;
 
-  DMKnownListRouter({this.agreement, required this.scrollCallback});
+  DMKnownListRouter({super.key, required this.scrollCallback});
 
   @override
   State<StatefulWidget> createState() {
@@ -58,7 +56,6 @@ class _DMKnownListRouter extends State<DMKnownListRouter> {
             var detail = details[index - flag];
             return DMSessionListItemComponent(
               detail: detail,
-              agreement: widget.agreement,
             );
           }
         },
