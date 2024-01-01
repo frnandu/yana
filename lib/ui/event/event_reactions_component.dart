@@ -505,7 +505,9 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
     }
     if (er.tagPList.isNotEmpty) {
       for (var p in er.tagPList) {
-        tagPs.add(["p", p]);
+        if (p!=loggedUserSigner!.getPublicKey()) {
+          tagPs.add(["p", p]);
+        }
       }
     }
     if (StringUtil.isNotBlank(er.rootId)) {
