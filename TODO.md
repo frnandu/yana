@@ -86,9 +86,8 @@
 - ~~choose to which relays / lists to broadcast on new note/reply~~
 - ~~when replying using gossip inbox model, should find best relay set for inbox all people involved in conversation~~
 - ~~write Gossip.md to explain in simple terms and link from the app and landing page~~
-
 ===== v0.14
-- add support for external signer https://github.com/greenart7c3/Amber
+- ~~add support for external signer https://github.com/greenart7c3/Amber~~
 - ~~added margins to post editor~~
 - ~~add conversation participants relays for zaps when using inbox model~~
 
@@ -133,7 +132,7 @@
 - Mutiny NWC Wallet
 - Current.io NWC Wallet
 - LndHub Wallet
-- greenlight LN NODE
+- breez sdk + greenlight LN NODE
 
 - WebLN for web: https://github.com/aniketambore/flutter_webln
 
