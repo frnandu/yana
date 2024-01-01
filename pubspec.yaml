@@ -115,12 +115,7 @@ dependencies:
   path_provider: ^2.1.1
   flutter_easyloading: ^3.0.5
   visibility_detector: ^0.4.0
-#uni_links: ^0.5.1
-#  amberflutter: ^0.0.8
-#  amberflutter:
-#    git:
-#      url: https://github.com/greenart7c3/amberflutter
-
+  #uni_links: ^0.5.1
   dart_ndk:
     git:
       url: https://github.com/relaystr/dart_ndk.git

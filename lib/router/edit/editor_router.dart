@@ -2,6 +2,7 @@ import 'package:dart_ndk/models/relay_set.dart';
 import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip01/metadata.dart';
 import 'package:dart_ndk/read_write.dart';
+import 'package:dart_ndk/relay.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
@@ -360,6 +361,7 @@ class _EditorRouter extends CustState<EditorRouter> with EditorMixin {
                   EasyLoading.dismiss();
                 }
               }
+              relays.removeWhere((element) => Relay.clean(element)==null);
               List<String>? results = await showDialog(
                 context: context,
                 builder: (BuildContext context) {

@@ -89,10 +89,11 @@
 
 ===== v0.14
 - add support for external signer https://github.com/greenart7c3/Amber
-- added margins to post editor
-- add conversation participants relays for zaps when using inbox model
+- ~~added margins to post editor~~
+- ~~add conversation participants relays for zaps when using inbox model~~
 
 ===== v0.15
+- nostr.wine-compatible translations service integration
 - make thread detail subscription of new replies work
 - make reactions live again with subscriptions or some other way
 - show progress of broadcasting note on relays with retry if some fail

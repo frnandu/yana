@@ -500,7 +500,9 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
     tagsAddedWhenSend.add(["e", widget.event.id, relayAddr, directMarked]);
 
     List<dynamic> tagPs = [];
-    tagPs.add(["p", widget.event.pubKey]);
+    if (widget.event.pubKey!=loggedUserSigner!.getPublicKey()) {
+      tagPs.add(["p", widget.event.pubKey]);
+    }
     if (er.tagPList.isNotEmpty) {
       for (var p in er.tagPList) {
         tagPs.add(["p", p]);
