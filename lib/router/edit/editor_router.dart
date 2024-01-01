@@ -345,7 +345,12 @@ class _EditorRouter extends CustState<EditorRouter> with EditorMixin {
               if (settingProvider.inboxForReactions == 1) {
                 List<String> pubKeys = Nip01Event.getTags(widget.tagPs, "p");
                 if (pubKeys.length == 1) {
-                  relays.addAll(await getInboxRelays(pubKeys.first));
+                  for (var element in (await getInboxRelays(pubKeys.first))) {
+                    String? cleanUrl = Relay.clean(element);
+                    if (cleanUrl!=null) {
+                      relays.add(cleanUrl);
+                    }
+                  }
                 } else if (pubKeys.isNotEmpty) {
                   EasyLoading.show(status: 'Calculating inbox relays of participants...', maskType: EasyLoadingMaskType.black, dismissOnTap: true);
                   RelaySet inboxRelaySet = await relayManager
@@ -356,12 +361,18 @@ class _EditorRouter extends CustState<EditorRouter> with EditorMixin {
                       direction: RelayDirection.inbox,
                       relayMinCountPerPubKey: settingProvider
                           .broadcastToInboxMaxCount);
-                  relays.addAll(inboxRelaySet.urls.toSet());
+                  inboxRelaySet.urls.forEach((element) {
+                    String? cleanUrl = Relay.clean(element);
+                    if (cleanUrl!=null) {
+                      relays.add(cleanUrl);
+                    }
+                  });
+
                   relays.removeWhere((element) => relayManager.blockedRelays.contains(element));
                   EasyLoading.dismiss();
                 }
               }
-              relays.removeWhere((element) => Relay.clean(element)==null);
+              // relays.removeWhere((element) => Relay.clean(element)==null);
               List<String>? results = await showDialog(
                 context: context,
                 builder: (BuildContext context) {
