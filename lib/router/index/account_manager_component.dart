@@ -143,7 +143,7 @@ class AccountsState extends State<AccountsComponent> {
   }
 
   static void doLogin() async {
-    EasyLoading.show(status: "Logging in...",maskType: EasyLoadingMaskType.black);
+    EasyLoading.show(status: "Logging in...",maskType: EasyLoadingMaskType.black, dismissOnTap: true);
 
     String? key = settingProvider.key;
     bool isPrivate = settingProvider.isPrivateKey;
@@ -152,9 +152,9 @@ class AccountsState extends State<AccountsComponent> {
         ? Bip340EventSigner(isPrivate ? key : null, publicKey)
         : Nip07EventSigner(await js.getPublicKeyAsync());
 
-    await initRelays(newKey: false);
 
-    followEventProvider.loadCachedFeed();
+    await followEventProvider.loadCachedFeed();
+    initRelays(newKey: false);
     notificationsProvider.notifyListeners();
     nwcProvider.init();
     settingProvider.notifyListeners();

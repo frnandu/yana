@@ -415,7 +415,7 @@ class _LoginRouter extends State<LoginRouter>
   }
 
   Future<void> initRelayManager( String publicKey, bool newKey) async {
-    EasyLoading.showToast("Relaying other stuff...", dismissOnTap: true,  duration: const Duration(seconds: 5), maskType: EasyLoadingMaskType.black);
+    EasyLoading.showToast("Relaying other stuff...", dismissOnTap: true,  duration: const Duration(seconds: 15), maskType: EasyLoadingMaskType.black);
     await initRelays(newKey: newKey);
     followEventProvider.loadCachedFeed();
     nwcProvider.init();

@@ -330,6 +330,8 @@ Future<void> initRelays({bool newKey = false}) async {
     if (settingProvider.gossip == 1) {
       feedRelaySet = relayManager.getRelaySet("feed", loggedUserSigner!.getPublicKey());
       if (feedRelaySet == null) {
+        EasyLoading.showToast("Calculating feed relays from contact's outboxes...", dismissOnTap: true,  duration: const Duration(seconds: 15), maskType: EasyLoadingMaskType.black);
+
         feedRelaySet = await relayManager.calculateRelaySet(
             name: "feed",
             ownerPubKey: loggedUserSigner!.getPublicKey(),

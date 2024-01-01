@@ -211,7 +211,7 @@ class RelaysItemComponent extends StatelessWidget {
                           bool finished = false;
                           Future.delayed(const Duration(seconds: 1), () {
                             if (!finished) {
-                              EasyLoading.show(status: "Refreshing relay list before changing...", maskType: EasyLoadingMaskType.black);
+                              EasyLoading.show(status: "Refreshing relay list before changing...", maskType: EasyLoadingMaskType.black, dismissOnTap: true);
                             }
                           });
                           await relayProvider.updateMarker(url, marker!);
@@ -243,7 +243,7 @@ class RelaysItemComponent extends StatelessWidget {
                           bool finished = false;
                           Future.delayed(const Duration(seconds: 1), () {
                             if (!finished) {
-                              EasyLoading.show(status: "Refreshing relay list before changing...", maskType: EasyLoadingMaskType.black);
+                              EasyLoading.show(status: "Refreshing relay list before changing...", maskType: EasyLoadingMaskType.black, dismissOnTap: true);
                             }
                           });
                           await relayProvider.updateMarker(url, marker!);
@@ -272,7 +272,7 @@ class RelaysItemComponent extends StatelessWidget {
                           bool finished = false;
                           Future.delayed(const Duration(seconds: 1), () {
                             if (!finished) {
-                              EasyLoading.show(status: "Refreshing relay list before removing...", maskType: EasyLoadingMaskType.black);
+                              EasyLoading.show(status: "Refreshing relay list before removing...", maskType: EasyLoadingMaskType.black, dismissOnTap: true);
                             }
                           });
                           await relayProvider.removeRelay(url);
