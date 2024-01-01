@@ -12,12 +12,11 @@ packages:
   amberflutter:
     dependency: transitive
     description:
-      path: "."
-      ref: HEAD
-      resolved-ref: "79d11d020cc942a4060448ae97d93bab22019844"
-      url: "https://github.com/frnandu/amberflutter"
-    source: git
-    version: "0.0.8"
+      name: amberflutter
+      sha256: "5101b36419a93e0620a227ada25690286efc93ab9de59dc80e7c3a0c29ccd348"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.0.9"
   analyzer:
     dependency: transitive
     description:
@@ -309,11 +308,10 @@ packages:
   dart_ndk:
     dependency: "direct main"
     description:
-      path: "."
-      ref: HEAD
-      resolved-ref: "9e56a0c1fafa9cf8e54bc71fe8b2886f86f0fbdd"
-      url: "https://github.com/relaystr/dart_ndk.git"
-    source: git
+      name: dart_ndk
+      sha256: "02b491528247343bda021541f28c0d5a01e591a6966355c8508c3c1400aeca37"
+      url: "https://pub.dev"
+    source: hosted
     version: "0.1.0-dev8"
   dart_style:
     dependency: transitive
