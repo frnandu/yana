@@ -196,13 +196,13 @@ class NwcProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> requestListTransactions() async {
+  Future<void> requestListTransactions({int limit=10, int offset=0, bool unpaid=false}) async {
     if (StringUtil.isNotBlank(walletPubKey) &&
         StringUtil.isNotBlank(relay) &&
         StringUtil.isNotBlank(secret)) {
       EventSigner nwcSigner = Bip340EventSigner(secret!, getPublicKey(secret!));
 
-      var content = '{"method":"${NwcCommand.LIST_TRANSACTIONS}", "params":{ "limit": 50, "offset":0, "unpaid":false }}';
+      var content = '{"method":"${NwcCommand.LIST_TRANSACTIONS}", "params":{ "limit": $limit, "offset":$offset, "unpaid":$unpaid }}';
       var encrypted = Nip04.encrypt(secret!,walletPubKey!, content );
 
       var tags = [
