@@ -21,8 +21,8 @@ class NumberFormatUtil {
     int firstNonZeroIndex = formattedAmount.indexOf(RegExp(r'[1-9]'));
 
     // Split the string into parts before and after the first non-zero digit
-    String beforeDecimal = formattedAmount.substring(0, firstNonZeroIndex);
-    String afterDecimal = formattedAmount.substring(firstNonZeroIndex);
+    String beforeDecimal = firstNonZeroIndex!=-1 ? formattedAmount.substring(0, firstNonZeroIndex): formattedAmount;
+    String afterDecimal = firstNonZeroIndex!=-1 ? formattedAmount.substring(firstNonZeroIndex) : "";
 
     // Add spaces every 3 characters before the decimal point, excluding leading zeros
     beforeDecimal = beforeDecimal.replaceAllMapped(

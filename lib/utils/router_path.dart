@@ -4,6 +4,7 @@ class RouterPath {
   static const String NOTICES = "/notices";
   static const String KEY_BACKUP = "/keyBackup";
   static const String WALLET = "/wallet";
+  static const String WALLET_TRANSACTIONS = "/wallet/transactions";
   static const String NWC = "/nwc";
   static const String RELAYS = "/relays";
   static const String USER = "/user";
