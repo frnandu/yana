@@ -7,9 +7,9 @@ class WalletTransaction {
   String? description_hash;
   String? preimage;
   String? payment_hash;
-  String? created_at;
-  String? expires_at;
-  String? settled_at;
+  int? created_at;
+  int? expires_at;
+  int? settled_at;
   var metadata;
 
   WalletTransaction({

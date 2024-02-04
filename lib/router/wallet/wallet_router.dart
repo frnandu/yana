@@ -122,8 +122,7 @@ class _WalletRouter extends State<WalletRouter> {
                       bool outgoing = t.type == "outgoing";
                       var time = "";
                       try {
-                        time = t.settled_at!=null?GetTimeAgo.parse(
-                            DateFormat("yyyy-MM-ddTHH:mm:ss.SSSSSSSSZ").parseUtc(t.settled_at!)):"";
+                        time = t.settled_at!=null?GetTimeAgo.parse(DateTime.fromMillisecondsSinceEpoch(t.settled_at!*1000)):"";
                         // 2023-12-21T01:36:39.97766341Z
                       } catch (e) {}
                       return Row(children: [
