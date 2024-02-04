@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:ui';
 
 import 'package:awesome_notifications/awesome_notifications.dart';
@@ -508,7 +509,7 @@ Future<void> main() async {
   nwcProvider = NwcProvider();
 
   final amber = Amberflutter();
-  isExternalSignerInstalled = await amber.isAppInstalled();
+  isExternalSignerInstalled = Platform.isAndroid && await amber.isAppInstalled();
 
   String? key = settingProvider.key;
   if (StringUtil.isNotBlank(key)) {
