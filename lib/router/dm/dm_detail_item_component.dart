@@ -1,13 +1,17 @@
+import 'package:dart_ndk/nips/nip01/amber_event_signer.dart';
 import 'package:dart_ndk/nips/nip01/event.dart';
+import 'package:dart_ndk/nips/nip01/helpers.dart';
 import 'package:dart_ndk/nips/nip04/nip04.dart';
 import 'package:flutter/material.dart';
 import 'package:get_time_ago/get_time_ago.dart';
 import 'package:pointycastle/export.dart' as pointycastle;
 import 'package:provider/provider.dart';
+import 'package:yana/main.dart';
 import 'package:yana/ui/content/content_decoder.dart';
 import 'package:yana/utils/router_path.dart';
 import 'package:yana/utils/router_util.dart';
 
+import '../../provider/dm_provider.dart';
 import '../../provider/setting_provider.dart';
 import '../../ui/user_pic_component.dart';
 import '../../utils/base.dart';
@@ -20,13 +24,10 @@ class DMDetailItemComponent extends StatefulWidget {
 
   bool isLocal;
 
-  pointycastle.ECDHBasicAgreement agreement;
-
   DMDetailItemComponent({
     required this.sessionPubkey,
     required this.event,
     required this.isLocal,
-    required this.agreement,
   });
 
   @override
@@ -39,9 +40,24 @@ class _DMDetailItemComponent extends State<DMDetailItemComponent> {
   static const double IMAGE_WIDTH = 34;
 
   static const double BLANK_WIDTH = 50;
+  late DMProvider provider;
+
+  String? content;
+
+  Future<void> decryptContent() async {
+    if (content==null && widget.event.content.contains('iv=')) {
+      var a = await provider.decrypt(widget.event.content, widget.sessionPubkey);
+      if (a != null) {
+        setState(() {
+          content = a;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    provider = Provider.of<DMProvider>(context, listen: false);
     var _settingProvider = Provider.of<SettingProvider>(context);
     var themeData = Theme.of(context);
     var mainColor = themeData.primaryColor;
@@ -56,11 +72,14 @@ class _DMDetailItemComponent extends State<DMDetailItemComponent> {
     var smallTextSize = themeData.textTheme.bodySmall!.fontSize;
     var hintColor = themeData.hintColor;
 
-    String timeStr = GetTimeAgo.parse(
-        DateTime.fromMillisecondsSinceEpoch(widget.event.createdAt * 1000));
+    String timeStr = GetTimeAgo.parse(DateTime.fromMillisecondsSinceEpoch(widget.event.createdAt * 1000));
 
-    var content = Nip04.decryptWithAgreement(
-        widget.event.content, widget.agreement, widget.sessionPubkey);
+    decryptContent();
+    // if (loggedUserSigner is AmberEventSigner) {
+    // } else {
+    //   final agreement = Nip04.getAgreement(loggedUserSigner!.getPrivateKey()!);
+    //   content = await loggedUserSigner.decrypt(widget.event.content, agreement, widget.sessionPubkey);
+    // }
 
     var contentWidget = Container(
       margin: const EdgeInsets.only(
@@ -68,8 +87,7 @@ class _DMDetailItemComponent extends State<DMDetailItemComponent> {
         right: Base.BASE_PADDING_HALF,
       ),
       child: Column(
-        crossAxisAlignment:
-            !widget.isLocal ? CrossAxisAlignment.start : CrossAxisAlignment.end,
+        crossAxisAlignment: !widget.isLocal ? CrossAxisAlignment.start : CrossAxisAlignment.end,
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
@@ -91,16 +109,13 @@ class _DMDetailItemComponent extends State<DMDetailItemComponent> {
             ),
             // child: SelectableText(content),
             child: Column(
-              crossAxisAlignment: widget.isLocal
-                  ? CrossAxisAlignment.end
-                  : CrossAxisAlignment.start,
+              crossAxisAlignment: widget.isLocal ? CrossAxisAlignment.end : CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: ContentDecoder.decode(
                 context,
-                content,
+                content??widget.event.content,
                 widget.event,
-                showLinkPreview:
-                    _settingProvider.linkPreview == OpenStatus.OPEN,
+                showLinkPreview: _settingProvider.linkPreview == OpenStatus.OPEN,
               ),
             ),
           ),

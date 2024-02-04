@@ -359,7 +359,7 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
                 newNotificationsProvider.clear();
                 followEventProvider.clear();
                 followEventProvider.clear();
-                settingProvider.addAndChangeKey(widget.pubkey, false, updateUI: true);
+                settingProvider.addAndChangeKey(widget.pubkey, false, false, updateUI: true);
                 String publicKey = widget.pubkey;
                 loggedUserSigner = Bip340EventSigner(null, publicKey);
                 await initRelays(newKey: false);

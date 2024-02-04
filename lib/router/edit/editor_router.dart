@@ -2,6 +2,7 @@ import 'package:dart_ndk/models/relay_set.dart';
 import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip01/metadata.dart';
 import 'package:dart_ndk/read_write.dart';
+import 'package:dart_ndk/relay.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
@@ -53,7 +54,6 @@ class EditorRouter extends StatefulWidget {
     required this.tags,
     required this.tagsAddedWhenSend,
     required this.tagPs,
-    this.agreement,
     this.pubkey,
     this.initEmbeds,
   });
@@ -63,7 +63,6 @@ class EditorRouter extends StatefulWidget {
     List<dynamic>? tags,
     List<dynamic>? tagsAddedWhenSend,
     List<dynamic>? tagPs,
-    ECDHBasicAgreement? agreement,
     String? pubkey,
     List<quill.BlockEmbed>? initEmbeds,
   }) {
@@ -75,7 +74,6 @@ class EditorRouter extends StatefulWidget {
       tags: tags,
       tagsAddedWhenSend: tagsAddedWhenSend,
       tagPs: tagPs,
-      agreement: agreement,
       pubkey: pubkey,
       initEmbeds: initEmbeds,
     );
@@ -347,7 +345,12 @@ class _EditorRouter extends CustState<EditorRouter> with EditorMixin {
               if (settingProvider.inboxForReactions == 1) {
                 List<String> pubKeys = Nip01Event.getTags(widget.tagPs, "p");
                 if (pubKeys.length == 1) {
-                  relays.addAll(await getInboxRelays(pubKeys.first));
+                  for (var element in (await getInboxRelays(pubKeys.first))) {
+                    String? cleanUrl = Relay.clean(element);
+                    if (cleanUrl!=null) {
+                      relays.add(cleanUrl);
+                    }
+                  }
                 } else if (pubKeys.isNotEmpty) {
                   EasyLoading.show(status: 'Calculating inbox relays of participants...', maskType: EasyLoadingMaskType.black, dismissOnTap: true);
                   RelaySet inboxRelaySet = await relayManager
@@ -358,11 +361,18 @@ class _EditorRouter extends CustState<EditorRouter> with EditorMixin {
                       direction: RelayDirection.inbox,
                       relayMinCountPerPubKey: settingProvider
                           .broadcastToInboxMaxCount);
-                  relays.addAll(inboxRelaySet.urls.toSet());
+                  inboxRelaySet.urls.forEach((element) {
+                    String? cleanUrl = Relay.clean(element);
+                    if (cleanUrl!=null) {
+                      relays.add(cleanUrl);
+                    }
+                  });
+
                   relays.removeWhere((element) => relayManager.blockedRelays.contains(element));
                   EasyLoading.dismiss();
                 }
               }
+              // relays.removeWhere((element) => Relay.clean(element)==null);
               List<String>? results = await showDialog(
                 context: context,
                 builder: (BuildContext context) {
@@ -616,6 +626,11 @@ class _EditorRouter extends CustState<EditorRouter> with EditorMixin {
     }
 
     return list;
+  }
+
+  @override
+  bool isDM() {
+    return false;
   }
 }
 

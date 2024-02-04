@@ -119,7 +119,7 @@ class EventReactions implements FindEventInterface {
         } else {
           likeNum++;
           likes.add(event);
-          if (event.pubKey == loggedUserSigner!.getPublicKey()) {
+          if (loggedUserSigner!=null && event.pubKey == loggedUserSigner!.getPublicKey()) {
             myLikeEvents ??= [];
             myLikeEvents!.add(event);
           }
@@ -129,7 +129,7 @@ class EventReactions implements FindEventInterface {
         zaps.add(event);
 
         // if (StringUtil.isNotBlank(event.content)) {
-          if (event.pubKey == loggedUserSigner!.getPublicKey()) {
+          if (loggedUserSigner!=null && event.pubKey == loggedUserSigner!.getPublicKey()) {
             hasMyZap = true;
           } else {
             var tagLength = event.tags.length;

@@ -19,11 +19,11 @@ mixin PenddingEventsLaterFunction {
 
     latering = true;
     Future.delayed(Duration(milliseconds: laterTimeMS), () {
+      latering = false;
       if (!_running || loggedUserSigner==null) {
         return;
       }
 
-      latering = false;
       func(penddingEvents);
       penddingEvents.clear();
       if (completeFunc != null) {

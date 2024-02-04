@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:dart_ndk/models/pubkey_mapping.dart';
 import 'package:dart_ndk/models/relay_set.dart';
 import 'package:dart_ndk/models/user_relay_list.dart';
 import 'package:dart_ndk/nips/nip51/nip51.dart';
@@ -10,7 +9,6 @@ import 'package:dart_ndk/read_write.dart';
 import 'package:dart_ndk/relay.dart';
 import 'package:dart_ndk/relay_manager.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 import '../main.dart';
@@ -60,16 +58,16 @@ class RelayProvider extends ChangeNotifier {
     return "";
   }
 
-  Nip51Set? getNip51RelaySet(String name) {
-    Nip51Set? r = relayManager.getCachedNip51RelaySet(name, loggedUserSigner!);
+  Future<Nip51Set?> getNip51RelaySet(String name) async {
+    Nip51Set? r = await relayManager.getCachedNip51RelaySet(name, loggedUserSigner!);
     if (r == null) {
       relayManager.getSingleNip51RelaySet(name, loggedUserSigner!);
     }
     return r;
   }
 
-  Nip51List? getNip51List(int kind) {
-    Nip51List? r = relayManager.getCachedNip51List(kind, loggedUserSigner!);
+  Future<Nip51List?> getNip51List(int kind) async {
+    Nip51List? r = await relayManager.getCachedNip51List(kind, loggedUserSigner!);
     if (r == null) {
       relayManager.getSingleNip51List(kind, loggedUserSigner!);
     }
@@ -154,7 +152,7 @@ class RelayProvider extends ChangeNotifier {
   Map<int,List<String>?> relaysFromApiByNip = {};
 
   Uri relaysApiUri = Uri.parse("https://api.nostr.watch/v1/online").replace(scheme: 'https');
-  
+
   Future<bool> fetchRelaysFromApi() async {
     try {
       var response = await http.get(relaysApiUri);
@@ -215,7 +213,7 @@ class RelayProvider extends ChangeNotifier {
       return set
           .where((element) =>
               text.length>=3 &&
-              element.replaceAll("wss://", "").replaceAll("ws://", "").contains(text) || 
+              element.replaceAll("wss://", "").replaceAll("ws://", "").contains(text) ||
                   element.replaceAll("wss://", "").replaceAll("ws://", "").startsWith(text) ||
                   element.startsWith(text)
       )

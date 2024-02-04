@@ -1,5 +1,7 @@
+import 'package:dart_ndk/dart_ndk.dart';
 import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip01/filter.dart';
+import 'package:dart_ndk/relay.dart';
 import 'package:dart_ndk/request.dart';
 import 'package:flutter/material.dart';
 
@@ -13,13 +15,13 @@ class SingleEventProvider extends ChangeNotifier with LaterFunction {
 
   List<Nip01Event> _penddingEvents = [];
 
-  Nip01Event? getEvent(String id) {
+  Nip01Event? getEvent(String id, { bool queryIfNotFound=true}) {
     var event = _eventsMap[id];
     if (event != null) {
       return event;
     }
 
-    if (!_needUpdateIds.contains(id)) {
+    if (queryIfNotFound && !_needUpdateIds.contains(id)) {
       _needUpdateIds.add(id);
     }
     later(_laterCallback, null);
@@ -94,13 +96,30 @@ class SingleEventProvider extends ChangeNotifier with LaterFunction {
     // final encoded = jsonEncode(request);
     // textSocketHandler.sendMessage(encoded);
 
+    Set<String> urls = relayManager.bootstrapRelays.toSet();
+    urls.addAll(RelayManager.DEFAULT_BOOTSTRAP_RELAYS);
+
     if (myInboxRelaySet!=null) {
-      NostrRequest request = await relayManager.requestRelays(
-          myInboxRelaySet!.urls, filter, timeout: 2);
-      request.stream.listen((event) {
-        _onEvent(event);
+      myInboxRelaySet!.urls.forEach((element) {
+        String? relay = Relay.clean(element);
+        if (relay!=null) {
+          urls.add(relay);
+        }
       });
     }
+    NostrRequest request = await relayManager.requestRelays(
+        urls, filter, timeout: 5,
+      onTimeout: () {
+          _onEvent(Nip01Event(pubKey: "", kind: -1, tags: [], content: "note not found or muted author"));
+      }
+    );
+    request.stream.listen((event) {
+      _onEvent(event);
+    },onError: (error) {
+      print("$error onERROR for single event provider loading $filter");
+      return;
+    }
+    );
     _needUpdateIds.clear();
   }
 }

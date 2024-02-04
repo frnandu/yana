@@ -86,13 +86,14 @@
 - ~~choose to which relays / lists to broadcast on new note/reply~~
 - ~~when replying using gossip inbox model, should find best relay set for inbox all people involved in conversation~~
 - ~~write Gossip.md to explain in simple terms and link from the app and landing page~~
-
 ===== v0.14
-- add support for external signer https://github.com/greenart7c3/Amber
-- added margins to post editor
-- add conversation participants relays for zaps when using inbox model
+- ~~add support for external signer https://github.com/greenart7c3/Amber~~
+- ~~added margins to post editor~~
+- ~~add conversation participants relays for zaps when using inbox model~~
 
 ===== v0.15
+- Wallet list of transactions
+- nostr.wine-compatible translations service integration
 - make thread detail subscription of new replies work
 - make reactions live again with subscriptions or some other way
 - show progress of broadcasting note on relays with retry if some fail
@@ -126,13 +127,12 @@
 - solve floating icon in tablet mode above buttons
 - i18n crowdin.com using github actions
 
-- Wallet list of transactions
 - Wallet balance in FIAT (choose currency) from coingecko/kraken?
 
 - Mutiny NWC Wallet
 - Current.io NWC Wallet
 - LndHub Wallet
-- greenlight LN NODE
+- breez sdk + greenlight LN NODE
 
 - WebLN for web: https://github.com/aniketambore/flutter_webln
 

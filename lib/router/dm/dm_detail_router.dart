@@ -1,3 +1,4 @@
+import 'package:dart_ndk/nips/nip01/amber_event_signer.dart';
 import 'package:dart_ndk/nips/nip04/nip04.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:dart_ndk/nips/nip01/metadata.dart';
@@ -40,7 +41,7 @@ class DMDetailRouter extends StatefulWidget {
 class _DMDetailRouter extends CustState<DMDetailRouter> with EditorMixin {
   DMSessionDetail? detail;
 
-  ECDHBasicAgreement? agreement;
+  String content = '';
 
   @override
   void initState() {
@@ -81,7 +82,6 @@ class _DMDetailRouter extends CustState<DMDetailRouter> with EditorMixin {
     );
 
     var localPubkey = loggedUserSigner!.getPublicKey();
-    agreement = Nip04.getAgreement(loggedUserSigner!.getPrivateKey()!);
 
     List<Widget> list = [];
 
@@ -102,7 +102,6 @@ class _DMDetailRouter extends CustState<DMDetailRouter> with EditorMixin {
               sessionPubkey: detail!.dmSession.pubkey,
               event: event,
               isLocal: localPubkey == event.pubKey,
-              agreement: agreement!,
             );
           },
           reverse: true,
@@ -317,11 +316,6 @@ class _DMDetailRouter extends CustState<DMDetailRouter> with EditorMixin {
   // }
 
   @override
-  ECDHBasicAgreement? getAgreement() {
-    return agreement;
-  }
-
-  @override
   BuildContext getContext() {
     return context;
   }
@@ -348,5 +342,10 @@ class _DMDetailRouter extends CustState<DMDetailRouter> with EditorMixin {
   @override
   void updateUI() {
     setState(() {});
+  }
+
+  @override
+  bool isDM() {
+    return true;
   }
 }

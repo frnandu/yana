@@ -7,10 +7,9 @@ import '../../provider/index_provider.dart';
 import 'dm_session_list_item_component.dart';
 
 class DMUnknownListRouter extends StatefulWidget {
-  ECDHBasicAgreement? agreement;
   ScrollDirectionCallback scrollCallback;
 
-  DMUnknownListRouter({this.agreement, required this.scrollCallback});
+  DMUnknownListRouter({super.key, required this.scrollCallback});
 
   @override
   State<StatefulWidget> createState() {
@@ -40,7 +39,6 @@ class _DMUnknownListRouter extends State<DMUnknownListRouter> {
           var detail = details[index];
           return DMSessionListItemComponent(
             detail: detail,
-            agreement: widget.agreement,
           );
         },
         itemCount: details.length,

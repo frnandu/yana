@@ -195,8 +195,8 @@ class _KeyBackupRouter extends State<KeyBackupRouter> {
     // if (!checkTips()) {
     //   return;
     // }
-    if (loggedUserSigner!.getPrivateKey()!=null) {
-      var pk = loggedUserSigner!.getPrivateKey();
+    if (settingProvider.isPrivateKey) {
+      var pk = settingProvider.key;
       var nip19Key = Nip19.encodePrivateKey(pk!);
       doCopy(nip19Key);
     }

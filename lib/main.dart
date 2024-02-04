@@ -7,6 +7,7 @@ import 'package:dart_ndk/db/db_cache_manager.dart';
 import 'package:dart_ndk/models/pubkey_mapping.dart';
 import 'package:dart_ndk/models/relay_set.dart';
 import 'package:dart_ndk/models/user_relay_list.dart';
+import 'package:dart_ndk/nips/nip01/amber_event_signer.dart';
 import 'package:dart_ndk/nips/nip01/bip340_event_signer.dart';
 import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip01/event_signer.dart';
@@ -59,6 +60,8 @@ import 'package:yana/router/wallet/transactions_router.dart';
 import 'package:yana/router/wallet/wallet_router.dart';
 import 'package:yana/utils/image/cache_manager_builder.dart';
 import 'package:yana/utils/platform_util.dart';
+import 'package:amberflutter/amberflutter.dart';
+
 
 import '/js/js_helper.dart' as js;
 import 'i18n/i18n.dart';
@@ -164,6 +167,8 @@ EventSigner? loggedUserSigner;
 RelayManager relayManager = RelayManager(isWeb: kIsWeb);
 late CacheManager cacheManager;
 
+late bool isExternalSignerInstalled;
+
 RelaySet? feedRelaySet;
 RelaySet? myInboxRelaySet;
 RelaySet? myOutboxRelaySet;
@@ -241,7 +246,7 @@ Future<void> initProvidersAndStuff() async {
       if (StringUtil.isNotBlank(key)) {
         bool isPrivate = settingProvider.isPrivateKey;
         String publicKey = isPrivate ? getPublicKey(key!) : key!;
-        loggedUserSigner = isPrivate || !PlatformUtil.isWeb()? Bip340EventSigner(isPrivate? key:null, publicKey) : Nip07EventSigner(await js.getPublicKeyAsync());
+        loggedUserSigner = settingProvider.isExternalSignerKey ? AmberEventSigner(publicKey) : isPrivate || !PlatformUtil.isWeb()? Bip340EventSigner(isPrivate? key:null, publicKey) : Nip07EventSigner(await js.getPublicKeyAsync());
       }
       //
       // loggedUserSigner = Bip340EventSigner(settingProvider.key!, getPublicKey(settingProvider.key!));
@@ -298,6 +303,21 @@ Future<void> initRelays({bool newKey = false}) async {
   relayManager.getSingleNip51List(Nip51List.MUTE, loggedUserSigner!).then((list) {
     filterProvider.muteList = list;
     relayManager.eventFilters.add(filterProvider);
+    relayManager.blockedRelays = [];
+    relayManager.getSingleNip51List(Nip51List.BLOCKED_RELAYS, loggedUserSigner!).then((blockedRelays) {
+      if (blockedRelays!=null) {
+        relayManager.blockedRelays = blockedRelays.allRelays!;
+        relayProvider.notifyListeners();
+      }
+      searchRelays = [];
+      relayManager.getSingleNip51List(Nip51List.SEARCH_RELAYS, loggedUserSigner!).then((searchRelaySet)  {
+        if (searchRelaySet!=null) {
+          searchRelays = searchRelaySet.allRelays!;
+          for (var url in searchRelays) { relayManager.connectRelay(url);}
+          relayProvider.notifyListeners();
+        }
+      });
+    },);
   },);
 
   print("Loading contact list...");
@@ -311,6 +331,8 @@ Future<void> initRelays({bool newKey = false}) async {
     if (settingProvider.gossip == 1) {
       feedRelaySet = relayManager.getRelaySet("feed", loggedUserSigner!.getPublicKey());
       if (feedRelaySet == null) {
+        EasyLoading.showToast("Calculating feed relays from contact's outboxes...", dismissOnTap: true,  duration: const Duration(seconds: 15), maskType: EasyLoadingMaskType.black);
+
         feedRelaySet = await relayManager.calculateRelaySet(
             name: "feed",
             ownerPubKey: loggedUserSigner!.getPublicKey(),
@@ -335,21 +357,6 @@ Future<void> initRelays({bool newKey = false}) async {
   },);
   dmProvider.initDMSessions(loggedUserSigner!.getPublicKey());
   metadataProvider.notifyListeners();
-  relayManager.blockedRelays = [];
-  relayManager.getSingleNip51List(Nip51List.BLOCKED_RELAYS, loggedUserSigner!).then((blockedRelays) {
-    if (blockedRelays!=null) {
-      relayManager.blockedRelays = blockedRelays.allRelays!;
-      relayProvider.notifyListeners();
-    }
-  },);
-  searchRelays = [];
-  relayManager.getSingleNip51List(Nip51List.SEARCH_RELAYS, loggedUserSigner!).then((searchRelaySet)  {
-    if (searchRelaySet!=null) {
-      searchRelays = searchRelaySet.allRelays!;
-      for (var url in searchRelays) { relayManager.connectRelay(url);}
-      relayProvider.notifyListeners();
-    }
-  });
   try {
     if (PlatformUtil.isAndroid() || PlatformUtil.isIOS()) {
       initBackgroundService(settingProvider.backgroundService);
@@ -501,11 +508,20 @@ Future<void> main() async {
   communityInfoProvider = CommunityInfoProvider();
   nwcProvider = NwcProvider();
 
+  final amber = Amberflutter();
+  isExternalSignerInstalled = await amber.isAppInstalled();
+
   String? key = settingProvider.key;
   if (StringUtil.isNotBlank(key)) {
     bool isPrivate = settingProvider.isPrivateKey;
     String publicKey = isPrivate ? getPublicKey(key!) : key!;
-    loggedUserSigner = isPrivate || !PlatformUtil.isWeb()? Bip340EventSigner(isPrivate? key:null, publicKey) : Nip07EventSigner(await js.getPublicKeyAsync());
+    if (settingProvider.isExternalSignerKey && isExternalSignerInstalled) {
+      loggedUserSigner = AmberEventSigner(publicKey);
+    } else {
+      loggedUserSigner = isPrivate || !PlatformUtil.isWeb() ? Bip340EventSigner(
+          isPrivate ? key : null, publicKey) : Nip07EventSigner(
+          await js.getPublicKeyAsync());
+    }
   }
 
   if (loggedUserSigner != null) {
@@ -891,65 +907,67 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
     if (newState == AppLifecycleState.resumed &&
         (appState == AppLifecycleState.paused || appState == AppLifecycleState.hidden || appState == AppLifecycleState.inactive)) {
       //now you know that your app went to the background and is back to the foreground
-      if (loggedUserSigner != null) {
-        if (backgroundService != null && settingProvider.backgroundService) {
-          backgroundService!.invoke('stopService');
-        }
-        relayManager.allowReconnectRelays=false;
-        List<String> requestIdsToClose = relayManager.nostrRequests.keys.toList();
-        for (var id in requestIdsToClose) {
-          try {
-            await relayManager.closeNostrRequestById(id);
-          } catch (e) {
-            print(e);
+      if (loggedUserSigner != null)  {
+        if (relayManager.allowReconnectRelays==false) {
+          if (backgroundService != null && settingProvider.backgroundService) {
+            backgroundService!.invoke('stopService');
           }
+          relayManager.allowReconnectRelays = false;
+          List<String> requestIdsToClose = relayManager.nostrRequests.keys
+              .toList();
+          for (var id in requestIdsToClose) {
+            try {
+              await relayManager.closeNostrRequestById(id);
+            } catch (e) {
+              print(e);
+            }
+          }
+          // await relayManager.closeAllSockets();
+
+          relayManager.allowReconnectRelays = true;
+
+          // Set<String> urls = {};
+          // urls.addAll(myInboxRelaySet!.urls);
+          // if (settingProvider.gossip == 1 && feedRelaySet!=null) {
+          //   urls.addAll(feedRelaySet!.urls);
+          // }
+          //
+          // try {
+          //   await relayManager.reconnectRelays(urls);
+          //   // await relayManager.reconnectRelays(urls);
+          // } catch (e) {
+          //   print(e);
+          // }
+
+          followEventProvider.startSubscriptions();
+          notificationsProvider.startSubscription();
         }
-        // await relayManager.closeAllSockets();
-
-        relayManager.allowReconnectRelays=true;
-
-        // Set<String> urls = {};
-        // urls.addAll(myInboxRelaySet!.urls);
-        // if (settingProvider.gossip == 1 && feedRelaySet!=null) {
-        //   urls.addAll(feedRelaySet!.urls);
-        // }
-        //
-        // try {
-        //   await relayManager.reconnectRelays(urls);
-        //   // await relayManager.reconnectRelays(urls);
-        // } catch (e) {
-        //   print(e);
-        // }
-
-        followEventProvider.startSubscriptions();
-        notificationsProvider.startSubscription();
       }
     }
     if ((newState == AppLifecycleState.paused || newState == AppLifecycleState.hidden || newState == AppLifecycleState.inactive) &&
         appState == AppLifecycleState.resumed && loggedUserSigner != null) {
-      if (backgroundService!=null && settingProvider.backgroundService) {
-        backgroundService!.startService();
-      }
-      Future.delayed(const Duration(seconds: 5), () {
-        AwesomeNotifications().getAppLifeCycle().then((value) async {
-          if (value.toString() != "NotificationLifeCycle.Foreground") {
-            relayManager.allowReconnectRelays=false;
-            List<String> requestIdsToClose = relayManager.nostrRequests.keys.toList();
-            for (var id in requestIdsToClose) {
-              try {
-                await relayManager.closeNostrRequestById(id);
-              } catch (e) {
-                print(e);
-              }
-            }
-
-            await relayManager.closeAllSockets();
-
-            // if (settingProvider.backgroundService) {
-            //   backgroundService!.startService();
-            // }
+      Future.delayed(const Duration(seconds: 5), () async {
+        NotificationLifeCycle value = await AwesomeNotifications().getAppLifeCycle();
+        if (value.toString() != "NotificationLifeCycle.Foreground") {
+          if (backgroundService!=null && settingProvider.backgroundService) {
+            backgroundService!.startService();
           }
-        });
+          relayManager.allowReconnectRelays=false;
+          List<String> requestIdsToClose = relayManager.nostrRequests.keys.toList();
+          for (var id in requestIdsToClose) {
+            try {
+              await relayManager.closeNostrRequestById(id);
+            } catch (e) {
+              print(e);
+            }
+          }
+
+          await relayManager.closeAllSockets();
+
+          // if (settingProvider.backgroundService) {
+          //   backgroundService!.startService();
+          // }
+        }
       });
     }
     appState = newState;

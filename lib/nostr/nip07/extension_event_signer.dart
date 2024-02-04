@@ -29,13 +29,14 @@ class Nip07EventSigner extends EventSigner {
   }
 
   @override
-  Future<void> decrypt(String msg) {
+  Future<String?> decrypt(String msg, String destPubKey, { String? id }) {
     // TODO: implement decrypt
     throw UnimplementedError();
   }
 
   @override
-  String? getPrivateKey() {
+  Future<String?> encrypt(String msg, String destPubKey, { String? id }) {
+    // TODO: implement encrypt
     throw UnimplementedError();
   }
 }
