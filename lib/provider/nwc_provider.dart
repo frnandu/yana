@@ -196,7 +196,7 @@ class NwcProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> requestListTransactions({int limit=10, int offset=0, bool unpaid=false}) async {
+  Future<void> requestListTransactions({int limit=20, int offset=0, bool unpaid=false}) async {
     if (StringUtil.isNotBlank(walletPubKey) &&
         StringUtil.isNotBlank(relay) &&
         StringUtil.isNotBlank(secret)) {
