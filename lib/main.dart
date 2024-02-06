@@ -161,6 +161,8 @@ late CommunityInfoProvider communityInfoProvider;
 
 late NwcProvider nwcProvider;
 
+Map<String,dynamic>? fiatCurrencyRate;
+
 AppLifecycleState appState = AppLifecycleState.resumed;
 
 EventSigner? loggedUserSigner;

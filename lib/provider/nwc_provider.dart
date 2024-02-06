@@ -14,6 +14,7 @@ import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:get_time_ago/get_time_ago.dart';
 import 'package:intl/intl.dart';
 import 'package:yana/models/wallet_transaction.dart';
+import 'package:yana/utils/rates.dart';
 
 import '../main.dart';
 import '../nostr/event_kind.dart';
@@ -136,6 +137,8 @@ class NwcProvider extends ChangeNotifier {
     if (StringUtil.isNotBlank(walletPubKey) &&
         StringUtil.isNotBlank(relay) &&
         StringUtil.isNotBlank(secret)) {
+      fiatCurrencyRate = await RatesUtil.coinbase("usd");
+
       EventSigner nwcSigner = Bip340EventSigner(secret!, getPublicKey(secret!));
 
       var encrypted = Nip04.encrypt(secret!,walletPubKey!,  '{"method":"${NwcCommand.GET_BALANCE}"}');
@@ -200,6 +203,7 @@ class NwcProvider extends ChangeNotifier {
     if (StringUtil.isNotBlank(walletPubKey) &&
         StringUtil.isNotBlank(relay) &&
         StringUtil.isNotBlank(secret)) {
+      fiatCurrencyRate = await RatesUtil.coinbase("usd");
       EventSigner nwcSigner = Bip340EventSigner(secret!, getPublicKey(secret!));
 
       var content = '{"method":"${NwcCommand.LIST_TRANSACTIONS}", "params":{ "limit": $limit, "offset":$offset, "unpaid":$unpaid }}';
