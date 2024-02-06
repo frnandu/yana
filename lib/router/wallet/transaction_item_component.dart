@@ -39,7 +39,7 @@ class _TransactionItemComponent extends State<TransactionItemComponent> {
         margin: const EdgeInsets.only(left: Base.BASE_PADDING, right: Base.BASE_PADDING, top: Base.BASE_PADDING),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: ShapeDecoration(
-          color: const Color(0xFF131313),
+          // color: const Color(0xFF131313),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
@@ -56,9 +56,8 @@ class _TransactionItemComponent extends State<TransactionItemComponent> {
               child:  Text(
                 outgoing ?"↗":"↙",
                 style: TextStyle(
-                  color: outgoing ? const Color(0xFFE26842) : const Color(0xFF47A66D),
+                  color: outgoing ? const Color(0xffD44E7D) : const Color(0xFF47A66D),
                   fontSize: 32,
-                  fontFamily: 'Geist',
                   fontWeight: FontWeight.w400,
                 ),
               )
@@ -88,7 +87,6 @@ class _TransactionItemComponent extends State<TransactionItemComponent> {
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 16,
-                              fontFamily: 'Geist',
                               fontWeight: FontWeight.w400,
                               overflow: TextOverflow.ellipsis,
                               // height: 0.12,
@@ -104,7 +102,6 @@ class _TransactionItemComponent extends State<TransactionItemComponent> {
                           style: const TextStyle(
                             color: Color(0xFF7A7D81),
                             fontSize: 12,
-                            fontFamily: 'Geist',
                             fontWeight: FontWeight.w400,
                             // height: 0.11,
                           )),
@@ -126,6 +123,7 @@ class _TransactionItemComponent extends State<TransactionItemComponent> {
                     style: TextStyle(
                       color: outgoing ? const Color(0xFFE26842) : const Color(0xFF47A66D),
                       fontSize: 14,
+                      fontFamily: 'Geist.Mono',
                       fontWeight: FontWeight.w400,
                       // height: 0.12,
                     ),
@@ -150,7 +148,7 @@ class _TransactionItemComponent extends State<TransactionItemComponent> {
                     style: const TextStyle(
                       color: Color(0xFF7A7D81),
                       fontSize: 12,
-                      fontFamily: 'Geist',
+                      fontFamily: 'Geist.Mono',
                       fontWeight: FontWeight.w400,
                       // height: 0.11,
                     ),

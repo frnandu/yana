@@ -91,7 +91,7 @@ class _TransactionsRouter extends State<TransactionsRouter> {
     Widget main =
       RefreshIndicator(
               onRefresh: () async {
-                nwcProvider.requestListTransactions(limit: 100);
+                nwcProvider.requestListTransactions(limit: 20);
               },
               child: Selector<NwcProvider, List<WalletTransaction>>(
                 builder: (context, transactions, child) {

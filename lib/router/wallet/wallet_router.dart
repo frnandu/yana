@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:yana/main.dart';
 import 'package:yana/models/wallet_transaction.dart';
 import 'package:yana/provider/nwc_provider.dart';
+import 'package:yana/router/wallet/transaction_item_component.dart';
 import 'package:yana/utils/base.dart';
 
 import '../../../ui/appbar4stack.dart';
@@ -29,7 +30,9 @@ class _WalletRouter extends State<WalletRouter> {
   void initState() {
     // nwcProvider.reload();
   }
+
   ScrollController scrollController = ScrollController();
+
   // scrollController.addListener(() {
   // widget.scrollCallback.call(scrollController.position.userScrollDirection);
   // });
@@ -56,7 +59,7 @@ class _WalletRouter extends State<WalletRouter> {
               title,
               style: const TextStyle(
                 fontWeight: FontWeight.bold,
-                fontFamily: "Geist",
+                fontFamily: "Geist.Mono",
                 fontSize: 20,
               ),
             ),
@@ -76,30 +79,30 @@ class _WalletRouter extends State<WalletRouter> {
           Widget balance = Selector<NwcProvider, int?>(
             builder: (context, balance, child) {
               if (balance != null) {
+                double? fiatAmount = fiatCurrencyRate != null ? ((balance / 100000000) * fiatCurrencyRate!["value"]) : null;
+
                 return Expanded(
-                    child: Container(
-                        margin: const EdgeInsets.only(left: Base.BASE_PADDING),
-                        alignment: Alignment.center,
-                        child: Row(children: [
-                          const Icon(
-                            Icons.currency_bitcoin,
-                            color: Colors.orange,
-                            size: 40,
-                          ),
-                          NumberFormatUtil.formatBitcoinAmount(
-                              balance / 100000000,
-                              TextStyle(
-                                  color: themeData.focusColor,
-                                  fontSize: 30,
-                                  fontWeight: FontWeight.bold),
-                              TextStyle(
-                                  color: themeData.dividerColor,
-                                  fontSize: 30,
-                                  fontWeight: FontWeight.bold)),
-                          const Text(" sats",
-                              style: TextStyle(
-                                  fontSize: 30, fontWeight: FontWeight.w100)),
-                        ])));
+                    child: Column(children: [
+                  Container(
+                      margin: const EdgeInsets.only(left: Base.BASE_PADDING),
+                      alignment: Alignment.center,
+                      child: Row(children: [
+                        const Icon(
+                          Icons.currency_bitcoin,
+                          color: Color(0xFF7A7D81),
+                          size: 30,
+                        ),
+                        NumberFormatUtil.formatBitcoinAmount(
+                            balance / 100000000,
+                            TextStyle(color: themeData.focusColor, fontSize: 30, fontFamily: 'Geist.Mono', fontWeight: FontWeight.normal),
+                            const TextStyle(color: Color(0xffD44E7D), fontSize: 30, fontFamily: 'Geist.Mono', fontWeight: FontWeight.normal)),
+                        const Text(" sats", style: TextStyle(color: Color(0xffD44E7D), fontSize: 24, fontWeight: FontWeight.w100)),
+                      ])),
+                  Container(
+                      margin: EdgeInsets.only(top: Base.BASE_PADDING),
+                      child: Text(fiatAmount! < 0.01 ? "< ${fiatCurrencyRate?["unit"]}0.01" : "~${fiatCurrencyRate?["unit"]}${fiatAmount.toStringAsFixed(2)}",
+                          style: const TextStyle(color: Color(0xFF7A7D81), fontSize: 16, fontFamily: 'Geist.Mono')))
+                ]));
               }
               return Container();
             },
@@ -109,62 +112,75 @@ class _WalletRouter extends State<WalletRouter> {
           );
           list.add(balance);
 
-
           if (nwcProvider.canListTransaction) {
-            list.add(RefreshIndicator(
-              onRefresh: () async {
-                nwcProvider.requestListTransactions();
-              },
-              child: Selector<NwcProvider, List<WalletTransaction>>(
-                builder: (context, transactions, child) {
-                  return transactions!=null && transactions.isNotEmpty ? Column(
-                    children: transactions.take(10).map((t) {
-                      bool outgoing = t.type == "outgoing";
-                      var time = "";
-                      try {
-                        time = t.settled_at!=null?GetTimeAgo.parse(DateTime.fromMillisecondsSinceEpoch(t.settled_at!*1000)):"";
-                        // 2023-12-21T01:36:39.97766341Z
-                      } catch (e) {}
-                      return Row(children: [
-                        Text(outgoing ? ' ↑ ' : ' ↓ ', style: TextStyle(color: outgoing? Colors.red:Colors.green),),
-                        Text(Helpers.isNotBlank(t.description)?t.description!:(outgoing?" Sent ":" Received ")),
-                        Text(" ${outgoing? "-": "+"}${(t.amount / 1000).toInt()} ", style: TextStyle(color: outgoing? Colors.red:Colors.green)),
-                        Text("${time}")
-                      ]);
-                    }).toList(),
-                  ) : Container();
-                },
-              selector: (context, _provider) {
-                return _provider.transactions;
-              }
-            )));
+            list.add(Container(
+                height: 400,
+                child: Selector<NwcProvider, List<WalletTransaction>>(builder: (context, transactions, child) {
+                  return transactions != null && transactions.isNotEmpty
+                      ? ListView.builder(
+                          itemBuilder: (context, index) {
+                            return TransactionItemComponent(transaction: transactions[index]);
+                          },
+                          itemCount: transactions.length,
+                        )
+                      : Container();
+                }, selector: (context, _provider) {
+                  return _provider.transactions;
+                })));
+            // list.add(RefreshIndicator(
+            //   onRefresh: () async {
+            //     nwcProvider.requestListTransactions();
+            //   },
+            //   child: Selector<NwcProvider, List<WalletTransaction>>(
+            //     builder: (context, transactions, child) {
+            //       return transactions!=null && transactions.isNotEmpty ? Column(
+            //         children: transactions.take(10).map((t) {
+            //           bool outgoing = t.type == "outgoing";
+            //           var time = "";
+            //           try {
+            //             time = t.settled_at!=null?GetTimeAgo.parse(DateTime.fromMillisecondsSinceEpoch(t.settled_at!*1000)):"";
+            //             // 2023-12-21T01:36:39.97766341Z
+            //           } catch (e) {}
+            //           return Row(children: [
+            //             Text(outgoing ? ' ↑ ' : ' ↓ ', style: TextStyle(color: outgoing? Colors.red:Colors.green),),
+            //             Text(Helpers.isNotBlank(t.description)?t.description!:(outgoing?" Sent ":" Received ")),
+            //             Text(" ${outgoing? "-": "+"}${(t.amount / 1000).toInt()} ", style: TextStyle(color: outgoing? Colors.red:Colors.green)),
+            //             Text("${time}")
+            //           ]);
+            //         }).toList(),
+            //       ) : Container();
+            //     },
+            //   selector: (context, _provider) {
+            //     return _provider.transactions;
+            //   }
+            // )));
           }
-          list.add(GestureDetector(
-              onTap: () {
-                RouterUtil.router(context, RouterPath.WALLET_TRANSACTIONS);
-              },
-              // child:
-              // Expanded(
-              child: MouseRegion(
-                  cursor: SystemMouseCursors.click,
-                  child: Container(
-                    margin: const EdgeInsets.only(top: Base.BASE_PADDING),
-                    padding: const EdgeInsets.all(Base.BASE_PADDING),
-                    height: 60.0,
-                    // decoration: const BoxDecoration(
-                    //     gradient: LinearGradient(
-                    //         colors: [Color(0xffFFDE6E), Colors.orange]),
-                    //     borderRadius: BorderRadius.all(Radius.circular(20.0))),
-                    child: const Center(
-                        child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text('List all transactions >>',
-                                  style: TextStyle(color: Colors.white))
-                            ])),
-                  ))
-            // ),
-          ));
+          // list.add(GestureDetector(
+          //     onTap: () {
+          //       RouterUtil.router(context, RouterPath.WALLET_TRANSACTIONS);
+          //     },
+          //     // child:
+          //     // Expanded(
+          //     child: MouseRegion(
+          //         cursor: SystemMouseCursors.click,
+          //         child: Container(
+          //           margin: const EdgeInsets.only(top: Base.BASE_PADDING),
+          //           padding: const EdgeInsets.all(Base.BASE_PADDING),
+          //           height: 60.0,
+          //           // decoration: const BoxDecoration(
+          //           //     gradient: LinearGradient(
+          //           //         colors: [Color(0xffFFDE6E), Colors.orange]),
+          //           //     borderRadius: BorderRadius.all(Radius.circular(20.0))),
+          //           child: const Center(
+          //               child: Row(
+          //                   mainAxisAlignment: MainAxisAlignment.center,
+          //                   children: [
+          //                     Text('List all transactions >>',
+          //                         style: TextStyle(color: Colors.white))
+          //                   ])),
+          //         ))
+          //   // ),
+          // ));
 
           // list.add(Text(
           //     "One-tap Zaps will now be sent from this wallet, no confirmation will be asked."));
@@ -218,7 +234,7 @@ class _WalletRouter extends State<WalletRouter> {
           //             //             size: 25, color: themeData.iconTheme.color)
           //           )))
           // ]));
-          list.add(Container(margin: const EdgeInsets.all(200)));
+          // list.add(Container(margin: const EdgeInsets.all(200)));
           list.add(MouseRegion(
               cursor: SystemMouseCursors.click,
               child: GestureDetector(
@@ -230,17 +246,13 @@ class _WalletRouter extends State<WalletRouter> {
                   child: Container(
                     margin: EdgeInsets.all(Base.BASE_PADDING),
                     decoration: BoxDecoration(
-                      borderRadius:
-                          const BorderRadius.all(Radius.circular(20.0)),
+                      borderRadius: const BorderRadius.all(Radius.circular(20.0)),
                       border: Border.all(
                         width: 1,
                         color: themeData.hintColor,
                       ),
                     ),
-                    child: Container(
-                        alignment: Alignment.center,
-                        margin: const EdgeInsets.all(Base.BASE_PADDING),
-                        child: const Text("Disconnect wallet")),
+                    child: Container(alignment: Alignment.center, margin: const EdgeInsets.all(Base.BASE_PADDING), child: const Text("Disconnect wallet")),
                   ))));
         } else {
           list.add(GestureDetector(
@@ -256,84 +268,54 @@ class _WalletRouter extends State<WalletRouter> {
                     padding: const EdgeInsets.all(Base.BASE_PADDING),
                     height: 60.0,
                     decoration: const BoxDecoration(
-                        gradient: LinearGradient(
-                            colors: [Color(0xffFFDE6E), Colors.orange]),
-                        borderRadius: BorderRadius.all(Radius.circular(20.0))),
+                        gradient: LinearGradient(colors: [Color(0xffFFDE6E), Colors.orange]), borderRadius: BorderRadius.all(Radius.circular(20.0))),
                     child: Center(
-                        child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                          Container(
-                              margin: const EdgeInsets.only(
-                                  right: Base.BASE_PADDING),
-                              child: Image.asset("assets/imgs/nwc.png")),
-                          const Text('Nostr Wallet Connect',
-                              style: TextStyle(color: Colors.black))
-                        ])),
+                        child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                      Container(margin: const EdgeInsets.only(right: Base.BASE_PADDING), child: Image.asset("assets/imgs/nwc.png")),
+                      const Text('Nostr Wallet Connect', style: TextStyle(color: Colors.black))
+                    ])),
                   ))
               // ),
               ));
           list.add(Row(children: [
             Expanded(
-          child: MouseRegion(
-          cursor: SystemMouseCursors.click,
+                child: MouseRegion(
+              cursor: SystemMouseCursors.click,
               child: Container(
-              margin: const EdgeInsets.only(top: Base.BASE_PADDING * 2),
-              padding: const EdgeInsets.all(Base.BASE_PADDING),
-              height: 60.0,
-              decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                      colors: [Color(0xff8bd7f9), Color(0xff174697)]),
-                  borderRadius: BorderRadius.all(Radius.circular(20.0))),
-              child: Center(
-                  child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
+                  margin: const EdgeInsets.only(top: Base.BASE_PADDING * 2),
+                  padding: const EdgeInsets.all(Base.BASE_PADDING),
+                  height: 60.0,
+                  decoration: const BoxDecoration(
+                      gradient: LinearGradient(colors: [Color(0xff8bd7f9), Color(0xff174697)]), borderRadius: BorderRadius.all(Radius.circular(20.0))),
+                  child: Center(
+                      child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
                     Container(
                         margin: const EdgeInsets.only(right: Base.BASE_PADDING),
-                        child: ClipRRect(
-                            borderRadius: BorderRadius.circular(5.0),
-                            child: Image.asset("assets/imgs/lndhub.png"))),
-                    const Text('LndHub Connect',
-                        style: TextStyle(color: Colors.white)),
-                    Text('  (soon)',
-                        style: TextStyle(
-                            color: themeData.hintColor,
-                            fontFamily: "Geist",
-                            fontSize: 12))
+                        child: ClipRRect(borderRadius: BorderRadius.circular(5.0), child: Image.asset("assets/imgs/lndhub.png"))),
+                    const Text('LndHub Connect', style: TextStyle(color: Colors.white)),
+                    Text('  (soon)', style: TextStyle(color: themeData.hintColor, fontFamily: "Geist", fontSize: 12))
                   ]))),
             )),
           ]));
           list.add(Row(children: [
             Expanded(
                 child: MouseRegion(
-                  cursor: SystemMouseCursors.click,
-                  child: Container(
-                      margin: const EdgeInsets.only(top: Base.BASE_PADDING * 2),
-                      padding: const EdgeInsets.all(Base.BASE_PADDING),
-                      height: 60.0,
-                      decoration: const BoxDecoration(
-                          gradient: LinearGradient(
-                              colors: [Color(0xff0f0f0f), Color(0xff0f0f0f)]),
-                          borderRadius: BorderRadius.all(Radius.circular(20.0))),
-                      child: Center(
-                          child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Container(
-                                    margin: const EdgeInsets.only(right: Base.BASE_PADDING),
-                                    child: ClipRRect(
-                                        borderRadius: BorderRadius.circular(5.0),
-                                        child: Image.asset("assets/imgs/greenlight.png"))),
-                                const Text('',
-                                    style: TextStyle(color: Colors.white)),
-                                Text('  (soon)',
-                                    style: TextStyle(
-                                        color: themeData.hintColor,
-                                        fontFamily: "Geist",
-                                        fontSize: 12))
-                              ]))),
-                )),
+              cursor: SystemMouseCursors.click,
+              child: Container(
+                  margin: const EdgeInsets.only(top: Base.BASE_PADDING * 2),
+                  padding: const EdgeInsets.all(Base.BASE_PADDING),
+                  height: 60.0,
+                  decoration: const BoxDecoration(
+                      gradient: LinearGradient(colors: [Color(0xff0f0f0f), Color(0xff0f0f0f)]), borderRadius: BorderRadius.all(Radius.circular(20.0))),
+                  child: Center(
+                      child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                    Container(
+                        margin: const EdgeInsets.only(right: Base.BASE_PADDING),
+                        child: ClipRRect(borderRadius: BorderRadius.circular(5.0), child: Image.asset("assets/imgs/greenlight.png"))),
+                    const Text('', style: TextStyle(color: Colors.white)),
+                    Text('  (soon)', style: TextStyle(color: themeData.hintColor, fontFamily: "Geist", fontSize: 12))
+                  ]))),
+            )),
           ]));
 
           // TODO Lndhub wallet connect
@@ -373,8 +355,7 @@ class _WalletRouter extends State<WalletRouter> {
               child: Center(
                 child:
                     //main
-                    Container(
-                        width: mediaDataCache.size.width * 0.8, child: main),
+                    Container(width: mediaDataCache.size.width * 0.8, child: main),
               ),
             ),
           ),
