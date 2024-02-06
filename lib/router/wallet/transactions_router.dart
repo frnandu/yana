@@ -60,8 +60,7 @@ class _TransactionsRouter extends State<TransactionsRouter> {
       ),
       backgroundColor: appbarBackgroundColor,
     );
-    var appBar =
-    AppBar(
+    var appBar = AppBar(
       leading: GestureDetector(
         onTap: () {
           RouterUtil.back(context);

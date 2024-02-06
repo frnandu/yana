@@ -28,6 +28,7 @@ class _TransactionItemComponent extends State<TransactionItemComponent> {
   @override
   Widget build(BuildContext context) {
     var _nwcProvider = Provider.of<NwcProvider>(context);
+    var themeData = Theme.of(context);
 
     bool outgoing = widget.transaction.type == "outgoing";
     var time = "";
@@ -39,7 +40,7 @@ class _TransactionItemComponent extends State<TransactionItemComponent> {
         margin: const EdgeInsets.only(left: Base.BASE_PADDING, right: Base.BASE_PADDING, top: Base.BASE_PADDING),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: ShapeDecoration(
-          // color: const Color(0xFF131313),
+          color: themeData.cardColor,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
@@ -85,7 +86,7 @@ class _TransactionItemComponent extends State<TransactionItemComponent> {
                             Helpers.isNotBlank(widget.transaction.description) ? widget.transaction.description! : (outgoing ? "Sent " : "Received "),
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
-                              color: Colors.white,
+                              // color: Colors.white,
                               fontSize: 16,
                               fontWeight: FontWeight.w400,
                               overflow: TextOverflow.ellipsis,

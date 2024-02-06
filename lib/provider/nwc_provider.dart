@@ -61,6 +61,10 @@ class NwcProvider extends ChangeNotifier {
 
   int? get getBalance => balance;
 
+  bool get canMakeInvoice => permissions.contains(NwcCommand.MAKE_INVOICE);
+
+  bool get canPayInvoice => permissions.contains(NwcCommand.PAY_INVOICE);
+
   bool get isConnected =>
       permissions != null &&
       permissions.isNotEmpty &&
