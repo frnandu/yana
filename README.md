@@ -60,7 +60,7 @@ You can run your own web version using docker
 
 And then go to https://127.0.0.1:8080
 
-You can also check out my hosted version at https://yana.do
+You can also check out my hosted version at https://app.yana.do
 
 [Planned](https://github.com/frnandu/yana/issues/34) also an Umbrel Store package so it is simple to install and run it for umbrel users 
 
