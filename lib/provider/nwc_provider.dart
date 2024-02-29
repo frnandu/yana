@@ -36,7 +36,10 @@ class NwcProvider extends ChangeNotifier {
     // TODO make this multi account aware
     String? perms = sharedPreferences.getString(DataKey.NWC_PERMISSIONS);
     if (StringUtil.isNotBlank(perms)) {
-      permissions = perms!.split(",");
+      permissions = perms!.split(" ");
+      if (permissions.length==1) {
+        permissions = permissions[0].split(",");
+      }
     }
     uri = await settingProvider.getNwc();
     secret = await settingProvider.getNwcSecret();
@@ -101,7 +104,11 @@ class NwcProvider extends ChangeNotifier {
       sharedPreferences.setString(DataKey.NWC_PERMISSIONS, event.content);
       sharedPreferences.setString(DataKey.NWC_RELAY, relay!);
       sharedPreferences.setString(DataKey.NWC_PUB_KEY, walletPubKey!);
-      permissions = event.content.split(",");
+      permissions = event.content.split(" ");
+      if (permissions.length==1) {
+        permissions = permissions[0].split(",");
+      }
+
       if (permissions.contains(NwcCommand.GET_BALANCE) && balance==null) {
         await requestBalance(walletPubKey!, relay!, secret!);
       }
