@@ -11,6 +11,10 @@ import 'package:dart_ndk/request.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:get_time_ago/get_time_ago.dart';
+import 'package:intl/intl.dart';
+import 'package:yana/models/wallet_transaction.dart';
+import 'package:yana/utils/rates.dart';
 
 import '../main.dart';
 import '../nostr/event_kind.dart';
@@ -31,6 +35,7 @@ class NwcProvider extends ChangeNotifier {
   String? payInvoiceEventId;
 
   List<String> permissions = [];
+  List<WalletTransaction> transactions = [];
 
   Future<void> init() async {
     // TODO make this multi account aware
@@ -50,6 +55,8 @@ class NwcProvider extends ChangeNotifier {
     }
   }
 
+  bool get canListTransaction => permissions.contains(NwcCommand.LIST_TRANSACTIONS);
+
   Future<void> reload() async {
     await init();
     notifyListeners();
@@ -57,12 +64,16 @@ class NwcProvider extends ChangeNotifier {
 
   int? get getBalance => balance;
 
+  bool get canMakeInvoice => permissions.contains(NwcCommand.MAKE_INVOICE);
+
+  bool get canPayInvoice => permissions.contains(NwcCommand.PAY_INVOICE);
+
   bool get isConnected =>
       permissions != null &&
       permissions.isNotEmpty &&
       StringUtil.isNotBlank(secret);
 
-  Future<void>  connect(String nwc) async {
+  Future<void> connect(String nwc) async {
     nwc = nwc.replaceAll("yana:", "nostr+walletconnect:");
     Uri uri = Uri.parse(nwc.replaceAll("nostr+walletconnect:", "https:"));
     String? walletPubKey = uri.host;
@@ -112,6 +123,9 @@ class NwcProvider extends ChangeNotifier {
       if (permissions.contains(NwcCommand.GET_BALANCE) && balance==null) {
         await requestBalance(walletPubKey!, relay!, secret!);
       }
+      if (permissions.contains(NwcCommand.LIST_TRANSACTIONS)) {
+        await requestListTransactions();
+      }
       notifyListeners();
     }
   }
@@ -129,10 +143,13 @@ class NwcProvider extends ChangeNotifier {
     permissions = [];
     notifyListeners();
   }
+
   Future<void> requestBalance(String walletPubKey, String relay, String secret) async {
     if (StringUtil.isNotBlank(walletPubKey) &&
         StringUtil.isNotBlank(relay) &&
         StringUtil.isNotBlank(secret)) {
+      fiatCurrencyRate = await RatesUtil.coinbase("usd");
+
       EventSigner nwcSigner = Bip340EventSigner(secret!, getPublicKey(secret!));
 
       var encrypted = Nip04.encrypt(secret!,walletPubKey!,  '{"method":"${NwcCommand.GET_BALANCE}"}');
@@ -183,6 +200,85 @@ class NwcProvider extends ChangeNotifier {
           maxAmount = maxAmount! ~/ 1000;
         }
         notifyListeners();
+      } else if (data!=null && data.containsKey("error")) {
+        var error = data['error']['code'];
+        if (error == "UNAUTHORIZED") {
+          await disconnect();
+          notifyListeners();
+        }
+      }
+    }
+  }
+
+  Future<void> requestListTransactions({int limit=20, int offset=0, bool unpaid=false}) async {
+    if (StringUtil.isNotBlank(walletPubKey) &&
+        StringUtil.isNotBlank(relay) &&
+        StringUtil.isNotBlank(secret)) {
+      fiatCurrencyRate = await RatesUtil.coinbase("usd");
+      EventSigner nwcSigner = Bip340EventSigner(secret!, getPublicKey(secret!));
+
+      var content = '{"method":"${NwcCommand.LIST_TRANSACTIONS}", "params":{ "limit": $limit, "offset":$offset, "unpaid":$unpaid }}';
+      var encrypted = Nip04.encrypt(secret!,walletPubKey!, content );
+
+      var tags = [
+        ["p", walletPubKey]
+      ];
+      final event = Nip01Event(pubKey: nwcSigner!.getPublicKey(), kind: NwcKind.REQUEST, tags: tags, content: encrypted);
+
+      var filter = Filter(
+          kinds: [NwcKind.RESPONSE], authors: [walletPubKey!], eTags: [event.id]);
+      // RelayManager relayManager = RelayManager();
+      await relayManager.reconnectRelay(relay!, force: true);
+
+      NostrRequest subscription = await relayManager.requestRelays([relay!], filter, closeOnEOSE: false);
+      subscription.stream.listen((event) async {
+        await relayManager.closeNostrRequest(subscription);
+        await onGetListTransactions(event);
+      });
+      await relayManager.broadcastEvent(event, [relay!], nwcSigner);
+    } else {
+      var filter = Filter(kinds: [NwcKind.INFO_REQUEST], authors: [walletPubKey!]);
+      if (await relayManager.connectRelay(relay!)) {
+        (await relayManager.requestRelays([relay!], filter)).stream.listen((event) {
+          onEventInfo.call(event);
+        });
+      }
+    }
+  }
+
+  Future<void> onGetListTransactions(Nip01Event event) async {
+    if (event.kind == NwcKind.RESPONSE &&
+        StringUtil.isNotBlank(event.content) &&
+        StringUtil.isNotBlank(secret) &&
+        StringUtil.isNotBlank(walletPubKey)) {
+      var decrypted = Nip04.decrypt(secret!, walletPubKey!, event.content);
+      Map<String, dynamic> data;
+      data = json.decode(decrypted);
+      if (data != null &&
+          data['result_type'] == NwcCommand.LIST_TRANSACTIONS &&
+          data.containsKey("result")
+          ) {
+        var list = data["result"]["transactions"];
+        transactions = [];
+        if (list!=null) {
+          for (var t in list) {
+            transactions.add(WalletTransaction.fromJson(t));
+            // bool outgoing = t["type"] == "outgoing";
+            // var time = "";
+            // try {
+            //   time = GetTimeAgo.parse(
+            //       DateFormat("yyyy-MM-ddTHH:mm:ss.SSSSSSSSZ").parseUtc(
+            //           t["settled_at"]));
+            //   // 2023-12-21T01:36:39.97766341Z
+            // } catch (e) {}
+            //   transactions.add(
+            //       "${outgoing ? "↑" : "↓"} ${t["description"]} ${outgoing
+            //           ? "-"
+            //           : "+"}${(t["amount"] / 1000).toInt()} ${time}");
+          }
+          // TODO set transactions
+          notifyListeners();
+        }
       } else if (data!=null && data.containsKey("error")) {
         var error = data['error']['code'];
         if (error == "UNAUTHORIZED") {
