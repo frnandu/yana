@@ -117,7 +117,6 @@ class _EventMainComponent extends State<EventMainComponent> {
 
   @override
   Widget build(BuildContext context) {
-    var s = I18n.of(context);
     var _settingProvider = Provider.of<SettingProvider>(context);
     if (eventRelation.id != widget.event.id) {
       // change when thread root load lazy
@@ -264,7 +263,7 @@ class _EventMainComponent extends State<EventMainComponent> {
           widget.event.kind == kind.EventKind.GENERIC_REPOST) {
         list.add(Container(
           alignment: Alignment.centerLeft,
-          child: Text("${s.Repost}:"),
+          child: Text("Repost"),
         ));
         if (repostEvent != null) {
           list.add(EventQuoteComponent(
@@ -293,7 +292,7 @@ class _EventMainComponent extends State<EventMainComponent> {
             List<Widget> replyingList = [];
             var length = eventRelation.tagPList.length;
             replyingList.add(Text(
-              "${s.Replying}: ",
+              "Replying: ",
               style: textStyle,
             ));
             int maxPTags = 20;
@@ -463,7 +462,7 @@ class _EventMainComponent extends State<EventMainComponent> {
               right: 3,
             ),
             child: Text(
-              s.From,
+              "From",
               style: TextStyle(
                 color: hintColor,
                 fontSize: smallTextSize,
