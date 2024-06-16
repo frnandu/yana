@@ -119,7 +119,7 @@ class _TransactionItemComponent extends State<TransactionItemComponent> {
               children: [
                 Row(children: [
                   Text(
-                    '${outgoing ? "-" : "+"}${formatter.format(widget.transaction.amount * 10000000 ~/ 1000).replaceAll(',', ' ')}',
+                    '${outgoing ? "-" : "+"}${formatter.format(widget.transaction.amount  ~/ 1000).replaceAll(',', ' ')}',
                     textAlign: TextAlign.right,
                     style: TextStyle(
                       color: outgoing ? const Color(0xFFE26842) : const Color(0xFF47A66D),

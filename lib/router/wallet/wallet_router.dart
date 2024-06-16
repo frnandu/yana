@@ -102,7 +102,7 @@ class _WalletRouter extends State<WalletRouter> {
                       Row(mainAxisSize: MainAxisSize.min, mainAxisAlignment: MainAxisAlignment.end, crossAxisAlignment: CrossAxisAlignment.center, children: [
                         const Text("₿", style: TextStyle(color: Color(0xFF7A7D81), fontSize: 30, fontFamily: 'Geist.Mono')),
                         const SizedBox(width: 4),
-                        NumberFormatUtil.formatBitcoinAmount(5478234979 / 100000000, TextStyle(color: themeData.focusColor, fontSize: 30, fontFamily: 'Geist.Mono'),
+                        NumberFormatUtil.formatBitcoinAmount(balance / 100000000, TextStyle(color: themeData.focusColor, fontSize: 30, fontFamily: 'Geist.Mono'),
                             const TextStyle(color: Color(0xffD44E7D), fontSize: 30, fontFamily: 'Geist.Mono')),
                         const Text(" sats", style: TextStyle(color: Color(0xffD44E7D), fontSize: 24, fontWeight: FontWeight.w100)),
                       ]),
