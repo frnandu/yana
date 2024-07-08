@@ -61,7 +61,7 @@ dependencies:
   widget_size: ^1.0.0
   sizer: ^2.0.15
   webview_flutter: ^4.2.1
-  screenshot: ^2.1.0
+  screenshot: ^3.0.0
   share_plus: ^7.2.1
   video_player: ^2.6.1
   image_picker: ^1.0.3
@@ -138,11 +138,12 @@ dev_dependencies:
   flutter_lints: ^3.0.1
   build_runner: ^2.4.6
 
-#dependency_overrides:
+dependency_overrides:
 #  http: ^1.0.0
 #  extended_image: ^8.0.1
 #  markdown: ^7.1.0
-#  intl: ^0.18.1
+  intl: ^0.19.0
+  flutter_colorpicker: 1.1.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
