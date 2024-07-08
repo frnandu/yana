@@ -35,7 +35,7 @@ class _TransactionItemComponent extends State<TransactionItemComponent> {
     try {
       time = widget.transaction.settled_at != null ? GetTimeAgo.parse(DateTime.fromMillisecondsSinceEpoch(widget.transaction.settled_at! * 1000), pattern: "dd.MM.yyyy") : "";
     } catch (e) {}
-    double? fiatAmount = fiatCurrencyRate != null ? ((widget.transaction.amount / 1000) / fiatCurrencyRate!["value"]) : null;
+    double? fiatAmount = fiatCurrencyRate != null ? ((widget.transaction.amount / 100000000000) * fiatCurrencyRate!["value"]) : null;
     return Container(
         margin: const EdgeInsets.only(left: Base.BASE_PADDING, right: Base.BASE_PADDING, top: Base.BASE_PADDING),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),

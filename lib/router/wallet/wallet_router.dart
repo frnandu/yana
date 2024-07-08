@@ -119,51 +119,51 @@ class _WalletRouter extends State<WalletRouter> {
               return _provider.getBalance;
             },
           ));
-          if (_nwcProvider.canPayInvoice || nwcProvider.canMakeInvoice) {
-            list.add(Row(children: [
-              _nwcProvider.canMakeInvoice
-                  ? Expanded(
-                      child: GestureDetector(
-                          behavior: HitTestBehavior.translucent,
-                          onTap: () async {
-                            // TODO choose recipient
-                          },
-                          child: Container(
-                            width: 150,
-                            margin: const EdgeInsets.all(Base.BASE_PADDING),
-                            decoration: BoxDecoration(
-                              borderRadius: const BorderRadius.all(Radius.circular(10.0)),
-                              border: Border.all(
-                                width: 1,
-                                color: const Color(0xffD44E7D),
-                              ),
-                            ),
-                            child: Container(alignment: Alignment.center, margin: const EdgeInsets.all(Base.BASE_PADDING), child: const Text("↙  Receive")),
-                          )))
-                  : Container(),
-              _nwcProvider.canPayInvoice
-                  ? Expanded(
-                      child: GestureDetector(
-                          behavior: HitTestBehavior.translucent,
-                          onTap: () async {
-                            // TODO choose recipient
-                          },
-                          child: Container(
-                            alignment: Alignment.center,
-                            margin: const EdgeInsets.all(Base.BASE_PADDING),
-                            decoration: BoxDecoration(
-                              borderRadius: const BorderRadius.all(Radius.circular(10.0)),
-                              border: Border.all(
-                                width: 1,
-                                color: const Color(0xffD44E7D),
-                              ),
-                            ),
-                            child: Container(alignment: Alignment.center, margin: const EdgeInsets.all(Base.BASE_PADDING), child: const Text("↗  Send")),
-                            //             size: 25, color: themeData.iconTheme.color)
-                          )))
-                  : Container()
-            ]));
-          }
+          // if (_nwcProvider.canPayInvoice || nwcProvider.canMakeInvoice) {
+          //   list.add(Row(children: [
+          //     _nwcProvider.canMakeInvoice
+          //         ? Expanded(
+          //             child: GestureDetector(
+          //                 behavior: HitTestBehavior.translucent,
+          //                 onTap: () async {
+          //                   // TODO choose recipient
+          //                 },
+          //                 child: Container(
+          //                   width: 150,
+          //                   margin: const EdgeInsets.all(Base.BASE_PADDING),
+          //                   decoration: BoxDecoration(
+          //                     borderRadius: const BorderRadius.all(Radius.circular(10.0)),
+          //                     border: Border.all(
+          //                       width: 1,
+          //                       color: const Color(0xffD44E7D),
+          //                     ),
+          //                   ),
+          //                   child: Container(alignment: Alignment.center, margin: const EdgeInsets.all(Base.BASE_PADDING), child: const Text("↙  Receive")),
+          //                 )))
+          //         : Container(),
+          //     _nwcProvider.canPayInvoice
+          //         ? Expanded(
+          //             child: GestureDetector(
+          //                 behavior: HitTestBehavior.translucent,
+          //                 onTap: () async {
+          //                   // TODO choose recipient
+          //                 },
+          //                 child: Container(
+          //                   alignment: Alignment.center,
+          //                   margin: const EdgeInsets.all(Base.BASE_PADDING),
+          //                   decoration: BoxDecoration(
+          //                     borderRadius: const BorderRadius.all(Radius.circular(10.0)),
+          //                     border: Border.all(
+          //                       width: 1,
+          //                       color: const Color(0xffD44E7D),
+          //                     ),
+          //                   ),
+          //                   child: Container(alignment: Alignment.center, margin: const EdgeInsets.all(Base.BASE_PADDING), child: const Text("↗  Send")),
+          //                   //             size: 25, color: themeData.iconTheme.color)
+          //                 )))
+          //         : Container()
+          //   ]));
+          // }
 
           if (nwcProvider.canListTransaction) {
             list.add(const SizedBox(height: 16));
