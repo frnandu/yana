@@ -186,7 +186,13 @@ class NwcProvider extends ChangeNotifier {
       if (data != null &&
           data.containsKey("result") &&
           data['result_type'] == NwcCommand.GET_INFO) {
-        Map<String, dynamic> notifications = data['result']['notifications'];
+        Map<String, dynamic> result = data['result'];
+        if (result['notifications'] != null) {
+          notifications = List<String>.from(result['notifications'].map((e) => e.toString()));
+          if (notifications!=null && notifications.isNotEmpty) {
+            await subscribeToNotifications();
+          }
+        }
         notifyListeners();
       } else if (data!=null && data.containsKey("error")) {
         var error = data['error']['code'];
