@@ -427,32 +427,56 @@ class NwcProvider extends ChangeNotifier {
       fiatCurrencyRate = await RatesUtil.coinbase("usd");
       EventSigner nwcSigner = Bip340EventSigner(secret!, getPublicKey(secret!));
 
-      var content = '{"method":"${NwcCommand.LIST_TRANSACTIONS}", "params":{  }}';
-      var encrypted = Nip04.encrypt(secret!,walletPubKey!, content );
-
       var tags = [
         ["p", walletPubKey]
       ];
-      final event = Nip01Event(pubKey: nwcSigner!.getPublicKey(), kind: NwcKind.REQUEST, tags: tags, content: encrypted);
 
       var filter = Filter(
-          kinds: [NwcKind.RESPONSE], authors: [walletPubKey!], eTags: [event.id]);
-      // RelayManager relayManager = RelayManager();
+          kinds: [NwcKind.NOTIFICATION], authors: [walletPubKey!]);
       await relayManager.reconnectRelay(relay!, force: true);
 
       NostrRequest subscription = await relayManager.requestRelays([relay!], filter, closeOnEOSE: false);
       subscription.stream.listen((event) async {
         await relayManager.closeNostrRequest(subscription);
-        await onGetListTransactions(event);
+        await onNotification(event);
       });
-      await relayManager.broadcastEvent(event, [relay!], nwcSigner);
-    } else {
-      var filter = Filter(kinds: [NwcKind.INFO_REQUEST], authors: [walletPubKey!]);
-      if (await relayManager.connectRelay(relay!)) {
-        (await relayManager.requestRelays([relay!], filter)).stream.listen((event) {
-          onEventInfo.call(event);
-        });
+    }
+  }
+
+  Future<void> onNotification(Nip01Event event) async {
+    if (event.kind == NwcKind.RESPONSE &&
+        StringUtil.isNotBlank(event.content) &&
+        StringUtil.isNotBlank(secret) &&
+        StringUtil.isNotBlank(walletPubKey)) {
+      var decrypted = Nip04.decrypt(secret!, walletPubKey!, event.content);
+      Map<String, dynamic> data;
+      data = json.decode(decrypted);
+      if (data != null &&
+          data.containsKey("result") &&
+          data['result_type'] == NwcCommand.PAY_INVOICE) {
+        var preImage = data['result']['preimage'];
+        EasyLoading.showSuccess("Zap payed", duration: const Duration(seconds: 2));
+        if (payInvoiceEventId!=null) {
+          String payInvoiceEventId = this.payInvoiceEventId!;
+          var filter = Filter(
+              kinds: [EventKind.ZAP_RECEIPT], eTags: [payInvoiceEventId!]);
+          Nip01Event? zapReceipt;
+          NostrRequest subscription = await relayManager.requestRelays(myInboxRelaySet!.urls.toList()..add(relay!), filter, closeOnEOSE: false);
+          subscription.stream.listen((event) async {
+            await relayManager.closeNostrRequest(subscription);
+            if (zapReceipt==null || zapReceipt!.createdAt < event.createdAt) {
+              zapReceipt = event;
+              eventReactionsProvider.addZap(payInvoiceEventId!, event);
+            }
+          });
+          // await eventReactionsProvider.subscription(payInvoiceEventId!, null, [EventKind.ZAP_RECEIPT]);
+        }
+        notifyListeners();
+        requestBalance(walletPubKey!, relay!, secret!);
+      } else if (data!=null && data.containsKey("error")){
+        EasyLoading.showError("error ${data['error'].toString()}", duration: const Duration(seconds: 5));
       }
     }
+    payInvoiceEventId = null;
   }
 }
