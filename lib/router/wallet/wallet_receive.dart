@@ -1,6 +1,13 @@
 import 'dart:math';
 
 import 'package:confetti/confetti.dart';
+import 'package:eeffects/eEffect/effects/colorShift.dart';
+import 'package:eeffects/eEffect/effects/effect.dart';
+import 'package:eeffects/eEffect/effects/lightning/lightning.dart';
+import 'package:eeffects/eEffect/math/relative.dart';
+import 'package:eeffects/eEffect/math/relativePair.dart';
+import 'package:eeffects/eEffect/math/relativePos.dart';
+import 'package:eeffects/eEffect/scene/scene.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -25,6 +32,28 @@ class _WalletReceiveRouter extends State<WalletReceiveRouter> {
   TextEditingController descriptionInputcontroller = TextEditingController();
   late ConfettiController confettiController;
   bool paid = false;
+  EScene? scene = EScene(
+    width: 400,
+    height: 600,
+    effects: [
+      ELightning(
+          ERelativePos(0.5, 0),
+          0.02,
+          ERelative(1, ERelative.absolute),
+          ERelative(20, ERelative.absolute),
+          ERelative(600, ERelative.absolute),
+          50,
+          5,
+          EColorShift([Color.fromARGB(255, 80, 0, 255)], 0),
+          true,
+          8,
+          1,
+          name: "Example Lightning"),
+    ],
+    darkness: EColorShift([Color.fromARGB(255, 0, 0, 0)], 0),
+    afterUpdate: () {},
+    beforeUpdate: () {},
+  );
 
   @override
   void initState() {
@@ -102,7 +131,16 @@ class _WalletReceiveRouter extends State<WalletReceiveRouter> {
               setState(() {
                 paid = true;
               });
-              confettiController.play();
+              //confettiController.play();
+              EEffect effect = scene!.getEffect("Example Lightning")!;
+              if (effect is ELightning) {
+                ELightning ourLightning = effect;
+                ourLightning.buildLightningOnNextTickATTarget(ERelativePair(
+                    ERelative(100, ERelative.absolute),
+                    ERelative(200, ERelative.absolute)));
+
+                ourLightning.fireLightningIn(3);
+              }
             },);
           },
           child: MouseRegion(
@@ -153,6 +191,28 @@ class _WalletReceiveRouter extends State<WalletReceiveRouter> {
     return Scaffold(
       body: Stack(
         children: [
+          Align(
+              alignment: Alignment.center,
+              child: scene
+            // ConfettiWidget(
+            //   confettiController: confettiController,
+            //   // blastDirection: -pi / 2,
+            //   // emissionFrequency: 0.01,
+            //   // numberOfParticles: 20,
+            //   // maxBlastForce: 100,
+            //   // minBlastForce: 80,
+            //   // displayTarget: true,
+            //   gravity: 0.8,
+            //   blastDirectionality: BlastDirectionality.explosive, // don't specify a direction, blast randomly
+            //   shouldLoop: false, // start again as soon as the animation is finished
+            //   colors: const [
+            //     Colors.yellow,
+            //     Colors.orange,
+            //     // Colors.red
+            //   ], // manually specify the colors to be used
+            //   // createParticlePath: drawStar, // define a custom shape/path.
+            // ),
+          ),
           Container(
             width: mediaDataCache.size.width,
             height: mediaDataCache.size.height - mediaDataCache.padding.top,
@@ -174,27 +234,6 @@ class _WalletReceiveRouter extends State<WalletReceiveRouter> {
             child: Container(
               width: mediaDataCache.size.width,
               child: appBar,
-            ),
-          ),
-          Align(
-            alignment: Alignment.center,
-            child: ConfettiWidget(
-              confettiController: confettiController,
-              // blastDirection: -pi / 2,
-              // emissionFrequency: 0.01,
-              // numberOfParticles: 20,
-              maxBlastForce: 100,
-              minBlastForce: 80,
-              displayTarget: true,
-              gravity: 0.8,
-              blastDirectionality: BlastDirectionality.explosive, // don't specify a direction, blast randomly
-              shouldLoop: true, // start again as soon as the animation is finished
-              colors: const [
-                Colors.yellow,
-                Colors.orange,
-                // Colors.red
-              ], // manually specify the colors to be used
-              // createParticlePath: drawStar, // define a custom shape/path.
             ),
           ),
         ],
