@@ -66,7 +66,7 @@ dependencies:
   video_player: ^2.6.1
   image_picker: ^1.0.3
   keframe: ^3.0.0
-  pretty_qr_code: ^3.0.0
+  pretty_qr_code: ^3.3.0
   flutter_link_previewer: ^3.2.1
   easy_image_viewer: ^1.2.1
   android_intent_plus: ^4.0.1
@@ -117,6 +117,7 @@ dependencies:
   visibility_detector: ^0.4.0
   #uni_links: ^0.5.1
   dart_ndk:  0.1.0-dev8
+  confetti: ^0.7.0
 #  dart_ndk:
 #    git:
 #      url: https://github.com/relaystr/dart_ndk.git

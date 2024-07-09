@@ -99,35 +99,35 @@ class _NwcRouter extends State<NwcRouter> {
                   const Text("Connect with Alby account",
                       style: TextStyle(color: Colors.black))
                 ])))));
-    list.add(GestureDetector(
-        // onTap: () {
-        //   launchUrl(
-        //       Uri.parse(
-        //           "https://app.mutinywallet.com/settings/connections?callbackUri=yana&name=${packageInfo.appName}"),
-        //       mode: LaunchMode.externalApplication);
-        // },
-        child: MouseRegion(
-            cursor: SystemMouseCursors.click,
-            child: Container(
-                margin: const EdgeInsets.all(Base.BASE_PADDING),
-                padding: const EdgeInsets.only(left: Base.BASE_PADDING),
-                decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                        colors: [Color(0xff800000), Color(0xff550000)]),
-                    borderRadius: BorderRadius.all(Radius.circular(20.0))),
-                child: Row(children: [
-                  Container(
-                    margin: const EdgeInsets.all(Base.BASE_PADDING),
-                    child: Image.asset("assets/imgs/mutiny.png",
-                        width: 30, height: 30),
-                  ),
-                  const Text("Connect with Mutiny wallet", style: TextStyle(color: Colors.white)),
-                  Text('  (soon)',
-                      style: TextStyle(
-                          color: themeData.hintColor,
-                          fontFamily: "Geist",
-                          fontSize: 12))
-                ])))));
+    // list.add(GestureDetector(
+    //     // onTap: () {
+    //     //   launchUrl(
+    //     //       Uri.parse(
+    //     //           "https://app.mutinywallet.com/settings/connections?callbackUri=yana&name=${packageInfo.appName}"),
+    //     //       mode: LaunchMode.externalApplication);
+    //     // },
+    //     child: MouseRegion(
+    //         cursor: SystemMouseCursors.click,
+    //         child: Container(
+    //             margin: const EdgeInsets.all(Base.BASE_PADDING),
+    //             padding: const EdgeInsets.only(left: Base.BASE_PADDING),
+    //             decoration: const BoxDecoration(
+    //                 gradient: LinearGradient(
+    //                     colors: [Color(0xff800000), Color(0xff550000)]),
+    //                 borderRadius: BorderRadius.all(Radius.circular(20.0))),
+    //             child: Row(children: [
+    //               Container(
+    //                 margin: const EdgeInsets.all(Base.BASE_PADDING),
+    //                 child: Image.asset("assets/imgs/mutiny.png",
+    //                     width: 30, height: 30),
+    //               ),
+    //               const Text("Connect with Mutiny wallet", style: TextStyle(color: Colors.white)),
+    //               Text('  (soon)',
+    //                   style: TextStyle(
+    //                       color: themeData.hintColor,
+    //                       fontFamily: "Geist",
+    //                       fontSize: 12))
+    //             ])))));
     if (!PlatformUtil.isWeb()) {
       list.add(GestureDetector(
           behavior: HitTestBehavior.translucent,

@@ -1,3 +1,6 @@
+import 'dart:math';
+
+import 'package:confetti/confetti.dart';
 import 'package:dart_ndk/nips/nip01/helpers.dart';
 import 'package:flutter/material.dart';
 import 'package:get_time_ago/get_time_ago.dart';
@@ -24,18 +27,9 @@ class WalletRouter extends StatefulWidget {
 }
 
 class _WalletRouter extends State<WalletRouter> {
-  TextEditingController controller = TextEditingController();
-
-  @override
-  void initState() {
-    // nwcProvider.reload();
-  }
+  TextEditingController nwcInputController = TextEditingController();
 
   ScrollController scrollController = ScrollController();
-
-  // scrollController.addListener(() {
-  // widget.scrollCallback.call(scrollController.position.userScrollDirection);
-  // });
 
   String formatBitcoinNumber(double bitcoin) {
     // Convert the number to a string with 2 decimal places
@@ -126,7 +120,10 @@ class _WalletRouter extends State<WalletRouter> {
                       child: GestureDetector(
                           behavior: HitTestBehavior.translucent,
                           onTap: () async {
-                            //_nwcProvider.onPayInvoiceResponse(event, onZapped)
+                            RouterUtil.router(context, RouterPath.WALLET_RECEIVE);
+                            //
+                            // confettiController.play();
+                            // //_nwcProvider.onPayInvoiceResponse(event, onZapped)
                           },
                           child: Container(
                             width: 150,
@@ -208,32 +205,32 @@ class _WalletRouter extends State<WalletRouter> {
             //   }
             // )));
           }
-          // list.add(GestureDetector(
-          //     onTap: () {
-          //       RouterUtil.router(context, RouterPath.WALLET_TRANSACTIONS);
-          //     },
-          //     // child:
-          //     // Expanded(
-          //     child: MouseRegion(
-          //         cursor: SystemMouseCursors.click,
-          //         child: Container(
-          //           margin: const EdgeInsets.only(top: Base.BASE_PADDING),
-          //           padding: const EdgeInsets.all(Base.BASE_PADDING),
-          //           height: 60.0,
-          //           // decoration: const BoxDecoration(
-          //           //     gradient: LinearGradient(
-          //           //         colors: [Color(0xffFFDE6E), Colors.orange]),
-          //           //     borderRadius: BorderRadius.all(Radius.circular(20.0))),
-          //           child: const Center(
-          //               child: Row(
-          //                   mainAxisAlignment: MainAxisAlignment.center,
-          //                   children: [
-          //                     Text('List all transactions >>',
-          //                         style: TextStyle(color: Colors.white))
-          //                   ])),
-          //         ))
-          //   // ),
-          // ));
+          list.add(GestureDetector(
+              onTap: () {
+                RouterUtil.router(context, RouterPath.WALLET_TRANSACTIONS);
+              },
+              // child:
+              // Expanded(
+              child: MouseRegion(
+                  cursor: SystemMouseCursors.click,
+                  child: Container(
+                    margin: const EdgeInsets.only(top: Base.BASE_PADDING),
+                    padding: const EdgeInsets.all(Base.BASE_PADDING),
+                    height: 60.0,
+                    // decoration: const BoxDecoration(
+                    //     gradient: LinearGradient(
+                    //         colors: [Color(0xffFFDE6E), Colors.orange]),
+                    //     borderRadius: BorderRadius.all(Radius.circular(20.0))),
+                    child: const Center(
+                        child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text('List all transactions >>',
+                                  style: TextStyle(color: Colors.white))
+                            ])),
+                  ))
+            // ),
+          ));
 
           // list.add(Text(
           //     "One-tap Zaps will now be sent from this wallet, no confirmation will be asked."));
@@ -244,7 +241,7 @@ class _WalletRouter extends State<WalletRouter> {
               child: GestureDetector(
                   behavior: HitTestBehavior.translucent,
                   onTap: () async {
-                    controller.text = "";
+                    nwcInputController.text = "";
                     await nwcProvider.disconnect();
                   },
                   child: Container(
@@ -377,7 +374,7 @@ class _WalletRouter extends State<WalletRouter> {
     return Scaffold(
       appBar: appBarNew,
       backgroundColor: themeData.cardColor,
-      body: main,
+      body: main
     );
 
     return Scaffold(
