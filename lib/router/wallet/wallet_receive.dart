@@ -8,6 +8,7 @@ import 'package:yana/main.dart';
 import 'package:yana/nostr/nip47/nwc_notification.dart';
 import 'package:yana/provider/nwc_provider.dart';
 import 'package:yana/utils/base.dart';
+import 'package:yana/utils/string_util.dart';
 
 import '../../../ui/appbar4stack.dart';
 import '../../ui/lightning_qrcode_dialog.dart';
@@ -108,6 +109,7 @@ class _WalletReceiveRouter extends State<WalletReceiveRouter> {
               // await QrcodeDialog.show(context, invoice);
               await LightningQrcodeDialog.show(this.context, invoice);
             }, (notification) async {
+              Navigator.pop(this.context, true);
               setState(() {
                 paid = notification;
               });
@@ -159,6 +161,16 @@ class _WalletReceiveRouter extends State<WalletReceiveRouter> {
                   color: Colors.grey[700],
                 ),
               ),
+              StringUtil.isNotBlank(paid!.description)?
+              const SizedBox(height: 10.0):Container(),
+              StringUtil.isNotBlank(paid!.description)?
+              Text(
+                '${paid!.description}',
+                style: TextStyle(
+                  fontSize: 20.0,
+                  color: Colors.grey[700],
+                ),
+              ):Container(),
             ],
           ),
         ),

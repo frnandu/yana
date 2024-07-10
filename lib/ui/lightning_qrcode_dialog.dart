@@ -267,7 +267,7 @@ class _LightningQrcodeDialog extends State<LightningQrcodeDialog> {
 
   void _doCopy(String text) {
     Clipboard.setData(ClipboardData(text: text)).then((_) {
-      EasyLoading.show(status: I18n.of(context).Copy_success, dismissOnTap: true);
+      EasyLoading.showSuccess(I18n.of(context).Copy_success, dismissOnTap: true, duration: const Duration(seconds: 2));
     });
   }
 
