@@ -34,6 +34,8 @@ class NwcProvider extends ChangeNotifier {
   int? balance;
   int? maxAmount;
   String? payInvoiceEventId;
+  String? receivingInvoice;
+  Function(NwcNotification)? settledInvoiceCallback;
 
   List<String> permissions = [];
   List<String> notifications = []; // payment_received payment_sent
@@ -421,7 +423,7 @@ class NwcProvider extends ChangeNotifier {
     payInvoiceEventId = null;
   }
 
-  Future<void> makeInvoice(int amount, String? description, String? description_hash, int expiry, Function(String) onCreatedInvoice) async {
+  Future<void> makeInvoice(int amount, String? description, String? description_hash, int expiry, Function(String) onCreatedInvoice, Function(NwcNotification)? settledInvoiceCallback) async {
     if (StringUtil.isNotBlank(walletPubKey) &&
         StringUtil.isNotBlank(relay) &&
         StringUtil.isNotBlank(secret)) {
@@ -442,6 +444,7 @@ class NwcProvider extends ChangeNotifier {
         await relayManager.closeNostrRequest(subscription);
         await onMakeInvoiceResponse(event, onCreatedInvoice);
       });
+      this.settledInvoiceCallback = settledInvoiceCallback;
       await relayManager.broadcastEvent(event, [relay!], nwcSigner);
     } else {
       EasyLoading.showError("missing pubKey and/or relay for connecting", duration: const Duration(seconds: 5));
@@ -459,9 +462,11 @@ class NwcProvider extends ChangeNotifier {
       if (data != null &&
           data.containsKey("result") &&
           data['result_type'] == NwcCommand.MAKE_INVOICE) {
-        var invoice = data['result']['invoice'];
-        onCreatedInvoice(invoice);
-        notifyListeners();
+        receivingInvoice = data['result']['invoice'];
+        if (receivingInvoice!=null) {
+          onCreatedInvoice(receivingInvoice!);
+          notifyListeners();
+        }
       } else if (data!=null && data.containsKey("error")){
         EasyLoading.showError("error ${data['error'].toString()}", duration: const Duration(seconds: 5));
       }
@@ -493,10 +498,20 @@ class NwcProvider extends ChangeNotifier {
       data = json.decode(decrypted);
       if (data != null &&
           data.containsKey("notification_type") &&
-          data['notification_type'] == NwcNotification.PAYMENT_RECEIVED) {
-        Map<String, dynamic> notification = data['notification'];
-        if (notification!=null && notification['type']=='incoming') {
-          EasyLoading.showSuccess("Payment received ${notification['amount']} sats (fees:${notification['fees_paid']})", duration: const Duration(seconds: 2));
+          data['notification_type'] == NwcNotification.PAYMENT_RECEIVED &&
+          data['notification'] != null
+      ) {
+        NwcNotification notification = NwcNotification.fromMap(data['notification']);
+        if (notification.type == NwcNotification.INCOMING) {
+          if (receivingInvoice!=null && receivingInvoice==notification.invoice && settledInvoiceCallback!=null) {
+            settledInvoiceCallback!(notification);
+            receivingInvoice = null;
+            settledInvoiceCallback = null;
+          } else {
+            EasyLoading.showSuccess("Payment received ${notification.amount /
+                1000} sats (fees:${notification.feesPaid / 1000})",
+                duration: const Duration(seconds: 2));
+          }
         }
         notifyListeners();
         requestBalance(walletPubKey!, relay!, secret!);
