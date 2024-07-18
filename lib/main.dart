@@ -60,6 +60,7 @@ import 'package:yana/router/wallet/nwc_router.dart';
 import 'package:yana/router/wallet/transactions_router.dart';
 import 'package:yana/router/wallet/wallet_receive.dart';
 import 'package:yana/router/wallet/wallet_router.dart';
+import 'package:yana/router/wallet/wallet_send.dart';
 import 'package:yana/utils/image/cache_manager_builder.dart';
 import 'package:yana/utils/platform_util.dart';
 import 'package:amberflutter/amberflutter.dart';
@@ -700,6 +701,7 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
       RouterPath.WALLET: (context) => const WalletRouter(),
       RouterPath.WALLET_TRANSACTIONS: (context) => const TransactionsRouter(),
       RouterPath.WALLET_RECEIVE: (context) => const WalletReceiveRouter(),
+      RouterPath.WALLET_SEND: (context) => const WalletSendRouter(),
       RouterPath.NWC: (context) => const NwcRouter(),
       RouterPath.RELAYS: (context) => const RelaysRouter(),
       RouterPath.PROFILE_EDITOR: (context) => const ProfileEditorRouter(),

@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:math';
 
 import 'package:android_intent_plus/android_intent.dart';
 import 'package:confetti/confetti.dart';
@@ -17,9 +16,7 @@ import 'package:yana/utils/string_util.dart';
 
 import '../../../ui/appbar4stack.dart';
 import '../../i18n/i18n.dart';
-import '../../ui/lightning_qrcode_dialog.dart';
 import '../../utils/platform_util.dart';
-import '../../utils/router_util.dart';
 
 class WalletReceiveRouter extends StatefulWidget {
   const WalletReceiveRouter({super.key});

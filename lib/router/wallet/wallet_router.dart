@@ -143,7 +143,7 @@ class _WalletRouter extends State<WalletRouter> {
                       child: GestureDetector(
                           behavior: HitTestBehavior.translucent,
                           onTap: () async {
-                            // TODO choose recipient
+                            RouterUtil.router(context, RouterPath.WALLET_SEND);
                           },
                           child: Container(
                             alignment: Alignment.center,
