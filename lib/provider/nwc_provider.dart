@@ -9,10 +9,7 @@ import 'package:dart_ndk/nips/nip01/filter.dart';
 import 'package:dart_ndk/nips/nip04/nip04.dart';
 import 'package:dart_ndk/request.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
-import 'package:get_time_ago/get_time_ago.dart';
-import 'package:intl/intl.dart';
 import 'package:yana/models/wallet_transaction.dart';
 import 'package:yana/nostr/nip47/nwc_notification.dart';
 import 'package:yana/utils/rates.dart';
@@ -289,6 +286,9 @@ class NwcProvider extends ChangeNotifier {
         maxAmount = data['result']['max_amount'];
         if (maxAmount != null) {
           maxAmount = maxAmount! ~/ 1000;
+        }
+        if (permissions.contains(NwcCommand.LIST_TRANSACTIONS)) {
+          requestListTransactions();
         }
         notifyListeners();
       } else if (data != null && data.containsKey("error")) {
