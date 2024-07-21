@@ -1,6 +1,6 @@
+import 'package:dart_ndk/config/bootstrap_relays.dart';
 import 'package:dart_ndk/dart_ndk.dart';
-import 'package:dart_ndk/nips/nip01/event.dart';
-import 'package:dart_ndk/nips/nip01/filter.dart';
+import 'package:dart_ndk/domain_layer/entities/nip_01_event.dart';
 import 'package:dart_ndk/relay.dart';
 import 'package:dart_ndk/request.dart';
 import 'package:flutter/material.dart';
@@ -97,11 +97,11 @@ class SingleEventProvider extends ChangeNotifier with LaterFunction {
     // textSocketHandler.sendMessage(encoded);
 
     Set<String> urls = relayManager.bootstrapRelays.toSet();
-    urls.addAll(RelayManager.DEFAULT_BOOTSTRAP_RELAYS);
+    urls.addAll(DEFAULT_BOOTSTRAP_RELAYS);
 
     if (myInboxRelaySet!=null) {
       myInboxRelaySet!.urls.forEach((element) {
-        String? relay = Relay.clean(element);
+        String? relay = Relay.cleanUrl(element);
         if (relay!=null) {
           urls.add(relay);
         }

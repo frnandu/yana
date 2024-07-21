@@ -1,8 +1,8 @@
 import 'dart:convert';
 
 import 'package:dart_ndk/models/relay_set.dart';
-import 'package:dart_ndk/nips/nip01/event.dart';
-import 'package:dart_ndk/nips/nip51/nip51.dart';
+import 'package:dart_ndk/domain_layer/entities/nip_01_event.dart';
+import 'package:dart_ndk/shared/nips/nip51/nip51.dart';
 import 'package:dart_ndk/read_write.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';

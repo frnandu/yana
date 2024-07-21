@@ -2,11 +2,8 @@ import 'dart:convert';
 
 import 'package:bip340/bip340.dart';
 import 'package:dart_ndk/dart_ndk.dart';
-import 'package:dart_ndk/nips/nip01/bip340_event_signer.dart';
-import 'package:dart_ndk/nips/nip01/event.dart';
-import 'package:dart_ndk/nips/nip01/event_signer.dart';
-import 'package:dart_ndk/nips/nip01/filter.dart';
-import 'package:dart_ndk/nips/nip04/nip04.dart';
+import 'package:dart_ndk/domain_layer/entities/nip_01_event.dart';
+import 'package:dart_ndk/shared/nips/nip04/nip04.dart';
 import 'package:dart_ndk/request.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -85,7 +82,7 @@ class NwcProvider extends ChangeNotifier {
     await settingProvider.setNwc(nwc);
     await settingProvider.setNwcSecret(secret!);
     var filter = Filter(kinds: [NwcKind.INFO_REQUEST], authors: [walletPubKey!]);
-    RelayManager relayManager = RelayManager(isWeb: kIsWeb);
+    RelayManager relayManager = RelayManager();
     // if (relayManager.webSockets[relay]!=null) {
     //   relayManager.webSockets[relay]!.disconnect("a");
     //   relayManager.webSockets[relay]!.close();

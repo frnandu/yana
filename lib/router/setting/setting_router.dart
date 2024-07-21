@@ -1,6 +1,6 @@
 import 'package:dart_ndk/dart_ndk.dart';
-import 'package:dart_ndk/nips/nip01/helpers.dart';
-import 'package:dart_ndk/nips/nip51/nip51.dart';
+import 'package:dart_ndk/shared/nips/nip01/helpers.dart';
+import 'package:dart_ndk/shared/nips/nip51/nip51.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_font_picker/flutter_font_picker.dart';

@@ -1,5 +1,5 @@
 import 'package:assorted_layout_widgets/assorted_layout_widgets.dart';
-import 'package:dart_ndk/nips/nip01/event.dart';
+import 'package:dart_ndk/domain_layer/entities/nip_01_event.dart';
 import 'package:flutter/material.dart';
 import 'package:yana/ui/user_pic_component.dart';
 import 'package:yana/utils/base.dart';

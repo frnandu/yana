@@ -1,8 +1,8 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dart_ndk/models/user_relay_list.dart';
-import 'package:dart_ndk/nips/nip01/bip340_event_signer.dart';
-import 'package:dart_ndk/nips/nip01/metadata.dart';
-import 'package:dart_ndk/nips/nip51/nip51.dart';
+import 'package:dart_ndk/shared/nips/nip01/bip340_event_signer.dart';
+import 'package:dart_ndk/shared/nips/nip01/metadata.dart';
+import 'package:dart_ndk/shared/nips/nip51/nip51.dart';
 import 'package:easy_image_viewer/easy_image_viewer.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';

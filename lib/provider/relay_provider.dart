@@ -1,13 +1,13 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:dart_ndk/models/relay_set.dart';
-import 'package:dart_ndk/models/user_relay_list.dart';
-import 'package:dart_ndk/nips/nip51/nip51.dart';
-import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
-import 'package:dart_ndk/read_write.dart';
+import 'package:dart_ndk/config/bootstrap_relays.dart';
+import 'package:dart_ndk/domain_layer/entities/nip_51_list.dart';
+import 'package:dart_ndk/domain_layer/entities/read_write.dart';
+import 'package:dart_ndk/domain_layer/entities/read_write_marker.dart';
+import 'package:dart_ndk/domain_layer/entities/relay_set.dart';
+import 'package:dart_ndk/domain_layer/entities/user_relay_list.dart';
 import 'package:dart_ndk/relay.dart';
-import 'package:dart_ndk/relay_manager.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
@@ -22,7 +22,7 @@ class RelayProvider extends ChangeNotifier {
   }
 
   int? getFeedRelayState(String url) {
-    String? cleanedUrl = Relay.clean(url);
+    String? cleanedUrl = Relay.cleanUrl(url);
     if (cleanedUrl == null) {
       return WebSocket.closed;
     }
@@ -103,7 +103,7 @@ class RelayProvider extends ChangeNotifier {
 
   Future<void> updateMarker(String url, ReadWriteMarker marker) async {
     Set<String> relays = {};
-    relays.addAll(RelayManager.DEFAULT_BOOTSTRAP_RELAYS);
+    relays.addAll(DEFAULT_BOOTSTRAP_RELAYS);
     relays.addAll(myOutboxRelaySet!.urls);
 
     UserRelayList? userRelayList = await relayManager.broadcastUpdateNip65RelayMarker(url, marker, relays, loggedUserSigner!);

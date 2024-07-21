@@ -1,4 +1,4 @@
-import 'package:dart_ndk/nips/nip04/nip04.dart';
+import 'package:dart_ndk/shared/nips/nip04/nip04.dart';
 import 'package:flutter/material.dart';
 import 'package:pointycastle/ecc/api.dart';
 import 'package:provider/provider.dart';

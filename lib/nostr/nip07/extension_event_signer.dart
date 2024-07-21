@@ -1,6 +1,6 @@
-import 'package:dart_ndk/nips/nip01/event.dart';
-import 'package:dart_ndk/nips/nip01/event_signer.dart';
-import 'package:dart_ndk/nips/nip01/helpers.dart';
+import 'package:dart_ndk/domain_layer/entities/nip_01_event.dart';
+import 'package:dart_ndk/domain_layer/repositories/event_signer_repository.dart';
+import 'package:dart_ndk/shared/nips/nip01/helpers.dart';
 import '/js/js_helper.dart' as js;
 
 class Nip07EventSigner extends EventSigner {

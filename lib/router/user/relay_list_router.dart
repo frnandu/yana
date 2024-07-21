@@ -1,6 +1,6 @@
-import 'package:dart_ndk/nips/nip01/helpers.dart';
-import 'package:dart_ndk/nips/nip50/nip50.dart';
-import 'package:dart_ndk/nips/nip51/nip51.dart';
+import 'package:dart_ndk/shared/nips/nip01/helpers.dart';
+import 'package:dart_ndk/shared/nips/nip50/nip50.dart';
+import 'package:dart_ndk/shared/nips/nip51/nip51.dart';
 import 'package:dart_ndk/relay.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
@@ -124,7 +124,7 @@ class _RelayListRouter extends State<RelayListRouter> with SingleTickerProviderS
                     decoration: InputDecoration(
                       prefixIcon: const Icon(Icons.lan),
                       hintText: "start typing relay name or URL",
-                      suffixIcon: Relay.clean(controller.text) != null
+                      suffixIcon: Relay.cleanUrl(controller.text) != null
                           ? PopupMenuButton<String>(
                               icon: const Icon(Icons.add),
                               tooltip: "more",
@@ -222,7 +222,7 @@ class _RelayListRouter extends State<RelayListRouter> with SingleTickerProviderS
   }
 
   Future<void> add(String url, bool private) async {
-    String? cleanUrl = Relay.clean(url);
+    String? cleanUrl = Relay.cleanUrl(url);
     if (cleanUrl == null) {
       EasyLoading.showError(
         "Invalid address wss://<host>:<port> or ws://<host>:<port>",

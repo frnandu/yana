@@ -1,10 +1,10 @@
 import 'dart:convert';
 
-import 'package:dart_ndk/nips/nip01/event.dart';
-import 'package:dart_ndk/nips/nip01/filter.dart';
-import 'package:dart_ndk/nips/nip01/helpers.dart';
-import 'package:dart_ndk/nips/nip01/metadata.dart';
-import 'package:dart_ndk/nips/nip51/nip51.dart';
+import 'package:dart_ndk/domain_layer/entities/nip_01_event.dart';
+import 'package:dart_ndk/shared/nips/nip01/filter.dart';
+import 'package:dart_ndk/shared/nips/nip01/helpers.dart';
+import 'package:dart_ndk/shared/nips/nip01/metadata.dart';
+import 'package:dart_ndk/shared/nips/nip51/nip51.dart';
 import 'package:dart_ndk/relay.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
@@ -126,7 +126,7 @@ class _MuteListRouter extends State<MuteListRouter> with SingleTickerProviderSta
                     decoration: InputDecoration(
                       prefixIcon: const Icon(Icons.lan),
                       hintText: "profile name, pubkey, hashtag or word",
-                      suffixIcon: Relay.clean(controller.text) != null
+                      suffixIcon: Relay.cleanUrl(controller.text) != null
                           ? PopupMenuButton<String>(
                               icon: const Icon(Icons.add),
                               tooltip: "more",

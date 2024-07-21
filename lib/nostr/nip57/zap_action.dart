@@ -1,5 +1,5 @@
-import 'package:dart_ndk/models/relay_set.dart';
-import 'package:dart_ndk/read_write.dart';
+import 'package:dart_ndk/domain_layer/entities/read_write.dart';
+import 'package:dart_ndk/domain_layer/entities/relay_set.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 

@@ -1,7 +1,7 @@
-import 'package:dart_ndk/models/relay_set.dart';
-import 'package:dart_ndk/nips/nip01/helpers.dart';
-import 'package:dart_ndk/nips/nip01/metadata.dart';
-import 'package:dart_ndk/nips/nip05/nip05.dart';
+import 'package:dart_ndk/domain_layer/entities/metadata.dart';
+import 'package:dart_ndk/domain_layer/entities/relay_set.dart';
+import 'package:dart_ndk/shared/nips/nip01/helpers.dart';
+import 'package:dart_ndk/shared/nips/nip05/nip05.dart';
 import 'package:flutter/material.dart';
 
 import '../main.dart';

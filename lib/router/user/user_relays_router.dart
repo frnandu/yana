@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dart_ndk/models/pubkey_mapping.dart';
-import 'package:dart_ndk/nips/nip51/nip51.dart';
+import 'package:dart_ndk/shared/nips/nip51/nip51.dart';
 import 'package:dart_ndk/relay.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -61,7 +61,7 @@ class _UserRelayRouter extends State<UserRelayRouter>
       relays!.sort((r1, r2) => compareRelays(r1, r2));
     }
     relays!.forEach((element) {
-      element.url = Relay.clean(element.url!);
+      element.url = Relay.cleanUrl(element.url!);
     });
 
     return Scaffold(

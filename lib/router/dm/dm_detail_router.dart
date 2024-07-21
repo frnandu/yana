@@ -1,12 +1,8 @@
-import 'package:dart_ndk/nips/nip01/amber_event_signer.dart';
-import 'package:dart_ndk/nips/nip04/nip04.dart';
-import 'package:flutter_easyloading/flutter_easyloading.dart';
-import 'package:dart_ndk/nips/nip01/metadata.dart';
+import 'package:dart_ndk/domain_layer/entities/metadata.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
-import 'package:flutter_quill/flutter_quill.dart';
-import 'package:pointycastle/ecc/api.dart';
 import 'package:provider/provider.dart';
 import 'package:yana/nostr/nip04/dm_session.dart';
 import 'package:yana/ui/cust_state.dart';

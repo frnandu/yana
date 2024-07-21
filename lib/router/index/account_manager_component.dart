@@ -1,9 +1,9 @@
 import 'dart:developer';
 
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:dart_ndk/nips/nip01/amber_event_signer.dart';
-import 'package:dart_ndk/nips/nip01/bip340_event_signer.dart';
-import 'package:dart_ndk/nips/nip01/metadata.dart';
+import 'package:dart_ndk/data_layer/repositories/signers/amber_event_signer.dart';
+import 'package:dart_ndk/data_layer/repositories/signers/bip340_event_signer.dart';
+import 'package:dart_ndk/domain_layer/entities/metadata.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:provider/provider.dart';

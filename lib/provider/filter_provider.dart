@@ -1,8 +1,8 @@
+import 'package:dart_ndk/domain_layer/entities/metadata.dart';
+import 'package:dart_ndk/domain_layer/entities/nip_51_list.dart';
 import 'package:dart_ndk/event_filter.dart';
-import 'package:dart_ndk/nips/nip01/event.dart';
-import 'package:dart_ndk/nips/nip01/metadata.dart';
-import 'package:dart_ndk/nips/nip25/reactions.dart';
-import 'package:dart_ndk/nips/nip51/nip51.dart';
+import 'package:dart_ndk/domain_layer/entities/nip_01_event.dart';
+import 'package:dart_ndk/shared/nips/nip25/reactions.dart';
 import 'package:flutter/material.dart';
 
 class FilterProvider extends ChangeNotifier implements EventFilter {

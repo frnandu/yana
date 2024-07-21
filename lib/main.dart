@@ -3,22 +3,14 @@ import 'dart:io';
 import 'dart:ui';
 
 import 'package:awesome_notifications/awesome_notifications.dart';
-import 'package:dart_ndk/cache_manager.dart';
-import 'package:dart_ndk/db/db_cache_manager.dart';
-import 'package:dart_ndk/models/pubkey_mapping.dart';
-import 'package:dart_ndk/models/relay_set.dart';
-import 'package:dart_ndk/models/user_relay_list.dart';
-import 'package:dart_ndk/nips/nip01/amber_event_signer.dart';
-import 'package:dart_ndk/nips/nip01/bip340_event_signer.dart';
-import 'package:dart_ndk/nips/nip01/event.dart';
-import 'package:dart_ndk/nips/nip01/event_signer.dart';
-import 'package:dart_ndk/nips/nip01/metadata.dart';
-import 'package:dart_ndk/nips/nip02/contact_list.dart';
-import 'package:dart_ndk/nips/nip51/nip51.dart';
-import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
-import 'package:dart_ndk/read_write.dart';
+import 'package:dart_ndk/data_layer/repositories/cache_manager/db_cache_manager.dart';
+import 'package:dart_ndk/data_layer/repositories/signers/amber_event_signer.dart';
+import 'package:dart_ndk/domain_layer/entities/nip_01_event.dart';
+import 'package:dart_ndk/domain_layer/entities/relay_set.dart';
+import 'package:dart_ndk/domain_layer/repositories/cache_manager.dart';
+import 'package:dart_ndk/domain_layer/repositories/event_signer_repository.dart';
+import 'package:dart_ndk/domain_layer/usecases/relay_manager.dart';
 import 'package:dart_ndk/relay.dart';
-import 'package:dart_ndk/relay_manager.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -164,7 +156,7 @@ AppLifecycleState appState = AppLifecycleState.resumed;
 
 EventSigner? loggedUserSigner;
 
-RelayManager relayManager = RelayManager(isWeb: kIsWeb);
+RelayManager relayManager = RelayManager();
 late CacheManager cacheManager;
 
 late bool isExternalSignerInstalled;
@@ -394,11 +386,11 @@ void createMyRelaySets(UserRelayList userRelayList) {
 
   Map<String, List<PubkeyMapping>> inbox = {
     for (var item in userRelayList.relays.entries.where((entry) => entry.value.isRead))
-      Relay.clean(item.key) ?? item.key: [PubkeyMapping(pubKey: userRelayList.pubKey, rwMarker: item.value)]
+      Relay.cleanUrl(item.key) ?? item.key: [PubkeyMapping(pubKey: userRelayList.pubKey, rwMarker: item.value)]
   };
   Map<String, List<PubkeyMapping>> outbox = {
     for (var item in userRelayList.relays.entries.where((entry) => entry.value.isWrite))
-      Relay.clean(item.key) ?? item.key: [PubkeyMapping(pubKey: userRelayList.pubKey, rwMarker: item.value)]
+      Relay.cleanUrl(item.key) ?? item.key: [PubkeyMapping(pubKey: userRelayList.pubKey, rwMarker: item.value)]
   };
   myInboxRelaySet = RelaySet(
       name: "inbox",
@@ -841,7 +833,7 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
                         }
                       } else if (NIP19Tlv.isNrelay(key)) {
                         var nrelay = NIP19Tlv.decodeNrelay(key);
-                        String? url = nrelay != null ? Relay.clean(nrelay.addr) : null;
+                        String? url = nrelay != null ? Relay.cleanUrl(nrelay.addr) : null;
                         if (url != null) {
                           // inline
                           Relay relay = Relay(url);

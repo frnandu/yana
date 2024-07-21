@@ -1,6 +1,6 @@
 import 'package:dart_ndk/models/user_relay_list.dart';
-import 'package:dart_ndk/nips/nip01/helpers.dart';
-import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
+import 'package:dart_ndk/shared/nips/nip01/helpers.dart';
+import 'package:dart_ndk/shared/nips/nip65/read_write_marker.dart';
 import 'package:dart_ndk/relay.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
@@ -54,7 +54,7 @@ class _RelaysRouter extends CustState<RelaysRouter> with WhenStopFunction {
         relays: {for (String url in relayManager.bootstrapRelays) url: ReadWriteMarker.readWrite},
         createdAt: Helpers.now,
         refreshedTimestamp: Helpers.now);
-    await Future.wait(userRelayList!.urls.map((url) => relayManager.getRelayInfo(Relay.clean(url)!)));
+    await Future.wait(userRelayList!.urls.map((url) => relayManager.getRelayInfo(Relay.cleanUrl(url)!)));
 
     /// TODO check if widget is not disposed already...
 
@@ -139,7 +139,7 @@ class _RelaysRouter extends CustState<RelaysRouter> with WhenStopFunction {
                                       decoration: InputDecoration(
                                         prefixIcon: const Icon(Icons.lan),
                                         hintText: "start typing relay name or URL",
-                                        suffixIcon: Relay.clean(controller.text) != null
+                                        suffixIcon: Relay.cleanUrl(controller.text) != null
                                             ? IconButton(
                                           icon: const Icon(Icons.add),
                                           onPressed: () async {
@@ -232,7 +232,7 @@ class _RelaysRouter extends CustState<RelaysRouter> with WhenStopFunction {
     disposed = true;
   }
   // Future<void> add(String url) async {
-  //   String? cleanUrl = Relay.clean(url);
+  //   String? cleanUrl = Relay.cleanUrl(url);
   //   if (cleanUrl==null) {
   //     EasyLoading.showError("Invalid address wss://<host>:<port> or ws://<host>:<port>", dismissOnTap: true, duration: const Duration(seconds: 5));
   //     return;
@@ -259,12 +259,12 @@ class _RelaysRouter extends CustState<RelaysRouter> with WhenStopFunction {
   // }
 
   Future<void> addRelay(String url) async {
-    String? cleanUrl = Relay.clean(url);
+    String? cleanUrl = Relay.cleanUrl(url);
     if (cleanUrl==null) {
       EasyLoading.showError("Invalid address wss://<host>:<port> or ws://<host>:<port>", dismissOnTap: true, duration: const Duration(seconds: 5), maskType: EasyLoadingMaskType.black,);
       return;
     }
-    if (userRelayList!.relays.keys!.any((element) => Relay.clean(element) == cleanUrl)) {
+    if (userRelayList!.relays.keys!.any((element) => Relay.cleanUrl(element) == cleanUrl)) {
       EasyLoading.showError("Relay already on list", maskType: EasyLoadingMaskType.black, dismissOnTap: true, duration: const Duration(seconds: 5));
       return;
     }

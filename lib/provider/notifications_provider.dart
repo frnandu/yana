@@ -1,8 +1,8 @@
 import 'dart:async';
 
-import 'package:dart_ndk/nips/nip01/event.dart';
-import 'package:dart_ndk/nips/nip01/filter.dart';
-import 'package:dart_ndk/nips/nip25/reactions.dart';
+import 'package:dart_ndk/domain_layer/entities/filter.dart';
+import 'package:dart_ndk/domain_layer/entities/nip_01_event.dart';
+import 'package:dart_ndk/shared/nips/nip25/reactions.dart';
 import 'package:dart_ndk/request.dart';
 import 'package:flutter/material.dart';
 import 'package:yana/provider/data_util.dart';

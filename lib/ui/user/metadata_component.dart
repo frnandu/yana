@@ -1,4 +1,4 @@
-import 'package:dart_ndk/nips/nip01/metadata.dart';
+import 'package:dart_ndk/shared/nips/nip01/metadata.dart';
 import 'package:flutter/material.dart';
 
 import '../../utils/base.dart';
