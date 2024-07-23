@@ -103,7 +103,7 @@ or install deb file from releases:
 - [x] Relay Pages ([NIP-11](https://github.com/nostr-protocol/nips/blob/master/11.md))
 - [X] Multiple Accounts
 - [X] Bookmarks, Pinned Posts, Muted Lists, Search/Blocked Relays ([NIP-51](https://github.com/nostr-protocol/nips/blob/master/51.md))
-- [X] Wallet Connect API ([NIP-47](https://github.com/nostr-protocol/nips/blob/master/47.md))
+- [X] Nostr Wallet Connect ([NIP-47](https://github.com/nostr-protocol/nips/blob/master/47.md))
 - [X] Relay List Metadata ([NIP-65](https://github.com/nostr-protocol/nips/blob/master/65.md))
 - [X] Online Relay Search ([NIP-50](https://github.com/nostr-protocol/nips/blob/master/50.md))
 - [ ] Video/LnInvoice Previews
