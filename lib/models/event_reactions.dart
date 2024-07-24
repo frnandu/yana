@@ -1,7 +1,7 @@
 import 'dart:convert';
 
-import 'package:dart_ndk/nips/nip01/event.dart';
-import 'package:dart_ndk/nips/nip25/reactions.dart';
+import 'package:dart_ndk/domain_layer/entities/nip_01_event.dart';
+import 'package:dart_ndk/shared/nips/nip25/reactions.dart';
 
 import '../main.dart';
 import '../nostr/event_kind.dart' as kind;

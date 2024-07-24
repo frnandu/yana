@@ -1,7 +1,7 @@
-import 'package:dart_ndk/models/relay_set.dart';
-import 'package:dart_ndk/nips/nip01/helpers.dart';
-import 'package:dart_ndk/nips/nip01/metadata.dart';
-import 'package:dart_ndk/nips/nip05/nip05.dart';
+import 'package:dart_ndk/domain_layer/entities/metadata.dart';
+import 'package:dart_ndk/domain_layer/entities/relay_set.dart';
+import 'package:dart_ndk/shared/nips/nip01/helpers.dart';
+import 'package:dart_ndk/shared/nips/nip05/nip05.dart';
 import 'package:flutter/material.dart';
 
 import '../main.dart';
@@ -78,7 +78,7 @@ class MetadataProvider extends ChangeNotifier with LaterFunction {
         : myInboxRelaySet;
     if (relaySet != null) {
       loading=true;
-      List<Metadata> loaded = await relayManager.loadMissingMetadatas(
+      List<Metadata> loaded = await nostr.loadMissingMetadatas(
           _needUpdateMetadatas, relaySet,
           splitRequestsByPubKeyMappings: settingProvider.gossip == 1, onLoad: (metadata) {
             notifyListeners();

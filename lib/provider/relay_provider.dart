@@ -1,13 +1,13 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:dart_ndk/models/relay_set.dart';
-import 'package:dart_ndk/models/user_relay_list.dart';
-import 'package:dart_ndk/nips/nip51/nip51.dart';
-import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
-import 'package:dart_ndk/read_write.dart';
+import 'package:dart_ndk/config/bootstrap_relays.dart';
+import 'package:dart_ndk/domain_layer/entities/nip_51_list.dart';
+import 'package:dart_ndk/domain_layer/entities/read_write.dart';
+import 'package:dart_ndk/domain_layer/entities/read_write_marker.dart';
+import 'package:dart_ndk/domain_layer/entities/relay_set.dart';
+import 'package:dart_ndk/domain_layer/entities/user_relay_list.dart';
 import 'package:dart_ndk/relay.dart';
-import 'package:dart_ndk/relay_manager.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
@@ -22,7 +22,7 @@ class RelayProvider extends ChangeNotifier {
   }
 
   int? getFeedRelayState(String url) {
-    String? cleanedUrl = Relay.clean(url);
+    String? cleanedUrl = Relay.cleanUrl(url);
     if (cleanedUrl == null) {
       return WebSocket.closed;
     }
@@ -59,17 +59,17 @@ class RelayProvider extends ChangeNotifier {
   }
 
   Future<Nip51Set?> getNip51RelaySet(String name) async {
-    Nip51Set? r = await relayManager.getCachedNip51RelaySet(name, loggedUserSigner!);
+    Nip51Set? r = await nostr.getCachedNip51RelaySet(name, loggedUserSigner!);
     if (r == null) {
-      relayManager.getSingleNip51RelaySet(name, loggedUserSigner!);
+      nostr.getSingleNip51RelaySet(name, loggedUserSigner!);
     }
     return r;
   }
 
   Future<Nip51List?> getNip51List(int kind) async {
-    Nip51List? r = await relayManager.getCachedNip51List(kind, loggedUserSigner!);
+    Nip51List? r = await nostr.getCachedNip51List(kind, loggedUserSigner!);
     if (r == null) {
-      relayManager.getSingleNip51List(kind, loggedUserSigner!);
+      nostr.getSingleNip51List(kind, loggedUserSigner!);
     }
     return r;
   }
@@ -81,17 +81,17 @@ class RelayProvider extends ChangeNotifier {
   Future<void> addRelay(String relayAddr) async {
     ReadWriteMarker marker = ReadWriteMarker.readWrite;
     if (myOutboxRelaySet != null && !myOutboxRelaySet!.urls.contains(relayAddr) && myInboxRelaySet!=null && !myInboxRelaySet!.urls.contains(relayAddr)) {
-      UserRelayList userRelayList = await relayManager.broadcastAddNip65Relay(relayAddr, marker, myOutboxRelaySet!.urls, loggedUserSigner!);
+      UserRelayList userRelayList = await nostr.broadcastAddNip65Relay(relayAddr, marker, myOutboxRelaySet!.urls, loggedUserSigner!);
       createMyRelaySets(userRelayList);
-      await relayManager.saveRelaySet(myOutboxRelaySet!);
-      await relayManager.saveRelaySet(myInboxRelaySet!);
+      await cacheManager.saveRelaySet(myOutboxRelaySet!);
+      await cacheManager.saveRelaySet(myInboxRelaySet!);
       await relayManager.connect(urls: userRelayList.urls);
       notifyListeners();
     }
   }
 
   Future<void> removeRelay(String url) async {
-    UserRelayList? userRelayList = await relayManager.broadcastRemoveNip65Relay(url, myOutboxRelaySet!.urls, loggedUserSigner!);
+    UserRelayList? userRelayList = await nostr.broadcastRemoveNip65Relay(url, myOutboxRelaySet!.urls, loggedUserSigner!);
     if (userRelayList != null) {
       createMyRelaySets(userRelayList);
       await cacheManager.saveRelaySet(myOutboxRelaySet!);
@@ -103,10 +103,10 @@ class RelayProvider extends ChangeNotifier {
 
   Future<void> updateMarker(String url, ReadWriteMarker marker) async {
     Set<String> relays = {};
-    relays.addAll(RelayManager.DEFAULT_BOOTSTRAP_RELAYS);
+    relays.addAll(DEFAULT_BOOTSTRAP_RELAYS);
     relays.addAll(myOutboxRelaySet!.urls);
 
-    UserRelayList? userRelayList = await relayManager.broadcastUpdateNip65RelayMarker(url, marker, relays, loggedUserSigner!);
+    UserRelayList? userRelayList = await nostr.broadcastUpdateNip65RelayMarker(url, marker, relays, loggedUserSigner!);
 
     if (userRelayList != null) {
       createMyRelaySets(userRelayList);
@@ -133,7 +133,7 @@ class RelayProvider extends ChangeNotifier {
       feedRelaySet = newRelaySet;
       feedRelaySet!.name = "feed";
       feedRelaySet!.pubKey = loggedUserSigner!.getPublicKey();
-      await relayManager.saveRelaySet(feedRelaySet!);
+      await cacheManager.saveRelaySet(feedRelaySet!);
       // followEventProvider.refreshPosts();
       notifyListeners();
     }

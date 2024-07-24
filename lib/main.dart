@@ -3,23 +3,25 @@ import 'dart:io';
 import 'dart:ui';
 
 import 'package:awesome_notifications/awesome_notifications.dart';
-import 'package:dart_ndk/cache_manager.dart';
-import 'package:dart_ndk/db/db_cache_manager.dart';
-import 'package:dart_ndk/models/pubkey_mapping.dart';
-import 'package:dart_ndk/models/relay_set.dart';
-import 'package:dart_ndk/models/user_relay_list.dart';
-import 'package:dart_ndk/nips/nip01/amber_event_signer.dart';
-import 'package:dart_ndk/nips/nip01/bip340_event_signer.dart';
-import 'package:dart_ndk/nips/nip01/event.dart';
-import 'package:dart_ndk/nips/nip01/event_signer.dart';
-import 'package:dart_ndk/nips/nip01/metadata.dart';
-import 'package:dart_ndk/nips/nip02/contact_list.dart';
-import 'package:dart_ndk/nips/nip51/nip51.dart';
-import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
-import 'package:dart_ndk/read_write.dart';
+import 'package:dart_ndk/config/bootstrap_relays.dart';
+import 'package:dart_ndk/data_layer/data_sources/amber_flutter.dart';
+import 'package:dart_ndk/data_layer/repositories/cache_manager/db_cache_manager.dart';
+import 'package:dart_ndk/data_layer/repositories/signers/amber_event_signer.dart';
+import 'package:dart_ndk/data_layer/repositories/signers/bip340_event_signer.dart';
+import 'package:dart_ndk/domain_layer/entities/contact_list.dart';
+import 'package:dart_ndk/domain_layer/entities/metadata.dart';
+import 'package:dart_ndk/domain_layer/entities/nip_01_event.dart';
+import 'package:dart_ndk/domain_layer/entities/nip_51_list.dart';
+import 'package:dart_ndk/domain_layer/entities/pubkey_mapping.dart';
+import 'package:dart_ndk/domain_layer/entities/read_write.dart';
+import 'package:dart_ndk/domain_layer/entities/read_write_marker.dart';
+import 'package:dart_ndk/domain_layer/entities/relay_set.dart';
+import 'package:dart_ndk/domain_layer/entities/user_relay_list.dart';
+import 'package:dart_ndk/domain_layer/repositories/cache_manager.dart';
+import 'package:dart_ndk/domain_layer/repositories/event_signer.dart';
+import 'package:dart_ndk/domain_layer/usecases/relay_manager.dart';
+import 'package:dart_ndk/nostr.dart';
 import 'package:dart_ndk/relay.dart';
-import 'package:dart_ndk/relay_manager.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
@@ -169,8 +171,11 @@ AppLifecycleState appState = AppLifecycleState.resumed;
 
 EventSigner? loggedUserSigner;
 
-RelayManager relayManager = RelayManager(isWeb: kIsWeb);
+AmberFlutterDS amberFlutterDS = AmberFlutterDS(Amberflutter());
 late CacheManager cacheManager;
+RelayManager relayManager = RelayManager(cacheManager: cacheManager);
+Nostr nostr = Nostr(relayManager: relayManager, cacheManager: cacheManager);
+
 
 late bool isExternalSignerInstalled;
 
@@ -251,7 +256,7 @@ Future<void> initProvidersAndStuff() async {
       if (StringUtil.isNotBlank(key)) {
         bool isPrivate = settingProvider.isPrivateKey;
         String publicKey = isPrivate ? getPublicKey(key!) : key!;
-        loggedUserSigner = settingProvider.isExternalSignerKey ? AmberEventSigner(publicKey) : isPrivate || !PlatformUtil.isWeb()? Bip340EventSigner(isPrivate? key:null, publicKey) : Nip07EventSigner(await js.getPublicKeyAsync());
+        loggedUserSigner = settingProvider.isExternalSignerKey ? AmberEventSigner(publicKey, amberFlutterDS) : isPrivate || !PlatformUtil.isWeb()? Bip340EventSigner(isPrivate? key:null, publicKey) : Nip07EventSigner(await js.getPublicKeyAsync());
       }
       //
       // loggedUserSigner = Bip340EventSigner(settingProvider.key!, getPublicKey(settingProvider.key!));
@@ -262,11 +267,12 @@ Future<void> initProvidersAndStuff() async {
       cacheManager = dbCacheManager;
       dbCacheManager.eventFilter = filterProvider;
       relayManager.cacheManager = cacheManager;
+      nostr.cacheManager = cacheManager;
       // relayManager.eventVerifier = HybridEventVerifier();
 
       if (myInboxRelaySet==null) {
         await relayManager.connect();
-        UserRelayList? userRelayList = await relayManager.getSingleUserRelayList(loggedUserSigner!.getPublicKey());
+        UserRelayList? userRelayList = await nostr.getSingleUserRelayList(loggedUserSigner!.getPublicKey());
         if (userRelayList != null) {
           createMyRelaySets(userRelayList);
         }
@@ -294,28 +300,28 @@ Future<void> initRelays({bool newKey = false}) async {
 
   await relayManager.connect();
 
-  UserRelayList? userRelayList = !newKey ? await relayManager.getSingleUserRelayList(loggedUserSigner!.getPublicKey()) : null;
+  UserRelayList? userRelayList = !newKey ? await nostr.getSingleUserRelayList(loggedUserSigner!.getPublicKey()) : null;
   if (userRelayList == null) {
     int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
     userRelayList = UserRelayList(
         pubKey: loggedUserSigner!.getPublicKey(),
-        relays: {for (String url in RelayManager.DEFAULT_BOOTSTRAP_RELAYS) url: ReadWriteMarker.readWrite},
+        relays: {for (String url in DEFAULT_BOOTSTRAP_RELAYS) url: ReadWriteMarker.readWrite},
         createdAt: now,
         refreshedTimestamp: now);
   }
   createMyRelaySets(userRelayList);
   await relayManager.connect(urls: userRelayList!.urls);
-  relayManager.getSingleNip51List(Nip51List.MUTE, loggedUserSigner!).then((list) {
+  nostr.getSingleNip51List(Nip51List.MUTE, loggedUserSigner!).then((list) {
     filterProvider.muteList = list;
     relayManager.eventFilters.add(filterProvider);
     relayManager.blockedRelays = [];
-    relayManager.getSingleNip51List(Nip51List.BLOCKED_RELAYS, loggedUserSigner!).then((blockedRelays) {
+    nostr.getSingleNip51List(Nip51List.BLOCKED_RELAYS, loggedUserSigner!).then((blockedRelays) {
       if (blockedRelays!=null) {
         relayManager.blockedRelays = blockedRelays.allRelays!;
         relayProvider.notifyListeners();
       }
       searchRelays = [];
-      relayManager.getSingleNip51List(Nip51List.SEARCH_RELAYS, loggedUserSigner!).then((searchRelaySet)  {
+      nostr.getSingleNip51List(Nip51List.SEARCH_RELAYS, loggedUserSigner!).then((searchRelaySet)  {
         if (searchRelaySet!=null) {
           searchRelays = searchRelaySet.allRelays!;
           for (var url in searchRelays) { relayManager.connectRelay(url);}
@@ -326,7 +332,7 @@ Future<void> initRelays({bool newKey = false}) async {
   },);
 
   print("Loading contact list...");
-  ContactList? contactList = !newKey ? await relayManager.loadContactList(loggedUserSigner!.getPublicKey()) : null;
+  ContactList? contactList = !newKey ? await nostr.loadContactList(loggedUserSigner!.getPublicKey()) : null;
   if (contactList != null) {
     for (var element in contactList.contacts) {
       metadataProvider.getMetadata(element);
@@ -334,7 +340,7 @@ Future<void> initRelays({bool newKey = false}) async {
 
     print("Loaded ${contactList.contacts.length} contacts...");
     if (settingProvider.gossip == 1) {
-      feedRelaySet = relayManager.getRelaySet("feed", loggedUserSigner!.getPublicKey());
+      feedRelaySet = cacheManager.loadRelaySet("feed", loggedUserSigner!.getPublicKey());
       if (feedRelaySet == null) {
         EasyLoading.showToast("Calculating feed relays from contact's outboxes...", dismissOnTap: true,  duration: const Duration(seconds: 15), maskType: EasyLoadingMaskType.black);
 
@@ -344,7 +350,7 @@ Future<void> initRelays({bool newKey = false}) async {
             pubKeys: contactList.contacts,
             direction: RelayDirection.outbox,
             relayMinCountPerPubKey: settingProvider.followeesRelayMinCount);
-        await relayManager.saveRelaySet(feedRelaySet!);
+        await cacheManager.saveRelaySet(feedRelaySet!);
       } else {
         final startTime = DateTime.now();
         print("connecting ${feedRelaySet!.relaysMap.length} relays");
@@ -371,7 +377,7 @@ Future<void> initRelays({bool newKey = false}) async {
 
 Future<List<String>> getInboxRelays(String pubKey) async {
   List<String> urlsToBroadcast = [];
-  UserRelayList? userRelayList = await relayManager.getSingleUserRelayList(
+  UserRelayList? userRelayList = await nostr.getSingleUserRelayList(
       pubKey!);
   if (userRelayList != null) {
     urlsToBroadcast = userRelayList.readUrls.toList();
@@ -399,11 +405,11 @@ void createMyRelaySets(UserRelayList userRelayList) {
 
   Map<String, List<PubkeyMapping>> inbox = {
     for (var item in userRelayList.relays.entries.where((entry) => entry.value.isRead))
-      Relay.clean(item.key) ?? item.key: [PubkeyMapping(pubKey: userRelayList.pubKey, rwMarker: item.value)]
+      Relay.cleanUrl(item.key) ?? item.key: [PubkeyMapping(pubKey: userRelayList.pubKey, rwMarker: item.value)]
   };
   Map<String, List<PubkeyMapping>> outbox = {
     for (var item in userRelayList.relays.entries.where((entry) => entry.value.isWrite))
-      Relay.clean(item.key) ?? item.key: [PubkeyMapping(pubKey: userRelayList.pubKey, rwMarker: item.value)]
+      Relay.cleanUrl(item.key) ?? item.key: [PubkeyMapping(pubKey: userRelayList.pubKey, rwMarker: item.value)]
   };
   myInboxRelaySet = RelaySet(
       name: "inbox",
@@ -521,7 +527,7 @@ Future<void> main() async {
     bool isPrivate = settingProvider.isPrivateKey;
     String publicKey = isPrivate ? getPublicKey(key!) : key!;
     if (settingProvider.isExternalSignerKey && isExternalSignerInstalled) {
-      loggedUserSigner = AmberEventSigner(publicKey);
+      loggedUserSigner = AmberEventSigner(publicKey, amberFlutterDS);
     } else {
       loggedUserSigner = isPrivate || !PlatformUtil.isWeb() ? Bip340EventSigner(
           isPrivate ? key : null, publicKey) : Nip07EventSigner(
@@ -849,7 +855,7 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
                         }
                       } else if (NIP19Tlv.isNrelay(key)) {
                         var nrelay = NIP19Tlv.decodeNrelay(key);
-                        String? url = nrelay != null ? Relay.clean(nrelay.addr) : null;
+                        String? url = nrelay != null ? Relay.cleanUrl(nrelay.addr) : null;
                         if (url != null) {
                           // inline
                           Relay relay = Relay(url);

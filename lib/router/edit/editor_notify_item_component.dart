@@ -1,4 +1,4 @@
-import 'package:dart_ndk/nips/nip01/metadata.dart';
+import 'package:dart_ndk/domain_layer/entities/metadata.dart';
 import 'package:flutter/material.dart';
 import 'package:yana/provider/metadata_provider.dart';
 import 'package:provider/provider.dart';

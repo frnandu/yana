@@ -1,4 +1,4 @@
-import 'package:dart_ndk/nips/nip01/helpers.dart';
+import 'package:dart_ndk/shared/nips/nip01/helpers.dart';
 import 'package:flutter/material.dart';
 import 'package:get_time_ago/get_time_ago.dart';
 import 'package:intl/intl.dart';

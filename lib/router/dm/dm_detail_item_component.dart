@@ -1,12 +1,7 @@
-import 'package:dart_ndk/nips/nip01/amber_event_signer.dart';
-import 'package:dart_ndk/nips/nip01/event.dart';
-import 'package:dart_ndk/nips/nip01/helpers.dart';
-import 'package:dart_ndk/nips/nip04/nip04.dart';
+import 'package:dart_ndk/domain_layer/entities/nip_01_event.dart';
 import 'package:flutter/material.dart';
 import 'package:get_time_ago/get_time_ago.dart';
-import 'package:pointycastle/export.dart' as pointycastle;
 import 'package:provider/provider.dart';
-import 'package:yana/main.dart';
 import 'package:yana/ui/content/content_decoder.dart';
 import 'package:yana/utils/router_path.dart';
 import 'package:yana/utils/router_util.dart';

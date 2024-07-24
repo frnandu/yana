@@ -1,8 +1,8 @@
 import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:dart_ndk/models/pubkey_mapping.dart';
-import 'package:dart_ndk/nips/nip51/nip51.dart';
+import 'package:dart_ndk/domain_layer/entities/nip_51_list.dart';
+import 'package:dart_ndk/domain_layer/entities/pubkey_mapping.dart';
 import 'package:dart_ndk/relay.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -61,7 +61,7 @@ class _UserRelayRouter extends State<UserRelayRouter>
       relays!.sort((r1, r2) => compareRelays(r1, r2));
     }
     relays!.forEach((element) {
-      element.url = Relay.clean(element.url!);
+      element.url = Relay.cleanUrl(element.url!);
     });
 
     return Scaffold(
@@ -279,7 +279,7 @@ class RelayMetadataComponent extends StatelessWidget {
                   status: 'Removing from list and broadcasting...',
                   maskType: EasyLoadingMaskType.black,
                   dismissOnTap: true);
-              Nip51List? relayList = await relayManager
+              Nip51List? relayList = await nostr
                   .broadcastRemoveNip51Relay(
                       Nip51List.BLOCKED_RELAYS,
                       relayMetadata!.url!,
@@ -313,7 +313,7 @@ class RelayMetadataComponent extends StatelessWidget {
                     maskType: EasyLoadingMaskType.black,
                     dismissOnTap: true);
                 Nip51List blocked =
-                    await relayManager.broadcastAddNip51ListRelay(
+                    await nostr.broadcastAddNip51ListRelay(
                         Nip51List.BLOCKED_RELAYS,
                         relayMetadata!.url!,
                         myOutboxRelaySet!.urls,

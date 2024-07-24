@@ -1,4 +1,4 @@
-import 'package:dart_ndk/nips/nip01/event.dart';
+import 'package:dart_ndk/domain_layer/entities/nip_01_event.dart';
 
 import '../../../nostr/event_kind.dart' as kind;
 import '../../utils/spider_util.dart';

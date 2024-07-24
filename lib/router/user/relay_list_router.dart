@@ -1,6 +1,6 @@
-import 'package:dart_ndk/nips/nip01/helpers.dart';
-import 'package:dart_ndk/nips/nip50/nip50.dart';
-import 'package:dart_ndk/nips/nip51/nip51.dart';
+import 'package:dart_ndk/domain_layer/entities/nip_51_list.dart';
+import 'package:dart_ndk/shared/nips/nip01/helpers.dart';
+import 'package:dart_ndk/shared/nips/nip50/nip50.dart';
 import 'package:dart_ndk/relay.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
@@ -107,7 +107,7 @@ class _RelayListRouter extends State<RelayListRouter> with SingleTickerProviderS
         ),
         child: RefreshIndicator(
           onRefresh: () async {
-            Nip51List? refreshedList = await relayManager.getSingleNip51List(relayList!.kind, loggedUserSigner!, forceRefresh: true);
+            Nip51List? refreshedList = await nostr.getSingleNip51List(relayList!.kind, loggedUserSigner!, forceRefresh: true);
             refreshedList ??= Nip51List(pubKey: relayList!.pubKey, kind: relayList!.kind, elements: [], createdAt: Helpers.now);
             setState(() {
               relayList = refreshedList;
@@ -124,7 +124,7 @@ class _RelayListRouter extends State<RelayListRouter> with SingleTickerProviderS
                     decoration: InputDecoration(
                       prefixIcon: const Icon(Icons.lan),
                       hintText: "start typing relay name or URL",
-                      suffixIcon: Relay.clean(controller.text) != null
+                      suffixIcon: Relay.cleanUrl(controller.text) != null
                           ? PopupMenuButton<String>(
                               icon: const Icon(Icons.add),
                               tooltip: "more",
@@ -165,7 +165,7 @@ class _RelayListRouter extends State<RelayListRouter> with SingleTickerProviderS
                   bool? result = await ConfirmDialog.show(context, "Confirm remove ${url} from list");
                   if (result != null && result) {
                     EasyLoading.show(status: 'Removing from list and broadcasting...', maskType: EasyLoadingMaskType.black, dismissOnTap: true);
-                    relayList = await relayManager.broadcastRemoveNip51Relay(relayList!.kind, url, myOutboxRelaySet!.urls, loggedUserSigner!,
+                    relayList = await nostr.broadcastRemoveNip51Relay(relayList!.kind, url, myOutboxRelaySet!.urls, loggedUserSigner!,
                         defaultRelaysIfEmpty: relayList!.allRelays);
                     if (relayList!.kind == Nip51List.SEARCH_RELAYS) {
                       searchRelays = relayList!.allRelays!;
@@ -222,7 +222,7 @@ class _RelayListRouter extends State<RelayListRouter> with SingleTickerProviderS
   }
 
   Future<void> add(String url, bool private) async {
-    String? cleanUrl = Relay.clean(url);
+    String? cleanUrl = Relay.cleanUrl(url);
     if (cleanUrl == null) {
       EasyLoading.showError(
         "Invalid address wss://<host>:<port> or ws://<host>:<port>",
@@ -244,7 +244,7 @@ class _RelayListRouter extends State<RelayListRouter> with SingleTickerProviderS
     bool? result = await ConfirmDialog.show(context, "Confirm add ${private ? "private" : "public"} ${url} to list");
     if (result != null && result) {
       EasyLoading.show(status: 'Broadcasting relay list...', maskType: EasyLoadingMaskType.black, dismissOnTap: true);
-      relayList = await relayManager.broadcastAddNip51ListRelay(relayList!.kind, url, myOutboxRelaySet!.urls, loggedUserSigner!, private: private);
+      relayList = await nostr.broadcastAddNip51ListRelay(relayList!.kind, url, myOutboxRelaySet!.urls, loggedUserSigner!, private: private);
       if (relayList!.kind == Nip51List.SEARCH_RELAYS) {
         searchRelays = relayList!.allRelays!;
         await relayManager.reconnectRelays(searchRelays);

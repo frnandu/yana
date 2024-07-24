@@ -1,8 +1,8 @@
 import 'dart:async';
 
-import 'package:dart_ndk/nips/nip01/event.dart';
-import 'package:dart_ndk/nips/nip01/metadata.dart';
-import 'package:dart_ndk/nips/nip11/relay_info.dart';
+import 'package:dart_ndk/domain_layer/entities/metadata.dart';
+import 'package:dart_ndk/domain_layer/entities/nip_01_event.dart';
+import 'package:dart_ndk/domain_layer/entities/relay_info.dart';
 import 'package:dart_ndk/relay.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -130,7 +130,7 @@ class _IndexRouter extends CustState<IndexRouter>
             }
           } else if (NIP19Tlv.isNrelay(key)) {
             var nrelay = NIP19Tlv.decodeNrelay(key);
-            String? url = nrelay != null ? Relay.clean(nrelay.addr) : null;
+            String? url = nrelay != null ? Relay.cleanUrl(nrelay.addr) : null;
             if (url != null) {
               // inline
               Relay relay = Relay(url);

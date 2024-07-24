@@ -1,8 +1,7 @@
 import 'dart:convert';
 
-import 'package:dart_ndk/nips/nip01/event.dart';
-import 'package:dart_ndk/nips/nip01/metadata.dart';
-import 'package:dart_ndk/nips/nip25/reactions.dart';
+import 'package:dart_ndk/entities.dart';
+import 'package:dart_ndk/shared/nips/nip25/reactions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:provider/provider.dart';

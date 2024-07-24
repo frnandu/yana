@@ -1,8 +1,8 @@
 import 'package:awesome_notifications/awesome_notifications.dart';
-import 'package:dart_ndk/nips/nip01/event.dart';
-import 'package:dart_ndk/nips/nip01/filter.dart';
-import 'package:dart_ndk/nips/nip01/metadata.dart';
-import 'package:dart_ndk/nips/nip25/reactions.dart';
+import 'package:dart_ndk/domain_layer/entities/filter.dart';
+import 'package:dart_ndk/domain_layer/entities/metadata.dart';
+import 'package:dart_ndk/domain_layer/entities/nip_01_event.dart';
+import 'package:dart_ndk/shared/nips/nip25/reactions.dart';
 import 'package:flutter/foundation.dart';
 import 'package:yana/nostr/event_kind.dart';
 import 'package:yana/nostr/event_relation.dart';
@@ -54,7 +54,7 @@ class NewNotificationsProvider extends ChangeNotifier
       pTags: [loggedUserSigner!.getPublicKey()],
     );
     await for (final event in (await relayManager!.query(filter, myInboxRelaySet!)).stream) {
-      Metadata? metadata = await relayManager.getSingleMetadata(event.pubKey);
+      Metadata? metadata = await nostr.getSingleMetadata(event.pubKey);
       handleEvent(event, metadata);
     }
   }
