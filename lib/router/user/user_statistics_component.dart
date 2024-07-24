@@ -1,11 +1,8 @@
 import 'dart:async';
 
+import 'package:dart_ndk/entities.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:convert/convert.dart';
-import 'package:dart_ndk/models/user_relay_list.dart';
-import 'package:dart_ndk/domain_layer/entities/nip_01_event.dart';
-import 'package:dart_ndk/shared/nips/nip01/filter.dart';
-import 'package:dart_ndk/shared/nips/nip02/contact_list.dart';
 import 'package:dart_ndk/request.dart';
 import 'package:flutter/material.dart';
 import 'package:yana/utils/base_consts.dart';
@@ -94,7 +91,7 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
     if (contactList == null ||
         contactList!.loadedTimestamp == null ||
         contactList!.loadedTimestamp! < sometimeAgo) {
-      relayManager.loadContactList(pubkey!, forceRefresh: true).then(
+      nostr.loadContactList(pubkey!, forceRefresh: true).then(
         (newContactList) {
           if (newContactList != null &&
               (contactList == null ||

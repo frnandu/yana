@@ -3,7 +3,7 @@ import 'dart:developer';
 
 import 'package:bech32/bech32.dart';
 import 'package:dart_ndk/domain_layer/entities/nip_01_event.dart';
-import 'package:dart_ndk/domain_layer/repositories/event_signer_repository.dart';
+import 'package:dart_ndk/domain_layer/repositories/event_signer.dart';
 
 import '../../utils/dio_util.dart';
 import '../../utils/string_util.dart';

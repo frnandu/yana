@@ -1,17 +1,14 @@
 import 'package:auto_size_text_field/auto_size_text_field.dart';
-import 'package:dart_ndk/shared/nips/nip01/amber_event_signer.dart';
+import 'package:dart_ndk/entities.dart';
 import 'package:dart_ndk/shared/nips/nip01/helpers.dart';
-import 'package:dart_ndk/shared/nips/nip04/nip04.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dart_ndk/domain_layer/entities/nip_01_event.dart';
-import 'package:dart_ndk/shared/nips/nip01/metadata.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:pointycastle/ecc/api.dart';
 import 'package:provider/provider.dart';
 import 'package:yana/provider/custom_emoji_provider.dart';
 import 'package:yana/ui/datetime_picker_component.dart';
