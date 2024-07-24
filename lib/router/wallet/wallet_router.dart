@@ -1,10 +1,4 @@
-import 'dart:math';
-
-import 'package:confetti/confetti.dart';
-import 'package:dart_ndk/nips/nip01/helpers.dart';
 import 'package:flutter/material.dart';
-import 'package:get_time_ago/get_time_ago.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:yana/main.dart';
 import 'package:yana/models/wallet_transaction.dart';
