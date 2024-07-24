@@ -96,8 +96,8 @@ class SearchMentionUserItemComponent extends StatelessWidget {
     required this.width,
     required this.onTap,
     this.popupMenuButton,
-    this.showNip05,
-    this.showLnAddress
+    this.showNip05=true,
+    this.showLnAddress=false
   });
 
   @override

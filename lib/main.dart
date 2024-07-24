@@ -173,8 +173,8 @@ EventSigner? loggedUserSigner;
 
 AmberFlutterDS amberFlutterDS = AmberFlutterDS(Amberflutter());
 late CacheManager cacheManager;
-RelayManager relayManager = RelayManager();
-Nostr nostr = Nostr(relayManager: relayManager);
+RelayManager relayManager = RelayManager(cacheManager: cacheManager);
+Nostr nostr = Nostr(relayManager: relayManager, cacheManager: cacheManager);
 
 
 late bool isExternalSignerInstalled;
@@ -267,6 +267,7 @@ Future<void> initProvidersAndStuff() async {
       cacheManager = dbCacheManager;
       dbCacheManager.eventFilter = filterProvider;
       relayManager.cacheManager = cacheManager;
+      nostr.cacheManager = cacheManager;
       // relayManager.eventVerifier = HybridEventVerifier();
 
       if (myInboxRelaySet==null) {
