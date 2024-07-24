@@ -16,7 +16,7 @@ class NwcNotification {
   int createdAt;
   int? expiresAt;
   int settledAt;
-  Map<String, dynamic> metadata;
+  Map<String, dynamic>? metadata;
 
   NwcNotification({
     required this.type,
@@ -46,7 +46,7 @@ class NwcNotification {
       createdAt: map['created_at'] as int,
       expiresAt: map['expires_at'] as int?,
       settledAt: map['settled_at'] as int,
-      metadata: Map<String, dynamic>.from(map['metadata']),
+      metadata: map.containsKey('metadata') ? Map<String, dynamic>.from(map['metadata']): null,
     );
   }
 }
