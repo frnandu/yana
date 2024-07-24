@@ -2,6 +2,7 @@ import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter/material.dart';
 
 import '../i18n/i18n.dart';
+import '../nostr/nip47/nwc_notification.dart';
 import '../nostr/nip57/zap_action.dart';
 import '../utils/base.dart';
 import '../utils/router_util.dart';
@@ -13,7 +14,7 @@ class ZapGenDialog extends StatefulWidget {
 
   BuildContext parentContext;
 
-  Function(bool) onZapped;
+  Function(NwcNotification?) onZapped;
 
   ZapGenDialog(
       {super.key,
@@ -23,7 +24,7 @@ class ZapGenDialog extends StatefulWidget {
       required this.onZapped});
 
   static Future<void> show(BuildContext context, String pubkey,
-      {String? eventId, required Function(bool) onZapped}) async {
+      {String? eventId, required Function(NwcNotification?) onZapped}) async {
     return await showDialog<void>(
       context: context,
       builder: (_context) {

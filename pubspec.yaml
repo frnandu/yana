@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 0.14.2
+version: 0.15.0-master
 
 environment:
   sdk: '>=3.0.0 <3.11.0'
@@ -61,12 +61,12 @@ dependencies:
   widget_size: ^1.0.0
   sizer: ^2.0.15
   webview_flutter: ^4.2.1
-  screenshot: ^2.1.0
+  screenshot: ^3.0.0
   share_plus: ^7.2.1
   video_player: ^2.6.1
   image_picker: ^1.0.3
   keframe: ^3.0.0
-  pretty_qr_code: ^3.0.0
+  pretty_qr_code: ^3.3.0
   flutter_link_previewer: ^3.2.1
   easy_image_viewer: ^1.2.1
   android_intent_plus: ^4.0.1
@@ -116,7 +116,8 @@ dependencies:
   flutter_easyloading: ^3.0.5
   visibility_detector: ^0.4.0
   #uni_links: ^0.5.1
-#  dart_ndk:  0.1.0-dev8
+  #dart_ndk:  0.1.0-dev8
+  confetti: ^0.7.0
 #  dart_ndk:
 #    git:
 #      url: https://github.com/relaystr/dart_ndk.git
@@ -143,6 +144,7 @@ dependency_overrides:
 #  extended_image: ^8.0.1
 #  markdown: ^7.1.0
   intl: ^0.19.0
+  flutter_colorpicker: 1.1.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

@@ -59,7 +59,10 @@ import 'package:yana/router/user/relay_set_router.dart';
 import 'package:yana/router/user/user_history_contact_list_router.dart';
 import 'package:yana/router/user/user_zap_list_router.dart';
 import 'package:yana/router/wallet/nwc_router.dart';
+import 'package:yana/router/wallet/transactions_router.dart';
+import 'package:yana/router/wallet/wallet_receive.dart';
 import 'package:yana/router/wallet/wallet_router.dart';
+import 'package:yana/router/wallet/wallet_send.dart';
 import 'package:yana/utils/image/cache_manager_builder.dart';
 import 'package:yana/utils/platform_util.dart';
 import 'package:amberflutter/amberflutter.dart';
@@ -161,6 +164,8 @@ late CommunityApprovedProvider communityApprovedProvider;
 late CommunityInfoProvider communityInfoProvider;
 
 late NwcProvider nwcProvider;
+
+Map<String,dynamic>? fiatCurrencyRate;
 
 AppLifecycleState appState = AppLifecycleState.resumed;
 
@@ -699,6 +704,9 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
       RouterPath.SEARCH: (context) => const SearchRouter(),
       RouterPath.KEY_BACKUP: (context) => const KeyBackupRouter(),
       RouterPath.WALLET: (context) => const WalletRouter(),
+      RouterPath.WALLET_TRANSACTIONS: (context) => const TransactionsRouter(),
+      RouterPath.WALLET_RECEIVE: (context) => const WalletReceiveRouter(),
+      RouterPath.WALLET_SEND: (context) => const WalletSendRouter(),
       RouterPath.NWC: (context) => const NwcRouter(),
       RouterPath.RELAYS: (context) => const RelaysRouter(),
       RouterPath.PROFILE_EDITOR: (context) => const ProfileEditorRouter(),
@@ -948,8 +956,9 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
         }
       }
     }
-    if ((newState == AppLifecycleState.paused || newState == AppLifecycleState.hidden || newState == AppLifecycleState.inactive) &&
+    if ((newState == AppLifecycleState.paused || newState == AppLifecycleState.hidden) &&
         appState == AppLifecycleState.resumed && loggedUserSigner != null) {
+      print("newState = ${newState} , appState = ${appState}");
       Future.delayed(const Duration(seconds: 5), () async {
         NotificationLifeCycle value = await AwesomeNotifications().getAppLifeCycle();
         if (value.toString() != "NotificationLifeCycle.Foreground") {

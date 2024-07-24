@@ -82,6 +82,8 @@ class SearchMentionUserItemComponent extends StatelessWidget {
   static const double IMAGE_WIDTH = 50;
 
   final Metadata metadata;
+  bool? showNip05=true;
+  bool? showLnAddress=false;
 
   final double width;
 
@@ -93,7 +95,9 @@ class SearchMentionUserItemComponent extends StatelessWidget {
     required this.metadata,
     required this.width,
     required this.onTap,
-    this.popupMenuButton
+    this.popupMenuButton,
+    this.showNip05,
+    this.showLnAddress
   });
 
   @override
@@ -172,9 +176,18 @@ class SearchMentionUserItemComponent extends StatelessWidget {
                   //   overflow: TextOverflow.ellipsis,
                   // ),
                   ,
-                  StringUtil.isNotBlank(metadata.nip05)?
+                  showNip05! && StringUtil.isNotBlank(metadata.nip05)?
                   Text(
                     metadata.cleanNip05!,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: hintColor,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ):Container(),
+                  showLnAddress! && StringUtil.isNotBlank(metadata.lud16)?
+                  Text(
+                    metadata.lud16!,
                     style: TextStyle(
                       fontSize: 12,
                       color: hintColor,

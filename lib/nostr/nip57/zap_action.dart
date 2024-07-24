@@ -2,6 +2,7 @@ import 'package:dart_ndk/domain_layer/entities/read_write.dart';
 import 'package:dart_ndk/domain_layer/entities/relay_set.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:yana/nostr/nip47/nwc_notification.dart';
 
 import '../../i18n/i18n.dart';
 import '../../main.dart';
@@ -11,7 +12,7 @@ import 'zap.dart';
 
 class ZapAction {
   static Future<void> handleZap(BuildContext context, int sats, String pubkey,
-      {String? eventId, String? pollOption, String? comment, required Function(bool) onZapped}) async {
+      {String? eventId, String? pollOption, String? comment, required Function(NwcNotification?) onZapped}) async {
     var s = I18n.of(context);
     // EasyLoading.sho.showLoading();
     var invoiceCode = await _doGenInvoiceCode(context, sats, pubkey,
@@ -32,7 +33,7 @@ class ZapAction {
     if (!sendWithWallet) {
       await LightningUtil.goToPay(context, invoiceCode!);
 //      await eventReactionsProvider.subscription(eventId!, null, EventKind.ZAP_RECEIPT);
-      onZapped(true);
+      onZapped(null);
     }
   }
 
