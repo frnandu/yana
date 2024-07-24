@@ -76,17 +76,17 @@ class ContactListProvider extends ChangeNotifier {
   }
 
   Future<ContactList?> loadContactList(String pubKey) async {
-    return await relayManager.loadContactList(pubKey);
+    return await nostr.loadContactList(pubKey);
   }
 
   Future<void> addContact(String contact) async {
-    await relayManager.broadcastAddContact(contact, myOutboxRelaySet!.urls, loggedUserSigner!);
+    await nostr.broadcastAddContact(contact, myOutboxRelaySet!.urls, loggedUserSigner!);
 
     notifyListeners();
   }
 
   Future<void> removeContact(String pubKey) async{
-    await relayManager.broadcastRemoveContact(pubKey, myOutboxRelaySet!.urls, loggedUserSigner!);
+    await nostr.broadcastRemoveContact(pubKey, myOutboxRelaySet!.urls, loggedUserSigner!);
     notifyListeners();
   }
 
@@ -130,12 +130,12 @@ class ContactListProvider extends ChangeNotifier {
   }
 
   Future<void> addTag(String tag) async {
-    await relayManager.broadcastAddFollowedTag(tag, myOutboxRelaySet!.urls, loggedUserSigner!);
+    await nostr.broadcastAddFollowedTag(tag, myOutboxRelaySet!.urls, loggedUserSigner!);
     notifyListeners();
   }
 
   Future<void> removeTag(String tag) async {
-    await relayManager.broadcastRemoveFollowedTag(tag, myOutboxRelaySet!.urls, loggedUserSigner!);
+    await nostr.broadcastRemoveFollowedTag(tag, myOutboxRelaySet!.urls, loggedUserSigner!);
     notifyListeners();
   }
 
@@ -152,12 +152,12 @@ class ContactListProvider extends ChangeNotifier {
   }
 
   void addCommunity(String tag) async {
-    await relayManager.broadcastAddFollowedCommunity(tag, myOutboxRelaySet!.urls, loggedUserSigner!);
+    await nostr.broadcastAddFollowedCommunity(tag, myOutboxRelaySet!.urls, loggedUserSigner!);
     notifyListeners();
   }
 
   void removeCommunity(String tag) async {
-    await relayManager.broadcastRemoveFollowedCommunity(tag, myOutboxRelaySet!.urls, loggedUserSigner!);
+    await nostr.broadcastRemoveFollowedCommunity(tag, myOutboxRelaySet!.urls, loggedUserSigner!);
     notifyListeners();
   }
 }

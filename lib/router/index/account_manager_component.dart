@@ -148,7 +148,7 @@ class AccountsState extends State<AccountsComponent> {
     String? key = settingProvider.key;
     bool isPrivate = settingProvider.isPrivateKey;
     String publicKey = isPrivate ? getPublicKey(key!) : key!;
-    loggedUserSigner = settingProvider.isExternalSignerKey ? AmberEventSigner(publicKey) : isPrivate || !PlatformUtil.isWeb()
+    loggedUserSigner = settingProvider.isExternalSignerKey ? AmberEventSigner(publicKey, amberFlutterDS) : isPrivate || !PlatformUtil.isWeb()
         ? Bip340EventSigner(isPrivate ? key : null, publicKey)
         : Nip07EventSigner(await js.getPublicKeyAsync());
 

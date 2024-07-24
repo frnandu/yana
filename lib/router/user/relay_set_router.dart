@@ -1,5 +1,5 @@
+import 'package:dart_ndk/domain_layer/entities/nip_51_list.dart';
 import 'package:dart_ndk/shared/nips/nip01/helpers.dart';
-import 'package:dart_ndk/shared/nips/nip51/nip51.dart';
 import 'package:dart_ndk/relay.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
@@ -102,7 +102,7 @@ class _RelaySetRouter extends State<RelaySetRouter> with SingleTickerProviderSta
         ),
         child: RefreshIndicator(
           onRefresh: () async {
-            Nip51Set? refreshedRelaySet = await relayManager.getSingleNip51RelaySet(relaySet!.name, loggedUserSigner!, forceRefresh: true);
+            Nip51Set? refreshedRelaySet = await nostr.getSingleNip51RelaySet(relaySet!.name, loggedUserSigner!, forceRefresh: true);
             refreshedRelaySet ??= Nip51Set(pubKey: relaySet!.pubKey, name: relaySet!.name, createdAt: Helpers.now, elements: []);
             setState(() {
               relaySet = refreshedRelaySet;
@@ -156,7 +156,7 @@ class _RelaySetRouter extends State<RelaySetRouter> with SingleTickerProviderSta
                   bool? result = await ConfirmDialog.show(context, "Confirm add ${url} to list");
                   if (result != null && result) {
                     EasyLoading.show(status: 'Removing from list and broadcasting...', maskType: EasyLoadingMaskType.black, dismissOnTap: true);
-                    relaySet = await relayManager.broadcastRemoveNip51SetRelay(url, relaySet!.name, myOutboxRelaySet!.urls, loggedUserSigner!,
+                    relaySet = await nostr.broadcastRemoveNip51SetRelay(url, relaySet!.name, myOutboxRelaySet!.urls, loggedUserSigner!,
                         defaultRelaysIfEmpty: relaySet!.allRelays);
                     relayProvider.notifyListeners();
                     EasyLoading.dismiss();
@@ -231,7 +231,7 @@ class _RelaySetRouter extends State<RelaySetRouter> with SingleTickerProviderSta
     bool? result = await ConfirmDialog.show(context, "Confirm add ${url} to list");
     if (result != null && result) {
       EasyLoading.show(status: 'Broadcasting relay list...', maskType: EasyLoadingMaskType.black, dismissOnTap: true);
-      relaySet = await relayManager.broadcastAddNip51SetRelay(url, relaySet!.name, myOutboxRelaySet!.urls, loggedUserSigner!, private: false);
+      relaySet = await nostr.broadcastAddNip51SetRelay(url, relaySet!.name, myOutboxRelaySet!.urls, loggedUserSigner!, private: false);
       relayProvider.notifyListeners();
       EasyLoading.dismiss();
       setState(() {

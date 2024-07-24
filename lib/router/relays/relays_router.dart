@@ -1,6 +1,6 @@
-import 'package:dart_ndk/models/user_relay_list.dart';
+import 'package:dart_ndk/domain_layer/entities/read_write_marker.dart';
+import 'package:dart_ndk/domain_layer/entities/user_relay_list.dart';
 import 'package:dart_ndk/shared/nips/nip01/helpers.dart';
-import 'package:dart_ndk/shared/nips/nip65/read_write_marker.dart';
 import 'package:dart_ndk/relay.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
@@ -48,7 +48,7 @@ class _RelaysRouter extends CustState<RelaysRouter> with WhenStopFunction {
     // set.addAll(myOutboxRelaySet!.urls);
 
     userRelayList = cacheManager.loadUserRelayList(loggedUserSigner!.getPublicKey());
-    userRelayList ??= await relayManager.getSingleUserRelayList(loggedUserSigner!.getPublicKey(), forceRefresh: true);
+    userRelayList ??= await nostr.getSingleUserRelayList(loggedUserSigner!.getPublicKey(), forceRefresh: true);
     userRelayList ??= UserRelayList(
         pubKey: loggedUserSigner!.getPublicKey(),
         relays: {for (String url in relayManager.bootstrapRelays) url: ReadWriteMarker.readWrite},
@@ -100,7 +100,7 @@ class _RelaysRouter extends CustState<RelaysRouter> with WhenStopFunction {
               child: RefreshIndicator(
                   onRefresh: () async {
                     UserRelayList? oldRelayList = cacheManager.loadUserRelayList(loggedUserSigner!.getPublicKey());
-                    UserRelayList? userRelayList = await relayManager.getSingleUserRelayList(loggedUserSigner!.getPublicKey(), forceRefresh: true);
+                    UserRelayList? userRelayList = await nostr.getSingleUserRelayList(loggedUserSigner!.getPublicKey(), forceRefresh: true);
                     if (userRelayList != null && (oldRelayList == null || oldRelayList.createdAt < userRelayList.createdAt)) {
                       createMyRelaySets(userRelayList);
                     }

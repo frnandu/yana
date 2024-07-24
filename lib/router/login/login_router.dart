@@ -1,6 +1,6 @@
 import 'package:amberflutter/amberflutter.dart';
-import 'package:dart_ndk/shared/nips/nip01/amber_event_signer.dart';
-import 'package:dart_ndk/shared/nips/nip01/bip340_event_signer.dart';
+import 'package:dart_ndk/data_layer/repositories/signers/amber_event_signer.dart';
+import 'package:dart_ndk/data_layer/repositories/signers/bip340_event_signer.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
@@ -391,7 +391,7 @@ class _LoginRouter extends State<LoginRouter>
       await settingProvider.addAndChangeKey(key, !isPublic, isExternalSigner, updateUI: false);
       bool isPrivate = !isPublic;
       String publicKey = isPrivate ? getPublicKey(key!) : key!;
-      loggedUserSigner = settingProvider.isExternalSignerKey ? AmberEventSigner(publicKey) : isPrivate || !PlatformUtil.isWeb()
+      loggedUserSigner = settingProvider.isExternalSignerKey ? AmberEventSigner(publicKey, amberFlutterDS) : isPrivate || !PlatformUtil.isWeb()
           ? Bip340EventSigner(isPrivate ? key : null, publicKey)
           : Nip07EventSigner(await js.getPublicKeyAsync());
 

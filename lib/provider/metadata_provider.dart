@@ -78,7 +78,7 @@ class MetadataProvider extends ChangeNotifier with LaterFunction {
         : myInboxRelaySet;
     if (relaySet != null) {
       loading=true;
-      List<Metadata> loaded = await relayManager.loadMissingMetadatas(
+      List<Metadata> loaded = await nostr.loadMissingMetadatas(
           _needUpdateMetadatas, relaySet,
           splitRequestsByPubKeyMappings: settingProvider.gossip == 1, onLoad: (metadata) {
             notifyListeners();

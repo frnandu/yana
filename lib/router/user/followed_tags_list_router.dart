@@ -1,4 +1,4 @@
-import 'package:dart_ndk/shared/nips/nip02/contact_list.dart';
+import 'package:dart_ndk/domain_layer/entities/contact_list.dart';
 import 'package:flutter/material.dart';
 import 'package:yana/ui/tag_info_component.dart';
 import 'package:yana/utils/base.dart';

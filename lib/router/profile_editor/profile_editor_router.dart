@@ -1,5 +1,5 @@
+import 'package:dart_ndk/domain_layer/entities/metadata.dart';
 import 'package:dart_ndk/shared/nips/nip01/helpers.dart';
-import 'package:dart_ndk/shared/nips/nip01/metadata.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
@@ -79,7 +79,7 @@ class _ProfileEditorRouter extends CustState<ProfileEditorRouter> {
       if (cached!=null && cached.refreshedTimestamp!=null && cached.refreshedTimestamp! > (DateTime.now().subtract(REFRESH_METADATA_BEFORE_EDIT_DURATION).millisecondsSinceEpoch ~/ 1000)) {
         metadata = cached;
       } else {
-        relayManager.getSingleMetadata(
+        nostr.getSingleMetadata(
             loggedUserSigner!.getPublicKey(), forceRefresh: true).then((
             metadata) {
           setState(() {
@@ -321,7 +321,7 @@ class _ProfileEditorRouter extends CustState<ProfileEditorRouter> {
     metadata!.lud16 = lud16Controller.text;
     metadata!.lud06 = lud06Controller.text;
 
-    await relayManager.broadcastMetadata(metadata!, myOutboxRelaySet!.urls, loggedUserSigner!);
+    await nostr.broadcastMetadata(metadata!, myOutboxRelaySet!.urls, loggedUserSigner!);
     metadataProvider.notifyListeners();
     setState(() {
       broadcasting = false;

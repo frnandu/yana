@@ -54,7 +54,7 @@ class NewNotificationsProvider extends ChangeNotifier
       pTags: [loggedUserSigner!.getPublicKey()],
     );
     await for (final event in (await relayManager!.query(filter, myInboxRelaySet!)).stream) {
-      Metadata? metadata = await relayManager.getSingleMetadata(event.pubKey);
+      Metadata? metadata = await nostr.getSingleMetadata(event.pubKey);
       handleEvent(event, metadata);
     }
   }
