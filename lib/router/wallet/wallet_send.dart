@@ -1,15 +1,8 @@
-import 'dart:io';
-import 'dart:math';
-
-import 'package:android_intent_plus/android_intent.dart';
 import 'package:confetti/confetti.dart';
 import 'package:dart_ndk/nips/nip01/metadata.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_easyloading/flutter_easyloading.dart';
-import 'package:pretty_qr_code/pretty_qr_code.dart';
 import 'package:provider/provider.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:yana/main.dart';
 import 'package:yana/nostr/nip47/nwc_notification.dart';
 import 'package:yana/provider/nwc_provider.dart';
@@ -17,14 +10,10 @@ import 'package:yana/utils/base.dart';
 import 'package:yana/utils/string_util.dart';
 
 import '../../../ui/appbar4stack.dart';
-import '../../i18n/i18n.dart';
 import '../../nostr/nip57/zap.dart';
 import '../../nostr/nip57/zap_num_util.dart';
 import '../../ui/editor/search_mention_user_component.dart';
-import '../../ui/lightning_qrcode_dialog.dart';
 import '../../utils/dio_util.dart';
-import '../../utils/platform_util.dart';
-import '../../utils/router_util.dart';
 
 class WalletSendRouter extends StatefulWidget {
   const WalletSendRouter({super.key});

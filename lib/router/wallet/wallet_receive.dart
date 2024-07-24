@@ -205,6 +205,12 @@ class _WalletReceiveRouter extends State<WalletReceiveRouter> {
                     ])))));
       }
     } else {
+      double? fiatAmount = fiatCurrencyRate != null
+          ? ((paid!.amount / 100000000000) * fiatCurrencyRate!["value"])
+          : null;
+      int feesPaid = (paid!.feesPaid / 1000).round();
+      int amount = (paid!.amount / 1000).round();
+
       list.add(
         Center(
           child: Column(
@@ -225,10 +231,18 @@ class _WalletReceiveRouter extends State<WalletReceiveRouter> {
               ),
               const SizedBox(height: 10.0),
               Text(
-                '+${(paid!.amount / 1000).round()} sats',
+                '+$amount sats',
                 style: TextStyle(
                   fontSize: 28.0,
                   // color: Colors.grey[700],
+                ),
+              ),
+              Text(
+                fiatAmount! < 0.01
+                    ? "< ${fiatCurrencyRate?["unit"]}0.01"
+                    : "~${fiatCurrencyRate?["unit"]}${fiatAmount.toStringAsFixed(2)}",
+                style: const TextStyle(
+                  fontSize: 22.0,
                 ),
               ),
               StringUtil.isNotBlank(paid!.description)
