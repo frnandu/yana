@@ -11,13 +11,17 @@ class SingleEventProvider extends ChangeNotifier with LaterFunction {
   Map<String, Nip01Event> _eventsMap = {};
 
   List<String> _needUpdateIds = [];
+  List<String> notFoundEventIds = [];
 
   List<Nip01Event> _penddingEvents = [];
 
-  Nip01Event? getEvent(String id, { bool queryIfNotFound=true}) {
+  Nip01Event? getEvent(String id, {bool queryIfNotFound = true}) {
     var event = _eventsMap[id];
     if (event != null) {
       return event;
+    }
+    if (notFoundEventIds.contains(id)) {
+      return null;
     }
 
     if (queryIfNotFound && !_needUpdateIds.contains(id)) {
@@ -42,14 +46,12 @@ class SingleEventProvider extends ChangeNotifier with LaterFunction {
     for (var event in _penddingEvents) {
       var oldEvent = _eventsMap[event.id];
       if (oldEvent != null) {
-        if (event.sources.isNotEmpty &&
-            !oldEvent.sources.contains(event.sources[0])) {
+        if (event.sources.isNotEmpty && !oldEvent.sources.contains(event.sources[0])) {
           oldEvent.sources.add(event.sources[0]);
         }
       } else {
         _eventsMap[event.id] = event;
       }
-
     }
     _penddingEvents.clear();
     notifyListeners();
@@ -61,7 +63,7 @@ class SingleEventProvider extends ChangeNotifier with LaterFunction {
   }
 
   void _laterSearch() async {
-    if (_needUpdateIds.isEmpty || loggedUserSigner==null) {
+    if (_needUpdateIds.isEmpty || loggedUserSigner == null) {
       return;
     }
 
@@ -69,56 +71,33 @@ class SingleEventProvider extends ChangeNotifier with LaterFunction {
     List<String> tempIds = [];
     tempIds.addAll(_needUpdateIds);
 
-    // const connectionOptions = SocketConnectionOptions(
-    //   timeoutConnectionMs: 30000, // connection fail timeout after 4000 ms
-    //   skipPingMessages: true,
-    //   pingRestrictionForce: true,
-    // );
-    // final textSocketHandler = IWebSocketHandler<String, String>.createClient(
-    //   "wss://relay.damus.io", // Postman echo ws server
-    //   SocketSimpleTextProcessor(),
-    //   connectionOptions: connectionOptions
-    // );
-    //
-    // textSocketHandler.incomingMessagesStream.listen((message) {
-    //   List<dynamic> eventJson = json.decode(message);
-    //   if (eventJson[0] == 'EVENT') {
-    //     // print('> webSocket  got text message from server: "$message" ');
-    //     Nip01Event event = Nip01Event.fromJson(eventJson[2]);
-    //     _onEvent(event);
-    //     textSocketHandler.disconnect("");
-    //     textSocketHandler.close();
-    //   }
-    // });
-    // await textSocketHandler.connect();
-    // List<dynamic> request = ["REQ", Helpers.getRandomString(10), filter.toMap()];
-    // final encoded = jsonEncode(request);
-    // textSocketHandler.sendMessage(encoded);
-
     Set<String> urls = relayManager.bootstrapRelays.toSet();
     urls.addAll(DEFAULT_BOOTSTRAP_RELAYS);
 
-    if (myInboxRelaySet!=null) {
+    if (myInboxRelaySet != null) {
       myInboxRelaySet!.urls.forEach((element) {
         String? relay = cleanRelayUrl(element);
-        if (relay!=null) {
+        if (relay != null) {
           urls.add(relay);
         }
       });
     }
-    NdkResponse response = await relayManager.requestRelays(
-        urls, filter, timeout: 5,
-      onTimeout: () {
-          _onEvent(Nip01Event(pubKey: "", kind: -1, tags: [], content: "note not found or muted author"));
-      }
-    );
+    NdkResponse response = await relayManager.requestRelays(urls, filter, timeout: 15, onTimeout: () {
+      tempIds.forEach((id) {
+        Nip01Event event = Nip01Event(pubKey: "", kind: -1, tags: [], content: "note not found or muted author");
+        event.id = id;
+        _onEvent(event);
+      });
+    });
     response.stream.listen((event) {
+      tempIds.remove(event.id);
       _onEvent(event);
-    },onError: (error) {
+    }, onDone: () {
+      notFoundEventIds.addAll(tempIds);
+    }, onError: (error) {
       print("$error onERROR for single event provider loading $filter");
       return;
-    }
-    );
+    });
     _needUpdateIds.clear();
   }
 }
