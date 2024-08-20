@@ -1,11 +1,12 @@
 import 'dart:convert';
 
-import 'package:dart_ndk/domain_layer/entities/filter.dart';
-import 'package:dart_ndk/domain_layer/entities/metadata.dart';
-import 'package:dart_ndk/domain_layer/entities/nip_01_event.dart';
-import 'package:dart_ndk/domain_layer/entities/nip_51_list.dart';
-import 'package:dart_ndk/shared/nips/nip01/helpers.dart';
-import 'package:dart_ndk/relay.dart';
+import 'package:ndk/domain_layer/entities/filter.dart';
+import 'package:ndk/domain_layer/entities/metadata.dart';
+import 'package:ndk/domain_layer/entities/nip_01_event.dart';
+import 'package:ndk/domain_layer/entities/nip_51_list.dart';
+import 'package:ndk/domain_layer/entities/relay.dart';
+import 'package:ndk/shared/helpers/relay_helper.dart';
+import 'package:ndk/shared/nips/nip01/helpers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:provider/provider.dart';
@@ -107,7 +108,7 @@ class _MuteListRouter extends State<MuteListRouter> with SingleTickerProviderSta
         ),
         child: RefreshIndicator(
           onRefresh: () async {
-            Nip51List? refreshedList = await nostr.getSingleNip51List(muteList!.kind, loggedUserSigner!, forceRefresh: true);
+            Nip51List? refreshedList = await ndk.getSingleNip51List(muteList!.kind, loggedUserSigner!, forceRefresh: true);
             refreshedList ??= Nip51List(pubKey: muteList!.pubKey, kind: muteList!.kind, elements: [], createdAt: Helpers.now);
             filterProvider.muteList = refreshedList;
             filterProvider.notifyListeners();
@@ -126,7 +127,7 @@ class _MuteListRouter extends State<MuteListRouter> with SingleTickerProviderSta
                     decoration: InputDecoration(
                       prefixIcon: const Icon(Icons.lan),
                       hintText: "profile name, pubkey, hashtag or word",
-                      suffixIcon: Relay.cleanUrl(controller.text) != null
+                      suffixIcon: cleanRelayUrl(controller.text) != null
                           ? PopupMenuButton<String>(
                               icon: const Icon(Icons.add),
                               tooltip: "more",
@@ -187,8 +188,8 @@ class _MuteListRouter extends State<MuteListRouter> with SingleTickerProviderSta
                   bool? result = await ConfirmDialog.show(context, "Confirm remove ${element.value} from list");
                   if (result != null && result) {
                     EasyLoading.show(status: 'Removing from list and broadcasting...', maskType: EasyLoadingMaskType.black, dismissOnTap: true);
-                    muteList = await nostr.broadcastRemoveNip51ListElement(
-                        muteList!.kind, element.tag, element.value, myOutboxRelaySet!.urls, loggedUserSigner!);
+                    muteList = await ndk.broadcastRemoveNip51ListElement(
+                        muteList!.kind, element.tag, element.value, myOutboxRelaySet!.urls);
                     filterProvider.muteList = muteList;
                     filterProvider.notifyListeners();
                     EasyLoading.dismiss();
@@ -283,7 +284,7 @@ class _MuteListRouter extends State<MuteListRouter> with SingleTickerProviderSta
     if (result != null && result) {
       EasyLoading.show(status: 'Broadcasting mute list...', maskType: EasyLoadingMaskType.black, dismissOnTap: true);
 
-      muteList = await nostr.broadcastAddNip51ListElement(muteList!.kind, element.tag, element.value, myOutboxRelaySet!.urls, loggedUserSigner!, private: private);
+      muteList = await ndk.broadcastAddNip51ListElement(muteList!.kind, element.tag, element.value, myOutboxRelaySet!.urls, private: private);
       filterProvider.muteList = muteList;
       filterProvider.notifyListeners();
       EasyLoading.dismiss();

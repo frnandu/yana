@@ -1,12 +1,13 @@
 import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:dart_ndk/domain_layer/entities/nip_51_list.dart';
-import 'package:dart_ndk/domain_layer/entities/pubkey_mapping.dart';
-import 'package:dart_ndk/relay.dart';
+import 'package:ndk/domain_layer/entities/nip_51_list.dart';
+import 'package:ndk/domain_layer/entities/pubkey_mapping.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:ndk/domain_layer/entities/relay.dart';
+import 'package:ndk/shared/helpers/relay_helper.dart';
 import 'package:provider/provider.dart';
 import 'package:yana/main.dart';
 import 'package:yana/provider/relay_provider.dart';
@@ -61,7 +62,7 @@ class _UserRelayRouter extends State<UserRelayRouter>
       relays!.sort((r1, r2) => compareRelays(r1, r2));
     }
     relays!.forEach((element) {
-      element.url = Relay.cleanUrl(element.url!);
+      element.url = cleanRelayUrl(element.url!);
     });
 
     return Scaffold(
@@ -279,12 +280,11 @@ class RelayMetadataComponent extends StatelessWidget {
                   status: 'Removing from list and broadcasting...',
                   maskType: EasyLoadingMaskType.black,
                   dismissOnTap: true);
-              Nip51List? relayList = await nostr
+              Nip51List? relayList = await ndk
                   .broadcastRemoveNip51Relay(
                       Nip51List.BLOCKED_RELAYS,
                       relayMetadata!.url!,
                       myOutboxRelaySet!.urls,
-                      loggedUserSigner!,
                       defaultRelaysIfEmpty: []);
               relayManager.blockedRelays = relayList!.allRelays!;
               relayProvider.notifyListeners();
@@ -313,11 +313,10 @@ class RelayMetadataComponent extends StatelessWidget {
                     maskType: EasyLoadingMaskType.black,
                     dismissOnTap: true);
                 Nip51List blocked =
-                    await nostr.broadcastAddNip51ListRelay(
+                    await ndk.broadcastAddNip51ListRelay(
                         Nip51List.BLOCKED_RELAYS,
                         relayMetadata!.url!,
                         myOutboxRelaySet!.urls,
-                        loggedUserSigner!,
                         private: value == "private" ? true : false);
                 relayManager.blockedRelays = blocked.allRelays!;
                 EasyLoading.dismiss();

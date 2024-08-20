@@ -1,10 +1,10 @@
 import 'dart:convert';
 
 import 'package:bip340/bip340.dart';
-import 'package:dart_ndk/dart_ndk.dart';
-import 'package:dart_ndk/domain_layer/entities/nip_01_event.dart';
-import 'package:dart_ndk/shared/nips/nip04/nip04.dart';
-import 'package:dart_ndk/request.dart';
+import 'package:ndk/ndk.dart';
+import 'package:ndk/domain_layer/entities/nip_01_event.dart';
+import 'package:ndk/presentation_layer/request_response.dart';
+import 'package:ndk/shared/nips/nip04/nip04.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:yana/models/wallet_transaction.dart';
@@ -176,13 +176,13 @@ class NwcProvider extends ChangeNotifier {
       // RelayManager relayManager = RelayManager();
       await relayManager.reconnectRelay(relay, force: true);
 
-      NostrRequest sub = await relayManager
+      NdkResponse sub = await relayManager
           .requestRelays([relay!], filter, closeOnEOSE: false);
       sub.stream.listen((event) async {
-        await relayManager.closeNostrRequest(sub);
+        await ndk.closeSubscription(sub.requestId);
         await onGetInfo(event);
       });
-      await relayManager.broadcastEvent(event, [relay!], nwcSigner);
+      await ndk.broadcastEvent(event, [relay!], signer: nwcSigner);
     }
   }
 
@@ -244,10 +244,10 @@ class NwcProvider extends ChangeNotifier {
       // RelayManager relayManager = RelayManager();
       await relayManager.reconnectRelay(relay, force: true);
 
-      NostrRequest balanceSubscription = await relayManager
+      NdkResponse balanceSubscription = await relayManager
           .requestRelays([relay!], filter, closeOnEOSE: false);
       balanceSubscription.stream.listen((event) async {
-        await relayManager.closeNostrRequest(balanceSubscription);
+        await ndk.closeSubscription(balanceSubscription.requestId);
         await onGetBalanceResponse(event);
       });
       await relayManager.broadcastEvent(event, [relay!], nwcSigner);
@@ -325,10 +325,10 @@ class NwcProvider extends ChangeNotifier {
       // RelayManager relayManager = RelayManager();
       await relayManager.reconnectRelay(relay!, force: true);
 
-      NostrRequest subscription = await relayManager
+      NdkResponse subscription = await relayManager
           .requestRelays([relay!], filter, closeOnEOSE: false);
       subscription.stream.listen((event) async {
-        await relayManager.closeNostrRequest(subscription);
+        await ndk.closeSubscription(subscription.requestId);
         await onGetListTransactions(event);
       });
       await relayManager.broadcastEvent(event, [relay!], nwcSigner);
@@ -411,10 +411,10 @@ class NwcProvider extends ChangeNotifier {
           authors: [walletPubKey!],
           eTags: [event.id]);
 
-      NostrRequest subscription = await relayManager
+      NdkResponse subscription = await relayManager
           .requestRelays([relay!], filter, closeOnEOSE: false);
       subscription.stream.listen((event) async {
-        await relayManager.closeNostrRequest(subscription);
+        await ndk.closeSubscription(subscription.requestId);
         await onPayInvoiceResponse(event, onZapped);
       });
       await relayManager.broadcastEvent(event, [relay!], nwcSigner);
@@ -447,11 +447,11 @@ class NwcProvider extends ChangeNotifier {
           var filter = Filter(
               kinds: [EventKind.ZAP_RECEIPT], eTags: [payInvoiceEventId!]);
           Nip01Event? zapReceipt;
-          NostrRequest subscription = await relayManager.requestRelays(
+          NdkResponse subscription = await relayManager.requestRelays(
               myInboxRelaySet!.urls.toList()..add(relay!), filter,
               closeOnEOSE: false);
           subscription.stream.listen((event) async {
-            await relayManager.closeNostrRequest(subscription);
+            await ndk.closeSubscription(subscription.requestId);
             if (zapReceipt == null || zapReceipt!.createdAt < event.createdAt) {
               zapReceipt = event;
               eventReactionsProvider.addZap(payInvoiceEventId!, event);
@@ -509,10 +509,10 @@ class NwcProvider extends ChangeNotifier {
           authors: [walletPubKey!],
           eTags: [event.id]);
 
-      NostrRequest subscription = await relayManager
+      NdkResponse subscription = await relayManager
           .requestRelays([relay!], filter, closeOnEOSE: false);
       subscription.stream.listen((event) async {
-        await relayManager.closeNostrRequest(subscription);
+        await ndk.closeSubscription(subscription.requestId);
         await onMakeInvoiceResponse(event, onCreatedInvoice);
       });
       this.settledInvoiceCallback = settledInvoiceCallback;
@@ -555,7 +555,7 @@ class NwcProvider extends ChangeNotifier {
           Filter(kinds: [NwcKind.NOTIFICATION], authors: [walletPubKey!]);
       await relayManager.reconnectRelay(relay!, force: true);
 
-      NostrRequest subscription = await relayManager
+      NdkResponse subscription = await relayManager
           .requestRelays([relay!], filter, closeOnEOSE: false);
       subscription.stream.listen((event) async {
         await onNotification(event);

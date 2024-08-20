@@ -1,6 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:dart_ndk/dart_ndk.dart';
-import 'package:dart_ndk/entities.dart';
+import 'package:ndk/ndk.dart';
+import 'package:ndk/entities.dart';
 import 'package:easy_image_viewer/easy_image_viewer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -357,7 +357,7 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
                 followEventProvider.clear();
                 settingProvider.addAndChangeKey(widget.pubkey, false, false, updateUI: true);
                 String publicKey = widget.pubkey;
-                loggedUserSigner = Bip340EventSigner(null, publicKey);
+                ndk.changeEventSigner(Bip340EventSigner(null, publicKey));
                 await initRelays(newKey: false);
                 followEventProvider.loadCachedFeed();
                 nwcProvider.init();
@@ -375,13 +375,13 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
                 String share = 'https://njump.me/${NIP19Tlv.encodeNprofile(nevent).replaceAll("nostr:","")}';
                 Share.share(share);
               } else if (value.startsWith("mute-")) {
-                Nip51List muteList = await nostr.broadcastAddNip51ListElement(Nip51List.MUTE, Nip51List.PUB_KEY, widget.pubkey, myOutboxRelaySet!.urls, loggedUserSigner!, private: value=="mute-private");
+                Nip51List muteList = await ndk.broadcastAddNip51ListElement(Nip51List.MUTE, Nip51List.PUB_KEY, widget.pubkey, myOutboxRelaySet!.urls, private: value=="mute-private");
                 filterProvider.muteList = muteList;
                 filterProvider.notifyListeners();
                 setState(() {
                 });
               } else if (value == "unmute") {
-                Nip51List? muteList = await nostr.broadcastRemoveNip51ListElement(Nip51List.MUTE, Nip51List.PUB_KEY, widget.pubkey, myOutboxRelaySet!.urls, loggedUserSigner!);
+                Nip51List? muteList = await ndk.broadcastRemoveNip51ListElement(Nip51List.MUTE, Nip51List.PUB_KEY, widget.pubkey, myOutboxRelaySet!.urls);
                 if (muteList!=null) {
                   filterProvider.muteList = muteList;
                   filterProvider.notifyListeners();

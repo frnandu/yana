@@ -1,9 +1,9 @@
 import 'dart:async';
 
-import 'package:dart_ndk/domain_layer/entities/filter.dart';
-import 'package:dart_ndk/domain_layer/entities/nip_01_event.dart';
-import 'package:dart_ndk/shared/nips/nip25/reactions.dart';
-import 'package:dart_ndk/request.dart';
+import 'package:ndk/domain_layer/entities/filter.dart';
+import 'package:ndk/domain_layer/entities/nip_01_event.dart';
+import 'package:ndk/presentation_layer/request_response.dart';
+import 'package:ndk/shared/nips/nip25/reactions.dart';
 import 'package:flutter/material.dart';
 import 'package:yana/provider/data_util.dart';
 
@@ -12,8 +12,7 @@ import '../models/event_mem_box.dart';
 import '../nostr/event_kind.dart' as kind;
 import '../utils/peddingevents_later_function.dart';
 
-class NotificationsProvider extends ChangeNotifier
-    with PenddingEventsLaterFunction {
+class NotificationsProvider extends ChangeNotifier with PenddingEventsLaterFunction {
   late int _initTime;
 
   int? timestamp;
@@ -26,10 +25,9 @@ class NotificationsProvider extends ChangeNotifier
   }
 
   void setTimestampToNewestAndSave() {
-    if (eventBox.newestEvent!=null) {
+    if (eventBox.newestEvent != null) {
       timestamp = eventBox.newestEvent!.createdAt;
-      sharedPreferences.setInt(
-          DataKey.NOTIFICATIONS_TIMESTAMP, timestamp!);
+      sharedPreferences.setInt(DataKey.NOTIFICATIONS_TIMESTAMP, timestamp!);
       // DateTime a = DateTime.fromMillisecondsSinceEpoch(timestamp!*1000);
       // print("NOTIFICATION WRITTEN TIMESTAMP: $a");
     }
@@ -79,11 +77,11 @@ class NotificationsProvider extends ChangeNotifier
     return kinds;
   }
 
-  NostrRequest? subscription;
+  NdkResponse? subscription;
 
-  void startSubscription({bool refreshed=false}) async {
+  void startSubscription({bool refreshed = false}) async {
     if (subscription != null) {
-      await relayManager.closeNostrRequest(subscription!);
+      await ndk.closeSubscription(subscription!.requestId);
     }
     int? since;
     if (!refreshed) {
@@ -93,17 +91,12 @@ class NotificationsProvider extends ChangeNotifier
       }
     }
 
-    if (myInboxRelaySet!=null) {
-      var filter = Filter(
-          kinds: queryEventKinds(),
-          since: since,
-          pTags: [loggedUserSigner!.getPublicKey()],
-          limit: 100);
+    if (myInboxRelaySet != null) {
+      var filter = Filter(kinds: queryEventKinds(), since: since, pTags: [loggedUserSigner!.getPublicKey()], limit: 100);
 
       await relayManager.reconnectRelays(myInboxRelaySet!.urls);
 
-      subscription = await relayManager!.subscription(
-          filter, myInboxRelaySet!);
+      subscription = ndk.subscription(filters: [filter], relaySet: myInboxRelaySet!);
       subscription!.stream.listen((event) {
         onEvent(event);
       });
@@ -116,14 +109,11 @@ class NotificationsProvider extends ChangeNotifier
     }, null);
   }
 
-  void onEvents(list, {bool saveToCache=true}) {
-    list = list
-        .where(
-            (element) => element.pubKey != loggedUserSigner?.getPublicKey())
-        .toList();
+  void onEvents(list, {bool saveToCache = true}) {
+    list = list.where((element) => element.pubKey != loggedUserSigner?.getPublicKey()).toList();
     List<Nip01Event> toSave = [];
     for (var event in list) {
-      if (timestamp!=null && event.createdAt > timestamp!) {
+      if (timestamp != null && event.createdAt > timestamp!) {
         newNotificationsProvider.handleEvent(event, null);
       } else {
         var result = eventBox.addList([event]);

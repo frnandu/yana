@@ -1,4 +1,4 @@
-import 'package:dart_ndk/domain_layer/entities/nip_01_event.dart';
+import 'package:ndk/domain_layer/entities/nip_01_event.dart';
 import 'package:yana/nostr/nip19/nip19.dart';
 import 'package:yana/nostr/nip19/nip19_tlv.dart';
 

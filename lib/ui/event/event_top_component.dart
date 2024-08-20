@@ -2,11 +2,11 @@ import 'dart:convert';
 
 import 'package:assorted_layout_widgets/assorted_layout_widgets.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:dart_ndk/domain_layer/entities/nip_01_event.dart';
-import 'package:dart_ndk/entities.dart';
-import 'package:dart_ndk/relay.dart';
+import 'package:ndk/domain_layer/entities/relay.dart';
+import 'package:ndk/entities.dart';
 import 'package:flutter/material.dart';
 import 'package:get_time_ago/get_time_ago.dart';
+import 'package:ndk/shared/helpers/relay_helper.dart';
 import 'package:provider/provider.dart';
 import 'package:yana/nostr/event_kind.dart';
 import 'package:yana/ui/name_component.dart';
@@ -70,7 +70,7 @@ class _EventTopComponent extends State<EventTopComponent> {
     List<GestureDetector> relayIcons = [];
     widget.event.sources.forEach((source) {
       Relay? relay = relayManager.relays[source];
-      relay ??= relayManager.relays[Relay.cleanUrl(source)];
+      relay ??= relayManager.relays[cleanRelayUrl(source)];
       Container? relayIcon = relay != null ? getRelayIcon(relay,13) : null;
       if (relayIcon != null) {
         relayIcons.add(GestureDetector(
@@ -228,7 +228,7 @@ class _EventTopComponent extends State<EventTopComponent> {
   }
 
   loadRelayInfos() async {
-    await Future.wait(widget.event.sources.map((url) => relayManager.getRelayInfo(Relay.cleanUrl(url)!)));
+    await Future.wait(widget.event.sources.map((url) => relayManager.getRelayInfo(cleanRelayUrl(url)!)));
     // setState(() {});
   }
 
@@ -238,7 +238,7 @@ class _EventTopComponent extends State<EventTopComponent> {
 
       List<EnumObj>? relays = widget.event.sources.map((source) {
         Relay? relay = relayManager.relays[source];
-        relay ??= relayManager.relays[Relay.cleanUrl(source)];
+        relay ??= relayManager.relays[cleanRelayUrl(source)];
         return EnumObj(
           source,
           null,

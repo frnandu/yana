@@ -1,5 +1,5 @@
-import 'package:dart_ndk/domain_layer/entities/filter.dart';
-import 'package:dart_ndk/domain_layer/entities/nip_01_event.dart';
+import 'package:ndk/domain_layer/entities/filter.dart';
+import 'package:ndk/domain_layer/entities/nip_01_event.dart';
 import 'package:flutter/material.dart';
 import 'package:yana/nostr/nip172/community_id.dart';
 import 'package:yana/nostr/nip172/community_info.dart';

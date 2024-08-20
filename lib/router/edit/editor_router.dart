@@ -1,12 +1,12 @@
-import 'package:dart_ndk/domain_layer/entities/metadata.dart';
-import 'package:dart_ndk/domain_layer/entities/nip_01_event.dart';
-import 'package:dart_ndk/domain_layer/entities/read_write.dart';
-import 'package:dart_ndk/domain_layer/entities/relay_set.dart';
-import 'package:dart_ndk/relay.dart';
+import 'package:ndk/domain_layer/entities/metadata.dart';
+import 'package:ndk/domain_layer/entities/nip_01_event.dart';
+import 'package:ndk/domain_layer/entities/read_write.dart';
+import 'package:ndk/domain_layer/entities/relay_set.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:intl/intl.dart';
+import 'package:ndk/shared/helpers/relay_helper.dart';
 import 'package:pointycastle/ecc/api.dart';
 import 'package:yana/main.dart';
 import 'package:yana/nostr/nip172/community_id.dart';
@@ -346,7 +346,7 @@ class _EditorRouter extends CustState<EditorRouter> with EditorMixin {
                 List<String> pubKeys = Nip01Event.getTags(widget.tagPs, "p");
                 if (pubKeys.length == 1) {
                   for (var element in (await getInboxRelays(pubKeys.first))) {
-                    String? cleanUrl = Relay.cleanUrl(element);
+                    String? cleanUrl = cleanRelayUrl(element);
                     if (cleanUrl!=null) {
                       relays.add(cleanUrl);
                     }
@@ -362,7 +362,7 @@ class _EditorRouter extends CustState<EditorRouter> with EditorMixin {
                       relayMinCountPerPubKey: settingProvider
                           .broadcastToInboxMaxCount);
                   inboxRelaySet.urls.forEach((element) {
-                    String? cleanUrl = Relay.cleanUrl(element);
+                    String? cleanUrl = cleanRelayUrl(element);
                     if (cleanUrl!=null) {
                       relays.add(cleanUrl);
                     }
@@ -372,7 +372,7 @@ class _EditorRouter extends CustState<EditorRouter> with EditorMixin {
                   EasyLoading.dismiss();
                 }
               }
-              // relays.removeWhere((element) => Relay.cleanUrl(element)==null);
+              // relays.removeWhere((element) => cleanRelayUrl(element)==null);
               List<String>? results = await showDialog(
                 context: context,
                 builder: (BuildContext context) {

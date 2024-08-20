@@ -1,4 +1,4 @@
-import 'package:dart_ndk/shared/nips/nip25/reactions.dart';
+import 'package:ndk/shared/nips/nip25/reactions.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:visibility_detector/visibility_detector.dart';

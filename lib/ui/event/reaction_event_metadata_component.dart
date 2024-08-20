@@ -1,5 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:dart_ndk/entities.dart';
+import 'package:ndk/entities.dart';
 import 'package:flutter/material.dart';
 import 'package:yana/utils/router_path.dart';
 import 'package:yana/utils/router_util.dart';

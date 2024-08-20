@@ -1,10 +1,10 @@
 import 'dart:async';
 
-import 'package:dart_ndk/domain_layer/entities/filter.dart';
-import 'package:dart_ndk/domain_layer/entities/nip_01_event.dart';
-import 'package:dart_ndk/domain_layer/entities/read_write.dart';
-import 'package:dart_ndk/domain_layer/entities/relay_set.dart';
-import 'package:dart_ndk/request.dart';
+import 'package:ndk/domain_layer/entities/filter.dart';
+import 'package:ndk/domain_layer/entities/nip_01_event.dart';
+import 'package:ndk/domain_layer/entities/read_write.dart';
+import 'package:ndk/domain_layer/entities/relay_set.dart';
+import 'package:ndk/presentation_layer/request_response.dart';
 import 'package:flutter/material.dart';
 
 import '../main.dart';
@@ -18,7 +18,7 @@ class EventReactionsProvider extends ChangeNotifier
 
   Map<String, EventReactions> _eventReactionsMap = {};
   Map<String, List<Nip01Event>> _repliesMap = {};
-  Map<String, NostrRequest> requests = {};
+  Map<String, NdkResponse> subscriptions = {};
 
   EventReactionsProvider() {
     laterTimeMS = 2000;
@@ -70,10 +70,10 @@ class EventReactionsProvider extends ChangeNotifier
     /// TODO refresh after some time
     if (replies==null || force) {
       /// TODO use other relaySet if gossip
-      NostrRequest request = await relayManager!.query(Filter(eTags: [id], kinds: [Nip01Event.TEXT_NODE_KIND]), myInboxRelaySet!,
+      NdkResponse response = await relayManager!.query(Filter(eTags: [id], kinds: [Nip01Event.TEXT_NODE_KIND]), myInboxRelaySet!,
           splitRequestsByPubKeyMappings: false, idleTimeout: 1);
       Map<String, Nip01Event> map = {};
-      await for (final event in request.stream) {
+      await for (final event in response.stream) {
         if (map[event.id] == null || map[event.id]!.createdAt < event.createdAt) {
           map[event.id] = event;
         }
@@ -127,10 +127,10 @@ class EventReactionsProvider extends ChangeNotifier
       return;
     }
     print(
-        "---------------- reactions subscriptions: ${requests.length}");
-    NostrRequest request = await relayManager!.query(filter, relaySet!,
+        "---------------- reactions subscriptions: ${subscriptions.length}");
+    NdkResponse request = await relayManager!.query(filter, relaySet!,
         splitRequestsByPubKeyMappings: settingProvider.gossip == 1, idleTimeout: 10);
-    requests[eventId] = request;
+    subscriptions[eventId] = request;
 
     request.stream.listen((event) {
       _handleSingleEvent2(event);
@@ -277,9 +277,9 @@ class EventReactionsProvider extends ChangeNotifier
 
   void removePendding(String eventId) async {
     // _penddingIds.remove(eventId);
-    if (requests[eventId] != null) {
-      await relayManager.closeNostrRequest(requests[eventId]!);
-      requests.remove(eventId);
+    if (subscriptions[eventId] != null) {
+      await ndk.closeSubscription(subscriptions[eventId]!.requestId);
+      subscriptions.remove(eventId);
     }
   }
 

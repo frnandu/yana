@@ -1,7 +1,8 @@
-import 'package:dart_ndk/domain_layer/entities/read_write_marker.dart';
-import 'package:dart_ndk/domain_layer/entities/user_relay_list.dart';
-import 'package:dart_ndk/shared/nips/nip01/helpers.dart';
-import 'package:dart_ndk/relay.dart';
+import 'package:ndk/domain_layer/entities/read_write_marker.dart';
+import 'package:ndk/domain_layer/entities/relay.dart';
+import 'package:ndk/domain_layer/entities/user_relay_list.dart';
+import 'package:ndk/shared/helpers/relay_helper.dart';
+import 'package:ndk/shared/nips/nip01/helpers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:provider/provider.dart';
@@ -48,13 +49,13 @@ class _RelaysRouter extends CustState<RelaysRouter> with WhenStopFunction {
     // set.addAll(myOutboxRelaySet!.urls);
 
     userRelayList = cacheManager.loadUserRelayList(loggedUserSigner!.getPublicKey());
-    userRelayList ??= await nostr.getSingleUserRelayList(loggedUserSigner!.getPublicKey(), forceRefresh: true);
+    userRelayList ??= await ndk.getSingleUserRelayList(loggedUserSigner!.getPublicKey(), forceRefresh: true);
     userRelayList ??= UserRelayList(
         pubKey: loggedUserSigner!.getPublicKey(),
         relays: {for (String url in relayManager.bootstrapRelays) url: ReadWriteMarker.readWrite},
         createdAt: Helpers.now,
         refreshedTimestamp: Helpers.now);
-    await Future.wait(userRelayList!.urls.map((url) => relayManager.getRelayInfo(Relay.cleanUrl(url)!)));
+    await Future.wait(userRelayList!.urls.map((url) => relayManager.getRelayInfo(cleanRelayUrl(url)!)));
 
     /// TODO check if widget is not disposed already...
 
@@ -100,7 +101,7 @@ class _RelaysRouter extends CustState<RelaysRouter> with WhenStopFunction {
               child: RefreshIndicator(
                   onRefresh: () async {
                     UserRelayList? oldRelayList = cacheManager.loadUserRelayList(loggedUserSigner!.getPublicKey());
-                    UserRelayList? userRelayList = await nostr.getSingleUserRelayList(loggedUserSigner!.getPublicKey(), forceRefresh: true);
+                    UserRelayList? userRelayList = await ndk.getSingleUserRelayList(loggedUserSigner!.getPublicKey(), forceRefresh: true);
                     if (userRelayList != null && (oldRelayList == null || oldRelayList.createdAt < userRelayList.createdAt)) {
                       createMyRelaySets(userRelayList);
                     }
@@ -139,7 +140,7 @@ class _RelaysRouter extends CustState<RelaysRouter> with WhenStopFunction {
                                       decoration: InputDecoration(
                                         prefixIcon: const Icon(Icons.lan),
                                         hintText: "start typing relay name or URL",
-                                        suffixIcon: Relay.cleanUrl(controller.text) != null
+                                        suffixIcon: cleanRelayUrl(controller.text) != null
                                             ? IconButton(
                                           icon: const Icon(Icons.add),
                                           onPressed: () async {
@@ -232,7 +233,7 @@ class _RelaysRouter extends CustState<RelaysRouter> with WhenStopFunction {
     disposed = true;
   }
   // Future<void> add(String url) async {
-  //   String? cleanUrl = Relay.cleanUrl(url);
+  //   String? cleanUrl = cleanRelayUrl(url);
   //   if (cleanUrl==null) {
   //     EasyLoading.showError("Invalid address wss://<host>:<port> or ws://<host>:<port>", dismissOnTap: true, duration: const Duration(seconds: 5));
   //     return;
@@ -259,12 +260,12 @@ class _RelaysRouter extends CustState<RelaysRouter> with WhenStopFunction {
   // }
 
   Future<void> addRelay(String url) async {
-    String? cleanUrl = Relay.cleanUrl(url);
+    String? cleanUrl = cleanRelayUrl(url);
     if (cleanUrl==null) {
       EasyLoading.showError("Invalid address wss://<host>:<port> or ws://<host>:<port>", dismissOnTap: true, duration: const Duration(seconds: 5), maskType: EasyLoadingMaskType.black,);
       return;
     }
-    if (userRelayList!.relays.keys!.any((element) => Relay.cleanUrl(element) == cleanUrl)) {
+    if (userRelayList!.relays.keys!.any((element) => cleanRelayUrl(element) == cleanUrl)) {
       EasyLoading.showError("Relay already on list", maskType: EasyLoadingMaskType.black, dismissOnTap: true, duration: const Duration(seconds: 5));
       return;
     }

@@ -38,4 +38,9 @@ class MarkdownNrelayElementBuilder implements MarkdownElementBuilder {
     // TODO: implement visitElementAfterWithContext
     throw UnimplementedError();
   }
+
+  @override
+  bool isBlockElement() {
+    return false;
+  }
 }

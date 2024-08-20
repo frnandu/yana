@@ -1,9 +1,9 @@
 import 'dart:async';
 
-import 'package:dart_ndk/entities.dart';
+import 'package:ndk/entities.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:convert/convert.dart';
-import 'package:dart_ndk/request.dart';
+import 'package:ndk/presentation_layer/request_response.dart';
 import 'package:flutter/material.dart';
 import 'package:yana/utils/base_consts.dart';
 
@@ -91,7 +91,7 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
     if (contactList == null ||
         contactList!.loadedTimestamp == null ||
         contactList!.loadedTimestamp! < sometimeAgo) {
-      nostr.loadContactList(pubkey!, forceRefresh: true).then(
+      ndk.getContactList(pubkey!, forceRefresh: true).then(
         (newContactList) {
           if (newContactList != null &&
               (contactList == null ||
@@ -253,8 +253,8 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
 
   String followedSubscribeId = "";
 
-  NostrRequest? _followersSubscription;
-  NostrRequest? _zapsSubscription;
+  NdkResponse? _followersSubscription;
+  NdkResponse? _zapsSubscription;
 
   queryFollowers() async {
     if (followedMap == null) {
@@ -334,11 +334,11 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
   void deactivate() {
     super.deactivate();
     if (_followersSubscription != null) {
-      relayManager.closeNostrRequest(_followersSubscription!);
+      ndk.closeSubscription(_followersSubscription!.requestId);
       _followersSubscription=null;
     }
     if (_zapsSubscription != null) {
-      relayManager.closeNostrRequest(_zapsSubscription!);
+      ndk.closeSubscription(_zapsSubscription!.requestId);
       _zapsSubscription=null;
     }
   }
@@ -347,11 +347,11 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
   void dispose() {
     super.dispose();
     if (_followersSubscription != null) {
-      relayManager.closeNostrRequest(_followersSubscription!);
+      ndk.closeSubscription(_followersSubscription!.requestId);
       _followersSubscription=null;
     }
     if (_zapsSubscription != null) {
-      relayManager.closeNostrRequest(_zapsSubscription!);
+      ndk.closeSubscription(_zapsSubscription!.requestId);
       _zapsSubscription=null;
     }
     _disposed = true;

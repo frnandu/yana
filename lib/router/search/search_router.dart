@@ -1,8 +1,8 @@
 import 'dart:convert';
 
-import 'package:dart_ndk/domain_layer/entities/filter.dart';
-import 'package:dart_ndk/domain_layer/entities/metadata.dart';
-import 'package:dart_ndk/domain_layer/entities/nip_01_event.dart';
+import 'package:ndk/domain_layer/entities/filter.dart';
+import 'package:ndk/domain_layer/entities/metadata.dart';
+import 'package:ndk/domain_layer/entities/nip_01_event.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
@@ -463,7 +463,7 @@ class _SearchRouter extends CustState<SearchRouter>
         searchAbles.add(SearchActions.openPubkey);
         metadatasFromSearch.clear();
 
-        nostr.getSingleMetadata(Nip19.decode(text)).then((metadata) {
+        ndk.getSingleMetadata(Nip19.decode(text)).then((metadata) {
           setState(() {
             if (metadata!=null) {
               metadatasFromSearch = [metadata];

@@ -1,6 +1,6 @@
 import 'dart:developer';
 
-import 'package:dart_ndk/entities.dart';
+import 'package:ndk/entities.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';

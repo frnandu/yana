@@ -1,9 +1,9 @@
 import 'package:auto_size_text_field/auto_size_text_field.dart';
-import 'package:dart_ndk/entities.dart';
-import 'package:dart_ndk/shared/nips/nip01/helpers.dart';
+import 'package:ndk/entities.dart';
+import 'package:ndk/shared/nips/nip01/helpers.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:dart_ndk/domain_layer/entities/nip_01_event.dart';
+import 'package:ndk/domain_layer/entities/nip_01_event.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;

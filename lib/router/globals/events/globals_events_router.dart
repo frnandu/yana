@@ -1,9 +1,9 @@
 import 'dart:async';
 
-import 'package:dart_ndk/domain_layer/entities/filter.dart';
-import 'package:dart_ndk/domain_layer/entities/nip_01_event.dart';
-import 'package:dart_ndk/shared/nips/nip01/helpers.dart';
-import 'package:dart_ndk/request.dart';
+import 'package:ndk/domain_layer/entities/filter.dart';
+import 'package:ndk/domain_layer/entities/nip_01_event.dart';
+import 'package:ndk/presentation_layer/request_response.dart';
+import 'package:ndk/shared/nips/nip01/helpers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:provider/provider.dart';
@@ -36,7 +36,7 @@ class _GlobalsEventsRouter extends KeepAliveCustState<GlobalsEventsRouter>
   ScrollController scrollController = ScrollController();
   EventMemBox eventBox = EventMemBox();
 
-  NostrRequest? subscription;
+  NdkResponse? subscription;
 
   int? _initTime = DateTime.now().millisecondsSinceEpoch ~/ 1000 - 3600;
 
@@ -135,7 +135,7 @@ class _GlobalsEventsRouter extends KeepAliveCustState<GlobalsEventsRouter>
   Future<void> refresh() async {
     var filter = Filter(kinds: queryEventKinds(), until: until, since: (until!=null? until!: Helpers.now) - howManySecondsToLoadBack, limit: 100);
     if (subscription!=null) {
-      await relayManager.closeNostrRequest(subscription!);
+      await ndk.closeSubscription(subscription!.requestId);
     }
 
     await relayManager.reconnectRelays(myInboxRelaySet!.urls);
@@ -164,7 +164,7 @@ class _GlobalsEventsRouter extends KeepAliveCustState<GlobalsEventsRouter>
   void unsubscribe() async {
     try {
       if (subscription!=null) {
-        await relayManager.closeNostrRequest(subscription!);
+        await ndk.closeSubscription(subscription!.requestId);
       }
     } catch (e) {}
   }

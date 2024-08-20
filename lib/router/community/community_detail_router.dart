@@ -1,9 +1,9 @@
 import 'dart:async';
 
-import 'package:dart_ndk/domain_layer/entities/filter.dart';
-import 'package:dart_ndk/domain_layer/entities/nip_01_event.dart';
-import 'package:dart_ndk/request.dart';
+import 'package:ndk/domain_layer/entities/filter.dart';
+import 'package:ndk/domain_layer/entities/nip_01_event.dart';
 import 'package:flutter/material.dart';
+import 'package:ndk/presentation_layer/request_response.dart';
 import 'package:provider/provider.dart';
 import 'package:widget_size/widget_size.dart';
 import 'package:yana/provider/community_info_provider.dart';
@@ -162,11 +162,11 @@ class _CommunityDetailRouter extends CustState<CommunityDetailRouter> with Pendd
     }
   }
 
-  NostrRequest? subscription;
+  NdkResponse? subscription;
 
-  void queryEvents() {
+  void queryEvents() async {
     if (subscription!=null) {
-      relayManager.closeNostrRequest(subscription!);
+      await ndk.closeSubscription(subscription!.requestId);
     }
     var filter = Filter(kinds: [
       Nip01Event.TEXT_NODE_KIND,
@@ -177,13 +177,10 @@ class _CommunityDetailRouter extends CustState<CommunityDetailRouter> with Pendd
       communityId!.toAString()
     ], limit: 100);
 
-    relayManager.subscription(filter, myInboxRelaySet!).then((request) {
-      subscription = request;
-      subscription!.stream.listen((event) {
-        onEvent(event);
-      });
-    },);
-
+    subscription = ndk.subscription(filters: [filter], relaySet:  myInboxRelaySet!);
+    subscription!.stream.listen((event) {
+      onEvent(event);
+    });
   }
 
   void onEvent(Nip01Event event) {
@@ -199,7 +196,7 @@ class _CommunityDetailRouter extends CustState<CommunityDetailRouter> with Pendd
     disposeLater();
 
     if (subscription!=null) {
-      relayManager.closeNostrRequest(subscription!);
+      ndk.closeSubscription(subscription!.requestId);
     }
   }
 

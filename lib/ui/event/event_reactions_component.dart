@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:dart_ndk/entities.dart';
+import 'package:ndk/entities.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
@@ -420,7 +420,7 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
       setState(() {
         muting = true;
       });
-      Nip51List muteList = await nostr.broadcastAddNip51ListElement(Nip51List.MUTE, Nip51List.PUB_KEY, widget.event.pubKey, myOutboxRelaySet!.urls, loggedUserSigner!, private: value=="mute-private");
+      Nip51List muteList = await ndk.broadcastAddNip51ListElement(Nip51List.MUTE, Nip51List.PUB_KEY, widget.event.pubKey, myOutboxRelaySet!.urls, private: value=="mute-private");
       filterProvider.muteList = muteList;
       filterProvider.notifyListeners();
       setState(() {
@@ -437,7 +437,7 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
 
       Set<String> urlsToBroadcast = (await broadcastUrls(widget.event.pubKey)).toSet()..addAll(widget.event.sources);
       await relayManager.reconnectRelays(urlsToBroadcast);
-      await nostr!.broadcastDeletion(widget.event.id, urlsToBroadcast, loggedUserSigner!);
+      await ndk!.broadcastDeletion(widget.event.id, urlsToBroadcast, loggedUserSigner!);
 
       followEventProvider.deleteEvent(widget.event.id);
       notificationsProvider.deleteEvent(widget.event.id);
@@ -572,14 +572,14 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
       if (eventReactions?.myLikeEvents == null ||
           eventReactions!.myLikeEvents!.isEmpty) {
         // like
-        Nip01Event likeEvent = await nostr!.broadcastReaction(
-            widget.event.id, urlsToBroadcast, loggedUserSigner!);
+        Nip01Event likeEvent = await ndk!.broadcastReaction(
+            widget.event.id, urlsToBroadcast);
         if (likeEvent != null) {
           eventReactionsProvider.addLike(widget.event.id, likeEvent);
         }
       } else {
         for (var event in eventReactions!.myLikeEvents!) {
-          await nostr!.broadcastDeletion(
+          await ndk!.broadcastDeletion(
               event.id, urlsToBroadcast, loggedUserSigner!);
         }
         eventReactionsProvider.deleteLike(widget.event.id);

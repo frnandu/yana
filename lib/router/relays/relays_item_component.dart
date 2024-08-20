@@ -1,13 +1,12 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:dart_ndk/domain_layer/entities/read_write_marker.dart';
-import 'package:dart_ndk/relay.dart';
+import 'package:ndk/domain_layer/entities/read_write_marker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:ndk/domain_layer/entities/relay.dart';
 import 'package:yana/main.dart';
 import 'package:yana/utils/router_path.dart';
 import 'package:yana/utils/router_util.dart';
 
-import '../../i18n/i18n.dart';
 import '../../ui/confirm_dialog.dart';
 import '../../utils/base.dart';
 import '../../utils/hash_util.dart';

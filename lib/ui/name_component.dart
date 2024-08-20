@@ -1,4 +1,4 @@
-import 'package:dart_ndk/entities.dart';
+import 'package:ndk/entities.dart';
 import 'package:flutter/material.dart';
 import 'package:yana/ui/nip05_valid_component.dart';
 

@@ -1,5 +1,5 @@
-import 'package:dart_ndk/relay.dart';
 import 'package:flutter/material.dart';
+import 'package:ndk/domain_layer/entities/relay.dart';
 
 import '../../main.dart';
 import '../../utils/base.dart';

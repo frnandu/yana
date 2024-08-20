@@ -1,5 +1,5 @@
-import 'package:dart_ndk/dart_ndk.dart';
-import 'package:dart_ndk/shared/nips/nip01/helpers.dart';
+import 'package:ndk/ndk.dart';
+import 'package:ndk/shared/nips/nip01/helpers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_font_picker/flutter_font_picker.dart';
@@ -388,7 +388,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
               }
             });
             try {
-              Nip51List? list = await nostr.getSingleNip51List(Nip51List.MUTE, loggedUserSigner!);
+              Nip51List? list = await ndk.getSingleNip51List(Nip51List.MUTE, loggedUserSigner!);
               finished = true;
               RouterUtil.router(context, RouterPath.MUTE_LIST,
                   list ?? Nip51List(
@@ -426,7 +426,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
               }
             });
             try {
-              Nip51List? list = await nostr.getSingleNip51List(Nip51List.BLOCKED_RELAYS, loggedUserSigner!);
+              Nip51List? list = await ndk.getSingleNip51List(Nip51List.BLOCKED_RELAYS, loggedUserSigner!);
               finished = true;
               RouterUtil.router(context, RouterPath.RELAY_LIST,
                   list ?? Nip51List(
@@ -459,7 +459,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
                   }
                 });
                 try {
-                  Nip51List? list = await nostr.getSingleNip51List(Nip51List.SEARCH_RELAYS, loggedUserSigner!);
+                  Nip51List? list = await ndk.getSingleNip51List(Nip51List.SEARCH_RELAYS, loggedUserSigner!);
                   finished = true;
                   RouterUtil.router(context, RouterPath.RELAY_LIST,
                       list ?? Nip51List(
@@ -558,7 +558,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
           AccountsState.onLogoutTap(index, routerBack: true, context: context);
           metadataProvider.clear();
         } else {
-          loggedUserSigner = null;
+          ndk.changeEventSigner(null);
         }
       },
       leading: const Icon(Icons.logout),

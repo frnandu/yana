@@ -3,25 +3,25 @@ import 'dart:io';
 import 'dart:ui';
 
 import 'package:awesome_notifications/awesome_notifications.dart';
-import 'package:dart_ndk/config/bootstrap_relays.dart';
-import 'package:dart_ndk/data_layer/data_sources/amber_flutter.dart';
-import 'package:dart_ndk/data_layer/repositories/cache_manager/db_cache_manager.dart';
-import 'package:dart_ndk/data_layer/repositories/signers/amber_event_signer.dart';
-import 'package:dart_ndk/data_layer/repositories/signers/bip340_event_signer.dart';
-import 'package:dart_ndk/domain_layer/entities/contact_list.dart';
-import 'package:dart_ndk/domain_layer/entities/metadata.dart';
-import 'package:dart_ndk/domain_layer/entities/nip_01_event.dart';
-import 'package:dart_ndk/domain_layer/entities/nip_51_list.dart';
-import 'package:dart_ndk/domain_layer/entities/pubkey_mapping.dart';
-import 'package:dart_ndk/domain_layer/entities/read_write.dart';
-import 'package:dart_ndk/domain_layer/entities/read_write_marker.dart';
-import 'package:dart_ndk/domain_layer/entities/relay_set.dart';
-import 'package:dart_ndk/domain_layer/entities/user_relay_list.dart';
-import 'package:dart_ndk/domain_layer/repositories/cache_manager.dart';
-import 'package:dart_ndk/domain_layer/repositories/event_signer.dart';
-import 'package:dart_ndk/domain_layer/usecases/relay_manager.dart';
-import 'package:dart_ndk/nostr.dart';
-import 'package:dart_ndk/relay.dart';
+import 'package:ndk/config/bootstrap_relays.dart';
+import 'package:ndk/data_layer/data_sources/amber_flutter.dart';
+import 'package:ndk/data_layer/repositories/cache_manager/db_cache_manager.dart';
+import 'package:ndk/data_layer/repositories/signers/amber_event_signer.dart';
+import 'package:ndk/data_layer/repositories/signers/bip340_event_signer.dart';
+import 'package:ndk/domain_layer/entities/contact_list.dart';
+import 'package:ndk/domain_layer/entities/metadata.dart';
+import 'package:ndk/domain_layer/entities/nip_01_event.dart';
+import 'package:ndk/domain_layer/entities/nip_51_list.dart';
+import 'package:ndk/domain_layer/entities/pubkey_mapping.dart';
+import 'package:ndk/domain_layer/entities/read_write.dart';
+import 'package:ndk/domain_layer/entities/read_write_marker.dart';
+import 'package:ndk/domain_layer/entities/relay.dart';
+import 'package:ndk/domain_layer/entities/relay_set.dart';
+import 'package:ndk/domain_layer/entities/user_relay_list.dart';
+import 'package:ndk/domain_layer/repositories/cache_manager.dart';
+import 'package:ndk/domain_layer/repositories/event_signer.dart';
+import 'package:ndk/domain_layer/usecases/relay_manager.dart';
+import 'package:ndk/ndk.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
@@ -34,6 +34,8 @@ import 'package:get_time_ago/get_time_ago.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:isar/isar.dart' as isar;
+import 'package:ndk/shared/helpers/relay_helper.dart';
+import 'package:ndk/shared/nips/nip01/helpers.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:protocol_handler/protocol_handler.dart';
@@ -66,7 +68,6 @@ import 'package:yana/router/wallet/wallet_send.dart';
 import 'package:yana/utils/image/cache_manager_builder.dart';
 import 'package:yana/utils/platform_util.dart';
 import 'package:amberflutter/amberflutter.dart';
-
 
 import '/js/js_helper.dart' as js;
 import 'i18n/i18n.dart';
@@ -165,17 +166,18 @@ late CommunityInfoProvider communityInfoProvider;
 
 late NwcProvider nwcProvider;
 
-Map<String,dynamic>? fiatCurrencyRate;
+Map<String, dynamic>? fiatCurrencyRate;
 
 AppLifecycleState appState = AppLifecycleState.resumed;
 
-EventSigner? loggedUserSigner;
+get loggedUserSigner => ndk.config.eventSigner;
 
 AmberFlutterDS amberFlutterDS = AmberFlutterDS(Amberflutter());
 late CacheManager cacheManager;
 RelayManager relayManager = RelayManager(cacheManager: cacheManager);
-Nostr nostr = Nostr(relayManager: relayManager, cacheManager: cacheManager);
-
+Ndk ndk = Ndk(
+  NdkConfig(eventVerifier: AcinqSecp256k1EventVerifier(), cache: cacheManager, engine: NdkEngine.LISTS),
+);
 
 late bool isExternalSignerInstalled;
 
@@ -223,14 +225,14 @@ void onStart(ServiceInstance service) async {
         AwesomeNotifications().getAppLifeCycle().then((value) async {
           if (value.toString() != "NotificationLifeCycle.Foreground" && myInboxRelaySet != null) {
             appState = AppLifecycleState.inactive;
-            relayManager.allowReconnectRelays=true;
+            relayManager.allowReconnectRelays = true;
             await relayManager.connect(urls: myInboxRelaySet!.urls);
             await newNotificationsProvider.queryNew();
-            relayManager.allowReconnectRelays=false;
-            List<String> requestIdsToClose = relayManager.nostrRequests.keys.toList();
+            relayManager.allowReconnectRelays = false;
+            List<String> requestIdsToClose = relayManager.globalState.inFlightRequests.keys.toList();
             for (var id in requestIdsToClose) {
               try {
-                await relayManager.closeNostrRequestById(id);
+                await ndk.closeSubscription(id);
               } catch (e) {
                 print(e);
               }
@@ -251,12 +253,15 @@ Future<void> initProvidersAndStuff() async {
   settingProvider = await SettingProvider.getInstance();
   if (StringUtil.isNotBlank(settingProvider.key)) {
     try {
-
       String? key = settingProvider.key;
       if (StringUtil.isNotBlank(key)) {
         bool isPrivate = settingProvider.isPrivateKey;
         String publicKey = isPrivate ? getPublicKey(key!) : key!;
-        loggedUserSigner = settingProvider.isExternalSignerKey ? AmberEventSigner(publicKey, amberFlutterDS) : isPrivate || !PlatformUtil.isWeb()? Bip340EventSigner(isPrivate? key:null, publicKey) : Nip07EventSigner(await js.getPublicKeyAsync());
+        ndk.changeEventSigner(settingProvider.isExternalSignerKey
+            ? AmberEventSigner(publicKey, amberFlutterDS)
+            : isPrivate || !PlatformUtil.isWeb()
+                ? Bip340EventSigner(isPrivate ? key : null, publicKey)
+                : Nip07EventSigner(await js.getPublicKeyAsync()));
       }
       //
       // loggedUserSigner = Bip340EventSigner(settingProvider.key!, getPublicKey(settingProvider.key!));
@@ -267,12 +272,11 @@ Future<void> initProvidersAndStuff() async {
       cacheManager = dbCacheManager;
       dbCacheManager.eventFilter = filterProvider;
       relayManager.cacheManager = cacheManager;
-      nostr.cacheManager = cacheManager;
       // relayManager.eventVerifier = HybridEventVerifier();
 
-      if (myInboxRelaySet==null) {
+      if (myInboxRelaySet == null) {
         await relayManager.connect();
-        UserRelayList? userRelayList = await nostr.getSingleUserRelayList(loggedUserSigner!.getPublicKey());
+        UserRelayList? userRelayList = await ndk.getSingleUserRelayList(loggedUserSigner!.getPublicKey());
         if (userRelayList != null) {
           createMyRelaySets(userRelayList);
         }
@@ -297,10 +301,9 @@ Future<void> initProvidersAndStuff() async {
 }
 
 Future<void> initRelays({bool newKey = false}) async {
-
   await relayManager.connect();
 
-  UserRelayList? userRelayList = !newKey ? await nostr.getSingleUserRelayList(loggedUserSigner!.getPublicKey()) : null;
+  UserRelayList? userRelayList = !newKey ? await ndk.getSingleUserRelayList(loggedUserSigner!.getPublicKey()) : null;
   if (userRelayList == null) {
     int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
     userRelayList = UserRelayList(
@@ -311,28 +314,30 @@ Future<void> initRelays({bool newKey = false}) async {
   }
   createMyRelaySets(userRelayList);
   await relayManager.connect(urls: userRelayList!.urls);
-  nostr.getSingleNip51List(Nip51List.MUTE, loggedUserSigner!).then((list) {
-    filterProvider.muteList = list;
-    relayManager.eventFilters.add(filterProvider);
-    relayManager.blockedRelays = [];
-    nostr.getSingleNip51List(Nip51List.BLOCKED_RELAYS, loggedUserSigner!).then((blockedRelays) {
-      if (blockedRelays!=null) {
-        relayManager.blockedRelays = blockedRelays.allRelays!;
-        relayProvider.notifyListeners();
-      }
-      searchRelays = [];
-      nostr.getSingleNip51List(Nip51List.SEARCH_RELAYS, loggedUserSigner!).then((searchRelaySet)  {
-        if (searchRelaySet!=null) {
-          searchRelays = searchRelaySet.allRelays!;
-          for (var url in searchRelays) { relayManager.connectRelay(url);}
-          relayProvider.notifyListeners();
-        }
-      });
-    },);
-  },);
+
+  // TODO
+  // ndk.getSingleNip51List(Nip51List.MUTE, loggedUserSigner!).then((list) {
+  //   filterProvider.muteList = list;
+  //   relayManager.eventFilters.add(filterProvider);
+  //   relayManager.blockedRelays = [];
+  //   ndk.getSingleNip51List(Nip51List.BLOCKED_RELAYS, loggedUserSigner!).then((blockedRelays) {
+  //     if (blockedRelays!=null) {
+  //       relayManager.blockedRelays = blockedRelays.allRelays!;
+  //       relayProvider.notifyListeners();
+  //     }
+  //     searchRelays = [];
+  //     ndk.getSingleNip51List(Nip51List.SEARCH_RELAYS, loggedUserSigner!).then((searchRelaySet)  {
+  //       if (searchRelaySet!=null) {
+  //         searchRelays = searchRelaySet.allRelays!;
+  //         for (var url in searchRelays) { relayManager.connectRelay(url);}
+  //         relayProvider.notifyListeners();
+  //       }
+  //     });
+  //   },);
+  // },);
 
   print("Loading contact list...");
-  ContactList? contactList = !newKey ? await nostr.loadContactList(loggedUserSigner!.getPublicKey()) : null;
+  ContactList? contactList = !newKey ? await ndk.getContactList(loggedUserSigner!.getPublicKey()) : null;
   if (contactList != null) {
     for (var element in contactList.contacts) {
       metadataProvider.getMetadata(element);
@@ -342,7 +347,8 @@ Future<void> initRelays({bool newKey = false}) async {
     if (settingProvider.gossip == 1) {
       feedRelaySet = cacheManager.loadRelaySet("feed", loggedUserSigner!.getPublicKey());
       if (feedRelaySet == null) {
-        EasyLoading.showToast("Calculating feed relays from contact's outboxes...", dismissOnTap: true,  duration: const Duration(seconds: 15), maskType: EasyLoadingMaskType.black);
+        EasyLoading.showToast("Calculating feed relays from contact's outboxes...",
+            dismissOnTap: true, duration: const Duration(seconds: 15), maskType: EasyLoadingMaskType.black);
 
         feedRelaySet = await relayManager.calculateRelaySet(
             name: "feed",
@@ -363,9 +369,11 @@ Future<void> initRelays({bool newKey = false}) async {
     }
   }
   followEventProvider.startSubscriptions();
-  notificationsProvider.loadCached().then((value) {
-    notificationsProvider.startSubscription();
-  },);
+  notificationsProvider.loadCached().then(
+    (value) {
+      notificationsProvider.startSubscription();
+    },
+  );
   dmProvider.initDMSessions(loggedUserSigner!.getPublicKey());
   metadataProvider.notifyListeners();
   try {
@@ -377,8 +385,7 @@ Future<void> initRelays({bool newKey = false}) async {
 
 Future<List<String>> getInboxRelays(String pubKey) async {
   List<String> urlsToBroadcast = [];
-  UserRelayList? userRelayList = await nostr.getSingleUserRelayList(
-      pubKey!);
+  UserRelayList? userRelayList = await ndk.getSingleUserRelayList(pubKey!);
   if (userRelayList != null) {
     urlsToBroadcast = userRelayList.readUrls.toList();
   }
@@ -387,7 +394,7 @@ Future<List<String>> getInboxRelays(String pubKey) async {
 
 Future<List<String>> broadcastUrls(String? reactionInboxPubKey) async {
   List<String> urlsToBroadcast = [];
-  if (settingProvider.inboxForReactions == 1 && reactionInboxPubKey!=null) {
+  if (settingProvider.inboxForReactions == 1 && reactionInboxPubKey != null) {
     urlsToBroadcast = await getInboxRelays(reactionInboxPubKey);
     if (urlsToBroadcast.length > settingProvider.broadcastToInboxMaxCount) {
       urlsToBroadcast = urlsToBroadcast.take(settingProvider.broadcastToInboxMaxCount).toList();
@@ -401,15 +408,17 @@ Future<List<String>> broadcastUrls(String? reactionInboxPubKey) async {
 
 void createMyRelaySets(UserRelayList userRelayList) {
   print("FROM USER RELAY LIST: ");
-  for (var entry in userRelayList.relays.entries) { print("  - ${entry.key} : ${entry.value}");}
+  for (var entry in userRelayList.relays.entries) {
+    print("  - ${entry.key} : ${entry.value}");
+  }
 
   Map<String, List<PubkeyMapping>> inbox = {
     for (var item in userRelayList.relays.entries.where((entry) => entry.value.isRead))
-      Relay.cleanUrl(item.key) ?? item.key: [PubkeyMapping(pubKey: userRelayList.pubKey, rwMarker: item.value)]
+      cleanRelayUrl(item.key) ?? item.key: [PubkeyMapping(pubKey: userRelayList.pubKey, rwMarker: item.value)]
   };
   Map<String, List<PubkeyMapping>> outbox = {
     for (var item in userRelayList.relays.entries.where((entry) => entry.value.isWrite))
-      Relay.cleanUrl(item.key) ?? item.key: [PubkeyMapping(pubKey: userRelayList.pubKey, rwMarker: item.value)]
+      cleanRelayUrl(item.key) ?? item.key: [PubkeyMapping(pubKey: userRelayList.pubKey, rwMarker: item.value)]
   };
   myInboxRelaySet = RelaySet(
       name: "inbox",
@@ -421,9 +430,13 @@ void createMyRelaySets(UserRelayList userRelayList) {
   myOutboxRelaySet =
       RelaySet(name: "outbox", pubKey: userRelayList.pubKey, relayMinCountPerPubkey: outbox.length, direction: RelayDirection.outbox, relaysMap: outbox);
   print("GENERATED INBOX: ");
-  for (var entry in myInboxRelaySet!.relaysMap.entries) { print("  - ${entry.key} : ${entry.value.first.rwMarker}");}
+  for (var entry in myInboxRelaySet!.relaysMap.entries) {
+    print("  - ${entry.key} : ${entry.value.first.rwMarker}");
+  }
   print("GENERATED OUTBOX: ");
-  for (var entry in myOutboxRelaySet!.relaysMap.entries) { print("  - ${entry.key} : ${entry.value.first.rwMarker}");}
+  for (var entry in myOutboxRelaySet!.relaysMap.entries) {
+    print("  - ${entry.key} : ${entry.value.first.rwMarker}");
+  }
 }
 
 Future<void> main() async {
@@ -463,7 +476,7 @@ Future<void> main() async {
       await windowManager.focus();
     });
   }
-  if(!PlatformUtil.isTableModeWithoutSetting()) {
+  if (!PlatformUtil.isTableModeWithoutSetting()) {
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
       DeviceOrientation.portraitDown,
@@ -527,11 +540,11 @@ Future<void> main() async {
     bool isPrivate = settingProvider.isPrivateKey;
     String publicKey = isPrivate ? getPublicKey(key!) : key!;
     if (settingProvider.isExternalSignerKey && isExternalSignerInstalled) {
-      loggedUserSigner = AmberEventSigner(publicKey, amberFlutterDS);
+      ndk.changeEventSigner(AmberEventSigner(publicKey, amberFlutterDS));
     } else {
-      loggedUserSigner = isPrivate || !PlatformUtil.isWeb() ? Bip340EventSigner(
-          isPrivate ? key : null, publicKey) : Nip07EventSigner(
-          await js.getPublicKeyAsync());
+      ndk.changeEventSigner(
+          isPrivate || !PlatformUtil.isWeb() ? Bip340EventSigner(isPrivate ? key : null, publicKey) : Nip07EventSigner(await js.getPublicKeyAsync())
+      );
     }
   }
 
@@ -844,45 +857,54 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
                         //   });
                         // },);
 
-                        jump = MaterialPageRoute(settings: RouteSettings(name: RouterPath.THREAD_DETAIL, arguments: key), builder: (context) => ThreadDetailRouter(eventId: key));
+                        jump = MaterialPageRoute(
+                            settings: RouteSettings(name: RouterPath.THREAD_DETAIL, arguments: key), builder: (context) => ThreadDetailRouter(eventId: key));
                         // RouterUtil.router(context, RouterPath.THREAD_DETAIL, event);
                       } else if (NIP19Tlv.isNprofile(key)) {
                         var nprofile = NIP19Tlv.decodeNprofile(key);
                         if (nprofile != null) {
                           // inline
                           // mention user
-                          jump = MaterialPageRoute(settings: RouteSettings(name: RouterPath.USER, arguments: nprofile.pubkey), builder: (context) => UserRouter());
+                          jump =
+                              MaterialPageRoute(settings: RouteSettings(name: RouterPath.USER, arguments: nprofile.pubkey), builder: (context) => UserRouter());
                         }
                       } else if (NIP19Tlv.isNrelay(key)) {
                         var nrelay = NIP19Tlv.decodeNrelay(key);
-                        String? url = nrelay != null ? Relay.cleanUrl(nrelay.addr) : null;
+                        String? url = nrelay != null ? cleanRelayUrl(nrelay.addr) : null;
                         if (url != null) {
                           // inline
                           Relay relay = Relay(url);
-                          jump = MaterialPageRoute(settings: RouteSettings(name: RouterPath.RELAY_INFO, arguments: relay), builder: (context) => const RelayInfoRouter());
+                          jump = MaterialPageRoute(
+                              settings: RouteSettings(name: RouterPath.RELAY_INFO, arguments: relay), builder: (context) => const RelayInfoRouter());
                         }
                       } else if (NIP19Tlv.isNevent(key)) {
                         var nevent = NIP19Tlv.decodeNevent(key);
                         if (nevent != null) {
-                          jump = MaterialPageRoute(settings: RouteSettings(name: RouterPath.THREAD_DETAIL, arguments: nevent.id), builder: (context) => ThreadDetailRouter(eventId: nevent.id,));
+                          jump = MaterialPageRoute(
+                              settings: RouteSettings(name: RouterPath.THREAD_DETAIL, arguments: nevent.id),
+                              builder: (context) => ThreadDetailRouter(
+                                    eventId: nevent.id,
+                                  ));
                         }
                       } else if (NIP19Tlv.isNaddr(key)) {
                         var naddr = NIP19Tlv.decodeNaddr(key);
                         if (naddr != null) {
                           if (StringUtil.isNotBlank(naddr.id) && naddr.kind == Nip01Event.TEXT_NODE_KIND) {
-                            jump = MaterialPageRoute(settings: RouteSettings(name: RouterPath.THREAD_DETAIL, arguments: naddr.id), builder: (context) => ThreadDetailRouter(eventId: naddr.id,));
+                            jump = MaterialPageRoute(
+                                settings: RouteSettings(name: RouterPath.THREAD_DETAIL, arguments: naddr.id),
+                                builder: (context) => ThreadDetailRouter(
+                                      eventId: naddr.id,
+                                    ));
                           } else if (StringUtil.isNotBlank(naddr.author) && naddr.kind == Metadata.KIND) {
-                            jump = MaterialPageRoute(settings: RouteSettings(name: RouterPath.USER, arguments: naddr.author), builder: (context) => UserRouter());
+                            jump =
+                                MaterialPageRoute(settings: RouteSettings(name: RouterPath.USER, arguments: naddr.author), builder: (context) => UserRouter());
                           }
                         }
                       }
                     }
                   }
-                  if (jump!=null) {
-                    return [
-                      MaterialPageRoute(builder: (context) => IndexRouter(reload: reload)),
-                      jump
-                    ];
+                  if (jump != null) {
+                    return [MaterialPageRoute(builder: (context) => IndexRouter(reload: reload)), jump];
                   }
                   return [
                     MaterialPageRoute(builder: (context) => IndexRouter(reload: reload)),
@@ -920,17 +942,16 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
     if (newState == AppLifecycleState.resumed &&
         (appState == AppLifecycleState.paused || appState == AppLifecycleState.hidden || appState == AppLifecycleState.inactive)) {
       //now you know that your app went to the background and is back to the foreground
-      if (loggedUserSigner != null)  {
-        if (relayManager.allowReconnectRelays==false) {
+      if (loggedUserSigner != null) {
+        if (relayManager.allowReconnectRelays == false) {
           if (backgroundService != null && settingProvider.backgroundService) {
             backgroundService!.invoke('stopService');
           }
           relayManager.allowReconnectRelays = false;
-          List<String> requestIdsToClose = relayManager.nostrRequests.keys
-              .toList();
+          List<String> requestIdsToClose = relayManager.globalState.inFlightRequests.keys.toList();
           for (var id in requestIdsToClose) {
             try {
-              await relayManager.closeNostrRequestById(id);
+              await ndk.closeSubscription(id);
             } catch (e) {
               print(e);
             }
@@ -957,20 +978,19 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
         }
       }
     }
-    if ((newState == AppLifecycleState.paused || newState == AppLifecycleState.hidden) &&
-        appState == AppLifecycleState.resumed && loggedUserSigner != null) {
+    if ((newState == AppLifecycleState.paused || newState == AppLifecycleState.hidden) && appState == AppLifecycleState.resumed && loggedUserSigner != null) {
       print("newState = ${newState} , appState = ${appState}");
       Future.delayed(const Duration(seconds: 5), () async {
         NotificationLifeCycle value = await AwesomeNotifications().getAppLifeCycle();
         if (value.toString() != "NotificationLifeCycle.Foreground") {
-          if (backgroundService!=null && settingProvider.backgroundService) {
+          if (backgroundService != null && settingProvider.backgroundService) {
             backgroundService!.startService();
           }
-          relayManager.allowReconnectRelays=false;
-          List<String> requestIdsToClose = relayManager.nostrRequests.keys.toList();
+          relayManager.allowReconnectRelays = false;
+          List<String> requestIdsToClose = relayManager.globalState.inFlightRequests.keys.toList();
           for (var id in requestIdsToClose) {
             try {
-              await relayManager.closeNostrRequestById(id);
+              await ndk.closeSubscription(id);
             } catch (e) {
               print(e);
             }

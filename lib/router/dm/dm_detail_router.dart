@@ -1,4 +1,4 @@
-import 'package:dart_ndk/domain_layer/entities/metadata.dart';
+import 'package:ndk/domain_layer/entities/metadata.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';

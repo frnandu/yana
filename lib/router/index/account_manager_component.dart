@@ -1,9 +1,9 @@
 import 'dart:developer';
 
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:dart_ndk/data_layer/repositories/signers/amber_event_signer.dart';
-import 'package:dart_ndk/data_layer/repositories/signers/bip340_event_signer.dart';
-import 'package:dart_ndk/domain_layer/entities/metadata.dart';
+import 'package:ndk/data_layer/repositories/signers/amber_event_signer.dart';
+import 'package:ndk/data_layer/repositories/signers/bip340_event_signer.dart';
+import 'package:ndk/domain_layer/entities/metadata.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:provider/provider.dart';
@@ -148,10 +148,10 @@ class AccountsState extends State<AccountsComponent> {
     String? key = settingProvider.key;
     bool isPrivate = settingProvider.isPrivateKey;
     String publicKey = isPrivate ? getPublicKey(key!) : key!;
-    loggedUserSigner = settingProvider.isExternalSignerKey ? AmberEventSigner(publicKey, amberFlutterDS) : isPrivate || !PlatformUtil.isWeb()
+    ndk.changeEventSigner(settingProvider.isExternalSignerKey ? AmberEventSigner(publicKey, amberFlutterDS) : isPrivate || !PlatformUtil.isWeb()
         ? Bip340EventSigner(isPrivate ? key : null, publicKey)
-        : Nip07EventSigner(await js.getPublicKeyAsync());
-
+        : Nip07EventSigner(await js.getPublicKeyAsync())
+    );
 
     await followEventProvider.loadCachedFeed();
     initRelays(newKey: false);
@@ -165,7 +165,7 @@ class AccountsState extends State<AccountsComponent> {
     if (settingProvider.privateKeyIndex != index) {
       EasyLoading.show(status: "Logging out...",maskType: EasyLoadingMaskType.black);
       clearCurrentMemInfo();
-      loggedUserSigner = null;
+      ndk.changeEventSigner(null);
 
       settingProvider.privateKeyIndex = index;
 
@@ -195,7 +195,7 @@ class AccountsState extends State<AccountsComponent> {
           RouterUtil.back(context);
         }
       } else {
-        loggedUserSigner = null;
+        ndk.changeEventSigner(null);
       }
     }
 

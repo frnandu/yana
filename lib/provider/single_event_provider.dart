@@ -1,9 +1,8 @@
-import 'package:dart_ndk/config/bootstrap_relays.dart';
-import 'package:dart_ndk/dart_ndk.dart';
-import 'package:dart_ndk/domain_layer/entities/nip_01_event.dart';
-import 'package:dart_ndk/relay.dart';
-import 'package:dart_ndk/request.dart';
+import 'package:ndk/config/bootstrap_relays.dart';
+import 'package:ndk/ndk.dart';
 import 'package:flutter/material.dart';
+import 'package:ndk/presentation_layer/request_response.dart';
+import 'package:ndk/shared/helpers/relay_helper.dart';
 
 import '../main.dart';
 import '../utils/later_function.dart';
@@ -101,19 +100,19 @@ class SingleEventProvider extends ChangeNotifier with LaterFunction {
 
     if (myInboxRelaySet!=null) {
       myInboxRelaySet!.urls.forEach((element) {
-        String? relay = Relay.cleanUrl(element);
+        String? relay = cleanRelayUrl(element);
         if (relay!=null) {
           urls.add(relay);
         }
       });
     }
-    NostrRequest request = await relayManager.requestRelays(
+    NdkResponse response = await relayManager.requestRelays(
         urls, filter, timeout: 5,
       onTimeout: () {
           _onEvent(Nip01Event(pubKey: "", kind: -1, tags: [], content: "note not found or muted author"));
       }
     );
-    request.stream.listen((event) {
+    response.stream.listen((event) {
       _onEvent(event);
     },onError: (error) {
       print("$error onERROR for single event provider loading $filter");

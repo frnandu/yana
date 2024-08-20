@@ -1,15 +1,15 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:dart_ndk/config/bootstrap_relays.dart';
-import 'package:dart_ndk/domain_layer/entities/nip_51_list.dart';
-import 'package:dart_ndk/domain_layer/entities/read_write.dart';
-import 'package:dart_ndk/domain_layer/entities/read_write_marker.dart';
-import 'package:dart_ndk/domain_layer/entities/relay_set.dart';
-import 'package:dart_ndk/domain_layer/entities/user_relay_list.dart';
-import 'package:dart_ndk/relay.dart';
+import 'package:ndk/config/bootstrap_relays.dart';
+import 'package:ndk/domain_layer/entities/nip_51_list.dart';
+import 'package:ndk/domain_layer/entities/read_write.dart';
+import 'package:ndk/domain_layer/entities/read_write_marker.dart';
+import 'package:ndk/domain_layer/entities/relay_set.dart';
+import 'package:ndk/domain_layer/entities/user_relay_list.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+import 'package:ndk/shared/helpers/relay_helper.dart';
 
 import '../main.dart';
 
@@ -22,7 +22,7 @@ class RelayProvider extends ChangeNotifier {
   }
 
   int? getFeedRelayState(String url) {
-    String? cleanedUrl = Relay.cleanUrl(url);
+    String? cleanedUrl = cleanRelayUrl(url);
     if (cleanedUrl == null) {
       return WebSocket.closed;
     }
@@ -59,17 +59,17 @@ class RelayProvider extends ChangeNotifier {
   }
 
   Future<Nip51Set?> getNip51RelaySet(String name) async {
-    Nip51Set? r = await nostr.getCachedNip51RelaySet(name, loggedUserSigner!);
+    Nip51Set? r = await ndk.getCachedNip51RelaySet(name, loggedUserSigner!);
     if (r == null) {
-      nostr.getSingleNip51RelaySet(name, loggedUserSigner!);
+      ndk.getSingleNip51RelaySet(name, loggedUserSigner!);
     }
     return r;
   }
 
   Future<Nip51List?> getNip51List(int kind) async {
-    Nip51List? r = await nostr.getCachedNip51List(kind, loggedUserSigner!);
+    Nip51List? r = await ndk.getCachedNip51List(kind, loggedUserSigner!);
     if (r == null) {
-      nostr.getSingleNip51List(kind, loggedUserSigner!);
+      ndk.getSingleNip51List(kind, loggedUserSigner!);
     }
     return r;
   }
@@ -81,7 +81,7 @@ class RelayProvider extends ChangeNotifier {
   Future<void> addRelay(String relayAddr) async {
     ReadWriteMarker marker = ReadWriteMarker.readWrite;
     if (myOutboxRelaySet != null && !myOutboxRelaySet!.urls.contains(relayAddr) && myInboxRelaySet!=null && !myInboxRelaySet!.urls.contains(relayAddr)) {
-      UserRelayList userRelayList = await nostr.broadcastAddNip65Relay(relayAddr, marker, myOutboxRelaySet!.urls, loggedUserSigner!);
+      UserRelayList userRelayList = await ndk.broadcastAddNip65Relay(relayAddr, marker, myOutboxRelaySet!.urls);
       createMyRelaySets(userRelayList);
       await cacheManager.saveRelaySet(myOutboxRelaySet!);
       await cacheManager.saveRelaySet(myInboxRelaySet!);
@@ -91,7 +91,7 @@ class RelayProvider extends ChangeNotifier {
   }
 
   Future<void> removeRelay(String url) async {
-    UserRelayList? userRelayList = await nostr.broadcastRemoveNip65Relay(url, myOutboxRelaySet!.urls, loggedUserSigner!);
+    UserRelayList? userRelayList = await ndk.broadcastRemoveNip65Relay(url, myOutboxRelaySet!.urls);
     if (userRelayList != null) {
       createMyRelaySets(userRelayList);
       await cacheManager.saveRelaySet(myOutboxRelaySet!);
@@ -106,7 +106,7 @@ class RelayProvider extends ChangeNotifier {
     relays.addAll(DEFAULT_BOOTSTRAP_RELAYS);
     relays.addAll(myOutboxRelaySet!.urls);
 
-    UserRelayList? userRelayList = await nostr.broadcastUpdateNip65RelayMarker(url, marker, relays, loggedUserSigner!);
+    UserRelayList? userRelayList = await ndk.broadcastUpdateNip65RelayMarker(url, marker, relays);
 
     if (userRelayList != null) {
       createMyRelaySets(userRelayList);

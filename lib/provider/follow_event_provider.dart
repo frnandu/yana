@@ -1,10 +1,11 @@
 import 'dart:async';
 
-import 'package:dart_ndk/domain_layer/entities/contact_list.dart';
-import 'package:dart_ndk/domain_layer/entities/filter.dart';
-import 'package:dart_ndk/domain_layer/entities/nip_01_event.dart';
-import 'package:dart_ndk/request.dart';
+import 'package:ndk/domain_layer/entities/contact_list.dart';
+import 'package:ndk/domain_layer/entities/filter.dart';
+import 'package:ndk/domain_layer/entities/nip_01_event.dart';
 import 'package:flutter/foundation.dart';
+import 'package:ndk/domain_layer/entities/request_state.dart';
+import 'package:ndk/presentation_layer/request_response.dart';
 import 'package:yana/provider/data_util.dart';
 
 import '../main.dart';
@@ -15,10 +16,10 @@ import '../utils/peddingevents_later_function.dart';
 
 class FollowEventProvider extends ChangeNotifier with PenddingEventsLaterFunction implements FindEventInterface {
   late int _initTime;
-  NostrRequest? subscription;
-  NostrRequest? subscriptionTags;
-  NostrRequest? subscriptionCommunities;
-  NostrRequest? subscriptionEvents;
+  NdkResponse? subscription;
+  NdkResponse? subscriptionTags;
+  NdkResponse? subscriptionCommunities;
+  NdkResponse? subscriptionEvents;
 
   int? postsTimestamp;
   int? repliesTimestamp;
@@ -168,8 +169,8 @@ class FollowEventProvider extends ChangeNotifier with PenddingEventsLaterFunctio
     } else {
       await relayManager.reconnectRelays(myInboxRelaySet!.urls);
     }
-    subscription = await relayManager!.subscription(filter, (feedRelaySet != null && settingProvider.gossip == 1) ? feedRelaySet! : myInboxRelaySet!,
-        splitRequestsByPubKeyMappings: settingProvider.gossip == 1);
+    subscription = ndk.subscription(filters: [filter], relaySet: (feedRelaySet != null && settingProvider.gossip == 1) ? feedRelaySet! : myInboxRelaySet!);
+        // splitRequestsByPubKeyMappings: settingProvider.gossip == 1);
     subscription!.stream.listen((event) {
       onEvent(event);
     });
@@ -225,7 +226,7 @@ class FollowEventProvider extends ChangeNotifier with PenddingEventsLaterFunctio
     List<String> contactsForFeed = contactListProvider.contacts();
     var filter = Filter(
       kinds: queryEventKinds(),
-      authors: contactsForFeed, //..add(loggedUserSigner!.getPublicKey()),
+      authors: contactsForFeed, //..add(loggedUserSigner!.getPubliNdkResponsecKey()),
       until: until,
       limit: 100,
     );
@@ -255,40 +256,42 @@ class FollowEventProvider extends ChangeNotifier with PenddingEventsLaterFunctio
       await relayManager.reconnectRelays(myInboxRelaySet!.urls);
     }
 
-    NostrRequest request = await relayManager!.query(filter, (feedRelaySet != null && settingProvider.gossip == 1) ? feedRelaySet! : myInboxRelaySet!);
-    request!.stream.listen((event) {
-      onEvent(event);
-    });
+    ndk.query(filters: [filter], relaySet: (feedRelaySet != null && settingProvider.gossip == 1) ? feedRelaySet! : myInboxRelaySet!).stream.listen((event) {
+          onEvent(event);
+        });
 
-    (await relayManager!.query(Filter(kinds: queryEventKinds(), tTags: contactList?.followedTags, until: until, limit: 100), myInboxRelaySet!))
+    ndk
+        .query(filters: [Filter(kinds: queryEventKinds(), tTags: contactList?.followedTags, until: until, limit: 100)], relaySet: myInboxRelaySet!)
         .stream
         .listen((event) {
-      onEvent(event);
-    });
-    (await relayManager!.query(Filter(kinds: queryEventKinds(), aTags: contactList?.followedCommunities, until: until, limit: 100), myInboxRelaySet!))
+          onEvent(event);
+        });
+    ndk
+        .query(filters: [Filter(kinds: queryEventKinds(), aTags: contactList?.followedCommunities, until: until, limit: 100)], relaySet: myInboxRelaySet!)
         .stream
         .listen((event) {
-      onEvent(event);
-    });
-    (await relayManager!.query(Filter(kinds: queryEventKinds(), eTags: contactList?.followedEvents, until: until, limit: 100), myInboxRelaySet!))
+          onEvent(event);
+        });
+    ndk
+        .query(filters: [Filter(kinds: queryEventKinds(), eTags: contactList?.followedEvents, until: until, limit: 100)], relaySet: myInboxRelaySet!)
         .stream
         .listen((event) {
-      onEvent(event);
-    });
+          onEvent(event);
+        });
   }
 
   void doUnscribe() {
     if (subscription != null) {
-      relayManager.closeNostrRequest(subscription!);
+      ndk.closeSubscription(subscription!.requestId);
     }
     if (subscriptionTags != null) {
-      relayManager.closeNostrRequest(subscriptionTags!);
+      ndk.closeSubscription(subscriptionTags!.requestId);
     }
     if (subscriptionCommunities != null) {
-      relayManager.closeNostrRequest(subscriptionCommunities!);
+      ndk.closeSubscription(subscriptionCommunities!.requestId);
     }
     if (subscriptionEvents != null) {
-      relayManager.closeNostrRequest(subscriptionEvents!);
+      ndk.closeSubscription(subscriptionEvents!.requestId);
     }
   }
 

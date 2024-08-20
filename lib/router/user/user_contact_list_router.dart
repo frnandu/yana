@@ -1,4 +1,4 @@
-import 'package:dart_ndk/domain_layer/entities/contact_list.dart';
+import 'package:ndk/domain_layer/entities/contact_list.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:yana/main.dart';
