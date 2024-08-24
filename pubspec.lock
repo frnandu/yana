@@ -514,34 +514,34 @@ packages:
     dependency: "direct main"
     description:
       name: flutter_background_service
-      sha256: d3c6cb7916b70b73da30740237e1e3cf41f81eba32c9cb6bca3a33d49ad4a144
+      sha256: "8807ed792227be05329478870b92f2df62c7af96f49763f6d62ad39d2eac6ee6"
       url: "https://pub.dev"
     source: hosted
-    version: "4.0.0"
+    version: "5.0.7"
   flutter_background_service_android:
     dependency: transitive
     description:
       name: flutter_background_service_android
-      sha256: "98a5352399ed77d65fa8301b0f14b5c3b5b52ab7fe104e7c83fdf1b6f5861826"
+      sha256: fe06c4bd719b8ce8512d5724a229526155c1f54f734524b8e43f8212e98384a8
       url: "https://pub.dev"
     source: hosted
-    version: "5.0.0"
+    version: "6.2.4"
   flutter_background_service_ios:
     dependency: transitive
     description:
       name: flutter_background_service_ios
-      sha256: fc793ba580b43b50aa53f3a0a146faf8da5eb875c3fa58ee2dc8af35a3c8e910
+      sha256: "45c8aca1e8850e5c45822152b06d5806aba9470517dcd2c291fce8ef99a44d60"
       url: "https://pub.dev"
     source: hosted
-    version: "4.0.0"
+    version: "5.0.2"
   flutter_background_service_platform_interface:
     dependency: transitive
     description:
       name: flutter_background_service_platform_interface
-      sha256: "3521274bc6b8b045a82c7fdcd4c3a0aea18e612f223c24c3a08d305db900a5bb"
+      sha256: "91dd3391c213e37094fbc3fb7f34319b99ea9df76036a5c054d6371be843b0ae"
       url: "https://pub.dev"
     source: hosted
-    version: "4.0.0"
+    version: "5.1.1"
   flutter_cache_manager:
     dependency: transitive
     description:
@@ -591,12 +591,13 @@ packages:
     source: hosted
     version: "6.0.0"
   flutter_inappwebview_android:
-    dependency: transitive
+    dependency: "direct overridden"
     description:
-      name: flutter_inappwebview_android
-      sha256: d247f6ed417f1f8c364612fa05a2ecba7f775c8d0c044c1d3b9ee33a6515c421
-      url: "https://pub.dev"
-    source: hosted
+      path: flutter_inappwebview_android
+      ref: d89b1d32638b49dfc58c4b7c84153be0c269d057
+      resolved-ref: d89b1d32638b49dfc58c4b7c84153be0c269d057
+      url: "https://github.com/holzgeist/flutter_inappwebview"
+    source: git
     version: "1.0.13"
   flutter_inappwebview_internal_annotations:
     dependency: transitive
@@ -638,14 +639,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.8"
-  flutter_isolate:
-    dependency: "direct main"
-    description:
-      name: flutter_isolate
-      sha256: "8ab879634322a012feb096153cf759caa118d81300189d1730455f3718bca24b"
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.0.5-pre"
   flutter_keyboard_visibility:
     dependency: transitive
     description:
