@@ -71,7 +71,7 @@ class SingleEventProvider extends ChangeNotifier with LaterFunction {
     List<String> tempIds = [];
     tempIds.addAll(_needUpdateIds);
 
-    Set<String> urls = relayManager.bootstrapRelays.toSet();
+    Set<String> urls =ndk.relayManager().bootstrapRelays.toSet();
     urls.addAll(DEFAULT_BOOTSTRAP_RELAYS);
 
     if (myInboxRelaySet != null) {
@@ -82,13 +82,7 @@ class SingleEventProvider extends ChangeNotifier with LaterFunction {
         }
       });
     }
-    NdkResponse response = await relayManager.requestRelays(urls, filter, timeout: 15, onTimeout: () {
-      tempIds.forEach((id) {
-        Nip01Event event = Nip01Event(pubKey: "", kind: -1, tags: [], content: "note not found or muted author");
-        event.id = id;
-        _onEvent(event);
-      });
-    });
+    NdkResponse response = ndk.query(relays: urls, filters: [filter]);
     response.stream.listen((event) {
       tempIds.remove(event.id);
       _onEvent(event);

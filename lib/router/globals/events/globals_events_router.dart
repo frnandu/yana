@@ -22,7 +22,6 @@ import '../../../utils/peddingevents_later_function.dart';
 import '../../../utils/platform_util.dart';
 
 class GlobalsEventsRouter extends StatefulWidget {
-
   GlobalsEventsRouter({super.key});
 
   @override
@@ -63,7 +62,7 @@ class _GlobalsEventsRouter extends KeepAliveCustState<GlobalsEventsRouter>
 
     var main = RefreshIndicator(
         onRefresh: () async {
-          until= null;
+          until = null;
           refresh();
         },
         child: EventDeleteCallback(
@@ -133,37 +132,41 @@ class _GlobalsEventsRouter extends KeepAliveCustState<GlobalsEventsRouter>
   int howManySecondsToLoadBack = 600;
 
   Future<void> refresh() async {
-    var filter = Filter(kinds: queryEventKinds(), until: until, since: (until!=null? until!: Helpers.now) - howManySecondsToLoadBack, limit: 100);
-    if (subscription!=null) {
+    var filter = Filter(
+        kinds: queryEventKinds(),
+        until: until,
+        since:
+            (until != null ? until! : Helpers.now) - howManySecondsToLoadBack,
+        limit: 100);
+    if (subscription != null) {
       await ndk.closeSubscription(subscription!.requestId);
     }
 
-    await relayManager.reconnectRelays(myInboxRelaySet!.urls);
+    await ndk.relayManager().reconnectRelays(myInboxRelaySet!.urls);
 
-    subscription = await relayManager!.query(
-        filter, myInboxRelaySet!, splitRequestsByPubKeyMappings: false);
+    subscription = ndk.query(filters: [filter], relaySet: myInboxRelaySet!);
     subscription!.stream.listen((event) {
-        if (eventBox.isEmpty()) {
-          laterTimeMS = 200;
-        } else {
-          laterTimeMS = 1000;
-        }
+      if (eventBox.isEmpty()) {
+        laterTimeMS = 200;
+      } else {
+        laterTimeMS = 1000;
+      }
 
-        later(event, (list) {
-          print("Received GLOBAL ${list.length} events");
-          setState(() {
-            eventBox.addList(list);
-            if (eventBox.newestEvent != null) {
-              _initTime = eventBox.newestEvent!.createdAt;
-            }
-          });
-        }, null);
+      later(event, (list) {
+        print("Received GLOBAL ${list.length} events");
+        setState(() {
+          eventBox.addList(list);
+          if (eventBox.newestEvent != null) {
+            _initTime = eventBox.newestEvent!.createdAt;
+          }
+        });
+      }, null);
     });
   }
 
   void unsubscribe() async {
     try {
-      if (subscription!=null) {
+      if (subscription != null) {
         await ndk.closeSubscription(subscription!.requestId);
       }
     } catch (e) {}

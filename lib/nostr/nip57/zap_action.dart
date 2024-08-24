@@ -92,7 +92,7 @@ class ZapAction {
     Set<String> relays = {};
     relays.addAll(myOutboxRelaySet!.urls.toList());
     if (settingProvider.inboxForReactions == 1) {
-      RelaySet inboxRelaySet = await relayManager
+      RelaySet inboxRelaySet = await ndk
           .calculateRelaySet(
           name: "replyInboxRelaySet",
           ownerPubKey: loggedUserSigner!.getPublicKey(),
@@ -101,7 +101,7 @@ class ZapAction {
           relayMinCountPerPubKey: settingProvider
               .broadcastToInboxMaxCount);
       relays.addAll(inboxRelaySet.urls.toSet());
-      relays.removeWhere((element) => relayManager.blockedRelays.contains(element));
+      relays.removeWhere((element) => ndk.blockedRelays().contains(element));
     }
 
     return await Zap.getInvoiceCode(

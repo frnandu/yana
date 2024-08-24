@@ -1,9 +1,9 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:ndk/domain_layer/entities/contact_list.dart';
 import 'package:ndk/domain_layer/entities/filter.dart';
 import 'package:ndk/domain_layer/entities/nip_01_event.dart';
-import 'package:flutter/foundation.dart';
 import 'package:ndk/domain_layer/entities/request_state.dart';
 import 'package:ndk/presentation_layer/request_response.dart';
 import 'package:yana/provider/data_util.dart';
@@ -165,9 +165,9 @@ class FollowEventProvider extends ChangeNotifier with PenddingEventsLaterFunctio
     //   filter.aTags = communities;
     // }
     if (settingProvider.gossip == 1 && feedRelaySet != null) {
-      await relayManager.reconnectRelays(feedRelaySet!.urls);
+      await ndk.relayManager().reconnectRelays(feedRelaySet!.urls);
     } else {
-      await relayManager.reconnectRelays(myInboxRelaySet!.urls);
+      await ndk.relayManager().reconnectRelays(myInboxRelaySet!.urls);
     }
     subscription = ndk.subscription(filters: [filter], relaySet: (feedRelaySet != null && settingProvider.gossip == 1) ? feedRelaySet! : myInboxRelaySet!);
         // splitRequestsByPubKeyMappings: settingProvider.gossip == 1);
@@ -177,7 +177,7 @@ class FollowEventProvider extends ChangeNotifier with PenddingEventsLaterFunctio
 
     // if (contactList != null) {
     //   if (contactList.followedTags.isNotEmpty) {
-    //     subscriptionTags = await relayManager!.subscription(
+    //     subscriptionTags = await ndk.relayManager().subscription(
     //         Filter(
     //           kinds: queryEventKinds(),
     //           since: since,
@@ -191,7 +191,7 @@ class FollowEventProvider extends ChangeNotifier with PenddingEventsLaterFunctio
     //     });
     //   }
     //   if (contactList.followedCommunities.isNotEmpty) {
-    //     subscriptionCommunities = await relayManager!.subscription(
+    //     subscriptionCommunities = await ndk.relayManager().subscription(
     //         Filter(
     //           kinds: queryEventKinds(),
     //           since: since,
@@ -205,7 +205,7 @@ class FollowEventProvider extends ChangeNotifier with PenddingEventsLaterFunctio
     //     });
     //   }
     //   if (contactList.followedEvents.isNotEmpty) {
-    //     subscriptionEvents = await relayManager!.subscription(
+    //     subscriptionEvents = await ndk.relayManager().subscription(
     //         Filter(
     //           kinds: queryEventKinds(),
     //           since: since,
@@ -251,9 +251,9 @@ class FollowEventProvider extends ChangeNotifier with PenddingEventsLaterFunctio
       }
     }
     if (settingProvider.gossip == 1 && feedRelaySet != null) {
-      await relayManager.reconnectRelays(feedRelaySet!.urls);
+      await ndk.relayManager().reconnectRelays(feedRelaySet!.urls);
     } else {
-      await relayManager.reconnectRelays(myInboxRelaySet!.urls);
+      await ndk.relayManager().reconnectRelays(myInboxRelaySet!.urls);
     }
 
     ndk.query(filters: [filter], relaySet: (feedRelaySet != null && settingProvider.gossip == 1) ? feedRelaySet! : myInboxRelaySet!).stream.listen((event) {

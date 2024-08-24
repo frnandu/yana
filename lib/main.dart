@@ -174,7 +174,6 @@ get loggedUserSigner => ndk.config.eventSigner;
 
 AmberFlutterDS amberFlutterDS = AmberFlutterDS(Amberflutter());
 late CacheManager cacheManager;
-RelayManager relayManager = RelayManager(cacheManager: cacheManager);
 Ndk ndk = Ndk(
   NdkConfig(eventVerifier: AcinqSecp256k1EventVerifier(), cache: cacheManager, engine: NdkEngine.LISTS),
 );
@@ -225,11 +224,11 @@ void onStart(ServiceInstance service) async {
         AwesomeNotifications().getAppLifeCycle().then((value) async {
           if (value.toString() != "NotificationLifeCycle.Foreground" && myInboxRelaySet != null) {
             appState = AppLifecycleState.inactive;
-            relayManager.allowReconnectRelays = true;
-            await relayManager.connect(urls: myInboxRelaySet!.urls);
+            ndk.relayManager().allowReconnectRelays = true;
+            await ndk.relayManager().connect(urls: myInboxRelaySet!.urls);
             await newNotificationsProvider.queryNew();
-            relayManager.allowReconnectRelays = false;
-            List<String> requestIdsToClose = relayManager.globalState.inFlightRequests.keys.toList();
+            ndk.relayManager().allowReconnectRelays = false;
+            List<String> requestIdsToClose = ndk.relayManager().globalState.inFlightRequests.keys.toList();
             for (var id in requestIdsToClose) {
               try {
                 await ndk.closeSubscription(id);
@@ -237,7 +236,7 @@ void onStart(ServiceInstance service) async {
                 print(e);
               }
             }
-            await relayManager.closeAllSockets();
+            await ndk.relayManager().closeAllTransports();
           }
         });
       }
@@ -266,22 +265,21 @@ Future<void> initProvidersAndStuff() async {
       //
       // loggedUserSigner = Bip340EventSigner(settingProvider.key!, getPublicKey(settingProvider.key!));
       filterProvider = FilterProvider.getInstance();
-      relayManager.eventFilters.add(filterProvider);
+      ndk.relayManager().eventFilters.add(filterProvider);
       DbCacheManager dbCacheManager = DbCacheManager();
       await dbCacheManager.init(directory: PlatformUtil.isWeb() ? isar.Isar.sqliteInMemory : (await getApplicationDocumentsDirectory()).path);
       cacheManager = dbCacheManager;
       dbCacheManager.eventFilter = filterProvider;
-      relayManager.cacheManager = cacheManager;
-      // relayManager.eventVerifier = HybridEventVerifier();
+      //ndk.relayManager().eventVerifier = HybridEventVerifier();
 
       if (myInboxRelaySet == null) {
-        await relayManager.connect();
+        await ndk.relayManager().connect();
         UserRelayList? userRelayList = await ndk.getSingleUserRelayList(loggedUserSigner!.getPublicKey());
         if (userRelayList != null) {
           createMyRelaySets(userRelayList);
         }
       }
-      // await relayManager.connect(urls: userRelayList != null ? userRelayList.urls : RelayManager.DEFAULT_BOOTSTRAP_RELAYS);
+      // await ndk.relayManager().connect(urls: userRelayList != null ? userRelayList.urls :ndk.relayManager().DEFAULT_BOOTSTRAP_RELAYS);
       // await relayProvider!.loadRelays(loggedUserSigner!.getPublicKey(), () {
       //   relayProvider.addRelays(nostr!).then((bla) {
       notificationsProvider = NotificationsProvider();
@@ -301,7 +299,7 @@ Future<void> initProvidersAndStuff() async {
 }
 
 Future<void> initRelays({bool newKey = false}) async {
-  await relayManager.connect();
+  await ndk.relayManager().connect();
 
   UserRelayList? userRelayList = !newKey ? await ndk.getSingleUserRelayList(loggedUserSigner!.getPublicKey()) : null;
   if (userRelayList == null) {
@@ -313,23 +311,23 @@ Future<void> initRelays({bool newKey = false}) async {
         refreshedTimestamp: now);
   }
   createMyRelaySets(userRelayList);
-  await relayManager.connect(urls: userRelayList!.urls);
+  await ndk.relayManager().connect(urls: userRelayList!.urls);
 
   // TODO
   // ndk.getSingleNip51List(Nip51List.MUTE, loggedUserSigner!).then((list) {
   //   filterProvider.muteList = list;
-  //   relayManager.eventFilters.add(filterProvider);
-  //   relayManager.blockedRelays = [];
+  //  ndk.relayManager().eventFilters.add(filterProvider);
+  //  ndk.relayManager().blockedRelays = [];
   //   ndk.getSingleNip51List(Nip51List.BLOCKED_RELAYS, loggedUserSigner!).then((blockedRelays) {
   //     if (blockedRelays!=null) {
-  //       relayManager.blockedRelays = blockedRelays.allRelays!;
+  //      ndk.relayManager().blockedRelays = blockedRelays.allRelays!;
   //       relayProvider.notifyListeners();
   //     }
   //     searchRelays = [];
   //     ndk.getSingleNip51List(Nip51List.SEARCH_RELAYS, loggedUserSigner!).then((searchRelaySet)  {
   //       if (searchRelaySet!=null) {
   //         searchRelays = searchRelaySet.allRelays!;
-  //         for (var url in searchRelays) { relayManager.connectRelay(url);}
+  //         for (var url in searchRelays) {ndk.relayManager().connectRelay(url);}
   //         relayProvider.notifyListeners();
   //       }
   //     });
@@ -350,7 +348,7 @@ Future<void> initRelays({bool newKey = false}) async {
         EasyLoading.showToast("Calculating feed relays from contact's outboxes...",
             dismissOnTap: true, duration: const Duration(seconds: 15), maskType: EasyLoadingMaskType.black);
 
-        feedRelaySet = await relayManager.calculateRelaySet(
+        feedRelaySet = await ndk.calculateRelaySet(
             name: "feed",
             ownerPubKey: loggedUserSigner!.getPublicKey(),
             pubKeys: contactList.contacts,
@@ -360,7 +358,7 @@ Future<void> initRelays({bool newKey = false}) async {
       } else {
         final startTime = DateTime.now();
         print("connecting ${feedRelaySet!.relaysMap.length} relays");
-        List<bool> connected = await Future.wait(feedRelaySet!.relaysMap.keys.map((url) => relayManager.connectRelay(url)));
+        List<bool> connected = await Future.wait(feedRelaySet!.relaysMap.keys.map((url) => ndk.relayManager().connectRelay(url)));
         final endTime = DateTime.now();
         final duration = endTime.difference(startTime);
         print(
@@ -453,12 +451,11 @@ Future<void> main() async {
   try {
     await dbCacheManager.init(directory: PlatformUtil.isWeb() ? isar.Isar.sqliteInMemory : (await getApplicationDocumentsDirectory()).path);
     cacheManager = dbCacheManager;
-    relayManager.cacheManager = cacheManager;
   } catch (e) {
-    cacheManager = relayManager.cacheManager;
+    cacheManager = MemCacheManager();
     print(e);
   }
-  // relayManager.eventVerifier = HybridEventVerifier();
+  //ndk.relayManager().eventVerifier = HybridEventVerifier();
 
   if (!PlatformUtil.isWeb() && PlatformUtil.isPC()) {
     await windowManager.ensureInitialized();
@@ -851,7 +848,7 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
                         }
                         key = Nip19.decode(key);
                         // var filter = Filter(ids: [key]);
-                        // relayManager.requestRelays(relayManager.bootstrapRelays, filter, idleTimeout: 20).then((stream) {
+                        //ndk.relayManager().requestRelays(relayManager.bootstrapRelays, filter, idleTimeout: 20).then((stream) {
                         //   stream.listen((event) {
                         //     RouterUtil.router(context, RouterPath.THREAD_DETAIL, event);
                         //   });
@@ -943,12 +940,12 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
         (appState == AppLifecycleState.paused || appState == AppLifecycleState.hidden || appState == AppLifecycleState.inactive)) {
       //now you know that your app went to the background and is back to the foreground
       if (loggedUserSigner != null) {
-        if (relayManager.allowReconnectRelays == false) {
+        if (ndk.relayManager().allowReconnectRelays == false) {
           if (backgroundService != null && settingProvider.backgroundService) {
             backgroundService!.invoke('stopService');
           }
-          relayManager.allowReconnectRelays = false;
-          List<String> requestIdsToClose = relayManager.globalState.inFlightRequests.keys.toList();
+          ndk.relayManager().allowReconnectRelays = false;
+          List<String> requestIdsToClose = ndk.relayManager().globalState.inFlightRequests.keys.toList();
           for (var id in requestIdsToClose) {
             try {
               await ndk.closeSubscription(id);
@@ -956,9 +953,9 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
               print(e);
             }
           }
-          // await relayManager.closeAllSockets();
+          // await ndk.relayManager().closeAllSockets();
 
-          relayManager.allowReconnectRelays = true;
+          ndk.relayManager().allowReconnectRelays = true;
 
           // Set<String> urls = {};
           // urls.addAll(myInboxRelaySet!.urls);
@@ -967,8 +964,8 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
           // }
           //
           // try {
-          //   await relayManager.reconnectRelays(urls);
-          //   // await relayManager.reconnectRelays(urls);
+          //   await ndk.relayManager().reconnectRelays(urls);
+          //   // await ndk.relayManager().reconnectRelays(urls);
           // } catch (e) {
           //   print(e);
           // }
@@ -986,8 +983,8 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
           if (backgroundService != null && settingProvider.backgroundService) {
             backgroundService!.startService();
           }
-          relayManager.allowReconnectRelays = false;
-          List<String> requestIdsToClose = relayManager.globalState.inFlightRequests.keys.toList();
+          ndk.relayManager().allowReconnectRelays = false;
+          List<String> requestIdsToClose = ndk.relayManager().globalState.inFlightRequests.keys.toList();
           for (var id in requestIdsToClose) {
             try {
               await ndk.closeSubscription(id);
@@ -996,7 +993,7 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
             }
           }
 
-          await relayManager.closeAllSockets();
+          await ndk.relayManager().closeAllTransports();
 
           // if (settingProvider.backgroundService) {
           //   backgroundService!.startService();

@@ -353,7 +353,7 @@ class _EditorRouter extends CustState<EditorRouter> with EditorMixin {
                   }
                 } else if (pubKeys.isNotEmpty) {
                   EasyLoading.show(status: 'Calculating inbox relays of participants...', maskType: EasyLoadingMaskType.black, dismissOnTap: true);
-                  RelaySet inboxRelaySet = await relayManager
+                  RelaySet inboxRelaySet = await ndk
                       .calculateRelaySet(
                       name: "replyInboxRelaySet",
                       ownerPubKey: loggedUserSigner!.getPublicKey(),
@@ -368,7 +368,7 @@ class _EditorRouter extends CustState<EditorRouter> with EditorMixin {
                     }
                   });
 
-                  relays.removeWhere((element) => relayManager.blockedRelays.contains(element));
+                  relays.removeWhere((element) =>ndk.relayManager().blockedRelays.contains(element));
                   EasyLoading.dismiss();
                 }
               }

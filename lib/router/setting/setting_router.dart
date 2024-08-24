@@ -418,7 +418,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
 
     listsTiles.add(SettingsTile.navigation(
         onPressed: (context) async {
-          if (relayManager.blockedRelaysCount>0) {
+          if (ndk.relayManager().blockedRelaysCount>0) {
             bool finished = false;
             Future.delayed(const Duration(milliseconds: 500), () {
               if (!finished) {
@@ -444,7 +444,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
         ),
         trailing: Icon(Icons.navigate_next),
         title: Text(
-            "${relayManager.blockedRelaysCount} Blocked relays",
+            "${ndk.relayManager().blockedRelaysCount} Blocked relays",
           )));
 
     listsTiles.add(
@@ -917,8 +917,8 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
   void initImageServiceList() {
     if (imageServiceList == null) {
       imageServiceList = [];
-      imageServiceList!.add(EnumObj(ImageServices.NOSTRIMG_COM, ImageServices.NOSTRIMG_COM));
       imageServiceList!.add(EnumObj(ImageServices.NOSTR_BUILD, ImageServices.NOSTR_BUILD));
+
     }
   }
 

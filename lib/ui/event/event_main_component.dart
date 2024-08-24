@@ -167,7 +167,7 @@ class _EventMainComponent extends State<EventMainComponent> {
     if (_settingProvider.autoOpenSensitive == OpenStatus.OPEN) {
       showWarning = true;
     }
-    if (widget.mutedProfile || !relayManager.filterEvent(widget.event)) {
+    if (widget.mutedProfile || !ndk.relayManager().filterEvent(widget.event)) {
       return Container();
     }
 

@@ -5,6 +5,7 @@ import 'package:ndk/domain_layer/entities/metadata.dart';
 import 'package:ndk/domain_layer/entities/nip_01_event.dart';
 import 'package:ndk/domain_layer/entities/nip_51_list.dart';
 import 'package:ndk/domain_layer/entities/relay.dart';
+import 'package:ndk/presentation_layer/request_response.dart';
 import 'package:ndk/shared/helpers/relay_helper.dart';
 import 'package:ndk/shared/nips/nip01/helpers.dart';
 import 'package:flutter/material.dart';
@@ -94,7 +95,7 @@ class _MuteListRouter extends State<MuteListRouter> with SingleTickerProviderSta
             //   onChanged: (value) {
             //     print("!!!!!!!!!!!!!! $value");
             //     setState(() {
-            //       relaySet = relayManager.getCachedNip51RelaySet(value!, loggedUserSigner!);
+            //       relaySet =ndk.relayManager().getCachedNip51RelaySet(value!, loggedUserSigner!);
             //       selectedList = value!;
             //     });
             //   },
@@ -228,12 +229,10 @@ class _MuteListRouter extends State<MuteListRouter> with SingleTickerProviderSta
           filterMap = Filter(kinds: [Metadata.KIND], limit: 10).toMap();
           filterMap!["search"] = search;
           List<String> relaysWithNip50 = searchRelays.isNotEmpty ? searchRelays : ["wss://relay.nostr.band", "wss://relay.noshere.com"];
-          relayManager.requestRelays(relaysWithNip50, Filter.fromMap(filterMap!), timeout: 10).then((request) {
-            request.stream.listen((event) {
-              onQueryEvent(search, event);
-            });
+          NdkResponse response = ndk.query(relays: relaysWithNip50, filters: [Filter.fromMap(filterMap!)]);
+          response.stream.listen((event) {
+            onQueryEvent(search, event);
           });
-          // });
         }
       }
     }
@@ -254,16 +253,16 @@ class _MuteListRouter extends State<MuteListRouter> with SingleTickerProviderSta
   }
 
   int compareRelays(RelayMetadata r1, RelayMetadata r2) {
-    Relay? relay1 = relayManager.getRelay(r1.url!);
-    Relay? relay2 = relayManager!.getRelay(r2.url!);
+    Relay? relay1 =ndk.relayManager().getRelay(r1.url!);
+    Relay? relay2 = ndk.relayManager().getRelay(r2.url!);
     if (relay1 == null) {
       return 1;
     }
     if (relay2 == null) {
       return -1;
     }
-    bool a1 = relayManager.isRelayConnected(r1.url!);
-    bool a2 = relayManager.isRelayConnected(r2.url!);
+    bool a1 =ndk.relayManager().isRelayConnected(r1.url!);
+    bool a2 =ndk.relayManager().isRelayConnected(r2.url!);
     if (a1) {
       return a2 ? (r2.count != null ? r2.count!.compareTo(r1.count!) : 0) : -1;
     }

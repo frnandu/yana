@@ -366,7 +366,7 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
                 RouterUtil.back(context);
               } else if (value == "share") {
                 UserRelayList? userRelayList = cacheManager.loadUserRelayList(widget.pubkey);
-                List<String> relays = relayManager.bootstrapRelays;
+                List<String> relays = ndk.config.bootstrapRelays;
                 if (userRelayList!=null && userRelayList.relays!=null) {
                   relays = userRelayList!.relays!.keys!.toList();
                 }

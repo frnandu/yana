@@ -52,10 +52,10 @@ class _RelaysRouter extends CustState<RelaysRouter> with WhenStopFunction {
     userRelayList ??= await ndk.getSingleUserRelayList(loggedUserSigner!.getPublicKey(), forceRefresh: true);
     userRelayList ??= UserRelayList(
         pubKey: loggedUserSigner!.getPublicKey(),
-        relays: {for (String url in relayManager.bootstrapRelays) url: ReadWriteMarker.readWrite},
+        relays: {for (String url in ndk.relayManager().bootstrapRelays) url: ReadWriteMarker.readWrite},
         createdAt: Helpers.now,
         refreshedTimestamp: Helpers.now);
-    await Future.wait(userRelayList!.urls.map((url) => relayManager.getRelayInfo(cleanRelayUrl(url)!)));
+    await Future.wait(userRelayList!.urls.map((url) =>ndk.relayManager().getRelayInfo(cleanRelayUrl(url)!)));
 
     /// TODO check if widget is not disposed already...
 
@@ -107,14 +107,14 @@ class _RelaysRouter extends CustState<RelaysRouter> with WhenStopFunction {
                     }
                     await loadRelayInfos();
                     // try {
-                    //   await Future.wait(userRelayList!.urls.map((url) => relayManager.webSockets[url]!,).map((webSocket) => webSocket.disconnect("reconnect")).toList());
+                    //   await Future.wait(userRelayList!.urls.map((url) =>ndk.relayManager().webSockets[url]!,).map((webSocket) => webSocket.disconnect("reconnect")).toList());
                     // } catch (e) {
                     //   print(e);
                     // }
 
-                    await relayManager.reconnectRelays(userRelayList!.urls);
+                    await ndk.relayManager().reconnectRelays(userRelayList!.urls);
 
-                    // await relayManager.reconnectRelays(userRelayList!.urls);
+                    // await ndk.relayManager().reconnectRelays(userRelayList!.urls);
                     setState(() {});
                   },
                   child: Selector<RelayProvider, UserRelayList?>(
@@ -124,7 +124,7 @@ class _RelaysRouter extends CustState<RelaysRouter> with WhenStopFunction {
                     builder: (BuildContext context, UserRelayList? userRelayList, Widget? child) {
                       userRelayList ??= UserRelayList(
                           pubKey: loggedUserSigner!.getPublicKey(),
-                          relays: {for (String url in relayManager.bootstrapRelays) url: ReadWriteMarker.readWrite},
+                          relays: {for (String url in ndk.relayManager().bootstrapRelays) url: ReadWriteMarker.readWrite},
                           createdAt: Helpers.now,
                           refreshedTimestamp: Helpers.now);
                       return userRelayList == null
@@ -175,7 +175,7 @@ class _RelaysRouter extends CustState<RelaysRouter> with WhenStopFunction {
                                 ReadWriteMarker? marker = userRelayList!.relays[url]!;
                                 return RelaysItemComponent(
                                   url: url,
-                                  relay: relayManager.getRelay(url)!,
+                                  relay:ndk.relayManager().getRelay(url)!,
                                   marker: marker,
                                   showConnection: true,
                                   showStats: true,
@@ -211,9 +211,9 @@ class _RelaysRouter extends CustState<RelaysRouter> with WhenStopFunction {
     // itemScrollController.jumpTo(index: userRelayList!.relays.length-1);
     List<String> result = await relayProvider.findRelays(controller.text);
     for (var url in result) {
-      if (relayManager.getRelay(url)==null || relayManager.getRelay(url)!.info==null) {
-        relayManager.relays[url] = Relay(url);
-        relayManager.getRelayInfo(url).then((value) {
+      if (ndk.relayManager().getRelay(url)==null ||ndk.relayManager().getRelay(url)!.info==null) {
+       ndk.relayManager().relays[url] = Relay(url);
+       ndk.relayManager().getRelayInfo(url).then((value) {
           if (!disposed) {
             setState(() {});
           }
@@ -245,11 +245,11 @@ class _RelaysRouter extends CustState<RelaysRouter> with WhenStopFunction {
   //   bool? result = await ConfirmDialog.show(context, "Confirm add ${url} to list");
   //   if (result != null && result) {
   //     EasyLoading.show(status: 'Broadcasting relay list...', maskType: EasyLoadingMaskType.black, dismissOnTap: true);
-  //     relaySet = await relayManager.broadcastAddNip51Relay(url, relaySet!.name, myOutboxRelaySet!.urls, loggedUserSigner!);
+  //     relaySet = await ndk.relayManager().broadcastAddNip51Relay(url, relaySet!.name, myOutboxRelaySet!.urls, loggedUserSigner!);
   //     if (relaySet!.name == "search") {
   //       searchRelays = relaySet!.relays;
   //     } else if (relaySet!.name == "blocked") {
-  //       relayManager.blockedRelays = relaySet!.relays;
+  //      ndk.relayManager().blockedRelays = relaySet!.relays;
   //     }
   //     relayProvider.notifyListeners();
   //     EasyLoading.dismiss();

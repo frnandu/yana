@@ -65,11 +65,11 @@ class Uploader {
 
   static Future<String?> upload(String localPath,
       {String? imageService}) async {
-    if (imageService == ImageServices.NOSTRIMG_COM) {
-      return await NostrimgComUploader.upload(localPath);
-    } else if (imageService == ImageServices.NOSTR_BUILD) {
+    // if (imageService == ImageServices.NOSTRIMG_COM) {
+    //   return await NostrimgComUploader.upload(localPath);
+    // } else if (imageService == ImageServices.NOSTR_BUILD) {
       return await NostrBuildUploader.upload(localPath);
-    }
-    return await NostrimgComUploader.upload(localPath);
+    // }
+    // return await NostrimgComUploader.upload(localPath);
   }
 }

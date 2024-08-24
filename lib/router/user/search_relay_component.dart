@@ -129,7 +129,7 @@ class SearchRelayItemComponent extends StatelessWidget {
     //     displayName = nip19Name;
     //   }
     // }
-    Relay? relay = relayManager.getRelay(url);
+    Relay? relay =ndk.relayManager().getRelay(url);
 
     // Widget main = Container(
     //   width: width,

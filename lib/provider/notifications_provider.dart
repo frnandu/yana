@@ -94,7 +94,7 @@ class NotificationsProvider extends ChangeNotifier with PenddingEventsLaterFunct
     if (myInboxRelaySet != null) {
       var filter = Filter(kinds: queryEventKinds(), since: since, pTags: [loggedUserSigner!.getPublicKey()], limit: 100);
 
-      await relayManager.reconnectRelays(myInboxRelaySet!.urls);
+      await ndk.relayManager().reconnectRelays(myInboxRelaySet!.urls);
 
       subscription = ndk.subscription(filters: [filter], relaySet: myInboxRelaySet!);
       subscription!.stream.listen((event) {

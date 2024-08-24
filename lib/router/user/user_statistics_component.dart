@@ -65,7 +65,7 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
 
   void load() async {
     refreshContactListIfNeededAsync(widget.pubkey);
-    await relayManager.loadMissingRelayListsFromNip65OrNip02([widget.pubkey],forceRefresh: true).then(
+    await ndk.loadMissingRelayListsFromNip65OrNip02([widget.pubkey],forceRefresh: true).then(
       (value) {
         userRelayList = cacheManager.loadUserRelayList(widget.pubkey);
         contactList = cacheManager.loadContactList(widget.pubkey);
@@ -263,12 +263,11 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
       Filter filter =
           Filter(kinds: [ContactList.KIND], pTags: [widget.pubkey]);
 
-      _followersSubscription = await relayManager.query(
-          // relayManager.bootstrapRelays.toList()
+      _followersSubscription = ndk.query(
+          //ndk.relayManager().bootstrapRelays.toList()
           //   ..addAll(myInboxRelaySet!.urls),
-          filter,
-          myInboxRelaySet!,
-          idleTimeout: 20
+          filters: [filter],
+          relaySet: myInboxRelaySet!,
       );
       _followersSubscription!.stream.listen((event) {
         var oldEvent = followedMap![event.pubKey];
@@ -305,12 +304,11 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
     if (zapEventBox == null) {
       zapEventBox = EventMemBox(sortAfterAdd: false);
       // pull zap event
-      _zapsSubscription = await relayManager.query(
-          // relayManager.bootstrapRelays.toList()
+      _zapsSubscription = await ndk.query(
+          //ndk.relayManager().bootstrapRelays.toList()
           //   ..addAll(myInboxRelaySet!.urls),
-          Filter(kinds: [EventKind.ZAP_RECEIPT], pTags: [widget.pubkey]),
-          myInboxRelaySet!,
-        idleTimeout: 20
+          filters: [Filter(kinds: [EventKind.ZAP_RECEIPT], pTags: [widget.pubkey])],
+          relaySet: myInboxRelaySet!,
       );
       _zapsSubscription!.stream.listen(
         (event) {

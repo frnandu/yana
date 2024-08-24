@@ -69,8 +69,8 @@ class _EventTopComponent extends State<EventTopComponent> {
     }
     List<GestureDetector> relayIcons = [];
     widget.event.sources.forEach((source) {
-      Relay? relay = relayManager.relays[source];
-      relay ??= relayManager.relays[cleanRelayUrl(source)];
+      Relay? relay =ndk.relayManager().relays[source];
+      relay ??=ndk.relayManager().relays[cleanRelayUrl(source)];
       Container? relayIcon = relay != null ? getRelayIcon(relay,13) : null;
       if (relayIcon != null) {
         relayIcons.add(GestureDetector(
@@ -228,7 +228,7 @@ class _EventTopComponent extends State<EventTopComponent> {
   }
 
   loadRelayInfos() async {
-    await Future.wait(widget.event.sources.map((url) => relayManager.getRelayInfo(cleanRelayUrl(url)!)));
+    await Future.wait(widget.event.sources.map((url) =>ndk.relayManager().getRelayInfo(cleanRelayUrl(url)!)));
     // setState(() {});
   }
 
@@ -237,8 +237,8 @@ class _EventTopComponent extends State<EventTopComponent> {
       await loadRelayInfos();
 
       List<EnumObj>? relays = widget.event.sources.map((source) {
-        Relay? relay = relayManager.relays[source];
-        relay ??= relayManager.relays[cleanRelayUrl(source)];
+        Relay? relay =ndk.relayManager().relays[source];
+        relay ??=ndk.relayManager().relays[cleanRelayUrl(source)];
         return EnumObj(
           source,
           null,
@@ -247,7 +247,7 @@ class _EventTopComponent extends State<EventTopComponent> {
       }).toList();
       EnumObj? resultEnumObj = await EnumSelectorComponent.show(context, relays!);
       if (resultEnumObj != null) {
-        RouterUtil.router(context, RouterPath.RELAY_INFO, relayManager.relays[resultEnumObj.value]);
+        RouterUtil.router(context, RouterPath.RELAY_INFO,ndk.relayManager().relays[resultEnumObj.value]);
       }
     }
   }

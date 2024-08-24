@@ -40,7 +40,7 @@ class _RelaySetRouter extends State<RelaySetRouter> with SingleTickerProviderSta
     controller.addListener(() {
       onEditingComplete();
     });
-    // relayManager.getNip51RelaySets(loggedUserSigner!).then((value) {
+    //ndk.relayManager().getNip51RelaySets(loggedUserSigner!).then((value) {
     //   setState(() {
     //     list = value;
     //   });
@@ -90,7 +90,7 @@ class _RelaySetRouter extends State<RelaySetRouter> with SingleTickerProviderSta
         //   onChanged: (value) {
         //     print("!!!!!!!!!!!!!! $value");
         //     setState(() {
-        //       relaySet = relayManager.getCachedNip51RelaySet(value!, loggedUserSigner!);
+        //       relaySet =ndk.relayManager().getCachedNip51RelaySet(value!, loggedUserSigner!);
         //       selectedList = value!;
         //     });
         //   },
@@ -176,9 +176,9 @@ class _RelaySetRouter extends State<RelaySetRouter> with SingleTickerProviderSta
   void onEditingComplete() async {
     List<String> result = await relayProvider.findRelays(controller.text);
     result.forEach((url) {
-      if (relayManager.getRelay(url) == null || relayManager.getRelay(url)!.info == null) {
-        relayManager.relays[url] = Relay(url);
-        relayManager.getRelayInfo(url).then((value) {
+      if (ndk.relayManager().getRelay(url) == null ||ndk.relayManager().getRelay(url)!.info == null) {
+       ndk.relayManager().relays[url] = Relay(url);
+       ndk.relayManager().getRelayInfo(url).then((value) {
           if (!disposed) {
             setState(() {});
           }
@@ -193,16 +193,16 @@ class _RelaySetRouter extends State<RelaySetRouter> with SingleTickerProviderSta
 
 
   int compareRelays(RelayMetadata r1, RelayMetadata r2) {
-    Relay? relay1 = relayManager.getRelay(r1.url!);
-    Relay? relay2 = relayManager!.getRelay(r2.url!);
+    Relay? relay1 =ndk.relayManager().getRelay(r1.url!);
+    Relay? relay2 = ndk.relayManager().getRelay(r2.url!);
     if (relay1 == null) {
       return 1;
     }
     if (relay2 == null) {
       return -1;
     }
-    bool a1 = relayManager.isRelayConnected(r1.url!);
-    bool a2 = relayManager.isRelayConnected(r2.url!);
+    bool a1 =ndk.relayManager().isRelayConnected(r1.url!);
+    bool a2 =ndk.relayManager().isRelayConnected(r2.url!);
     if (a1) {
       return a2 ? (r2.count != null ? r2.count!.compareTo(r1.count!) : 0) : -1;
     }

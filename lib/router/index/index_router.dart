@@ -143,7 +143,7 @@ class _IndexRouter extends CustState<IndexRouter>
             if (nevent != null) {
               if (nevent.relays!=null && nevent.relays!.isNotEmpty) {
                 // TODO allowReconnectRelays is false, WTF?
-                // await relayManager.reconnectRelays(nevent.relays!);
+                // await ndk.relayManager().reconnectRelays(nevent.relays!);
               }
               RouterUtil.router(context, RouterPath.THREAD_DETAIL, nevent.id);
             }

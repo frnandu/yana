@@ -27,7 +27,7 @@ if (flutterVersionName == null) {
 }
 
 android {
-    compileSdkVersion 34
+    compileSdkVersion 35
     ndkVersion flutter.ndkVersion
 
     compileOptions {
@@ -83,6 +83,6 @@ flutter {
 dependencies {
     implementation 'com.android.support:multidex:1.0.3'
     // Bitcoin secp256k1 bindings to Android
-    implementation 'fr.acinq.secp256k1:secp256k1-kmp-jni-android:0.10.1'
+    implementation 'fr.acinq.secp256k1:secp256k1-kmp-jni-android:0.15.0'
 
 }
