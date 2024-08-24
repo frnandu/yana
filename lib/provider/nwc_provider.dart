@@ -325,7 +325,7 @@ class NwcProvider extends ChangeNotifier {
       // RelayManager relayManager = RelayManager();
       await ndk.relayManager().reconnectRelay(relay!, force: true);
 
-      NdkResponse subscription = ndk.subscription(relays: [relay], filters: [filter]);
+      NdkResponse subscription = ndk.subscription(relays: [relay!], filters: [filter]);
 
       subscription.stream.listen((event) async {
         await ndk.closeSubscription(subscription.requestId);
