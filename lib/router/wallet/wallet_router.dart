@@ -84,7 +84,7 @@ class _WalletRouter extends State<WalletRouter> {
       builder: (context, isConnected, child) {
         List<Widget> list = [];
         if (isConnected) {
-          list.add(const SizedBox(height: 20,));
+          list.add(const SizedBox(height: 40,));
           list.add(Selector<NwcProvider, int?>(
             builder: (context, balance, child) {
               if (balance != null) {
@@ -102,6 +102,7 @@ class _WalletRouter extends State<WalletRouter> {
               return _provider.getBalance;
             },
           ));
+          list.add(const SizedBox(height: 20,));
           if (_nwcProvider.canPayInvoice || nwcProvider.canMakeInvoice) {
             list.add(Container(
                 margin: const EdgeInsets.all(Base.BASE_PADDING),
@@ -114,6 +115,7 @@ class _WalletRouter extends State<WalletRouter> {
                         ? Expanded(
                             child: Button(
                                 text: "Receive",
+                                height: 70,
                                 // before: const Icon(Icons.call_received_rounded),
                                 onTap: () async {
                                   RouterUtil.router(
@@ -130,6 +132,7 @@ class _WalletRouter extends State<WalletRouter> {
                         ? Expanded(
                             child: Button(
                                 text: "Send",
+                                height: 70,
                                 // before: const Icon(Icons.call_made_rounded),
                                 onTap: () async {
                                   RouterUtil.router(
@@ -336,7 +339,11 @@ class _WalletRouter extends State<WalletRouter> {
       //     ),
       //   )
       // ],
-      title: const Text("Wallet"),
+      title: const Text("Wallet", style: const TextStyle(
+        fontWeight: FontWeight.bold,
+        fontFamily: "Geist.Mono",
+        fontSize: 20,
+      )),
       actions: [barOptions()],
     );
 
@@ -374,6 +381,7 @@ class _WalletRouter extends State<WalletRouter> {
 
   Widget barOptions() {
     return PopupMenuButton<String>(
+        icon: const Icon(Icons.settings),
         tooltip: "more",
         itemBuilder: (context) {
           List<PopupMenuEntry<String>> list = [

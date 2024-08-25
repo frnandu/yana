@@ -324,6 +324,9 @@ class _WalletReceiveRouter extends State<WalletReceiveRouter> {
           ),
         ),
       );
+      list.add(Button(text:"Close", onTap: () {
+        RouterUtil.back(context);
+      },));
     }
     return Scaffold(
       body: Stack(

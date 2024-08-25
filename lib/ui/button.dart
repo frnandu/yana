@@ -4,9 +4,10 @@ class Button extends StatelessWidget {
   String text;
   Icon? before;
   Icon? after;
+  double height;
   GestureTapCallback onTap;
 
-  Button({super.key, required this.text, required this.onTap, this.before, this.after});
+  Button({super.key, required this.text, required this.onTap, this.before, this.after, this.height=48});
 
   @override
   Widget build(BuildContext context) {
@@ -16,7 +17,7 @@ class Button extends StatelessWidget {
       behavior: HitTestBehavior.translucent,
       onTap: onTap,
       child: Container(
-        height: 48,
+        height: height,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         clipBehavior: Clip.antiAlias,
         decoration: ShapeDecoration(
