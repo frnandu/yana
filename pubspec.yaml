@@ -117,6 +117,8 @@ dependencies:
   visibility_detector: ^0.4.0
   #uni_links: ^0.5.1
   confetti: ^0.7.0
+  flutter_timer_countdown: ^1.0.7
+
   #ndk:  0.1.0-dev8
 #  ndk:
 #    git:

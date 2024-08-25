@@ -5,6 +5,7 @@ import 'package:confetti/confetti.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:flutter_timer_countdown/flutter_timer_countdown.dart';
 import 'package:pretty_qr_code/pretty_qr_code.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -18,6 +19,8 @@ import '../../../ui/appbar4stack.dart';
 import '../../i18n/i18n.dart';
 import '../../ui/button.dart';
 import '../../utils/platform_util.dart';
+import '../../utils/router_util.dart';
+import 'bitcoin_amount.dart';
 
 class WalletReceiveRouter extends StatefulWidget {
   const WalletReceiveRouter({super.key});
@@ -38,6 +41,8 @@ class _WalletReceiveRouter extends State<WalletReceiveRouter> {
 
   static const int BTC_IN_SATS = 100000000;
 
+  int? expiration;
+
   @override
   void initState() {
     // nwcProvider.reload();
@@ -46,7 +51,7 @@ class _WalletReceiveRouter extends State<WalletReceiveRouter> {
         if (fiatCurrencyRate != null &&
             StringUtil.isNotBlank(amountInputcontroller.text.trim())) {
           double? btc =
-              (int.parse(amountInputcontroller.text).toDouble() /  BTC_IN_SATS);
+              (int.parse(amountInputcontroller.text).toDouble() / BTC_IN_SATS);
           var fiatFactor = fiatCurrencyRate!["value"];
           fiatAmount = (btc * fiatFactor * 100).truncateToDouble() / 100;
           print(fiatAmount);
@@ -111,9 +116,68 @@ class _WalletReceiveRouter extends State<WalletReceiveRouter> {
         if (PlatformUtil.isPC() || PlatformUtil.isWeb() || true) {
           link = 'lightning:${payingInvoice!}';
         }
-        list.add(const SizedBox(
-          height: 20,
-        ));
+        list.add(BitcoinAmount(fiatAmount: fiatAmount, fiatUnit: fiatCurrencyRate?["unit"], balance: int.parse(amountInputcontroller.text))
+        );
+        list.add(Container(
+            margin: const EdgeInsets.only(
+                bottom: Base.BASE_PADDING * 2),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      color: themeData.primaryColor,
+                      strokeWidth: 2.0,
+                    )),
+                const SizedBox(width: 10),
+                const Text("Waiting for settlement",
+                    style: TextStyle(
+                        color: Color(0xFF7A7D81),
+                        fontSize: 20,
+                        fontFamily: 'Geist.Mono'))
+              ],
+            )));
+        const TextStyle timeTextStyle = TextStyle(
+            color: Color(0xFF7A7D81),
+            fontSize: 16,
+            fontFamily: 'Geist.Mono');
+        list.add(
+          Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Expanded(
+                    child: Text("Expiration time:",
+                        style: timeTextStyle)),
+                const SizedBox(
+                  width: 40,
+                ),
+                Expanded(
+                    child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                      TimerCountdown(
+                        enableDescriptions: false,
+                        spacerWidth: 1,
+                        colonsTextStyle:timeTextStyle,
+                        timeTextStyle: timeTextStyle,
+                        format: CountDownTimerFormat.hoursMinutesSeconds,
+                        endTime: DateTime.now().add(
+                          Duration(seconds: expiration!),
+                        ),
+                        onEnd: () {
+                          RouterUtil.back(context);
+                        },
+                      )
+                    ]))
+              ]),
+        );
+        list.add(const SizedBox(height: 20));
         list.add(Row(
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.start,
@@ -162,7 +226,7 @@ class _WalletReceiveRouter extends State<WalletReceiveRouter> {
                       ? ""
                       : fiatAmount! < 0.01
                           ? "< 0.01 ${fiatCurrencyRate?["unit"]}"
-                          : "${fiatAmount!.toStringAsFixed(fiatAmount!<10?2:0)} ${fiatCurrencyRate?["unit"]}",
+                          : "${fiatAmount!.toStringAsFixed(fiatAmount! < 10 ? 2 : 0)} ${fiatCurrencyRate?["unit"]}",
                   style: const TextStyle(
                       color: Color(0xFF7A7D81),
                       fontSize: 20,
@@ -188,11 +252,12 @@ class _WalletReceiveRouter extends State<WalletReceiveRouter> {
         list.add(Button(
             text: "Create Invoice",
             onTap: () async {
+              expiration = 3600;
               await _nwcProvider.makeInvoice(
                   int.parse(amountInputcontroller.text) * 1000,
                   descriptionInputcontroller.text,
                   "",
-                  3600, (invoice) async {
+                  expiration!, (invoice) async {
                 // await QrcodeDialog.show(context, invoice);
                 payingInvoice = invoice;
               }, (notification) async {
@@ -231,7 +296,7 @@ class _WalletReceiveRouter extends State<WalletReceiveRouter> {
               const SizedBox(height: 10.0),
               Text(
                 '+$amount sats',
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 28.0,
                   // color: Colors.grey[700],
                 ),

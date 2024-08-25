@@ -11,6 +11,7 @@ import '../../ui/button.dart';
 import '../../utils/number_format_util.dart';
 import '../../utils/router_path.dart';
 import '../../utils/router_util.dart';
+import 'bitcoin_amount.dart';
 
 class WalletRouter extends StatefulWidget {
   const WalletRouter({super.key});
@@ -83,6 +84,7 @@ class _WalletRouter extends State<WalletRouter> {
       builder: (context, isConnected, child) {
         List<Widget> list = [];
         if (isConnected) {
+          list.add(const SizedBox(height: 20,));
           list.add(Selector<NwcProvider, int?>(
             builder: (context, balance, child) {
               if (balance != null) {
@@ -92,70 +94,7 @@ class _WalletRouter extends State<WalletRouter> {
                         100
                     : null;
 
-                return Container(
-                    margin: const EdgeInsets.only(
-                        top: Base.BASE_PADDING * 5,
-                        bottom: Base.BASE_PADDING * 2),
-                    child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Row(
-                              textBaseline: TextBaseline.ideographic,
-                              mainAxisSize: MainAxisSize.min,
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                RichText(
-                                    text: const TextSpan(
-                                        text: "₿",
-                                        style: TextStyle(
-                                            color: Color(0xFF7A7D81),
-                                            fontSize: 40,
-                                            fontFamily: 'Geist.Mono'))),
-
-                                // const Text("₿",
-                                //           style: TextStyle(
-                                //               color: Color(0xFF7A7D81),
-                                //               fontSize: 40,
-                                //               fontFamily: 'Geist.Mono')),
-                                const SizedBox(width: 4),
-                                // const Text("000002112",
-                                //     style: TextStyle(
-                                //         color: Color(0xffD44E7D),
-                                //         fontSize: 40,
-                                //         fontFamily: 'Geist.Mono')),
-                                NumberFormatUtil.formatBitcoinAmount(
-                                    balance / 100000000,
-                                    TextStyle(
-                                        color: themeData.focusColor,
-                                        fontSize: 40,
-                                        fontFamily: 'Geist.Mono'),
-                                    TextStyle(
-                                        color: themeData.primaryColor,
-                                        fontSize: 40,
-                                        fontFamily: 'Geist.Mono')),
-                                Text(" sats",
-                                    style: TextStyle(
-                                        color: themeData.primaryColor,
-                                        fontSize: 24,
-                                        fontWeight: FontWeight.w100)),
-                              ]),
-                          Container(
-                              margin: const EdgeInsets.only(
-                                  top: Base.BASE_PADDING * 2,
-                                  bottom: Base.BASE_PADDING * 2),
-                              child: Text(
-                                  fiatAmount == null
-                                      ? ""
-                                      : fiatAmount < 0.01
-                                          ? "< 0.01 ${fiatCurrencyRate?["unit"]}"
-                                          : "${fiatAmount.toStringAsFixed(2)} ${fiatCurrencyRate?["unit"]}",
-                                  style: const TextStyle(
-                                      color: Color(0xFF7A7D81),
-                                      fontSize: 20,
-                                      fontFamily: 'Geist.Mono')))
-                        ]));
+                return BitcoinAmount(fiatAmount: fiatAmount, fiatUnit: fiatCurrencyRate?["unit"], balance: balance);
               }
               return Container();
             },

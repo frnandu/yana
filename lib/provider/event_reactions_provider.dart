@@ -125,14 +125,14 @@ class EventReactionsProvider extends ChangeNotifier
     if (relaySet==null) {
       return;
     }
-    print(
-        "---------------- reactions subscriptions: ${subscriptions.length}");
-    NdkResponse response = ndk.query(filters: [filter], relaySet:  relaySet);
-    subscriptions[eventId] = response;
-
-    response.stream.listen((event) {
-      _handleSingleEvent2(event);
-    });
+    // print(
+    //     "---------------- reactions subscriptions: ${subscriptions.length}");
+    // NdkResponse response = ndk.query(filters: [filter], relaySet:  relaySet);
+    // subscriptions[eventId] = response;
+    //
+    // response.stream.listen((event) {
+    //   _handleSingleEvent2(event);
+    // });
     // TODO should use other relays inbox for pubKey....
   }
 
