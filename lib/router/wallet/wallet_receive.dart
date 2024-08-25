@@ -36,19 +36,20 @@ class _WalletReceiveRouter extends State<WalletReceiveRouter> {
   NwcNotification? paid;
   double? fiatAmount;
 
+  static const int BTC_IN_SATS = 100000000;
+
   @override
   void initState() {
     // nwcProvider.reload();
     amountInputcontroller.addListener(() {
       setState(() {
-        if (fiatCurrencyRate != null) {
+        if (fiatCurrencyRate != null &&
+            StringUtil.isNotBlank(amountInputcontroller.text.trim())) {
           double? btc =
-              (int.parse(amountInputcontroller.text).toDouble() / 10000000);
+              (int.parse(amountInputcontroller.text).toDouble() /  BTC_IN_SATS);
           var fiatFactor = fiatCurrencyRate!["value"];
-          fiatAmount = fiatCurrencyRate != null
-              ? (btc * fiatFactor * 100).truncateToDouble() /
-                  100
-              : null;
+          fiatAmount = (btc * fiatFactor * 100).truncateToDouble() / 100;
+          print(fiatAmount);
         }
       });
     });
@@ -161,7 +162,7 @@ class _WalletReceiveRouter extends State<WalletReceiveRouter> {
                       ? ""
                       : fiatAmount! < 0.01
                           ? "< 0.01 ${fiatCurrencyRate?["unit"]}"
-                          : "${fiatAmount!.toStringAsFixed(2)} ${fiatCurrencyRate?["unit"]}",
+                          : "${fiatAmount!.toStringAsFixed(fiatAmount!<10?2:0)} ${fiatCurrencyRate?["unit"]}",
                   style: const TextStyle(
                       color: Color(0xFF7A7D81),
                       fontSize: 20,
