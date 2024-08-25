@@ -35,7 +35,7 @@ class _TransactionItemComponent extends State<TransactionItemComponent> {
     try {
       time = widget.transaction.settled_at != null ? GetTimeAgo.parse(DateTime.fromMillisecondsSinceEpoch(widget.transaction.settled_at! * 1000), pattern: "dd.MM.yyyy") : "";
     } catch (e) {}
-    double? fiatAmount = fiatCurrencyRate != null ? ((widget.transaction.amount / 100000000000) * fiatCurrencyRate!["value"]) : null;
+    double? fiatAmount = fiatCurrencyRate != null ? ((widget.transaction.amount / 100000000000) * fiatCurrencyRate!["value"] * 100 ).truncateToDouble() / 100 : null;
     return Container(
         margin: const EdgeInsets.only(left: Base.BASE_PADDING, right: Base.BASE_PADDING, top: Base.BASE_PADDING),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -144,7 +144,7 @@ class _TransactionItemComponent extends State<TransactionItemComponent> {
                   width:100,
                   alignment: Alignment.bottomRight,
                   child: Text(
-                    fiatAmount! < 0.01 ? "< 0.01 ${fiatCurrencyRate?["unit"]}" : "~${fiatAmount.toStringAsFixed(2)} ${fiatCurrencyRate?["unit"]}",
+                    fiatAmount==null? "" : fiatAmount < 0.01 ? "< 0.01 ${fiatCurrencyRate?["unit"]}" : "~${fiatAmount.toStringAsFixed(2)} ${fiatCurrencyRate?["unit"]}",
                     textAlign: TextAlign.right,
                     style: const TextStyle(
                       color: Color(0xFF7A7D81),

@@ -86,7 +86,7 @@ class _WalletRouter extends State<WalletRouter> {
             builder: (context, balance, child) {
               if (balance != null) {
                 double? fiatAmount = fiatCurrencyRate != null
-                    ? ((balance / 100000000) * fiatCurrencyRate!["value"])
+                    ? ((balance / 100000000) * fiatCurrencyRate!["value"] * 100 ).truncateToDouble() / 100
                     : null;
 
                 return Container(
@@ -144,7 +144,8 @@ class _WalletRouter extends State<WalletRouter> {
                                   top: Base.BASE_PADDING * 2,
                                   bottom: Base.BASE_PADDING * 2),
                               child: Text(
-                                  fiatAmount! < 0.01
+                                fiatAmount==null ? "":
+                                  fiatAmount < 0.01
                                       ? "< 0.01 ${fiatCurrencyRate?["unit"]}"
                                       : "${fiatAmount.toStringAsFixed(2)} ${fiatCurrencyRate?["unit"]}",
                                   style: const TextStyle(

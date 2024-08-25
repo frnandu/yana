@@ -67,7 +67,8 @@ class NwcProvider extends ChangeNotifier {
   bool get canPayInvoice => permissions.contains(NwcCommand.PAY_INVOICE);
 
   bool get isConnected =>
-      permissions != null &&
+      StringUtil.isNotBlank(relay) &&
+      StringUtil.isNotBlank(walletPubKey) &&
       permissions.isNotEmpty &&
       StringUtil.isNotBlank(secret);
 
@@ -97,12 +98,17 @@ class NwcProvider extends ChangeNotifier {
     await settingProvider.setNwc(nwc);
     await settingProvider.setNwcSecret(secret!);
     var filter = Filter(kinds: [NwcKind.INFO_REQUEST], authors: [walletPubKey]);
-    await ndk.relayManager().reconnectRelay(relay, force: true);
-    ndk.query(relays: [relay], filters: [filter], cacheRead: false, cacheWrite: false)
+    await ndk.relayManager().reconnectRelay(relay);
+    ndk
+        .query(
+            relays: [relay],
+            filters: [filter],
+            cacheRead: false,
+            cacheWrite: false)
         .stream
         .listen((event) async {
-      await onEventInfo.call(event);
-    });
+          await onEventInfo.call(event);
+        });
   }
 
   Future<void> onEventInfo(Nip01Event event) async {
@@ -118,10 +124,10 @@ class NwcProvider extends ChangeNotifier {
         permissions = permissions[0].split(",");
       }
       if (permissions.contains(NwcCommand.GET_INFO)) {
-        await requestGetInfo(walletPubKey!, relay!, secret!);
+        await requestGetInfo();
       }
       if (permissions.contains(NwcCommand.GET_BALANCE) && balance == null) {
-        await requestBalance(walletPubKey!, relay!, secret!);
+        await requestBalance();
       }
       if (permissions.contains(NwcCommand.LIST_TRANSACTIONS)) {
         await requestListTransactions();
@@ -144,15 +150,12 @@ class NwcProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> requestGetInfo(
-      String walletPubKey, String relay, String secret) async {
-    if (StringUtil.isNotBlank(walletPubKey) &&
-        StringUtil.isNotBlank(relay) &&
-        StringUtil.isNotBlank(secret)) {
+  Future<void> requestGetInfo() async {
+    if (isConnected) {
       EventSigner nwcSigner = Bip340EventSigner(secret!, getPublicKey(secret!));
 
       var encrypted = Nip04.encrypt(
-          secret, walletPubKey, '{"method":"${NwcCommand.GET_INFO}"}');
+          secret!, walletPubKey!, '{"method":"${NwcCommand.GET_INFO}"}');
 
       var tags = [
         ["p", walletPubKey]
@@ -165,23 +168,22 @@ class NwcProvider extends ChangeNotifier {
 
       var filter = Filter(
           kinds: [NwcKind.RESPONSE],
-          authors: [walletPubKey],
+          authors: [walletPubKey!],
           pTags: [nwcSigner.getPublicKey()],
-          eTags: [event.id]
-      );
-      await ndk.relayManager().reconnectRelay(relay);
+          eTags: [event.id]);
+      await ndk.relayManager().reconnectRelay(relay!);
 
       NdkResponse sub = ndk.subscription(
-          relays: [relay],
+          relays: [relay!],
           filters: [filter],
-          cacheRead: false, cacheWrite: false
-      );
+          cacheRead: false,
+          cacheWrite: false);
 
       sub.stream.listen((event) async {
         await ndk.closeSubscription(sub.requestId);
         await onGetInfo(event);
       });
-      await ndk.broadcastEvent(event, [relay], signer: nwcSigner);
+      await ndk.broadcastEvent(event, [relay!], signer: nwcSigner);
     }
   }
 
@@ -201,7 +203,7 @@ class NwcProvider extends ChangeNotifier {
           notifications = List<String>.from(
               result['notifications'].map((e) => e.toString()));
           if (notifications != null && notifications.isNotEmpty) {
-            await subscribeToNotifications();
+            await subscribeToNotificationsAndResponses();
           }
         }
         notifyListeners();
@@ -215,17 +217,14 @@ class NwcProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> requestBalance(
-      String walletPubKey, String relay, String secret) async {
-    if (StringUtil.isNotBlank(walletPubKey) &&
-        StringUtil.isNotBlank(relay) &&
-        StringUtil.isNotBlank(secret)) {
+  Future<void> requestBalance() async {
+    if (isConnected) {
       fiatCurrencyRate = await RatesUtil.coinbase("pln");
 
-      EventSigner nwcSigner = Bip340EventSigner(secret, getPublicKey(secret));
+      EventSigner nwcSigner = Bip340EventSigner(secret, getPublicKey(secret!));
 
       var encrypted = Nip04.encrypt(
-          secret, walletPubKey, '{"method":"${NwcCommand.GET_BALANCE}"}');
+          secret!, walletPubKey!, '{"method":"${NwcCommand.GET_BALANCE}"}');
 
       var tags = [
         ["p", walletPubKey]
@@ -236,31 +235,21 @@ class NwcProvider extends ChangeNotifier {
           tags: tags,
           content: encrypted);
 
-      var filter = Filter(
-          kinds: [NwcKind.RESPONSE],
-          authors: [walletPubKey],
-          pTags: [nwcSigner.getPublicKey()],
-          eTags: [event.id]
-      );
-      await ndk.relayManager().reconnectRelay(relay);
-
-      NdkResponse balanceSubscription = ndk.subscription(relays: [relay], filters: [filter], cacheRead: false, cacheWrite: false);
-
-      balanceSubscription.stream.listen((event) async {
-        await ndk.closeSubscription(balanceSubscription.requestId);
-        await onGetBalanceResponse(event);
-      });
-      await ndk.relayManager().broadcastEvent(event, [relay], nwcSigner);
+      await ndk.relayManager().broadcastEvent(event, [relay!], nwcSigner);
     } else {
       var filter =
-          Filter(kinds: [NwcKind.INFO_REQUEST], authors: [walletPubKey]);
-      if (await ndk.relayManager().connectRelay(relay)) {
-        ndk.query(relays: [relay],  filters: [filter], cacheRead: false, cacheWrite: false)
-            .stream
-            .listen((event) {
-          onEventInfo.call(event);
-        });
-      }
+          Filter(kinds: [NwcKind.INFO_REQUEST], authors: [walletPubKey!]);
+      await ndk.relayManager().connectRelay(relay!);
+      ndk
+          .query(
+              relays: [relay],
+              filters: [filter],
+              cacheRead: false,
+              cacheWrite: false)
+          .stream
+          .listen((event) {
+            onEventInfo.call(event);
+          });
     }
   }
 
@@ -283,9 +272,9 @@ class NwcProvider extends ChangeNotifier {
         if (maxAmount != null) {
           maxAmount = maxAmount! ~/ 1000;
         }
-        if (permissions.contains(NwcCommand.LIST_TRANSACTIONS)) {
-          requestListTransactions();
-        }
+        // if (permissions.contains(NwcCommand.LIST_TRANSACTIONS)) {
+        //   requestListTransactions();
+        // }
         notifyListeners();
       } else if (data != null && data.containsKey("error")) {
         var error = data['error']['code'];
@@ -299,9 +288,7 @@ class NwcProvider extends ChangeNotifier {
 
   Future<void> requestListTransactions(
       {int limit = 20, int offset = 0, bool unpaid = false}) async {
-    if (StringUtil.isNotBlank(walletPubKey) &&
-        StringUtil.isNotBlank(relay) &&
-        StringUtil.isNotBlank(secret)) {
+    if (isConnected) {
       fiatCurrencyRate = await RatesUtil.coinbase("pln");
       EventSigner nwcSigner = Bip340EventSigner(secret!, getPublicKey(secret!));
 
@@ -318,73 +305,8 @@ class NwcProvider extends ChangeNotifier {
           tags: tags,
           content: encrypted);
 
-      var filter = Filter(
-          kinds: [NwcKind.RESPONSE],
-          authors: [walletPubKey!],
-          pTags: [nwcSigner.getPublicKey()],
-          eTags: [event.id]
-      );
       await ndk.relayManager().reconnectRelay(relay!);
-
-      NdkResponse subscription = ndk.subscription(relays: [relay!], filters: [filter], cacheRead: false, cacheWrite: false);
-
-      subscription.stream.listen((event) async {
-        await ndk.closeSubscription(subscription.requestId);
-        await onGetListTransactions(event);
-      });
       await ndk.relayManager().broadcastEvent(event, [relay!], nwcSigner);
-    } else {
-      var filter =
-          Filter(kinds: [NwcKind.INFO_REQUEST], authors: [walletPubKey!]);
-      if (await ndk.relayManager().connectRelay(relay!)) {
-        ndk.query(relays: [relay!], filters: [filter], cacheRead: false, cacheWrite: false)
-            .stream
-            .listen((event) {
-          onEventInfo.call(event);
-        });
-      }
-    }
-  }
-
-  Future<void> onGetListTransactions(Nip01Event event) async {
-    if (event.kind == NwcKind.RESPONSE &&
-        StringUtil.isNotBlank(event.content) &&
-        StringUtil.isNotBlank(secret) &&
-        StringUtil.isNotBlank(walletPubKey)) {
-      var decrypted = Nip04.decrypt(secret!, walletPubKey!, event.content);
-      Map<String, dynamic> data;
-      data = json.decode(decrypted);
-      if (data != null &&
-          data['result_type'] == NwcCommand.LIST_TRANSACTIONS &&
-          data.containsKey("result")) {
-        var list = data["result"]["transactions"];
-        transactions = [];
-        if (list != null) {
-          for (var t in list) {
-            transactions.add(WalletTransaction.fromJson(t));
-            // bool outgoing = t["type"] == "outgoing";
-            // var time = "";
-            // try {
-            //   time = GetTimeAgo.parse(
-            //       DateFormat("yyyy-MM-ddTHH:mm:ss.SSSSSSSSZ").parseUtc(
-            //           t["settled_at"]));
-            //   // 2023-12-21T01:36:39.97766341Z
-            // } catch (e) {}
-            //   transactions.add(
-            //       "${outgoing ? "↑" : "↓"} ${t["description"]} ${outgoing
-            //           ? "-"
-            //           : "+"}${(t["amount"] / 1000).toInt()} ${time}");
-          }
-          // TODO set transactions
-          notifyListeners();
-        }
-      } else if (data != null && data.containsKey("error")) {
-        var error = data['error']['code'];
-        if (error == "UNAUTHORIZED") {
-          await disconnect();
-          notifyListeners();
-        }
-      }
     }
   }
 
@@ -411,9 +333,12 @@ class NwcProvider extends ChangeNotifier {
           kinds: [NwcKind.RESPONSE],
           authors: [walletPubKey!],
           pTags: [nwcSigner.getPublicKey()],
-          eTags: [event.id]
-      );
-      NdkResponse subscription = ndk.subscription(relays: [relay], filters: [filter], cacheRead: false, cacheWrite: false);
+          eTags: [event.id]);
+      NdkResponse subscription = ndk.subscription(
+          relays: [relay],
+          filters: [filter],
+          cacheRead: false,
+          cacheWrite: false);
 
       subscription.stream.listen((event) async {
         await ndk.closeSubscription(subscription.requestId);
@@ -445,7 +370,11 @@ class NwcProvider extends ChangeNotifier {
           var filter = Filter(
               kinds: [EventKind.ZAP_RECEIPT], eTags: [payInvoiceEventId]);
           Nip01Event? zapReceipt;
-          NdkResponse subscription = ndk.subscription(relays: myInboxRelaySet!.urls.toList()..add(relay!), filters: [filter], cacheRead: false, cacheWrite: false);
+          NdkResponse subscription = ndk.subscription(
+              relays: myInboxRelaySet!.urls.toList()..add(relay!),
+              filters: [filter],
+              cacheRead: false,
+              cacheWrite: false);
           subscription.stream.listen((event) async {
             await ndk.closeSubscription(subscription.requestId);
             if (zapReceipt == null || zapReceipt!.createdAt < event.createdAt) {
@@ -461,12 +390,12 @@ class NwcProvider extends ChangeNotifier {
             preimage: preImage!,
             paymentHash: "",
             amount: 0,
-            feesPaid: data['result']['fees_paid']??0,
+            feesPaid: data['result']['fees_paid'] ?? 0,
             createdAt: 0,
             settledAt: 0,
             metadata: {});
         notifyListeners();
-        requestBalance(walletPubKey!, relay!, secret!);
+        requestBalance();
         onZapped(notification);
       } else if (data != null && data.containsKey("error")) {
         onZapped(null);
@@ -504,9 +433,12 @@ class NwcProvider extends ChangeNotifier {
           kinds: [NwcKind.RESPONSE],
           authors: [walletPubKey!],
           pTags: [nwcSigner.getPublicKey()],
-          eTags: [event.id]
-      );
-      NdkResponse subscription = ndk.subscription(relays: myInboxRelaySet!.urls.toList()..add(relay!), filters: [filter], cacheRead: false, cacheWrite: false);
+          eTags: [event.id]);
+      NdkResponse subscription = ndk.subscription(
+          relays: myInboxRelaySet!.urls.toList()..add(relay!),
+          filters: [filter],
+          cacheRead: false,
+          cacheWrite: false);
       subscription.stream.listen((event) async {
         await ndk.closeSubscription(subscription.requestId);
         await onMakeInvoiceResponse(event, onCreatedInvoice);
@@ -543,35 +475,88 @@ class NwcProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> subscribeToNotifications() async {
+  Future<void> subscribeToNotificationsAndResponses() async {
     if (StringUtil.isNotBlank(walletPubKey) &&
         StringUtil.isNotBlank(relay) &&
         StringUtil.isNotBlank(secret)) {
       EventSigner nwcSigner = Bip340EventSigner(secret!, getPublicKey(secret!));
 
-      var filter =
-          Filter(kinds: [
-            NwcKind.NOTIFICATION],
-            authors: [walletPubKey!],
-            pTags: [nwcSigner.getPublicKey()],
-          );
+      var filter = Filter(
+        kinds: [NwcKind.NOTIFICATION, NwcKind.RESPONSE],
+        authors: [walletPubKey!],
+        pTags: [nwcSigner.getPublicKey()],
+      );
       await ndk.relayManager().reconnectRelay(relay!);
 
       NdkResponse subscription = ndk.subscription(
           relays: [relay!],
           filters: [filter],
           cacheRead: false,
-          cacheWrite: false
-      );
+          cacheWrite: false);
       subscription.stream.listen((event) async {
-        await onNotification(event);
+        if (event.kind == NwcKind.NOTIFICATION) {
+          await onNotification(event);
+        } else if (event.kind == NwcKind.RESPONSE) {
+          await onResponse(event);
+        }
       });
     }
   }
 
-  Future<void> onNotification(Nip01Event event) async {
-    if (event.kind == NwcKind.NOTIFICATION &&
+  Future<void> onResponse(Nip01Event event) async {
+    if (event.kind == NwcKind.RESPONSE &&
         StringUtil.isNotBlank(event.content) &&
+        StringUtil.isNotBlank(secret) &&
+        StringUtil.isNotBlank(walletPubKey)) {
+      var decrypted = Nip04.decrypt(secret!, walletPubKey!, event.content);
+      Map<String, dynamic> data;
+      data = json.decode(decrypted);
+      if (data != null && data.containsKey("result")) {
+        if (data['result_type'] == NwcCommand.GET_BALANCE) {
+          balance = data['result']['balance'];
+          if (balance != null) {
+            balance = balance! ~/ 1000;
+          }
+          maxAmount = data['result']['max_amount'];
+          if (maxAmount != null) {
+            maxAmount = maxAmount! ~/ 1000;
+          }
+          notifyListeners();
+        } else if (data['result_type'] == NwcCommand.LIST_TRANSACTIONS) {
+          var list = data["result"]["transactions"];
+          transactions = [];
+          if (list != null) {
+            for (var t in list) {
+              transactions.add(WalletTransaction.fromJson(t));
+              // bool outgoing = t["type"] == "outgoing";
+              // var time = "";
+              // try {
+              //   time = GetTimeAgo.parse(
+              //       DateFormat("yyyy-MM-ddTHH:mm:ss.SSSSSSSSZ").parseUtc(
+              //           t["settled_at"]));
+              //   // 2023-12-21T01:36:39.97766341Z
+              // } catch (e) {}
+              //   transactions.add(
+              //       "${outgoing ? "↑" : "↓"} ${t["description"]} ${outgoing
+              //           ? "-"
+              //           : "+"}${(t["amount"] / 1000).toInt()} ${time}");
+            }
+            // TODO set transactions
+            notifyListeners();
+          }
+        }
+      } else if (data != null && data.containsKey("error")) {
+        var error = data['error']['code'];
+        if (error == "UNAUTHORIZED") {
+          await disconnect();
+          notifyListeners();
+        }
+      }
+    }
+  }
+
+  Future<void> onNotification(Nip01Event event) async {
+    if (StringUtil.isNotBlank(event.content) &&
         StringUtil.isNotBlank(secret) &&
         StringUtil.isNotBlank(walletPubKey)) {
       var decrypted = Nip04.decrypt(secret!, walletPubKey!, event.content);
@@ -600,8 +585,8 @@ class NwcProvider extends ChangeNotifier {
               "Payment type=${notification.type} amount=${(notification.amount / 1000).round()} sats (fees:${(notification.feesPaid / 1000).round()})",
               duration: const Duration(seconds: 2));
         }
-        notifyListeners();
-        requestBalance(walletPubKey!, relay!, secret!);
+        requestBalance();
+        requestListTransactions();
       } else if (data != null && data.containsKey("error")) {
         EasyLoading.showError("error ${data['error'].toString()}",
             duration: const Duration(seconds: 5));
