@@ -116,11 +116,12 @@ class _WalletReceiveRouter extends State<WalletReceiveRouter> {
         if (PlatformUtil.isPC() || PlatformUtil.isWeb() || true) {
           link = 'lightning:${payingInvoice!}';
         }
-        list.add(BitcoinAmount(fiatAmount: fiatAmount, fiatUnit: fiatCurrencyRate?["unit"], balance: int.parse(amountInputcontroller.text))
-        );
+        list.add(BitcoinAmount(
+            fiatAmount: fiatAmount,
+            fiatUnit: fiatCurrencyRate?["unit"],
+            balance: int.parse(amountInputcontroller.text)));
         list.add(Container(
-            margin: const EdgeInsets.only(
-                bottom: Base.BASE_PADDING * 2),
+            margin: const EdgeInsets.only(bottom: Base.BASE_PADDING * 2),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               mainAxisAlignment: MainAxisAlignment.start,
@@ -142,9 +143,7 @@ class _WalletReceiveRouter extends State<WalletReceiveRouter> {
               ],
             )));
         const TextStyle timeTextStyle = TextStyle(
-            color: Color(0xFF7A7D81),
-            fontSize: 16,
-            fontFamily: 'Geist.Mono');
+            color: Color(0xFF7A7D81), fontSize: 16, fontFamily: 'Geist.Mono');
         list.add(
           Row(
               mainAxisSize: MainAxisSize.min,
@@ -152,8 +151,7 @@ class _WalletReceiveRouter extends State<WalletReceiveRouter> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Expanded(
-                    child: Text("Expiration time:",
-                        style: timeTextStyle)),
+                    child: Text("Expiration time:", style: timeTextStyle)),
                 const SizedBox(
                   width: 40,
                 ),
@@ -164,7 +162,7 @@ class _WalletReceiveRouter extends State<WalletReceiveRouter> {
                       TimerCountdown(
                         enableDescriptions: false,
                         spacerWidth: 1,
-                        colonsTextStyle:timeTextStyle,
+                        colonsTextStyle: timeTextStyle,
                         timeTextStyle: timeTextStyle,
                         format: CountDownTimerFormat.hoursMinutesSeconds,
                         endTime: DateTime.now().add(
@@ -185,16 +183,17 @@ class _WalletReceiveRouter extends State<WalletReceiveRouter> {
           children: [
             Expanded(
                 child: Button(
+                    before: const Icon(Icons.copy),
                     text: "Copy ",
                     onTap: () async {
                       _doCopy(payingInvoice!);
-                    },
-                    after: const Icon(Icons.copy))),
+                    })),
             if (link != null) const SizedBox(width: 24),
             if (link != null)
               Expanded(
                   child: Button(
-                      text: "Open in app ",
+                      before: const Icon(Icons.ios_share),
+                      text: "Share",
                       onTap: () async {
                         _doPay(link!);
                       }))
@@ -373,8 +372,8 @@ class _WalletReceiveRouter extends State<WalletReceiveRouter> {
 
   void _doCopy(String text) {
     Clipboard.setData(ClipboardData(text: text)).then((_) {
-      EasyLoading.showSuccess(I18n.of(context).Copy_success,
-          dismissOnTap: true, duration: const Duration(seconds: 2));
+      // EasyLoading.showSuccess(I18n.of(context).Copy_success,
+      //     dismissOnTap: true, duration: const Duration(seconds: 2));
     });
   }
 
