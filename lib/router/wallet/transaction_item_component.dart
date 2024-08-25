@@ -144,7 +144,7 @@ class _TransactionItemComponent extends State<TransactionItemComponent> {
                   width:100,
                   alignment: Alignment.bottomRight,
                   child: Text(
-                    fiatAmount! < 0.01 ? "< ${fiatCurrencyRate?["unit"]}0.01" : "~${fiatCurrencyRate?["unit"]}${fiatAmount.toStringAsFixed(2)}",
+                    fiatAmount! < 0.01 ? "< 0.01 ${fiatCurrencyRate?["unit"]}" : "~${fiatAmount.toStringAsFixed(2)} ${fiatCurrencyRate?["unit"]}",
                     textAlign: TextAlign.right,
                     style: const TextStyle(
                       color: Color(0xFF7A7D81),

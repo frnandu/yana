@@ -54,32 +54,6 @@ class NumberFormatUtil {
       }
     }
 
-
-    // Find the index of the first non-zero digit
-    // int firstNonZeroIndex = formattedAmount.indexOf(RegExp(r'[1-9]'));
-    //
-    // // Split the string into parts before and after the first non-zero digit
-    // String beforeFirstZero = firstNonZeroIndex!=-1 ? formattedAmount.substring(0, firstNonZeroIndex): formattedAmount;
-    // String afterFirstZero = firstNonZeroIndex!=-1 ? formattedAmount.substring(firstNonZeroIndex) : "";
-    //
-    // afterFirstZero = afterFirstZero.replaceAllMapped(
-    //     RegExp(r'(\d)(?=(?:\d{3})+(?!\d))'), (match) => '${match[1]} ');
-    //
-    // // If there are no digits after the decimal point, add a space
-    // if (afterFirstZero.length==3) {
-    //   afterFirstZero = ' $afterFirstZero';
-    // }
-    // String integers = beforeFirstZero.substring(0, beforeFirstZero.indexOf("."));
-    // String decimals = beforeFirstZero.substring(beforeFirstZero.indexOf("."), beforeFirstZero.length);
-    // if (decimals.length>3) {
-    //   beforeFirstZero = integers + decimals.substring(0,3) + " " + decimals.substring(3,decimals.length);
-    // }
-    //
-    // // Add spaces every 3 characters before the decimal point, excluding leading zeros
-    // beforeFirstZero = beforeFirstZero.replaceAllMapped(
-    //     RegExp(r'(\d)(?=(?:\d{3})+(?!\d))'), (match) => '${match[1]} ');
-
-
     // Create a list of TextSpans with different colors
     List<TextSpan> textSpans = [
 

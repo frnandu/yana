@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:bip340/bip340.dart';
 import 'package:ndk/ndk.dart';
-import 'package:ndk/domain_layer/entities/nip_01_event.dart';
 import 'package:ndk/presentation_layer/request_response.dart';
 import 'package:ndk/shared/nips/nip04/nip04.dart';
 import 'package:flutter/foundation.dart';
@@ -97,14 +96,9 @@ class NwcProvider extends ChangeNotifier {
     relay = Uri.decodeFull(relay!);
     await settingProvider.setNwc(nwc);
     await settingProvider.setNwcSecret(secret!);
-    var filter = Filter(kinds: [NwcKind.INFO_REQUEST], authors: [walletPubKey!]);
-    RelayManager relayManager = RelayManager();
-    // if (relayManager.webSockets[relay]!=null) {
-    //  ndk.relayManager().webSockets[relay]!.disconnect("a");
-    //  ndk.relayManager().webSockets[relay]!.close();
-    // }
+    var filter = Filter(kinds: [NwcKind.INFO_REQUEST], authors: [walletPubKey]);
     await ndk.relayManager().reconnectRelay(relay, force: true);
-    ndk.query(relays: [relay], filters: [filter])
+    ndk.query(relays: [relay], filters: [filter], cacheRead: false, cacheWrite: false)
         .stream
         .listen((event) async {
       await onEventInfo.call(event);
@@ -158,7 +152,7 @@ class NwcProvider extends ChangeNotifier {
       EventSigner nwcSigner = Bip340EventSigner(secret!, getPublicKey(secret!));
 
       var encrypted = Nip04.encrypt(
-          secret!, walletPubKey!, '{"method":"${NwcCommand.GET_INFO}"}');
+          secret, walletPubKey, '{"method":"${NwcCommand.GET_INFO}"}');
 
       var tags = [
         ["p", walletPubKey]
@@ -171,18 +165,23 @@ class NwcProvider extends ChangeNotifier {
 
       var filter = Filter(
           kinds: [NwcKind.RESPONSE],
-          authors: [walletPubKey!],
-          eTags: [event.id]);
-      // RelayManager relayManager = RelayManager();
-      await ndk.relayManager().reconnectRelay(relay, force: true);
+          authors: [walletPubKey],
+          pTags: [nwcSigner.getPublicKey()],
+          eTags: [event.id]
+      );
+      await ndk.relayManager().reconnectRelay(relay);
 
-      NdkResponse sub = ndk.subscription(relays: [relay!], filters: [filter]);
+      NdkResponse sub = ndk.subscription(
+          relays: [relay],
+          filters: [filter],
+          cacheRead: false, cacheWrite: false
+      );
 
       sub.stream.listen((event) async {
         await ndk.closeSubscription(sub.requestId);
         await onGetInfo(event);
       });
-      await ndk.broadcastEvent(event, [relay!], signer: nwcSigner);
+      await ndk.broadcastEvent(event, [relay], signer: nwcSigner);
     }
   }
 
@@ -221,41 +220,42 @@ class NwcProvider extends ChangeNotifier {
     if (StringUtil.isNotBlank(walletPubKey) &&
         StringUtil.isNotBlank(relay) &&
         StringUtil.isNotBlank(secret)) {
-      fiatCurrencyRate = await RatesUtil.coinbase("usd");
+      fiatCurrencyRate = await RatesUtil.coinbase("pln");
 
-      EventSigner nwcSigner = Bip340EventSigner(secret!, getPublicKey(secret!));
+      EventSigner nwcSigner = Bip340EventSigner(secret, getPublicKey(secret));
 
       var encrypted = Nip04.encrypt(
-          secret!, walletPubKey!, '{"method":"${NwcCommand.GET_BALANCE}"}');
+          secret, walletPubKey, '{"method":"${NwcCommand.GET_BALANCE}"}');
 
       var tags = [
         ["p", walletPubKey]
       ];
       final event = Nip01Event(
-          pubKey: nwcSigner!.getPublicKey(),
+          pubKey: nwcSigner.getPublicKey(),
           kind: NwcKind.REQUEST,
           tags: tags,
           content: encrypted);
 
       var filter = Filter(
           kinds: [NwcKind.RESPONSE],
-          authors: [walletPubKey!],
-          eTags: [event.id]);
-      // RelayManager relayManager = RelayManager();
-      await ndk.relayManager().reconnectRelay(relay, force: true);
+          authors: [walletPubKey],
+          pTags: [nwcSigner.getPublicKey()],
+          eTags: [event.id]
+      );
+      await ndk.relayManager().reconnectRelay(relay);
 
-      NdkResponse balanceSubscription = ndk.subscription(relays: [relay], filters: [filter]);
+      NdkResponse balanceSubscription = ndk.subscription(relays: [relay], filters: [filter], cacheRead: false, cacheWrite: false);
 
       balanceSubscription.stream.listen((event) async {
         await ndk.closeSubscription(balanceSubscription.requestId);
         await onGetBalanceResponse(event);
       });
-      await ndk.relayManager().broadcastEvent(event, [relay!], nwcSigner);
+      await ndk.relayManager().broadcastEvent(event, [relay], nwcSigner);
     } else {
       var filter =
-          Filter(kinds: [NwcKind.INFO_REQUEST], authors: [walletPubKey!]);
-      if (await ndk.relayManager().connectRelay(relay!)) {
-        ndk.query(relays: [relay!],  filters: [filter])
+          Filter(kinds: [NwcKind.INFO_REQUEST], authors: [walletPubKey]);
+      if (await ndk.relayManager().connectRelay(relay)) {
+        ndk.query(relays: [relay],  filters: [filter], cacheRead: false, cacheWrite: false)
             .stream
             .listen((event) {
           onEventInfo.call(event);
@@ -302,7 +302,7 @@ class NwcProvider extends ChangeNotifier {
     if (StringUtil.isNotBlank(walletPubKey) &&
         StringUtil.isNotBlank(relay) &&
         StringUtil.isNotBlank(secret)) {
-      fiatCurrencyRate = await RatesUtil.coinbase("usd");
+      fiatCurrencyRate = await RatesUtil.coinbase("pln");
       EventSigner nwcSigner = Bip340EventSigner(secret!, getPublicKey(secret!));
 
       var content =
@@ -321,11 +321,12 @@ class NwcProvider extends ChangeNotifier {
       var filter = Filter(
           kinds: [NwcKind.RESPONSE],
           authors: [walletPubKey!],
-          eTags: [event.id]);
-      // RelayManager relayManager = RelayManager();
-      await ndk.relayManager().reconnectRelay(relay!, force: true);
+          pTags: [nwcSigner.getPublicKey()],
+          eTags: [event.id]
+      );
+      await ndk.relayManager().reconnectRelay(relay!);
 
-      NdkResponse subscription = ndk.subscription(relays: [relay!], filters: [filter]);
+      NdkResponse subscription = ndk.subscription(relays: [relay!], filters: [filter], cacheRead: false, cacheWrite: false);
 
       subscription.stream.listen((event) async {
         await ndk.closeSubscription(subscription.requestId);
@@ -336,7 +337,7 @@ class NwcProvider extends ChangeNotifier {
       var filter =
           Filter(kinds: [NwcKind.INFO_REQUEST], authors: [walletPubKey!]);
       if (await ndk.relayManager().connectRelay(relay!)) {
-        ndk.query(relays: [relay!], filters: [filter])
+        ndk.query(relays: [relay!], filters: [filter], cacheRead: false, cacheWrite: false)
             .stream
             .listen((event) {
           onEventInfo.call(event);
@@ -409,18 +410,16 @@ class NwcProvider extends ChangeNotifier {
       var filter = Filter(
           kinds: [NwcKind.RESPONSE],
           authors: [walletPubKey!],
-          eTags: [event.id]);
-      NdkResponse subscription = ndk.subscription(relays: [relay], filters: [filter]);
+          pTags: [nwcSigner.getPublicKey()],
+          eTags: [event.id]
+      );
+      NdkResponse subscription = ndk.subscription(relays: [relay], filters: [filter], cacheRead: false, cacheWrite: false);
 
       subscription.stream.listen((event) async {
         await ndk.closeSubscription(subscription.requestId);
         await onPayInvoiceResponse(event, onZapped);
       });
       await ndk.relayManager().broadcastEvent(event, [relay!], nwcSigner);
-      // TODO use dart_ndk
-      // nwcNostr!.queryRelay2(filter.toMap(), relay!, onPayInvoiceResponse, onZapped: onZapped);
-      // TODO use dart_ndk
-      // await nwcNostr!.sendRelayEvent(event, relay!);
     } else {
       EasyLoading.showError("missing pubKey and/or relay for connecting",
           duration: const Duration(seconds: 5));
@@ -444,9 +443,9 @@ class NwcProvider extends ChangeNotifier {
               duration: const Duration(seconds: 2));
           String payInvoiceEventId = this.payInvoiceEventId!;
           var filter = Filter(
-              kinds: [EventKind.ZAP_RECEIPT], eTags: [payInvoiceEventId!]);
+              kinds: [EventKind.ZAP_RECEIPT], eTags: [payInvoiceEventId]);
           Nip01Event? zapReceipt;
-          NdkResponse subscription = ndk.subscription(relays: myInboxRelaySet!.urls.toList()..add(relay!), filters: [filter]);
+          NdkResponse subscription = ndk.subscription(relays: myInboxRelaySet!.urls.toList()..add(relay!), filters: [filter], cacheRead: false, cacheWrite: false);
           subscription.stream.listen((event) async {
             await ndk.closeSubscription(subscription.requestId);
             if (zapReceipt == null || zapReceipt!.createdAt < event.createdAt) {
@@ -504,8 +503,10 @@ class NwcProvider extends ChangeNotifier {
       var filter = Filter(
           kinds: [NwcKind.RESPONSE],
           authors: [walletPubKey!],
-          eTags: [event.id]);
-      NdkResponse subscription = ndk.subscription(relays: myInboxRelaySet!.urls.toList()..add(relay!), filters: [filter]);
+          pTags: [nwcSigner.getPublicKey()],
+          eTags: [event.id]
+      );
+      NdkResponse subscription = ndk.subscription(relays: myInboxRelaySet!.urls.toList()..add(relay!), filters: [filter], cacheRead: false, cacheWrite: false);
       subscription.stream.listen((event) async {
         await ndk.closeSubscription(subscription.requestId);
         await onMakeInvoiceResponse(event, onCreatedInvoice);
@@ -546,11 +547,22 @@ class NwcProvider extends ChangeNotifier {
     if (StringUtil.isNotBlank(walletPubKey) &&
         StringUtil.isNotBlank(relay) &&
         StringUtil.isNotBlank(secret)) {
-      var filter =
-          Filter(kinds: [NwcKind.NOTIFICATION], authors: [walletPubKey!]);
-      await ndk.relayManager().reconnectRelay(relay!, force: true);
+      EventSigner nwcSigner = Bip340EventSigner(secret!, getPublicKey(secret!));
 
-      NdkResponse subscription = ndk.subscription(relays: [relay!], filters: [filter]);
+      var filter =
+          Filter(kinds: [
+            NwcKind.NOTIFICATION],
+            authors: [walletPubKey!],
+            pTags: [nwcSigner.getPublicKey()],
+          );
+      await ndk.relayManager().reconnectRelay(relay!);
+
+      NdkResponse subscription = ndk.subscription(
+          relays: [relay!],
+          filters: [filter],
+          cacheRead: false,
+          cacheWrite: false
+      );
       subscription.stream.listen((event) async {
         await onNotification(event);
       });
