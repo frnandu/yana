@@ -38,7 +38,7 @@ class _TransactionItemComponent extends State<TransactionItemComponent> {
     double? fiatAmount = fiatCurrencyRate != null ? ((widget.transaction.amount / 100000000000) * fiatCurrencyRate!["value"] * 100 ).truncateToDouble() / 100 : null;
     return Container(
         margin: const EdgeInsets.only(left: Base.BASE_PADDING, right: Base.BASE_PADDING, top: Base.BASE_PADDING),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
         decoration: ShapeDecoration(
           color: themeData.cardColor,
           shape: RoundedRectangleBorder(
@@ -110,53 +110,52 @@ class _TransactionItemComponent extends State<TransactionItemComponent> {
                   ],
                 )),
             const SizedBox(width: 8),
-            Container(
-                child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.end,
+            Column(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.end,
 
-              children: [
-                Row(children: [
-                  Text(
-                    '${outgoing ? "-" : "+"}${formatter.format(widget.transaction.amount  ~/ 1000).replaceAll(',', ' ')}',
-                    textAlign: TextAlign.right,
-                    style: TextStyle(
-                      color: outgoing ? const Color(0xFFE26842) : const Color(0xFF47A66D),
-                      fontSize: 14,
-                      fontFamily: 'Geist.Mono',
-                      fontWeight: FontWeight.w400,
-                      // height: 0.12,
-                    ),
-                  ),
-                  const SizedBox(width: 4),
-                  const Text(
-                    'sats',
-                    style: TextStyle(
-                      color: Color(0xFF7A7D81),
-                      fontSize: 14,
-                      fontWeight: FontWeight.w400,
-                      height: 0.12,
-                    ),
-                  ),
-                ]),
-                Container(
-                  width:100,
-                  alignment: Alignment.bottomRight,
-                  child: Text(
-                    fiatAmount==null? "" : fiatAmount < 0.01 ? "< 0.01 ${fiatCurrencyRate?["unit"]}" : "~${fiatAmount.toStringAsFixed(2)} ${fiatCurrencyRate?["unit"]}",
-                    textAlign: TextAlign.right,
-                    style: const TextStyle(
-                      color: Color(0xFF7A7D81),
-                      fontSize: 12,
-                      fontFamily: 'Geist.Mono',
-                      fontWeight: FontWeight.w400,
-                      // height: 0.11,
-                    ),
-                  ),
-                )
-              ],
-            ))
+                          children: [
+            Row(children: [
+              Text(
+                '${outgoing ? "-" : "+"}${formatter.format(widget.transaction.amount  ~/ 1000).replaceAll(',', ' ')}',
+                textAlign: TextAlign.right,
+                style: TextStyle(
+                  color: outgoing ? const Color(0xFFE26842) : const Color(0xFF47A66D),
+                  fontSize: 16,
+                  fontFamily: 'Geist.Mono',
+                  fontWeight: FontWeight.w400,
+                  // height: 0.12,
+                ),
+              ),
+              const SizedBox(width: 4),
+              const Text(
+                'sats',
+                style: TextStyle(
+                  color: Color(0xFF7A7D81),
+                  fontSize: 14,
+                  fontWeight: FontWeight.w400,
+                  height: 0.12,
+                ),
+              ),
+            ]),
+            Container(
+              width:100,
+              alignment: Alignment.bottomRight,
+              child: Text(
+                fiatAmount==null? "" : fiatAmount < 0.01 ? "< 0.01 ${fiatCurrencyRate?["unit"]}" : "~${fiatAmount.toStringAsFixed(2)} ${fiatCurrencyRate?["unit"]}",
+                textAlign: TextAlign.right,
+                style: const TextStyle(
+                  color: Color(0xFF7A7D81),
+                  fontSize: 12,
+                  fontFamily: 'Geist.Mono',
+                  fontWeight: FontWeight.w400,
+                  // height: 0.11,
+                ),
+              ),
+            )
+                          ],
+                        )
           ],
         ));
   }

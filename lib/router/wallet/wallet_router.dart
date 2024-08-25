@@ -7,6 +7,7 @@ import 'package:yana/router/wallet/transaction_item_component.dart';
 import 'package:yana/utils/base.dart';
 
 import '../../../ui/appbar4stack.dart';
+import '../../ui/button.dart';
 import '../../utils/number_format_util.dart';
 import '../../utils/router_path.dart';
 import '../../utils/router_util.dart';
@@ -86,12 +87,14 @@ class _WalletRouter extends State<WalletRouter> {
             builder: (context, balance, child) {
               if (balance != null) {
                 double? fiatAmount = fiatCurrencyRate != null
-                    ? ((balance / 100000000) * fiatCurrencyRate!["value"] * 100 ).truncateToDouble() / 100
+                    ? ((balance / 100000000) * fiatCurrencyRate!["value"] * 100)
+                            .truncateToDouble() /
+                        100
                     : null;
 
                 return Container(
                     margin: const EdgeInsets.only(
-                        top: Base.BASE_PADDING * 4,
+                        top: Base.BASE_PADDING * 5,
                         bottom: Base.BASE_PADDING * 2),
                     child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -103,20 +106,19 @@ class _WalletRouter extends State<WalletRouter> {
                               mainAxisAlignment: MainAxisAlignment.end,
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
-                              RichText(
+                                RichText(
+                                    text: const TextSpan(
+                                        text: "₿",
+                                        style: TextStyle(
+                                            color: Color(0xFF7A7D81),
+                                            fontSize: 40,
+                                            fontFamily: 'Geist.Mono'))),
 
-                                text: const TextSpan(
-                                  text: "₿",
-                                    style: TextStyle(
-                                        color: Color(0xFF7A7D81),
-                                        fontSize: 40,
-                                        fontFamily: 'Geist.Mono'))),
-
-                          // const Text("₿",
-                          //           style: TextStyle(
-                          //               color: Color(0xFF7A7D81),
-                          //               fontSize: 40,
-                          //               fontFamily: 'Geist.Mono')),
+                                // const Text("₿",
+                                //           style: TextStyle(
+                                //               color: Color(0xFF7A7D81),
+                                //               fontSize: 40,
+                                //               fontFamily: 'Geist.Mono')),
                                 const SizedBox(width: 4),
                                 // const Text("000002112",
                                 //     style: TextStyle(
@@ -129,13 +131,13 @@ class _WalletRouter extends State<WalletRouter> {
                                         color: themeData.focusColor,
                                         fontSize: 40,
                                         fontFamily: 'Geist.Mono'),
-                                    const TextStyle(
-                                        color: Color(0xffD44E7D),
+                                    TextStyle(
+                                        color: themeData.primaryColor,
                                         fontSize: 40,
                                         fontFamily: 'Geist.Mono')),
-                                const Text(" sats",
+                                Text(" sats",
                                     style: TextStyle(
-                                        color: Color(0xffD44E7D),
+                                        color: themeData.primaryColor,
                                         fontSize: 24,
                                         fontWeight: FontWeight.w100)),
                               ]),
@@ -144,10 +146,11 @@ class _WalletRouter extends State<WalletRouter> {
                                   top: Base.BASE_PADDING * 2,
                                   bottom: Base.BASE_PADDING * 2),
                               child: Text(
-                                fiatAmount==null ? "":
-                                  fiatAmount < 0.01
-                                      ? "< 0.01 ${fiatCurrencyRate?["unit"]}"
-                                      : "${fiatAmount.toStringAsFixed(2)} ${fiatCurrencyRate?["unit"]}",
+                                  fiatAmount == null
+                                      ? ""
+                                      : fiatAmount < 0.01
+                                          ? "< 0.01 ${fiatCurrencyRate?["unit"]}"
+                                          : "${fiatAmount.toStringAsFixed(2)} ${fiatCurrencyRate?["unit"]}",
                                   style: const TextStyle(
                                       color: Color(0xFF7A7D81),
                                       fontSize: 20,
@@ -161,61 +164,41 @@ class _WalletRouter extends State<WalletRouter> {
             },
           ));
           if (_nwcProvider.canPayInvoice || nwcProvider.canMakeInvoice) {
-            list.add(Row(children: [
-              _nwcProvider.canMakeInvoice
-                  ? Expanded(
-                      child: GestureDetector(
-                          behavior: HitTestBehavior.translucent,
-                          onTap: () async {
-                            RouterUtil.router(
-                                context, RouterPath.WALLET_RECEIVE);
-                            //
-                            // confettiController.play();
-                            // //_nwcProvider.onPayInvoiceResponse(event, onZapped)
-                          },
-                          child: Container(
-                            width: 150,
-                            margin: const EdgeInsets.all(Base.BASE_PADDING),
-                            decoration: BoxDecoration(
-                              borderRadius:
-                                  const BorderRadius.all(Radius.circular(10.0)),
-                              border: Border.all(
-                                width: 1,
-                                color: const Color(0xffD44E7D),
-                              ),
-                            ),
-                            child: Container(
-                                alignment: Alignment.center,
-                                margin: const EdgeInsets.all(Base.BASE_PADDING),
-                                child: const Text("↙  Receive")),
-                          )))
-                  : Container(),
-              _nwcProvider.canPayInvoice
-                  ? Expanded(
-                      child: GestureDetector(
-                          behavior: HitTestBehavior.translucent,
-                          onTap: () async {
-                            RouterUtil.router(context, RouterPath.WALLET_SEND);
-                          },
-                          child: Container(
-                            alignment: Alignment.center,
-                            margin: const EdgeInsets.all(Base.BASE_PADDING),
-                            decoration: BoxDecoration(
-                              borderRadius:
-                                  const BorderRadius.all(Radius.circular(10.0)),
-                              border: Border.all(
-                                width: 1,
-                                color: const Color(0xffD44E7D),
-                              ),
-                            ),
-                            child: Container(
-                                alignment: Alignment.center,
-                                margin: const EdgeInsets.all(Base.BASE_PADDING),
-                                child: const Text("↗  Send")),
-                            //             size: 25, color: themeData.iconTheme.color)
-                          )))
-                  : Container()
-            ]));
+            list.add(Container(
+                margin: const EdgeInsets.all(Base.BASE_PADDING),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _nwcProvider.canMakeInvoice
+                        ? Expanded(
+                            child: Button(
+                                text: "Receive",
+                                // before: const Icon(Icons.call_received_rounded),
+                                onTap: () async {
+                                  RouterUtil.router(
+                                      context, RouterPath.WALLET_RECEIVE);
+                                  //
+                                  // confettiController.play();
+                                  // //_nwcProvider.onPayInvoiceResponse(event, onZapped)
+                                }))
+                        : Container(),
+                    _nwcProvider.canMakeInvoice && _nwcProvider.canPayInvoice
+                        ? const SizedBox(width: 24)
+                        : Container(),
+                    _nwcProvider.canPayInvoice
+                        ? Expanded(
+                            child: Button(
+                                text: "Send",
+                                // before: const Icon(Icons.call_made_rounded),
+                                onTap: () async {
+                                  RouterUtil.router(
+                                      context, RouterPath.WALLET_SEND);
+                                }))
+                        : Container()
+                  ],
+                )));
           }
 
           if (nwcProvider.canListTransaction) {
@@ -226,10 +209,38 @@ class _WalletRouter extends State<WalletRouter> {
               return transactions != null && transactions.isNotEmpty
                   ? ListView.builder(
                       itemBuilder: (context, index) {
+                        if (index == transactions.length) {
+                          return GestureDetector(
+                              onTap: () {
+                                RouterUtil.router(context, RouterPath.WALLET_TRANSACTIONS);
+                              },
+                              // child:
+                              // Expanded(
+                              child: MouseRegion(
+                                  cursor: SystemMouseCursors.click,
+                                  child: Container(
+                                    margin: const EdgeInsets.only(top: Base.BASE_PADDING),
+                                    padding: const EdgeInsets.all(Base.BASE_PADDING),
+                                    height: 60.0,
+                                    // decoration: const BoxDecoration(
+                                    //     gradient: LinearGradient(
+                                    //         colors: [Color(0xffFFDE6E), Colors.orange]),
+                                    //     borderRadius: BorderRadius.all(Radius.circular(20.0))),
+                                    child: const Center(
+                                        child: Row(
+                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            children: [
+                                              Text('List all transactions >>',
+                                                  style: TextStyle(color: Colors.white))
+                                            ])),
+                                  ))
+                            // ),
+                          );
+                        }
                         return TransactionItemComponent(
                             transaction: transactions[index]);
                       },
-                      itemCount: transactions.length,
+                      itemCount: transactions.length+1,
                     )
                   : Container();
             }, selector: (context, _provider) {
@@ -263,60 +274,7 @@ class _WalletRouter extends State<WalletRouter> {
             //   }
             // )));
           }
-          list.add(GestureDetector(
-              onTap: () {
-                RouterUtil.router(context, RouterPath.WALLET_TRANSACTIONS);
-              },
-              // child:
-              // Expanded(
-              child: MouseRegion(
-                  cursor: SystemMouseCursors.click,
-                  child: Container(
-                    margin: const EdgeInsets.only(top: Base.BASE_PADDING),
-                    padding: const EdgeInsets.all(Base.BASE_PADDING),
-                    height: 60.0,
-                    // decoration: const BoxDecoration(
-                    //     gradient: LinearGradient(
-                    //         colors: [Color(0xffFFDE6E), Colors.orange]),
-                    //     borderRadius: BorderRadius.all(Radius.circular(20.0))),
-                    child: const Center(
-                        child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                          Text('List all transactions >>',
-                              style: TextStyle(color: Colors.white))
-                        ])),
-                  ))
-              // ),
-              ));
-
-          // list.add(Text(
-          //     "One-tap Zaps will now be sent from this wallet, no confirmation will be asked."));
-
-          // list.add(Container(margin: const EdgeInsets.all(200)));
-          list.add(MouseRegion(
-              cursor: SystemMouseCursors.click,
-              child: GestureDetector(
-                  behavior: HitTestBehavior.translucent,
-                  onTap: () async {
-                    nwcInputController.text = "";
-                    await nwcProvider.disconnect();
-                  },
-                  child: Container(
-                    margin: EdgeInsets.all(Base.BASE_PADDING),
-                    decoration: BoxDecoration(
-                      borderRadius:
-                          const BorderRadius.all(Radius.circular(20.0)),
-                      border: Border.all(
-                        width: 1,
-                        color: themeData.hintColor,
-                      ),
-                    ),
-                    child: Container(
-                        alignment: Alignment.center,
-                        margin: const EdgeInsets.all(Base.BASE_PADDING),
-                        child: const Text("Disconnect wallet")),
-                  ))));
+          // list.add();
         } else {
           list.add(GestureDetector(
               onTap: () {
@@ -415,31 +373,33 @@ class _WalletRouter extends State<WalletRouter> {
     );
 
     var appBarNew = AppBar(
-        leading: GestureDetector(
-          onTap: () {
-            RouterUtil.back(context);
-          },
-          child: Icon(
-            Icons.arrow_back_ios,
-            color: themeData.appBarTheme.titleTextStyle!.color,
-          ),
+      leading: GestureDetector(
+        onTap: () {
+          RouterUtil.back(context);
+        },
+        child: Icon(
+          Icons.arrow_back_ios,
+          color: themeData.appBarTheme.titleTextStyle!.color,
         ),
-        // actions: [
-        //   GestureDetector(
-        //     onTap: addToCommunity,
-        //     child: Container(
-        //       margin: const EdgeInsets.only(
-        //         left: Base.BASE_PADDING,
-        //         right: Base.BASE_PADDING,
-        //       ),
-        //       child: Icon(
-        //         Icons.add,
-        //         color: themeData.appBarTheme.titleTextStyle!.color,
-        //       ),
-        //     ),
-        //   )
-        // ],
-        title: const Text("Wallet"));
+      ),
+      // actions: [
+      //   GestureDetector(
+      //     onTap: addToCommunity,
+      //     child: Container(
+      //       margin: const EdgeInsets.only(
+      //         left: Base.BASE_PADDING,
+      //         right: Base.BASE_PADDING,
+      //       ),
+      //       child: Icon(
+      //         Icons.add,
+      //         color: themeData.appBarTheme.titleTextStyle!.color,
+      //       ),
+      //     ),
+      //   )
+      // ],
+      title: const Text("Wallet"),
+      actions: [barOptions()],
+    );
 
     return Scaffold(
         appBar: appBarNew, backgroundColor: themeData.cardColor, body: main);
@@ -471,5 +431,27 @@ class _WalletRouter extends State<WalletRouter> {
         ],
       ),
     );
+  }
+
+  Widget barOptions() {
+    return PopupMenuButton<String>(
+        tooltip: "more",
+        itemBuilder: (context) {
+          List<PopupMenuEntry<String>> list = [
+            //const PopupMenuItem(value: "settings", child: Text("Settings")),
+            const PopupMenuItem(
+              value: "disconnect",
+              child: Text("Disconnect wallet"),
+            ),
+          ];
+          return list;
+        },
+        onSelected: (value) async {
+          if (value == "disconnect") {
+            setState(() async {
+              await nwcProvider.disconnect();
+            });
+          }
+        });
   }
 }

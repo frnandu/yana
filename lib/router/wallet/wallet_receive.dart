@@ -16,6 +16,7 @@ import 'package:yana/utils/string_util.dart';
 
 import '../../../ui/appbar4stack.dart';
 import '../../i18n/i18n.dart';
+import '../../ui/button.dart';
 import '../../utils/platform_util.dart';
 
 class WalletReceiveRouter extends StatefulWidget {
@@ -33,10 +34,24 @@ class _WalletReceiveRouter extends State<WalletReceiveRouter> {
   late ConfettiController confettiController;
   String? payingInvoice;
   NwcNotification? paid;
+  double? fiatAmount;
 
   @override
   void initState() {
     // nwcProvider.reload();
+    amountInputcontroller.addListener(() {
+      setState(() {
+        if (fiatCurrencyRate != null) {
+          double? btc =
+              (int.parse(amountInputcontroller.text).toDouble() / 10000000);
+          var fiatFactor = fiatCurrencyRate!["value"];
+          fiatAmount = fiatCurrencyRate != null
+              ? (btc * fiatFactor * 100).truncateToDouble() /
+                  100
+              : null;
+        }
+      });
+    });
     confettiController =
         ConfettiController(duration: const Duration(seconds: 2));
   }
@@ -72,9 +87,6 @@ class _WalletReceiveRouter extends State<WalletReceiveRouter> {
     );
 
     List<Widget> list = [];
-    // list.add(Container(
-    //     alignment: Alignment.centerLeft,
-    //     child: Text("Amout")));
     if (paid == null) {
       if (payingInvoice != null) {
         list.add(Container(
@@ -94,50 +106,37 @@ class _WalletReceiveRouter extends State<WalletReceiveRouter> {
             );
         Color cardColor = themeData.hintColor;
         var hintColor = themeData.cardColor;
-
-        list.add(GestureDetector(
-          onTap: () {
-            _doCopy(payingInvoice!);
-          },
-          child: Container(
-            // width: QR_WIDTH + Base.BASE_PADDING_HALF * 2,
-            padding: const EdgeInsets.all(Base.BASE_PADDING_HALF),
-            decoration: BoxDecoration(
-              color: hintColor.withOpacity(0.5),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: SelectableText(
-              "Copy invoice",
-              onTap: () {
-                _doCopy(payingInvoice!);
-              },
-            ),
-          ),
-        ));
+        String? link;
         if (PlatformUtil.isPC() || PlatformUtil.isWeb() || true) {
-          var link = 'lightning:${payingInvoice!}';
-
-          list.add(GestureDetector(
-            onTap: () {
-              _doPay(link);
-            },
-            child: Container(
-              // width: QR_WIDTH + Base.BASE_PADDING_HALF * 2,
-              padding: const EdgeInsets.all(Base.BASE_PADDING_HALF),
-              decoration: BoxDecoration(
-                color: hintColor.withOpacity(0.5),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: SelectableText(
-                "Open in app",
-                onTap: () {
-                  _doPay(link);
-                },
-              ),
-            ),
-          ));
+          link = 'lightning:${payingInvoice!}';
         }
-
+        list.add(const SizedBox(
+          height: 20,
+        ));
+        list.add(Row(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+                child: Button(
+                    text: "Copy ",
+                    onTap: () async {
+                      _doCopy(payingInvoice!);
+                    },
+                    after: const Icon(Icons.copy))),
+            if (link != null) const SizedBox(width: 24),
+            if (link != null)
+              Expanded(
+                  child: Button(
+                      text: "Open in app ",
+                      onTap: () async {
+                        _doPay(link!);
+                      }))
+            else
+              Container()
+          ],
+        ));
       } else {
         list.add(Row(
           children: [
@@ -152,6 +151,22 @@ class _WalletReceiveRouter extends State<WalletReceiveRouter> {
             )),
           ],
         ));
+
+        list.add(Row(children: [
+          Container(
+              margin: const EdgeInsets.only(
+                  top: Base.BASE_PADDING * 2, bottom: Base.BASE_PADDING * 2),
+              child: Text(
+                  fiatAmount == null
+                      ? ""
+                      : fiatAmount! < 0.01
+                          ? "< 0.01 ${fiatCurrencyRate?["unit"]}"
+                          : "${fiatAmount!.toStringAsFixed(2)} ${fiatCurrencyRate?["unit"]}",
+                  style: const TextStyle(
+                      color: Color(0xFF7A7D81),
+                      fontSize: 20,
+                      fontFamily: 'Geist.Mono')))
+        ]));
         // list.add(const Divider());
         // list.add(Container(
         //     alignment: Alignment.centerLeft,
@@ -166,9 +181,11 @@ class _WalletReceiveRouter extends State<WalletReceiveRouter> {
             )),
           ],
         ));
-
-        list.add(GestureDetector(
-            behavior: HitTestBehavior.translucent,
+        list.add(const SizedBox(
+          height: 20,
+        ));
+        list.add(Button(
+            text: "Create Invoice",
             onTap: () async {
               await _nwcProvider.makeInvoice(
                   int.parse(amountInputcontroller.text) * 1000,
@@ -183,26 +200,7 @@ class _WalletReceiveRouter extends State<WalletReceiveRouter> {
                 });
                 confettiController.play();
               });
-            },
-            child: MouseRegion(
-                cursor: SystemMouseCursors.click,
-                child: Container(
-                    margin: const EdgeInsets.all(Base.BASE_PADDING * 2),
-                    decoration: BoxDecoration(
-                      borderRadius:
-                          const BorderRadius.all(Radius.circular(20.0)),
-                      border: Border.all(
-                        width: 1,
-                        color: themeData.hintColor,
-                      ),
-                    ),
-                    child: Row(children: [
-                      Container(
-                          margin: const EdgeInsets.all(Base.BASE_PADDING),
-                          child: Icon(Icons.edit_note,
-                              size: 25, color: themeData.iconTheme.color)),
-                      const Text("Create Invoice"),
-                    ])))));
+            }));
       }
     } else {
       double? fiatAmount = fiatCurrencyRate != null
@@ -273,7 +271,7 @@ class _WalletReceiveRouter extends State<WalletReceiveRouter> {
               color: cardColor,
               child: Center(
                 child: Container(
-                    width: mediaDataCache.size.width * 0.8,
+                    width: mediaDataCache.size.width * 0.85,
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: list,
@@ -309,7 +307,8 @@ class _WalletReceiveRouter extends State<WalletReceiveRouter> {
 
   void _doCopy(String text) {
     Clipboard.setData(ClipboardData(text: text)).then((_) {
-      EasyLoading.showSuccess(I18n.of(context).Copy_success, dismissOnTap: true, duration: const Duration(seconds: 2));
+      EasyLoading.showSuccess(I18n.of(context).Copy_success,
+          dismissOnTap: true, duration: const Duration(seconds: 2));
     });
   }
 
@@ -326,4 +325,3 @@ class _WalletReceiveRouter extends State<WalletReceiveRouter> {
     }
   }
 }
-

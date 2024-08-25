@@ -305,7 +305,7 @@ class NwcProvider extends ChangeNotifier {
   }
 
   Future<void> makeInvoice(
-      int amount,
+      int amountInMsats,
       String? description,
       String? description_hash,
       int expiry,
@@ -317,7 +317,7 @@ class NwcProvider extends ChangeNotifier {
       EventSigner nwcSigner = Bip340EventSigner(secret!, getPublicKey(secret!));
 
       String makeInvoice =
-          '{"method":"${NwcCommand.MAKE_INVOICE}", "params": { "amount":${amount}, "description" : "${description}", "expiry":${expiry}}}';
+          '{"method":"${NwcCommand.MAKE_INVOICE}", "params": { "amount":${amountInMsats}, "description" : "${description}", "expiry":${expiry}}}';
       var encrypted = Nip04.encrypt(secret!, walletPubKey!, makeInvoice);
       var tags = [
         ["p", walletPubKey]

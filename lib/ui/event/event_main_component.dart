@@ -677,7 +677,7 @@ class _EventMainComponent extends State<EventMainComponent> {
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.warning),
+              const Icon(Icons.warning),
               Container(
                 margin: EdgeInsets.only(left: Base.BASE_PADDING_HALF),
                 child: Text(
