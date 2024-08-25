@@ -124,6 +124,8 @@ class NwcProvider extends ChangeNotifier {
       if (permissions.length == 1) {
         permissions = permissions[0].split(",");
       }
+      await subscribeToNotificationsAndResponses();
+
       if (permissions.contains(NwcCommand.GET_INFO)) {
         await requestGetInfo();
       }
@@ -188,7 +190,7 @@ class NwcProvider extends ChangeNotifier {
           kind: NwcKind.REQUEST,
           tags: tags,
           content: encrypted);
-
+      await ndk.relayManager().reconnectRelay(relay!);
       await ndk.relayManager().broadcastEvent(event, [relay!], nwcSigner);
     }
   }
@@ -228,7 +230,7 @@ class NwcProvider extends ChangeNotifier {
       this.onZapped = onZapped;
 
       var encrypted = Nip04.encrypt(secret!, walletPubKey!,
-          '{"method":"${NwcCommand.PAY_INVOICE}", "params": { "invoice":"${invoice}"}}');
+          '{"method":"${NwcCommand.PAY_INVOICE}", "params": { "invoice":"$invoice"}}');
       var tags = [
         ["p", walletPubKey]
       ];
@@ -299,6 +301,7 @@ class NwcProvider extends ChangeNotifier {
     notifyListeners();
     requestBalance();
     payInvoiceEventId = null;
+    onZapped = null;
   }
 
   Future<void> makeInvoice(
@@ -421,6 +424,8 @@ class NwcProvider extends ChangeNotifier {
           onZapped!(null);
           EasyLoading.showError("error ${data['error'].toString()}",
               duration: const Duration(seconds: 5));
+          payInvoiceEventId = null;
+          onZapped = null;
         }
         var error = data['error']['code'];
         if (error == "UNAUTHORIZED") {
@@ -437,7 +442,7 @@ class NwcProvider extends ChangeNotifier {
       notifications =
           List<String>.from(result['notifications'].map((e) => e.toString()));
       if (notifications != null && notifications.isNotEmpty) {
-        await subscribeToNotificationsAndResponses();
+        // TODO ??
       }
     }
   }
