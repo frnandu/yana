@@ -33,6 +33,7 @@ class NwcProvider extends ChangeNotifier {
   List<String> permissions = [];
   List<String> notifications = []; // payment_received payment_sent
   List<WalletTransaction> transactions = [];
+  Function(NwcNotification?)? onZapped;
 
   Future<void> init() async {
     // TODO make this multi account aware
@@ -107,11 +108,11 @@ class NwcProvider extends ChangeNotifier {
             cacheWrite: false)
         .stream
         .listen((event) async {
-          await onEventInfo.call(event);
+          await onInfoRequest.call(event);
         });
   }
 
-  Future<void> onEventInfo(Nip01Event event) async {
+  Future<void> onInfoRequest(Nip01Event event) async {
     if (event.kind == NwcKind.INFO_REQUEST &&
         StringUtil.isNotBlank(event.content)) {
       walletPubKey = event.pubKey;
@@ -165,55 +166,8 @@ class NwcProvider extends ChangeNotifier {
           kind: NwcKind.REQUEST,
           tags: tags,
           content: encrypted);
-
-      var filter = Filter(
-          kinds: [NwcKind.RESPONSE],
-          authors: [walletPubKey!],
-          pTags: [nwcSigner.getPublicKey()],
-          eTags: [event.id]);
       await ndk.relayManager().reconnectRelay(relay!);
-
-      NdkResponse sub = ndk.subscription(
-          relays: [relay!],
-          filters: [filter],
-          cacheRead: false,
-          cacheWrite: false);
-
-      sub.stream.listen((event) async {
-        await ndk.closeSubscription(sub.requestId);
-        await onGetInfo(event);
-      });
       await ndk.broadcastEvent(event, [relay!], signer: nwcSigner);
-    }
-  }
-
-  Future<void> onGetInfo(Nip01Event event) async {
-    if (event.kind == NwcKind.RESPONSE &&
-        StringUtil.isNotBlank(event.content) &&
-        StringUtil.isNotBlank(secret) &&
-        StringUtil.isNotBlank(walletPubKey)) {
-      var decrypted = Nip04.decrypt(secret!, walletPubKey!, event.content);
-      Map<String, dynamic> data;
-      data = json.decode(decrypted);
-      if (data != null &&
-          data.containsKey("result") &&
-          data['result_type'] == NwcCommand.GET_INFO) {
-        Map<String, dynamic> result = data['result'];
-        if (result['notifications'] != null) {
-          notifications = List<String>.from(
-              result['notifications'].map((e) => e.toString()));
-          if (notifications != null && notifications.isNotEmpty) {
-            await subscribeToNotificationsAndResponses();
-          }
-        }
-        notifyListeners();
-      } else if (data != null && data.containsKey("error")) {
-        var error = data['error']['code'];
-        if (error == "UNAUTHORIZED") {
-          await disconnect();
-          notifyListeners();
-        }
-      }
     }
   }
 
@@ -236,53 +190,6 @@ class NwcProvider extends ChangeNotifier {
           content: encrypted);
 
       await ndk.relayManager().broadcastEvent(event, [relay!], nwcSigner);
-    } else {
-      var filter =
-          Filter(kinds: [NwcKind.INFO_REQUEST], authors: [walletPubKey!]);
-      await ndk.relayManager().connectRelay(relay!);
-      ndk
-          .query(
-              relays: [relay],
-              filters: [filter],
-              cacheRead: false,
-              cacheWrite: false)
-          .stream
-          .listen((event) {
-            onEventInfo.call(event);
-          });
-    }
-  }
-
-  Future<void> onGetBalanceResponse(Nip01Event event) async {
-    if (event.kind == NwcKind.RESPONSE &&
-        StringUtil.isNotBlank(event.content) &&
-        StringUtil.isNotBlank(secret) &&
-        StringUtil.isNotBlank(walletPubKey)) {
-      var decrypted = Nip04.decrypt(secret!, walletPubKey!, event.content);
-      Map<String, dynamic> data;
-      data = json.decode(decrypted);
-      if (data != null &&
-          data.containsKey("result") &&
-          data['result_type'] == NwcCommand.GET_BALANCE) {
-        balance = data['result']['balance'];
-        if (balance != null) {
-          balance = balance! ~/ 1000;
-        }
-        maxAmount = data['result']['max_amount'];
-        if (maxAmount != null) {
-          maxAmount = maxAmount! ~/ 1000;
-        }
-        // if (permissions.contains(NwcCommand.LIST_TRANSACTIONS)) {
-        //   requestListTransactions();
-        // }
-        notifyListeners();
-      } else if (data != null && data.containsKey("error")) {
-        var error = data['error']['code'];
-        if (error == "UNAUTHORIZED") {
-          await disconnect();
-          notifyListeners();
-        }
-      }
     }
   }
 
@@ -318,6 +225,7 @@ class NwcProvider extends ChangeNotifier {
       EventSigner nwcSigner = Bip340EventSigner(secret!, getPublicKey(secret!));
 
       payInvoiceEventId = eventId;
+      this.onZapped = onZapped;
 
       var encrypted = Nip04.encrypt(secret!, walletPubKey!,
           '{"method":"${NwcCommand.PAY_INVOICE}", "params": { "invoice":"${invoice}"}}');
@@ -329,21 +237,21 @@ class NwcProvider extends ChangeNotifier {
           kind: NwcKind.REQUEST,
           tags: tags,
           content: encrypted);
-      var filter = Filter(
-          kinds: [NwcKind.RESPONSE],
-          authors: [walletPubKey!],
-          pTags: [nwcSigner.getPublicKey()],
-          eTags: [event.id]);
-      NdkResponse subscription = ndk.subscription(
-          relays: [relay],
-          filters: [filter],
-          cacheRead: false,
-          cacheWrite: false);
-
-      subscription.stream.listen((event) async {
-        await ndk.closeSubscription(subscription.requestId);
-        await onPayInvoiceResponse(event, onZapped);
-      });
+      // var filter = Filter(
+      //     kinds: [NwcKind.RESPONSE],
+      //     authors: [walletPubKey!],
+      //     pTags: [nwcSigner.getPublicKey()],
+      //     eTags: [event.id]);
+      // NdkResponse subscription = ndk.subscription(
+      //     relays: [relay],
+      //     filters: [filter],
+      //     cacheRead: false,
+      //     cacheWrite: false);
+      //
+      // subscription.stream.listen((event) async {
+      //   await ndk.closeSubscription(subscription.requestId);
+      //   await onPayInvoiceResponse(event, onZapped);
+      // });
       await ndk.relayManager().broadcastEvent(event, [relay!], nwcSigner);
     } else {
       EasyLoading.showError("missing pubKey and/or relay for connecting",
@@ -351,58 +259,45 @@ class NwcProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> onPayInvoiceResponse(
-      Nip01Event event, Function(NwcNotification?) onZapped) async {
-    if (event.kind == NwcKind.RESPONSE &&
-        StringUtil.isNotBlank(event.content) &&
-        StringUtil.isNotBlank(secret) &&
-        StringUtil.isNotBlank(walletPubKey)) {
-      var decrypted = Nip04.decrypt(secret!, walletPubKey!, event.content);
-      Map<String, dynamic> data;
-      data = json.decode(decrypted);
-      if (data.containsKey("result") &&
-          data['result_type'] == NwcCommand.PAY_INVOICE) {
-        String? preImage = data['result']['preimage'];
-        if (payInvoiceEventId != null) {
-          EasyLoading.showSuccess("Zap payed",
-              duration: const Duration(seconds: 2));
-          String payInvoiceEventId = this.payInvoiceEventId!;
-          var filter = Filter(
-              kinds: [EventKind.ZAP_RECEIPT], eTags: [payInvoiceEventId]);
-          Nip01Event? zapReceipt;
-          NdkResponse subscription = ndk.subscription(
-              relays: myInboxRelaySet!.urls.toList()..add(relay!),
-              filters: [filter],
-              cacheRead: false,
-              cacheWrite: false);
-          subscription.stream.listen((event) async {
-            await ndk.closeSubscription(subscription.requestId);
-            if (zapReceipt == null || zapReceipt!.createdAt < event.createdAt) {
-              zapReceipt = event;
-              eventReactionsProvider.addZap(payInvoiceEventId!, event);
-            }
-          });
-          // await eventReactionsProvider.subscription(payInvoiceEventId!, null, [EventKind.ZAP_RECEIPT]);
+  Future<void> handlePayInvoiceResponse(Map<String, dynamic> data) async {
+    String? preImage = data['result']['preimage'];
+    if (payInvoiceEventId != null) {
+      EasyLoading.showSuccess("Zap payed",
+          duration: const Duration(seconds: 2));
+      String payInvoiceEventId = this.payInvoiceEventId!;
+      // get ZAP receipt
+      var filter =
+          Filter(kinds: [EventKind.ZAP_RECEIPT], eTags: [payInvoiceEventId]);
+      Nip01Event? zapReceipt;
+      NdkResponse subscription = ndk.subscription(
+          relays: myInboxRelaySet!.urls.toList()..add(relay!),
+          filters: [filter],
+          cacheRead: false,
+          cacheWrite: false);
+      subscription.stream.listen((event) async {
+        await ndk.closeSubscription(subscription.requestId);
+        if (zapReceipt == null || zapReceipt!.createdAt < event.createdAt) {
+          zapReceipt = event;
+          eventReactionsProvider.addZap(payInvoiceEventId, event);
         }
-        NwcNotification notification = NwcNotification(
-            type: NwcNotification.OUTGOING,
-            invoice: "",
-            preimage: preImage!,
-            paymentHash: "",
-            amount: 0,
-            feesPaid: data['result']['fees_paid'] ?? 0,
-            createdAt: 0,
-            settledAt: 0,
-            metadata: {});
-        notifyListeners();
-        requestBalance();
-        onZapped(notification);
-      } else if (data != null && data.containsKey("error")) {
-        onZapped(null);
-        EasyLoading.showError("error ${data['error'].toString()}",
-            duration: const Duration(seconds: 5));
-      }
+      });
+      // await eventReactionsProvider.subscription(payInvoiceEventId!, null, [EventKind.ZAP_RECEIPT]);
     }
+    NwcNotification notification = NwcNotification(
+        type: NwcNotification.OUTGOING,
+        invoice: "",
+        preimage: preImage!,
+        paymentHash: "",
+        amount: 0,
+        feesPaid: data['result']['fees_paid'] ?? 0,
+        createdAt: 0,
+        settledAt: 0,
+        metadata: {});
+    if (onZapped != null) {
+      onZapped!(notification);
+    }
+    notifyListeners();
+    requestBalance();
     payInvoiceEventId = null;
   }
 
@@ -513,39 +408,20 @@ class NwcProvider extends ChangeNotifier {
       data = json.decode(decrypted);
       if (data != null && data.containsKey("result")) {
         if (data['result_type'] == NwcCommand.GET_BALANCE) {
-          balance = data['result']['balance'];
-          if (balance != null) {
-            balance = balance! ~/ 1000;
-          }
-          maxAmount = data['result']['max_amount'];
-          if (maxAmount != null) {
-            maxAmount = maxAmount! ~/ 1000;
-          }
-          notifyListeners();
+          handleBalance(data);
         } else if (data['result_type'] == NwcCommand.LIST_TRANSACTIONS) {
-          var list = data["result"]["transactions"];
-          transactions = [];
-          if (list != null) {
-            for (var t in list) {
-              transactions.add(WalletTransaction.fromJson(t));
-              // bool outgoing = t["type"] == "outgoing";
-              // var time = "";
-              // try {
-              //   time = GetTimeAgo.parse(
-              //       DateFormat("yyyy-MM-ddTHH:mm:ss.SSSSSSSSZ").parseUtc(
-              //           t["settled_at"]));
-              //   // 2023-12-21T01:36:39.97766341Z
-              // } catch (e) {}
-              //   transactions.add(
-              //       "${outgoing ? "↑" : "↓"} ${t["description"]} ${outgoing
-              //           ? "-"
-              //           : "+"}${(t["amount"] / 1000).toInt()} ${time}");
-            }
-            // TODO set transactions
-            notifyListeners();
-          }
+          handleListTransactions(data);
+        } else if (data['result_type'] == NwcCommand.GET_INFO) {
+          await handleGetInfo(data);
+        } else if (data['result_type'] == NwcCommand.PAY_INVOICE) {
+          await handlePayInvoiceResponse(data);
         }
       } else if (data != null && data.containsKey("error")) {
+        if (payInvoiceEventId != null && onZapped != null) {
+          onZapped!(null);
+          EasyLoading.showError("error ${data['error'].toString()}",
+              duration: const Duration(seconds: 5));
+        }
         var error = data['error']['code'];
         if (error == "UNAUTHORIZED") {
           await disconnect();
@@ -553,6 +429,53 @@ class NwcProvider extends ChangeNotifier {
         }
       }
     }
+  }
+
+  Future<void> handleGetInfo(Map<String, dynamic> data) async {
+    Map<String, dynamic> result = data['result'];
+    if (result['notifications'] != null) {
+      notifications =
+          List<String>.from(result['notifications'].map((e) => e.toString()));
+      if (notifications != null && notifications.isNotEmpty) {
+        await subscribeToNotificationsAndResponses();
+      }
+    }
+  }
+
+  void handleListTransactions(Map<String, dynamic> data) {
+    var list = data["result"]["transactions"];
+    transactions = [];
+    if (list != null) {
+      for (var t in list) {
+        transactions.add(WalletTransaction.fromJson(t));
+        // bool outgoing = t["type"] == "outgoing";
+        // var time = "";
+        // try {
+        //   time = GetTimeAgo.parse(
+        //       DateFormat("yyyy-MM-ddTHH:mm:ss.SSSSSSSSZ").parseUtc(
+        //           t["settled_at"]));
+        //   // 2023-12-21T01:36:39.97766341Z
+        // } catch (e) {}
+        //   transactions.add(
+        //       "${outgoing ? "↑" : "↓"} ${t["description"]} ${outgoing
+        //           ? "-"
+        //           : "+"}${(t["amount"] / 1000).toInt()} ${time}");
+      }
+      // TODO set transactions
+      notifyListeners();
+    }
+  }
+
+  void handleBalance(Map<String, dynamic> data) {
+    balance = data['result']['balance'];
+    if (balance != null) {
+      balance = balance! ~/ 1000;
+    }
+    maxAmount = data['result']['max_amount'];
+    if (maxAmount != null) {
+      maxAmount = maxAmount! ~/ 1000;
+    }
+    notifyListeners();
   }
 
   Future<void> onNotification(Nip01Event event) async {
@@ -566,31 +489,35 @@ class NwcProvider extends ChangeNotifier {
           data.containsKey("notification_type") &&
           data['notification_type'] == NwcNotification.PAYMENT_RECEIVED &&
           data['notification'] != null) {
-        NwcNotification notification =
-            NwcNotification.fromMap(data['notification']);
-        if (notification.type == NwcNotification.INCOMING) {
-          if (receivingInvoice != null &&
-              receivingInvoice == notification.invoice &&
-              settledInvoiceCallback != null) {
-            settledInvoiceCallback!(notification);
-            receivingInvoice = null;
-            settledInvoiceCallback = null;
-          } else {
-            EasyLoading.showSuccess(
-                "Payment received ${notification.amount / 1000} sats (fees:${notification.feesPaid / 1000})",
-                duration: const Duration(seconds: 2));
-          }
-        } else {
-          EasyLoading.showSuccess(
-              "Payment type=${notification.type} amount=${(notification.amount / 1000).round()} sats (fees:${(notification.feesPaid / 1000).round()})",
-              duration: const Duration(seconds: 2));
-        }
-        requestBalance();
-        requestListTransactions();
+        handlePayment(data);
       } else if (data != null && data.containsKey("error")) {
         EasyLoading.showError("error ${data['error'].toString()}",
             duration: const Duration(seconds: 5));
       }
     }
+  }
+
+  void handlePayment(Map<String, dynamic> data) {
+    NwcNotification notification =
+        NwcNotification.fromMap(data['notification']);
+    if (notification.type == NwcNotification.INCOMING) {
+      if (receivingInvoice != null &&
+          receivingInvoice == notification.invoice &&
+          settledInvoiceCallback != null) {
+        settledInvoiceCallback!(notification);
+        receivingInvoice = null;
+        settledInvoiceCallback = null;
+      } else {
+        EasyLoading.showSuccess(
+            "Payment received ${notification.amount / 1000} sats (fees:${notification.feesPaid / 1000})",
+            duration: const Duration(seconds: 2));
+      }
+    } else {
+      EasyLoading.showSuccess(
+          "Payment type=${notification.type} amount=${(notification.amount / 1000).round()} sats (fees:${(notification.feesPaid / 1000).round()})",
+          duration: const Duration(seconds: 2));
+    }
+    requestBalance();
+    requestListTransactions();
   }
 }
