@@ -125,7 +125,8 @@ class _WalletRouter extends State<WalletRouter> {
                             child: Button(
                                 before: Container(
                                     padding: const EdgeInsets.only(right: 10),
-                                    child: const Icon(Icons.call_received, color: Colors.white)),
+                                    child: const Icon(Icons.call_received,
+                                        color: Colors.white)),
                                 text: "Receive",
                                 height: 70,
                                 // before: const Icon(Icons.call_received_rounded),
@@ -145,7 +146,10 @@ class _WalletRouter extends State<WalletRouter> {
                             child: Button(
                                 before: Container(
                                     padding: const EdgeInsets.only(right: 10),
-                                    child: const Icon(Icons.call_made, color: Colors.white,)),
+                                    child: const Icon(
+                                      Icons.call_made,
+                                      color: Colors.white,
+                                    )),
                                 text: "Send",
                                 height: 70,
                                 // before: const Icon(Icons.call_made_rounded),
@@ -437,14 +441,16 @@ class _WalletRouter extends State<WalletRouter> {
       ),
       backgroundColor: themeData.appBarTheme.backgroundColor,
       leading: GestureDetector(
-        onTap: () {
-          RouterUtil.back(context);
-        },
-        child: Icon(
-          Icons.arrow_back_ios,
-          color: themeData.appBarTheme.titleTextStyle!.color,
-        ),
-      ),
+          onTap: () {
+            RouterUtil.back(context);
+          },
+          child: Container(
+            margin: const EdgeInsets.only(left: 10),
+            child: Icon(
+              Icons.arrow_back_ios,
+              color: themeData.hintColor,
+            ),
+          )),
       title: const Text("Wallet",
           style: const TextStyle(
             fontWeight: FontWeight.bold,

@@ -38,7 +38,7 @@ class _TransactionItemComponent extends State<TransactionItemComponent> {
     double? fiatAmount = fiatCurrencyRate != null ? ((widget.transaction.amount / 100000000000) * fiatCurrencyRate!["value"] * 100 ).truncateToDouble() / 100 : null;
     return Container(
         margin: const EdgeInsets.only(left: Base.BASE_PADDING, right: Base.BASE_PADDING, top: Base.BASE_PADDING),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: ShapeDecoration(
           color: themeData.cardColor,
           shape: RoundedRectangleBorder(
@@ -51,17 +51,24 @@ class _TransactionItemComponent extends State<TransactionItemComponent> {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Container(
-              // margin: const EdgeInsets.only(right: Base.BASE_PADDING),
+              decoration: ShapeDecoration(
+                color: themeData.appBarTheme.backgroundColor,
+                shape: const CircleBorder(side: BorderSide.none),
+                  // borderRadius: BorderRadius.circular(16),
+                // ),
+              ),
+              padding: const EdgeInsets.all(Base.BASE_PADDING),
               // width: 32,
               // height: 32,
-              child:  Text(
-                outgoing ?"↗":"↙",
-                style: TextStyle(
-                  color: outgoing ? const Color(0xffD44E7D) : const Color(0xFF47A66D),
-                  fontSize: 32,
-                  fontWeight: FontWeight.w400,
-                ),
-              )
+              child:  Icon(outgoing ?Icons.call_made: Icons.call_received, color: outgoing ? const Color(0xFFE26842) : const Color(0xFF47A66D),)
+              // Text(
+              //   outgoing ?"↗":"↙",
+              //   style: TextStyle(
+              //     color: outgoing ? const Color(0xffD44E7D) : const Color(0xFF47A66D),
+              //     fontSize: 32,
+              //     fontWeight: FontWeight.w400,
+              //   ),
+              // )
               // decoration: ShapeDecoration(
               //   image: const DecorationImage(
               //     image: NetworkImage("https://via.placeholder.com/32x32"),

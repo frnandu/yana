@@ -82,20 +82,24 @@ class _WalletReceiveRouter extends State<WalletReceiveRouter> {
       ),
       backgroundColor: themeData.appBarTheme.foregroundColor,
       leading: GestureDetector(
-        onTap: () {
-          RouterUtil.back(context);
-        },
-        child: Icon(
-          Icons.arrow_back_ios,
-          color: themeData.appBarTheme.titleTextStyle!.color,
-        ),
-      ),
+          onTap: () {
+            RouterUtil.back(context);
+          },
+          child: Container(
+            margin: const EdgeInsets.only(left: 10),
+            child: Icon(
+              Icons.arrow_back_ios,
+              color: themeData.hintColor,
+            ),
+          )),
       title: const Text("Receive",
           style: const TextStyle(
             fontWeight: FontWeight.bold,
             fontFamily: "Geist.Mono",
             fontSize: 20,
           )),
+      actions: [barOptions()],
+
     );
 
     List<Widget> list = [];
@@ -330,9 +334,12 @@ class _WalletReceiveRouter extends State<WalletReceiveRouter> {
           ),
         ),
       );
-      list.add(Button(text:"Close", onTap: () {
-        RouterUtil.back(context);
-      },));
+      list.add(Button(
+        text: "Close",
+        onTap: () {
+          RouterUtil.back(context);
+        },
+      ));
     }
     return Scaffold(
       backgroundColor: themeData.cardColor,
@@ -400,4 +407,20 @@ class _WalletReceiveRouter extends State<WalletReceiveRouter> {
       launchUrl(url);
     }
   }
+
+  Widget barOptions() {
+    return PopupMenuButton<String>(
+        icon: const Icon(Icons.qr_code_scanner),
+        tooltip: "Scan Invoice",
+        itemBuilder: (context) {
+          List<PopupMenuEntry<String>> list = [
+            //const PopupMenuItem(value: "settings", child: Text("Settings")),
+          ];
+          return list;
+        },
+        onSelected: (value) async {
+          // TODO open qr invoice
+        });
+  }
+
 }

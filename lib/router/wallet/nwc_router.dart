@@ -124,9 +124,12 @@ class _NwcRouter extends State<NwcRouter> {
         onTap: () {
           RouterUtil.back(context);
         },
-        child: Icon(
-          Icons.arrow_back_ios,
-          color: themeData.appBarTheme.titleTextStyle!.color,
+        child: Container(
+          margin: const EdgeInsets.only(left: 10),
+          child: Icon(
+            Icons.arrow_back_ios,
+            color: themeData.hintColor,
+          ),
         ),
       ),
       // actions: [

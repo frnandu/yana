@@ -87,14 +87,16 @@ class _WalletReceiveRouter extends State<WalletSendRouter> {
       ),
       backgroundColor: themeData.appBarTheme.foregroundColor,
       leading: GestureDetector(
-        onTap: () {
-          RouterUtil.back(context);
-        },
-        child: Icon(
-          Icons.arrow_back_ios,
-          color: themeData.appBarTheme.titleTextStyle!.color,
-        ),
-      ),
+          onTap: () {
+            RouterUtil.back(context);
+          },
+          child: Container(
+            margin: const EdgeInsets.only(left: 10),
+            child: Icon(
+              Icons.arrow_back_ios,
+              color: themeData.hintColor,
+            ),
+          )),
       title: const Text("Send",
           style: const TextStyle(
             fontWeight: FontWeight.bold,
