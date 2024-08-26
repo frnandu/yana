@@ -52,7 +52,7 @@ class _WalletRouter extends State<WalletRouter> {
 
     var themeData = Theme.of(context);
 
-    Color? appbarBackgroundColor = Colors.transparent;
+    Color? appbarBackgroundColor = themeData.canvasColor;
 
     var appBar = Appbar4Stack(
       title: Selector<NwcProvider, bool>(
@@ -84,7 +84,9 @@ class _WalletRouter extends State<WalletRouter> {
       builder: (context, isConnected, child) {
         List<Widget> list = [];
         if (isConnected) {
-          list.add(const SizedBox(height: 40,));
+          list.add(const SizedBox(
+            height: 40,
+          ));
           list.add(Selector<NwcProvider, int?>(
             builder: (context, balance, child) {
               if (balance != null) {
@@ -94,7 +96,12 @@ class _WalletRouter extends State<WalletRouter> {
                         100
                     : null;
 
-                return BitcoinAmount(fiatAmount: fiatAmount, fiatUnit: fiatCurrencyRate?["unit"], balance: balance);
+                return BitcoinAmount(
+                    fiatAmount: fiatAmount,
+                    fiatUnit: fiatCurrencyRate != null
+                        ? fiatCurrencyRate!["unit"]
+                        : null,
+                    balance: balance);
               }
               return Container();
             },
@@ -102,7 +109,9 @@ class _WalletRouter extends State<WalletRouter> {
               return _provider.getBalance;
             },
           ));
-          list.add(const SizedBox(height: 20,));
+          list.add(const SizedBox(
+            height: 20,
+          ));
           if (_nwcProvider.canPayInvoice || nwcProvider.canMakeInvoice) {
             list.add(Container(
                 margin: const EdgeInsets.all(Base.BASE_PADDING),
@@ -114,6 +123,9 @@ class _WalletRouter extends State<WalletRouter> {
                     _nwcProvider.canMakeInvoice
                         ? Expanded(
                             child: Button(
+                                before: Container(
+                                    padding: const EdgeInsets.only(right: 10),
+                                    child: const Icon(Icons.call_received, color: Colors.white)),
                                 text: "Receive",
                                 height: 70,
                                 // before: const Icon(Icons.call_received_rounded),
@@ -131,6 +143,9 @@ class _WalletRouter extends State<WalletRouter> {
                     _nwcProvider.canPayInvoice
                         ? Expanded(
                             child: Button(
+                                before: Container(
+                                    padding: const EdgeInsets.only(right: 10),
+                                    child: const Icon(Icons.call_made, color: Colors.white,)),
                                 text: "Send",
                                 height: 70,
                                 // before: const Icon(Icons.call_made_rounded),
@@ -151,38 +166,38 @@ class _WalletRouter extends State<WalletRouter> {
               return transactions != null && transactions.isNotEmpty
                   ? ListView.builder(
                       itemBuilder: (context, index) {
-                        if (index == transactions.length) {
-                          return GestureDetector(
-                              onTap: () {
-                                RouterUtil.router(context, RouterPath.WALLET_TRANSACTIONS);
-                              },
-                              // child:
-                              // Expanded(
-                              child: MouseRegion(
-                                  cursor: SystemMouseCursors.click,
-                                  child: Container(
-                                    margin: const EdgeInsets.only(top: Base.BASE_PADDING),
-                                    padding: const EdgeInsets.all(Base.BASE_PADDING),
-                                    height: 60.0,
-                                    // decoration: const BoxDecoration(
-                                    //     gradient: LinearGradient(
-                                    //         colors: [Color(0xffFFDE6E), Colors.orange]),
-                                    //     borderRadius: BorderRadius.all(Radius.circular(20.0))),
-                                    child: const Center(
-                                        child: Row(
-                                            mainAxisAlignment: MainAxisAlignment.center,
-                                            children: [
-                                              Text('List all transactions >>',
-                                                  style: TextStyle(color: Colors.white))
-                                            ])),
-                                  ))
-                            // ),
-                          );
-                        }
+                        // if (index == transactions.length) {
+                        //   return GestureDetector(
+                        //       onTap: () {
+                        //         RouterUtil.router(context, RouterPath.WALLET_TRANSACTIONS);
+                        //       },
+                        //       // child:
+                        //       // Expanded(
+                        //       child: MouseRegion(
+                        //           cursor: SystemMouseCursors.click,
+                        //           child: Container(
+                        //             margin: const EdgeInsets.only(top: Base.BASE_PADDING),
+                        //             padding: const EdgeInsets.all(Base.BASE_PADDING),
+                        //             height: 60.0,
+                        //             // decoration: const BoxDecoration(
+                        //             //     gradient: LinearGradient(
+                        //             //         colors: [Color(0xffFFDE6E), Colors.orange]),
+                        //             //     borderRadius: BorderRadius.all(Radius.circular(20.0))),
+                        //             child: const Center(
+                        //                 child: Row(
+                        //                     mainAxisAlignment: MainAxisAlignment.center,
+                        //                     children: [
+                        //                       Text('List all transactions >>',
+                        //                           style: TextStyle(color: Colors.white))
+                        //                     ])),
+                        //           ))
+                        //     // ),
+                        //   );
+                        // }
                         return TransactionItemComponent(
                             transaction: transactions[index]);
                       },
-                      itemCount: transactions.length+1,
+                      itemCount: transactions.length,
                     )
                   : Container();
             }, selector: (context, _provider) {
@@ -218,36 +233,137 @@ class _WalletRouter extends State<WalletRouter> {
           }
           // list.add();
         } else {
-          list.add(GestureDetector(
-              onTap: () {
-                RouterUtil.router(context, RouterPath.NWC);
-              },
-              // child:
-              // Expanded(
-              child: MouseRegion(
-                  cursor: SystemMouseCursors.click,
+          list.add(Expanded(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Expanded(
                   child: Container(
-                    margin: const EdgeInsets.only(top: Base.BASE_PADDING),
-                    padding: const EdgeInsets.all(Base.BASE_PADDING),
-                    height: 60.0,
-                    decoration: const BoxDecoration(
-                        gradient: LinearGradient(
-                            colors: [Color(0xffFFDE6E), Colors.orange]),
-                        borderRadius: BorderRadius.all(Radius.circular(20.0))),
-                    child: Center(
-                        child: Row(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        SizedBox(
+                          width: 80,
+                          height: 80,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
                             mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
-                          Container(
-                              margin: const EdgeInsets.only(
-                                  right: Base.BASE_PADDING),
-                              child: Image.asset("assets/imgs/nwc.png")),
-                          const Text('Nostr Wallet Connect',
-                              style: TextStyle(color: Colors.black))
-                        ])),
-                  ))
-              // ),
-              ));
+                              SizedBox(
+                                width: 80,
+                                height: 80,
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Image.asset("assets/imgs/nwc.png"),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Container(
+                          width: double.infinity,
+                          // height: 112,
+                          padding: const EdgeInsets.only(bottom: 24),
+                          child: const Column(
+                            mainAxisSize: MainAxisSize.min,
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              SizedBox(height: 20),
+                              SizedBox(
+                                width: double.infinity,
+                                child: Text(
+                                  'Connect Wallet',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 24,
+                                    fontFamily: 'Geist',
+                                    fontWeight: FontWeight.w700,
+                                    height: 0.06,
+                                  ),
+                                ),
+                              ),
+                              SizedBox(height: 20),
+                              SizedBox(
+                                // width: double.infinity,
+                                child: Text(
+                                  'Connect your bitcoin lightning wallet with NWC for better zapping experience.',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    color: Color(0xFF7A7D81),
+                                    fontSize: 16,
+                                    fontFamily: 'Geist',
+                                    fontWeight: FontWeight.w400,
+                                    // height: 0.09,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Button(
+                              text: "Start",
+                              width: 200,
+                              onTap: () {
+                                RouterUtil.router(context, RouterPath.NWC);
+                              },
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ));
+          // list.add(GestureDetector(
+          //     onTap: () {
+          //       RouterUtil.router(context, RouterPath.NWC);
+          //     },
+          //     // child:
+          //     // Expanded(
+          //     child: MouseRegion(
+          //         cursor: SystemMouseCursors.click,
+          //         child: Container(
+          //           margin: const EdgeInsets.only(top: Base.BASE_PADDING),
+          //           padding: const EdgeInsets.all(Base.BASE_PADDING),
+          //           height: 60.0,
+          //           decoration: const BoxDecoration(
+          //               gradient: LinearGradient(
+          //                   colors: [Color(0xffFFDE6E), Colors.orange]),
+          //               borderRadius: BorderRadius.all(Radius.circular(20.0))),
+          //           child: Center(
+          //               child: Row(
+          //                   mainAxisAlignment: MainAxisAlignment.center,
+          //                   children: [
+          //                 Container(
+          //                     margin: const EdgeInsets.only(
+          //                         right: Base.BASE_PADDING),
+          //                     child: Image.asset("assets/imgs/nwc.png")),
+          //                 const Text('Nostr Wallet Connect',
+          //                     style: TextStyle(color: Colors.black))
+          //               ])),
+          //         ))
+          //     // ),
+          //     ));
           // list.add(Row(children: [
           //   Expanded(
           //       child: MouseRegion(
@@ -315,6 +431,11 @@ class _WalletRouter extends State<WalletRouter> {
     );
 
     var appBarNew = AppBar(
+      toolbarHeight: 70,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(30),
+      ),
+      backgroundColor: themeData.appBarTheme.backgroundColor,
       leading: GestureDetector(
         onTap: () {
           RouterUtil.back(context);
@@ -324,26 +445,12 @@ class _WalletRouter extends State<WalletRouter> {
           color: themeData.appBarTheme.titleTextStyle!.color,
         ),
       ),
-      // actions: [
-      //   GestureDetector(
-      //     onTap: addToCommunity,
-      //     child: Container(
-      //       margin: const EdgeInsets.only(
-      //         left: Base.BASE_PADDING,
-      //         right: Base.BASE_PADDING,
-      //       ),
-      //       child: Icon(
-      //         Icons.add,
-      //         color: themeData.appBarTheme.titleTextStyle!.color,
-      //       ),
-      //     ),
-      //   )
-      // ],
-      title: const Text("Wallet", style: const TextStyle(
-        fontWeight: FontWeight.bold,
-        fontFamily: "Geist.Mono",
-        fontSize: 20,
-      )),
+      title: const Text("Wallet",
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            fontFamily: "Geist.Mono",
+            fontSize: 20,
+          )),
       actions: [barOptions()],
     );
 
@@ -380,25 +487,32 @@ class _WalletRouter extends State<WalletRouter> {
   }
 
   Widget barOptions() {
-    return PopupMenuButton<String>(
-        icon: const Icon(Icons.settings),
-        tooltip: "more",
-        itemBuilder: (context) {
-          List<PopupMenuEntry<String>> list = [
-            //const PopupMenuItem(value: "settings", child: Text("Settings")),
-            const PopupMenuItem(
-              value: "disconnect",
-              child: Text("Disconnect wallet"),
-            ),
-          ];
-          return list;
-        },
-        onSelected: (value) async {
-          if (value == "disconnect") {
-            setState(() async {
-              await nwcProvider.disconnect();
-            });
-          }
-        });
+    return nwcProvider.isConnected
+        ? PopupMenuButton<String>(
+            icon:
+                Image.asset("assets/imgs/settings.png", width: 32, height: 32),
+            tooltip: "settings",
+            itemBuilder: (context) {
+              List<PopupMenuEntry<String>> list = [
+                //const PopupMenuItem(value: "settings", child: Text("Settings")),
+              ];
+              if (nwcProvider.isConnected) {
+                list.add(
+                  const PopupMenuItem(
+                    value: "disconnect",
+                    child: Text("Disconnect wallet"),
+                  ),
+                );
+              }
+              return list;
+            },
+            onSelected: (value) {
+              if (value == "disconnect") {
+                setState(() {
+                  nwcProvider.disconnect();
+                });
+              }
+            })
+        : Container();
   }
 }

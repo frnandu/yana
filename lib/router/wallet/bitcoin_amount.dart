@@ -5,11 +5,11 @@ import '../../utils/base.dart';
 import '../../utils/number_format_util.dart';
 
 class BitcoinAmount extends StatelessWidget {
-  String fiatUnit;
+  String? fiatUnit;
 
   BitcoinAmount({
     super.key,
-    required this.fiatAmount, required this.balance, required this.fiatUnit
+    required this.fiatAmount, required this.balance, this.fiatUnit
   });
 
   final double? fiatAmount;
@@ -76,8 +76,8 @@ class BitcoinAmount extends StatelessWidget {
                       fiatAmount == null
                           ? ""
                           : fiatAmount! < 0.01
-                          ? "< 0.01 $fiatUnit"
-                          : "${fiatAmount!.toStringAsFixed(2)} $fiatUnit",
+                          ? "< 0.01 ${fiatUnit ?? ''}"
+                          : "${fiatAmount!.toStringAsFixed(2)} ${fiatUnit??''}",
                       style: const TextStyle(
                           color: Color(0xFF7A7D81),
                           fontSize: 20,

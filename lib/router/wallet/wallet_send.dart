@@ -9,11 +9,11 @@ import 'package:yana/provider/nwc_provider.dart';
 import 'package:yana/utils/base.dart';
 import 'package:yana/utils/string_util.dart';
 
-import '../../../ui/appbar4stack.dart';
 import '../../nostr/nip57/zap.dart';
 import '../../nostr/nip57/zap_num_util.dart';
 import '../../ui/editor/search_mention_user_component.dart';
 import '../../utils/dio_util.dart';
+import '../../utils/router_util.dart';
 
 class WalletSendRouter extends StatefulWidget {
   const WalletSendRouter({super.key});
@@ -80,21 +80,27 @@ class _WalletReceiveRouter extends State<WalletSendRouter> {
     var themeData = Theme.of(context);
     var cardColor = themeData.cardColor;
 
-    Color? appbarBackgroundColor = Colors.transparent;
-
-    var appBar = Appbar4Stack(
-      title: Container(
-        alignment: Alignment.center,
-        child: const Text(
-          "Send",
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            fontFamily: "Geist",
-            fontSize: 20,
-          ),
+    var appBarNew = AppBar(
+      toolbarHeight: 70,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(30),
+      ),
+      backgroundColor: themeData.appBarTheme.foregroundColor,
+      leading: GestureDetector(
+        onTap: () {
+          RouterUtil.back(context);
+        },
+        child: Icon(
+          Icons.arrow_back_ios,
+          color: themeData.appBarTheme.titleTextStyle!.color,
         ),
       ),
-      backgroundColor: appbarBackgroundColor,
+      title: const Text("Send",
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            fontFamily: "Geist.Mono",
+            fontSize: 20,
+          )),
     );
 
     List<Widget> list = [];
@@ -299,12 +305,14 @@ class _WalletReceiveRouter extends State<WalletSendRouter> {
       );
     }
     return Scaffold(
+      backgroundColor: cardColor,
+      appBar: appBarNew,
       body: Stack(
         children: [
-          Container(
+          SizedBox(
             width: mediaDataCache.size.width,
             height: mediaDataCache.size.height - mediaDataCache.padding.top,
-            margin: EdgeInsets.only(top: mediaDataCache.padding.top),
+            // margin: EdgeInsets.only(top: mediaDataCache.padding.top),
             child: Container(
               color: cardColor,
               child: Center(
@@ -317,13 +325,13 @@ class _WalletReceiveRouter extends State<WalletSendRouter> {
               ),
             ),
           ),
-          Positioned(
-            top: mediaDataCache.padding.top,
-            child: SizedBox(
-              width: mediaDataCache.size.width,
-              child: appBar,
-            ),
-          ),
+          // Positioned(
+          //   top: mediaDataCache.padding.top,
+          //   child: SizedBox(
+          //     width: mediaDataCache.size.width,
+          //     child: ,
+          //   ),
+          // ),
           Align(
             alignment: Alignment.topCenter,
             child: ConfettiWidget(

@@ -87,7 +87,7 @@ class _TransactionItemComponent extends State<TransactionItemComponent> {
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
                               // color: Colors.white,
-                              fontSize: 16,
+                              fontSize: 20,
                               fontWeight: FontWeight.w400,
                               overflow: TextOverflow.ellipsis,
                               // height: 0.12,
@@ -102,7 +102,7 @@ class _TransactionItemComponent extends State<TransactionItemComponent> {
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
                             color: Color(0xFF7A7D81),
-                            fontSize: 12,
+                            fontSize: 14,
                             fontWeight: FontWeight.w400,
                             // height: 0.11,
                           )),
@@ -122,7 +122,7 @@ class _TransactionItemComponent extends State<TransactionItemComponent> {
                 textAlign: TextAlign.right,
                 style: TextStyle(
                   color: outgoing ? const Color(0xFFE26842) : const Color(0xFF47A66D),
-                  fontSize: 16,
+                  fontSize: 20,
                   fontFamily: 'Geist.Mono',
                   fontWeight: FontWeight.w400,
                   // height: 0.12,
@@ -133,7 +133,7 @@ class _TransactionItemComponent extends State<TransactionItemComponent> {
                 'sats',
                 style: TextStyle(
                   color: Color(0xFF7A7D81),
-                  fontSize: 14,
+                  fontSize: 16,
                   fontWeight: FontWeight.w400,
                   height: 0.12,
                 ),
@@ -147,7 +147,7 @@ class _TransactionItemComponent extends State<TransactionItemComponent> {
                 textAlign: TextAlign.right,
                 style: const TextStyle(
                   color: Color(0xFF7A7D81),
-                  fontSize: 12,
+                  fontSize: 14,
                   fontFamily: 'Geist.Mono',
                   fontWeight: FontWeight.w400,
                   // height: 0.11,

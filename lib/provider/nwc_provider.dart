@@ -35,6 +35,8 @@ class NwcProvider extends ChangeNotifier {
   List<WalletTransaction> transactions = [];
   Function(NwcNotification?)? onZapped;
 
+  static const String NWC_PROTOCOL_PREFIX="nostr+walletconnect://";
+
   Future<void> init() async {
     // TODO make this multi account aware
     String? perms = sharedPreferences.getString(DataKey.NWC_PERMISSIONS);
@@ -196,7 +198,7 @@ class NwcProvider extends ChangeNotifier {
   }
 
   Future<void> requestListTransactions(
-      {int limit = 20, int offset = 0, bool unpaid = false}) async {
+      {int limit = 100, int offset = 0, bool unpaid = false}) async {
     if (isConnected) {
       fiatCurrencyRate = await RatesUtil.coinbase("pln");
       EventSigner nwcSigner = Bip340EventSigner(secret!, getPublicKey(secret!));

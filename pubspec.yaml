@@ -81,6 +81,7 @@ dependencies:
   flutter_markdown: ^0.6.14
   window_manager: ^0.3.4
   qr_code_scanner: ^1.0.1
+#  mobile_scanner: ^5.2.1
   image_gallery_saver: ^2.0.3
   permission_handler: ^10.2.0
   file_saver: ^0.2.4
@@ -168,6 +169,7 @@ flutter:
     - assets/imgs/alby.png
     - assets/imgs/mutiny.png
     - assets/imgs/nwc.png
+    - assets/imgs/settings.png
     - assets/imgs/mutiny.png
     - assets/imgs/logo/logo-new.png
     - assets/imgs/logo/logo-name.svg

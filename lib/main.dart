@@ -1069,7 +1069,7 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
       primaryColor: themeColor[500],
       appBarTheme: AppBarTheme(
         // color: Base.APPBAR_COLOR,
-        backgroundColor: const Color(0xff281237),
+        backgroundColor: const Color(0xFF131313),
         //   PlatformUtil.isPC() ? scaffoldBackgroundColor : themeColor[500],
         titleTextStyle: titleTextStyle,
         elevation: 0,
@@ -1148,7 +1148,8 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
       primaryColor: themeColor[500],
       appBarTheme: AppBarTheme(
         // color: Base.APPBAR_COLOR,
-        backgroundColor: background,
+        backgroundColor: const Color(0xFF131313),
+        // backgroundColor: background,
         titleTextStyle: titleTextStyle,
         elevation: 0,
       ),

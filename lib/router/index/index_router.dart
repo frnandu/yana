@@ -10,6 +10,7 @@ import 'package:ndk/shared/helpers/relay_helper.dart';
 import 'package:protocol_handler/protocol_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:yana/provider/dm_provider.dart';
+import 'package:yana/provider/nwc_provider.dart';
 import 'package:yana/provider/pc_router_fake_provider.dart';
 import 'package:yana/router/follow/notifications_router.dart';
 import 'package:yana/ui/cust_state.dart';
@@ -86,7 +87,7 @@ class _IndexRouter extends CustState<IndexRouter>
     // String log = 'Url received: $url)';
     // print(log);
     if (StringUtil.isNotBlank(url)) {
-      if (url.startsWith("nostr+walletconnect://")) {
+      if (url.startsWith(NwcProvider.NWC_PROTOCOL_PREFIX)) {
         Future.delayed(const Duration(microseconds: 1), () async {
           await nwcProvider.connect(url);
           bool canPop = Navigator.canPop(context);
