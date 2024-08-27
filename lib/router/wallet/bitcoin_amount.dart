@@ -41,17 +41,7 @@ class BitcoinAmount extends StatelessWidget {
                                 fontSize: 40,
                                 fontFamily: 'Geist.Mono'))),
 
-                    // const Text("₿",
-                    //           style: TextStyle(
-                    //               color: Color(0xFF7A7D81),
-                    //               fontSize: 40,
-                    //               fontFamily: 'Geist.Mono')),
                     const SizedBox(width: 4),
-                    // const Text("000002112",
-                    //     style: TextStyle(
-                    //         color: Color(0xffD44E7D),
-                    //         fontSize: 40,
-                    //         fontFamily: 'Geist.Mono')),
                     NumberFormatUtil.formatBitcoinAmount(
                         balance / 100000000,
                         TextStyle(
@@ -71,7 +61,8 @@ class BitcoinAmount extends StatelessWidget {
               Container(
                   margin: const EdgeInsets.only(
                       top: Base.BASE_PADDING,
-                      bottom: Base.BASE_PADDING),
+                      // bottom: Base.BASE_PADDING
+                  ),
                   child: Text(
                       fiatAmount == null
                           ? ""

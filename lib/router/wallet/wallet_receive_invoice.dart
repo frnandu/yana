@@ -1,10 +1,12 @@
 import 'dart:io';
 
 import 'package:android_intent_plus/android_intent.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:confetti/confetti.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_timer_countdown/flutter_timer_countdown.dart';
+import 'package:ndk/domain_layer/entities/metadata.dart';
 import 'package:pretty_qr_code/pretty_qr_code.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -39,10 +41,12 @@ class _WalletReceiveRouter extends State<WalletReceiveInvoiceRouter> {
   static const int BTC_IN_SATS = 100000000;
 
   int? expiration;
+  Metadata? metadata;
 
   @override
   void initState() {
-    // nwcProvider.reload();
+    metadata = metadataProvider.getMetadata(loggedUserSigner!.getPublicKey());
+
     amountInputcontroller.addListener(() {
       setState(() {
         if (fiatCurrencyRate != null && StringUtil.isNotBlank(amountInputcontroller.text.trim())) {
@@ -104,28 +108,41 @@ class _WalletReceiveRouter extends State<WalletReceiveInvoiceRouter> {
                 ),
                 child: PrettyQrView.data(
                     data: payingInvoice!,
-                    decoration: const PrettyQrDecoration(
+                    decoration: PrettyQrDecoration(
                       shape: PrettyQrSmoothSymbol(roundFactor: 1),
                       image: PrettyQrDecorationImage(
-                        image: AssetImage('assets/imgs/logo/logo-new.png'),
+                        image: metadata != null && StringUtil.isNotBlank(metadata!.picture)
+                            ? CachedNetworkImageProvider(metadata!.picture!)
+                            : AssetImage('assets/imgs/logo/logo-new.png'),
                       ),
                     )))
             // LightningQrcodeDialog(invoice: payingInvoice!)
             );
-        Color cardColor = themeData.hintColor;
-        var hintColor = themeData.cardColor;
         String? link;
         if (PlatformUtil.isPC() || PlatformUtil.isWeb() || true) {
           link = 'lightning:${payingInvoice!}';
         }
         list.add(BitcoinAmount(fiatAmount: fiatAmount, fiatUnit: fiatCurrencyRate?["unit"], balance: int.parse(amountInputcontroller.text)));
+        if (StringUtil.isNotBlank(descriptionInputcontroller.text)) {
+          list.add(Container(
+              margin: const EdgeInsets.only(bottom: Base.BASE_PADDING*2),
+              child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(descriptionInputcontroller.text, style: const TextStyle(fontSize: 20, fontFamily: 'Geist.Mono'))])));
+        }
+        list.add(const SizedBox(height: 10));
+        const TextStyle timeTextStyle = TextStyle(color: Color(0xFF7A7D81), fontSize: 18, fontFamily: 'Geist.Mono');
         list.add(Container(
-            margin: const EdgeInsets.only(bottom: Base.BASE_PADDING * 2),
+            margin: const EdgeInsets.only(bottom: Base.BASE_PADDING),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                const SizedBox(width: 10),
                 SizedBox(
                     width: 20,
                     height: 20,
@@ -134,60 +151,86 @@ class _WalletReceiveRouter extends State<WalletReceiveInvoiceRouter> {
                       strokeWidth: 2.0,
                     )),
                 const SizedBox(width: 10),
-                const Text("Waiting for settlement", style: TextStyle(color: Color(0xFF7A7D81), fontSize: 20, fontFamily: 'Geist.Mono'))
+                const Expanded(child:Text("Waiting for settlement", style: timeTextStyle)),
+                const SizedBox(width: 10),
+                TimerCountdown(
+                  enableDescriptions: false,
+                  spacerWidth: 1,
+                  colonsTextStyle: timeTextStyle,
+                  timeTextStyle: timeTextStyle,
+                  format: CountDownTimerFormat.hoursMinutesSeconds,
+                  endTime: DateTime.now().add(
+                    Duration(seconds: expiration!),
+                  ),
+                  onEnd: () {
+                    RouterUtil.back(context);
+                  },
+                )
               ],
             )));
-        const TextStyle timeTextStyle = TextStyle(color: Color(0xFF7A7D81), fontSize: 16, fontFamily: 'Geist.Mono');
-        list.add(
-          Row(mainAxisSize: MainAxisSize.min, mainAxisAlignment: MainAxisAlignment.start, crossAxisAlignment: CrossAxisAlignment.start, children: [
-            const Expanded(child: Text("Expiration time:", style: timeTextStyle)),
-            const SizedBox(
-              width: 40,
-            ),
-            Expanded(
-                child: Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
-              TimerCountdown(
-                enableDescriptions: false,
-                spacerWidth: 1,
-                colonsTextStyle: timeTextStyle,
-                timeTextStyle: timeTextStyle,
-                format: CountDownTimerFormat.hoursMinutesSeconds,
-                endTime: DateTime.now().add(
-                  Duration(seconds: expiration!),
-                ),
-                onEnd: () {
-                  RouterUtil.back(context);
-                },
-              )
-            ]))
-          ]),
-        );
+        // list.add(
+        //   Row(mainAxisSize: MainAxisSize.min, mainAxisAlignment: MainAxisAlignment.start, crossAxisAlignment: CrossAxisAlignment.start, children: [
+        //     const Expanded(child: Text("Expiration time:", style: timeTextStyle)),
+        //     const SizedBox(
+        //       width: 40,
+        //     ),
+        //     Expanded(
+        //         child: Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
+        //       TimerCountdown(
+        //         enableDescriptions: false,
+        //         spacerWidth: 1,
+        //         colonsTextStyle: timeTextStyle,
+        //         timeTextStyle: timeTextStyle,
+        //         format: CountDownTimerFormat.hoursMinutesSeconds,
+        //         endTime: DateTime.now().add(
+        //           Duration(seconds: expiration!),
+        //         ),
+        //         onEnd: () {
+        //           RouterUtil.back(context);
+        //         },
+        //       )
+        //     ]))
+        //   ]),
+        // );
         list.add(const SizedBox(height: 20));
-        list.add(Row(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+
+        if (link != null) {
+          list.add(Row(children: [
             Expanded(
                 child: Button(
-                    before: const Icon(Icons.copy),
+                    before: const Icon(Icons.copy, color: Colors.white),
                     text: "Copy ",
                     onTap: () async {
                       _doCopy(payingInvoice!);
-                    })),
-            if (link != null) const SizedBox(width: 24),
-            if (link != null)
+                    }))
+          ]));
+          list.add(const SizedBox(height: 10));
+          list.add(Row(
+            children: [
               Expanded(
                   child: Button(
-                      before: const Icon(Icons.ios_share),
+                      before: Icon(Icons.ios_share, color: themeData.textTheme.labelSmall!.color),
+                      fill: false,
+                      border: true,
                       text: "Share",
                       onTap: () async {
                         _doPay(link!);
                       }))
-            else
-              Container()
-          ],
-        ));
+            ],
+          ));
+          list.add(const SizedBox(height: 10));
+          list.add(Button(
+              before: Icon(Icons.edit_outlined, color: themeData.disabledColor),
+              border: false,
+              fill: false,
+              fontColor: themeData.disabledColor,
+              text: "Edit Invoice",
+              onTap: () async {
+                setState(() {
+                  payingInvoice = null;
+                });
+              }));
+        }
       } else {
         list.add(Row(
           children: [
@@ -222,27 +265,33 @@ class _WalletReceiveRouter extends State<WalletReceiveInvoiceRouter> {
             Expanded(
                 child: TextField(
               controller: descriptionInputcontroller,
-              decoration: const InputDecoration(hintText: "Description"),
+              decoration: const InputDecoration(hintText: "Add description (optional)"),
             )),
           ],
         ));
         list.add(const SizedBox(
           height: 20,
         ));
-        list.add(Button(
-            text: "Create Invoice",
-            onTap: () async {
-              expiration = 3600;
-              await _nwcProvider.makeInvoice(int.parse(amountInputcontroller.text) * 1000, descriptionInputcontroller.text, "", expiration!, (invoice) async {
-                // await QrcodeDialog.show(context, invoice);
-                payingInvoice = invoice;
-              }, (notification) async {
-                setState(() {
-                  paid = notification;
-                });
-                confettiController.play();
-              });
-            }));
+        list.add(Row(children: [
+          Expanded(
+              child: Button(
+                  text: "Create Invoice",
+                  fill: false,
+                  border: true,
+                  onTap: () async {
+                    expiration = 3600;
+                    await _nwcProvider.makeInvoice(int.parse(amountInputcontroller.text) * 1000, descriptionInputcontroller.text, "", expiration!,
+                        (invoice) async {
+                      // await QrcodeDialog.show(context, invoice);
+                      payingInvoice = invoice;
+                    }, (notification) async {
+                      setState(() {
+                        paid = notification;
+                      });
+                      confettiController.play();
+                    });
+                  }))
+        ]));
       }
     } else {
       double? fiatAmount = fiatCurrencyRate != null ? ((paid!.amount / 100000000000) * fiatCurrencyRate!["value"]) : null;
