@@ -335,7 +335,7 @@ class NwcProvider extends ChangeNotifier {
           pTags: [nwcSigner.getPublicKey()],
           eTags: [event.id]);
       NdkResponse subscription = ndk.subscription(
-          relays: myInboxRelaySet!.urls.toList()..add(relay!),
+          relays: [relay!],
           filters: [filter],
           cacheRead: false,
           cacheWrite: false);

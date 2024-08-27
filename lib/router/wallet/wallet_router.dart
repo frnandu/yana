@@ -35,10 +35,7 @@ class _WalletRouter extends State<WalletRouter> {
     List<String> parts = bitcoinString.split('.');
 
     // Add spaces every three digits before the decimal point
-    String formattedIntegerPart = parts[0].splitMapJoin(
-        RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-        onMatch: (m) => '${m[1]} ',
-        onNonMatch: (n) => n);
+    String formattedIntegerPart = parts[0].splitMapJoin(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), onMatch: (m) => '${m[1]} ', onNonMatch: (n) => n);
 
     // Combine the formatted integer part and the decimal part with 1 space
     String formattedBitcoin = '$formattedIntegerPart.${parts[1]}';
@@ -90,18 +87,9 @@ class _WalletRouter extends State<WalletRouter> {
           list.add(Selector<NwcProvider, int?>(
             builder: (context, balance, child) {
               if (balance != null) {
-                double? fiatAmount = fiatCurrencyRate != null
-                    ? ((balance / 100000000) * fiatCurrencyRate!["value"] * 100)
-                            .truncateToDouble() /
-                        100
-                    : null;
+                double? fiatAmount = fiatCurrencyRate != null ? ((balance / 100000000) * fiatCurrencyRate!["value"] * 100).truncateToDouble() / 100 : null;
 
-                return BitcoinAmount(
-                    fiatAmount: fiatAmount,
-                    fiatUnit: fiatCurrencyRate != null
-                        ? fiatCurrencyRate!["unit"]
-                        : null,
-                    balance: balance);
+                return BitcoinAmount(fiatAmount: fiatAmount, fiatUnit: fiatCurrencyRate != null ? fiatCurrencyRate!["unit"] : null, balance: balance);
               }
               return Container();
             },
@@ -123,24 +111,19 @@ class _WalletRouter extends State<WalletRouter> {
                     _nwcProvider.canMakeInvoice
                         ? Expanded(
                             child: Button(
-                                before: Container(
-                                    padding: const EdgeInsets.only(right: 10),
-                                    child: const Icon(Icons.call_received,
-                                        color: Colors.white)),
+                                before: Container(padding: const EdgeInsets.only(right: 10), child: const Icon(Icons.call_received, color: Colors.white)),
+                                fontSize: 20,
                                 text: "Receive",
                                 height: 70,
                                 // before: const Icon(Icons.call_received_rounded),
                                 onTap: () async {
-                                  RouterUtil.router(
-                                      context, RouterPath.WALLET_RECEIVE);
+                                  RouterUtil.router(context, RouterPath.WALLET_RECEIVE);
                                   //
                                   // confettiController.play();
                                   // //_nwcProvider.onPayInvoiceResponse(event, onZapped)
                                 }))
                         : Container(),
-                    _nwcProvider.canMakeInvoice && _nwcProvider.canPayInvoice
-                        ? const SizedBox(width: 24)
-                        : Container(),
+                    _nwcProvider.canMakeInvoice && _nwcProvider.canPayInvoice ? const SizedBox(width: 24) : Container(),
                     _nwcProvider.canPayInvoice
                         ? Expanded(
                             child: Button(
@@ -151,11 +134,11 @@ class _WalletRouter extends State<WalletRouter> {
                                       color: Colors.white,
                                     )),
                                 text: "Send",
+                                fontSize: 20,
                                 height: 70,
                                 // before: const Icon(Icons.call_made_rounded),
                                 onTap: () async {
-                                  RouterUtil.router(
-                                      context, RouterPath.WALLET_SEND);
+                                  RouterUtil.router(context, RouterPath.WALLET_SEND);
                                 }))
                         : Container()
                   ],
@@ -165,8 +148,7 @@ class _WalletRouter extends State<WalletRouter> {
           if (nwcProvider.canListTransaction) {
             list.add(const SizedBox(height: 16));
             list.add(Expanded(
-                child: Selector<NwcProvider, List<WalletTransaction>>(
-                    builder: (context, transactions, child) {
+                child: Selector<NwcProvider, List<WalletTransaction>>(builder: (context, transactions, child) {
               return transactions != null && transactions.isNotEmpty
                   ? ListView.builder(
                       itemBuilder: (context, index) {
@@ -198,8 +180,7 @@ class _WalletRouter extends State<WalletRouter> {
                         //     // ),
                         //   );
                         // }
-                        return TransactionItemComponent(
-                            transaction: transactions[index]);
+                        return TransactionItemComponent(transaction: transactions[index]);
                       },
                       itemCount: transactions.length,
                     )
@@ -324,6 +305,7 @@ class _WalletRouter extends State<WalletRouter> {
                           children: [
                             Button(
                               text: "Start",
+                              fontSize: 20,
                               width: 200,
                               onTap: () {
                                 RouterUtil.router(context, RouterPath.NWC);
@@ -460,8 +442,7 @@ class _WalletRouter extends State<WalletRouter> {
       actions: [barOptions()],
     );
 
-    return Scaffold(
-        appBar: appBarNew, backgroundColor: themeData.cardColor, body: main);
+    return Scaffold(appBar: appBarNew, backgroundColor: themeData.cardColor, body: main);
 
     return Scaffold(
       body: Stack(
@@ -475,8 +456,7 @@ class _WalletRouter extends State<WalletRouter> {
               child: Center(
                 child:
                     //main
-                    Container(
-                        width: mediaDataCache.size.width * 0.8, child: main),
+                    Container(width: mediaDataCache.size.width * 0.8, child: main),
               ),
             ),
           ),
@@ -494,31 +474,32 @@ class _WalletRouter extends State<WalletRouter> {
 
   Widget barOptions() {
     return nwcProvider.isConnected
-        ? PopupMenuButton<String>(
-            icon:
-                Image.asset("assets/imgs/settings.png", width: 32, height: 32),
-            tooltip: "settings",
-            itemBuilder: (context) {
-              List<PopupMenuEntry<String>> list = [
-                //const PopupMenuItem(value: "settings", child: Text("Settings")),
-              ];
-              if (nwcProvider.isConnected) {
-                list.add(
-                  const PopupMenuItem(
-                    value: "disconnect",
-                    child: Text("Disconnect wallet"),
-                  ),
-                );
-              }
-              return list;
-            },
-            onSelected: (value) {
-              if (value == "disconnect") {
-                setState(() {
-                  nwcProvider.disconnect();
-                });
-              }
-            })
+        ? Container(
+            margin: const EdgeInsets.all(5),
+            child: PopupMenuButton<String>(
+                icon: Image.asset("assets/imgs/settings.png", width: 24, height: 24),
+                tooltip: "settings",
+                itemBuilder: (context) {
+                  List<PopupMenuEntry<String>> list = [
+                    //const PopupMenuItem(value: "settings", child: Text("Settings")),
+                  ];
+                  if (nwcProvider.isConnected) {
+                    list.add(
+                      const PopupMenuItem(
+                        value: "disconnect",
+                        child: Text("Disconnect wallet"),
+                      ),
+                    );
+                  }
+                  return list;
+                },
+                onSelected: (value) {
+                  if (value == "disconnect") {
+                    setState(() {
+                      nwcProvider.disconnect();
+                    });
+                  }
+                }))
         : Container();
   }
 }

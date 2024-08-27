@@ -20,11 +20,11 @@ class WalletSendRouter extends StatefulWidget {
 
   @override
   State<StatefulWidget> createState() {
-    return _WalletReceiveRouter();
+    return _WalletSendRouter();
   }
 }
 
-class _WalletReceiveRouter extends State<WalletSendRouter> {
+class _WalletSendRouter extends State<WalletSendRouter> {
   TextEditingController recipientInputcontroller = TextEditingController();
   TextEditingController amountInputcontroller = TextEditingController();
   late ConfettiController confettiController;
@@ -79,6 +79,14 @@ class _WalletReceiveRouter extends State<WalletSendRouter> {
 
     var themeData = Theme.of(context);
     var cardColor = themeData.cardColor;
+    String? sendTo = RouterUtil.routerArgs(context) as String?;
+    if (StringUtil.isNotBlank(sendTo)) {
+      setState(() {
+        recipientInputcontroller!.text = sendTo!;
+        recipientAddress = sendTo;
+        // TODO move along the process
+      });
+    }
 
     var appBarNew = AppBar(
       toolbarHeight: 70,

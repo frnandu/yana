@@ -63,6 +63,7 @@ import 'package:yana/router/user/user_zap_list_router.dart';
 import 'package:yana/router/wallet/nwc_router.dart';
 import 'package:yana/router/wallet/transactions_router.dart';
 import 'package:yana/router/wallet/wallet_receive.dart';
+import 'package:yana/router/wallet/wallet_receive_invoice.dart';
 import 'package:yana/router/wallet/wallet_router.dart';
 import 'package:yana/router/wallet/wallet_send.dart';
 import 'package:yana/utils/image/cache_manager_builder.dart';
@@ -442,6 +443,7 @@ Future<void> main() async {
   packageInfo = await PackageInfo.fromPlatform();
   try {
     await protocolHandler.register('nostr+walletconnect');
+    await protocolHandler.register('lightning');
     await protocolHandler.register('yana');
     await protocolHandler.register('nostr');
   } catch (err) {
@@ -717,6 +719,7 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
       RouterPath.WALLET: (context) => const WalletRouter(),
       RouterPath.WALLET_TRANSACTIONS: (context) => const TransactionsRouter(),
       RouterPath.WALLET_RECEIVE: (context) => const WalletReceiveRouter(),
+      RouterPath.WALLET_RECEIVE_INVOICE: (context) => const WalletReceiveInvoiceRouter(),
       RouterPath.WALLET_SEND: (context) => const WalletSendRouter(),
       RouterPath.NWC: (context) => const NwcRouter(),
       RouterPath.RELAYS: (context) => const RelaysRouter(),

@@ -99,6 +99,8 @@ class _IndexRouter extends CustState<IndexRouter>
             RouterUtil.router(context, RouterPath.WALLET);
           }
         });
+      } else if (url.startsWith("lightning:")) {
+        RouterUtil.router(context, RouterPath.WALLET_SEND, url.split(":").last);
       } else if (url.startsWith("nostr:")) {
         RegExpMatch? match = Nip19.nip19regex.firstMatch(url);
 

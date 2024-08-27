@@ -1,28 +1,26 @@
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:android_intent_plus/android_intent.dart';
-import 'package:bech32/bech32.dart';
 import 'package:confetti/confetti.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:ndk/domain_layer/entities/metadata.dart';
+import 'package:flutter_timer_countdown/flutter_timer_countdown.dart';
 import 'package:pretty_qr_code/pretty_qr_code.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:yana/main.dart';
 import 'package:yana/nostr/nip47/nwc_notification.dart';
 import 'package:yana/provider/nwc_provider.dart';
-import 'package:yana/utils/router_path.dart';
+import 'package:yana/utils/base.dart';
 import 'package:yana/utils/string_util.dart';
 
-import '../../nostr/nip19/nip19.dart';
 import '../../ui/button.dart';
-import '../../ui/user_pic_component.dart';
+import '../../utils/platform_util.dart';
 import '../../utils/router_util.dart';
+import 'bitcoin_amount.dart';
 
-class WalletReceiveRouter extends StatefulWidget {
-  const WalletReceiveRouter({super.key});
+class WalletReceiveInvoiceRouter extends StatefulWidget {
+  const WalletReceiveInvoiceRouter({super.key});
 
   @override
   State<StatefulWidget> createState() {
@@ -30,24 +28,20 @@ class WalletReceiveRouter extends StatefulWidget {
   }
 }
 
-class _WalletReceiveRouter extends State<WalletReceiveRouter> {
+class _WalletReceiveRouter extends State<WalletReceiveInvoiceRouter> {
   TextEditingController amountInputcontroller = TextEditingController();
   TextEditingController descriptionInputcontroller = TextEditingController();
   late ConfettiController confettiController;
   String? payingInvoice;
   NwcNotification? paid;
   double? fiatAmount;
-  static Bech32Codec bech32Codec = const Bech32Codec();
 
   static const int BTC_IN_SATS = 100000000;
 
   int? expiration;
-  Metadata? metadata;
 
   @override
   void initState() {
-    super.initState();
-    metadata = metadataProvider.getMetadata(loggedUserSigner!.getPublicKey());
     // nwcProvider.reload();
     amountInputcontroller.addListener(() {
       setState(() {
@@ -74,7 +68,6 @@ class _WalletReceiveRouter extends State<WalletReceiveRouter> {
 
     var themeData = Theme.of(context);
     var cardColor = themeData.cardColor;
-    var hintColor = themeData.cardColor;
 
     var appBarNew = AppBar(
       toolbarHeight: 70,
@@ -93,109 +86,164 @@ class _WalletReceiveRouter extends State<WalletReceiveRouter> {
               color: themeData.hintColor,
             ),
           )),
-      title: const Text("Receive",
+      title: const Text("Create Invoice",
           style: TextStyle(
             fontWeight: FontWeight.bold,
             fontFamily: "Geist.Mono",
             fontSize: 20,
           )),
-      actions: [barOptions()],
     );
 
     List<Widget> list = [];
     if (paid == null) {
-      if (metadata != null && StringUtil.isNotBlank(metadata!.lud16)) {
+      if (payingInvoice != null) {
         list.add(Container(
-            padding: const EdgeInsets.all(20),
-            decoration: const BoxDecoration(
-              color: Colors.black,
-            ),
-            child: PrettyQrView.data(
-                data: metadata!.lud16!,
-                decoration: const PrettyQrDecoration(
-                  background: Colors.black,
-                  shape: PrettyQrSmoothSymbol(color: Colors.white, roundFactor: 1),
-                  image: PrettyQrDecorationImage(
-                    scale: 0.3,
-                    image: AssetImage('assets/imgs/logo/logo-new.png'),
-                  ),
-                ))));
-        list.add(const SizedBox(height: 10));
-        list.add(UserPicComponent(
-          pubkey: loggedUserSigner!.getPublicKey(),
-          width: 64,
-        ));
-        list.add(Text(metadata!.getName(),
-            style: const TextStyle(
-              fontWeight: FontWeight.w700,
-              fontFamily: "Geist.Mono",
-              fontSize: 20,
+                padding: const EdgeInsets.all(20),
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                ),
+                child: PrettyQrView.data(
+                    data: payingInvoice!,
+                    decoration: const PrettyQrDecoration(
+                      shape: PrettyQrSmoothSymbol(roundFactor: 1),
+                      image: PrettyQrDecorationImage(
+                        image: AssetImage('assets/imgs/logo/logo-new.png'),
+                      ),
+                    )))
+            // LightningQrcodeDialog(invoice: payingInvoice!)
+            );
+        Color cardColor = themeData.hintColor;
+        var hintColor = themeData.cardColor;
+        String? link;
+        if (PlatformUtil.isPC() || PlatformUtil.isWeb() || true) {
+          link = 'lightning:${payingInvoice!}';
+        }
+        list.add(BitcoinAmount(fiatAmount: fiatAmount, fiatUnit: fiatCurrencyRate?["unit"], balance: int.parse(amountInputcontroller.text)));
+        list.add(Container(
+            margin: const EdgeInsets.only(bottom: Base.BASE_PADDING * 2),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      color: themeData.primaryColor,
+                      strokeWidth: 2.0,
+                    )),
+                const SizedBox(width: 10),
+                const Text("Waiting for settlement", style: TextStyle(color: Color(0xFF7A7D81), fontSize: 20, fontFamily: 'Geist.Mono'))
+              ],
             )));
-        List<String> lnAddressSplit = metadata!.lud16!.split("@");
-        list.add(Text.rich(
-          TextSpan(
-            children: [
-              TextSpan(
-                text: lnAddressSplit.first,
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontFamily: 'Geist.Mono',
-                  fontWeight: FontWeight.w400,
-                ),
-              ),
-              TextSpan(
-                text: "@${lnAddressSplit.last}",
-                style: TextStyle(
-                  color: themeData.disabledColor,
-                  fontSize: 14,
-                  fontFamily: 'Geist.Mono',
-                  fontWeight: FontWeight.w400,
-                ),
-              ),
-            ],
-          ),
-          textAlign: TextAlign.center,
-        ));
-        list.add(const SizedBox(height: 10));
+        const TextStyle timeTextStyle = TextStyle(color: Color(0xFF7A7D81), fontSize: 16, fontFamily: 'Geist.Mono');
         list.add(
-          Row(children: [
+          Row(mainAxisSize: MainAxisSize.min, mainAxisAlignment: MainAxisAlignment.start, crossAxisAlignment: CrossAxisAlignment.start, children: [
+            const Expanded(child: Text("Expiration time:", style: timeTextStyle)),
+            const SizedBox(
+              width: 40,
+            ),
             Expanded(
-                child: Button(
-                    height: 50,
-                    before: const Icon(Icons.copy, color: Colors.white),
-                    text: "Copy Address",
-                    onTap: () async {
-                      _doCopy(metadata!.lud16!);
-                    }))
+                child: Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
+              TimerCountdown(
+                enableDescriptions: false,
+                spacerWidth: 1,
+                colonsTextStyle: timeTextStyle,
+                timeTextStyle: timeTextStyle,
+                format: CountDownTimerFormat.hoursMinutesSeconds,
+                endTime: DateTime.now().add(
+                  Duration(seconds: expiration!),
+                ),
+                onEnd: () {
+                  RouterUtil.back(context);
+                },
+              )
+            ]))
           ]),
         );
-        list.add(const SizedBox(height: 15));
+        list.add(const SizedBox(height: 20));
+        list.add(Row(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+                child: Button(
+                    before: const Icon(Icons.copy),
+                    text: "Copy ",
+                    onTap: () async {
+                      _doCopy(payingInvoice!);
+                    })),
+            if (link != null) const SizedBox(width: 24),
+            if (link != null)
+              Expanded(
+                  child: Button(
+                      before: const Icon(Icons.ios_share),
+                      text: "Share",
+                      onTap: () async {
+                        _doPay(link!);
+                      }))
+            else
+              Container()
+          ],
+        ));
+      } else {
+        list.add(Row(
+          children: [
+            Expanded(
+                child: TextField(
+              controller: amountInputcontroller,
+              keyboardType: TextInputType.number,
+              inputFormatters: <TextInputFormatter>[FilteringTextInputFormatter.digitsOnly],
+              decoration: const InputDecoration(hintText: "Amount in sats"),
+            )),
+          ],
+        ));
+
         list.add(Row(children: [
-          Expanded(
-              child: Button(
-                  before: const Icon(Icons.ios_share),
-                  height: 50,
-                  text: "Share",
-                  fill: false,
-                  onTap: () async {
-                    final lnurl = bech32Codec.encode(
-                        Bech32('LNURL1', Nip19.convertBits(utf8.encode("https://${lnAddressSplit.last}/.well-known/lnurlp/${lnAddressSplit.first}"), 8, 5, true)));
-                    _doPay("lightning:$lnurl");
-                  }))
+          Container(
+              margin: const EdgeInsets.only(top: Base.BASE_PADDING * 2, bottom: Base.BASE_PADDING * 2),
+              child: Text(
+                  fiatAmount == null
+                      ? ""
+                      : fiatAmount! < 0.01
+                          ? "< 0.01 ${fiatCurrencyRate?["unit"]}"
+                          : "${fiatAmount!.toStringAsFixed(fiatAmount! < 10 ? 2 : 0)} ${fiatCurrencyRate?["unit"]}",
+                  style: const TextStyle(color: Color(0xFF7A7D81), fontSize: 20, fontFamily: 'Geist.Mono')))
         ]));
-        list.add(const SizedBox(height: 15));
+        // list.add(const Divider());
+        // list.add(Container(
+        //     alignment: Alignment.centerLeft,
+        //     child: Text("Description")));
+
+        list.add(Row(
+          children: [
+            Expanded(
+                child: TextField(
+              controller: descriptionInputcontroller,
+              decoration: const InputDecoration(hintText: "Description"),
+            )),
+          ],
+        ));
+        list.add(const SizedBox(
+          height: 20,
+        ));
         list.add(Button(
-            before: Icon(Icons.receipt_long_outlined, color: themeData.disabledColor),
-            border: false,
-            fill: false,
-            fontColor: themeData.disabledColor,
-            text: "Payment Invoice",
+            text: "Create Invoice",
             onTap: () async {
-              RouterUtil.router(context, RouterPath.WALLET_RECEIVE_INVOICE);
+              expiration = 3600;
+              await _nwcProvider.makeInvoice(int.parse(amountInputcontroller.text) * 1000, descriptionInputcontroller.text, "", expiration!, (invoice) async {
+                // await QrcodeDialog.show(context, invoice);
+                payingInvoice = invoice;
+              }, (notification) async {
+                setState(() {
+                  paid = notification;
+                });
+                confettiController.play();
+              });
             }));
       }
-      // TODO
-      // no lud16 set, go directly to create invoice
     } else {
       double? fiatAmount = fiatCurrencyRate != null ? ((paid!.amount / 100000000000) * fiatCurrencyRate!["value"]) : null;
       int feesPaid = (paid!.feesPaid / 1000).round();
@@ -275,6 +323,13 @@ class _WalletReceiveRouter extends State<WalletReceiveRouter> {
               ),
             ),
           ),
+          // Positioned(
+          //   top: mediaDataCache.padding.top,
+          //   child: SizedBox(
+          //     width: mediaDataCache.size.width,
+          //     child: appBarNew,
+          //   ),
+          // ),
           Align(
             alignment: Alignment.topCenter,
             child: ConfettiWidget(
@@ -312,24 +367,5 @@ class _WalletReceiveRouter extends State<WalletReceiveRouter> {
       var url = Uri.parse(link);
       launchUrl(url);
     }
-  }
-
-  Widget barOptions() {
-    return Container();
-    // return Container(
-    //     margin: const EdgeInsets.all(10),
-    //     child: PopupMenuButton<String>(
-    //         icon: Image.asset("assets/imgs/scan.png", width: 24, height: 24),
-    //         // icon: const Icon(Icons.qr_code_scanner_outlined, color: Colors.grey,size: 30),
-    //         tooltip: "Scan Invoice",
-    //         itemBuilder: (context) {
-    //           List<PopupMenuEntry<String>> list = [
-    //             //const PopupMenuItem(value: "settings", child: Text("Settings")),
-    //           ];
-    //           return list;
-    //         },
-    //         onSelected: (value) async {
-    //           // TODO open qr invoice
-    //         }));
   }
 }

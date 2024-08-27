@@ -75,8 +75,8 @@ class AccountsState extends State<AccountsComponent> {
       }
       list.add(AccountManagerItemComponent(
         index: index,
-        privateKey: isPrivate? value: null,
-        publicKey: !isPrivate? value: null,
+        privateKey: isPrivate ? value : null,
+        publicKey: !isPrivate ? value : null,
         isCurrent: _settingProvider.privateKeyIndex == index,
         onLoginTap: onLoginTap,
         onLogoutTap: (index) {
@@ -143,15 +143,16 @@ class AccountsState extends State<AccountsComponent> {
   }
 
   static void doLogin() async {
-    EasyLoading.show(status: "Logging in...",maskType: EasyLoadingMaskType.black, dismissOnTap: true);
+    EasyLoading.show(status: "Logging in...", maskType: EasyLoadingMaskType.black, dismissOnTap: true);
 
     String? key = settingProvider.key;
     bool isPrivate = settingProvider.isPrivateKey;
     String publicKey = isPrivate ? getPublicKey(key!) : key!;
-    ndk.changeEventSigner(settingProvider.isExternalSignerKey ? AmberEventSigner(publicKey, amberFlutterDS) : isPrivate || !PlatformUtil.isWeb()
-        ? Bip340EventSigner(isPrivate ? key : null, publicKey)
-        : Nip07EventSigner(await js.getPublicKeyAsync())
-    );
+    ndk.changeEventSigner(settingProvider.isExternalSignerKey
+        ? AmberEventSigner(publicKey, amberFlutterDS)
+        : isPrivate || !PlatformUtil.isWeb()
+            ? Bip340EventSigner(isPrivate ? key : null, publicKey)
+            : Nip07EventSigner(await js.getPublicKeyAsync()));
 
     await followEventProvider.loadCachedFeed();
     initRelays(newKey: false);
@@ -163,7 +164,7 @@ class AccountsState extends State<AccountsComponent> {
 
   void onLoginTap(int index) {
     if (settingProvider.privateKeyIndex != index) {
-      EasyLoading.show(status: "Logging out...",maskType: EasyLoadingMaskType.black);
+      EasyLoading.show(status: "Logging out...", maskType: EasyLoadingMaskType.black);
       clearCurrentMemInfo();
       ndk.changeEventSigner(null);
 
@@ -179,8 +180,7 @@ class AccountsState extends State<AccountsComponent> {
     }
   }
 
-  static void onLogoutTap(int index,
-      {bool routerBack = true, required BuildContext context}) {
+  static void onLogoutTap(int index, {bool routerBack = true, required BuildContext context}) {
     var oldIndex = settingProvider.privateKeyIndex;
     clearLocalData(index);
 
@@ -272,10 +272,7 @@ class _AccountManagerItemComponent extends State<AccountManagerItemComponent> {
   void initState() {
     super.initState();
     try {
-      pubkey = StringUtil.isBlank(widget.publicKey) &&
-          StringUtil.isNotBlank(widget.privateKey)
-          ? getPublicKey(widget.privateKey!)
-          : widget.publicKey!;
+      pubkey = StringUtil.isBlank(widget.publicKey) && StringUtil.isNotBlank(widget.privateKey) ? getPublicKey(widget.privateKey!) : widget.publicKey!;
     } catch (e) {
       print(e);
     }
@@ -289,8 +286,7 @@ class _AccountManagerItemComponent extends State<AccountManagerItemComponent> {
       cardColor = Colors.grey[300];
     }
 
-    return Selector<MetadataProvider, Metadata?>(
-        builder: (context, metadata, child) {
+    return Selector<MetadataProvider, Metadata?>(builder: (context, metadata, child) {
       Color currentColor = Colors.green;
       List<Widget> list = [];
       // if (metadata==null) {
@@ -305,9 +301,7 @@ class _AccountManagerItemComponent extends State<AccountManagerItemComponent> {
 
       Widget? imageWidget;
 
-      String? url = metadata != null && StringUtil.isNotBlank(metadata.picture)
-          ? metadata.picture
-          : StringUtil.robohash(pubkey!);
+      String? url = metadata != null && StringUtil.isNotBlank(metadata.picture) ? metadata.picture : StringUtil.robohash(pubkey!);
 
       if (url != null) {
         imageWidget = CachedNetworkImage(
@@ -324,22 +318,22 @@ class _AccountManagerItemComponent extends State<AccountManagerItemComponent> {
         width: 24,
         alignment: Alignment.centerLeft,
         child: Container(
-          width: 15,
-          margin: const EdgeInsets.only(right:10),
-          child: widget.isCurrent ? PointComponent(
             width: 15,
-            color: currentColor,
-          ):
-          GestureDetector(
-            onTap: onLoginTap,
-            child: Icon(Icons.login, color: themeData.disabledColor),
-          )
-        ),
+            margin: const EdgeInsets.only(right: 10),
+            child: widget.isCurrent
+                ? PointComponent(
+                    width: 15,
+                    color: currentColor,
+                  )
+                : GestureDetector(
+                    onTap: onLoginTap,
+                    child: Icon(Icons.login, color: themeData.disabledColor),
+                  )),
       ));
       list.add(Container(
         width: IMAGE_WIDTH,
         height: IMAGE_WIDTH,
-        margin: const EdgeInsets.only(left:10),
+        margin: const EdgeInsets.only(left: 10),
         clipBehavior: Clip.hardEdge,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(IMAGE_WIDTH / 2),
@@ -364,7 +358,6 @@ class _AccountManagerItemComponent extends State<AccountManagerItemComponent> {
               "(external)",
               style: TextStyle(fontWeight: FontWeight.w100, fontSize: 10),
             )));
-
       } else if (!settingProvider.isPrivateKeyIndex(widget.index)) {
         list.add(Container(
             width: 50,
@@ -386,8 +379,7 @@ class _AccountManagerItemComponent extends State<AccountManagerItemComponent> {
           color: cardColor,
           borderRadius: BorderRadius.circular(10),
         ),
-        child:
-        Text(
+        child: Text(
           nip19PubKey!,
           overflow: TextOverflow.ellipsis,
         ),
@@ -419,7 +411,7 @@ class _AccountManagerItemComponent extends State<AccountManagerItemComponent> {
         ),
       );
     }, selector: (context, _provider) {
-      return pubkey!=null ? _provider.getMetadata(pubkey!) : null;
+      return pubkey != null ? _provider.getMetadata(pubkey!) : null;
     });
   }
 

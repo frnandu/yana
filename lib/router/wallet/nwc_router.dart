@@ -340,7 +340,7 @@ class _NwcRouter extends State<NwcRouter> {
                           width: 328,
                           height: 56,
                           text:
-                              isConnecting() ? "Connecting..." : "Paste Secret",
+                              isConnecting() ? "Connecting..." : " Paste Secret",
                           before: isConnecting()
                               ? Container()
                               : const Icon(Icons.paste),

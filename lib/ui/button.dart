@@ -4,11 +4,16 @@ class Button extends StatelessWidget {
   String text;
   Widget? before;
   Widget? after;
+
   double height;
   double? width;
+  double fontSize;
+  Color? fontColor;
+  bool fill;
+  bool border;
   GestureTapCallback onTap;
 
-  Button({super.key, required this.text, required this.onTap, this.before, this.after, this.height=48, this.width});
+  Button({super.key, required this.text, required this.onTap, this.before, this.after, this.height=48, this.width, this.fill = true, this.fontSize=16, this.border=true, this.fontColor});
 
   @override
   Widget build(BuildContext context) {
@@ -21,11 +26,15 @@ class Button extends StatelessWidget {
         height: height,
         width: width,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        clipBehavior: Clip.antiAlias,
-        decoration: ShapeDecoration(
-          color: themeData.primaryColor,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        ),
+        clipBehavior: border?  Clip.antiAlias : Clip.none,
+        decoration: border? ShapeDecoration(
+          color: fill? themeData.primaryColor : null,
+          shape: RoundedRectangleBorder(
+            side: const BorderSide(width: 1, color: Color(0xFFD44E7D)),
+            borderRadius: BorderRadius.circular(8),
+          )
+        ): null,
+        // ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,
@@ -35,9 +44,9 @@ class Button extends StatelessWidget {
             Text(
               text,
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 20,
+              style: TextStyle(
+                color: fontColor??(fill?Colors.white:themeData.textTheme.labelSmall!.color),
+                fontSize: fontSize,
                 fontFamily: 'Geist',
                 fontWeight: FontWeight.w700,
                 height: 0.09,
