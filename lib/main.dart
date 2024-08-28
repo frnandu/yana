@@ -2,26 +2,8 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:ui';
 
+import 'package:amberflutter/amberflutter.dart';
 import 'package:awesome_notifications/awesome_notifications.dart';
-import 'package:ndk/config/bootstrap_relays.dart';
-import 'package:ndk/data_layer/data_sources/amber_flutter.dart';
-import 'package:ndk/data_layer/repositories/cache_manager/db_cache_manager.dart';
-import 'package:ndk/data_layer/repositories/signers/amber_event_signer.dart';
-import 'package:ndk/data_layer/repositories/signers/bip340_event_signer.dart';
-import 'package:ndk/domain_layer/entities/contact_list.dart';
-import 'package:ndk/domain_layer/entities/metadata.dart';
-import 'package:ndk/domain_layer/entities/nip_01_event.dart';
-import 'package:ndk/domain_layer/entities/nip_51_list.dart';
-import 'package:ndk/domain_layer/entities/pubkey_mapping.dart';
-import 'package:ndk/domain_layer/entities/read_write.dart';
-import 'package:ndk/domain_layer/entities/read_write_marker.dart';
-import 'package:ndk/domain_layer/entities/relay.dart';
-import 'package:ndk/domain_layer/entities/relay_set.dart';
-import 'package:ndk/domain_layer/entities/user_relay_list.dart';
-import 'package:ndk/domain_layer/repositories/cache_manager.dart';
-import 'package:ndk/domain_layer/repositories/event_signer.dart';
-import 'package:ndk/domain_layer/usecases/relay_manager.dart';
-import 'package:ndk/ndk.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
@@ -34,8 +16,15 @@ import 'package:get_time_ago/get_time_ago.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:isar/isar.dart' as isar;
+import 'package:ndk/config/bootstrap_relays.dart';
+import 'package:ndk/data_layer/data_sources/amber_flutter.dart';
+import 'package:ndk/data_layer/repositories/signers/amber_event_signer.dart';
+import 'package:ndk/data_layer/repositories/verifiers/acinq_event_verifier.dart';
+import 'package:ndk/domain_layer/entities/pubkey_mapping.dart';
+import 'package:ndk/domain_layer/entities/read_write_marker.dart';
+import 'package:ndk/domain_layer/entities/user_relay_list.dart';
+import 'package:ndk/ndk.dart';
 import 'package:ndk/shared/helpers/relay_helper.dart';
-import 'package:ndk/shared/nips/nip01/helpers.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:protocol_handler/protocol_handler.dart';
@@ -68,7 +57,6 @@ import 'package:yana/router/wallet/wallet_router.dart';
 import 'package:yana/router/wallet/wallet_send.dart';
 import 'package:yana/utils/image/cache_manager_builder.dart';
 import 'package:yana/utils/platform_util.dart';
-import 'package:amberflutter/amberflutter.dart';
 
 import '/js/js_helper.dart' as js;
 import 'i18n/i18n.dart';
@@ -176,7 +164,7 @@ get loggedUserSigner => ndk.config.eventSigner;
 AmberFlutterDS amberFlutterDS = AmberFlutterDS(Amberflutter());
 late CacheManager cacheManager;
 Ndk ndk = Ndk(
-  NdkConfig(eventVerifier: AcinqSecp256k1EventVerifier(), cache: cacheManager, engine: NdkEngine.LISTS),
+  NdkConfig(eventVerifier: AcinqSecp256k1EventVerifier(), cache: cacheManager, engine: NdkEngine.RELAY_SETS),
 );
 
 late bool isExternalSignerInstalled;
@@ -225,19 +213,19 @@ void onStart(ServiceInstance service) async {
         AwesomeNotifications().getAppLifeCycle().then((value) async {
           if (value.toString() != "NotificationLifeCycle.Foreground" && myInboxRelaySet != null) {
             appState = AppLifecycleState.inactive;
-            ndk.relayManager().allowReconnectRelays = true;
-            await ndk.relayManager().connect(urls: myInboxRelaySet!.urls);
+            ndk.relays.allowReconnectRelays = true;
+            await ndk.relays.connect(urls: myInboxRelaySet!.urls);
             await newNotificationsProvider.queryNew();
-            ndk.relayManager().allowReconnectRelays = false;
-            List<String> requestIdsToClose = ndk.relayManager().globalState.inFlightRequests.keys.toList();
+            ndk.relays.allowReconnectRelays = false;
+            List<String> requestIdsToClose = ndk.relays.globalState.inFlightRequests.keys.toList();
             for (var id in requestIdsToClose) {
               try {
-                await ndk.closeSubscription(id);
+                await ndk.relays.closeSubscription(id);
               } catch (e) {
                 print(e);
               }
             }
-            await ndk.relayManager().closeAllTransports();
+            await ndk.relays.closeAllTransports();
           }
         });
       }
@@ -266,21 +254,21 @@ Future<void> initProvidersAndStuff() async {
       //
       // loggedUserSigner = Bip340EventSigner(settingProvider.key!, getPublicKey(settingProvider.key!));
       filterProvider = FilterProvider.getInstance();
-      ndk.relayManager().eventFilters.add(filterProvider);
+      ndk.relays.eventFilters.add(filterProvider);
       DbCacheManager dbCacheManager = DbCacheManager();
       await dbCacheManager.init(directory: PlatformUtil.isWeb() ? isar.Isar.sqliteInMemory : (await getApplicationDocumentsDirectory()).path);
       cacheManager = dbCacheManager;
       dbCacheManager.eventFilter = filterProvider;
-      //ndk.relayManager().eventVerifier = HybridEventVerifier();
+      //ndk.relays.eventVerifier = HybridEventVerifier();
 
       if (myInboxRelaySet == null) {
-        await ndk.relayManager().connect();
+        await ndk.relays.connect();
         UserRelayList? userRelayList = await ndk.getSingleUserRelayList(loggedUserSigner!.getPublicKey());
         if (userRelayList != null) {
           createMyRelaySets(userRelayList);
         }
       }
-      // await ndk.relayManager().connect(urls: userRelayList != null ? userRelayList.urls :ndk.relayManager().DEFAULT_BOOTSTRAP_RELAYS);
+      // await ndk.relays.connect(urls: userRelayList != null ? userRelayList.urls :ndk.relays.DEFAULT_BOOTSTRAP_RELAYS);
       // await relayProvider!.loadRelays(loggedUserSigner!.getPublicKey(), () {
       //   relayProvider.addRelays(nostr!).then((bla) {
       notificationsProvider = NotificationsProvider();
@@ -300,7 +288,7 @@ Future<void> initProvidersAndStuff() async {
 }
 
 Future<void> initRelays({bool newKey = false}) async {
-  await ndk.relayManager().connect();
+  await ndk.relays.connect();
 
   UserRelayList? userRelayList = !newKey ? await ndk.getSingleUserRelayList(loggedUserSigner!.getPublicKey()) : null;
   if (userRelayList == null) {
@@ -312,23 +300,23 @@ Future<void> initRelays({bool newKey = false}) async {
         refreshedTimestamp: now);
   }
   createMyRelaySets(userRelayList);
-  await ndk.relayManager().connect(urls: userRelayList!.urls);
+  await ndk.relays.connect(urls: userRelayList.urls);
 
   // TODO
   // ndk.getSingleNip51List(Nip51List.MUTE, loggedUserSigner!).then((list) {
   //   filterProvider.muteList = list;
-  //  ndk.relayManager().eventFilters.add(filterProvider);
-  //  ndk.relayManager().blockedRelays = [];
+  //  ndk.relays.eventFilters.add(filterProvider);
+  //  ndk.relays.blockedRelays = [];
   //   ndk.getSingleNip51List(Nip51List.BLOCKED_RELAYS, loggedUserSigner!).then((blockedRelays) {
   //     if (blockedRelays!=null) {
-  //      ndk.relayManager().blockedRelays = blockedRelays.allRelays!;
+  //      ndk.relays.blockedRelays = blockedRelays.allRelays!;
   //       relayProvider.notifyListeners();
   //     }
   //     searchRelays = [];
   //     ndk.getSingleNip51List(Nip51List.SEARCH_RELAYS, loggedUserSigner!).then((searchRelaySet)  {
   //       if (searchRelaySet!=null) {
   //         searchRelays = searchRelaySet.allRelays!;
-  //         for (var url in searchRelays) {ndk.relayManager().connectRelay(url);}
+  //         for (var url in searchRelays) {ndk.relays.connectRelay(url);}
   //         relayProvider.notifyListeners();
   //       }
   //     });
@@ -336,7 +324,7 @@ Future<void> initRelays({bool newKey = false}) async {
   // },);
 
   print("Loading contact list...");
-  ContactList? contactList = !newKey ? await ndk.getContactList(loggedUserSigner!.getPublicKey()) : null;
+  ContactList? contactList = !newKey ? await ndk.follows.getContactList(loggedUserSigner!.getPublicKey()) : null;
   if (contactList != null) {
     for (var element in contactList.contacts) {
       metadataProvider.getMetadata(element);
@@ -359,7 +347,7 @@ Future<void> initRelays({bool newKey = false}) async {
       } else {
         final startTime = DateTime.now();
         print("connecting ${feedRelaySet!.relaysMap.length} relays");
-        List<bool> connected = await Future.wait(feedRelaySet!.relaysMap.keys.map((url) => ndk.relayManager().connectRelay(url)));
+        List<bool> connected = await Future.wait(feedRelaySet!.relaysMap.keys.map((url) => ndk.relays.connectRelay(url)));
         final endTime = DateTime.now();
         final duration = endTime.difference(startTime);
         print(
@@ -457,7 +445,7 @@ Future<void> main() async {
     cacheManager = MemCacheManager();
     print(e);
   }
-  //ndk.relayManager().eventVerifier = HybridEventVerifier();
+  //ndk.relays.eventVerifier = HybridEventVerifier();
 
   if (!PlatformUtil.isWeb() && PlatformUtil.isPC()) {
     await windowManager.ensureInitialized();
@@ -851,7 +839,7 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
                         }
                         key = Nip19.decode(key);
                         // var filter = Filter(ids: [key]);
-                        //ndk.relayManager().requestRelays(relayManager.bootstrapRelays, filter, idleTimeout: 20).then((stream) {
+                        //ndk.relays.requestRelays(relayManager.bootstrapRelays, filter, idleTimeout: 20).then((stream) {
                         //   stream.listen((event) {
                         //     RouterUtil.router(context, RouterPath.THREAD_DETAIL, event);
                         //   });
@@ -943,22 +931,22 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
         (appState == AppLifecycleState.paused || appState == AppLifecycleState.hidden || appState == AppLifecycleState.inactive)) {
       //now you know that your app went to the background and is back to the foreground
       if (loggedUserSigner != null) {
-        if (ndk.relayManager().allowReconnectRelays == false) {
+        if (ndk.relays.allowReconnectRelays == false) {
           if (backgroundService != null && settingProvider.backgroundService) {
             backgroundService!.invoke('stopService');
           }
-          ndk.relayManager().allowReconnectRelays = false;
-          List<String> requestIdsToClose = ndk.relayManager().globalState.inFlightRequests.keys.toList();
+          ndk.relays.allowReconnectRelays = false;
+          List<String> requestIdsToClose = ndk.relays.globalState.inFlightRequests.keys.toList();
           for (var id in requestIdsToClose) {
             try {
-              await ndk.closeSubscription(id);
+              await ndk.relays.closeSubscription(id);
             } catch (e) {
               print(e);
             }
           }
-          // await ndk.relayManager().closeAllSockets();
+          // await ndk.relays.closeAllSockets();
 
-          ndk.relayManager().allowReconnectRelays = true;
+          ndk.relays.allowReconnectRelays = true;
 
           // Set<String> urls = {};
           // urls.addAll(myInboxRelaySet!.urls);
@@ -967,8 +955,8 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
           // }
           //
           // try {
-          //   await ndk.relayManager().reconnectRelays(urls);
-          //   // await ndk.relayManager().reconnectRelays(urls);
+          //   await ndk.relays.reconnectRelays(urls);
+          //   // await ndk.relays.reconnectRelays(urls);
           // } catch (e) {
           //   print(e);
           // }
@@ -986,17 +974,17 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
           if (backgroundService != null && settingProvider.backgroundService) {
             backgroundService!.startService();
           }
-          ndk.relayManager().allowReconnectRelays = false;
-          List<String> requestIdsToClose = ndk.relayManager().globalState.inFlightRequests.keys.toList();
+          ndk.relays.allowReconnectRelays = false;
+          List<String> requestIdsToClose = ndk.relays.globalState.inFlightRequests.keys.toList();
           for (var id in requestIdsToClose) {
             try {
-              await ndk.closeSubscription(id);
+              await ndk.relays.closeSubscription(id);
             } catch (e) {
               print(e);
             }
           }
 
-          await ndk.relayManager().closeAllTransports();
+          await ndk.relays.closeAllTransports();
 
           // if (settingProvider.backgroundService) {
           //   backgroundService!.startService();

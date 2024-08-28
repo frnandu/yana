@@ -1,9 +1,6 @@
-import 'package:ndk/domain_layer/entities/filter.dart';
-import 'package:ndk/domain_layer/entities/relay_set.dart';
-import 'package:ndk/domain_layer/entities/nip_01_event.dart';
 import 'package:flutter/foundation.dart';
-import 'package:ndk/domain_layer/entities/request_state.dart';
-import 'package:ndk/presentation_layer/request_response.dart';
+import 'package:ndk/domain_layer/entities/relay_set.dart';
+import 'package:ndk/ndk.dart';
 
 import '../main.dart';
 import '../models/dm_session_info.dart';
@@ -260,7 +257,7 @@ class DMProvider extends ChangeNotifier with PenddingEventsLaterFunction {
       return;
     }
     if (subscription != null) {
-      ndk.closeSubscription(subscription!.requestId);
+      ndk.relays.closeSubscription(subscription!.requestId);
     }
     var sentFilter = Filter(
       kinds: [kind.EventKind.DIRECT_MESSAGE],
@@ -273,12 +270,12 @@ class DMProvider extends ChangeNotifier with PenddingEventsLaterFunction {
       since: _initSince != 0 ? _initSince + 1 : null,
     );
     RelaySet relaySet = myInboxRelaySet!;
-    subscription = ndk.subscription(filters: [receivedFilter], relaySet: relaySet);
+    subscription = ndk.requests.subscription(filters: [receivedFilter], relaySet: relaySet);
     subscription!.stream.listen((event) {
       onEvent(event);
     });
 
-    ndk.query(filters: [sentFilter], relaySet: relaySet).stream.listen((event) {
+    ndk.requests.query(filters: [sentFilter], relaySet: relaySet).stream.listen((event) {
           onEvent(event);
         });
   }

@@ -1,7 +1,6 @@
 import 'package:ndk/config/bootstrap_relays.dart';
 import 'package:ndk/ndk.dart';
 import 'package:flutter/material.dart';
-import 'package:ndk/presentation_layer/request_response.dart';
 import 'package:ndk/shared/helpers/relay_helper.dart';
 
 import '../main.dart';
@@ -71,7 +70,7 @@ class SingleEventProvider extends ChangeNotifier with LaterFunction {
     List<String> tempIds = [];
     tempIds.addAll(_needUpdateIds);
 
-    Set<String> urls =ndk.relayManager().bootstrapRelays.toSet();
+    Set<String> urls =ndk.relays.bootstrapRelays.toSet();
     urls.addAll(DEFAULT_BOOTSTRAP_RELAYS);
 
     if (myInboxRelaySet != null) {
@@ -82,7 +81,7 @@ class SingleEventProvider extends ChangeNotifier with LaterFunction {
         }
       });
     }
-    NdkResponse response = ndk.query(relays: urls.toList(), filters: [filter]);
+    NdkResponse response = ndk.requests.query(relays: urls.toList(), filters: [filter]);
     response.stream.listen((event) {
       tempIds.remove(event.id);
       _onEvent(event);

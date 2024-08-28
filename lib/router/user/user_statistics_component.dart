@@ -1,10 +1,10 @@
 import 'dart:async';
 
-import 'package:ndk/entities.dart';
-import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:convert/convert.dart';
-import 'package:ndk/presentation_layer/request_response.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:ndk/entities.dart';
+import 'package:ndk/ndk.dart';
 import 'package:yana/utils/base_consts.dart';
 
 import '../../i18n/i18n.dart';
@@ -91,7 +91,7 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
     if (contactList == null ||
         contactList!.loadedTimestamp == null ||
         contactList!.loadedTimestamp! < sometimeAgo) {
-      ndk.getContactList(pubkey!, forceRefresh: true).then(
+      ndk.follows.getContactList(pubkey!, forceRefresh: true).then(
         (newContactList) {
           if (newContactList != null &&
               (contactList == null ||
@@ -263,8 +263,8 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
       Filter filter =
           Filter(kinds: [ContactList.KIND], pTags: [widget.pubkey]);
 
-      _followersSubscription = ndk.query(
-          //ndk.relayManager().bootstrapRelays.toList()
+      _followersSubscription = ndk.requests.query(
+          //ndk.relays.bootstrapRelays.toList()
           //   ..addAll(myInboxRelaySet!.urls),
           filters: [filter],
           relaySet: myInboxRelaySet!,
@@ -304,8 +304,8 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
     if (zapEventBox == null) {
       zapEventBox = EventMemBox(sortAfterAdd: false);
       // pull zap event
-      _zapsSubscription = await ndk.query(
-          //ndk.relayManager().bootstrapRelays.toList()
+      _zapsSubscription = await ndk.requests.query(
+          //ndk.relays.bootstrapRelays.toList()
           //   ..addAll(myInboxRelaySet!.urls),
           filters: [Filter(kinds: [EventKind.ZAP_RECEIPT], pTags: [widget.pubkey])],
           relaySet: myInboxRelaySet!,
@@ -332,11 +332,11 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
   void deactivate() {
     super.deactivate();
     if (_followersSubscription != null) {
-      ndk.closeSubscription(_followersSubscription!.requestId);
+      ndk.relays.closeSubscription(_followersSubscription!.requestId);
       _followersSubscription=null;
     }
     if (_zapsSubscription != null) {
-      ndk.closeSubscription(_zapsSubscription!.requestId);
+      ndk.relays.closeSubscription(_zapsSubscription!.requestId);
       _zapsSubscription=null;
     }
   }
@@ -345,11 +345,11 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
   void dispose() {
     super.dispose();
     if (_followersSubscription != null) {
-      ndk.closeSubscription(_followersSubscription!.requestId);
+      ndk.relays.closeSubscription(_followersSubscription!.requestId);
       _followersSubscription=null;
     }
     if (_zapsSubscription != null) {
-      ndk.closeSubscription(_zapsSubscription!.requestId);
+      ndk.relays.closeSubscription(_zapsSubscription!.requestId);
       _zapsSubscription=null;
     }
     _disposed = true;

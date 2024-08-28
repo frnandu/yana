@@ -53,7 +53,7 @@ class NewNotificationsProvider extends ChangeNotifier
       kinds: notificationsProvider.queryEventKinds(),
       pTags: [loggedUserSigner!.getPublicKey()],
     );
-    await for (final event in ndk.query(filters: [filter], relaySet: myInboxRelaySet!).stream) {
+    await for (final event in ndk.requests.query(filters: [filter], relaySet: myInboxRelaySet!).stream) {
       Metadata? metadata = await ndk.getSingleMetadata(event.pubKey);
       handleEvent(event, metadata);
     }
@@ -74,11 +74,11 @@ class NewNotificationsProvider extends ChangeNotifier
               Nip01Event? otherEvent;
               print("event.tags: ${event.tags}");
               if (eventRelation.replyId != null) {
-                await for (final event in ndk.query(filters: [Filter(ids: [eventRelation.replyId!])], relaySet: myInboxRelaySet!).stream) {
+                await for (final event in ndk.requests.query(filters: [Filter(ids: [eventRelation.replyId!])], relaySet: myInboxRelaySet!).stream) {
                   otherEvent = event;
                 }
               } else if (eventRelation.tagEList.isNotEmpty) {
-                await for (final event in ndk.query(filters: [Filter(ids: [eventRelation.tagEList.first!])], relaySet: myInboxRelaySet!).stream) {
+                await for (final event in ndk.requests.query(filters: [Filter(ids: [eventRelation.tagEList.first!])], relaySet: myInboxRelaySet!).stream) {
                   otherEvent = event;
                 }
               }

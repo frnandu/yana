@@ -40,7 +40,7 @@ class _RelayListRouter extends State<RelayListRouter> with SingleTickerProviderS
     controller.addListener(() {
       onEditingComplete();
     });
-    //ndk.relayManager().getNip51RelaySets(loggedUserSigner!).then((value) {
+    //ndk.relays.getNip51RelaySets(loggedUserSigner!).then((value) {
     //   setState(() {
     //     list = value;
     //   });
@@ -94,7 +94,7 @@ class _RelayListRouter extends State<RelayListRouter> with SingleTickerProviderS
             //   onChanged: (value) {
             //     print("!!!!!!!!!!!!!! $value");
             //     setState(() {
-            //       relaySet =ndk.relayManager().getCachedNip51RelaySet(value!, loggedUserSigner!);
+            //       relaySet =ndk.relays.getCachedNip51RelaySet(value!, loggedUserSigner!);
             //       selectedList = value!;
             //     });
             //   },
@@ -170,7 +170,7 @@ class _RelayListRouter extends State<RelayListRouter> with SingleTickerProviderS
                     if (relayList!.kind == Nip51List.SEARCH_RELAYS) {
                       searchRelays = relayList!.allRelays!;
                     } else if (relayList!.kind == Nip51List.BLOCKED_RELAYS) {
-                     ndk.relayManager().blockedRelays = relayList!.allRelays!;
+                     ndk.relays.blockedRelays = relayList!.allRelays!;
                     }
                     relayProvider.notifyListeners();
                     EasyLoading.dismiss();
@@ -189,9 +189,9 @@ class _RelayListRouter extends State<RelayListRouter> with SingleTickerProviderS
   void onEditingComplete() async {
     List<String> result = await relayProvider.findRelays(controller.text, nip: relayList!.kind == Nip51List.SEARCH_RELAYS ? Nip50.NIP : null);
     result.forEach((url) {
-      if (ndk.relayManager().getRelay(url) == null ||ndk.relayManager().getRelay(url)!.info == null) {
-       ndk.relayManager().relays[url] = Relay(url);
-       ndk.relayManager().getRelayInfo(url).then((value) {
+      if (ndk.relays.getRelay(url) == null ||ndk.relays.getRelay(url)!.info == null) {
+       ndk.relays.relays[url] = Relay(url);
+       ndk.relays.getRelayInfo(url).then((value) {
           if (!disposed) {
             setState(() {});
           }
@@ -205,16 +205,16 @@ class _RelayListRouter extends State<RelayListRouter> with SingleTickerProviderS
   }
 
   int compareRelays(RelayMetadata r1, RelayMetadata r2) {
-    Relay? relay1 =ndk.relayManager().getRelay(r1.url!);
-    Relay? relay2 = ndk.relayManager().getRelay(r2.url!);
+    Relay? relay1 =ndk.relays.getRelay(r1.url!);
+    Relay? relay2 = ndk.relays.getRelay(r2.url!);
     if (relay1 == null) {
       return 1;
     }
     if (relay2 == null) {
       return -1;
     }
-    bool a1 =ndk.relayManager().isRelayConnected(r1.url!);
-    bool a2 =ndk.relayManager().isRelayConnected(r2.url!);
+    bool a1 =ndk.relays.isRelayConnected(r1.url!);
+    bool a2 =ndk.relays.isRelayConnected(r2.url!);
     if (a1) {
       return a2 ? (r2.count != null ? r2.count!.compareTo(r1.count!) : 0) : -1;
     }
@@ -247,9 +247,9 @@ class _RelayListRouter extends State<RelayListRouter> with SingleTickerProviderS
       relayList = await ndk.broadcastAddNip51ListRelay(relayList!.kind, url, myOutboxRelaySet!.urls, private: private);
       if (relayList!.kind == Nip51List.SEARCH_RELAYS) {
         searchRelays = relayList!.allRelays!;
-        await ndk.relayManager().reconnectRelays(searchRelays);
+        await ndk.relays.reconnectRelays(searchRelays);
       } else if (relayList!.kind == Nip51List.BLOCKED_RELAYS) {
-       ndk.relayManager().blockedRelays = relayList!.allRelays!;
+       ndk.relays.blockedRelays = relayList!.allRelays!;
       }
       relayProvider.notifyListeners();
       EasyLoading.dismiss();
@@ -341,17 +341,17 @@ class RelayListElementComponent extends StatelessWidget {
             Expanded(
               child: GestureDetector(
                 onTap: () async {
-                  if (ndk.relayManager().getRelay(url) == null ||ndk.relayManager().getRelay(url)!.info == null) {
-                   ndk.relayManager().relays[url] = Relay(url);
+                  if (ndk.relays.getRelay(url) == null ||ndk.relays.getRelay(url)!.info == null) {
+                   ndk.relays.relays[url] = Relay(url);
                     EasyLoading.show(status: "Loading relay info...");
-                   ndk.relayManager().getRelayInfo(url).then((info) {
+                   ndk.relays.getRelayInfo(url).then((info) {
                       EasyLoading.dismiss();
                       if (info != null) {
-                        RouterUtil.router(context, RouterPath.RELAY_INFO,ndk.relayManager().relays[url]);
+                        RouterUtil.router(context, RouterPath.RELAY_INFO,ndk.relays.relays[url]);
                       }
                     });
                   } else {
-                    RouterUtil.router(context, RouterPath.RELAY_INFO,ndk.relayManager().relays[url]);
+                    RouterUtil.router(context, RouterPath.RELAY_INFO,ndk.relays.relays[url]);
                   }
                 },
                 child: Column(

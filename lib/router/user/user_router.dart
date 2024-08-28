@@ -1,8 +1,7 @@
 import 'dart:async';
 
-import 'package:ndk/entities.dart';
 import 'package:flutter/material.dart';
-import 'package:ndk/presentation_layer/request_response.dart';
+import 'package:ndk/ndk.dart';
 import 'package:provider/provider.dart';
 import 'package:yana/provider/filter_provider.dart';
 
@@ -283,7 +282,7 @@ class _UserRouter extends CustState<UserRouter> with PenddingEventsLaterFunction
 
   void unSubscribe() {
     if (subscription != null) {
-      ndk.closeSubscription(subscription!.requestId);
+      ndk.relays.closeSubscription(subscription!.requestId);
     }
   }
 
@@ -336,7 +335,7 @@ class _UserRouter extends CustState<UserRouter> with PenddingEventsLaterFunction
     } else if (feedRelaySet != null && settingProvider.gossip == 1) {
       relaySet = feedRelaySet!;
     }
-    subscription = ndk.subscription(filters: [filter], relaySet: relaySet);
+    subscription = ndk.requests.subscription(filters: [filter], relaySet: relaySet);
     subscription!.stream.listen((event) {
       onEvent(event, saveToCache: pubkey == loggedUserSigner!.getPublicKey());
     });

@@ -1,12 +1,9 @@
 import 'dart:convert';
 
-import 'package:ndk/domain_layer/entities/filter.dart';
-import 'package:ndk/domain_layer/entities/metadata.dart';
-import 'package:ndk/domain_layer/entities/nip_01_event.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
-import 'package:ndk/presentation_layer/request_response.dart';
+import 'package:ndk/ndk.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:yana/models/event_find_util.dart';
@@ -155,7 +152,7 @@ class _SearchRouter extends CustState<SearchRouter>
             events.length);
 
     if (StringUtil.isBlank(controller.text)) {
-      // bool anyNip50 = myInboxRelaySet!=null &&ndk.relayManager().getConnectedRelays(myInboxRelaySet!.urls).any((relay) => relay.info!=null && relay.info!.nips!=null && relay.info!.nips.contains(50));
+      // bool anyNip50 = myInboxRelaySet!=null &&ndk.relays.getConnectedRelays(myInboxRelaySet!.urls).any((relay) => relay.info!=null && relay.info!.nips!=null && relay.info!.nips.contains(50));
 //       if (searchRelays==null || searchRelays.isEmpty) {
 //         body = SearchActionItemComponent(onTap: () async {
 //           bool finished = false;
@@ -164,7 +161,7 @@ class _SearchRouter extends CustState<SearchRouter>
 //               EasyLoading.show(status: 'Loading relay list...', maskType: EasyLoadingMaskType.black, dismissOnTap: true);
 //             }
 //           });
-//           Nip51List? list = await ndk.relayManager().getSingleNip51List(Nip51List.SEARCH_RELAYS, loggedUserSigner!);
+//           Nip51List? list = await ndk.relays.getSingleNip51List(Nip51List.SEARCH_RELAYS, loggedUserSigner!);
 //           finished = true;
 //           EasyLoading.dismiss();
 //           RouterUtil.router(context, RouterPath.L, list!=null? list : Nip51List(pubKey: loggedUserSigner!.getPublicKey(), kind: Nip51List.SEARCH_RELAYS, privateRelays: searchRelays, createdAt: Helpers.now));
@@ -281,7 +278,7 @@ class _SearchRouter extends CustState<SearchRouter>
             "wss://relay.nostr.band",
             "wss://relay.noshere.com"
           ]; //!=null? searchRelays.where((url) {
-    //   Relay? relay =ndk.relayManager().getRelay(url);
+    //   Relay? relay =ndk.relays.getRelay(url);
     //   return relay!=null? relay.supportsNip(50) : false;
     // }).toList() : [];
 
@@ -293,11 +290,11 @@ class _SearchRouter extends CustState<SearchRouter>
       }
     }
     // RelayManager relayManager = RelayManager();
-    //ndk.relayManager().cacheManager = cacheManager;
-    //ndk.relayManager().connect(urls: relaysWithNip50).then((value) {
+    //ndk.relays.cacheManager = cacheManager;
+    //ndk.relays.connect(urls: relaysWithNip50).then((value) {
     var search = filterMap!["search"];
     NdkResponse response = ndk
-        .query(relays: relaysWithNip50, filters: [Filter.fromMap(filterMap!)]);
+        .requests.query(relays: relaysWithNip50, filters: [Filter.fromMap(filterMap!)]);
     response.stream.listen((event) {
       if (search == controller.text.trim()) {
         onQueryEvent(event);

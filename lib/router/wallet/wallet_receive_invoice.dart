@@ -117,7 +117,7 @@ class _WalletReceiveRouter extends State<WalletReceiveInvoiceRouter> {
                 child: PrettyQrView.data(
                     data: payingInvoice!,
                     decoration: PrettyQrDecoration(
-                      shape: PrettyQrSmoothSymbol(roundFactor: 1),
+                      shape: const PrettyQrSmoothSymbol(roundFactor: 1),
                       image: PrettyQrDecorationImage(
                         image: metadata != null && StringUtil.isNotBlank(metadata!.picture)
                             ? CachedNetworkImageProvider(metadata!.picture!)
@@ -232,7 +232,7 @@ class _WalletReceiveRouter extends State<WalletReceiveInvoiceRouter> {
               style: const TextStyle(fontSize: 80, fontFamily: 'Geist.Mono'),
               // textDirection: TextDirection.ltr,
               controller: amountInputcontroller,
-              keyboardType: TextInputType.number,
+              keyboardType: TextInputType.numberWithOptions(decimal: !satsInput),
               inputFormatters: <TextInputFormatter>[FilteringTextInputFormatter.digitsOnly],
               decoration: InputDecoration(
                 border: InputBorder.none,
@@ -252,7 +252,7 @@ class _WalletReceiveRouter extends State<WalletReceiveInvoiceRouter> {
               setState(() {
                 satsInput = !satsInput;
                 double holder = otherCurrencyAmount??0;
-                otherCurrencyAmount = double.parse(amountInputcontroller.text);
+                otherCurrencyAmount = StringUtil.isNotBlank(amountInputcontroller.text.trim())?double.parse(amountInputcontroller.text):0;
                 amountInputcontroller.text = "$holder";
                 // updateOtherCurrency();
               });

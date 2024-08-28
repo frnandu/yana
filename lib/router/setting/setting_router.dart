@@ -418,7 +418,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
 
     listsTiles.add(SettingsTile.navigation(
         onPressed: (context) async {
-          if (ndk.relayManager().blockedRelaysCount>0) {
+          if (ndk.relays.blockedRelaysCount>0) {
             bool finished = false;
             Future.delayed(const Duration(milliseconds: 500), () {
               if (!finished) {
@@ -444,7 +444,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
         ),
         trailing: Icon(Icons.navigate_next),
         title: Text(
-            "${ndk.relayManager().blockedRelaysCount} Blocked relays",
+            "${ndk.relays.blockedRelaysCount} Blocked relays",
           )));
 
     listsTiles.add(

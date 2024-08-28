@@ -1,11 +1,10 @@
 import 'dart:convert';
 
 import 'package:bip340/bip340.dart';
-import 'package:ndk/ndk.dart';
-import 'package:ndk/presentation_layer/request_response.dart';
-import 'package:ndk/shared/nips/nip04/nip04.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:ndk/ndk.dart';
+import 'package:ndk/shared/nips/nip04/nip04.dart';
 import 'package:yana/models/wallet_transaction.dart';
 import 'package:yana/nostr/nip47/nwc_notification.dart';
 import 'package:yana/utils/rates.dart';
@@ -101,9 +100,9 @@ class NwcProvider extends ChangeNotifier {
     await settingProvider.setNwc(nwc);
     await settingProvider.setNwcSecret(secret!);
     var filter = Filter(kinds: [NwcKind.INFO_REQUEST], authors: [walletPubKey]);
-    await ndk.relayManager().reconnectRelay(relay);
+    await ndk.relays.reconnectRelay(relay);
     ndk
-        .query(
+        .requests.query(
             relays: [relay],
             filters: [filter],
             cacheRead: false,
@@ -170,7 +169,7 @@ class NwcProvider extends ChangeNotifier {
           kind: NwcKind.REQUEST,
           tags: tags,
           content: encrypted);
-      await ndk.relayManager().reconnectRelay(relay!);
+      await ndk.relays.reconnectRelay(relay!);
       await ndk.broadcastEvent(event, [relay!], signer: nwcSigner);
     }
   }
@@ -192,8 +191,8 @@ class NwcProvider extends ChangeNotifier {
           kind: NwcKind.REQUEST,
           tags: tags,
           content: encrypted);
-      await ndk.relayManager().reconnectRelay(relay!);
-      await ndk.relayManager().broadcastEvent(event, [relay!], nwcSigner);
+      await ndk.relays.reconnectRelay(relay!);
+      await ndk.relays.broadcastEvent(event, [relay!], nwcSigner);
     }
   }
 
@@ -216,8 +215,8 @@ class NwcProvider extends ChangeNotifier {
           tags: tags,
           content: encrypted);
 
-      await ndk.relayManager().reconnectRelay(relay!);
-      await ndk.relayManager().broadcastEvent(event, [relay!], nwcSigner);
+      await ndk.relays.reconnectRelay(relay!);
+      await ndk.relays.broadcastEvent(event, [relay!], nwcSigner);
     }
   }
 
@@ -253,10 +252,10 @@ class NwcProvider extends ChangeNotifier {
       //     cacheWrite: false);
       //
       // subscription.stream.listen((event) async {
-      //   await ndk.closeSubscription(subscription.requestId);
+      //   await ndk.relays.closeSubscription(subscription.requestId);
       //   await onPayInvoiceResponse(event, onZapped);
       // });
-      await ndk.relayManager().broadcastEvent(event, [relay!], nwcSigner);
+      await ndk.relays.broadcastEvent(event, [relay!], nwcSigner);
     } else {
       EasyLoading.showError("missing pubKey and/or relay for connecting",
           duration: const Duration(seconds: 5));
@@ -273,13 +272,13 @@ class NwcProvider extends ChangeNotifier {
       var filter =
           Filter(kinds: [EventKind.ZAP_RECEIPT], eTags: [payInvoiceEventId]);
       Nip01Event? zapReceipt;
-      NdkResponse subscription = ndk.subscription(
+      NdkResponse subscription = ndk.requests.subscription(
           relays: myInboxRelaySet!.urls.toList()..add(relay!),
           filters: [filter],
           cacheRead: false,
           cacheWrite: false);
       subscription.stream.listen((event) async {
-        await ndk.closeSubscription(subscription.requestId);
+        await ndk.relays.closeSubscription(subscription.requestId);
         if (zapReceipt == null || zapReceipt!.createdAt < event.createdAt) {
           zapReceipt = event;
           eventReactionsProvider.addZap(payInvoiceEventId, event);
@@ -334,17 +333,17 @@ class NwcProvider extends ChangeNotifier {
           authors: [walletPubKey!],
           pTags: [nwcSigner.getPublicKey()],
           eTags: [event.id]);
-      NdkResponse subscription = ndk.subscription(
+      NdkResponse subscription = ndk.requests.subscription(
           relays: [relay!],
           filters: [filter],
           cacheRead: false,
           cacheWrite: false);
       subscription.stream.listen((event) async {
-        await ndk.closeSubscription(subscription.requestId);
+        await ndk.relays.closeSubscription(subscription.requestId);
         await onMakeInvoiceResponse(event, onCreatedInvoice);
       });
       this.settledInvoiceCallback = settledInvoiceCallback;
-      await ndk.relayManager().broadcastEvent(event, [relay!], nwcSigner);
+      await ndk.relays.broadcastEvent(event, [relay!], nwcSigner);
     } else {
       EasyLoading.showError("missing pubKey and/or relay for connecting",
           duration: const Duration(seconds: 5));
@@ -386,9 +385,9 @@ class NwcProvider extends ChangeNotifier {
         authors: [walletPubKey!],
         pTags: [nwcSigner.getPublicKey()],
       );
-      await ndk.relayManager().reconnectRelay(relay!);
+      await ndk.relays.reconnectRelay(relay!);
 
-      NdkResponse subscription = ndk.subscription(
+      NdkResponse subscription = ndk.requests.subscription(
           relays: [relay!],
           filters: [filter],
           cacheRead: false,

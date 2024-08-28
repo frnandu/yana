@@ -26,9 +26,9 @@ class RelayProvider extends ChangeNotifier {
     if (cleanedUrl == null) {
       return WebSocket.closed;
     }
-    return ndk.relayManager().isRelayConnecting(cleanedUrl)
+    return ndk.relays.isRelayConnecting(cleanedUrl)
         ? WebSocket.connecting
-        :ndk.relayManager().isRelayConnected(cleanedUrl)
+        :ndk.relays.isRelayConnected(cleanedUrl)
             ? WebSocket.open
             : WebSocket.closed;
   }
@@ -41,8 +41,8 @@ class RelayProvider extends ChangeNotifier {
     if (myOutboxRelaySet!=null) {
       set.addAll(myOutboxRelaySet!.urls);
     }
-    String result = "${ndk.relayManager().getConnectedRelays(set).length}/${set.length}";
-    // result +=",${relayManager.webSockets.keys.where((element) =>ndk.relayManager().isWebSocketOpen(element)).length}";
+    String result = "${ndk.relays.getConnectedRelays(set).length}/${set.length}";
+    // result +=",${relayManager.webSockets.keys.where((element) =>ndk.relays.isWebSocketOpen(element)).length}";
     // String result =
     //     "${nostr!.activeRelays().length}/${nostr!.allRelays().length}";
     if (settingProvider.gossip == 1 && feedRelaySet != null && feedRelaySet!.urls.isNotEmpty) {
@@ -53,7 +53,7 @@ class RelayProvider extends ChangeNotifier {
 
   String feedRelaysNumStr() {
     if (feedRelaySet != null) {
-      return "${ndk.relayManager().getConnectedRelays(feedRelaySet!.urls).length}/${feedRelaySet!.urls.length}";
+      return "${ndk.relays.getConnectedRelays(feedRelaySet!.urls).length}/${feedRelaySet!.urls.length}";
     }
     return "";
   }
@@ -85,7 +85,7 @@ class RelayProvider extends ChangeNotifier {
       createMyRelaySets(userRelayList);
       await cacheManager.saveRelaySet(myOutboxRelaySet!);
       await cacheManager.saveRelaySet(myInboxRelaySet!);
-      await ndk.relayManager().connect(urls: userRelayList.urls);
+      await ndk.relays.connect(urls: userRelayList.urls);
       notifyListeners();
     }
   }
@@ -96,7 +96,7 @@ class RelayProvider extends ChangeNotifier {
       createMyRelaySets(userRelayList);
       await cacheManager.saveRelaySet(myOutboxRelaySet!);
       await cacheManager.saveRelaySet(myInboxRelaySet!);
-      await ndk.relayManager().connect(urls: userRelayList.urls);
+      await ndk.relays.connect(urls: userRelayList.urls);
       notifyListeners();
     }
   }
@@ -119,7 +119,7 @@ class RelayProvider extends ChangeNotifier {
 
   UserRelayList? getUserRelayList(String publicKey) {
     return cacheManager.loadUserRelayList(loggedUserSigner!.getPublicKey());
-//    userRelayList ??= await ndk.relayManager().getSingleUserRelayList(loggedUserSigner!.getPublicKey(), forceRefresh: true);
+//    userRelayList ??= await ndk.relays.getSingleUserRelayList(loggedUserSigner!.getPublicKey(), forceRefresh: true);
   }
 
   Future<RelaySet> recalculateFeedRelaySet() async {
@@ -141,7 +141,7 @@ class RelayProvider extends ChangeNotifier {
   }
 
   List<String> getBlockedRelays() {
-    return ndk.relayManager().blockedRelays;
+    return ndk.relays.blockedRelays;
   }
 
   List<String> getSearchRelays() {

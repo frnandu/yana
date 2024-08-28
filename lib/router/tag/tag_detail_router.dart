@@ -1,7 +1,5 @@
-import 'package:ndk/domain_layer/entities/filter.dart';
-import 'package:ndk/domain_layer/entities/nip_01_event.dart';
 import 'package:flutter/material.dart';
-import 'package:ndk/presentation_layer/request_response.dart';
+import 'package:ndk/ndk.dart';
 import 'package:provider/provider.dart';
 import 'package:yana/main.dart';
 import 'package:yana/ui/event_delete_callback.dart';
@@ -155,7 +153,7 @@ class _TagDetailRouter extends CustState<TagDetailRouter>
 
   void doQuery() async {
     if (subscription!=null) {
-      await ndk.closeSubscription(subscription!.requestId);
+      await ndk.relays.closeSubscription(subscription!.requestId);
     }
     var plainTag = tag!.replaceFirst("#", "");
     var filter = Filter(kinds: [
@@ -173,7 +171,7 @@ class _TagDetailRouter extends CustState<TagDetailRouter>
     // } else {
     //   queryArg["#t"] = [plainTag];
     // }
-    subscription = ndk.subscription(filters: [filter], relaySet:  myInboxRelaySet!);
+    subscription = ndk.requests.subscription(filters: [filter], relaySet:  myInboxRelaySet!);
     subscription!.stream.listen((event) {
       onEvent(event);
     });
@@ -192,7 +190,7 @@ class _TagDetailRouter extends CustState<TagDetailRouter>
     disposeLater();
 
     try {
-      ndk.closeSubscription(subscription!.requestId);
+      ndk.relays.closeSubscription(subscription!.requestId);
     } catch (e) {
       print(e);
     }

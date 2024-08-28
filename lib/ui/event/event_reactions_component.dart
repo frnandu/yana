@@ -393,7 +393,7 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
               relayMinCountPerPubKey: settingProvider
                   .broadcastToInboxMaxCount);
           relays.addAll(inboxRelaySet.urls.toSet());
-          relays.removeWhere((element) =>ndk.relayManager().blockedRelays.contains(element));
+          relays.removeWhere((element) =>ndk.relays.blockedRelays.contains(element));
           EasyLoading.dismiss();
         }
       }
@@ -411,7 +411,7 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
         //     return MultiSelect(items: results!, selectedItems: [], sending: true,);
         //   },
         // );
-        await ndk.relayManager().broadcastEvent(widget.event, results, loggedUserSigner!);
+        await ndk.relays.broadcastEvent(widget.event, results, loggedUserSigner!);
         widget.event.sources.addAll(results);
         cacheManager.saveEvent(widget.event);
       }
@@ -436,7 +436,7 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
       });
 
       Set<String> urlsToBroadcast = (await broadcastUrls(widget.event.pubKey)).toSet()..addAll(widget.event.sources);
-      await ndk.relayManager().reconnectRelays(urlsToBroadcast);
+      await ndk.relays.reconnectRelays(urlsToBroadcast);
       await ndk!.broadcastDeletion(widget.event.id, urlsToBroadcast, loggedUserSigner!);
 
       followEventProvider.deleteEvent(widget.event.id);
@@ -549,9 +549,9 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
                 .now()
                 .millisecondsSinceEpoch ~/ 1000);
         Iterable<String> urlsToBroadcast = await broadcastUrls(widget.event.pubKey);
-        await ndk.relayManager().reconnectRelays(urlsToBroadcast);
+        await ndk.relays.reconnectRelays(urlsToBroadcast);
 
-        await ndk.relayManager().broadcastEvent(
+        await ndk.relays.broadcastEvent(
             event, urlsToBroadcast, loggedUserSigner!);
 
         eventReactionsProvider.addRepost(widget.event.id);
@@ -567,7 +567,7 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
   void onLikeTap() async {
     if (loggedUserSigner!.canSign()) {
       Iterable<String> urlsToBroadcast = await broadcastUrls(widget.event.pubKey);
-      await ndk.relayManager().reconnectRelays(urlsToBroadcast);
+      await ndk.relays.reconnectRelays(urlsToBroadcast);
 
       if (eventReactions?.myLikeEvents == null ||
           eventReactions!.myLikeEvents!.isEmpty) {

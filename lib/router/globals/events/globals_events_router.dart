@@ -1,8 +1,6 @@
 import 'dart:async';
 
-import 'package:ndk/domain_layer/entities/filter.dart';
-import 'package:ndk/domain_layer/entities/nip_01_event.dart';
-import 'package:ndk/presentation_layer/request_response.dart';
+import 'package:ndk/ndk.dart';
 import 'package:ndk/shared/nips/nip01/helpers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -139,12 +137,12 @@ class _GlobalsEventsRouter extends KeepAliveCustState<GlobalsEventsRouter>
             (until != null ? until! : Helpers.now) - howManySecondsToLoadBack,
         limit: 100);
     if (subscription != null) {
-      await ndk.closeSubscription(subscription!.requestId);
+      await ndk.relays.closeSubscription(subscription!.requestId);
     }
 
-    await ndk.relayManager().reconnectRelays(myInboxRelaySet!.urls);
+    await ndk.relays.reconnectRelays(myInboxRelaySet!.urls);
 
-    subscription = ndk.query(filters: [filter], relaySet: myInboxRelaySet!);
+    subscription = ndk.requests.query(filters: [filter], relaySet: myInboxRelaySet!);
     subscription!.stream.listen((event) {
       if (eventBox.isEmpty()) {
         laterTimeMS = 200;
@@ -167,7 +165,7 @@ class _GlobalsEventsRouter extends KeepAliveCustState<GlobalsEventsRouter>
   void unsubscribe() async {
     try {
       if (subscription != null) {
-        await ndk.closeSubscription(subscription!.requestId);
+        await ndk.relays.closeSubscription(subscription!.requestId);
       }
     } catch (e) {}
   }

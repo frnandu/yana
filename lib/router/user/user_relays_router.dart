@@ -88,7 +88,7 @@ class _UserRelayRouter extends State<UserRelayRouter>
                   relays!.isNotEmpty &&
                   relays![0].count != null &&
                   feedRelaySet != null) {
-                await ndk.relayManager().reconnectRelays(feedRelaySet!.urls);
+                await ndk.relays.reconnectRelays(feedRelaySet!.urls);
                 relayProvider.notifyListeners();
                 setState(() {
                   if (kDebugMode) {
@@ -127,7 +127,7 @@ class _UserRelayRouter extends State<UserRelayRouter>
                   },
                 );
                 // }, selector: (context, provider) {
-                //   returnndk.relayManager().isRelayConnected(relayMetadata.url!);
+                //   returnndk.relays.isRelayConnected(relayMetadata.url!);
                 // });
               },
               itemCount: relays!.length,
@@ -137,16 +137,16 @@ class _UserRelayRouter extends State<UserRelayRouter>
   }
 
   int compareRelays(RelayMetadata r1, RelayMetadata r2) {
-    Relay? relay1 =ndk.relayManager().getRelay(r1.url!);
-    Relay? relay2 = ndk.relayManager().getRelay(r2.url!);
+    Relay? relay1 =ndk.relays.getRelay(r1.url!);
+    Relay? relay2 = ndk.relays.getRelay(r2.url!);
     if (relay1 == null) {
       return 1;
     }
     if (relay2 == null) {
       return -1;
     }
-    bool a1 =ndk.relayManager().isRelayConnected(r1.url!);
-    bool a2 =ndk.relayManager().isRelayConnected(r2.url!);
+    bool a1 =ndk.relays.isRelayConnected(r1.url!);
+    bool a2 =ndk.relays.isRelayConnected(r2.url!);
     if (a1) {
       return a2 ? (r2.count != null ? r2.count!.compareTo(r1.count!) : 0) : -1;
     }
@@ -263,7 +263,7 @@ class RelayMetadataComponent extends StatelessWidget {
           ),
         ));
       }
-      bool blocked =ndk.relayManager().blockedRelays.contains(relayMetadata!.url);
+      bool blocked =ndk.relays.blockedRelays.contains(relayMetadata!.url);
       if (blocked) {
         rightButtons.add(PopupMenuButton<String>(
           icon: const Icon(Icons.not_interested, color: Colors.red),
@@ -286,7 +286,7 @@ class RelayMetadataComponent extends StatelessWidget {
                       relayMetadata!.url!,
                       myOutboxRelaySet!.urls,
                       defaultRelaysIfEmpty: []);
-             ndk.relayManager().blockedRelays = relayList!.allRelays!;
+             ndk.relays.blockedRelays = relayList!.allRelays!;
               relayProvider.notifyListeners();
               EasyLoading.dismiss();
             }
@@ -318,7 +318,7 @@ class RelayMetadataComponent extends StatelessWidget {
                         relayMetadata!.url!,
                         myOutboxRelaySet!.urls,
                         private: value == "private" ? true : false);
-               ndk.relayManager().blockedRelays = blocked.allRelays!;
+               ndk.relays.blockedRelays = blocked.allRelays!;
                 EasyLoading.dismiss();
                 if (onBlock != null) {
                   onBlock!(relayMetadata!.url!);
@@ -336,7 +336,7 @@ class RelayMetadataComponent extends StatelessWidget {
     //   ],
     // ),
     //
-    Relay? relay =ndk.relayManager().getRelay(relayMetadata!.url!);
+    Relay? relay =ndk.relays.getRelay(relayMetadata!.url!);
     Widget imageWidget;
 
     String? iconUrl;

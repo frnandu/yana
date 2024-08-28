@@ -580,9 +580,9 @@ mixin EditorMixin {
     // TODO what about more people that might take part in the thread conversation?
 
     Iterable<String> urlsToBroadcast = broadcastRelays??await broadcastUrls(null);
-    await ndk.relayManager().reconnectRelays(urlsToBroadcast);
+    await ndk.relays.reconnectRelays(urlsToBroadcast);
 
-    await ndk.relayManager().broadcastEvent(event, urlsToBroadcast,loggedUserSigner!);
+    await ndk.relays.broadcastEvent(event, urlsToBroadcast,loggedUserSigner!);
     return event;
   }
 

@@ -1,7 +1,7 @@
 import 'package:ndk/domain_layer/entities/filter.dart';
 import 'package:ndk/domain_layer/entities/nip_01_event.dart';
 import 'package:flutter/material.dart';
-import 'package:ndk/presentation_layer/request_response.dart';
+import 'package:ndk/ndk.dart';
 import 'package:yana/nostr/nip172/community_id.dart';
 import 'package:yana/nostr/nip172/community_info.dart';
 
@@ -63,7 +63,7 @@ class CommunityInfoProvider extends ChangeNotifier with LaterFunction {
       kind.EventKind.COMMUNITY_DEFINITION,
     ], authors: ids.map((e) => e.pubkey).toList());
     NdkResponse response =
-        ndk.query(filters: [filter], relaySet: myInboxRelaySet!);
+        ndk.requests.query(filters: [filter], relaySet: myInboxRelaySet!);
     response.stream.listen((event) {
       _onEvent(event);
     });

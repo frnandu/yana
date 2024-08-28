@@ -42,7 +42,7 @@ class RelaysItemComponent extends StatelessWidget {
     Color? borderLeftColor;
     if (showConnection && relay != null) {
       borderLeftColor = Colors.red;
-      if (ndk.relayManager().isRelayConnected(relay!.url)) {
+      if (ndk.relays.isRelayConnected(relay!.url)) {
         borderLeftColor = Colors.green;
       } else if (relay!.connecting) {
         borderLeftColor = Colors.yellow;

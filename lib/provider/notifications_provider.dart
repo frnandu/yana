@@ -1,8 +1,6 @@
 import 'dart:async';
 
-import 'package:ndk/domain_layer/entities/filter.dart';
-import 'package:ndk/domain_layer/entities/nip_01_event.dart';
-import 'package:ndk/presentation_layer/request_response.dart';
+import 'package:ndk/ndk.dart';
 import 'package:ndk/shared/nips/nip25/reactions.dart';
 import 'package:flutter/material.dart';
 import 'package:yana/provider/data_util.dart';
@@ -81,7 +79,7 @@ class NotificationsProvider extends ChangeNotifier with PenddingEventsLaterFunct
 
   void startSubscription({bool refreshed = false}) async {
     if (subscription != null) {
-      await ndk.closeSubscription(subscription!.requestId);
+      await ndk.relays.closeSubscription(subscription!.requestId);
     }
     int? since;
     if (!refreshed) {
@@ -94,9 +92,9 @@ class NotificationsProvider extends ChangeNotifier with PenddingEventsLaterFunct
     if (myInboxRelaySet != null) {
       var filter = Filter(kinds: queryEventKinds(), since: since, pTags: [loggedUserSigner!.getPublicKey()], limit: 100);
 
-      await ndk.relayManager().reconnectRelays(myInboxRelaySet!.urls);
+      await ndk.relays.reconnectRelays(myInboxRelaySet!.urls);
 
-      subscription = ndk.subscription(filters: [filter], relaySet: myInboxRelaySet!);
+      subscription = ndk.requests.subscription(filters: [filter], relaySet: myInboxRelaySet!);
       subscription!.stream.listen((event) {
         onEvent(event);
       });
