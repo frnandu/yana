@@ -61,21 +61,29 @@ class EventReactionsProvider extends ChangeNotifier
     }
   }
 
-  Future<List<Nip01Event>> getThreadReplies(String id, {bool force=false}) async {
+  Future<List<Nip01Event>> getThreadReplies(String id,
+      {bool force = false}) async {
     var replies = _repliesMap[id];
+
     /// TODO refresh after some time
-    if (replies==null || force) {
+    if (replies == null || force) {
       /// TODO use other relaySet if gossip
-      NdkResponse response = await ndk.requests.query(filters: [Filter(eTags: [id], kinds: [Nip01Event.TEXT_NODE_KIND])], relaySet:  myInboxRelaySet!);
+      NdkResponse response = ndk.requests.query(
+          idPrefix: "event-reations-",
+          filters: [
+            Filter(eTags: [id], kinds: [Nip01Event.TEXT_NODE_KIND])
+          ],
+          relaySet: myInboxRelaySet!);
       Map<String, Nip01Event> map = {};
       await for (final event in response.stream) {
-        if (map[event.id] == null || map[event.id]!.createdAt < event.createdAt) {
+        if (map[event.id] == null ||
+            map[event.id]!.createdAt < event.createdAt) {
           map[event.id] = event;
         }
       }
       replies = map.values.toList();
       _repliesMap[id] = replies;
-      if (_eventReactionsMap[id]!=null) {
+      if (_eventReactionsMap[id] != null) {
         _eventReactionsMap[id]!.replies = replies;
       }
     }
@@ -93,32 +101,33 @@ class EventReactionsProvider extends ChangeNotifier
   }
 
   void addReply(String id, Nip01Event reply) {
-    if (_repliesMap[id]!=null) {
+    if (_repliesMap[id] != null) {
       _repliesMap[id]!.add(reply);
     }
   }
 
-  Future<void> subscription(String eventId, String? pubKey, List<int>? kinds) async {
+  Future<void> subscription(
+      String eventId, String? pubKey, List<int>? kinds) async {
     var filter = kinds != null
         ? Filter(eTags: [eventId], kinds: kinds)
         : Filter(eTags: [eventId]);
 
     RelaySet? relaySet;
 
-    if (settingProvider.gossip == 1 && pubKey!=null) {
+    if (settingProvider.gossip == 1 && pubKey != null) {
       relaySet = await ndk.calculateRelaySet(
           name: "reactions-feed",
           ownerPubKey: pubKey!,
           pubKeys: [pubKey!],
           direction: RelayDirection.inbox,
           relayMinCountPerPubKey: 5);
-      if (myInboxRelaySet!=null) {
+      if (myInboxRelaySet != null) {
         relaySet.addMoreRelays(myInboxRelaySet!.relaysMap);
       }
     } else {
       relaySet = myInboxRelaySet;
     }
-    if (relaySet==null) {
+    if (relaySet == null) {
       return;
     }
     // print(
@@ -132,7 +141,8 @@ class EventReactionsProvider extends ChangeNotifier
     // TODO should use other relays inbox for pubKey....
   }
 
-  EventReactions? get(String id, {String? pubKey, bool forceSubscription = false, List<int>? kinds}) {
+  EventReactions? get(String id,
+      {String? pubKey, bool forceSubscription = false, List<int>? kinds}) {
     var er = _eventReactionsMap[id];
     if (er == null) {
       // plan to pull
@@ -272,7 +282,7 @@ class EventReactionsProvider extends ChangeNotifier
   void removePendding(String eventId) async {
     // _penddingIds.remove(eventId);
     if (subscriptions[eventId] != null) {
-      await ndk.relays.closeSubscription(subscriptions[eventId]!.requestId);
+      ndk.relays.closeSubscription(subscriptions[eventId]!.requestId);
       subscriptions.remove(eventId);
     }
   }

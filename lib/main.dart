@@ -4,6 +4,7 @@ import 'dart:ui';
 
 import 'package:amberflutter/amberflutter.dart';
 import 'package:awesome_notifications/awesome_notifications.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
@@ -164,7 +165,7 @@ get loggedUserSigner => ndk.config.eventSigner;
 AmberFlutterDS amberFlutterDS = AmberFlutterDS(Amberflutter());
 late CacheManager cacheManager;
 Ndk ndk = Ndk(
-  NdkConfig(eventVerifier: AcinqSecp256k1EventVerifier(), cache: cacheManager, engine: NdkEngine.RELAY_SETS),
+  NdkConfig(eventVerifier: kDebugMode? Bip340EventVerifier(doVerification: false):AcinqSecp256k1EventVerifier(), cache: cacheManager, engine: NdkEngine.RELAY_SETS),
 );
 
 late bool isExternalSignerInstalled;
@@ -220,7 +221,7 @@ void onStart(ServiceInstance service) async {
             List<String> requestIdsToClose = ndk.relays.globalState.inFlightRequests.keys.toList();
             for (var id in requestIdsToClose) {
               try {
-                await ndk.relays.closeSubscription(id);
+                ndk.relays.closeSubscription(id);
               } catch (e) {
                 print(e);
               }
@@ -939,7 +940,7 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
           List<String> requestIdsToClose = ndk.relays.globalState.inFlightRequests.keys.toList();
           for (var id in requestIdsToClose) {
             try {
-              await ndk.relays.closeSubscription(id);
+              ndk.relays.closeSubscription(id);
             } catch (e) {
               print(e);
             }
@@ -978,7 +979,7 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
           List<String> requestIdsToClose = ndk.relays.globalState.inFlightRequests.keys.toList();
           for (var id in requestIdsToClose) {
             try {
-              await ndk.relays.closeSubscription(id);
+              ndk.relays.closeSubscription(id);
             } catch (e) {
               print(e);
             }

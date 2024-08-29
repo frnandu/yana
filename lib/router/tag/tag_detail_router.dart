@@ -153,7 +153,7 @@ class _TagDetailRouter extends CustState<TagDetailRouter>
 
   void doQuery() async {
     if (subscription!=null) {
-      await ndk.relays.closeSubscription(subscription!.requestId);
+      ndk.relays.closeSubscription(subscription!.requestId);
     }
     var plainTag = tag!.replaceFirst("#", "");
     var filter = Filter(kinds: [

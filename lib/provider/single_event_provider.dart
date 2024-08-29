@@ -66,7 +66,7 @@ class SingleEventProvider extends ChangeNotifier with LaterFunction {
       return;
     }
 
-    var filter = Filter(ids: _needUpdateIds);
+    Filter filter = Filter(ids: _needUpdateIds);
     List<String> tempIds = [];
     tempIds.addAll(_needUpdateIds);
 
@@ -81,16 +81,16 @@ class SingleEventProvider extends ChangeNotifier with LaterFunction {
         }
       });
     }
-    NdkResponse response = ndk.requests.query(explicitRelays: urls.toList(), filters: [filter]);
-    response.stream.listen((event) {
-      tempIds.remove(event.id);
-      _onEvent(event);
-    }, onDone: () {
-      notFoundEventIds.addAll(tempIds);
-    }, onError: (error) {
-      print("$error onERROR for single event provider loading $filter");
-      return;
-    });
+    // NdkResponse response = ndk.requests.query(explicitRelays: urls.toList(), filters: [filter]);
+    // response.stream.listen((event) {
+    //   tempIds.remove(event.id);
+    //   _onEvent(event);
+    // }, onDone: () {
+    //   notFoundEventIds.addAll(tempIds);
+    // }, onError: (error) {
+    //   print("$error onERROR for single event provider loading $filter");
+    //   return;
+    // });
     _needUpdateIds.clear();
   }
 }

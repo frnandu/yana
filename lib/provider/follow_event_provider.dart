@@ -185,6 +185,7 @@ class FollowEventProvider extends ChangeNotifier
       await ndk.relays.reconnectRelays(myInboxRelaySet!.urls);
     }
     subscription = ndk.requests.subscription(
+        idPrefix: "feed-sub-",
         filters: [filter],
         relaySet: (feedRelaySet != null && settingProvider.gossip == 1)
             ? feedRelaySet!
@@ -289,41 +290,50 @@ class FollowEventProvider extends ChangeNotifier
         });
 
     ndk.requests
-        .query(filters: [
-          Filter(
-              kinds: queryEventKinds(),
-              tTags: contactList?.followedTags,
-              until: until,
-              limit: 100)
-        ], relaySet: myInboxRelaySet!)
+        .query(
+            idPrefix: "feed-old-tags",
+            filters: [
+              Filter(
+                  kinds: queryEventKinds(),
+                  tTags: contactList?.followedTags,
+                  until: until,
+                  limit: 100)
+            ],
+            relaySet: myInboxRelaySet!)
         .stream
         .listen((event) {
-          onEvent(event);
-        });
+      onEvent(event);
+    });
     ndk.requests
-        .query(filters: [
-          Filter(
-              kinds: queryEventKinds(),
-              aTags: contactList?.followedCommunities,
-              until: until,
-              limit: 100)
-        ], relaySet: myInboxRelaySet!)
+        .query(
+            idPrefix: "feed-old-communities",
+            filters: [
+              Filter(
+                  kinds: queryEventKinds(),
+                  aTags: contactList?.followedCommunities,
+                  until: until,
+                  limit: 100)
+            ],
+            relaySet: myInboxRelaySet!)
         .stream
         .listen((event) {
-          onEvent(event);
-        });
+      onEvent(event);
+    });
     ndk.requests
-        .query(filters: [
-          Filter(
-              kinds: queryEventKinds(),
-              eTags: contactList?.followedEvents,
-              until: until,
-              limit: 100)
-        ], relaySet: myInboxRelaySet!)
+        .query(
+            idPrefix: "feed-old-events",
+            filters: [
+              Filter(
+                  kinds: queryEventKinds(),
+                  eTags: contactList?.followedEvents,
+                  until: until,
+                  limit: 100)
+            ],
+            relaySet: myInboxRelaySet!)
         .stream
         .listen((event) {
-          onEvent(event);
-        });
+      onEvent(event);
+    });
   }
 
   void doUnscribe() {

@@ -106,6 +106,7 @@ class NwcProvider extends ChangeNotifier {
     await ndk.relays.reconnectRelay(relay);
     ndk
         .requests.query(
+            idPrefix: "nwc-",
             explicitRelays: [relay],
             filters: [filter],
             cacheRead: false,
@@ -255,7 +256,7 @@ class NwcProvider extends ChangeNotifier {
       //     cacheWrite: false);
       //
       // subscription.stream.listen((event) async {
-      //   await ndk.relays.closeSubscription(subscription.requestId);
+      //   ndk.relays.closeSubscription(subscription.requestId);
       //   await onPayInvoiceResponse(event, onZapped);
       // });
       await ndk.relays.broadcastEvent(event, [relay!], nwcSigner);
@@ -276,12 +277,13 @@ class NwcProvider extends ChangeNotifier {
           Filter(kinds: [EventKind.ZAP_RECEIPT], eTags: [payInvoiceEventId]);
       Nip01Event? zapReceipt;
       NdkResponse subscription = ndk.requests.subscription(
+          idPrefix: "nwc-pay-invoice-sub-",
           explicitRelays: [relay!],
           filters: [filter],
           cacheRead: false,
           cacheWrite: false);
       subscription.stream.listen((event) async {
-        await ndk.relays.closeSubscription(subscription.requestId);
+        ndk.relays.closeSubscription(subscription.requestId);
         if (zapReceipt == null || zapReceipt!.createdAt < event.createdAt) {
           zapReceipt = event;
           eventReactionsProvider.addZap(payInvoiceEventId, event);
@@ -339,12 +341,13 @@ class NwcProvider extends ChangeNotifier {
           pTags: [nwcSigner.getPublicKey()],
           eTags: [event.id]);
       NdkResponse subscription = ndk.requests.subscription(
+          idPrefix: "nwc-make-invoice-sub-",
           explicitRelays: [relay!],
           filters: [filter],
           cacheRead: false,
           cacheWrite: false);
       subscription.stream.listen((event) async {
-        await ndk.relays.closeSubscription(subscription.requestId);
+        ndk.relays.closeSubscription(subscription.requestId);
         await onMakeInvoiceResponse(event, onCreatedInvoice);
       });
       this.settledInvoiceCallback = settledInvoiceCallback;
@@ -393,6 +396,7 @@ class NwcProvider extends ChangeNotifier {
       await ndk.relays.reconnectRelay(relay!);
 
       NdkResponse subscription = ndk.requests.subscription(
+          idPrefix: "nwc-notifications-sub-",
           explicitRelays: [relay!],
           filters: [filter],
           cacheRead: false,

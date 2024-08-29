@@ -44,6 +44,7 @@ class _ContentVideoComponent extends State<ContentVideoComponent> {
   @override
   void dispose() {
     super.dispose();
+    disposed=true;
   }
 
   @override

@@ -336,7 +336,7 @@ class _UserRouter extends CustState<UserRouter> with PenddingEventsLaterFunction
     } else if (feedRelaySet != null && settingProvider.gossip == 1) {
       relaySet = feedRelaySet!;
     }
-    subscription = ndk.requests.subscription(filters: [filter], relaySet: relaySet);
+    subscription = ndk.requests.subscription(idPrefix:"user-sub",filters: [filter], relaySet: relaySet);
     subscription!.stream.listen((event) {
       onEvent(event, saveToCache: pubkey == loggedUserSigner!.getPublicKey());
     });

@@ -79,7 +79,7 @@ class NotificationsProvider extends ChangeNotifier with PenddingEventsLaterFunct
 
   void startSubscription({bool refreshed = false}) async {
     if (subscription != null) {
-      await ndk.relays.closeSubscription(subscription!.requestId);
+      ndk.relays.closeSubscription(subscription!.requestId);
     }
     int? since;
     if (!refreshed) {
@@ -94,7 +94,7 @@ class NotificationsProvider extends ChangeNotifier with PenddingEventsLaterFunct
 
       await ndk.relays.reconnectRelays(myInboxRelaySet!.urls);
 
-      subscription = ndk.requests.subscription(filters: [filter], relaySet: myInboxRelaySet!);
+      subscription = ndk.requests.subscription(idPrefix:"notifications-sub-", filters: [filter], relaySet: myInboxRelaySet!);
       subscription!.stream.listen((event) {
         onEvent(event);
       });

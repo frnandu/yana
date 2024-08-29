@@ -164,7 +164,7 @@ class _CommunityDetailRouter extends CustState<CommunityDetailRouter> with Pendd
 
   void queryEvents() async {
     if (subscription!=null) {
-      await ndk.relays.closeSubscription(subscription!.requestId);
+      ndk.relays.closeSubscription(subscription!.requestId);
     }
     var filter = Filter(kinds: [
       Nip01Event.TEXT_NODE_KIND,

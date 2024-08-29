@@ -270,7 +270,7 @@ class DMProvider extends ChangeNotifier with PenddingEventsLaterFunction {
       since: _initSince != 0 ? _initSince + 1 : null,
     );
     RelaySet relaySet = myInboxRelaySet!;
-    subscription = ndk.requests.subscription(filters: [receivedFilter], relaySet: relaySet);
+    subscription = ndk.requests.subscription(idPrefix:"dms-sub-",filters: [receivedFilter], relaySet: relaySet);
     subscription!.stream.listen((event) {
       onEvent(event);
     });

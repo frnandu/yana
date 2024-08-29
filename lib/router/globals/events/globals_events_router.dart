@@ -137,12 +137,12 @@ class _GlobalsEventsRouter extends KeepAliveCustState<GlobalsEventsRouter>
             (until != null ? until! : Helpers.now) - howManySecondsToLoadBack,
         limit: 100);
     if (subscription != null) {
-      await ndk.relays.closeSubscription(subscription!.requestId);
+      ndk.relays.closeSubscription(subscription!.requestId);
     }
 
     await ndk.relays.reconnectRelays(myInboxRelaySet!.urls);
 
-    subscription = ndk.requests.query(filters: [filter], relaySet: myInboxRelaySet!);
+    subscription = ndk.requests.query(idPrefix: "global-", filters: [filter], relaySet: myInboxRelaySet!);
     subscription!.stream.listen((event) {
       if (eventBox.isEmpty()) {
         laterTimeMS = 200;
@@ -165,7 +165,7 @@ class _GlobalsEventsRouter extends KeepAliveCustState<GlobalsEventsRouter>
   void unsubscribe() async {
     try {
       if (subscription != null) {
-        await ndk.relays.closeSubscription(subscription!.requestId);
+        ndk.relays.closeSubscription(subscription!.requestId);
       }
     } catch (e) {}
   }

@@ -53,7 +53,12 @@ class NewNotificationsProvider extends ChangeNotifier
       kinds: notificationsProvider.queryEventKinds(),
       pTags: [loggedUserSigner!.getPublicKey()],
     );
-    await for (final event in ndk.requests.query(filters: [filter], relaySet: myInboxRelaySet!).stream) {
+    await for (final event in ndk.requests
+        .query(
+            idPrefix: "new-notifications-",
+            filters: [filter],
+            relaySet: myInboxRelaySet!)
+        .stream) {
       Metadata? metadata = await ndk.getSingleMetadata(event.pubKey);
       handleEvent(event, metadata);
     }
@@ -61,7 +66,8 @@ class NewNotificationsProvider extends ChangeNotifier
 
   handleEvent(Nip01Event event, Metadata? metadata) {
     int previousCount = eventMemBox.length();
-    if (event.pubKey != loggedUserSigner?.getPublicKey() && !notificationsProvider.eventBox.containsId(event.id)) {
+    if (event.pubKey != loggedUserSigner?.getPublicKey() &&
+        !notificationsProvider.eventBox.containsId(event.id)) {
       if (eventMemBox.add(event, returnTrueOnNewSources: false)) {
         _localSince = eventMemBox.newestEvent!.createdAt;
         if (eventMemBox.length() > previousCount) {
@@ -74,15 +80,20 @@ class NewNotificationsProvider extends ChangeNotifier
               Nip01Event? otherEvent;
               print("event.tags: ${event.tags}");
               if (eventRelation.replyId != null) {
-                await for (final event in ndk.requests.query(filters: [Filter(ids: [eventRelation.replyId!])], relaySet: myInboxRelaySet!).stream) {
+                await for (final event in ndk.requests.query(filters: [
+                  Filter(ids: [eventRelation.replyId!])
+                ], relaySet: myInboxRelaySet!).stream) {
                   otherEvent = event;
                 }
               } else if (eventRelation.tagEList.isNotEmpty) {
-                await for (final event in ndk.requests.query(filters: [Filter(ids: [eventRelation.tagEList.first!])], relaySet: myInboxRelaySet!).stream) {
+                await for (final event in ndk.requests.query(filters: [
+                  Filter(ids: [eventRelation.tagEList.first!])
+                ], relaySet: myInboxRelaySet!).stream) {
                   otherEvent = event;
                 }
               }
-              String name = metadata!=null? metadata.getName() : event.pubKey;
+              String name =
+                  metadata != null ? metadata.getName() : event.pubKey;
               if (event.kind == Reaction.KIND) {
                 title = "$name reacted ${event.content.replaceAll('+', '❤')}";
                 if (otherEvent != null) {
@@ -107,18 +118,17 @@ class NewNotificationsProvider extends ChangeNotifier
                     title: title,
                     body: body,
                     payload: {"name": "new notification"},
-                    badge:
-                    eventMemBox.length()
-                  // +
-                  //     dmProvider.howManyNewDMSessionsWithNewMessages(
-                  //         dmProvider.followingList) +
-                  //     dmProvider
-                  //         .howManyNewDMSessionsWithNewMessages(
-                  //         dmProvider.knownList) +
-                  //     dmProvider
-                  //         .howManyNewDMSessionsWithNewMessages(
-                  //         dmProvider.unknownList)
-                ),
+                    badge: eventMemBox.length()
+                    // +
+                    //     dmProvider.howManyNewDMSessionsWithNewMessages(
+                    //         dmProvider.followingList) +
+                    //     dmProvider
+                    //         .howManyNewDMSessionsWithNewMessages(
+                    //         dmProvider.knownList) +
+                    //     dmProvider
+                    //         .howManyNewDMSessionsWithNewMessages(
+                    //         dmProvider.unknownList)
+                    ),
               );
             }
           });
