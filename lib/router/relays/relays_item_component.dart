@@ -172,7 +172,7 @@ class RelaysItemComponent extends StatelessWidget {
                                           iconColor: Colors.lightGreen,
                                           textColor: Colors.lightGreen,
                                           iconData: Icons.lan_outlined,
-                                          num: "${relay!.stats.connections}",
+                                          num: "${relay!.stats.activeRequests}",
                                         )),
                                     Container(
                                         margin: const EdgeInsets.only(right: Base.BASE_PADDING_HALF),

@@ -1,8 +1,12 @@
+import 'package:back_button_interceptor/back_button_interceptor.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:yana/main.dart';
 import 'package:yana/models/wallet_transaction.dart';
+import 'package:yana/nostr/nip47/nwc_notification.dart';
 import 'package:yana/provider/nwc_provider.dart';
+import 'package:yana/router/wallet/payment_component.dart';
 import 'package:yana/router/wallet/transaction_item_component.dart';
 import 'package:yana/utils/base.dart';
 
@@ -26,6 +30,9 @@ class _WalletRouter extends State<WalletRouter> {
   TextEditingController nwcInputController = TextEditingController();
 
   ScrollController scrollController = ScrollController();
+  PanelController panelController = PanelController();
+
+  WalletTransaction? transactionDetails;
 
   String formatBitcoinNumber(double bitcoin) {
     // Convert the number to a string with 2 decimal places
@@ -35,12 +42,36 @@ class _WalletRouter extends State<WalletRouter> {
     List<String> parts = bitcoinString.split('.');
 
     // Add spaces every three digits before the decimal point
-    String formattedIntegerPart = parts[0].splitMapJoin(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), onMatch: (m) => '${m[1]} ', onNonMatch: (n) => n);
+    String formattedIntegerPart = parts[0].splitMapJoin(
+        RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+        onMatch: (m) => '${m[1]} ',
+        onNonMatch: (n) => n);
 
     // Combine the formatted integer part and the decimal part with 1 space
     String formattedBitcoin = '$formattedIntegerPart.${parts[1]}';
 
     return formattedBitcoin;
+  }
+
+
+  @override
+  void initState() {
+    super.initState();
+    BackButtonInterceptor.add(myInterceptor);
+  }
+
+  @override
+  void dispose() {
+    BackButtonInterceptor.remove(myInterceptor);
+    super.dispose();
+  }
+
+  bool myInterceptor(bool stopDefaultButtonEvent, RouteInfo info) {
+    bool wasOpen = panelController.isPanelOpen;
+    if (wasOpen) {
+      panelController.close();
+    }
+    return wasOpen;
   }
 
   @override
@@ -87,9 +118,18 @@ class _WalletRouter extends State<WalletRouter> {
           list.add(Selector<NwcProvider, int?>(
             builder: (context, balance, child) {
               if (balance != null) {
-                double? fiatAmount = fiatCurrencyRate != null ? ((balance / 100000000) * fiatCurrencyRate!["value"] * 100).truncateToDouble() / 100 : null;
+                double? fiatAmount = fiatCurrencyRate != null
+                    ? ((balance / 100000000) * fiatCurrencyRate!["value"] * 100)
+                            .truncateToDouble() /
+                        100
+                    : null;
 
-                return BitcoinAmount(fiatAmount: fiatAmount, fiatUnit: fiatCurrencyRate != null ? fiatCurrencyRate!["unit"] : null, balance: balance);
+                return BitcoinAmount(
+                    fiatAmount: fiatAmount,
+                    fiatUnit: fiatCurrencyRate != null
+                        ? fiatCurrencyRate!["unit"]
+                        : null,
+                    balance: balance);
               }
               return Container();
             },
@@ -111,19 +151,25 @@ class _WalletRouter extends State<WalletRouter> {
                     _nwcProvider.canMakeInvoice
                         ? Expanded(
                             child: Button(
-                                before: Container(padding: const EdgeInsets.only(right: 10), child: const Icon(Icons.call_received, color: Colors.white)),
+                                before: Container(
+                                    padding: const EdgeInsets.only(right: 10),
+                                    child: const Icon(Icons.call_received,
+                                        color: Colors.white)),
                                 fontSize: 20,
                                 text: "Receive",
                                 height: 70,
                                 // before: const Icon(Icons.call_received_rounded),
                                 onTap: () async {
-                                  RouterUtil.router(context, RouterPath.WALLET_RECEIVE);
+                                  RouterUtil.router(
+                                      context, RouterPath.WALLET_RECEIVE);
                                   //
                                   // confettiController.play();
                                   // //_nwcProvider.onPayInvoiceResponse(event, onZapped)
                                 }))
                         : Container(),
-                    _nwcProvider.canMakeInvoice && _nwcProvider.canPayInvoice ? const SizedBox(width: 24) : Container(),
+                    _nwcProvider.canMakeInvoice && _nwcProvider.canPayInvoice
+                        ? const SizedBox(width: 24)
+                        : Container(),
                     _nwcProvider.canPayInvoice
                         ? Expanded(
                             child: Button(
@@ -138,7 +184,8 @@ class _WalletRouter extends State<WalletRouter> {
                                 height: 70,
                                 // before: const Icon(Icons.call_made_rounded),
                                 onTap: () async {
-                                  RouterUtil.router(context, RouterPath.WALLET_SEND);
+                                  RouterUtil.router(
+                                      context, RouterPath.WALLET_SEND);
                                 }))
                         : Container()
                   ],
@@ -148,7 +195,8 @@ class _WalletRouter extends State<WalletRouter> {
           if (nwcProvider.canListTransaction) {
             list.add(const SizedBox(height: 16));
             list.add(Expanded(
-                child: Selector<NwcProvider, List<WalletTransaction>>(builder: (context, transactions, child) {
+                child: Selector<NwcProvider, List<WalletTransaction>>(
+                    builder: (context, transactions, child) {
               return transactions != null && transactions.isNotEmpty
                   ? ListView.builder(
                       itemBuilder: (context, index) {
@@ -180,7 +228,15 @@ class _WalletRouter extends State<WalletRouter> {
                         //     // ),
                         //   );
                         // }
-                        return TransactionItemComponent(transaction: transactions[index]);
+                        return GestureDetector(
+                            onTap: () async {
+                              setState(() {
+                                transactionDetails = transactions[index];
+                              });
+                              await panelController.open();
+                            },
+                            child: TransactionItemComponent(
+                                transaction: transactions[index]));
                       },
                       itemCount: transactions.length,
                     )
@@ -442,7 +498,21 @@ class _WalletRouter extends State<WalletRouter> {
       actions: [barOptions()],
     );
 
-    return Scaffold(appBar: appBarNew, backgroundColor: themeData.cardColor, body: main);
+    return Scaffold(
+        appBar: appBarNew,
+        backgroundColor: themeData.cardColor,
+        body: Stack(children: [main, SlidingUpPanel(
+            controller: panelController,
+            backdropEnabled: true,
+            color: themeData.appBarTheme.backgroundColor!,
+            minHeight: 0,
+            maxHeight: mediaDataCache.size.height - 300,
+            borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(20), topRight: Radius.circular(20)),
+            panel: PaymentDetailsComponent(
+                    paid: transactionDetails,
+                  ),
+            )]));
 
     return Scaffold(
       body: Stack(
@@ -456,7 +526,8 @@ class _WalletRouter extends State<WalletRouter> {
               child: Center(
                 child:
                     //main
-                    Container(width: mediaDataCache.size.width * 0.8, child: main),
+                    Container(
+                        width: mediaDataCache.size.width * 0.8, child: main),
               ),
             ),
           ),
@@ -477,7 +548,8 @@ class _WalletRouter extends State<WalletRouter> {
         ? Container(
             margin: const EdgeInsets.all(5),
             child: PopupMenuButton<String>(
-                icon: Image.asset("assets/imgs/settings.png", width: 24, height: 24),
+                icon: Image.asset("assets/imgs/settings.png",
+                    width: 24, height: 24),
                 tooltip: "settings",
                 itemBuilder: (context) {
                   List<PopupMenuEntry<String>> list = [

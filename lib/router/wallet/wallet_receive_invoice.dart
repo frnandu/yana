@@ -6,6 +6,7 @@ import 'package:confetti/confetti.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_timer_countdown/flutter_timer_countdown.dart';
+import 'package:lottie/lottie.dart';
 import 'package:ndk/domain_layer/entities/metadata.dart';
 import 'package:pretty_qr_code/pretty_qr_code.dart';
 import 'package:provider/provider.dart';
@@ -36,9 +37,8 @@ class _WalletReceiveRouter extends State<WalletReceiveInvoiceRouter> {
   late ConfettiController confettiController;
   String? payingInvoice;
   NwcNotification? paid;
-  double otherCurrencyAmount = 0;
-
-  static const int BTC_IN_SATS = 100000000;
+  int sats = 0;
+  double fiat = 0;
 
   int? expiration;
   Metadata? metadata;
@@ -50,21 +50,29 @@ class _WalletReceiveRouter extends State<WalletReceiveInvoiceRouter> {
 
     amountInputcontroller.addListener(() {
       setState(() {
-        if (fiatCurrencyRate != null && StringUtil.isNotBlank(amountInputcontroller.text.trim())) {
+        if (fiatCurrencyRate != null &&
+            StringUtil.isNotBlank(amountInputcontroller.text.trim())) {
           updateOtherCurrency();
         }
       });
     });
-    confettiController = ConfettiController(duration: const Duration(seconds: 2));
+    confettiController =
+        ConfettiController(duration: const Duration(seconds: 2));
   }
 
   void updateOtherCurrency() {
     if (satsInput) {
-      double? btc = StringUtil.isNotBlank(amountInputcontroller.text)? double.parse(amountInputcontroller.text) / BTC_IN_SATS : 0;
+      double? btc = StringUtil.isNotBlank(amountInputcontroller.text)
+          ? double.parse(amountInputcontroller.text) / NwcProvider.BTC_IN_SATS
+          : 0;
       var fiatFactor = fiatCurrencyRate!["value"];
-      otherCurrencyAmount = (btc * fiatFactor * 100).truncateToDouble() / 100;
+      fiat = (btc * fiatFactor * 100).truncateToDouble() / 100;
     } else {
-      otherCurrencyAmount = StringUtil.isNotBlank(amountInputcontroller.text)? double.parse(amountInputcontroller.text) / fiatCurrencyRate!["value"] * BTC_IN_SATS : 0;
+      fiat = StringUtil.isNotBlank(amountInputcontroller.text)
+          ? double.parse(amountInputcontroller.text) /
+              fiatCurrencyRate!["value"] *
+              NwcProvider.BTC_IN_SATS
+          : 0;
     }
   }
 
@@ -119,7 +127,8 @@ class _WalletReceiveRouter extends State<WalletReceiveInvoiceRouter> {
                     decoration: PrettyQrDecoration(
                       shape: const PrettyQrSmoothSymbol(roundFactor: 1),
                       image: PrettyQrDecorationImage(
-                        image: metadata != null && StringUtil.isNotBlank(metadata!.picture)
+                        image: metadata != null &&
+                                StringUtil.isNotBlank(metadata!.picture)
                             ? CachedNetworkImageProvider(metadata!.picture!)
                             : const AssetImage('assets/imgs/logo/logo-new.png'),
                       ),
@@ -130,9 +139,10 @@ class _WalletReceiveRouter extends State<WalletReceiveInvoiceRouter> {
         if (PlatformUtil.isPC() || PlatformUtil.isWeb() || true) {
           link = 'lightning:${payingInvoice!}';
         }
-        int sats = satsInput? int.parse(amountInputcontroller.text): otherCurrencyAmount.round();
-        double fiatAmount = satsInput? otherCurrencyAmount :  double.parse(amountInputcontroller.text);
-        list.add(BitcoinAmount(fiatAmount: fiatAmount , fiatUnit: fiatCurrencyRate?["unit"], balance: sats));
+        list.add(BitcoinAmount(
+            fiatAmount: fiat,
+            fiatUnit: fiatCurrencyRate?["unit"],
+            balance: sats));
         if (StringUtil.isNotBlank(descriptionInputcontroller.text)) {
           list.add(Container(
               margin: const EdgeInsets.only(bottom: Base.BASE_PADDING * 2),
@@ -140,10 +150,15 @@ class _WalletReceiveRouter extends State<WalletReceiveInvoiceRouter> {
                   mainAxisSize: MainAxisSize.min,
                   mainAxisAlignment: MainAxisAlignment.start,
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [Text(descriptionInputcontroller.text, style: const TextStyle(fontSize: 20, fontFamily: 'Geist.Mono'))])));
+                  children: [
+                    Text(descriptionInputcontroller.text,
+                        style: const TextStyle(
+                            fontSize: 20, fontFamily: 'Geist.Mono'))
+                  ])));
         }
         list.add(const SizedBox(height: 10));
-        const TextStyle timeTextStyle = TextStyle(color: Color(0xFF7A7D81), fontSize: 18, fontFamily: 'Geist.Mono');
+        const TextStyle timeTextStyle = TextStyle(
+            color: Color(0xFF7A7D81), fontSize: 18, fontFamily: 'Geist.Mono');
         list.add(Container(
             margin: const EdgeInsets.only(bottom: Base.BASE_PADDING),
             child: Row(
@@ -155,12 +170,16 @@ class _WalletReceiveRouter extends State<WalletReceiveInvoiceRouter> {
                 SizedBox(
                     width: 20,
                     height: 20,
-                    child: CircularProgressIndicator(
-                      color: themeData.primaryColor,
-                      strokeWidth: 2.0,
-                    )),
+                    child: Lottie.asset("assets/animations/spinner.json")
+                  // CircularProgressIndicator(
+                  //     color: themeData.primaryColor,
+                  //     strokeWidth: 2.0,
+                  //   )
+        ),
                 const SizedBox(width: 10),
-                const Expanded(child: Text("Waiting for settlement", style: timeTextStyle)),
+                const Expanded(
+                    child:
+                        Text("Waiting for settlement", style: timeTextStyle)),
                 const SizedBox(width: 10),
                 TimerCountdown(
                   enableDescriptions: false,
@@ -194,7 +213,8 @@ class _WalletReceiveRouter extends State<WalletReceiveInvoiceRouter> {
             children: [
               Expanded(
                   child: Button(
-                      before: Icon(Icons.ios_share, color: themeData.textTheme.labelSmall!.color),
+                      before: Icon(Icons.ios_share,
+                          color: themeData.textTheme.labelSmall!.color),
                       fill: false,
                       border: true,
                       text: "Share",
@@ -232,13 +252,19 @@ class _WalletReceiveRouter extends State<WalletReceiveInvoiceRouter> {
               style: const TextStyle(fontSize: 80, fontFamily: 'Geist.Mono'),
               // textDirection: TextDirection.ltr,
               controller: amountInputcontroller,
-              keyboardType: TextInputType.numberWithOptions(decimal: !satsInput),
-              inputFormatters: <TextInputFormatter>[FilteringTextInputFormatter.digitsOnly],
+              keyboardType:
+                  TextInputType.numberWithOptions(decimal: !satsInput),
+              inputFormatters: <TextInputFormatter>[
+                FilteringTextInputFormatter.digitsOnly
+              ],
               decoration: InputDecoration(
                 border: InputBorder.none,
                 hintText: "  0",
                 hintTextDirection: TextDirection.ltr,
-                hintStyle: TextStyle(fontSize: 80, color: themeData.disabledColor, fontFamily: 'Geist.Mono'),
+                hintStyle: TextStyle(
+                    fontSize: 80,
+                    color: themeData.disabledColor,
+                    fontFamily: 'Geist.Mono'),
                 contentPadding: const EdgeInsets.only(right: 20),
               ),
             )),
@@ -251,28 +277,46 @@ class _WalletReceiveRouter extends State<WalletReceiveInvoiceRouter> {
             onTap: () {
               setState(() {
                 satsInput = !satsInput;
-                double holder = otherCurrencyAmount??0;
-                otherCurrencyAmount = StringUtil.isNotBlank(amountInputcontroller.text.trim())?double.parse(amountInputcontroller.text):0;
-                amountInputcontroller.text = "$holder";
+                // TODO switch
+                // double holder = otherCurrencyAmount ?? 0;
+                // otherCurrencyAmount =
+                //     StringUtil.isNotBlank(amountInputcontroller.text.trim())
+                //         ? double.parse(amountInputcontroller.text)
+                //         : 0;
+                // amountInputcontroller.text = "$holder";
                 // updateOtherCurrency();
               });
             },
-            child: Row(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.center, children: [
-              Text(textAlign: TextAlign.center, satsInput?"sats":fiatCurrencyRate?["unit"], style: const TextStyle(color: Color(0xFF7A7D81), fontSize: 32, fontFamily: 'Geist.Mono')),
-              Image.asset('assets/imgs/arrows.png'),
-            ])));
+            child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text(
+                      textAlign: TextAlign.center,
+                      satsInput ? "sats" : fiatCurrencyRate?["unit"],
+                      style: const TextStyle(
+                          color: Color(0xFF7A7D81),
+                          fontSize: 32,
+                          fontFamily: 'Geist.Mono')),
+                  Image.asset('assets/imgs/arrows.png'),
+                ])));
         list.add(const SizedBox(
           height: 10,
         ));
-        list.add(Row(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.center, children: [
-          Expanded(
-              child: Text(
-                  textAlign: TextAlign.center,
-                  "${otherCurrencyAmount == null || otherCurrencyAmount==0
-                      ? satsInput? "0.00" : "0"
-                      : otherCurrencyAmount!.toStringAsFixed(otherCurrencyAmount! < 10 ? 2 : 0)} ${satsInput?"${fiatCurrencyRate?['unit']}":'sats'}",
-                  style: const TextStyle(color: Color(0xFF7A7D81), fontSize: 30, fontFamily: 'Geist.Mono')))
-        ]));
+        list.add(Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Expanded(
+                  child: Text(
+                      textAlign: TextAlign.center,
+                      "${fiat == 0 ? satsInput ? "0.00" : "0" : fiat.toStringAsFixed(fiat < 10 ? 2 : 0)} "
+                      "${satsInput ? "${fiatCurrencyRate?['unit']}" : 'sats'}",
+                      style: const TextStyle(
+                          color: Color(0xFF7A7D81),
+                          fontSize: 30,
+                          fontFamily: 'Geist.Mono')))
+            ]));
         list.add(const SizedBox(
           height: 20,
         ));
@@ -282,7 +326,9 @@ class _WalletReceiveRouter extends State<WalletReceiveInvoiceRouter> {
             Expanded(
                 child: TextField(
               controller: descriptionInputcontroller,
-              decoration: InputDecoration(hintText: "Add description (optional)", hintStyle: TextStyle(color: themeData.disabledColor)),
+              decoration: InputDecoration(
+                  hintText: "Add description (optional)",
+                  hintStyle: TextStyle(color: themeData.disabledColor)),
             )),
           ],
         ));
@@ -297,10 +343,14 @@ class _WalletReceiveRouter extends State<WalletReceiveInvoiceRouter> {
                   border: true,
                   onTap: () async {
                     expiration = 3600;
-                    int sats = satsInput? int.parse(amountInputcontroller.text) : otherCurrencyAmount.round();
-                    await _nwcProvider.makeInvoice(sats * 1000, descriptionInputcontroller.text, "", expiration!,
-                        (invoice) async {
-                      // await QrcodeDialog.show(context, invoice);
+                    int sats = satsInput
+                        ? int.parse(amountInputcontroller.text)
+                        : fiat.round();
+                    await _nwcProvider.makeInvoice(
+                        sats * 1000,
+                        descriptionInputcontroller.text,
+                        "",
+                        expiration!, (invoice) async {
                       payingInvoice = invoice;
                     }, (notification) async {
                       setState(() {
@@ -312,7 +362,9 @@ class _WalletReceiveRouter extends State<WalletReceiveInvoiceRouter> {
         ]));
       }
     } else {
-      double? fiatAmount = fiatCurrencyRate != null ? ((paid!.amount / 100000000000) * fiatCurrencyRate!["value"]) : null;
+      double? fiatAmount = fiatCurrencyRate != null
+          ? ((paid!.amount / 100000000000) * fiatCurrencyRate!["value"])
+          : null;
       int feesPaid = (paid!.feesPaid / 1000).round();
       int amount = (paid!.amount / 1000).round();
 
@@ -343,12 +395,16 @@ class _WalletReceiveRouter extends State<WalletReceiveInvoiceRouter> {
                 ),
               ),
               Text(
-                fiatAmount! < 0.01 ? "< ${fiatCurrencyRate?["unit"]}0.01" : "~${fiatCurrencyRate?["unit"]}${fiatAmount.toStringAsFixed(2)}",
+                fiatAmount! < 0.01
+                    ? "< ${fiatCurrencyRate?["unit"]}0.01"
+                    : "~${fiatCurrencyRate?["unit"]}${fiatAmount.toStringAsFixed(2)}",
                 style: const TextStyle(
                   fontSize: 22.0,
                 ),
               ),
-              StringUtil.isNotBlank(paid!.description) ? const SizedBox(height: 10.0) : Container(),
+              StringUtil.isNotBlank(paid!.description)
+                  ? const SizedBox(height: 10.0)
+                  : Container(),
               StringUtil.isNotBlank(paid!.description)
                   ? Text(
                       '${paid!.description}',
@@ -428,5 +484,4 @@ class _WalletReceiveRouter extends State<WalletReceiveInvoiceRouter> {
       launchUrl(url);
     }
   }
-  
 }

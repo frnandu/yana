@@ -210,9 +210,9 @@ class _EditorRouter extends CustState<EditorRouter> with EditorMixin {
           margin: EdgeInsets.only(left: 10, bottom: Base.BASE_PADDING_HALF),
           child: Row(
             children: [
-              Icon(Icons.timer_outlined),
+              const Icon(Icons.timer_outlined),
               Container(
-                margin: EdgeInsets.only(left: 4),
+                margin: const EdgeInsets.only(left: 4),
                 child: Text(
                   dateFormate.format(createdAt!),
                 ),

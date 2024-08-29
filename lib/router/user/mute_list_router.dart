@@ -224,7 +224,7 @@ class _MuteListRouter extends State<MuteListRouter> with SingleTickerProviderSta
           filterMap = Filter(kinds: [Metadata.KIND], limit: 10).toMap();
           filterMap!["search"] = search;
           List<String> relaysWithNip50 = searchRelays.isNotEmpty ? searchRelays : ["wss://relay.nostr.band", "wss://relay.noshere.com"];
-          NdkResponse response = ndk.requests.query(relays: relaysWithNip50, filters: [Filter.fromMap(filterMap!)]);
+          NdkResponse response = ndk.requests.query(explicitRelays: relaysWithNip50, filters: [Filter.fromMap(filterMap!)]);
           response.stream.listen((event) {
             onQueryEvent(search, event);
           });

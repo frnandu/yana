@@ -81,7 +81,7 @@ class SingleEventProvider extends ChangeNotifier with LaterFunction {
         }
       });
     }
-    NdkResponse response = ndk.requests.query(relays: urls.toList(), filters: [filter]);
+    NdkResponse response = ndk.requests.query(explicitRelays: urls.toList(), filters: [filter]);
     response.stream.listen((event) {
       tempIds.remove(event.id);
       _onEvent(event);

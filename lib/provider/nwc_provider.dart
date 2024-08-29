@@ -17,6 +17,8 @@ import '../utils/string_util.dart';
 import 'data_util.dart';
 
 class NwcProvider extends ChangeNotifier {
+  static const int BTC_IN_SATS = 100000000;
+
   static NwcProvider? _nwcProvider;
 
   String? uri;
@@ -28,6 +30,7 @@ class NwcProvider extends ChangeNotifier {
   String? payInvoiceEventId;
   String? receivingInvoice;
   Function(NwcNotification)? settledInvoiceCallback;
+  Function(NwcNotification)? paymentReceivedCallback;
 
   List<String> permissions = [];
   List<String> notifications = []; // payment_received payment_sent
@@ -103,7 +106,7 @@ class NwcProvider extends ChangeNotifier {
     await ndk.relays.reconnectRelay(relay);
     ndk
         .requests.query(
-            relays: [relay],
+            explicitRelays: [relay],
             filters: [filter],
             cacheRead: false,
             cacheWrite: false)
@@ -273,7 +276,7 @@ class NwcProvider extends ChangeNotifier {
           Filter(kinds: [EventKind.ZAP_RECEIPT], eTags: [payInvoiceEventId]);
       Nip01Event? zapReceipt;
       NdkResponse subscription = ndk.requests.subscription(
-          relays: myInboxRelaySet!.urls.toList()..add(relay!),
+          explicitRelays: [relay!],
           filters: [filter],
           cacheRead: false,
           cacheWrite: false);
@@ -305,6 +308,8 @@ class NwcProvider extends ChangeNotifier {
     onZapped = null;
   }
 
+
+
   Future<void> makeInvoice(
       int amountInMsats,
       String? description,
@@ -334,7 +339,7 @@ class NwcProvider extends ChangeNotifier {
           pTags: [nwcSigner.getPublicKey()],
           eTags: [event.id]);
       NdkResponse subscription = ndk.requests.subscription(
-          relays: [relay!],
+          explicitRelays: [relay!],
           filters: [filter],
           cacheRead: false,
           cacheWrite: false);
@@ -388,7 +393,7 @@ class NwcProvider extends ChangeNotifier {
       await ndk.relays.reconnectRelay(relay!);
 
       NdkResponse subscription = ndk.requests.subscription(
-          relays: [relay!],
+          explicitRelays: [relay!],
           filters: [filter],
           cacheRead: false,
           cacheWrite: false);
@@ -514,9 +519,14 @@ class NwcProvider extends ChangeNotifier {
         receivingInvoice = null;
         settledInvoiceCallback = null;
       } else {
-        EasyLoading.showSuccess(
-            "Payment received ${notification.amount / 1000} sats (fees:${notification.feesPaid / 1000})",
-            duration: const Duration(seconds: 2));
+        if (paymentReceivedCallback!=null) {
+          paymentReceivedCallback!.call(notification);
+        } else {
+          EasyLoading.showSuccess(
+              "Payment received ${notification.amount /
+                  1000} sats (fees:${notification.feesPaid / 1000})",
+              duration: const Duration(seconds: 2));
+        }
       }
     } else {
       EasyLoading.showSuccess(

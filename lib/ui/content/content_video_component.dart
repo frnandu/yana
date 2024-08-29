@@ -19,6 +19,7 @@ class ContentVideoComponent extends StatefulWidget {
 
 class _ContentVideoComponent extends State<ContentVideoComponent> {
   late VideoPlayerController _controller;
+  bool disposed=false;
 
   @override
   void initState() {
@@ -26,14 +27,23 @@ class _ContentVideoComponent extends State<ContentVideoComponent> {
     if (widget.url.indexOf("http") == 0) {
       _controller = VideoPlayerController.network(widget.url)
         ..initialize().then((_) {
-          setState(() {});
+          if (!disposed) {
+            setState(() {});
+          }
         });
     } else {
       _controller = VideoPlayerController.file(File(widget.url))
         ..initialize().then((_) {
-          setState(() {});
+          if (!disposed) {
+            setState(() {});
+          }
         });
     }
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
   }
 
   @override

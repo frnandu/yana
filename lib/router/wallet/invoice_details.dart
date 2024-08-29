@@ -9,21 +9,17 @@ import 'package:flutter/services.dart';
 import 'package:ndk/domain_layer/entities/metadata.dart';
 import 'package:pretty_qr_code/pretty_qr_code.dart';
 import 'package:provider/provider.dart';
-import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:yana/main.dart';
-import 'package:yana/models/wallet_transaction.dart';
 import 'package:yana/nostr/nip47/nwc_notification.dart';
 import 'package:yana/provider/nwc_provider.dart';
-import 'package:yana/router/wallet/payment_component.dart';
+import 'package:yana/utils/router_path.dart';
 import 'package:yana/utils/string_util.dart';
 
 import '../../nostr/nip19/nip19.dart';
 import '../../ui/button.dart';
 import '../../ui/user_pic_component.dart';
-import '../../utils/router_path.dart';
 import '../../utils/router_util.dart';
-
 
 class WalletReceiveRouter extends StatefulWidget {
   const WalletReceiveRouter({super.key});
@@ -41,14 +37,10 @@ class _WalletReceiveRouter extends State<WalletReceiveRouter> {
   static Bech32Codec bech32Codec = const Bech32Codec();
 
   Metadata? metadata;
-  bool showInvoiceDetails = false;
-
-  PanelController panelController = PanelController();
 
   @override
   void initState() {
     super.initState();
-
     metadata = metadataProvider.getMetadata(loggedUserSigner!.getPublicKey());
     confettiController =
         ConfettiController(duration: const Duration(seconds: 2));
@@ -216,9 +208,9 @@ class _WalletReceiveRouter extends State<WalletReceiveRouter> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const Icon(
-                size: 100,
-                Icons.check_circle_outline,
-                color: const Color(0xff47A66D),
+                Icons.check_circle,
+                color: Color(0xff47A66D),
+                size: 100.0,
               ),
               const SizedBox(height: 20.0),
               const Text(
@@ -244,6 +236,22 @@ class _WalletReceiveRouter extends State<WalletReceiveRouter> {
                   ],
                 ),
               ),
+              // Row(
+              //   children: [
+              //     Text(
+              //       '+$amount',
+              //       style: const TextStyle(
+              //           fontSize: 28.0, color: Color(0xff47A66D)),
+              //     ),
+              //     const SizedBox(
+              //       width: 5,
+              //     ),
+              //     Text(
+              //       'sats',
+              //       style: TextStyle(fontSize: 24.0, color: Colors.grey[700]),
+              //     ),
+              //   ],
+              // ),
               const SizedBox(height: 10.0),
               Text(
                 fiatAmount! < 0.01
@@ -269,9 +277,7 @@ class _WalletReceiveRouter extends State<WalletReceiveRouter> {
           ),
         ),
       );
-      list.add(const SizedBox(
-        height: 60,
-      ));
+      list.add(const SizedBox(height: 60,));
       list.add(Button(
         text: "Close",
         fill: false,
@@ -281,72 +287,54 @@ class _WalletReceiveRouter extends State<WalletReceiveRouter> {
           RouterUtil.back(context);
         },
       ));
-      list.add(const SizedBox(
-        height: 20,
-      ));
+      list.add(const SizedBox(height: 20,));
       list.add(Button(
         text: "View Details",
         fill: false,
         fontColor: themeData.disabledColor,
         border: false,
         width: 300,
-        onTap: () async {
-          setState(() {
-            showInvoiceDetails = true;
-          });
-          await panelController.open();
+        onTap: () {
         },
       ));
     }
-
     return Scaffold(
       backgroundColor: themeData.cardColor,
       appBar: appBarNew,
-      body: Stack(children: [
-        SizedBox(
-          width: mediaDataCache.size.width,
-          height: mediaDataCache.size.height - mediaDataCache.padding.top,
-          // margin: EdgeInsets.only(top: mediaDataCache.padding.top),
-          child: Container(
-            color: cardColor,
-            child: Center(
-              child: SizedBox(
-                  width: mediaDataCache.size.width * 0.85,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: list,
-                  )),
+      body: Stack(
+        children: [
+          SizedBox(
+            width: mediaDataCache.size.width,
+            height: mediaDataCache.size.height - mediaDataCache.padding.top,
+            // margin: EdgeInsets.only(top: mediaDataCache.padding.top),
+            child: Container(
+              color: cardColor,
+              child: Center(
+                child: SizedBox(
+                    width: mediaDataCache.size.width * 0.85,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: list,
+                    )),
+              ),
             ),
           ),
-        ),
-        Align(
-          alignment: Alignment.topCenter,
-          child: ConfettiWidget(
-            confettiController: confettiController,
-            emissionFrequency: 0.1,
-            numberOfParticles: 5,
-            maxBlastForce: 20,
-            minBlastForce: 1,
-            gravity: 0.8,
-            particleDrag: 0.05,
-            blastDirectionality: BlastDirectionality.explosive,
-            colors: const [Colors.yellow, Colors.orange, Colors.purple],
+          Align(
+            alignment: Alignment.topCenter,
+            child: ConfettiWidget(
+              confettiController: confettiController,
+              emissionFrequency: 0.1,
+              numberOfParticles: 5,
+              maxBlastForce: 20,
+              minBlastForce: 1,
+              gravity: 0.8,
+              particleDrag: 0.05,
+              blastDirectionality: BlastDirectionality.explosive,
+              colors: const [Colors.yellow, Colors.orange, Colors.purple],
+            ),
           ),
-        ),
-        paid != null
-            ? SlidingUpPanel(
-                // isDraggable: false,
-                controller: panelController,
-                backdropEnabled: true,
-                color: themeData.appBarTheme.backgroundColor!,
-                minHeight: 0,
-                maxHeight: mediaDataCache.size.height-300,
-                borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(20),
-                    topRight: Radius.circular(20)),
-                panel: PaymentDetailsComponent(paid: WalletTransaction.fromNotification(paid!),))
-            : Container()
-      ]),
+        ],
+      ),
     );
   }
 

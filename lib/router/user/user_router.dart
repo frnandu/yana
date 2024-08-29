@@ -257,6 +257,7 @@ class _UserRouter extends CustState<UserRouter> with PenddingEventsLaterFunction
   void onEvent(Nip01Event event, {bool saveToCache = false}) {
     if (event.pubKey != pubkey) {
       print("WTF $event");
+      return;
     }
     later(event, (list) {
       bool added = box.addList(list);

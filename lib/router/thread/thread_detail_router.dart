@@ -110,7 +110,7 @@ class _ThreadDetailRouter extends CustState<ThreadDetailRouter> with PenddingEve
     if (eventId != null) {
       var filter = Filter(ids: [eventId!]);
       if (myInboxRelaySet != null) {
-        NdkResponse response = ndk.requests.query(relays: myInboxRelaySet!.urls, filters: [filter]);
+        NdkResponse response = ndk.requests.query(explicitRelays: myInboxRelaySet!.urls, filters: [filter]);
         response.stream.listen((event) {
           setState(() {
             loadedEvent = event;

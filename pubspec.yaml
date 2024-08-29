@@ -119,6 +119,9 @@ dependencies:
   #uni_links: ^0.5.1
   confetti: ^0.7.0
   flutter_timer_countdown: ^1.0.7
+  sliding_up_panel: ^2.0.0+1
+  back_button_interceptor: ^7.0.3
+  lottie: ^3.1.2
 
   #ndk:  0.1.0-dev8
 #  ndk:
@@ -177,6 +180,7 @@ flutter:
     - assets/imgs/logo/logo-name.svg
     - assets/imgs/logo/logo-name.png
     - assets/imgs/logo/logo-with-name.png
+    - assets/animations/spinner.json
   # To add assets to your application, add an assets section, like this:
   # assets:
   #   - images/a_dot_burr.jpeg

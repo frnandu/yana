@@ -18,7 +18,6 @@ class Button extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var themeData = Theme.of(context);
-
     return GestureDetector(
       behavior: HitTestBehavior.translucent,
       onTap: onTap,
@@ -30,7 +29,7 @@ class Button extends StatelessWidget {
         decoration: border? ShapeDecoration(
           color: fill? themeData.primaryColor : null,
           shape: RoundedRectangleBorder(
-            side: const BorderSide(width: 1, color: Color(0xFFD44E7D)),
+            side: BorderSide(width: 1, color: themeData.primaryColor),
             borderRadius: BorderRadius.circular(8),
           )
         ): null,
@@ -49,7 +48,6 @@ class Button extends StatelessWidget {
                 fontSize: fontSize,
                 fontFamily: 'Geist',
                 fontWeight: FontWeight.w700,
-                height: 0.09,
               ),
             ),
             after ?? Container(),

@@ -294,7 +294,7 @@ class _SearchRouter extends CustState<SearchRouter>
     //ndk.relays.connect(urls: relaysWithNip50).then((value) {
     var search = filterMap!["search"];
     NdkResponse response = ndk
-        .requests.query(relays: relaysWithNip50, filters: [Filter.fromMap(filterMap!)]);
+        .requests.query(explicitRelays: relaysWithNip50, filters: [Filter.fromMap(filterMap!)]);
     response.stream.listen((event) {
       if (search == controller.text.trim()) {
         onQueryEvent(event);

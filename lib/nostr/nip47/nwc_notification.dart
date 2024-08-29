@@ -18,6 +18,8 @@ class NwcNotification {
   int settledAt;
   Map<String, dynamic>? metadata;
 
+  get isIncoming => type == INCOMING;
+
   NwcNotification({
     required this.type,
     required this.invoice,
