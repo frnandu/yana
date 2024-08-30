@@ -35,7 +35,7 @@ class UserStatisticsComponent extends StatefulWidget {
 }
 
 class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
-  static const Duration REFRESH_METADATA_DURATION = Duration(minutes: 10);
+  static const Duration REFRESH_METADATA_DURATION = Duration(minutes: 60);
 
   EventMemBox? zapEventBox;
   UserRelayList? userRelayList;
@@ -92,7 +92,7 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
     if (contactList == null ||
         contactList!.loadedTimestamp == null ||
         contactList!.loadedTimestamp! < sometimeAgo) {
-      ndk.follows.getContactList(pubkey!, forceRefresh: true).then(
+      ndk.follows.getContactList(pubkey, forceRefresh: true).then(
         (newContactList) {
           if (newContactList != null &&
               (contactList == null ||
