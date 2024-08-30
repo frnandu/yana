@@ -102,7 +102,7 @@ class _PaymentDetailsComponent extends State<PaymentDetailsComponent> {
                             : const Color(0xFFE26842)),
                   ),
                   TextSpan(
-                    text: ' sats',
+                    text: ' sat${amount > 1 ? 's' : ''}',
                     style: TextStyle(fontSize: 24.0, color: Colors.grey[700]),
                   ),
                 ],
@@ -162,7 +162,7 @@ class _PaymentDetailsComponent extends State<PaymentDetailsComponent> {
                                 fontSize: 16.0, color: Colors.grey[700]))),
                     Flexible(
                         child: Text(
-                      "${widget.paid!.fees_paid} sats",
+                      "${(widget.paid!.fees_paid!/1000).toStringAsFixed(0)} sats",
                     ))
                   ])
                 : Container(),

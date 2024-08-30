@@ -40,8 +40,9 @@ class _TransactionItemComponent extends State<TransactionItemComponent> {
               pattern: "dd.MM.yyyy")
           : "";
     } catch (e) {}
+    int sats = widget.transaction.amount ~/ 1000;
     double? fiatAmount = fiatCurrencyRate != null
-        ? ((widget.transaction.amount / 100000000000) *
+        ? ((sats / 100000000) *
                     fiatCurrencyRate!["value"] *
                     100)
                 .truncateToDouble() /
@@ -125,7 +126,7 @@ class _TransactionItemComponent extends State<TransactionItemComponent> {
               children: [
                 Row(children: [
                   Text(
-                    '${outgoing ? "-" : "+"}${formatter.format(widget.transaction.amount ~/ 1000).replaceAll(',', ' ')}',
+                    '${outgoing ? "-" : "+"}${formatter.format(sats).replaceAll(',', ' ')}',
                     textAlign: TextAlign.right,
                     style: TextStyle(
                       color: outgoing
@@ -138,9 +139,9 @@ class _TransactionItemComponent extends State<TransactionItemComponent> {
                     ),
                   ),
                   const SizedBox(width: 4),
-                  const Text(
-                    'sats',
-                    style: TextStyle(
+                  Text(
+                    "sat${sats > 1 ? 's' : ''}",
+                    style: const TextStyle(
                       color: Color(0xFF7A7D81),
                       fontSize: 16,
                       fontWeight: FontWeight.w400,

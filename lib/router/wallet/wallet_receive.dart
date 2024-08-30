@@ -24,7 +24,6 @@ import '../../ui/user_pic_component.dart';
 import '../../utils/router_path.dart';
 import '../../utils/router_util.dart';
 
-
 class WalletReceiveRouter extends StatefulWidget {
   const WalletReceiveRouter({super.key});
 
@@ -107,18 +106,18 @@ class _WalletReceiveRouter extends State<WalletReceiveRouter> {
         list.add(Container(
             padding: const EdgeInsets.all(20),
             decoration: const BoxDecoration(
-              color: Colors.black,
+              color: Colors.white,
             ),
             child: PrettyQrView.data(
                 data: metadata!.lud16!,
                 decoration: const PrettyQrDecoration(
-                  background: Colors.black,
+                  // background: Colors.white,
                   shape:
-                      PrettyQrSmoothSymbol(color: Colors.white, roundFactor: 1),
-                  image: PrettyQrDecorationImage(
-                    scale: 0.3,
-                    image: AssetImage('assets/imgs/logo/logo-new.png'),
-                  ),
+                      PrettyQrSmoothSymbol(color: Colors.black, roundFactor: 0),
+                  // image: PrettyQrDecorationImage(
+                  //   scale: 0.2,
+                  //   image: AssetImage('assets/imgs/logo/logo-new.png'),
+                  // ),
                 ))));
         list.add(const SizedBox(height: 10));
         list.add(UserPicComponent(
@@ -238,7 +237,7 @@ class _WalletReceiveRouter extends State<WalletReceiveRouter> {
                           fontSize: 28.0, color: Color(0xff47A66D)),
                     ),
                     TextSpan(
-                      text: ' sats',
+                      text: ' sat${amount > 1 ? 's' : ''}',
                       style: TextStyle(fontSize: 24.0, color: Colors.grey[700]),
                     ),
                   ],
@@ -340,11 +339,13 @@ class _WalletReceiveRouter extends State<WalletReceiveRouter> {
                 backdropEnabled: true,
                 color: themeData.appBarTheme.backgroundColor!,
                 minHeight: 0,
-                maxHeight: mediaDataCache.size.height-300,
+                maxHeight: mediaDataCache.size.height - 300,
                 borderRadius: const BorderRadius.only(
                     topLeft: Radius.circular(20),
                     topRight: Radius.circular(20)),
-                panel: PaymentDetailsComponent(paid: WalletTransaction.fromNotification(paid!),))
+                panel: PaymentDetailsComponent(
+                  paid: WalletTransaction.fromNotification(paid!),
+                ))
             : Container()
       ]),
     );

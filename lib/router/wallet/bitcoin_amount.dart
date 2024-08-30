@@ -52,7 +52,7 @@ class BitcoinAmount extends StatelessWidget {
                             color: themeData.primaryColor,
                             fontSize: 40,
                             fontFamily: 'Geist.Mono')),
-                    Text(" sats",
+                    Text(" sat${balance > 1 ? 's' : ''}",
                         style: TextStyle(
                             color: themeData.primaryColor,
                             fontSize: 24,

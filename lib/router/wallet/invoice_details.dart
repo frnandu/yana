@@ -230,7 +230,7 @@ class _WalletReceiveRouter extends State<WalletReceiveRouter> {
                           fontSize: 28.0, color: Color(0xff47A66D)),
                     ),
                     TextSpan(
-                      text: ' sats',
+                      text: ' sat${amount > 1 ? 's' : ''}',
                       style: TextStyle(fontSize: 24.0, color: Colors.grey[700]),
                     ),
                   ],

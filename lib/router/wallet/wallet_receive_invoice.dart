@@ -343,7 +343,7 @@ class _WalletReceiveRouter extends State<WalletReceiveInvoiceRouter> {
                   border: true,
                   onTap: () async {
                     expiration = 3600;
-                    int sats = satsInput
+                    sats = satsInput
                         ? int.parse(amountInputcontroller.text)
                         : fiat.round();
                     await _nwcProvider.makeInvoice(

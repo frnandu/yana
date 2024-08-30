@@ -77,7 +77,7 @@ class NwcProvider extends ChangeNotifier {
       permissions.isNotEmpty &&
       StringUtil.isNotBlank(secret);
 
-  Future<void> connect(String nwc) async {
+  Future<void> connect(String nwc, {Function? onConnect}) async {
     nwc = nwc.replaceAll("yana:", "nostr+walletconnect:");
     Uri uri = Uri.parse(nwc.replaceAll("nostr+walletconnect:", "https:"));
     String? walletPubKey = uri.host;
@@ -113,11 +113,11 @@ class NwcProvider extends ChangeNotifier {
             cacheWrite: false)
         .stream
         .listen((event) async {
-          await onInfoRequest.call(event);
+          await onInfoRequest(event, onConnect);
         });
   }
 
-  Future<void> onInfoRequest(Nip01Event event) async {
+  Future<void> onInfoRequest(Nip01Event event, Function? onConnect) async {
     if (event.kind == NwcKind.INFO_REQUEST &&
         StringUtil.isNotBlank(event.content)) {
       walletPubKey = event.pubKey;
@@ -139,6 +139,9 @@ class NwcProvider extends ChangeNotifier {
       }
       if (permissions.contains(NwcCommand.LIST_TRANSACTIONS)) {
         await requestListTransactions();
+      }
+      if (onConnect!=null) {
+        onConnect.call();
       }
       notifyListeners();
     }

@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:yana/main.dart';
 import 'package:yana/models/wallet_transaction.dart';
-import 'package:yana/nostr/nip47/nwc_notification.dart';
 import 'package:yana/provider/nwc_provider.dart';
 import 'package:yana/router/wallet/payment_component.dart';
 import 'package:yana/router/wallet/transaction_item_component.dart';
@@ -12,7 +11,6 @@ import 'package:yana/utils/base.dart';
 
 import '../../../ui/appbar4stack.dart';
 import '../../ui/button.dart';
-import '../../utils/number_format_util.dart';
 import '../../utils/router_path.dart';
 import '../../utils/router_util.dart';
 import 'bitcoin_amount.dart';

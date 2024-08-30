@@ -257,8 +257,8 @@ class _WalletSendRouter extends State<WalletSendRouter> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const Icon(
-                Icons.check_circle,
-                color: Colors.green,
+                Icons.check_circle_outline,
+                color: Color(0xFFE26842),
                 size: 100.0,
               ),
               const SizedBox(height: 20.0),
@@ -270,10 +270,19 @@ class _WalletSendRouter extends State<WalletSendRouter> {
                 ),
               ),
               const SizedBox(height: 10.0),
-              Text(
-                '-$amount sat${amount > 1 ? 's' : ''}',
-                style: const TextStyle(
-                  fontSize: 28.0,
+              RichText(
+                text: TextSpan(
+                  children: <TextSpan>[
+                    TextSpan(
+                      text: "-$amount",
+                      style: const TextStyle(
+                          fontSize: 28.0, color: Color(0xFFE26842)),
+                    ),
+                    TextSpan(
+                      text: ' sat${amount > 1 ? 's' : ''}',
+                      style: TextStyle(fontSize: 24.0, color: Colors.grey[700]),
+                    ),
+                  ],
                 ),
               ),
               feesPaid > 0 ? const SizedBox(height: 10.0) : Container(),
@@ -288,7 +297,7 @@ class _WalletSendRouter extends State<WalletSendRouter> {
                   : Container(),
               const SizedBox(height: 10.0),
               Text(
-                fiatAmount! < 0.01
+                fiatAmount==null || fiatAmount < 0.01
                     ? "< ${fiatCurrencyRate?["unit"]}0.01"
                     : "~${fiatCurrencyRate?["unit"]}${fiatAmount.toStringAsFixed(2)}",
                 // "~${fiatCurrencyRate?["unit"]}${fiatAmount?.toStringAsFixed(2)}",
