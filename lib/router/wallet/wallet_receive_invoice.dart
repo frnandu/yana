@@ -418,7 +418,9 @@ class _WalletReceiveRouter extends State<WalletReceiveInvoiceRouter> {
           ),
         ),
       );
-      list.add(Button(
+    list.add(const SizedBox(height: 20.0));
+
+    list.add(Button(
         text: "Close",
         onTap: () {
           RouterUtil.back(context);
