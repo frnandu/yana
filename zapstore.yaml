@@ -1,0 +1,10 @@
+albygo:
+  cli:
+    identifier: yana
+    name: Yana
+    summary: Yet Another Nostr Application
+    repository: https://github.com/frnandu/yana
+    builder: npub1xpuz4qerklyck9evtg40wgrthq5rce2mumwuuygnxcg6q02lz9ms275ams
+    artifacts:
+      nak-v%v-linux-amd64:
+        platform: linux-x86_64
