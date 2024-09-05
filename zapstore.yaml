@@ -6,4 +6,9 @@ yana:
     repository: https://github.com/frnandu/yana
     builder: npub1gp4xzpmluelsakjtayc4wtzj97fhj5kakqjvsannu00xkdlf4x8s0xdqyq
     artifacts:
-      yana-v%v.apk
+      app-armeabi-v7a-release.apk:
+        platform: armeabi-v7a
+      app-arm64-v8a-release.apk:
+        platform: arm64-v8a
+      app-x86_64-release.apk:
+        platform: x86_64
