@@ -66,13 +66,22 @@ class _WalletReceiveRouter extends State<WalletReceiveInvoiceRouter> {
           ? double.parse(amountInputcontroller.text) / NwcProvider.BTC_IN_SATS
           : 0;
       var fiatFactor = fiatCurrencyRate!["value"];
-      fiat = (btc * fiatFactor * 100).truncateToDouble() / 100;
+      fiat = btc * fiatFactor;
     } else {
-      fiat = StringUtil.isNotBlank(amountInputcontroller.text)
-          ? double.parse(amountInputcontroller.text) /
-              fiatCurrencyRate!["value"] *
-              NwcProvider.BTC_IN_SATS
-          : 0;
+      String a1 = fiat.toStringAsFixed(fiat < 10 ? 2 : 0);
+      String a2 = amountInputcontroller.text;
+      if ( a1 != a2 ) {
+        sats = StringUtil.isNotBlank(amountInputcontroller.text)
+            ? (double.parse(amountInputcontroller.text) /
+            fiatCurrencyRate!["value"] *
+            NwcProvider.BTC_IN_SATS).round()
+            : 0;
+      } else {
+        sats = (fiat /
+            fiatCurrencyRate!["value"] *
+            NwcProvider.BTC_IN_SATS).round();
+        print(fiat);
+      }
     }
   }
 
@@ -277,6 +286,11 @@ class _WalletReceiveRouter extends State<WalletReceiveInvoiceRouter> {
             onTap: () {
               setState(() {
                 satsInput = !satsInput;
+                if (satsInput) {
+                  amountInputcontroller.text = "$sats";
+                } else {
+                  amountInputcontroller.text = fiat.toStringAsFixed(fiat < 10 ? 2 : 0);
+                }
                 // TODO switch
                 // double holder = otherCurrencyAmount ?? 0;
                 // otherCurrencyAmount =
@@ -310,7 +324,7 @@ class _WalletReceiveRouter extends State<WalletReceiveInvoiceRouter> {
               Expanded(
                   child: Text(
                       textAlign: TextAlign.center,
-                      "${fiat == 0 ? satsInput ? "0.00" : "0" : fiat.toStringAsFixed(fiat < 10 ? 2 : 0)} "
+                      "${!satsInput? sats : (fiat == 0 ? "0.00" : "0") + fiat.toStringAsFixed(fiat < 10 ? 2 : 0)} "
                       "${satsInput ? "${fiatCurrencyRate?['unit']}" : 'sats'}",
                       style: const TextStyle(
                           color: Color(0xFF7A7D81),
