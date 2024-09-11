@@ -10,5 +10,5 @@ yana:
         platform: armeabi-v7a
       yana-v%v-android-arm64-v8a.apk:
         platform: arm64-v8a
-      yana-v%v-android-app-x86_64.apk:
+      yana-v%v-android-x86_64.apk:
         platform: x86_64
