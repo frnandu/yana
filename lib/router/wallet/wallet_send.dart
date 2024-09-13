@@ -350,6 +350,11 @@ class _WalletSendRouter extends State<WalletSendRouter> {
               var lnurlResponse =
                   lnurl != null ? await Zap.getLnurlResponse(lnurl!) : null;
               if (lnurlResponse == null) {
+                setState(() {
+                  makeInvoiceError =
+                  "could not generate invoice from $lnurl";
+                  makingInvoice = false;
+                });
                 return;
               }
               var callback = lnurlResponse.callback!;
