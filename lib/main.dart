@@ -20,7 +20,6 @@ import 'package:isar/isar.dart' as isar;
 import 'package:ndk/config/bootstrap_relays.dart';
 import 'package:ndk/data_layer/data_sources/amber_flutter.dart';
 import 'package:ndk/data_layer/repositories/signers/amber_event_signer.dart';
-import 'package:ndk/data_layer/repositories/verifiers/acinq_event_verifier.dart';
 import 'package:ndk/data_layer/repositories/verifiers/rust_event_verifier.dart';
 import 'package:ndk/domain_layer/entities/pubkey_mapping.dart';
 import 'package:ndk/domain_layer/entities/read_write_marker.dart';

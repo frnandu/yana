@@ -50,8 +50,7 @@ class _WalletReceiveRouter extends State<WalletReceiveInvoiceRouter> {
 
     amountInputcontroller.addListener(() {
       setState(() {
-        if (fiatCurrencyRate != null &&
-            StringUtil.isNotBlank(amountInputcontroller.text.trim())) {
+        if (fiatCurrencyRate != null) {
           updateOtherCurrency();
         }
       });
@@ -62,6 +61,9 @@ class _WalletReceiveRouter extends State<WalletReceiveInvoiceRouter> {
 
   void updateOtherCurrency() {
     if (satsInput) {
+      sats = StringUtil.isNotBlank(amountInputcontroller.text)
+          ? int.parse(amountInputcontroller.text)
+          : 0;
       double? btc = StringUtil.isNotBlank(amountInputcontroller.text)
           ? double.parse(amountInputcontroller.text) / NwcProvider.BTC_IN_SATS
           : 0;
@@ -70,16 +72,17 @@ class _WalletReceiveRouter extends State<WalletReceiveInvoiceRouter> {
     } else {
       String a1 = fiat.toStringAsFixed(fiat < 10 ? 2 : 0);
       String a2 = amountInputcontroller.text;
-      if ( a1 != a2 ) {
-        sats = StringUtil.isNotBlank(amountInputcontroller.text)
-            ? (double.parse(amountInputcontroller.text) /
-            fiatCurrencyRate!["value"] *
-            NwcProvider.BTC_IN_SATS).round()
+      if (a1 != a2) {
+        double a3 = StringUtil.isNotBlank(amountInputcontroller.text)
+            ? double.parse(amountInputcontroller.text)
+            : 0;
+        sats = a3 != 0.0
+            ? (a3 / fiatCurrencyRate!["value"] * NwcProvider.BTC_IN_SATS)
+                .round()
             : 0;
       } else {
-        sats = (fiat /
-            fiatCurrencyRate!["value"] *
-            NwcProvider.BTC_IN_SATS).round();
+        sats = (fiat / fiatCurrencyRate!["value"] * NwcProvider.BTC_IN_SATS)
+            .round();
         print(fiat);
       }
     }
@@ -180,11 +183,11 @@ class _WalletReceiveRouter extends State<WalletReceiveInvoiceRouter> {
                     width: 20,
                     height: 20,
                     child: Lottie.asset("assets/animations/spinner.json")
-                  // CircularProgressIndicator(
-                  //     color: themeData.primaryColor,
-                  //     strokeWidth: 2.0,
-                  //   )
-        ),
+                    // CircularProgressIndicator(
+                    //     color: themeData.primaryColor,
+                    //     strokeWidth: 2.0,
+                    //   )
+                    ),
                 const SizedBox(width: 10),
                 const Expanded(
                     child:
@@ -264,7 +267,9 @@ class _WalletReceiveRouter extends State<WalletReceiveInvoiceRouter> {
               keyboardType:
                   TextInputType.numberWithOptions(decimal: !satsInput),
               inputFormatters: <TextInputFormatter>[
-                FilteringTextInputFormatter.digitsOnly
+                satsInput
+                    ? FilteringTextInputFormatter.digitsOnly
+                    : FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))
               ],
               decoration: InputDecoration(
                 border: InputBorder.none,
@@ -289,16 +294,9 @@ class _WalletReceiveRouter extends State<WalletReceiveInvoiceRouter> {
                 if (satsInput) {
                   amountInputcontroller.text = "$sats";
                 } else {
-                  amountInputcontroller.text = fiat.toStringAsFixed(fiat < 10 ? 2 : 0);
+                  amountInputcontroller.text =
+                      fiat.toStringAsFixed(fiat < 10 ? 2 : 0);
                 }
-                // TODO switch
-                // double holder = otherCurrencyAmount ?? 0;
-                // otherCurrencyAmount =
-                //     StringUtil.isNotBlank(amountInputcontroller.text.trim())
-                //         ? double.parse(amountInputcontroller.text)
-                //         : 0;
-                // amountInputcontroller.text = "$holder";
-                // updateOtherCurrency();
               });
             },
             child: Row(
@@ -317,6 +315,10 @@ class _WalletReceiveRouter extends State<WalletReceiveInvoiceRouter> {
         list.add(const SizedBox(
           height: 10,
         ));
+        print("sats:$sats fiat: $fiat");
+        String fiatString =
+            (fiat == 0.0 ? "0.00" : fiat.toStringAsFixed(fiat < 10 ? 2 : 0));
+        print("fiatString: $fiatString");
         list.add(Row(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -324,7 +326,7 @@ class _WalletReceiveRouter extends State<WalletReceiveInvoiceRouter> {
               Expanded(
                   child: Text(
                       textAlign: TextAlign.center,
-                      "${!satsInput? sats : (fiat == 0 ? "0.00" : "0") + fiat.toStringAsFixed(fiat < 10 ? 2 : 0)} "
+                      "${!satsInput ? sats : fiatString} "
                       "${satsInput ? "${fiatCurrencyRate?['unit']}" : 'sats'}",
                       style: const TextStyle(
                           color: Color(0xFF7A7D81),
@@ -432,9 +434,9 @@ class _WalletReceiveRouter extends State<WalletReceiveInvoiceRouter> {
           ),
         ),
       );
-    list.add(const SizedBox(height: 20.0));
+      list.add(const SizedBox(height: 20.0));
 
-    list.add(Button(
+      list.add(Button(
         text: "Close",
         onTap: () {
           RouterUtil.back(context);

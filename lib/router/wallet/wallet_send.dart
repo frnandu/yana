@@ -48,9 +48,13 @@ class _WalletSendRouter extends State<WalletSendRouter> {
   void _onQRViewCreated(QRViewController controller) {
     qrController = controller;
     controller.scannedDataStream.listen((scanData) async {
-      if (invoice == null) {
-        if (scanData.code != null &&
-            scanData.code!.startsWith(NwcProvider.BOLT11_PREFIX)) {
+      // TODO handle lightning: + ln address
+      if (invoice == null && scanData.code!=null) {
+        String qr = scanData.code!;
+        if (qr.startsWith("lightning:")) {
+          qr = qr.replaceAll("lightning:", "");
+        }
+        if (qr.startsWith(NwcProvider.BOLT11_PREFIX)) {
           // nwcProvider.connect(scanData.code!);
           setState(() {
             invoice = scanData.code;
@@ -59,6 +63,13 @@ class _WalletSendRouter extends State<WalletSendRouter> {
                   context, RouterPath.WALLET_SEND_CONFIRM, invoice);
             }
 
+            scanning = false;
+            qrController!.pauseCamera();
+          });
+        } else if (qr.contains("@")) {
+          setState(() {
+            recipientAddress = qr;
+            recipientInputcontroller.text = qr;
             scanning = false;
             qrController!.pauseCamera();
           });
