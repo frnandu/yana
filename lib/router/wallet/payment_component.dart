@@ -112,7 +112,7 @@ class _PaymentDetailsComponent extends State<PaymentDetailsComponent> {
             Text(
               fiatAmount == null || fiatAmount < 0.01
                   ? "< ${fiatCurrencyRate?["unit"]}0.01"
-                  : "~${fiatCurrencyRate?["unit"]}${fiatAmount.toStringAsFixed(2)}",
+                  : "${fiatCurrencyRate?["unit"]}${fiatAmount.toStringAsFixed(2)}",
               style: TextStyle(fontSize: 22.0, color: Colors.grey[700]),
             ),
             const SizedBox(height: 20.0),
