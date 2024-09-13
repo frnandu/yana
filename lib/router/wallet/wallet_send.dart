@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:ndk/entities.dart';
@@ -95,7 +96,7 @@ class _WalletSendRouter extends State<WalletSendRouter> {
           recipientAddress = t;
         });
       } else if (t.isNotEmpty) {
-        List<Metadata> list = cacheManager.searchMetadatas(t, 5).toList();
+        List<Metadata> list = cacheManager.searchMetadatas(t, 100).toList();
         if (list.length != mentionResults.length) {
           setState(() {
             mentionResults = list;
@@ -163,14 +164,8 @@ class _WalletSendRouter extends State<WalletSendRouter> {
     if (!scanning) {
       list.addAll(inputWidgets());
     }
-    var scanArea = (MediaQuery
-        .of(context)
-        .size
-        .width < 400 ||
-        MediaQuery
-            .of(context)
-            .size
-            .height < 400)
+    var scanArea = (MediaQuery.of(context).size.width < 400 ||
+            MediaQuery.of(context).size.height < 400)
         ? 150.0
         : 350.0;
 
@@ -179,49 +174,28 @@ class _WalletSendRouter extends State<WalletSendRouter> {
         appBar: appBarNew,
         body: scanning
             ? Stack(children: [
-          QRView(
-            key: qrKey,
-            overlay: QrScannerOverlayShape(
-                cutOutBottomOffset: 50,
-                borderColor: themeData.primaryColor,
-                borderRadius: 10,
-                borderLength: 30,
-                borderWidth: 10,
-                cutOutSize: scanArea),
-            onQRViewCreated: _onQRViewCreated,
-          )
-        ])
+                QRView(
+                  key: qrKey,
+                  overlay: QrScannerOverlayShape(
+                      cutOutBottomOffset: 50,
+                      borderColor: themeData.primaryColor,
+                      borderRadius: 10,
+                      borderLength: 30,
+                      borderWidth: 10,
+                      cutOutSize: scanArea),
+                  onQRViewCreated: _onQRViewCreated,
+                )
+              ])
             : Container(
-            margin: const EdgeInsets.all(Base.BASE_PADDING * 2),
-            decoration: BoxDecoration(
-              // color: themeData.cardColor,
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Column(
-              // mainAxisSize: MainAxisSize.min,
-              children: list,
-            ))
-      // Stack(
-      //         children: [
-      //           SizedBox(
-      //             width: mediaDataCache.size.width,
-      //             height:
-      //                 mediaDataCache.size.height - mediaDataCache.padding.top,
-      //             child: Container(
-      //               color: cardColor,
-      //               child: Center(
-      //                 child: SizedBox(
-      //                     width: mediaDataCache.size.width * 0.8,
-      //                     child: Column(
-      //                       mainAxisSize: MainAxisSize.min,
-      //                       children: list,
-      //                     )),
-      //               ),
-      //             ),
-      //           ),
-      //         ],
-      //       ),
-    );
+                margin: const EdgeInsets.all(Base.BASE_PADDING),
+                decoration: BoxDecoration(
+                  // color: themeData.cardColor,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Column(
+                  // mainAxisSize: MainAxisSize.min,
+                  children: list,
+                )));
   }
 
   Iterable<Widget> inputWidgets() {
@@ -230,10 +204,10 @@ class _WalletSendRouter extends State<WalletSendRouter> {
       children: [
         Expanded(
             child: TextField(
-              controller: recipientInputcontroller,
-              decoration:
+          controller: recipientInputcontroller,
+          decoration:
               const InputDecoration(hintText: "Contact, address, invoice..."),
-            )),
+        )),
         IconButton(
             onPressed: () {
               Clipboard.getData(Clipboard.kTextPlain).then((clipboardData) {
@@ -279,45 +253,60 @@ class _WalletSendRouter extends State<WalletSendRouter> {
       ],
     ));
     if (mentionResults != null && mentionResults.isNotEmpty) {
-      list.add(ListView.builder(
-          physics: const BouncingScrollPhysics(),
-          shrinkWrap: true,
-          itemBuilder: (context, index) {
-            return SearchMentionUserItemComponent(
-              metadata: mentionResults[index],
-              width: 400,
-              showNip05: false,
-              showLnAddress: true,
-              onTap: (metadata) {
-                recipientInputcontroller.text = metadata.lud16!;
-                setState(() {
-                  mentionResults = [];
-                  recipientAddress = metadata.lud16!;
-                });
+      list.add(const SizedBox(
+        height: 10,
+      ));
+      list.add(const Text(
+        "Contacts",
+        style: TextStyle(
+          fontSize: 20.0,
+          fontWeight: FontWeight.bold,
+        ),
+      ));
+      list.add(const SizedBox(
+        height: 10,
+      ));
+      list.add(Expanded(
+          child: ListView.builder(
+              physics: const BouncingScrollPhysics(),
+              shrinkWrap: true,
+              itemBuilder: (context, index) {
+                return SearchMentionUserItemComponent(
+                  metadata: mentionResults[index],
+                  width: 400,
+                  showNip05: false,
+                  showLnAddress: true,
+                  onTap: (metadata) {
+                    recipientInputcontroller.text = metadata.lud16!;
+                    setState(() {
+                      mentionResults = [];
+                      recipientAddress = metadata.lud16!;
+                    });
+                  },
+                );
               },
-            );
-          },
-          itemCount: mentionResults.length));
+              itemCount: mentionResults.length)));
     }
-    if (recipientAddress != null || invoice != null) {
+    if (recipientAddress != null) {
       list.add(Row(
         children: [
           Expanded(
               child: TextField(
-                controller: amountInputcontroller,
-                keyboardType: TextInputType.number,
-                inputFormatters: <TextInputFormatter>[
-                  FilteringTextInputFormatter.digitsOnly
-                ],
-                decoration: const InputDecoration(hintText: "Amount in sats"),
-              )),
+            controller: amountInputcontroller,
+            keyboardType: TextInputType.number,
+            inputFormatters: <TextInputFormatter>[
+              FilteringTextInputFormatter.digitsOnly
+            ],
+            decoration: const InputDecoration(hintText: "Amount in sats"),
+          )),
         ],
       ));
       list.add(const SizedBox(
         height: 20,
       ));
-      if (makeInvoiceError!=null) {
-        list.add(Text("Error: $makeInvoiceError",
+      if (makeInvoiceError != null) {
+        list.add(Text(
+          "Error: $makeInvoiceError",
           style: TextStyle(
             fontSize: 20.0,
             color: Colors.grey[700],
@@ -327,24 +316,26 @@ class _WalletSendRouter extends State<WalletSendRouter> {
           height: 20,
         ));
       }
-      if (amountInputcontroller.text.trim().length>0) {
+      if (amountInputcontroller.text.trim().length > 0 &&
+          recipientAddress != null) {
         list.add(Button(
-          text: makingInvoice? "Making Invoice...":"Make Invoice",
-            after: makingInvoice? Row(children: [
-              const SizedBox(width: 30),
-              Visibility(
-                visible: makingInvoice,
-                child: const SizedBox(
-                  height: 24,
-                  width: 24,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2.0,
-                    valueColor:
-                    AlwaysStoppedAnimation<Color>(Colors.white),
-                  ),
-                ),
-              )
-            ]): Container(),
+          text: makingInvoice ? "Making Invoice..." : "Make Invoice",
+          after: makingInvoice
+              ? Row(children: [
+                  const SizedBox(width: 30),
+                  Visibility(
+                    visible: makingInvoice,
+                    child: const SizedBox(
+                      height: 24,
+                      width: 24,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.0,
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
+                    ),
+                  )
+                ])
+              : Container(),
           onTap: () async {
             if (recipientInputcontroller.text
                 .trim()
@@ -352,12 +343,12 @@ class _WalletSendRouter extends State<WalletSendRouter> {
                 .contains("@")) {
               setState(() {
                 makeInvoiceError = null;
-                makingInvoice=true;
+                makingInvoice = true;
               });
               String? lnurl =
-              Zap.getLud16LinkFromLud16(recipientInputcontroller.text);
+                  Zap.getLud16LinkFromLud16(recipientInputcontroller.text);
               var lnurlResponse =
-              lnurl != null ? await Zap.getLnurlResponse(lnurl!) : null;
+                  lnurl != null ? await Zap.getLnurlResponse(lnurl!) : null;
               if (lnurlResponse == null) {
                 return;
               }
@@ -371,24 +362,27 @@ class _WalletSendRouter extends State<WalletSendRouter> {
               var amountMsats = amount! * 1000;
               callback += "amount=$amountMsats";
               var responseMap = await DioUtil.get(callback);
-              if (responseMap != null && StringUtil.isNotBlank(responseMap["pr"])) {
+              if (responseMap != null &&
+                  StringUtil.isNotBlank(responseMap["pr"])) {
                 invoice = responseMap["pr"];
                 RouterUtil.router(
                     context, RouterPath.WALLET_SEND_CONFIRM, invoice);
               } else {
-                if (responseMap!=null && responseMap["status"]=="ERROR" && responseMap["reason"] != null) {
+                if (responseMap != null &&
+                    responseMap["status"] == "ERROR" &&
+                    responseMap["reason"] != null) {
                   setState(() {
                     makeInvoiceError = responseMap["reason"];
                   });
                 } else {
                   setState(() {
                     makeInvoiceError =
-                    "could not generate invoice, unknown error";
+                        "could not generate invoice, unknown error";
                   });
                 }
               }
               setState(() {
-                makingInvoice=false;
+                makingInvoice = false;
               });
             }
           },
