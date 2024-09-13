@@ -59,10 +59,13 @@ class _WalletSendConfirmRouter extends State<WalletSendConfirmRouter> {
       double btc = req.amount.toDouble();
       amount = (btc * NwcProvider.BTC_IN_SATS).toInt();
 
-      description = req.tags.firstWhere((el) {
+      if (req.tags.any((el) {
         return el.type == "description";
-      }).data;
-
+      })) {
+        description = req.tags.firstWhere((el) {
+          return el.type == "description";
+        }).data;
+      }
       // TODO
       // req.tags.forEach((TaggedField t) {
       //   print("${t.type}: ${t.data}");

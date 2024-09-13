@@ -41,6 +41,8 @@ class _WalletSendRouter extends State<WalletSendRouter> {
   List<Metadata> mentionResults = [];
 
   bool scanning = false;
+  bool makingInvoice = false;
+  String? makeInvoiceError;
 
   void _onQRViewCreated(QRViewController controller) {
     qrController = controller;
@@ -66,7 +68,15 @@ class _WalletSendRouter extends State<WalletSendRouter> {
 
   @override
   void initState() {
+    amountInputcontroller.addListener(() {
+      setState(() {
+        makeInvoiceError = null;
+      });
+    });
     recipientInputcontroller.addListener(() {
+      setState(() {
+        makeInvoiceError = null;
+      });
       String t = recipientInputcontroller.text.trim().toLowerCase();
       if (t.startsWith("lightning:")) {
         t = t.replaceAll("lightning:", "");
@@ -85,7 +95,7 @@ class _WalletSendRouter extends State<WalletSendRouter> {
           recipientAddress = t;
         });
       } else if (t.isNotEmpty) {
-        List<Metadata> list = cacheManager.searchMetadatas(t, 4).toList();
+        List<Metadata> list = cacheManager.searchMetadatas(t, 5).toList();
         if (list.length != mentionResults.length) {
           setState(() {
             mentionResults = list;
@@ -153,8 +163,14 @@ class _WalletSendRouter extends State<WalletSendRouter> {
     if (!scanning) {
       list.addAll(inputWidgets());
     }
-    var scanArea = (MediaQuery.of(context).size.width < 400 ||
-            MediaQuery.of(context).size.height < 400)
+    var scanArea = (MediaQuery
+        .of(context)
+        .size
+        .width < 400 ||
+        MediaQuery
+            .of(context)
+            .size
+            .height < 400)
         ? 150.0
         : 350.0;
 
@@ -163,49 +179,49 @@ class _WalletSendRouter extends State<WalletSendRouter> {
         appBar: appBarNew,
         body: scanning
             ? Stack(children: [
-                QRView(
-                  key: qrKey,
-                  overlay: QrScannerOverlayShape(
-                      cutOutBottomOffset: 50,
-                      borderColor: themeData.primaryColor,
-                      borderRadius: 10,
-                      borderLength: 30,
-                      borderWidth: 10,
-                      cutOutSize: scanArea),
-                  onQRViewCreated: _onQRViewCreated,
-                )
-              ])
+          QRView(
+            key: qrKey,
+            overlay: QrScannerOverlayShape(
+                cutOutBottomOffset: 50,
+                borderColor: themeData.primaryColor,
+                borderRadius: 10,
+                borderLength: 30,
+                borderWidth: 10,
+                cutOutSize: scanArea),
+            onQRViewCreated: _onQRViewCreated,
+          )
+        ])
             : Container(
-                margin: const EdgeInsets.all(Base.BASE_PADDING*2),
-                decoration: BoxDecoration(
-                  // color: themeData.cardColor,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Column(
-                  // mainAxisSize: MainAxisSize.min,
-                  children: list,
-                ))
-        // Stack(
-        //         children: [
-        //           SizedBox(
-        //             width: mediaDataCache.size.width,
-        //             height:
-        //                 mediaDataCache.size.height - mediaDataCache.padding.top,
-        //             child: Container(
-        //               color: cardColor,
-        //               child: Center(
-        //                 child: SizedBox(
-        //                     width: mediaDataCache.size.width * 0.8,
-        //                     child: Column(
-        //                       mainAxisSize: MainAxisSize.min,
-        //                       children: list,
-        //                     )),
-        //               ),
-        //             ),
-        //           ),
-        //         ],
-        //       ),
-        );
+            margin: const EdgeInsets.all(Base.BASE_PADDING * 2),
+            decoration: BoxDecoration(
+              // color: themeData.cardColor,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Column(
+              // mainAxisSize: MainAxisSize.min,
+              children: list,
+            ))
+      // Stack(
+      //         children: [
+      //           SizedBox(
+      //             width: mediaDataCache.size.width,
+      //             height:
+      //                 mediaDataCache.size.height - mediaDataCache.padding.top,
+      //             child: Container(
+      //               color: cardColor,
+      //               child: Center(
+      //                 child: SizedBox(
+      //                     width: mediaDataCache.size.width * 0.8,
+      //                     child: Column(
+      //                       mainAxisSize: MainAxisSize.min,
+      //                       children: list,
+      //                     )),
+      //               ),
+      //             ),
+      //           ),
+      //         ],
+      //       ),
+    );
   }
 
   Iterable<Widget> inputWidgets() {
@@ -214,10 +230,10 @@ class _WalletSendRouter extends State<WalletSendRouter> {
       children: [
         Expanded(
             child: TextField(
-          controller: recipientInputcontroller,
-          decoration:
+              controller: recipientInputcontroller,
+              decoration:
               const InputDecoration(hintText: "Contact, address, invoice..."),
-        )),
+            )),
         IconButton(
             onPressed: () {
               Clipboard.getData(Clipboard.kTextPlain).then((clipboardData) {
@@ -288,53 +304,96 @@ class _WalletSendRouter extends State<WalletSendRouter> {
         children: [
           Expanded(
               child: TextField(
-            controller: amountInputcontroller,
-            keyboardType: TextInputType.number,
-            inputFormatters: <TextInputFormatter>[
-              FilteringTextInputFormatter.digitsOnly
-            ],
-            decoration: const InputDecoration(hintText: "Amount in sats"),
-          )),
+                controller: amountInputcontroller,
+                keyboardType: TextInputType.number,
+                inputFormatters: <TextInputFormatter>[
+                  FilteringTextInputFormatter.digitsOnly
+                ],
+                decoration: const InputDecoration(hintText: "Amount in sats"),
+              )),
         ],
       ));
       list.add(const SizedBox(
         height: 20,
       ));
-      list.add(Button(
-        text: "Continue",
-        onTap: () async {
-          if (recipientInputcontroller.text
-              .trim()
-              .toLowerCase()
-              .contains("@")) {
-            String? lnurl =
-                Zap.getLud16LinkFromLud16(recipientInputcontroller.text);
-            var lnurlResponse =
-                lnurl != null ? await Zap.getLnurlResponse(lnurl!) : null;
-            if (lnurlResponse == null) {
-              return;
+      if (makeInvoiceError!=null) {
+        list.add(Text("Error: $makeInvoiceError",
+          style: TextStyle(
+            fontSize: 20.0,
+            color: Colors.grey[700],
+          ),
+        ));
+        list.add(const SizedBox(
+          height: 20,
+        ));
+      }
+      if (amountInputcontroller.text.trim().length>0) {
+        list.add(Button(
+          text: makingInvoice? "Making Invoice...":"Make Invoice",
+            after: makingInvoice? Row(children: [
+              const SizedBox(width: 30),
+              Visibility(
+                visible: makingInvoice,
+                child: const SizedBox(
+                  height: 24,
+                  width: 24,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2.0,
+                    valueColor:
+                    AlwaysStoppedAnimation<Color>(Colors.white),
+                  ),
+                ),
+              )
+            ]): Container(),
+          onTap: () async {
+            if (recipientInputcontroller.text
+                .trim()
+                .toLowerCase()
+                .contains("@")) {
+              setState(() {
+                makeInvoiceError = null;
+                makingInvoice=true;
+              });
+              String? lnurl =
+              Zap.getLud16LinkFromLud16(recipientInputcontroller.text);
+              var lnurlResponse =
+              lnurl != null ? await Zap.getLnurlResponse(lnurl!) : null;
+              if (lnurlResponse == null) {
+                return;
+              }
+              var callback = lnurlResponse.callback!;
+              if (callback.contains("?")) {
+                callback += "&";
+              } else {
+                callback += "?";
+              }
+              amount = int.parse(amountInputcontroller.text);
+              var amountMsats = amount! * 1000;
+              callback += "amount=$amountMsats";
+              var responseMap = await DioUtil.get(callback);
+              if (responseMap != null && StringUtil.isNotBlank(responseMap["pr"])) {
+                invoice = responseMap["pr"];
+                RouterUtil.router(
+                    context, RouterPath.WALLET_SEND_CONFIRM, invoice);
+              } else {
+                if (responseMap!=null && responseMap["status"]=="ERROR" && responseMap["reason"] != null) {
+                  setState(() {
+                    makeInvoiceError = responseMap["reason"];
+                  });
+                } else {
+                  setState(() {
+                    makeInvoiceError =
+                    "could not generate invoice, unknown error";
+                  });
+                }
+              }
+              setState(() {
+                makingInvoice=false;
+              });
             }
-
-            var callback = lnurlResponse.callback!;
-            if (callback.contains("?")) {
-              callback += "&";
-            } else {
-              callback += "?";
-            }
-            amount = int.parse(amountInputcontroller.text);
-            var amountMsats = amount! * 1000;
-
-            callback += "amount=$amountMsats";
-            var responseMap = await DioUtil.get(callback);
-            if (responseMap != null &&
-                StringUtil.isNotBlank(responseMap["pr"])) {
-              invoice = responseMap["pr"];
-              RouterUtil.router(
-                  context, RouterPath.WALLET_SEND_CONFIRM, invoice);
-            }
-          }
-        },
-      ));
+          },
+        ));
+      }
     }
     return list;
   }
