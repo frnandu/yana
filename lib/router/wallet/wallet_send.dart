@@ -1,5 +1,3 @@
-import 'package:bolt11_decoder/bolt11_decoder.dart';
-import 'package:confetti/confetti.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:ndk/entities.dart';
@@ -14,6 +12,7 @@ import '../../nostr/nip57/zap.dart';
 import '../../nostr/nip57/zap_num_util.dart';
 import '../../ui/button.dart';
 import '../../ui/editor/search_mention_user_component.dart';
+import '../../utils/base.dart';
 import '../../utils/dio_util.dart';
 import '../../utils/router_path.dart';
 import '../../utils/router_util.dart';
@@ -33,7 +32,6 @@ class _WalletSendRouter extends State<WalletSendRouter> {
   final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
   QRViewController? qrController;
 
-  late ConfettiController confettiController;
   String? recipientAddress;
   String? invoice;
   int? amount;
@@ -68,9 +66,6 @@ class _WalletSendRouter extends State<WalletSendRouter> {
 
   @override
   void initState() {
-    // nwcProvider.reload();
-    confettiController =
-        ConfettiController(duration: const Duration(seconds: 2));
     recipientInputcontroller.addListener(() {
       String t = recipientInputcontroller.text.trim().toLowerCase();
       if (t.startsWith("lightning:")) {
@@ -108,7 +103,6 @@ class _WalletSendRouter extends State<WalletSendRouter> {
 
   @override
   void dispose() {
-    confettiController.dispose();
     if (qrController != null) {
       qrController!.dispose();
     }
@@ -165,58 +159,53 @@ class _WalletSendRouter extends State<WalletSendRouter> {
         : 350.0;
 
     return Scaffold(
-      backgroundColor: cardColor,
-      appBar: appBarNew,
-      body: scanning
-          ? Expanded(
-              flex: 5,
-              child: QRView(
-                key: qrKey,
-                overlay: QrScannerOverlayShape(
-                    cutOutBottomOffset: 50,
-                    borderColor: themeData.primaryColor,
-                    borderRadius: 10,
-                    borderLength: 30,
-                    borderWidth: 10,
-                    cutOutSize: scanArea),
-                onQRViewCreated: _onQRViewCreated,
-              ))
-          : Stack(
-              children: [
-                SizedBox(
-                  width: mediaDataCache.size.width,
-                  height:
-                      mediaDataCache.size.height - mediaDataCache.padding.top,
-                  // margin: EdgeInsets.only(top: mediaDataCache.padding.top),
-                  child: Container(
-                    color: cardColor,
-                    child: Center(
-                      child: SizedBox(
-                          width: mediaDataCache.size.width * 0.8,
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: list,
-                          )),
-                    ),
-                  ),
+        backgroundColor: cardColor,
+        appBar: appBarNew,
+        body: scanning
+            ? Stack(children: [
+                QRView(
+                  key: qrKey,
+                  overlay: QrScannerOverlayShape(
+                      cutOutBottomOffset: 50,
+                      borderColor: themeData.primaryColor,
+                      borderRadius: 10,
+                      borderLength: 30,
+                      borderWidth: 10,
+                      cutOutSize: scanArea),
+                  onQRViewCreated: _onQRViewCreated,
+                )
+              ])
+            : Container(
+                margin: const EdgeInsets.all(Base.BASE_PADDING*2),
+                decoration: BoxDecoration(
+                  // color: themeData.cardColor,
+                  borderRadius: BorderRadius.circular(10),
                 ),
-                Align(
-                  alignment: Alignment.topCenter,
-                  child: ConfettiWidget(
-                    confettiController: confettiController,
-                    emissionFrequency: 0.1,
-                    numberOfParticles: 5,
-                    maxBlastForce: 20,
-                    minBlastForce: 1,
-                    gravity: 0.8,
-                    particleDrag: 0.05,
-                    blastDirectionality: BlastDirectionality.explosive,
-                    colors: const [Colors.yellow, Colors.orange, Colors.purple],
-                  ),
-                ),
-              ],
-            ),
-    );
+                child: Column(
+                  // mainAxisSize: MainAxisSize.min,
+                  children: list,
+                ))
+        // Stack(
+        //         children: [
+        //           SizedBox(
+        //             width: mediaDataCache.size.width,
+        //             height:
+        //                 mediaDataCache.size.height - mediaDataCache.padding.top,
+        //             child: Container(
+        //               color: cardColor,
+        //               child: Center(
+        //                 child: SizedBox(
+        //                     width: mediaDataCache.size.width * 0.8,
+        //                     child: Column(
+        //                       mainAxisSize: MainAxisSize.min,
+        //                       children: list,
+        //                     )),
+        //               ),
+        //             ),
+        //           ),
+        //         ],
+        //       ),
+        );
   }
 
   Iterable<Widget> inputWidgets() {

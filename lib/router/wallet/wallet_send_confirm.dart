@@ -1,22 +1,14 @@
+import 'package:bolt11_decoder/bolt11_decoder.dart';
 import 'package:confetti/confetti.dart';
-import 'package:ndk/entities.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import 'package:qr_code_scanner/qr_code_scanner.dart';
 import 'package:yana/main.dart';
 import 'package:yana/nostr/nip47/nwc_notification.dart';
 import 'package:yana/provider/nwc_provider.dart';
-import 'package:yana/utils/base.dart';
 import 'package:yana/utils/router_path.dart';
 import 'package:yana/utils/string_util.dart';
-import 'package:bolt11_decoder/bolt11_decoder.dart';
 
-import '../../nostr/nip57/zap.dart';
-import '../../nostr/nip57/zap_num_util.dart';
 import '../../ui/button.dart';
-import '../../ui/editor/search_mention_user_component.dart';
-import '../../utils/dio_util.dart';
 import '../../utils/router_util.dart';
 import 'bitcoin_amount.dart';
 

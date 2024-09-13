@@ -22,10 +22,10 @@ class RatesUtil {
     return 0;
   }
 
-  static final String COINBASE_RATES_API_ENDPOINT = "https://api.coingecko.com/api/v3/exchange_rates";
+  static final String RATES_API_ENDPOINT = "https://api.coingecko.com/api/v3/exchange_rates";
 
   static Future<Map<String,dynamic>?> coinbase(String currency) async {
-    Uri uri = Uri.parse(COINBASE_RATES_API_ENDPOINT).replace(scheme: 'https');
+    Uri uri = Uri.parse(RATES_API_ENDPOINT).replace(scheme: 'https');
     try {
       final response = await http.get(uri);
       final decodedResponse = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
