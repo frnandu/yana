@@ -92,7 +92,16 @@
 - ~~add conversation participants relays for zaps when using inbox model~~
 
 ===== v0.15
-- Wallet list of transactions
+- Full NWC Wallet: send, receive, list of transactions
+- Wallet balance in FIAT (choose currency) from coingecko/kraken?
+- rust event verifier
+- published on zap.store with self-signing
+
+- choose currency for wallet on settings
+- thread single event fix
+- fix nip65 on notifications WTF? 
+
+=====
 - nostr.wine-compatible translations service integration
 - make thread detail subscription of new replies work
 - make reactions live again with subscriptions or some other way
@@ -127,13 +136,8 @@
 - solve floating icon in tablet mode above buttons
 - i18n crowdin.com using github actions
 
-- Wallet balance in FIAT (choose currency) from coingecko/kraken?
 
-- Mutiny NWC Wallet
-- Current.io NWC Wallet
-- LndHub Wallet
-- breez sdk + greenlight LN NODE
-
+- 
 - WebLN for web: https://github.com/aniketambore/flutter_webln
 
 - nip19 nprofile
