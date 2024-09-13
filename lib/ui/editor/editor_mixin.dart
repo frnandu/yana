@@ -55,9 +55,9 @@ mixin EditorMixin {
 
   void updateUI();
 
-  List<dynamic> getTags();
+  List<List<String>> getTags();
 
-  List<dynamic> getTagsAddedWhenSend();
+  List<List<String>> getTagsAddedWhenSend();
 
   void handleFocusInit() {
     focusNode.addListener(() {
@@ -418,8 +418,8 @@ mixin EditorMixin {
 
     // customEmoji map
     Map<String, int> customEmojiMap = {};
-    var tags = []..addAll(getTags());
-    var tagsAddedWhenSend = []..addAll(getTagsAddedWhenSend());
+    List<List<String>> tags = []..addAll(getTags());
+    List<List<String>> tagsAddedWhenSend = []..addAll(getTagsAddedWhenSend());
 
     if (inputPoll) {
       var checkResult = pollInputController.checkInput(context);
@@ -527,7 +527,7 @@ mixin EditorMixin {
 
             if (customEmojiMap[value.name] == null) {
               customEmojiMap[value.name!] = 1;
-              tags.add(["emoji", value.name, value.filepath]);
+              tags.add(["emoji", value.name!, value.filepath!]);
             }
             continue;
           }
@@ -541,7 +541,7 @@ mixin EditorMixin {
     // print(tags);
     // print(tagsAddWhenSend);
 
-    List<dynamic> allTags = [];
+    List<List<String>> allTags = [];
     allTags.addAll(tags);
     allTags.addAll(tagsAddedWhenSend);
 

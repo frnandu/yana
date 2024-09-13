@@ -8,6 +8,7 @@ class RouterPath {
   static const String WALLET_RECEIVE = "/wallet/receive";
   static const String WALLET_RECEIVE_INVOICE = "/wallet/receive/invoice";
   static const String WALLET_SEND = "/wallet/send";
+  static const String WALLET_SEND_CONFIRM = "/wallet/send/confirm";
   static const String NWC = "/nwc";
   static const String RELAYS = "/relays";
   static const String USER = "/user";

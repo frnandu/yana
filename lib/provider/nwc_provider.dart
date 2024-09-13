@@ -37,7 +37,8 @@ class NwcProvider extends ChangeNotifier {
   List<WalletTransaction> transactions = [];
   Function(NwcNotification?)? onZapped;
 
-  static const String NWC_PROTOCOL_PREFIX="nostr+walletconnect://";
+  static const String BOLT11_PREFIX = "lnbc";
+  static const String NWC_PROTOCOL_PREFIX = "nostr+walletconnect://";
 
   Future<void> init() async {
     // TODO make this multi account aware
@@ -168,8 +169,8 @@ class NwcProvider extends ChangeNotifier {
       var encrypted = Nip04.encrypt(
           secret!, walletPubKey!, '{"method":"${NwcCommand.GET_INFO}"}');
 
-      var tags = [
-        ["p", walletPubKey]
+      List<List<String>> tags = [
+        ["p", walletPubKey!]
       ];
       final event = Nip01Event(
           pubKey: nwcSigner!.getPublicKey(),
@@ -190,8 +191,8 @@ class NwcProvider extends ChangeNotifier {
       var encrypted = Nip04.encrypt(
           secret!, walletPubKey!, '{"method":"${NwcCommand.GET_BALANCE}"}');
 
-      var tags = [
-        ["p", walletPubKey]
+      List<List<String>> tags = [
+        ["p", walletPubKey!]
       ];
       final event = Nip01Event(
           pubKey: nwcSigner.getPublicKey(),
@@ -213,8 +214,8 @@ class NwcProvider extends ChangeNotifier {
           '{"method":"${NwcCommand.LIST_TRANSACTIONS}", "params":{ "limit": $limit, "offset":$offset, "unpaid":$unpaid }}';
       var encrypted = Nip04.encrypt(secret!, walletPubKey!, content);
 
-      var tags = [
-        ["p", walletPubKey]
+      List<List<String>> tags = [
+        ["p", walletPubKey!]
       ];
       final event = Nip01Event(
           pubKey: nwcSigner.getPublicKey(),
@@ -239,8 +240,8 @@ class NwcProvider extends ChangeNotifier {
 
       var encrypted = Nip04.encrypt(secret!, walletPubKey!,
           '{"method":"${NwcCommand.PAY_INVOICE}", "params": { "invoice":"$invoice"}}');
-      var tags = [
-        ["p", walletPubKey]
+      List<List<String>> tags = [
+        ["p", walletPubKey!]
       ];
       final event = Nip01Event(
           pubKey: nwcSigner!.getPublicKey(),
@@ -330,8 +331,8 @@ class NwcProvider extends ChangeNotifier {
       String makeInvoice =
           '{"method":"${NwcCommand.MAKE_INVOICE}", "params": { "amount":${amountInMsats}, "description" : "${description}", "expiry":${expiry}}}';
       var encrypted = Nip04.encrypt(secret!, walletPubKey!, makeInvoice);
-      var tags = [
-        ["p", walletPubKey]
+      List<List<String>> tags = [
+        ["p", walletPubKey!]
       ];
       final event = Nip01Event(
           pubKey: nwcSigner!.getPublicKey(),
@@ -391,25 +392,34 @@ class NwcProvider extends ChangeNotifier {
         StringUtil.isNotBlank(secret)) {
       EventSigner nwcSigner = Bip340EventSigner(secret!, getPublicKey(secret!));
 
-      var filter = Filter(
-        kinds: [NwcKind.NOTIFICATION, NwcKind.RESPONSE],
-        authors: [walletPubKey!],
-        pTags: [nwcSigner.getPublicKey()],
-      );
       await ndk.relays.reconnectRelay(relay!);
 
       NdkResponse subscription = ndk.requests.subscription(
-          idPrefix: "nwc-notifications-sub-",
+          idPrefix: "nwc-responses-sub-",
           explicitRelays: [relay!],
-          filters: [filter],
+          filters: [Filter(
+            kinds: [NwcKind.RESPONSE],
+            authors: [walletPubKey!],
+            pTags: [nwcSigner.getPublicKey()],
+          )],
           cacheRead: false,
           cacheWrite: false);
       subscription.stream.listen((event) async {
-        if (event.kind == NwcKind.NOTIFICATION) {
-          await onNotification(event);
-        } else if (event.kind == NwcKind.RESPONSE) {
-          await onResponse(event);
-        }
+        await onResponse(event);
+      });
+
+      NdkResponse subscription2 = ndk.requests.subscription(
+          idPrefix: "nwc-notifications-sub-",
+          explicitRelays: [relay!],
+          filters: [Filter(
+            kinds: [NwcKind.NOTIFICATION],
+            authors: [walletPubKey!],
+            pTags: [nwcSigner.getPublicKey()],
+          )],
+          cacheRead: false,
+          cacheWrite: false);
+      subscription2.stream.listen((event) async {
+        await onNotification(event);
       });
     }
   }

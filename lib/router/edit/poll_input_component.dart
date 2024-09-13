@@ -16,8 +16,8 @@ class PollInputController {
     pollOptionControllers = [];
   }
 
-  List<List<dynamic>> getTags() {
-    List<List<dynamic>> tags = [];
+  List<List<String>> getTags() {
+    List<List<String>> tags = [];
     var length = pollOptionControllers.length;
     for (var i = 0; i < length; i++) {
       var pollPotion = pollOptionControllers[i];

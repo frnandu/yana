@@ -1,18 +1,21 @@
+import 'package:bolt11_decoder/bolt11_decoder.dart';
 import 'package:confetti/confetti.dart';
-import 'package:ndk/entities.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:ndk/entities.dart';
 import 'package:provider/provider.dart';
+import 'package:qr_code_scanner/qr_code_scanner.dart';
 import 'package:yana/main.dart';
 import 'package:yana/nostr/nip47/nwc_notification.dart';
 import 'package:yana/provider/nwc_provider.dart';
-import 'package:yana/utils/base.dart';
 import 'package:yana/utils/string_util.dart';
 
 import '../../nostr/nip57/zap.dart';
 import '../../nostr/nip57/zap_num_util.dart';
+import '../../ui/button.dart';
 import '../../ui/editor/search_mention_user_component.dart';
 import '../../utils/dio_util.dart';
+import '../../utils/router_path.dart';
 import '../../utils/router_util.dart';
 
 class WalletSendRouter extends StatefulWidget {
@@ -27,11 +30,41 @@ class WalletSendRouter extends StatefulWidget {
 class _WalletSendRouter extends State<WalletSendRouter> {
   TextEditingController recipientInputcontroller = TextEditingController();
   TextEditingController amountInputcontroller = TextEditingController();
+  final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
+  QRViewController? qrController;
+
   late ConfettiController confettiController;
   String? recipientAddress;
+  String? invoice;
+  int? amount;
+  String? description;
+
   NwcNotification? paid;
-  bool sending = false;
   List<Metadata> mentionResults = [];
+
+  bool scanning = false;
+
+  void _onQRViewCreated(QRViewController controller) {
+    qrController = controller;
+    controller.scannedDataStream.listen((scanData) async {
+      if (invoice == null) {
+        if (scanData.code != null &&
+            scanData.code!.startsWith(NwcProvider.BOLT11_PREFIX)) {
+          // nwcProvider.connect(scanData.code!);
+          setState(() {
+            invoice = scanData.code;
+            if (invoice != null) {
+              RouterUtil.router(
+                  context, RouterPath.WALLET_SEND_CONFIRM, invoice);
+            }
+
+            scanning = false;
+            qrController!.pauseCamera();
+          });
+        }
+      }
+    });
+  }
 
   @override
   void initState() {
@@ -40,12 +73,18 @@ class _WalletSendRouter extends State<WalletSendRouter> {
         ConfettiController(duration: const Duration(seconds: 2));
     recipientInputcontroller.addListener(() {
       String t = recipientInputcontroller.text.trim().toLowerCase();
+      if (t.startsWith("lightning:")) {
+        t = t.replaceAll("lightning:", "");
+      }
       if (t.startsWith("lnbc")) {
         int num = ZapNumUtil.getNumFromStr(t);
-        setState(() {
-          amountInputcontroller.text = "$num";
-          recipientAddress = t;
-        });
+        if (num > 0) {
+          setState(() {
+            amountInputcontroller.text = "$num";
+            recipientAddress = t;
+          });
+          RouterUtil.router(context, RouterPath.WALLET_SEND_CONFIRM, t);
+        }
       } else if (t.contains("@")) {
         setState(() {
           recipientAddress = t;
@@ -70,6 +109,9 @@ class _WalletSendRouter extends State<WalletSendRouter> {
   @override
   void dispose() {
     confettiController.dispose();
+    if (qrController != null) {
+      qrController!.dispose();
+    }
     super.dispose();
   }
 
@@ -105,7 +147,7 @@ class _WalletSendRouter extends State<WalletSendRouter> {
               color: themeData.hintColor,
             ),
           )),
-      title: const Text("Send",
+      title: Text(!scanning ? "Send" : "Scan QR",
           style: const TextStyle(
             fontWeight: FontWeight.bold,
             fontFamily: "Geist.Mono",
@@ -114,259 +156,197 @@ class _WalletSendRouter extends State<WalletSendRouter> {
     );
 
     List<Widget> list = [];
-    // list.add(Container(
-    //     alignment: Alignment.centerLeft,
-    //     child: Text("Amout")));
-    if (paid == null) {
+    if (!scanning) {
+      list.addAll(inputWidgets());
+    }
+    var scanArea = (MediaQuery.of(context).size.width < 400 ||
+            MediaQuery.of(context).size.height < 400)
+        ? 150.0
+        : 350.0;
+
+    return Scaffold(
+      backgroundColor: cardColor,
+      appBar: appBarNew,
+      body: scanning
+          ? Expanded(
+              flex: 5,
+              child: QRView(
+                key: qrKey,
+                overlay: QrScannerOverlayShape(
+                    cutOutBottomOffset: 50,
+                    borderColor: themeData.primaryColor,
+                    borderRadius: 10,
+                    borderLength: 30,
+                    borderWidth: 10,
+                    cutOutSize: scanArea),
+                onQRViewCreated: _onQRViewCreated,
+              ))
+          : Stack(
+              children: [
+                SizedBox(
+                  width: mediaDataCache.size.width,
+                  height:
+                      mediaDataCache.size.height - mediaDataCache.padding.top,
+                  // margin: EdgeInsets.only(top: mediaDataCache.padding.top),
+                  child: Container(
+                    color: cardColor,
+                    child: Center(
+                      child: SizedBox(
+                          width: mediaDataCache.size.width * 0.8,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: list,
+                          )),
+                    ),
+                  ),
+                ),
+                Align(
+                  alignment: Alignment.topCenter,
+                  child: ConfettiWidget(
+                    confettiController: confettiController,
+                    emissionFrequency: 0.1,
+                    numberOfParticles: 5,
+                    maxBlastForce: 20,
+                    minBlastForce: 1,
+                    gravity: 0.8,
+                    particleDrag: 0.05,
+                    blastDirectionality: BlastDirectionality.explosive,
+                    colors: const [Colors.yellow, Colors.orange, Colors.purple],
+                  ),
+                ),
+              ],
+            ),
+    );
+  }
+
+  Iterable<Widget> inputWidgets() {
+    List<Widget> list = [];
+    list.add(Row(
+      children: [
+        Expanded(
+            child: TextField(
+          controller: recipientInputcontroller,
+          decoration:
+              const InputDecoration(hintText: "Contact, address, invoice..."),
+        )),
+        IconButton(
+            onPressed: () {
+              Clipboard.getData(Clipboard.kTextPlain).then((clipboardData) {
+                if (clipboardData != null &&
+                    StringUtil.isNotBlank(clipboardData.text)) {
+                  setState(() {
+                    recipientInputcontroller.text = clipboardData.text!;
+                  });
+                  String t = recipientInputcontroller.text.trim().toLowerCase();
+                  if (t.startsWith("lnbc")) {
+                    int num = ZapNumUtil.getNumFromStr(t);
+                    if (num > 0) {
+                      setState(() {
+                        amountInputcontroller.text = "$num";
+                        recipientAddress = t;
+                      });
+                      RouterUtil.router(
+                          context, RouterPath.WALLET_SEND_CONFIRM, t);
+                    }
+                  }
+                }
+              });
+            },
+            icon: Icon(
+              size: 32,
+              Icons.paste,
+              color: Colors.grey[700],
+            )),
+        const SizedBox(
+          width: 10,
+        ),
+        GestureDetector(
+            onTap: () {
+              if (qrController != null) {
+                qrController!.resumeCamera();
+              }
+              setState(() {
+                invoice = null;
+                scanning = true;
+              });
+            },
+            child: Image.asset("assets/imgs/scan.png", width: 32, height: 32)),
+      ],
+    ));
+    if (mentionResults != null && mentionResults.isNotEmpty) {
+      list.add(ListView.builder(
+          physics: const BouncingScrollPhysics(),
+          shrinkWrap: true,
+          itemBuilder: (context, index) {
+            return SearchMentionUserItemComponent(
+              metadata: mentionResults[index],
+              width: 400,
+              showNip05: false,
+              showLnAddress: true,
+              onTap: (metadata) {
+                recipientInputcontroller.text = metadata.lud16!;
+                setState(() {
+                  mentionResults = [];
+                  recipientAddress = metadata.lud16!;
+                });
+              },
+            );
+          },
+          itemCount: mentionResults.length));
+    }
+    if (recipientAddress != null || invoice != null) {
       list.add(Row(
         children: [
           Expanded(
               child: TextField(
-            controller: recipientInputcontroller,
-            decoration:
-                const InputDecoration(hintText: "Contact, address, invoice..."),
+            controller: amountInputcontroller,
+            keyboardType: TextInputType.number,
+            inputFormatters: <TextInputFormatter>[
+              FilteringTextInputFormatter.digitsOnly
+            ],
+            decoration: const InputDecoration(hintText: "Amount in sats"),
           )),
         ],
       ));
-      if (mentionResults != null && mentionResults.isNotEmpty) {
-        list.add(ListView.builder(
-            physics: const BouncingScrollPhysics(),
-            shrinkWrap: true,
-            itemBuilder: (context, index) {
-              return SearchMentionUserItemComponent(
-                metadata: mentionResults[index],
-                width: 400,
-                showNip05: false,
-                showLnAddress: true,
-                onTap: (metadata) {
-                  recipientInputcontroller.text = metadata.lud16!;
-                  setState(() {
-                    mentionResults = [];
-                    recipientAddress = metadata.lud16!;
-                  });
-                },
-              );
-            },
-            itemCount: mentionResults.length));
-      }
-      if (recipientAddress != null) {
-        list.add(Row(
-          children: [
-            Expanded(
-                child: TextField(
-              controller: amountInputcontroller,
-              keyboardType: TextInputType.number,
-              inputFormatters: <TextInputFormatter>[
-                FilteringTextInputFormatter.digitsOnly
-              ],
-              decoration: const InputDecoration(hintText: "Amount in sats"),
-            )),
-          ],
-        ));
-        list.add(GestureDetector(
-            behavior: HitTestBehavior.translucent,
-            onTap: () async {
-              String? invoice;
-              var amount = int.parse(amountInputcontroller.text) * 1000;
-              if (recipientInputcontroller.text
-                  .trim()
-                  .toLowerCase()
-                  .contains("@")) {
-                String? lnurl =
-                    Zap.getLud16LinkFromLud16(recipientInputcontroller.text);
-                var lnurlResponse =
-                    lnurl != null ? await Zap.getLnurlResponse(lnurl!) : null;
-                if (lnurlResponse == null) {
-                  return;
-                }
+      list.add(const SizedBox(
+        height: 20,
+      ));
+      list.add(Button(
+        text: "Continue",
+        onTap: () async {
+          if (recipientInputcontroller.text
+              .trim()
+              .toLowerCase()
+              .contains("@")) {
+            String? lnurl =
+                Zap.getLud16LinkFromLud16(recipientInputcontroller.text);
+            var lnurlResponse =
+                lnurl != null ? await Zap.getLnurlResponse(lnurl!) : null;
+            if (lnurlResponse == null) {
+              return;
+            }
 
-                var callback = lnurlResponse.callback!;
-                if (callback.contains("?")) {
-                  callback += "&";
-                } else {
-                  callback += "?";
-                }
+            var callback = lnurlResponse.callback!;
+            if (callback.contains("?")) {
+              callback += "&";
+            } else {
+              callback += "?";
+            }
+            amount = int.parse(amountInputcontroller.text);
+            var amountMsats = amount! * 1000;
 
-                callback += "amount=$amount";
-                var responseMap = await DioUtil.get(callback);
-                if (responseMap != null &&
-                    StringUtil.isNotBlank(responseMap["pr"])) {
-                  invoice = responseMap["pr"];
-                }
-              }
-              if (recipientInputcontroller.text.startsWith("lnbc")) {
-                invoice = recipientInputcontroller.text;
-              }
-              if (invoice != null) {
-                FocusManager.instance.primaryFocus?.unfocus();
-                setState(() {
-                  sending = true;
-                });
-                await _nwcProvider.payInvoice(invoice, null,
-                    (nwcNotification) async {
-                  setState(() {
-                    paid = nwcNotification;
-                    nwcNotification!.amount = amount; // * 1000;
-                  });
-                  confettiController.play();
-                });
-              }
-            },
-            child: MouseRegion(
-                cursor: SystemMouseCursors.click,
-                child: Container(
-                    margin: const EdgeInsets.all(Base.BASE_PADDING * 2),
-                    decoration: BoxDecoration(
-                      borderRadius:
-                          const BorderRadius.all(Radius.circular(20.0)),
-                      border: Border.all(
-                        width: 1,
-                        color: themeData.hintColor,
-                      ),
-                    ),
-                    child: Row(children: [
-                      Container(
-                          margin: const EdgeInsets.all(Base.BASE_PADDING),
-                          child: const Icon(Icons.bolt,
-                              size: 25, color: Colors.amberAccent)),
-                      Text("Pay ${amountInputcontroller.text} sats"),
-                      const SizedBox(width: 30),
-                      Visibility(
-                        visible: sending,
-                        child: const SizedBox(
-                          height: 24,
-                          width: 24,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2.0,
-                            valueColor:
-                                AlwaysStoppedAnimation<Color>(Colors.white),
-                          ),
-                        ),
-                      ),
-                    ])))));
-      }
-    } else {
-      double? fiatAmount = fiatCurrencyRate != null
-          ? ((paid!.amount / 100000000000) * fiatCurrencyRate!["value"])
-          : null;
-      int feesPaid = (paid!.feesPaid / 1000).round();
-      int amount = (paid!.amount / 1000).round();
-      list.add(
-        Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(
-                Icons.check_circle_outline,
-                color: Color(0xFFE26842),
-                size: 100.0,
-              ),
-              const SizedBox(height: 20.0),
-              const Text(
-                'Payment Sent',
-                style: TextStyle(
-                  fontSize: 24.0,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 10.0),
-              RichText(
-                text: TextSpan(
-                  children: <TextSpan>[
-                    TextSpan(
-                      text: "-$amount",
-                      style: const TextStyle(
-                          fontSize: 28.0, color: Color(0xFFE26842)),
-                    ),
-                    TextSpan(
-                      text: ' sat${amount > 1 ? 's' : ''}',
-                      style: TextStyle(fontSize: 24.0, color: Colors.grey[700]),
-                    ),
-                  ],
-                ),
-              ),
-              feesPaid > 0 ? const SizedBox(height: 10.0) : Container(),
-              feesPaid > 0
-                  ? Text(
-                      'Fee $feesPaid sat${feesPaid > 1 ? 's' : ''}',
-                      style: TextStyle(
-                        fontSize: 16.0,
-                        color: Colors.grey[700],
-                      ),
-                    )
-                  : Container(),
-              const SizedBox(height: 10.0),
-              Text(
-                fiatAmount==null || fiatAmount < 0.01
-                    ? "< ${fiatCurrencyRate?["unit"]}0.01"
-                    : "~${fiatCurrencyRate?["unit"]}${fiatAmount.toStringAsFixed(2)}",
-                // "~${fiatCurrencyRate?["unit"]}${fiatAmount?.toStringAsFixed(2)}",
-                style: const TextStyle(
-                  fontSize: 22.0,
-                  // color: Colors.grey[700],
-                ),
-              ),
-              StringUtil.isNotBlank(paid!.description)
-                  ? const SizedBox(height: 10.0)
-                  : Container(),
-              StringUtil.isNotBlank(paid!.description)
-                  ? Text(
-                      '${paid!.description}',
-                      style: TextStyle(
-                        fontSize: 20.0,
-                        color: Colors.grey[700],
-                      ),
-                    )
-                  : Container(),
-            ],
-          ),
-        ),
-      );
+            callback += "amount=$amountMsats";
+            var responseMap = await DioUtil.get(callback);
+            if (responseMap != null &&
+                StringUtil.isNotBlank(responseMap["pr"])) {
+              invoice = responseMap["pr"];
+              RouterUtil.router(
+                  context, RouterPath.WALLET_SEND_CONFIRM, invoice);
+            }
+          }
+        },
+      ));
     }
-    return Scaffold(
-      backgroundColor: cardColor,
-      appBar: appBarNew,
-      body: Stack(
-        children: [
-          SizedBox(
-            width: mediaDataCache.size.width,
-            height: mediaDataCache.size.height - mediaDataCache.padding.top,
-            // margin: EdgeInsets.only(top: mediaDataCache.padding.top),
-            child: Container(
-              color: cardColor,
-              child: Center(
-                child: SizedBox(
-                    width: mediaDataCache.size.width * 0.8,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: list,
-                    )),
-              ),
-            ),
-          ),
-          // Positioned(
-          //   top: mediaDataCache.padding.top,
-          //   child: SizedBox(
-          //     width: mediaDataCache.size.width,
-          //     child: ,
-          //   ),
-          // ),
-          Align(
-            alignment: Alignment.topCenter,
-            child: ConfettiWidget(
-              confettiController: confettiController,
-              emissionFrequency: 0.1,
-              numberOfParticles: 5,
-              maxBlastForce: 20,
-              minBlastForce: 1,
-              gravity: 0.8,
-              particleDrag: 0.05,
-              blastDirectionality: BlastDirectionality.explosive,
-              colors: const [Colors.yellow, Colors.orange, Colors.purple],
-            ),
-          ),
-        ],
-      ),
-    );
+    return list;
   }
 }

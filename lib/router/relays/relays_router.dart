@@ -173,7 +173,7 @@ class _RelaysRouter extends CustState<RelaysRouter> with WhenStopFunction {
 
                                 var url = userRelayList!.urls.toList()[index];
                                 ReadWriteMarker? marker = userRelayList!.relays[url]!;
-                                return RelaysItemComponent(
+                                return ndk.relays.getRelay(url)!=null? RelaysItemComponent(
                                   url: url,
                                   relay:ndk.relays.getRelay(url)!,
                                   marker: marker,
@@ -182,7 +182,7 @@ class _RelaysRouter extends CustState<RelaysRouter> with WhenStopFunction {
                                   onRemove: () async {
                                     await loadRelayInfos();
                                   },
-                                );
+                                ):Container();
                               },
                               itemCount: (userRelayList != null ? userRelayList!.relays.length : 0) + (loggedUserSigner!.canSign() ? 1 : 0),
                             );

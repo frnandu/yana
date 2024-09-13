@@ -484,8 +484,8 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
 
   Future<void> onCommmentTap() async {
     var er = widget.eventRelation;
-    List<dynamic> tags = [];
-    List<dynamic> tagsAddedWhenSend = [];
+    List<List<String>> tags = [];
+    List<List<String>> tagsAddedWhenSend = [];
     String relayAddr = "";
     if (widget.event.sources.isNotEmpty) {
       relayAddr = widget.event.sources[0];
@@ -512,7 +512,7 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
       if (StringUtil.isNotBlank(er.rootRelayAddr)) {
         relayAddr = er.rootRelayAddr!;
       }
-      tags.add(["e", er.rootId, relayAddr, "root"]);
+      tags.add(["e", er.rootId!, relayAddr, "root"]);
     }
 
     // TODO reply maybe change the placeholder in editor router.
@@ -536,9 +536,9 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
         }
         var content = jsonEncode(widget.event.toJson());
 
-        List<dynamic> tag = ["e", widget.event.id];
+        List<String> tag = ["e", widget.event.id];
         if (StringUtil.isNotBlank(relayAddr)) {
-          tag.add(relayAddr);
+          tag.add(relayAddr!);
         }
         Nip01Event event = Nip01Event(
             pubKey: loggedUserSigner!.getPublicKey(),

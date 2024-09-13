@@ -39,9 +39,9 @@ class EditorRouter extends StatefulWidget {
   // dm arg
   String? pubkey;
 
-  List<dynamic> tags = [];
+  List<List<String>> tags = [];
 
-  List<dynamic> tagsAddedWhenSend = [];
+  List<List<String>> tagsAddedWhenSend = [];
 
   List<dynamic> tagPs = [];
 
@@ -60,8 +60,8 @@ class EditorRouter extends StatefulWidget {
 
   static Future<Nip01Event?> open(
     BuildContext context, {
-    List<dynamic>? tags,
-    List<dynamic>? tagsAddedWhenSend,
+    List<List<String>>? tags,
+    List<List<String>>? tagsAddedWhenSend,
     List<dynamic>? tagPs,
     String? pubkey,
     List<quill.BlockEmbed>? initEmbeds,
@@ -595,18 +595,18 @@ class _EditorRouter extends CustState<EditorRouter> with EditorMixin {
   }
 
   @override
-  List getTags() {
+  List<List<String>> getTags() {
     return widget.tags;
   }
 
   @override
-  List getTagsAddedWhenSend() {
+  List<List<String>> getTagsAddedWhenSend() {
     if ((notifyItems == null || notifyItems!.isEmpty) &&
         editorNotifyItems.isEmpty) {
       return widget.tagsAddedWhenSend;
     }
 
-    List<dynamic> list = [];
+    List<List<String>> list = [];
     list.addAll(widget.tagsAddedWhenSend);
     for (var item in notifyItems!) {
       if (item.selected) {

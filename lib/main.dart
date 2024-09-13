@@ -21,6 +21,7 @@ import 'package:ndk/config/bootstrap_relays.dart';
 import 'package:ndk/data_layer/data_sources/amber_flutter.dart';
 import 'package:ndk/data_layer/repositories/signers/amber_event_signer.dart';
 import 'package:ndk/data_layer/repositories/verifiers/acinq_event_verifier.dart';
+import 'package:ndk/data_layer/repositories/verifiers/rust_event_verifier.dart';
 import 'package:ndk/domain_layer/entities/pubkey_mapping.dart';
 import 'package:ndk/domain_layer/entities/read_write_marker.dart';
 import 'package:ndk/domain_layer/entities/user_relay_list.dart';
@@ -56,6 +57,7 @@ import 'package:yana/router/wallet/wallet_receive.dart';
 import 'package:yana/router/wallet/wallet_receive_invoice.dart';
 import 'package:yana/router/wallet/wallet_router.dart';
 import 'package:yana/router/wallet/wallet_send.dart';
+import 'package:yana/router/wallet/wallet_send_confirm.dart';
 import 'package:yana/utils/image/cache_manager_builder.dart';
 import 'package:yana/utils/platform_util.dart';
 
@@ -165,7 +167,8 @@ get loggedUserSigner => ndk.config.eventSigner;
 AmberFlutterDS amberFlutterDS = AmberFlutterDS(Amberflutter());
 late CacheManager cacheManager;
 Ndk ndk = Ndk(
-  NdkConfig(eventVerifier: kDebugMode? Bip340EventVerifier(doVerification: false):AcinqSecp256k1EventVerifier(), cache: cacheManager, engine: NdkEngine.RELAY_SETS),
+  // Bip340EventVerifier(doVerification: false)  :AcinqSecp256k1EventVerifier()
+  NdkConfig(eventVerifier: RustEventVerifier(), cache: cacheManager, engine: NdkEngine.RELAY_SETS),
 );
 
 late bool isExternalSignerInstalled;
@@ -710,6 +713,7 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
       RouterPath.WALLET_RECEIVE: (context) => const WalletReceiveRouter(),
       RouterPath.WALLET_RECEIVE_INVOICE: (context) => const WalletReceiveInvoiceRouter(),
       RouterPath.WALLET_SEND: (context) => const WalletSendRouter(),
+      RouterPath.WALLET_SEND_CONFIRM: (context) => const WalletSendConfirmRouter(),
       RouterPath.NWC: (context) => const NwcRouter(),
       RouterPath.RELAYS: (context) => const RelaysRouter(),
       RouterPath.PROFILE_EDITOR: (context) => const ProfileEditorRouter(),

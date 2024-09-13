@@ -275,7 +275,7 @@ class DMProvider extends ChangeNotifier with PenddingEventsLaterFunction {
       onEvent(event);
     });
 
-    ndk.requests.query(filters: [sentFilter], relaySet: relaySet).stream.listen((event) {
+    ndk.requests.query(cacheRead:false, filters: [sentFilter], relaySet: relaySet).stream.listen((event) {
           onEvent(event);
         });
   }

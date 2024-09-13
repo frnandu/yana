@@ -2,14 +2,12 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 import 'package:yana/main.dart';
 import 'package:yana/provider/nwc_provider.dart';
 
 import '../../ui/button.dart';
-import '../../utils/router_path.dart';
 import '../../utils/router_util.dart';
 import '../../utils/string_util.dart';
 
@@ -23,16 +21,10 @@ class NwcRouter extends StatefulWidget {
 }
 
 class _NwcRouter extends State<NwcRouter> {
-  // TextEditingController controller = TextEditingController();
   final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
   QRViewController? qrController;
   bool disposed = false;
 
-  // final MobileScannerController controller = MobileScannerController(
-  //   // required options for the scanner
-  // );
-  //
-  // StreamSubscription<Object?>? _subscription;
 
   String? nwcSecret;
 
@@ -53,16 +45,12 @@ class _NwcRouter extends State<NwcRouter> {
 
   @override
   Future<void> dispose() async {
-    // unawaited(_subscription?.cancel());
-    // _subscription = null;
     // Dispose the widget itself.
     super.dispose();
     disposed = true;
     if (qrController != null) {
       qrController!.dispose();
     }
-    // Finally, dispose of the controller.
-    // await controller.dispose();
   }
 
   @override
@@ -74,9 +62,6 @@ class _NwcRouter extends State<NwcRouter> {
 
     var appBarNew = AppBar(
       toolbarHeight: 70,
-      // shape: RoundedRectangleBorder(
-      //   borderRadius: BorderRadius.circular(30),
-      // ),
       backgroundColor: themeData.appBarTheme.backgroundColor,
       leading: GestureDetector(
         onTap: () {
@@ -90,21 +75,6 @@ class _NwcRouter extends State<NwcRouter> {
           ),
         ),
       ),
-      // actions: [
-      //   GestureDetector(
-      //     onTap: addToCommunity,
-      //     child: Container(
-      //       margin: const EdgeInsets.only(
-      //         left: Base.BASE_PADDING,
-      //         right: Base.BASE_PADDING,
-      //       ),
-      //       child: Icon(
-      //         Icons.add,
-      //         color: themeData.appBarTheme.titleTextStyle!.color,
-      //       ),
-      //     ),
-      //   )
-      // ],
       title: const Text("Scan or Paste Pairing Secret",
           style: TextStyle(
             fontWeight: FontWeight.bold,
