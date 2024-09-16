@@ -69,10 +69,11 @@ class EventReactionsProvider extends ChangeNotifier
     if (replies == null || force) {
       /// TODO use other relaySet if gossip
       NdkResponse response = ndk.requests.query(
-          idPrefix: "event-reations-thread-replies-",
+          idPrefix: "event-reations-thread-replies",
           filters: [
             Filter(eTags: [id], kinds: [Nip01Event.TEXT_NODE_KIND])
           ],
+      // TODO which relays for thread replies???? depends on event author + relay hints from event maybe?
       //    relaySet: myInboxRelaySet!
       );
       Map<String, Nip01Event> map = {};
