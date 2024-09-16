@@ -184,7 +184,7 @@ class NwcProvider extends ChangeNotifier {
 
   Future<void> requestBalance() async {
     if (isConnected) {
-      fiatCurrencyRate = await RatesUtil.coinbase("pln");
+      fiatCurrencyRate = await RatesUtil.fiatCurrency(settingProvider.currency!);
 
       EventSigner nwcSigner = Bip340EventSigner(secret, getPublicKey(secret!));
 
@@ -207,7 +207,7 @@ class NwcProvider extends ChangeNotifier {
   Future<void> requestListTransactions(
       {int limit = 100, int offset = 0, bool unpaid = false}) async {
     if (isConnected) {
-      fiatCurrencyRate = await RatesUtil.coinbase("pln");
+      fiatCurrencyRate = await RatesUtil.fiatCurrency(settingProvider.currency!);
       EventSigner nwcSigner = Bip340EventSigner(secret!, getPublicKey(secret!));
 
       var content =

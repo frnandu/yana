@@ -265,6 +265,8 @@ class SettingProvider extends ChangeNotifier {
 
   String? get translateTarget => _settingData!.translateTarget;
 
+  String? get currency => _settingData!.currency;
+
   Map<String, int> _translateSourceArgsMap = {};
 
   void _reloadTranslateSourceArgs() {
@@ -296,6 +298,7 @@ class SettingProvider extends ChangeNotifier {
   int get webviewAppbarOpen => _settingData!.webviewAppbarOpen;
 
   int? get tableMode => _settingData!.tableMode;
+
 
   int? get autoOpenSensitive => _settingData!.autoOpenSensitive;
 
@@ -442,6 +445,11 @@ class SettingProvider extends ChangeNotifier {
     saveAndNotifyListeners();
   }
 
+  set currency(String? o) {
+    _settingData!.currency = o;
+    saveAndNotifyListeners();
+  }
+
   set translateTarget(String? o) {
     _settingData!.translateTarget = o;
     saveAndNotifyListeners();
@@ -512,6 +520,7 @@ class SettingData {
   int? broadcastToInboxMaxCount;
 
   String? network;
+  String? currency;
 
   bool? backgroundService;
 
@@ -588,6 +597,7 @@ class SettingData {
     this.translateSourceArgs,
     this.broadcastWhenBoost,
     this.fontSize,
+    this.currency,
     this.webviewAppbarOpen = OpenStatus.OPEN,
     this.tableMode,
     this.autoOpenSensitive,
@@ -621,6 +631,11 @@ class SettingData {
       imgCompress = json['imgCompress'];
     } else {
       imgCompress = 50;
+    }
+    if (json['currency'] != null) {
+      currency = json['currency'];
+    } else {
+      currency = "usd";
     }
     if (json['gossip'] != null) {
       gossip = json['gossip'];
@@ -693,6 +708,7 @@ class SettingData {
     data['themeColor'] = this.themeColor;
     data['fontFamily'] = this.fontFamily;
     data['openTranslate'] = this.openTranslate;
+    data['currency'] = this.currency;
     data['translateTarget'] = this.translateTarget;
     data['translateSourceArgs'] = this.translateSourceArgs;
     data['broadcastWhenBoost'] = this.broadcastWhenBoost;

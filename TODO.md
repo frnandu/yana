@@ -96,8 +96,8 @@
 - Wallet balance in FIAT (choose currency) from coingecko/kraken?
 - rust event verifier
 - published on zap.store with self-signing
-
 - choose currency for wallet on settings
+- 
 - thread single event fix
 - fix nip65 on notifications WTF? 
 

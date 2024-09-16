@@ -5,6 +5,7 @@ import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:yana/main.dart';
 import 'package:yana/models/wallet_transaction.dart';
 import 'package:yana/provider/nwc_provider.dart';
+import 'package:yana/provider/setting_provider.dart';
 import 'package:yana/router/wallet/payment_component.dart';
 import 'package:yana/router/wallet/transaction_item_component.dart';
 import 'package:yana/utils/base.dart';
@@ -75,6 +76,7 @@ class _WalletRouter extends State<WalletRouter> {
   @override
   Widget build(BuildContext context) {
     var _nwcProvider = Provider.of<NwcProvider>(context);
+    var _settingsProvider = Provider.of<SettingProvider>(context);
 
     var themeData = Theme.of(context);
 
@@ -551,7 +553,7 @@ class _WalletRouter extends State<WalletRouter> {
                 tooltip: "settings",
                 itemBuilder: (context) {
                   List<PopupMenuEntry<String>> list = [
-                    //const PopupMenuItem(value: "settings", child: Text("Settings")),
+                    const PopupMenuItem(value: "settings", child: Text("Settings")),
                   ];
                   if (nwcProvider.isConnected) {
                     list.add(
@@ -568,6 +570,8 @@ class _WalletRouter extends State<WalletRouter> {
                     setState(() {
                       nwcProvider.disconnect();
                     });
+                  } else if (value == "settings") {
+                    RouterUtil.router(context, RouterPath.SETTING);
                   }
                 }))
         : Container();
