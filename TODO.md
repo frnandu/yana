@@ -99,8 +99,7 @@
 - choose currency for wallet on settings
 - thread single event fix
 
-- confirm outbox working
-- re-enable reactions subscriptions + test
+- loading thread....
 - fix nip65 on notifications WTF? 
 - refresh relay list
 

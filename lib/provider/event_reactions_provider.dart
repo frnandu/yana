@@ -116,19 +116,19 @@ class EventReactionsProvider extends ChangeNotifier
 
     RelaySet? relaySet;
 
-    if (settingProvider.gossip == 1 && pubKey != null) {
-      relaySet = await ndk.calculateRelaySet(
-          name: "reactions-feed",
-          ownerPubKey: pubKey!,
-          pubKeys: [pubKey!],
-          direction: RelayDirection.inbox,
-          relayMinCountPerPubKey: 5);
-      if (myInboxRelaySet != null) {
-        relaySet.addMoreRelays(myInboxRelaySet!.relaysMap);
-      }
-    } else {
+    // if (settingProvider.gossip == 1 && pubKey != null) {
+    //   relaySet = await ndk.calculateRelaySet(
+    //       name: "reactions-feed",
+    //       ownerPubKey: pubKey!,
+    //       pubKeys: [pubKey!],
+    //       direction: RelayDirection.inbox,
+    //       relayMinCountPerPubKey: 5);
+    //   if (myInboxRelaySet != null) {
+    //     relaySet.addMoreRelays(myInboxRelaySet!.relaysMap);
+    //   }
+    // } else {
       relaySet = myInboxRelaySet;
-    }
+    // }
     if (relaySet == null) {
       return;
     }
