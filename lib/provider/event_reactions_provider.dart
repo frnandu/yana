@@ -14,7 +14,7 @@ class EventReactionsProvider extends ChangeNotifier
 
   Map<String, EventReactions> _eventReactionsMap = {};
   Map<String, List<Nip01Event>> _repliesMap = {};
-  Map<String, NdkResponse> subscriptions = {};
+  // Map<String, NdkResponse> subscriptions = {};
 
   EventReactionsProvider() {
     laterTimeMS = 2000;
@@ -65,15 +65,16 @@ class EventReactionsProvider extends ChangeNotifier
       {bool force = false}) async {
     var replies = _repliesMap[id];
 
-    /// TODO refresh after some time
+    /// TODO refresh after some time or use subscriptions
     if (replies == null || force) {
       /// TODO use other relaySet if gossip
       NdkResponse response = ndk.requests.query(
-          idPrefix: "event-reations-",
+          idPrefix: "event-reations-thread-replies-",
           filters: [
             Filter(eTags: [id], kinds: [Nip01Event.TEXT_NODE_KIND])
           ],
-          relaySet: myInboxRelaySet!);
+      //    relaySet: myInboxRelaySet!
+      );
       Map<String, Nip01Event> map = {};
       await for (final event in response.stream) {
         if (map[event.id] == null ||
@@ -132,12 +133,12 @@ class EventReactionsProvider extends ChangeNotifier
     }
     // print(
     //     "---------------- reactions subscriptions: ${subscriptions.length}");
-    // NdkResponse response = ndk.query(filters: [filter], relaySet:  relaySet);
+    NdkResponse response = ndk.requests.query(idPrefix: "event-reations-", filters: [filter], relaySet:  relaySet);
     // subscriptions[eventId] = response;
-    //
-    // response.stream.listen((event) {
-    //   _handleSingleEvent2(event);
-    // });
+
+    response.stream.listen((event) {
+      _handleSingleEvent2(event);
+    });
     // TODO should use other relays inbox for pubKey....
   }
 
@@ -281,10 +282,10 @@ class EventReactionsProvider extends ChangeNotifier
 
   void removePendding(String eventId) async {
     // _penddingIds.remove(eventId);
-    if (subscriptions[eventId] != null) {
-      ndk.relays.closeSubscription(subscriptions[eventId]!.requestId);
-      subscriptions.remove(eventId);
-    }
+    // if (subscriptions[eventId] != null) {
+    //   ndk.relays.closeSubscription(subscriptions[eventId]!.requestId);
+    //   subscriptions.remove(eventId);
+    // }
   }
 
   void clear() {

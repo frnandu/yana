@@ -99,7 +99,10 @@
 - choose currency for wallet on settings
 - thread single event fix
 
+- confirm outbox working
+- re-enable reactions subscriptions + test
 - fix nip65 on notifications WTF? 
+- refresh relay list
 
 =====
 - nostr.wine-compatible translations service integration

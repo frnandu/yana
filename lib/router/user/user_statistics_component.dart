@@ -79,8 +79,10 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
         }
       },
     );
-    // queryFollowers();
-    // queryZaps();
+    if (loggedUserSigner!=null && loggedUserSigner!.getPublicKey() == widget.pubkey) {
+      queryFollowers();
+      queryZaps();
+    }
   }
 
   void refreshContactListIfNeededAsync(String pubkey) {
@@ -128,31 +130,32 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
         num: length, name: s.Following, onTap: onFollowingTap));
     // }
 
-    list.add(UserStatisticsItemComponent(
-      num: followedNum ?? 0,
-      name: s.Followers,
-      onTap: () {
-        if (followedMap != null) {
-          var pubkeys = followedMap!.keys.toList();
-          RouterUtil.router(context, RouterPath.FOLLOWED, pubkeys);
-        }
-      },
-      formatNum: true,
-    ));
+    if (loggedUserSigner!=null && loggedUserSigner!.getPublicKey() == widget.pubkey) {
+      list.add(UserStatisticsItemComponent(
+        num: followedNum ?? 0,
+        name: s.Followers,
+        onTap: () {
+          if (followedMap != null) {
+            var pubkeys = followedMap!.keys.toList();
+            RouterUtil.router(context, RouterPath.FOLLOWED, pubkeys);
+          }
+        },
+        formatNum: true,
+      ));
 
-    list.add(UserStatisticsItemComponent(
-      num: zapNum ?? 0,
-      name: "Zap",
-      onTap: () {
-        if (zapEventBox != null) {
-          zapEventBox!.sort();
-          var list = zapEventBox!.all();
-          RouterUtil.router(context, RouterPath.USER_ZAP_LIST, list);
-        }
-      },
-      formatNum: true,
-    ));
-
+      list.add(UserStatisticsItemComponent(
+        num: zapNum ?? 0,
+        name: "Zap",
+        onTap: () {
+          if (zapEventBox != null) {
+            zapEventBox!.sort();
+            var list = zapEventBox!.all();
+            RouterUtil.router(context, RouterPath.USER_ZAP_LIST, list);
+          }
+        },
+        formatNum: true,
+      ));
+    }
     list.add(UserStatisticsItemComponent(
         num: userRelayList != null ? userRelayList!.relays.length : 0,
         name: s.Relays,
