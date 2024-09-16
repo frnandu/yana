@@ -99,7 +99,6 @@
 - choose currency for wallet on settings
 - thread single event fix
 
-- fix follow !!!!
 - fix nip65 on notifications WTF? 
 
 =====
