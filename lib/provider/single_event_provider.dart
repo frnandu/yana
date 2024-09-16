@@ -30,8 +30,8 @@ class SingleEventProvider extends ChangeNotifier with LaterFunction {
     // later(_laterCallback, null);
     //   Filter filter = Filter(ids: _needUpdateIds);
 
-    NdkResponse response = ndk.requests.query(filters: [Filter(ids: [id])]);
-    response.stream.timeout(const Duration(seconds: 5)).listen((event) {
+    NdkResponse response = ndk.requests.query(idPrefix:"single-event-", timeout: 2, filters: [Filter(ids: [id])]);
+    response.stream.listen((event) {
       var oldEvent = _eventsMap[event.id];
       if (oldEvent != null) {
         if (event.sources.isNotEmpty && !oldEvent.sources.contains(event.sources[0])) {
@@ -49,7 +49,6 @@ class SingleEventProvider extends ChangeNotifier with LaterFunction {
       notFoundEventIds.add(id);
       Logger.log.d("$error onERROR for single event provider loading id $id");
     });
-
     return null;
   }
 
