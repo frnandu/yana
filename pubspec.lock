@@ -1305,9 +1305,11 @@ packages:
   ndk:
     dependency: "direct main"
     description:
-      path: "../dart_ndk"
-      relative: true
-    source: path
+      path: "."
+      ref: master
+      resolved-ref: dae306d85bf3f03a330c29a18c2f6f65fa9bcc29
+      url: "https://github.com/relaystr/dart_ndk.git"
+    source: git
     version: "0.1.0"
   nested:
     dependency: transitive
@@ -1608,9 +1610,11 @@ packages:
   rust_lib_ndk:
     dependency: transitive
     description:
-      path: "../dart_ndk/rust_builder"
-      relative: true
-    source: path
+      path: rust_builder
+      ref: master
+      resolved-ref: dae306d85bf3f03a330c29a18c2f6f65fa9bcc29
+      url: "https://github.com/relaystr/dart_ndk.git"
+    source: git
     version: "0.0.1"
   rxdart:
     dependency: transitive
