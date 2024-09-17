@@ -389,10 +389,10 @@ packages:
     dependency: "direct main"
     description:
       name: dio
-      sha256: "0dfb6b6a1979dac1c1245e17cef824d7b452ea29bd33d3467269f9bef3715fb0"
+      sha256: "5598aa796bbf4699afd5c67c0f5f6e2ed542afc956884b9cd58c306966efc260"
       url: "https://pub.dev"
     source: hosted
-    version: "5.6.0"
+    version: "5.7.0"
   dio_cookie_manager:
     dependency: "direct main"
     description:
@@ -437,10 +437,10 @@ packages:
     dependency: transitive
     description:
       name: extended_image
-      sha256: "9786aab821aac117763d6e4419cd49f5031fbaacfe3fd212c5b313d0334c37a9"
+      sha256: c7b628bdbeb398bdd824cfc9d521f18e04b63ad2af811d182e885d3ae4ef45de
       url: "https://pub.dev"
     source: hosted
-    version: "8.2.1"
+    version: "8.2.3"
   extended_image_library:
     dependency: transitive
     description:
@@ -546,34 +546,34 @@ packages:
     dependency: "direct main"
     description:
       name: flutter_background_service
-      sha256: "8807ed792227be05329478870b92f2df62c7af96f49763f6d62ad39d2eac6ee6"
+      sha256: d32f078ec57647c9cfd6e1a8da9297f7d8f021d4dcc204a35aaad2cdbfe255f0
       url: "https://pub.dev"
     source: hosted
-    version: "5.0.7"
+    version: "5.0.10"
   flutter_background_service_android:
     dependency: transitive
     description:
       name: flutter_background_service_android
-      sha256: fe06c4bd719b8ce8512d5724a229526155c1f54f734524b8e43f8212e98384a8
+      sha256: "39da42dddf877beeef82bc2583130d8bedb4d0765e99ca9e7b4a32e8c6abd239"
       url: "https://pub.dev"
     source: hosted
-    version: "6.2.4"
+    version: "6.2.7"
   flutter_background_service_ios:
     dependency: transitive
     description:
       name: flutter_background_service_ios
-      sha256: "45c8aca1e8850e5c45822152b06d5806aba9470517dcd2c291fce8ef99a44d60"
+      sha256: "6037ffd45c4d019dab0975c7feb1d31012dd697e25edc05505a4a9b0c7dc9fba"
       url: "https://pub.dev"
     source: hosted
-    version: "5.0.2"
+    version: "5.0.3"
   flutter_background_service_platform_interface:
     dependency: transitive
     description:
       name: flutter_background_service_platform_interface
-      sha256: "91dd3391c213e37094fbc3fb7f34319b99ea9df76036a5c054d6371be843b0ae"
+      sha256: ca74aa95789a8304f4d3f57f07ba404faa86bed6e415f83e8edea6ad8b904a41
       url: "https://pub.dev"
     source: hosted
-    version: "5.1.1"
+    version: "5.1.2"
   flutter_cache_manager:
     dependency: transitive
     description:
@@ -808,10 +808,10 @@ packages:
     dependency: transitive
     description:
       name: flutter_plugin_android_lifecycle
-      sha256: "9d98bd47ef9d34e803d438f17fd32b116d31009f534a6fa5ce3a1167f189a6de"
+      sha256: "9ee02950848f61c4129af3d6ec84a1cfc0e47931abc746b03e7a3bc3e8ff6eda"
       url: "https://pub.dev"
     source: hosted
-    version: "2.0.21"
+    version: "2.0.22"
   flutter_quill:
     dependency: "direct main"
     description:
@@ -1298,10 +1298,10 @@ packages:
     dependency: "direct main"
     description:
       name: mime
-      sha256: "2e123074287cc9fd6c09de8336dae606d1ddb88d9ac47358826db698c176a1f2"
+      sha256: "801fd0b26f14a4a58ccb09d5892c3fbdeff209594300a542492cf13fba9d247a"
       url: "https://pub.dev"
     source: hosted
-    version: "1.0.5"
+    version: "1.0.6"
   ndk:
     dependency: "direct main"
     description:
@@ -1483,10 +1483,10 @@ packages:
     dependency: "direct main"
     description:
       name: photo_manager
-      sha256: "1e8bbe46a6858870e34c976aafd85378bed221ce31c1201961eba9ad3d94df9f"
+      sha256: e29619443803c40385ee509abc7937835d9b5122f899940080d28b2dceed59c1
       url: "https://pub.dev"
     source: hosted
-    version: "3.2.3"
+    version: "3.3.0"
   photo_manager_image_provider:
     dependency: transitive
     description:
@@ -1595,10 +1595,10 @@ packages:
     dependency: transitive
     description:
       name: quiver
-      sha256: b1c1ac5ce6688d77f65f3375a9abb9319b3cb32486bdc7a1e0fdf004d7ba4e47
+      sha256: ea0b925899e64ecdfbf9c7becb60d5b50e706ade44a85b2363be2a22d88117d2
       url: "https://pub.dev"
     source: hosted
-    version: "3.2.1"
+    version: "3.2.2"
   rational:
     dependency: transitive
     description:
@@ -1684,10 +1684,10 @@ packages:
     dependency: transitive
     description:
       name: shared_preferences_android
-      sha256: a7e8467e9181cef109f601e3f65765685786c1a738a83d7fbbde377589c0d974
+      sha256: "480ba4345773f56acda9abf5f50bd966f581dac5d514e5fc4a18c62976bbba7e"
       url: "https://pub.dev"
     source: hosted
-    version: "2.3.1"
+    version: "2.3.2"
   shared_preferences_foundation:
     dependency: transitive
     description:
@@ -1993,10 +1993,10 @@ packages:
     dependency: transitive
     description:
       name: uuid
-      sha256: "83d37c7ad7aaf9aa8e275490669535c8080377cfa7a7004c24dfac53afffaa90"
+      sha256: f33d6bb662f0e4f79dcd7ada2e6170f3b3a2530c28fc41f49a411ddedd576a77
       url: "https://pub.dev"
     source: hosted
-    version: "4.4.2"
+    version: "4.5.0"
   vector_graphics:
     dependency: transitive
     description:
@@ -2041,10 +2041,10 @@ packages:
     dependency: transitive
     description:
       name: video_player_android
-      sha256: "4de50df9ee786f5891d3281e1e633d7b142ef1acf47392592eb91cba5d355849"
+      sha256: e343701aa890b74a863fa460f5c0e628127ed06a975d7d9af6b697133fb25bdf
       url: "https://pub.dev"
     source: hosted
-    version: "2.6.0"
+    version: "2.7.1"
   video_player_avfoundation:
     dependency: transitive
     description:
@@ -2129,10 +2129,10 @@ packages:
     dependency: transitive
     description:
       name: webview_flutter_android
-      sha256: c66651fba15f9d7ddd31daec42da8d6bce46c85610a7127e3ebcb39a4395c3c9
+      sha256: "6e64fcb1c19d92024da8f33503aaeeda35825d77142c01d0ea2aa32edc79fdc8"
       url: "https://pub.dev"
     source: hosted
-    version: "3.16.6"
+    version: "3.16.7"
   webview_flutter_platform_interface:
     dependency: transitive
     description:
@@ -2177,10 +2177,10 @@ packages:
     dependency: transitive
     description:
       name: win32_registry
-      sha256: "723b7f851e5724c55409bb3d5a32b203b3afe8587eaf5dafb93a5fed8ecda0d6"
+      sha256: "21ec76dfc731550fd3e2ce7a33a9ea90b828fdf19a5c3bcf556fa992cfa99852"
       url: "https://pub.dev"
     source: hosted
-    version: "1.1.4"
+    version: "1.1.5"
   window_manager:
     dependency: "direct main"
     description:
