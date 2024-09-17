@@ -100,6 +100,7 @@
 - thread single event fix
 
 - loading thread....
+- event multiple sources
 - fix nip65 on notifications WTF? 
 - fix require unlock to use error 
 - refresh relay list
