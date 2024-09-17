@@ -1,9 +1,8 @@
-import 'package:dart_ndk/dart_ndk.dart';
-import 'package:dart_ndk/nips/nip01/event.dart';
-import 'package:dart_ndk/nips/nip01/filter.dart';
-import 'package:dart_ndk/relay.dart';
-import 'package:dart_ndk/request.dart';
+import 'package:ndk/config/bootstrap_relays.dart';
+import 'package:ndk/ndk.dart';
 import 'package:flutter/material.dart';
+import 'package:ndk/shared/helpers/relay_helper.dart';
+import 'package:ndk/shared/logger/logger.dart';
 
 import '../main.dart';
 import '../utils/later_function.dart';
@@ -11,115 +10,113 @@ import '../utils/later_function.dart';
 class SingleEventProvider extends ChangeNotifier with LaterFunction {
   Map<String, Nip01Event> _eventsMap = {};
 
-  List<String> _needUpdateIds = [];
+  // List<String> _needUpdateIds = [];
+  List<String> notFoundEventIds = [];
 
   List<Nip01Event> _penddingEvents = [];
 
-  Nip01Event? getEvent(String id, { bool queryIfNotFound=true}) {
+  Nip01Event? getEvent(String id, {bool queryIfNotFound = true}) {
     var event = _eventsMap[id];
     if (event != null) {
       return event;
     }
-
-    if (queryIfNotFound && !_needUpdateIds.contains(id)) {
-      _needUpdateIds.add(id);
-    }
-    later(_laterCallback, null);
-
-    return null;
-  }
-
-  void _laterCallback() {
-    if (_needUpdateIds.isNotEmpty) {
-      _laterSearch();
+    if (notFoundEventIds.contains(id)) {
+      return null;
     }
 
-    if (_penddingEvents.isNotEmpty) {
-      _handlePenddingEvents();
-    }
-  }
+    // if (queryIfNotFound && !_needUpdateIds.contains(id)) {
+    //   _needUpdateIds.add(id);
+    // }
+    // later(_laterCallback, null);
+    //   Filter filter = Filter(ids: _needUpdateIds);
 
-  void _handlePenddingEvents() {
-    for (var event in _penddingEvents) {
+    NdkResponse response = ndk.requests.query(
+        name:"single-event",
+        timeout: 2,
+        filters: [Filter(ids: [id])],
+        explicitRelays: myInboxRelaySet?.urls
+    );
+    response.stream.listen((event) {
       var oldEvent = _eventsMap[event.id];
       if (oldEvent != null) {
-        if (event.sources.isNotEmpty &&
-            !oldEvent.sources.contains(event.sources[0])) {
+        if (event.sources.isNotEmpty && !oldEvent.sources.contains(event.sources[0])) {
           oldEvent.sources.add(event.sources[0]);
         }
       } else {
         _eventsMap[event.id] = event;
       }
-
-    }
-    _penddingEvents.clear();
-    notifyListeners();
-  }
-
-  void _onEvent(Nip01Event event) {
-    _penddingEvents.add(event);
-    later(_laterCallback, null);
-  }
-
-  void _laterSearch() async {
-    if (_needUpdateIds.isEmpty || loggedUserSigner==null) {
-      return;
-    }
-
-    var filter = Filter(ids: _needUpdateIds);
-    List<String> tempIds = [];
-    tempIds.addAll(_needUpdateIds);
-
-    // const connectionOptions = SocketConnectionOptions(
-    //   timeoutConnectionMs: 30000, // connection fail timeout after 4000 ms
-    //   skipPingMessages: true,
-    //   pingRestrictionForce: true,
-    // );
-    // final textSocketHandler = IWebSocketHandler<String, String>.createClient(
-    //   "wss://relay.damus.io", // Postman echo ws server
-    //   SocketSimpleTextProcessor(),
-    //   connectionOptions: connectionOptions
-    // );
-    //
-    // textSocketHandler.incomingMessagesStream.listen((message) {
-    //   List<dynamic> eventJson = json.decode(message);
-    //   if (eventJson[0] == 'EVENT') {
-    //     // print('> webSocket  got text message from server: "$message" ');
-    //     Nip01Event event = Nip01Event.fromJson(eventJson[2]);
-    //     _onEvent(event);
-    //     textSocketHandler.disconnect("");
-    //     textSocketHandler.close();
-    //   }
-    // });
-    // await textSocketHandler.connect();
-    // List<dynamic> request = ["REQ", Helpers.getRandomString(10), filter.toMap()];
-    // final encoded = jsonEncode(request);
-    // textSocketHandler.sendMessage(encoded);
-
-    Set<String> urls = relayManager.bootstrapRelays.toSet();
-    urls.addAll(RelayManager.DEFAULT_BOOTSTRAP_RELAYS);
-
-    if (myInboxRelaySet!=null) {
-      myInboxRelaySet!.urls.forEach((element) {
-        String? relay = Relay.clean(element);
-        if (relay!=null) {
-          urls.add(relay);
-        }
-      });
-    }
-    NostrRequest request = await relayManager.requestRelays(
-        urls, filter, timeout: 5,
-      onTimeout: () {
-          _onEvent(Nip01Event(pubKey: "", kind: -1, tags: [], content: "note not found or muted author"));
+      notifyListeners();
+    }, onDone: () {
+      if (_eventsMap[id]==null) {
+        notFoundEventIds.add(id);
       }
-    );
-    request.stream.listen((event) {
-      _onEvent(event);
-    },onError: (error) {
-      print("$error onERROR for single event provider loading $filter");
-      return;
-    }
-    );
-    _needUpdateIds.clear();
+    }, onError: (error) {
+      notFoundEventIds.add(id);
+      Logger.log.e("$error onERROR for single event provider loading id $id");
+    });
+    return null;
   }
+
+  // void _laterCallback() {
+  //   if (_needUpdateIds.isNotEmpty) {
+  //     _laterSearch();
+  //   }
+  //
+  //   if (_penddingEvents.isNotEmpty) {
+  //     _handlePenddingEvents();
+  //   }
+  // }
+
+  // void _handlePenddingEvents() {
+  //   for (var event in _penddingEvents) {
+  //     var oldEvent = _eventsMap[event.id];
+  //     if (oldEvent != null) {
+  //       if (event.sources.isNotEmpty && !oldEvent.sources.contains(event.sources[0])) {
+  //         oldEvent.sources.add(event.sources[0]);
+  //       }
+  //     } else {
+  //       _eventsMap[event.id] = event;
+  //     }
+  //   }
+  //   _penddingEvents.clear();
+  //   notifyListeners();
+  // }
+  //
+  // void _onEvent(Nip01Event event) {
+  //   _penddingEvents.add(event);
+  //   later(_laterCallback, null);
+  // }
+
+  // void _laterSearch() async {
+  //   if (_needUpdateIds.isEmpty || loggedUserSigner == null) {
+  //     return;
+  //   }
+  //
+  //   Filter filter = Filter(ids: _needUpdateIds);
+  //   List<String> tempIds = [];
+  //   tempIds.addAll(_needUpdateIds);
+  //
+  //   Set<String> urls =ndk.relays.bootstrapRelays.toSet();
+  //   urls.addAll(DEFAULT_BOOTSTRAP_RELAYS);
+  //
+  //   if (myInboxRelaySet != null) {
+  //     myInboxRelaySet!.urls.forEach((element) {
+  //       String? relay = cleanRelayUrl(element);
+  //       if (relay != null) {
+  //         urls.add(relay);
+  //       }
+  //     });
+  //   }
+  //   NdkResponse response = ndk.requests.query(explicitRelays: urls.toList(), filters: [filter]);
+  //   response.stream.listen((event) {
+  //     tempIds.remove(event.id);
+  //     _onEvent(event);
+  //   }, onDone: () {
+  //     notFoundEventIds.addAll(tempIds);
+  //   }, onError: (error) {
+  //     print("$error onERROR for single event provider loading $filter");
+  //     return;
+  //   });
+  //   _needUpdateIds.clear();
+  // }
 }

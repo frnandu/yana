@@ -1,5 +1,5 @@
-import 'package:dart_ndk/relay.dart';
 import 'package:flutter/material.dart';
+import 'package:ndk/domain_layer/entities/relay.dart';
 
 import '../../main.dart';
 import '../../utils/base.dart';
@@ -129,7 +129,7 @@ class SearchRelayItemComponent extends StatelessWidget {
     //     displayName = nip19Name;
     //   }
     // }
-    Relay? relay = relayManager.getRelay(url);
+    Relay? relay =ndk.relays.getRelay(url);
 
     // Widget main = Container(
     //   width: width,

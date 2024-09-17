@@ -1,7 +1,8 @@
-import 'package:dart_ndk/nips/nip01/helpers.dart';
-import 'package:dart_ndk/nips/nip50/nip50.dart';
-import 'package:dart_ndk/nips/nip51/nip51.dart';
-import 'package:dart_ndk/relay.dart';
+import 'package:ndk/domain_layer/entities/nip_51_list.dart';
+import 'package:ndk/domain_layer/entities/relay.dart';
+import 'package:ndk/shared/helpers/relay_helper.dart';
+import 'package:ndk/shared/nips/nip01/helpers.dart';
+import 'package:ndk/shared/nips/nip50/nip50.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:provider/provider.dart';
@@ -39,7 +40,7 @@ class _RelayListRouter extends State<RelayListRouter> with SingleTickerProviderS
     controller.addListener(() {
       onEditingComplete();
     });
-    // relayManager.getNip51RelaySets(loggedUserSigner!).then((value) {
+    //ndk.relays.getNip51RelaySets(loggedUserSigner!).then((value) {
     //   setState(() {
     //     list = value;
     //   });
@@ -93,7 +94,7 @@ class _RelayListRouter extends State<RelayListRouter> with SingleTickerProviderS
             //   onChanged: (value) {
             //     print("!!!!!!!!!!!!!! $value");
             //     setState(() {
-            //       relaySet = relayManager.getCachedNip51RelaySet(value!, loggedUserSigner!);
+            //       relaySet =ndk.relays.getCachedNip51RelaySet(value!, loggedUserSigner!);
             //       selectedList = value!;
             //     });
             //   },
@@ -107,7 +108,7 @@ class _RelayListRouter extends State<RelayListRouter> with SingleTickerProviderS
         ),
         child: RefreshIndicator(
           onRefresh: () async {
-            Nip51List? refreshedList = await relayManager.getSingleNip51List(relayList!.kind, loggedUserSigner!, forceRefresh: true);
+            Nip51List? refreshedList = await ndk.lists.getSingleNip51List(relayList!.kind, loggedUserSigner!, forceRefresh: true);
             refreshedList ??= Nip51List(pubKey: relayList!.pubKey, kind: relayList!.kind, elements: [], createdAt: Helpers.now);
             setState(() {
               relayList = refreshedList;
@@ -124,7 +125,7 @@ class _RelayListRouter extends State<RelayListRouter> with SingleTickerProviderS
                     decoration: InputDecoration(
                       prefixIcon: const Icon(Icons.lan),
                       hintText: "start typing relay name or URL",
-                      suffixIcon: Relay.clean(controller.text) != null
+                      suffixIcon: cleanRelayUrl(controller.text) != null
                           ? PopupMenuButton<String>(
                               icon: const Icon(Icons.add),
                               tooltip: "more",
@@ -165,12 +166,11 @@ class _RelayListRouter extends State<RelayListRouter> with SingleTickerProviderS
                   bool? result = await ConfirmDialog.show(context, "Confirm remove ${url} from list");
                   if (result != null && result) {
                     EasyLoading.show(status: 'Removing from list and broadcasting...', maskType: EasyLoadingMaskType.black, dismissOnTap: true);
-                    relayList = await relayManager.broadcastRemoveNip51Relay(relayList!.kind, url, myOutboxRelaySet!.urls, loggedUserSigner!,
-                        defaultRelaysIfEmpty: relayList!.allRelays);
+                    relayList = await ndk.lists.broadcastRemoveNip51Relay(relayList!.kind, url, myOutboxRelaySet!.urls, loggedUserSigner, defaultRelaysIfEmpty: relayList!.allRelays);
                     if (relayList!.kind == Nip51List.SEARCH_RELAYS) {
                       searchRelays = relayList!.allRelays!;
                     } else if (relayList!.kind == Nip51List.BLOCKED_RELAYS) {
-                      relayManager.blockedRelays = relayList!.allRelays!;
+                     ndk.relays.blockedRelays = relayList!.allRelays!;
                     }
                     relayProvider.notifyListeners();
                     EasyLoading.dismiss();
@@ -189,9 +189,9 @@ class _RelayListRouter extends State<RelayListRouter> with SingleTickerProviderS
   void onEditingComplete() async {
     List<String> result = await relayProvider.findRelays(controller.text, nip: relayList!.kind == Nip51List.SEARCH_RELAYS ? Nip50.NIP : null);
     result.forEach((url) {
-      if (relayManager.getRelay(url) == null || relayManager.getRelay(url)!.info == null) {
-        relayManager.relays[url] = Relay(url);
-        relayManager.getRelayInfo(url).then((value) {
+      if (ndk.relays.getRelay(url) == null ||ndk.relays.getRelay(url)!.info == null) {
+       ndk.relays.relays[url] = Relay(url);
+       ndk.relays.getRelayInfo(url).then((value) {
           if (!disposed) {
             setState(() {});
           }
@@ -205,16 +205,16 @@ class _RelayListRouter extends State<RelayListRouter> with SingleTickerProviderS
   }
 
   int compareRelays(RelayMetadata r1, RelayMetadata r2) {
-    Relay? relay1 = relayManager.getRelay(r1.url!);
-    Relay? relay2 = relayManager!.getRelay(r2.url!);
+    Relay? relay1 =ndk.relays.getRelay(r1.url!);
+    Relay? relay2 = ndk.relays.getRelay(r2.url!);
     if (relay1 == null) {
       return 1;
     }
     if (relay2 == null) {
       return -1;
     }
-    bool a1 = relayManager.isRelayConnected(r1.url!);
-    bool a2 = relayManager.isRelayConnected(r2.url!);
+    bool a1 =ndk.relays.isRelayConnected(r1.url!);
+    bool a2 =ndk.relays.isRelayConnected(r2.url!);
     if (a1) {
       return a2 ? (r2.count != null ? r2.count!.compareTo(r1.count!) : 0) : -1;
     }
@@ -222,7 +222,7 @@ class _RelayListRouter extends State<RelayListRouter> with SingleTickerProviderS
   }
 
   Future<void> add(String url, bool private) async {
-    String? cleanUrl = Relay.clean(url);
+    String? cleanUrl = cleanRelayUrl(url);
     if (cleanUrl == null) {
       EasyLoading.showError(
         "Invalid address wss://<host>:<port> or ws://<host>:<port>",
@@ -244,12 +244,12 @@ class _RelayListRouter extends State<RelayListRouter> with SingleTickerProviderS
     bool? result = await ConfirmDialog.show(context, "Confirm add ${private ? "private" : "public"} ${url} to list");
     if (result != null && result) {
       EasyLoading.show(status: 'Broadcasting relay list...', maskType: EasyLoadingMaskType.black, dismissOnTap: true);
-      relayList = await relayManager.broadcastAddNip51ListRelay(relayList!.kind, url, myOutboxRelaySet!.urls, loggedUserSigner!, private: private);
+      relayList = await ndk.lists.broadcastAddNip51ListRelay(relayList!.kind, url, myOutboxRelaySet!.urls, loggedUserSigner, private: private);
       if (relayList!.kind == Nip51List.SEARCH_RELAYS) {
         searchRelays = relayList!.allRelays!;
-        await relayManager.reconnectRelays(searchRelays);
+        await ndk.relays.reconnectRelays(searchRelays);
       } else if (relayList!.kind == Nip51List.BLOCKED_RELAYS) {
-        relayManager.blockedRelays = relayList!.allRelays!;
+       ndk.relays.blockedRelays = relayList!.allRelays!;
       }
       relayProvider.notifyListeners();
       EasyLoading.dismiss();
@@ -341,17 +341,17 @@ class RelayListElementComponent extends StatelessWidget {
             Expanded(
               child: GestureDetector(
                 onTap: () async {
-                  if (relayManager.getRelay(url) == null || relayManager.getRelay(url)!.info == null) {
-                    relayManager.relays[url] = Relay(url);
+                  if (ndk.relays.getRelay(url) == null ||ndk.relays.getRelay(url)!.info == null) {
+                   ndk.relays.relays[url] = Relay(url);
                     EasyLoading.show(status: "Loading relay info...");
-                    relayManager.getRelayInfo(url).then((info) {
+                   ndk.relays.getRelayInfo(url).then((info) {
                       EasyLoading.dismiss();
                       if (info != null) {
-                        RouterUtil.router(context, RouterPath.RELAY_INFO, relayManager.relays[url]);
+                        RouterUtil.router(context, RouterPath.RELAY_INFO,ndk.relays.relays[url]);
                       }
                     });
                   } else {
-                    RouterUtil.router(context, RouterPath.RELAY_INFO, relayManager.relays[url]);
+                    RouterUtil.router(context, RouterPath.RELAY_INFO,ndk.relays.relays[url]);
                   }
                 },
                 child: Column(

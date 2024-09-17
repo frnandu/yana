@@ -6,4 +6,4 @@
 #   http://developer.android.com/guide/developing/tools/proguard.html
 
 # preserve access to native classses
--keep class fr.acinq.secp256k1.** { *; }
+#-keep class fr.acinq.secp256k1.** { *; }

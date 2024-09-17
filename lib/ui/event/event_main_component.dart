@@ -1,8 +1,7 @@
 import 'dart:convert';
 
-import 'package:dart_ndk/nips/nip01/event.dart';
-import 'package:dart_ndk/nips/nip01/metadata.dart';
-import 'package:dart_ndk/nips/nip25/reactions.dart';
+import 'package:ndk/entities.dart';
+import 'package:ndk/shared/nips/nip25/reactions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:provider/provider.dart';
@@ -168,7 +167,7 @@ class _EventMainComponent extends State<EventMainComponent> {
     if (_settingProvider.autoOpenSensitive == OpenStatus.OPEN) {
       showWarning = true;
     }
-    if (widget.mutedProfile || !relayManager.filterEvent(widget.event)) {
+    if (widget.mutedProfile || !ndk.relays.filterEvent(widget.event)) {
       return Container();
     }
 
@@ -678,7 +677,7 @@ class _EventMainComponent extends State<EventMainComponent> {
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.warning),
+              const Icon(Icons.warning),
               Container(
                 margin: EdgeInsets.only(left: Base.BASE_PADDING_HALF),
                 child: Text(

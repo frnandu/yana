@@ -1,10 +1,7 @@
 import 'dart:async';
 
-import 'package:dart_ndk/nips/nip01/event.dart';
-import 'package:dart_ndk/nips/nip01/filter.dart';
-import 'package:dart_ndk/nips/nip02/contact_list.dart';
-import 'package:dart_ndk/request.dart';
 import 'package:flutter/foundation.dart';
+import 'package:ndk/ndk.dart';
 import 'package:yana/provider/data_util.dart';
 
 import '../main.dart';
@@ -13,12 +10,14 @@ import '../nostr/event_kind.dart' as kind;
 import '../utils/find_event_interface.dart';
 import '../utils/peddingevents_later_function.dart';
 
-class FollowEventProvider extends ChangeNotifier with PenddingEventsLaterFunction implements FindEventInterface {
+class FollowEventProvider extends ChangeNotifier
+    with PenddingEventsLaterFunction
+    implements FindEventInterface {
   late int _initTime;
-  NostrRequest? subscription;
-  NostrRequest? subscriptionTags;
-  NostrRequest? subscriptionCommunities;
-  NostrRequest? subscriptionEvents;
+  NdkResponse? subscription;
+  NdkResponse? subscriptionTags;
+  NdkResponse? subscriptionCommunities;
+  NdkResponse? subscriptionEvents;
 
   int? postsTimestamp;
   int? repliesTimestamp;
@@ -28,7 +27,8 @@ class FollowEventProvider extends ChangeNotifier with PenddingEventsLaterFunctio
 
   FollowEventProvider() {
     _initTime = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-    postsAndRepliesBox = EventMemBox(sortAfterAdd: false); // sortAfterAdd by call
+    postsAndRepliesBox =
+        EventMemBox(sortAfterAdd: false); // sortAfterAdd by call
     postsBox = EventMemBox(sortAfterAdd: false);
     postsTimestamp = sharedPreferences.getInt(DataKey.FEED_POSTS_TIMESTAMP);
     repliesTimestamp = sharedPreferences.getInt(DataKey.FEED_REPLIES_TIMESTAMP);
@@ -40,7 +40,8 @@ class FollowEventProvider extends ChangeNotifier with PenddingEventsLaterFunctio
 
   Future<void> loadCachedFeed() async {
     List<String> contactsForFeed = contactListProvider.contacts();
-    List<Nip01Event>? cachedEvents = cacheManager.loadEvents(pubKeys: contactsForFeed, kinds: queryEventKinds());
+    List<Nip01Event>? cachedEvents = cacheManager.loadEvents(
+        pubKeys: contactsForFeed, kinds: queryEventKinds());
     print("FOLLOW loaded ${cachedEvents.length} events from cache DB");
     onEvents(cachedEvents, saveToCache: false);
     // if (postsBox.newestEvent != null) {
@@ -60,11 +61,14 @@ class FollowEventProvider extends ChangeNotifier with PenddingEventsLaterFunctio
       since = newestPost!.createdAt;
     }
     var newestReply = postsAndRepliesBox.newestEvent;
-    if (newestReply != null && (since == null || newestReply!.createdAt > since)) {
+    if (newestReply != null &&
+        (since == null || newestReply!.createdAt > since)) {
       since = newestReply!.createdAt;
     }
     // await contactListProvider.loadContactList(loggedUserSigner!.getPublicKey());
-    subscribe(since: since, fallbackTags: followEventProvider.FALLBACK_TAGS_FOR_EMPTY_CONTACT_LIST);
+    subscribe(
+        since: since,
+        fallbackTags: followEventProvider.FALLBACK_TAGS_FOR_EMPTY_CONTACT_LIST);
   }
 
   @override
@@ -76,7 +80,14 @@ class FollowEventProvider extends ChangeNotifier with PenddingEventsLaterFunctio
     return postsAndRepliesBox.listByPubkey(pubkey);
   }
 
-  List<String> FALLBACK_TAGS_FOR_EMPTY_CONTACT_LIST = ["grownostr", "plebchain", "welcome", "introductions", "cofeechain", "photography"];
+  List<String> FALLBACK_TAGS_FOR_EMPTY_CONTACT_LIST = [
+    "grownostr",
+    "plebchain",
+    "welcome",
+    "introductions",
+    "cofeechain",
+    "photography"
+  ];
 
   void refreshPosts() {
     _initTime = DateTime.now().millisecondsSinceEpoch ~/ 1000;
@@ -126,11 +137,16 @@ class FollowEventProvider extends ChangeNotifier with PenddingEventsLaterFunctio
     ];
   }
 
-  void subscribe({int? since, List<String>? fallbackContacts, List<String>? fallbackTags}) async {
+  void subscribe(
+      {int? since,
+      List<String>? fallbackContacts,
+      List<String>? fallbackTags}) async {
     doUnscribe();
 
-    ContactList? contactList = contactListProvider.getContactList(loggedUserSigner!.getPublicKey());
-    List<String> contactsForFeed = contactList != null ? contactList.contacts : [];
+    ContactList? contactList =
+        contactListProvider.getContactList(loggedUserSigner!.getPublicKey());
+    List<String> contactsForFeed =
+        contactList != null ? contactList.contacts : [];
 
     var filter = Filter(
       kinds: queryEventKinds(),
@@ -164,19 +180,24 @@ class FollowEventProvider extends ChangeNotifier with PenddingEventsLaterFunctio
     //   filter.aTags = communities;
     // }
     if (settingProvider.gossip == 1 && feedRelaySet != null) {
-      await relayManager.reconnectRelays(feedRelaySet!.urls);
+      await ndk.relays.reconnectRelays(feedRelaySet!.urls);
     } else {
-      await relayManager.reconnectRelays(myInboxRelaySet!.urls);
+      await ndk.relays.reconnectRelays(myInboxRelaySet!.urls);
     }
-    subscription = await relayManager!.subscription(filter, (feedRelaySet != null && settingProvider.gossip == 1) ? feedRelaySet! : myInboxRelaySet!,
-        splitRequestsByPubKeyMappings: settingProvider.gossip == 1);
+    subscription = ndk.requests.subscription(
+        name: "feed-sub",
+        filters: [filter],
+        relaySet: (feedRelaySet != null && settingProvider.gossip == 1)
+            ? feedRelaySet!
+            : myInboxRelaySet!);
+    // splitRequestsByPubKeyMappings: settingProvider.gossip == 1);
     subscription!.stream.listen((event) {
       onEvent(event);
     });
 
     // if (contactList != null) {
     //   if (contactList.followedTags.isNotEmpty) {
-    //     subscriptionTags = await relayManager!.subscription(
+    //     subscriptionTags = await ndk.relays.subscription(
     //         Filter(
     //           kinds: queryEventKinds(),
     //           since: since,
@@ -190,7 +211,7 @@ class FollowEventProvider extends ChangeNotifier with PenddingEventsLaterFunctio
     //     });
     //   }
     //   if (contactList.followedCommunities.isNotEmpty) {
-    //     subscriptionCommunities = await relayManager!.subscription(
+    //     subscriptionCommunities = await ndk.relays.subscription(
     //         Filter(
     //           kinds: queryEventKinds(),
     //           since: since,
@@ -204,7 +225,7 @@ class FollowEventProvider extends ChangeNotifier with PenddingEventsLaterFunctio
     //     });
     //   }
     //   if (contactList.followedEvents.isNotEmpty) {
-    //     subscriptionEvents = await relayManager!.subscription(
+    //     subscriptionEvents = await ndk.relays.subscription(
     //         Filter(
     //           kinds: queryEventKinds(),
     //           since: since,
@@ -221,11 +242,13 @@ class FollowEventProvider extends ChangeNotifier with PenddingEventsLaterFunctio
   }
 
   void queryOlder({required int until, List<String>? fallbackTags}) async {
-    ContactList? contactList = contactListProvider.getContactList(loggedUserSigner!.getPublicKey());
+    ContactList? contactList =
+        contactListProvider.getContactList(loggedUserSigner!.getPublicKey());
     List<String> contactsForFeed = contactListProvider.contacts();
     var filter = Filter(
       kinds: queryEventKinds(),
-      authors: contactsForFeed, //..add(loggedUserSigner!.getPublicKey()),
+      authors: contactsForFeed,
+      //..add(loggedUserSigner!.getPubliNdkResponsecKey()),
       until: until,
       limit: 100,
     );
@@ -250,27 +273,63 @@ class FollowEventProvider extends ChangeNotifier with PenddingEventsLaterFunctio
       }
     }
     if (settingProvider.gossip == 1 && feedRelaySet != null) {
-      await relayManager.reconnectRelays(feedRelaySet!.urls);
+      await ndk.relays.reconnectRelays(feedRelaySet!.urls);
     } else {
-      await relayManager.reconnectRelays(myInboxRelaySet!.urls);
+      await ndk.relays.reconnectRelays(myInboxRelaySet!.urls);
     }
 
-    NostrRequest request = await relayManager!.query(filter, (feedRelaySet != null && settingProvider.gossip == 1) ? feedRelaySet! : myInboxRelaySet!);
-    request!.stream.listen((event) {
-      onEvent(event);
-    });
+    ndk.requests
+        .query(
+            filters: [filter],
+            relaySet: (feedRelaySet != null && settingProvider.gossip == 1)
+                ? feedRelaySet!
+                : myInboxRelaySet!)
+        .stream
+        .listen((event) {
+          onEvent(event);
+        });
 
-    (await relayManager!.query(Filter(kinds: queryEventKinds(), tTags: contactList?.followedTags, until: until, limit: 100), myInboxRelaySet!))
+    ndk.requests
+        .query(
+            name: "feed-old-tags",
+            filters: [
+              Filter(
+                  kinds: queryEventKinds(),
+                  tTags: contactList?.followedTags,
+                  until: until,
+                  limit: 100)
+            ],
+            relaySet: myInboxRelaySet!)
         .stream
         .listen((event) {
       onEvent(event);
     });
-    (await relayManager!.query(Filter(kinds: queryEventKinds(), aTags: contactList?.followedCommunities, until: until, limit: 100), myInboxRelaySet!))
+    ndk.requests
+        .query(
+            name: "feed-old-communities",
+            filters: [
+              Filter(
+                  kinds: queryEventKinds(),
+                  aTags: contactList?.followedCommunities,
+                  until: until,
+                  limit: 100)
+            ],
+            relaySet: myInboxRelaySet!)
         .stream
         .listen((event) {
       onEvent(event);
     });
-    (await relayManager!.query(Filter(kinds: queryEventKinds(), eTags: contactList?.followedEvents, until: until, limit: 100), myInboxRelaySet!))
+    ndk.requests
+        .query(
+            name: "feed-old-events",
+            filters: [
+              Filter(
+                  kinds: queryEventKinds(),
+                  eTags: contactList?.followedEvents,
+                  until: until,
+                  limit: 100)
+            ],
+            relaySet: myInboxRelaySet!)
         .stream
         .listen((event) {
       onEvent(event);
@@ -279,16 +338,16 @@ class FollowEventProvider extends ChangeNotifier with PenddingEventsLaterFunctio
 
   void doUnscribe() {
     if (subscription != null) {
-      relayManager.closeNostrRequest(subscription!);
+      ndk.relays.closeSubscription(subscription!.requestId);
     }
     if (subscriptionTags != null) {
-      relayManager.closeNostrRequest(subscriptionTags!);
+      ndk.relays.closeSubscription(subscriptionTags!.requestId);
     }
     if (subscriptionCommunities != null) {
-      relayManager.closeNostrRequest(subscriptionCommunities!);
+      ndk.relays.closeSubscription(subscriptionCommunities!.requestId);
     }
     if (subscriptionEvents != null) {
-      relayManager.closeNostrRequest(subscriptionEvents!);
+      ndk.relays.closeSubscription(subscriptionEvents!.requestId);
     }
   }
 
@@ -312,7 +371,8 @@ class FollowEventProvider extends ChangeNotifier with PenddingEventsLaterFunctio
   }
 
   void mergeNewPostAndReplyEvents() {
-    var postAndRepliesEvents = followNewEventProvider.eventPostsAndRepliesMemBox.all();
+    var postAndRepliesEvents =
+        followNewEventProvider.eventPostsAndRepliesMemBox.all();
 
     postsAndRepliesBox.addList(postAndRepliesEvents);
 
@@ -406,8 +466,10 @@ class FollowEventProvider extends ChangeNotifier with PenddingEventsLaterFunctio
   void setRepliesTimestampToNewestAndSave() {
     if (repliesTimestamp == null && postsAndRepliesBox.newestEvent != null) {
       repliesTimestamp = postsAndRepliesBox.newestEvent!.createdAt;
-      sharedPreferences.setInt(DataKey.FEED_REPLIES_TIMESTAMP, repliesTimestamp!);
-      DateTime a = DateTime.fromMillisecondsSinceEpoch(repliesTimestamp! * 1000);
+      sharedPreferences.setInt(
+          DataKey.FEED_REPLIES_TIMESTAMP, repliesTimestamp!);
+      DateTime a =
+          DateTime.fromMillisecondsSinceEpoch(repliesTimestamp! * 1000);
       print("REPLIES WRITTEN TIMESTAMP: $a");
     }
   }

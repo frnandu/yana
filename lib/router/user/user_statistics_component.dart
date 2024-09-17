@@ -1,13 +1,10 @@
 import 'dart:async';
 
-import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:convert/convert.dart';
-import 'package:dart_ndk/models/user_relay_list.dart';
-import 'package:dart_ndk/nips/nip01/event.dart';
-import 'package:dart_ndk/nips/nip01/filter.dart';
-import 'package:dart_ndk/nips/nip02/contact_list.dart';
-import 'package:dart_ndk/request.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:ndk/entities.dart';
+import 'package:ndk/ndk.dart';
 import 'package:yana/utils/base_consts.dart';
 
 import '../../i18n/i18n.dart';
@@ -38,7 +35,7 @@ class UserStatisticsComponent extends StatefulWidget {
 }
 
 class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
-  static const Duration REFRESH_METADATA_DURATION = Duration(minutes: 10);
+  static const Duration REFRESH_METADATA_DURATION = Duration(minutes: 60);
 
   EventMemBox? zapEventBox;
   UserRelayList? userRelayList;
@@ -68,7 +65,8 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
 
   void load() async {
     refreshContactListIfNeededAsync(widget.pubkey);
-    await relayManager.loadMissingRelayListsFromNip65OrNip02([widget.pubkey],forceRefresh: true).then(
+    await ndk.userRelayLists.loadMissingRelayListsFromNip65OrNip02([widget.pubkey],
+        forceRefresh: true).then(
       (value) {
         userRelayList = cacheManager.loadUserRelayList(widget.pubkey);
         contactList = cacheManager.loadContactList(widget.pubkey);
@@ -81,8 +79,10 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
         }
       },
     );
-    queryFollowers();
-    queryZaps();
+    if (loggedUserSigner!=null && loggedUserSigner!.getPublicKey() == widget.pubkey) {
+      queryFollowers();
+      queryZaps();
+    }
   }
 
   void refreshContactListIfNeededAsync(String pubkey) {
@@ -94,7 +94,7 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
     if (contactList == null ||
         contactList!.loadedTimestamp == null ||
         contactList!.loadedTimestamp! < sometimeAgo) {
-      relayManager.loadContactList(pubkey!, forceRefresh: true).then(
+      ndk.follows.getContactList(pubkey, forceRefresh: true).then(
         (newContactList) {
           if (newContactList != null &&
               (contactList == null ||
@@ -112,8 +112,7 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
       );
     } else {
       if (!_disposed) {
-        setState(() {
-        });
+        setState(() {});
       }
     }
   }
@@ -131,41 +130,48 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
         num: length, name: s.Following, onTap: onFollowingTap));
     // }
 
+    if (loggedUserSigner!=null && loggedUserSigner!.getPublicKey() == widget.pubkey) {
+      list.add(UserStatisticsItemComponent(
+        num: followedNum ?? 0,
+        name: s.Followers,
+        onTap: () {
+          if (followedMap != null) {
+            var pubkeys = followedMap!.keys.toList();
+            RouterUtil.router(context, RouterPath.FOLLOWED, pubkeys);
+          }
+        },
+        formatNum: true,
+      ));
+
+      list.add(UserStatisticsItemComponent(
+        num: zapNum ?? 0,
+        name: "Zap",
+        onTap: () {
+          if (zapEventBox != null) {
+            zapEventBox!.sort();
+            var list = zapEventBox!.all();
+            RouterUtil.router(context, RouterPath.USER_ZAP_LIST, list);
+          }
+        },
+        formatNum: true,
+      ));
+    }
     list.add(UserStatisticsItemComponent(
-      num: followedNum ?? 0,
-      name: s.Followers,
-      onTap: () {
-        if (followedMap != null) {
-          var pubkeys = followedMap!.keys.toList();
-          RouterUtil.router(context, RouterPath.FOLLOWED, pubkeys);
-        }
-      },
-      formatNum: true,
-    ));
+        num: userRelayList != null ? userRelayList!.relays.length : 0,
+        name: s.Relays,
+        onTap: onRelaysTap));
 
     list.add(UserStatisticsItemComponent(
-      num: zapNum ?? 0,
-      name: "Zap",
-      onTap: () {
-        if (zapEventBox != null) {
-          zapEventBox!.sort();
-          var list = zapEventBox!.all();
-          RouterUtil.router(context, RouterPath.USER_ZAP_LIST, list);
-        }
-      },
-      formatNum: true,
-    ));
-
-    list.add(UserStatisticsItemComponent(
-        num: userRelayList!=null? userRelayList!.relays.length:0, name: s.Relays, onTap: onRelaysTap));
-
-    list.add(UserStatisticsItemComponent(
-        num: contactList != null && contactList!.followedTags!=null? contactList!.followedTags!.length : 0,
+        num: contactList != null && contactList!.followedTags != null
+            ? contactList!.followedTags!.length
+            : 0,
         name: s.Followed_Tags,
         onTap: onFollowedTagsTap));
 
     list.add(UserStatisticsItemComponent(
-        num: contactList != null && contactList!.followedCommunities!=null ? contactList!.followedCommunities!.length : 0,
+        num: contactList != null && contactList!.followedCommunities != null
+            ? contactList!.followedCommunities!.length
+            : 0,
         name: s.Followed_Communities,
         onTap: onFollowedCommunitiesTap));
 
@@ -229,14 +235,14 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
   String queryId2 = "";
 
   @override
-  Future<void> onReady(BuildContext context) async {
-  }
+  Future<void> onReady(BuildContext context) async {}
 
   onFollowingTap() {
     if (contactList != null) {
       RouterUtil.router(context, RouterPath.USER_CONTACT_LIST, widget.pubkey);
     } else if (isLocal) {
-      var cl = contactListProvider.getContactList(loggedUserSigner!.getPublicKey());
+      var cl =
+          contactListProvider.getContactList(loggedUserSigner!.getPublicKey());
       if (cl != null) {
         RouterUtil.router(context, RouterPath.USER_CONTACT_LIST, widget.pubkey);
       }
@@ -247,7 +253,8 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
     if (contactList != null) {
       RouterUtil.router(context, RouterPath.FOLLOWED_TAGS_LIST, contactList);
     } else if (isLocal) {
-      var cl = contactListProvider.getContactList(loggedUserSigner!.getPublicKey());
+      var cl =
+          contactListProvider.getContactList(loggedUserSigner!.getPublicKey());
       if (cl != null) {
         RouterUtil.router(context, RouterPath.FOLLOWED_TAGS_LIST, cl);
       }
@@ -256,22 +263,22 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
 
   String followedSubscribeId = "";
 
-  NostrRequest? _followersSubscription;
-  NostrRequest? _zapsSubscription;
+  NdkResponse? _followersSubscription;
+  NdkResponse? _zapsSubscription;
 
   queryFollowers() async {
     if (followedMap == null) {
       followedMap = {};
 
-      Filter filter =
-          Filter(kinds: [ContactList.KIND], pTags: [widget.pubkey]);
+      Filter filter = Filter(kinds: [ContactList.KIND], pTags: [widget.pubkey]);
 
-      _followersSubscription = await relayManager.query(
-          // relayManager.bootstrapRelays.toList()
-          //   ..addAll(myInboxRelaySet!.urls),
-          filter,
-          myInboxRelaySet!,
-          idleTimeout: 20
+      _followersSubscription = ndk.requests.query(
+        //ndk.relays.bootstrapRelays.toList()
+        //   ..addAll(myInboxRelaySet!.urls),
+        name: "user-stats-followers",
+        timeout: 60,
+        filters: [filter],
+        relaySet: myInboxRelaySet!,
       );
       _followersSubscription!.stream.listen((event) {
         var oldEvent = followedMap![event.pubKey];
@@ -290,9 +297,9 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
   }
 
   onRelaysTap() {
-    if (userRelayList!=null && userRelayList!.relays.isNotEmpty) {
-      List<RelayMetadata> relays = userRelayList!.relays
-          .entries.map((entry) => RelayMetadata.full(
+    if (userRelayList != null && userRelayList!.relays.isNotEmpty) {
+      List<RelayMetadata> relays = userRelayList!.relays.entries
+          .map((entry) => RelayMetadata.full(
               url: entry.key,
               read: entry.value.isRead,
               write: entry.value.isWrite,
@@ -308,16 +315,20 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
     if (zapEventBox == null) {
       zapEventBox = EventMemBox(sortAfterAdd: false);
       // pull zap event
-      _zapsSubscription = await relayManager.query(
-          // relayManager.bootstrapRelays.toList()
-          //   ..addAll(myInboxRelaySet!.urls),
-          Filter(kinds: [EventKind.ZAP_RECEIPT], pTags: [widget.pubkey]),
-          myInboxRelaySet!,
-        idleTimeout: 20
+      _zapsSubscription = ndk.requests.query(
+        //ndk.relays.bootstrapRelays.toList()
+        //   ..addAll(myInboxRelaySet!.urls),
+        name: "zap-receipts",
+        filters: [
+          Filter(kinds: [EventKind.ZAP_RECEIPT], pTags: [widget.pubkey])
+        ],
+        timeout: 60,
+        relaySet: myInboxRelaySet!,
       );
       _zapsSubscription!.stream.listen(
         (event) {
-          if (event.kind == EventKind.ZAP_RECEIPT && zapEventBox!.add(event, returnTrueOnNewSources: false)) {
+          if (event.kind == EventKind.ZAP_RECEIPT &&
+              zapEventBox!.add(event, returnTrueOnNewSources: false)) {
             if (!_disposed) {
               setState(() {
                 zapNum = zapNum! + ZapNumUtil.getNumFromZapEvent(event);
@@ -333,31 +344,31 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
     }
   }
 
-  @override
-  void deactivate() {
-    super.deactivate();
-    if (_followersSubscription != null) {
-      relayManager.closeNostrRequest(_followersSubscription!);
-      _followersSubscription=null;
-    }
-    if (_zapsSubscription != null) {
-      relayManager.closeNostrRequest(_zapsSubscription!);
-      _zapsSubscription=null;
-    }
-  }
+  // @override
+  // void deactivate() {
+  //   super.deactivate();
+  //   if (_followersSubscription != null) {
+  //     ndk.relays.closeSubscription(_followersSubscription!.requestId);
+  //     _followersSubscription=null;
+  //   }
+  //   if (_zapsSubscription != null) {
+  //     ndk.relays.closeSubscription(_zapsSubscription!.requestId);
+  //     _zapsSubscription=null;
+  //   }
+  // }
 
   @override
   void dispose() {
     super.dispose();
+    _disposed = true;
     if (_followersSubscription != null) {
-      relayManager.closeNostrRequest(_followersSubscription!);
-      _followersSubscription=null;
+      ndk.relays.closeSubscription(_followersSubscription!.requestId);
+      _followersSubscription = null;
     }
     if (_zapsSubscription != null) {
-      relayManager.closeNostrRequest(_zapsSubscription!);
-      _zapsSubscription=null;
+      ndk.relays.closeSubscription(_zapsSubscription!.requestId);
+      _zapsSubscription = null;
     }
-    _disposed = true;
   }
 
   bool _disposed = false;
@@ -366,7 +377,8 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
     if (contactList != null) {
       RouterUtil.router(context, RouterPath.FOLLOWED_COMMUNITIES, contactList);
     } else if (isLocal) {
-      var cl = contactListProvider.getContactList(loggedUserSigner!.getPublicKey());
+      var cl =
+          contactListProvider.getContactList(loggedUserSigner!.getPublicKey());
       if (cl != null) {
         RouterUtil.router(context, RouterPath.FOLLOWED_COMMUNITIES, cl);
       }

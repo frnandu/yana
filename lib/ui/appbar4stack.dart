@@ -38,7 +38,7 @@ class _Appbar4Stack extends State<Appbar4Stack> {
         child: Container(
           alignment: Alignment.center,
           width: height,
-          child: Icon(Icons.arrow_back_ios_new),
+          child: const Icon(Icons.arrow_back_ios_new),
         ),
         onTap: () {
           RouterUtil.back(context);

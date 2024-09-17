@@ -1,7 +1,8 @@
-import 'package:dart_ndk/models/user_relay_list.dart';
-import 'package:dart_ndk/nips/nip01/helpers.dart';
-import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
-import 'package:dart_ndk/relay.dart';
+import 'package:ndk/domain_layer/entities/read_write_marker.dart';
+import 'package:ndk/domain_layer/entities/relay.dart';
+import 'package:ndk/domain_layer/entities/user_relay_list.dart';
+import 'package:ndk/shared/helpers/relay_helper.dart';
+import 'package:ndk/shared/nips/nip01/helpers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:provider/provider.dart';
@@ -48,13 +49,13 @@ class _RelaysRouter extends CustState<RelaysRouter> with WhenStopFunction {
     // set.addAll(myOutboxRelaySet!.urls);
 
     userRelayList = cacheManager.loadUserRelayList(loggedUserSigner!.getPublicKey());
-    userRelayList ??= await relayManager.getSingleUserRelayList(loggedUserSigner!.getPublicKey(), forceRefresh: true);
+    userRelayList ??= await ndk.userRelayLists.getSingleUserRelayList(loggedUserSigner!.getPublicKey(), forceRefresh: true);
     userRelayList ??= UserRelayList(
         pubKey: loggedUserSigner!.getPublicKey(),
-        relays: {for (String url in relayManager.bootstrapRelays) url: ReadWriteMarker.readWrite},
+        relays: {for (String url in ndk.relays.bootstrapRelays) url: ReadWriteMarker.readWrite},
         createdAt: Helpers.now,
         refreshedTimestamp: Helpers.now);
-    await Future.wait(userRelayList!.urls.map((url) => relayManager.getRelayInfo(Relay.clean(url)!)));
+    await Future.wait(userRelayList!.urls.map((url) =>ndk.relays.getRelayInfo(cleanRelayUrl(url)!)));
 
     /// TODO check if widget is not disposed already...
 
@@ -100,20 +101,20 @@ class _RelaysRouter extends CustState<RelaysRouter> with WhenStopFunction {
               child: RefreshIndicator(
                   onRefresh: () async {
                     UserRelayList? oldRelayList = cacheManager.loadUserRelayList(loggedUserSigner!.getPublicKey());
-                    UserRelayList? userRelayList = await relayManager.getSingleUserRelayList(loggedUserSigner!.getPublicKey(), forceRefresh: true);
+                    UserRelayList? userRelayList = await ndk.userRelayLists.getSingleUserRelayList(loggedUserSigner!.getPublicKey(), forceRefresh: true);
                     if (userRelayList != null && (oldRelayList == null || oldRelayList.createdAt < userRelayList.createdAt)) {
                       createMyRelaySets(userRelayList);
                     }
                     await loadRelayInfos();
                     // try {
-                    //   await Future.wait(userRelayList!.urls.map((url) => relayManager.webSockets[url]!,).map((webSocket) => webSocket.disconnect("reconnect")).toList());
+                    //   await Future.wait(userRelayList!.urls.map((url) =>ndk.relays.webSockets[url]!,).map((webSocket) => webSocket.disconnect("reconnect")).toList());
                     // } catch (e) {
                     //   print(e);
                     // }
 
-                    await relayManager.reconnectRelays(userRelayList!.urls);
+                    await ndk.relays.reconnectRelays(userRelayList!.urls);
 
-                    // await relayManager.reconnectRelays(userRelayList!.urls);
+                    // await ndk.relays.reconnectRelays(userRelayList!.urls);
                     setState(() {});
                   },
                   child: Selector<RelayProvider, UserRelayList?>(
@@ -123,7 +124,7 @@ class _RelaysRouter extends CustState<RelaysRouter> with WhenStopFunction {
                     builder: (BuildContext context, UserRelayList? userRelayList, Widget? child) {
                       userRelayList ??= UserRelayList(
                           pubKey: loggedUserSigner!.getPublicKey(),
-                          relays: {for (String url in relayManager.bootstrapRelays) url: ReadWriteMarker.readWrite},
+                          relays: {for (String url in ndk.relays.bootstrapRelays) url: ReadWriteMarker.readWrite},
                           createdAt: Helpers.now,
                           refreshedTimestamp: Helpers.now);
                       return userRelayList == null
@@ -139,7 +140,7 @@ class _RelaysRouter extends CustState<RelaysRouter> with WhenStopFunction {
                                       decoration: InputDecoration(
                                         prefixIcon: const Icon(Icons.lan),
                                         hintText: "start typing relay name or URL",
-                                        suffixIcon: Relay.clean(controller.text) != null
+                                        suffixIcon: cleanRelayUrl(controller.text) != null
                                             ? IconButton(
                                           icon: const Icon(Icons.add),
                                           onPressed: () async {
@@ -172,16 +173,16 @@ class _RelaysRouter extends CustState<RelaysRouter> with WhenStopFunction {
 
                                 var url = userRelayList!.urls.toList()[index];
                                 ReadWriteMarker? marker = userRelayList!.relays[url]!;
-                                return RelaysItemComponent(
+                                return ndk.relays.getRelay(url)!=null? RelaysItemComponent(
                                   url: url,
-                                  relay: relayManager.getRelay(url)!,
+                                  relay:ndk.relays.getRelay(url)!,
                                   marker: marker,
                                   showConnection: true,
                                   showStats: true,
                                   onRemove: () async {
                                     await loadRelayInfos();
                                   },
-                                );
+                                ):Container();
                               },
                               itemCount: (userRelayList != null ? userRelayList!.relays.length : 0) + (loggedUserSigner!.canSign() ? 1 : 0),
                             );
@@ -210,9 +211,9 @@ class _RelaysRouter extends CustState<RelaysRouter> with WhenStopFunction {
     // itemScrollController.jumpTo(index: userRelayList!.relays.length-1);
     List<String> result = await relayProvider.findRelays(controller.text);
     for (var url in result) {
-      if (relayManager.getRelay(url)==null || relayManager.getRelay(url)!.info==null) {
-        relayManager.relays[url] = Relay(url);
-        relayManager.getRelayInfo(url).then((value) {
+      if (ndk.relays.getRelay(url)==null ||ndk.relays.getRelay(url)!.info==null) {
+       ndk.relays.relays[url] = Relay(url);
+       ndk.relays.getRelayInfo(url).then((value) {
           if (!disposed) {
             setState(() {});
           }
@@ -232,7 +233,7 @@ class _RelaysRouter extends CustState<RelaysRouter> with WhenStopFunction {
     disposed = true;
   }
   // Future<void> add(String url) async {
-  //   String? cleanUrl = Relay.clean(url);
+  //   String? cleanUrl = cleanRelayUrl(url);
   //   if (cleanUrl==null) {
   //     EasyLoading.showError("Invalid address wss://<host>:<port> or ws://<host>:<port>", dismissOnTap: true, duration: const Duration(seconds: 5));
   //     return;
@@ -244,11 +245,11 @@ class _RelaysRouter extends CustState<RelaysRouter> with WhenStopFunction {
   //   bool? result = await ConfirmDialog.show(context, "Confirm add ${url} to list");
   //   if (result != null && result) {
   //     EasyLoading.show(status: 'Broadcasting relay list...', maskType: EasyLoadingMaskType.black, dismissOnTap: true);
-  //     relaySet = await relayManager.broadcastAddNip51Relay(url, relaySet!.name, myOutboxRelaySet!.urls, loggedUserSigner!);
+  //     relaySet = await ndk.relays.broadcastAddNip51Relay(url, relaySet!.name, myOutboxRelaySet!.urls, loggedUserSigner!);
   //     if (relaySet!.name == "search") {
   //       searchRelays = relaySet!.relays;
   //     } else if (relaySet!.name == "blocked") {
-  //       relayManager.blockedRelays = relaySet!.relays;
+  //      ndk.relays.blockedRelays = relaySet!.relays;
   //     }
   //     relayProvider.notifyListeners();
   //     EasyLoading.dismiss();
@@ -259,12 +260,12 @@ class _RelaysRouter extends CustState<RelaysRouter> with WhenStopFunction {
   // }
 
   Future<void> addRelay(String url) async {
-    String? cleanUrl = Relay.clean(url);
+    String? cleanUrl = cleanRelayUrl(url);
     if (cleanUrl==null) {
       EasyLoading.showError("Invalid address wss://<host>:<port> or ws://<host>:<port>", dismissOnTap: true, duration: const Duration(seconds: 5), maskType: EasyLoadingMaskType.black,);
       return;
     }
-    if (userRelayList!.relays.keys!.any((element) => Relay.clean(element) == cleanUrl)) {
+    if (userRelayList!.relays.keys!.any((element) => cleanRelayUrl(element) == cleanUrl)) {
       EasyLoading.showError("Relay already on list", maskType: EasyLoadingMaskType.black, dismissOnTap: true, duration: const Duration(seconds: 5));
       return;
     }

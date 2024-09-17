@@ -1,8 +1,6 @@
-import 'package:dart_ndk/models/relay_set.dart';
-import 'package:dart_ndk/nips/nip01/event.dart';
-import 'package:dart_ndk/nips/nip01/filter.dart';
-import 'package:dart_ndk/request.dart';
 import 'package:flutter/foundation.dart';
+import 'package:ndk/domain_layer/entities/relay_set.dart';
+import 'package:ndk/ndk.dart';
 
 import '../main.dart';
 import '../models/dm_session_info.dart';
@@ -12,7 +10,6 @@ import '../utils/peddingevents_later_function.dart';
 import '../utils/string_util.dart';
 
 class DMProvider extends ChangeNotifier with PenddingEventsLaterFunction {
-
   List<DMSessionDetail> _followingList = [];
 
   List<DMSessionDetail> _knownList = [];
@@ -59,12 +56,11 @@ class DMProvider extends ChangeNotifier with PenddingEventsLaterFunction {
     if (detail != null &&
         // detail.info != null &&
         detail.dmSession.newestEvent != null) {
-
-      bool create = detail.info==null;
+      bool create = detail.info == null;
       bool hasNewMessage = detail.hasNewMessage();
       detail.info ??= DMSessionInfo(pubkey: detail.dmSession.pubkey);
       detail.info!.keyIndex = settingProvider.privateKeyIndex!;
-      double now = DateTime.now().millisecondsSinceEpoch/1000;
+      double now = DateTime.now().millisecondsSinceEpoch / 1000;
       detail.info!.readedTime = now.toInt();
 
       // if (create || hasNewMessage) {
@@ -83,7 +79,7 @@ class DMProvider extends ChangeNotifier with PenddingEventsLaterFunction {
   }
 
   Future<DMSessionDetail> addDmSessionToKnown(DMSessionDetail detail) async {
-    bool create = detail.info==null;
+    bool create = detail.info == null;
     detail.info ??= DMSessionInfo(pubkey: detail.dmSession.pubkey, readedTime: detail.dmSession.newestEvent!.createdAt);
     detail.info!.keyIndex = settingProvider.privateKeyIndex!;
     detail.info!.known = 1;
@@ -164,7 +160,7 @@ class DMProvider extends ChangeNotifier with PenddingEventsLaterFunction {
       var info = infoMap[pubkey];
       var detail = DMSessionDetail(session, info: info);
       if (contactListProvider.contacts().contains(pubkey)) {
-       _followingList.add(detail);
+        _followingList.add(detail);
       } else {
         if (info != null && info.known == 1) {
           _knownList.add(detail);
@@ -197,8 +193,7 @@ class DMProvider extends ChangeNotifier with PenddingEventsLaterFunction {
 
   void _doSortDetailList(List<DMSessionDetail> detailList) {
     detailList.sort((detail0, detail1) {
-      return detail1.dmSession.newestEvent!.createdAt -
-          detail0.dmSession.newestEvent!.createdAt;
+      return detail1.dmSession.newestEvent!.createdAt - detail0.dmSession.newestEvent!.createdAt;
     });
 
     // // copy to a new list for provider update
@@ -222,7 +217,7 @@ class DMProvider extends ChangeNotifier with PenddingEventsLaterFunction {
     return null;
   }
 
-  bool _addEvent(String localPubkey, Nip01Event  event) {
+  bool _addEvent(String localPubkey, Nip01Event event) {
     var pubkey = _getPubkey(localPubkey, event);
     if (StringUtil.isBlank(pubkey)) {
       return false;
@@ -232,7 +227,7 @@ class DMProvider extends ChangeNotifier with PenddingEventsLaterFunction {
     if (session == null) {
       session = DMSession(pubkey: pubkey!);
       _sessions[pubkey] = session;
-      if (this.localPubkey!=null) {
+      if (this.localPubkey != null) {
         var detail = DMSessionDetail(session);
         var pubkey = _getPubkey(localPubkey, event);
         if (contactListProvider.contacts().contains(pubkey)) {
@@ -255,37 +250,34 @@ class DMProvider extends ChangeNotifier with PenddingEventsLaterFunction {
     return addResult;
   }
 
-  NostrRequest? subscription;
+  NdkResponse? subscription;
 
   void query() {
     if (!loggedUserSigner!.canSign()) {
       return;
     }
-    if (subscription!=null) {
-      relayManager.closeNostrRequest(subscription!);
+    if (subscription != null) {
+      ndk.relays.closeSubscription(subscription!.requestId);
     }
     var sentFilter = Filter(
       kinds: [kind.EventKind.DIRECT_MESSAGE],
       authors: [loggedUserSigner!.getPublicKey()],
-      since: _initSince!=0? _initSince + 1 : null,
+      since: _initSince != 0 ? _initSince + 1 : null,
     );
     var receivedFilter = Filter(
       kinds: [kind.EventKind.DIRECT_MESSAGE],
       pTags: [loggedUserSigner!.getPublicKey()],
-      since: _initSince!=0? _initSince + 1 : null,
+      since: _initSince != 0 ? _initSince + 1 : null,
     );
     RelaySet relaySet = myInboxRelaySet!;
-    relayManager!.subscription(receivedFilter, relaySet).then((request) {
-      subscription = request;
-      subscription!.stream.listen((event) {
-        onEvent(event);
-      });
-    },);
-    relayManager!.query(sentFilter, relaySet).then((request) {
-      request.stream.listen((event) {
-        onEvent(event);
-      });
-    },);
+    subscription = ndk.requests.subscription(name:"dms-sub",filters: [receivedFilter], relaySet: relaySet);
+    subscription!.stream.listen((event) {
+      onEvent(event);
+    });
+
+    ndk.requests.query(cacheRead:false, filters: [sentFilter], relaySet: relaySet).stream.listen((event) {
+          onEvent(event);
+        });
   }
 
   void onEvent(Nip01Event event) {
@@ -327,7 +319,7 @@ class DMProvider extends ChangeNotifier with PenddingEventsLaterFunction {
   }
 
   Future<String?> decrypt(String content, String pubkey) async {
-    return await loggedUserSigner!.decrypt(content,pubkey);
+    return await loggedUserSigner!.decrypt(content, pubkey);
   }
 }
 
@@ -341,8 +333,7 @@ class DMSessionDetail {
     // if (info == null) {
     //   return false;
     // } else
-    if (dmSession.newestEvent != null &&
-        (info!=null && info!.readedTime! < dmSession.newestEvent!.createdAt)) {
+    if (dmSession.newestEvent != null && (info != null && info!.readedTime! < dmSession.newestEvent!.createdAt)) {
       return true;
     }
     return false;

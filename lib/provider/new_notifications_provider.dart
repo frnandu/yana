@@ -1,8 +1,8 @@
 import 'package:awesome_notifications/awesome_notifications.dart';
-import 'package:dart_ndk/nips/nip01/event.dart';
-import 'package:dart_ndk/nips/nip01/filter.dart';
-import 'package:dart_ndk/nips/nip01/metadata.dart';
-import 'package:dart_ndk/nips/nip25/reactions.dart';
+import 'package:ndk/domain_layer/entities/filter.dart';
+import 'package:ndk/domain_layer/entities/metadata.dart';
+import 'package:ndk/domain_layer/entities/nip_01_event.dart';
+import 'package:ndk/shared/nips/nip25/reactions.dart';
 import 'package:flutter/foundation.dart';
 import 'package:yana/nostr/event_kind.dart';
 import 'package:yana/nostr/event_relation.dart';
@@ -53,15 +53,21 @@ class NewNotificationsProvider extends ChangeNotifier
       kinds: notificationsProvider.queryEventKinds(),
       pTags: [loggedUserSigner!.getPublicKey()],
     );
-    await for (final event in (await relayManager!.query(filter, myInboxRelaySet!)).stream) {
-      Metadata? metadata = await relayManager.getSingleMetadata(event.pubKey);
-      handleEvent(event, metadata);
+    await for (final event in ndk.requests
+        .query(
+            name: "new-notifications",
+            filters: [filter],
+            relaySet: myInboxRelaySet!)
+        .stream) {
+      // TODO fix this since it was screwing over received events to handle (metadata mixed)
+      handleEvent(event, await ndk.metadatas.loadMetadata(event.pubKey));
     }
   }
 
   handleEvent(Nip01Event event, Metadata? metadata) {
     int previousCount = eventMemBox.length();
-    if (event.pubKey != loggedUserSigner?.getPublicKey() && !notificationsProvider.eventBox.containsId(event.id)) {
+    if (event.pubKey != loggedUserSigner?.getPublicKey() &&
+        !notificationsProvider.eventBox.containsId(event.id)) {
       if (eventMemBox.add(event, returnTrueOnNewSources: false)) {
         _localSince = eventMemBox.newestEvent!.createdAt;
         if (eventMemBox.length() > previousCount) {
@@ -74,15 +80,20 @@ class NewNotificationsProvider extends ChangeNotifier
               Nip01Event? otherEvent;
               print("event.tags: ${event.tags}");
               if (eventRelation.replyId != null) {
-                await for (final event in (await relayManager.query(Filter(ids: [eventRelation.replyId!]), myInboxRelaySet!)).stream) {
+                await for (final event in ndk.requests.query(filters: [
+                  Filter(ids: [eventRelation.replyId!])
+                ], relaySet: myInboxRelaySet!).stream) {
                   otherEvent = event;
                 }
               } else if (eventRelation.tagEList.isNotEmpty) {
-                await for (final event in (await relayManager.query(Filter(ids: [eventRelation.tagEList.first!]), myInboxRelaySet!)).stream) {
+                await for (final event in ndk.requests.query(filters: [
+                  Filter(ids: [eventRelation.tagEList.first!])
+                ], relaySet: myInboxRelaySet!).stream) {
                   otherEvent = event;
                 }
               }
-              String name = metadata!=null? metadata.getName() : event.pubKey;
+              String name =
+                  metadata != null ? metadata.getName() : event.pubKey;
               if (event.kind == Reaction.KIND) {
                 title = "$name reacted ${event.content.replaceAll('+', '❤')}";
                 if (otherEvent != null) {
@@ -107,18 +118,17 @@ class NewNotificationsProvider extends ChangeNotifier
                     title: title,
                     body: body,
                     payload: {"name": "new notification"},
-                    badge:
-                    eventMemBox.length()
-                  // +
-                  //     dmProvider.howManyNewDMSessionsWithNewMessages(
-                  //         dmProvider.followingList) +
-                  //     dmProvider
-                  //         .howManyNewDMSessionsWithNewMessages(
-                  //         dmProvider.knownList) +
-                  //     dmProvider
-                  //         .howManyNewDMSessionsWithNewMessages(
-                  //         dmProvider.unknownList)
-                ),
+                    badge: eventMemBox.length()
+                    // +
+                    //     dmProvider.howManyNewDMSessionsWithNewMessages(
+                    //         dmProvider.followingList) +
+                    //     dmProvider
+                    //         .howManyNewDMSessionsWithNewMessages(
+                    //         dmProvider.knownList) +
+                    //     dmProvider
+                    //         .howManyNewDMSessionsWithNewMessages(
+                    //         dmProvider.unknownList)
+                    ),
               );
             }
           });

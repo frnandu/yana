@@ -1,17 +1,14 @@
 import 'package:auto_size_text_field/auto_size_text_field.dart';
-import 'package:dart_ndk/nips/nip01/amber_event_signer.dart';
-import 'package:dart_ndk/nips/nip01/helpers.dart';
-import 'package:dart_ndk/nips/nip04/nip04.dart';
+import 'package:ndk/entities.dart';
+import 'package:ndk/shared/nips/nip01/helpers.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:dart_ndk/nips/nip01/event.dart';
-import 'package:dart_ndk/nips/nip01/metadata.dart';
+import 'package:ndk/domain_layer/entities/nip_01_event.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:pointycastle/ecc/api.dart';
 import 'package:provider/provider.dart';
 import 'package:yana/provider/custom_emoji_provider.dart';
 import 'package:yana/ui/datetime_picker_component.dart';
@@ -58,9 +55,9 @@ mixin EditorMixin {
 
   void updateUI();
 
-  List<dynamic> getTags();
+  List<List<String>> getTags();
 
-  List<dynamic> getTagsAddedWhenSend();
+  List<List<String>> getTagsAddedWhenSend();
 
   void handleFocusInit() {
     focusNode.addListener(() {
@@ -421,8 +418,8 @@ mixin EditorMixin {
 
     // customEmoji map
     Map<String, int> customEmojiMap = {};
-    var tags = []..addAll(getTags());
-    var tagsAddedWhenSend = []..addAll(getTagsAddedWhenSend());
+    List<List<String>> tags = []..addAll(getTags());
+    List<List<String>> tagsAddedWhenSend = []..addAll(getTagsAddedWhenSend());
 
     if (inputPoll) {
       var checkResult = pollInputController.checkInput(context);
@@ -530,7 +527,7 @@ mixin EditorMixin {
 
             if (customEmojiMap[value.name] == null) {
               customEmojiMap[value.name!] = 1;
-              tags.add(["emoji", value.name, value.filepath]);
+              tags.add(["emoji", value.name!, value.filepath!]);
             }
             continue;
           }
@@ -544,7 +541,7 @@ mixin EditorMixin {
     // print(tags);
     // print(tagsAddWhenSend);
 
-    List<dynamic> allTags = [];
+    List<List<String>> allTags = [];
     allTags.addAll(tags);
     allTags.addAll(tagsAddedWhenSend);
 
@@ -583,9 +580,9 @@ mixin EditorMixin {
     // TODO what about more people that might take part in the thread conversation?
 
     Iterable<String> urlsToBroadcast = broadcastRelays??await broadcastUrls(null);
-    await relayManager.reconnectRelays(urlsToBroadcast);
+    await ndk.relays.reconnectRelays(urlsToBroadcast);
 
-    await relayManager.broadcastEvent(event, urlsToBroadcast,loggedUserSigner!);
+    await ndk.relays.broadcastEvent(event, urlsToBroadcast,loggedUserSigner!);
     return event;
   }
 

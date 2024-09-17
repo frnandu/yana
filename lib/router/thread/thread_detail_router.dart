@@ -1,10 +1,8 @@
 import 'dart:async';
 
-import 'package:dart_ndk/nips/nip01/event.dart';
-import 'package:dart_ndk/nips/nip01/filter.dart';
-import 'package:dart_ndk/request.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:ndk/ndk.dart';
 import 'package:provider/provider.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:widget_size/widget_size.dart';
@@ -112,8 +110,8 @@ class _ThreadDetailRouter extends CustState<ThreadDetailRouter> with PenddingEve
     if (eventId != null) {
       var filter = Filter(ids: [eventId!]);
       if (myInboxRelaySet != null) {
-        NostrRequest request = await relayManager.requestRelays(myInboxRelaySet!.urls, filter, timeout: 2);
-        request.stream.listen((event) {
+        NdkResponse response = ndk.requests.query(name: "thead-detail", explicitRelays: myInboxRelaySet!.urls, filters: [filter]);
+        response.stream.listen((event) {
           setState(() {
             loadedEvent = event;
           });

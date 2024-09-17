@@ -1,11 +1,8 @@
 import 'dart:async';
 
-import 'package:dart_ndk/models/relay_set.dart';
-import 'package:dart_ndk/nips/nip01/event.dart';
-import 'package:dart_ndk/nips/nip01/filter.dart';
-import 'package:dart_ndk/read_write.dart';
-import 'package:dart_ndk/request.dart';
 import 'package:flutter/material.dart';
+import 'package:ndk/ndk.dart';
+import 'package:ndk/shared/logger/logger.dart';
 
 import '../main.dart';
 import '../models/event_reactions.dart';
@@ -18,7 +15,7 @@ class EventReactionsProvider extends ChangeNotifier
 
   Map<String, EventReactions> _eventReactionsMap = {};
   Map<String, List<Nip01Event>> _repliesMap = {};
-  Map<String, NostrRequest> requests = {};
+  // Map<String, NdkResponse> subscriptions = {};
 
   EventReactionsProvider() {
     laterTimeMS = 2000;
@@ -65,22 +62,32 @@ class EventReactionsProvider extends ChangeNotifier
     }
   }
 
-  Future<List<Nip01Event>> getThreadReplies(String id, {bool force=false}) async {
+  Future<List<Nip01Event>> getThreadReplies(String id,
+      {bool force = false}) async {
     var replies = _repliesMap[id];
-    /// TODO refresh after some time
-    if (replies==null || force) {
+
+    /// TODO refresh after some time or use subscriptions
+    if (replies == null || force) {
       /// TODO use other relaySet if gossip
-      NostrRequest request = await relayManager!.query(Filter(eTags: [id], kinds: [Nip01Event.TEXT_NODE_KIND]), myInboxRelaySet!,
-          splitRequestsByPubKeyMappings: false, idleTimeout: 1);
+      NdkResponse response = ndk.requests.query(
+          name: "event-reations-thread-replies",
+          timeout: 5,
+          filters: [
+            Filter(eTags: [id], kinds: [Nip01Event.TEXT_NODE_KIND])
+          ],
+      // TODO which relays for thread replies???? depends on event author + relay hints from event maybe?
+      //    relaySet: myInboxRelaySet!
+      );
       Map<String, Nip01Event> map = {};
-      await for (final event in request.stream) {
-        if (map[event.id] == null || map[event.id]!.createdAt < event.createdAt) {
+      await for (final event in response.stream) {
+        if (map[event.id] == null ||
+            map[event.id]!.createdAt < event.createdAt) {
           map[event.id] = event;
         }
       }
       replies = map.values.toList();
       _repliesMap[id] = replies;
-      if (_eventReactionsMap[id]!=null) {
+      if (_eventReactionsMap[id] != null) {
         _eventReactionsMap[id]!.replies = replies;
       }
     }
@@ -98,47 +105,55 @@ class EventReactionsProvider extends ChangeNotifier
   }
 
   void addReply(String id, Nip01Event reply) {
-    if (_repliesMap[id]!=null) {
+    if (_repliesMap[id] != null) {
       _repliesMap[id]!.add(reply);
     }
   }
 
-  Future<void> subscription(String eventId, String? pubKey, List<int>? kinds) async {
+  Future<void> subscription(
+      String eventId, String? pubKey, List<int>? kinds) async {
     var filter = kinds != null
         ? Filter(eTags: [eventId], kinds: kinds)
         : Filter(eTags: [eventId]);
 
     RelaySet? relaySet;
 
-    if (settingProvider.gossip == 1 && pubKey!=null) {
-      relaySet = await relayManager.calculateRelaySet(
-          name: "reactions-feed",
-          ownerPubKey: pubKey!,
-          pubKeys: [pubKey!],
-          direction: RelayDirection.inbox,
-          relayMinCountPerPubKey: 5);
-      if (myInboxRelaySet!=null) {
-        relaySet.addMoreRelays(myInboxRelaySet!.relaysMap);
-      }
-    } else {
+    // if (settingProvider.gossip == 1 && pubKey != null) {
+    //   relaySet = await ndk.calculateRelaySet(
+    //       name: "reactions-feed",
+    //       ownerPubKey: pubKey!,
+    //       pubKeys: [pubKey!],
+    //       direction: RelayDirection.inbox,
+    //       relayMinCountPerPubKey: 5);
+    //   if (myInboxRelaySet != null) {
+    //     relaySet.addMoreRelays(myInboxRelaySet!.relaysMap);
+    //   }
+    // } else {
       relaySet = myInboxRelaySet;
-    }
-    if (relaySet==null) {
+    // }
+    if (relaySet == null) {
       return;
     }
-    print(
-        "---------------- reactions subscriptions: ${requests.length}");
-    NostrRequest request = await relayManager!.query(filter, relaySet!,
-        splitRequestsByPubKeyMappings: settingProvider.gossip == 1, idleTimeout: 10);
-    requests[eventId] = request;
+    // print(
+    //     "---------------- reactions subscriptions: ${subscriptions.length}");
+    NdkResponse response = ndk.requests.query(
+        name: "event-reactions",
+        timeout: 5,
+        filters: [filter],
+        explicitRelays: myInboxRelaySet?.urls
+    );//, relaySet:  relaySet);
+    // subscriptions[eventId] = response;
 
-    request.stream.listen((event) {
+    response.stream.timeout(const Duration(seconds: 10)).listen((event) {
       _handleSingleEvent2(event);
+    }).onError((error) {
+      Logger.log.f("!!!!!!!!!!!!!!!!!!! $error");
     });
     // TODO should use other relays inbox for pubKey....
   }
 
-  EventReactions? get(String id, {String? pubKey, bool forceSubscription = false, List<int>? kinds}) {
+  EventReactions? get(String id,
+      {String? pubKey, bool forceSubscription = false, List<int>? kinds}) {
     var er = _eventReactionsMap[id];
     if (er == null) {
       // plan to pull
@@ -277,10 +292,10 @@ class EventReactionsProvider extends ChangeNotifier
 
   void removePendding(String eventId) async {
     // _penddingIds.remove(eventId);
-    if (requests[eventId] != null) {
-      await relayManager.closeNostrRequest(requests[eventId]!);
-      requests.remove(eventId);
-    }
+    // if (subscriptions[eventId] != null) {
+    //   ndk.relays.closeSubscription(subscriptions[eventId]!.requestId);
+    //   subscriptions.remove(eventId);
+    // }
   }
 
   void clear() {

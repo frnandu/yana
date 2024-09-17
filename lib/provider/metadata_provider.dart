@@ -1,7 +1,7 @@
-import 'package:dart_ndk/models/relay_set.dart';
-import 'package:dart_ndk/nips/nip01/helpers.dart';
-import 'package:dart_ndk/nips/nip01/metadata.dart';
-import 'package:dart_ndk/nips/nip05/nip05.dart';
+import 'package:ndk/domain_layer/entities/metadata.dart';
+import 'package:ndk/domain_layer/entities/relay_set.dart';
+import 'package:ndk/shared/nips/nip01/helpers.dart';
+import 'package:ndk/shared/nips/nip05/nip05.dart';
 import 'package:flutter/material.dart';
 
 import '../main.dart';
@@ -67,24 +67,21 @@ class MetadataProvider extends ChangeNotifier with LaterFunction {
     }
     return null;
   }
-  bool loading=false;
+
+  bool loading = false;
 
   void _loadNeedingUpdateMetadatas() async {
     if (_needUpdateMetadatas.isEmpty || loading) {
       return;
     }
-    RelaySet? relaySet = settingProvider.gossip == 1 && feedRelaySet != null
-        ? feedRelaySet
-        : myInboxRelaySet;
+    RelaySet? relaySet = settingProvider.gossip == 1 && feedRelaySet != null ? feedRelaySet : myInboxRelaySet;
     if (relaySet != null) {
-      loading=true;
-      List<Metadata> loaded = await relayManager.loadMissingMetadatas(
-          _needUpdateMetadatas, relaySet,
-          splitRequestsByPubKeyMappings: settingProvider.gossip == 1, onLoad: (metadata) {
-            notifyListeners();
+      loading = true;
+      List<Metadata> loaded = await ndk.metadatas.loadMetadatas(_needUpdateMetadatas, relaySet, onLoad: (metadata) {
+        notifyListeners();
       });
       _needUpdateMetadatas.clear();
-      loading=false;
+      loading = false;
 
       if (loaded.isNotEmpty) {
         notifyListeners();
@@ -102,11 +99,7 @@ class MetadataProvider extends ChangeNotifier with LaterFunction {
     for (var metadata in doCheck) {
       Nip05? nip05 = cacheManager.loadNip05(metadata.pubKey);
       bool valid = await Nip05.check(metadata.nip05!, metadata.pubKey);
-      nip05 ??= Nip05(
-          pubKey: metadata.pubKey,
-          nip05: metadata.nip05!,
-          valid: valid,
-          updatedAt: Helpers.now);
+      nip05 ??= Nip05(pubKey: metadata.pubKey, nip05: metadata.nip05!, valid: valid, updatedAt: Helpers.now);
       nip05.valid = valid;
       nip05.updatedAt = Helpers.now;
       toSave.add(nip05);

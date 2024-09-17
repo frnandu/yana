@@ -1,9 +1,6 @@
 import 'dart:convert';
 
-import 'package:dart_ndk/models/relay_set.dart';
-import 'package:dart_ndk/nips/nip01/event.dart';
-import 'package:dart_ndk/nips/nip51/nip51.dart';
-import 'package:dart_ndk/read_write.dart';
+import 'package:ndk/entities.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
@@ -387,8 +384,7 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
           relays.addAll(await getInboxRelays(pubKeys.first));
         } else if (pubKeys.isNotEmpty) {
           EasyLoading.show(status: 'Calculating inbox relays of participants...', maskType: EasyLoadingMaskType.black, dismissOnTap: true);
-          RelaySet inboxRelaySet = await relayManager
-              .calculateRelaySet(
+          RelaySet inboxRelaySet = await ndk.relaySets.calculateRelaySet(
               name: "replyInboxRelaySet",
               ownerPubKey: loggedUserSigner!.getPublicKey(),
               pubKeys: pubKeys,
@@ -396,7 +392,7 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
               relayMinCountPerPubKey: settingProvider
                   .broadcastToInboxMaxCount);
           relays.addAll(inboxRelaySet.urls.toSet());
-          relays.removeWhere((element) => relayManager.blockedRelays.contains(element));
+          relays.removeWhere((element) =>ndk.relays.blockedRelays.contains(element));
           EasyLoading.dismiss();
         }
       }
@@ -414,7 +410,7 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
         //     return MultiSelect(items: results!, selectedItems: [], sending: true,);
         //   },
         // );
-        await relayManager.broadcastEvent(widget.event, results, loggedUserSigner!);
+        await ndk.relays.broadcastEvent(widget.event, results, loggedUserSigner!);
         widget.event.sources.addAll(results);
         cacheManager.saveEvent(widget.event);
       }
@@ -423,7 +419,7 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
       setState(() {
         muting = true;
       });
-      Nip51List muteList = await relayManager.broadcastAddNip51ListElement(Nip51List.MUTE, Nip51List.PUB_KEY, widget.event.pubKey, myOutboxRelaySet!.urls, loggedUserSigner!, private: value=="mute-private");
+      Nip51List muteList = await ndk.lists.broadcastAddNip51ListElement(Nip51List.MUTE, Nip51List.PUB_KEY, widget.event.pubKey, myOutboxRelaySet!.urls, loggedUserSigner,  private: value=="mute-private");
       filterProvider.muteList = muteList;
       filterProvider.notifyListeners();
       setState(() {
@@ -439,8 +435,8 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
       });
 
       Set<String> urlsToBroadcast = (await broadcastUrls(widget.event.pubKey)).toSet()..addAll(widget.event.sources);
-      await relayManager.reconnectRelays(urlsToBroadcast);
-      await relayManager!.broadcastDeletion(widget.event.id, urlsToBroadcast, loggedUserSigner!);
+      await ndk.relays.reconnectRelays(urlsToBroadcast);
+      await ndk!.broadcastDeletion(widget.event.id, urlsToBroadcast, loggedUserSigner!);
 
       followEventProvider.deleteEvent(widget.event.id);
       notificationsProvider.deleteEvent(widget.event.id);
@@ -487,8 +483,8 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
 
   Future<void> onCommmentTap() async {
     var er = widget.eventRelation;
-    List<dynamic> tags = [];
-    List<dynamic> tagsAddedWhenSend = [];
+    List<List<String>> tags = [];
+    List<List<String>> tagsAddedWhenSend = [];
     String relayAddr = "";
     if (widget.event.sources.isNotEmpty) {
       relayAddr = widget.event.sources[0];
@@ -515,7 +511,7 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
       if (StringUtil.isNotBlank(er.rootRelayAddr)) {
         relayAddr = er.rootRelayAddr!;
       }
-      tags.add(["e", er.rootId, relayAddr, "root"]);
+      tags.add(["e", er.rootId!, relayAddr, "root"]);
     }
 
     // TODO reply maybe change the placeholder in editor router.
@@ -539,9 +535,9 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
         }
         var content = jsonEncode(widget.event.toJson());
 
-        List<dynamic> tag = ["e", widget.event.id];
+        List<String> tag = ["e", widget.event.id];
         if (StringUtil.isNotBlank(relayAddr)) {
-          tag.add(relayAddr);
+          tag.add(relayAddr!);
         }
         Nip01Event event = Nip01Event(
             pubKey: loggedUserSigner!.getPublicKey(),
@@ -552,9 +548,9 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
                 .now()
                 .millisecondsSinceEpoch ~/ 1000);
         Iterable<String> urlsToBroadcast = await broadcastUrls(widget.event.pubKey);
-        await relayManager.reconnectRelays(urlsToBroadcast);
+        await ndk.relays.reconnectRelays(urlsToBroadcast);
 
-        await relayManager.broadcastEvent(
+        await ndk.relays.broadcastEvent(
             event, urlsToBroadcast, loggedUserSigner!);
 
         eventReactionsProvider.addRepost(widget.event.id);
@@ -570,19 +566,19 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
   void onLikeTap() async {
     if (loggedUserSigner!.canSign()) {
       Iterable<String> urlsToBroadcast = await broadcastUrls(widget.event.pubKey);
-      await relayManager.reconnectRelays(urlsToBroadcast);
+      await ndk.relays.reconnectRelays(urlsToBroadcast);
 
       if (eventReactions?.myLikeEvents == null ||
           eventReactions!.myLikeEvents!.isEmpty) {
         // like
-        Nip01Event likeEvent = await relayManager!.broadcastReaction(
-            widget.event.id, urlsToBroadcast, loggedUserSigner!);
+        Nip01Event likeEvent = await ndk!.broadcastReaction(
+            widget.event.id, urlsToBroadcast);
         if (likeEvent != null) {
           eventReactionsProvider.addLike(widget.event.id, likeEvent);
         }
       } else {
         for (var event in eventReactions!.myLikeEvents!) {
-          await relayManager!.broadcastDeletion(
+          await ndk!.broadcastDeletion(
               event.id, urlsToBroadcast, loggedUserSigner!);
         }
         eventReactionsProvider.deleteLike(widget.event.id);

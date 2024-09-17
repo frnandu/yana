@@ -1,4 +1,4 @@
-import 'package:dart_ndk/nips/nip01/event.dart';
+import 'package:ndk/domain_layer/entities/nip_01_event.dart';
 import 'package:yana/nostr/nip47/nwc_kind.dart';
 
 class NwcRequestInfo {

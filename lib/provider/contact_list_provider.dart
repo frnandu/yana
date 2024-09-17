@@ -1,7 +1,7 @@
 import 'dart:convert';
 
-import 'package:dart_ndk/nips/nip01/event.dart';
-import 'package:dart_ndk/nips/nip02/contact_list.dart';
+import 'package:ndk/domain_layer/entities/contact_list.dart';
+import 'package:ndk/domain_layer/entities/nip_01_event.dart';
 import 'package:flutter/material.dart';
 import 'package:yana/router/tag/topic_map.dart';
 
@@ -15,10 +15,7 @@ class ContactListProvider extends ChangeNotifier {
   Nip01Event? _event;
 
   static ContactListProvider getInstance() {
-    if (_contactListProvider == null) {
-      _contactListProvider = ContactListProvider();
-      // _contactListProvider!.reload();
-    }
+    _contactListProvider ??= ContactListProvider();
     return _contactListProvider!;
   }
 
@@ -67,8 +64,8 @@ class ContactListProvider extends ChangeNotifier {
   // }
 
   // void _saveAndNotify() {
-    // contactList!.contacts.forEach((contact) { metadataProvider.update(contact!);});
-    //followEventProvider.metadataUpdatedCallback(_contactList);
+  // contactList!.contacts.forEach((contact) { metadataProvider.update(contact!);});
+  //followEventProvider.metadataUpdatedCallback(_contactList);
   // }
 
   ContactList? getContactList(String pubKey) {
@@ -76,33 +73,35 @@ class ContactListProvider extends ChangeNotifier {
   }
 
   Future<ContactList?> loadContactList(String pubKey) async {
-    return await relayManager.loadContactList(pubKey);
+    return await ndk.follows.getContactList(pubKey);
   }
 
   Future<void> addContact(String contact) async {
-    await relayManager.broadcastAddContact(contact, myOutboxRelaySet!.urls, loggedUserSigner!);
+    await ndk.follows
+        .broadcastAddContact(contact, myOutboxRelaySet!.urls, loggedUserSigner);
 
     notifyListeners();
   }
 
-  Future<void> removeContact(String pubKey) async{
-    await relayManager.broadcastRemoveContact(pubKey, myOutboxRelaySet!.urls, loggedUserSigner!);
+  Future<void> removeContact(String pubKey) async {
+    await ndk.follows.broadcastRemoveContact(
+        pubKey, myOutboxRelaySet!.urls, loggedUserSigner);
     notifyListeners();
   }
 
   List<String> contacts() {
     ContactList? contactList = getContactList(loggedUserSigner!.getPublicKey());
-    return contactList!=null ? contactList!.contacts : [];
+    return contactList != null ? contactList!.contacts : [];
   }
-  
+
   List<String> followedTags() {
     ContactList? contactList = getContactList(loggedUserSigner!.getPublicKey());
-    return contactList!=null ? contactList!.followedTags : [];
+    return contactList != null ? contactList!.followedTags : [];
   }
 
   List<String> followedCommunities() {
     ContactList? contactList = getContactList(loggedUserSigner!.getPublicKey());
-    return contactList!=null ? contactList!.followedCommunities : [];
+    return contactList != null ? contactList!.followedCommunities : [];
   }
 
   void clear() {
@@ -112,30 +111,34 @@ class ContactListProvider extends ChangeNotifier {
 
   bool containTag(String tag) {
     ContactList? contactList = getContactList(loggedUserSigner!.getPublicKey());
-    if (contactList!=null) {
+    if (contactList != null) {
       var list = TopicMap.getList(tag);
       if (list != null) {
         for (var t in list) {
-          var exist = contactList!.followedTags != null && contactList!.followedTags!.contains(t);
+          var exist = contactList!.followedTags != null &&
+              contactList!.followedTags!.contains(t);
           if (exist) {
             return true;
           }
         }
         return false;
       } else {
-        return contactList!.followedTags != null && contactList!.followedTags!.contains(tag);
+        return contactList!.followedTags != null &&
+            contactList!.followedTags!.contains(tag);
       }
     }
     return false;
   }
 
   Future<void> addTag(String tag) async {
-    await relayManager.broadcastAddFollowedTag(tag, myOutboxRelaySet!.urls, loggedUserSigner!);
+    await ndk.follows
+        .broadcastAddFollowedTag(tag, myOutboxRelaySet!.urls, loggedUserSigner);
     notifyListeners();
   }
 
   Future<void> removeTag(String tag) async {
-    await relayManager.broadcastRemoveFollowedTag(tag, myOutboxRelaySet!.urls, loggedUserSigner!);
+    await ndk.follows.broadcastRemoveFollowedTag(
+        tag, myOutboxRelaySet!.urls, loggedUserSigner);
     notifyListeners();
   }
 
@@ -145,19 +148,22 @@ class ContactListProvider extends ChangeNotifier {
 
   bool followsCommunity(String id) {
     ContactList? contactList = getContactList(loggedUserSigner!.getPublicKey());
-    if (contactList!=null) {
-      return contactList!.followedCommunities != null && contactList!.followedCommunities!.contains(id);
+    if (contactList != null) {
+      return contactList!.followedCommunities != null &&
+          contactList!.followedCommunities!.contains(id);
     }
     return false;
   }
 
   void addCommunity(String tag) async {
-    await relayManager.broadcastAddFollowedCommunity(tag, myOutboxRelaySet!.urls, loggedUserSigner!);
+    await ndk.follows.broadcastAddFollowedCommunity(
+        tag, myOutboxRelaySet!.urls, loggedUserSigner);
     notifyListeners();
   }
 
   void removeCommunity(String tag) async {
-    await relayManager.broadcastRemoveFollowedCommunity(tag, myOutboxRelaySet!.urls, loggedUserSigner!);
+    await ndk.follows.broadcastRemoveFollowedCommunity(
+        tag, myOutboxRelaySet!.urls, loggedUserSigner);
     notifyListeners();
   }
 }

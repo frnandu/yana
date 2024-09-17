@@ -1,7 +1,5 @@
-import 'package:dart_ndk/nips/nip01/event.dart';
-import 'package:dart_ndk/nips/nip01/filter.dart';
-import 'package:dart_ndk/request.dart';
 import 'package:flutter/material.dart';
+import 'package:ndk/ndk.dart';
 import 'package:provider/provider.dart';
 import 'package:yana/main.dart';
 import 'package:yana/ui/event_delete_callback.dart';
@@ -33,7 +31,7 @@ class _TagDetailRouter extends CustState<TagDetailRouter>
 
   ScrollController _controller = ScrollController();
 
-  NostrRequest? subscription;
+  NdkResponse? subscription;
 
   bool showTitle = false;
 
@@ -155,7 +153,7 @@ class _TagDetailRouter extends CustState<TagDetailRouter>
 
   void doQuery() async {
     if (subscription!=null) {
-      await relayManager.closeNostrRequest(subscription!);
+      ndk.relays.closeSubscription(subscription!.requestId);
     }
     var plainTag = tag!.replaceFirst("#", "");
     var filter = Filter(kinds: [
@@ -173,7 +171,7 @@ class _TagDetailRouter extends CustState<TagDetailRouter>
     // } else {
     //   queryArg["#t"] = [plainTag];
     // }
-    subscription = await relayManager.subscription(filter, myInboxRelaySet!);
+    subscription = ndk.requests.subscription(filters: [filter], relaySet:  myInboxRelaySet!);
     subscription!.stream.listen((event) {
       onEvent(event);
     });
@@ -192,7 +190,7 @@ class _TagDetailRouter extends CustState<TagDetailRouter>
     disposeLater();
 
     try {
-      relayManager.closeNostrRequest(subscription!);
+      ndk.relays.closeSubscription(subscription!.requestId);
     } catch (e) {
       print(e);
     }

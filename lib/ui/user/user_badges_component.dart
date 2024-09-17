@@ -1,4 +1,4 @@
-import 'package:dart_ndk/nips/nip01/filter.dart';
+import 'package:ndk/entities.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 

@@ -1,11 +1,7 @@
 import 'dart:async';
 
-import 'package:dart_ndk/models/relay_set.dart';
-import 'package:dart_ndk/nips/nip01/event.dart';
-import 'package:dart_ndk/nips/nip01/filter.dart';
-import 'package:dart_ndk/nips/nip01/metadata.dart';
-import 'package:dart_ndk/request.dart';
 import 'package:flutter/material.dart';
+import 'package:ndk/ndk.dart';
 import 'package:provider/provider.dart';
 import 'package:yana/provider/filter_provider.dart';
 
@@ -28,6 +24,7 @@ import 'user_statistics_component.dart';
 
 class UserRouter extends StatefulWidget {
   String? pubKey;
+
   UserRouter({super.key, this.pubKey});
 
   @override
@@ -36,12 +33,11 @@ class UserRouter extends StatefulWidget {
   }
 }
 
-class _UserRouter extends CustState<UserRouter>
-    with PenddingEventsLaterFunction, LoadMoreEvent {
+class _UserRouter extends CustState<UserRouter> with PenddingEventsLaterFunction, LoadMoreEvent {
   final GlobalKey<NestedScrollViewState> globalKey = GlobalKey();
 
   ScrollController _controller = ScrollController();
-  NostrRequest? subscription;
+  NdkResponse? subscription;
 
   String? pubkey;
 
@@ -200,8 +196,7 @@ class _UserRouter extends CustState<UserRouter>
                     pubkey: pubkey!,
                     // userNostr: userNostr,
                     onContactListLoaded: (contactList) {
-                      if (!disposed && loggedUserSigner != null &&
-                          contactList.contacts.contains(loggedUserSigner!.getPublicKey())) {
+                      if (!disposed && loggedUserSigner != null && contactList.contacts.contains(loggedUserSigner!.getPublicKey())) {
                         setState(() {
                           followsYou = true;
                         });
@@ -234,17 +229,17 @@ class _UserRouter extends CustState<UserRouter>
         return Scaffold(
             backgroundColor: themeData.scaffoldBackgroundColor,
             body: Stack(
-          children: [
-            main,
-            Positioned(
-              top: paddingTop,
-              child: Container(
-                width: maxWidth,
-                child: appBar,
-              ),
-            ),
-          ],
-        ));
+              children: [
+                main,
+                Positioned(
+                  top: paddingTop,
+                  child: Container(
+                    width: maxWidth,
+                    child: appBar,
+                  ),
+                ),
+              ],
+            ));
       },
     );
   }
@@ -260,8 +255,9 @@ class _UserRouter extends CustState<UserRouter>
   }
 
   void onEvent(Nip01Event event, {bool saveToCache = false}) {
-    if (event.pubKey!=pubkey) {
+    if (event.pubKey != pubkey) {
       print("WTF $event");
+      return;
     }
     later(event, (list) {
       bool added = box.addList(list);
@@ -271,7 +267,6 @@ class _UserRouter extends CustState<UserRouter>
       setState(() {});
     }, null);
   }
-
 
   @override
   void deactivate() {
@@ -287,8 +282,8 @@ class _UserRouter extends CustState<UserRouter>
   }
 
   void unSubscribe() {
-    if (subscription!=null) {
-      relayManager.closeNostrRequest(subscription!);
+    if (subscription != null) {
+      ndk.relays.closeSubscription(subscription!.requestId);
     }
   }
 
@@ -306,21 +301,23 @@ class _UserRouter extends CustState<UserRouter>
   @override
   void doQuery() {
     if (box.isEmpty()) {
-      List<Nip01Event>? cachedEvents = cacheManager.loadEvents(pubKeys: [pubkey!],kinds: [
+      List<Nip01Event>? cachedEvents = cacheManager.loadEvents(pubKeys: [
+        pubkey!
+      ], kinds: [
         Nip01Event.TEXT_NODE_KIND,
         // kind.EventKind.REPOST,
         // kind.EventKind.GENERIC_REPOST,
         // kind.EventKind.LONG_FORM,
         // kind.EventKind.FILE_HEADER,
         // kind.EventKind.POLL,
-      ]);//queryEventKinds());
+      ]); //queryEventKinds());
       print("USER loaded ${cachedEvents.length} events from cache DB");
       for (var event in cachedEvents) {
         onEvent(event, saveToCache: false);
       }
     }
 
-    if (myInboxRelaySet==null || myOutboxRelaySet==null) {
+    if (myInboxRelaySet == null || myOutboxRelaySet == null) {
       return;
     }
     preQuery();
@@ -336,17 +333,13 @@ class _UserRouter extends CustState<UserRouter>
     RelaySet relaySet = myInboxRelaySet!;
     if (pubkey == loggedUserSigner!.getPublicKey()) {
       relaySet = myOutboxRelaySet!;
-    } else
-      if (feedRelaySet!=null && settingProvider.gossip==1) {
+    } else if (feedRelaySet != null && settingProvider.gossip == 1) {
       relaySet = feedRelaySet!;
     }
-    relayManager!.subscription(
-        filter, relaySet).then((request) {
-          subscription = request;
-          subscription!.stream.listen((event) {
-        onEvent(event, saveToCache: pubkey == loggedUserSigner!.getPublicKey());
-      });
-    },);
+    subscription = ndk.requests.subscription(name:"user-sub",filters: [filter], relaySet: relaySet);
+    subscription!.stream.listen((event) {
+      onEvent(event, saveToCache: pubkey == loggedUserSigner!.getPublicKey());
+    });
   }
 
   @override

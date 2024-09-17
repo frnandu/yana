@@ -1,5 +1,5 @@
-import 'package:dart_ndk/models/relay_set.dart';
-import 'package:dart_ndk/read_write.dart';
+import 'package:ndk/domain_layer/entities/read_write.dart';
+import 'package:ndk/domain_layer/entities/relay_set.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:yana/nostr/nip47/nwc_notification.dart';
@@ -92,7 +92,7 @@ class ZapAction {
     Set<String> relays = {};
     relays.addAll(myOutboxRelaySet!.urls.toList());
     if (settingProvider.inboxForReactions == 1) {
-      RelaySet inboxRelaySet = await relayManager
+      RelaySet inboxRelaySet = await ndk.relaySets
           .calculateRelaySet(
           name: "replyInboxRelaySet",
           ownerPubKey: loggedUserSigner!.getPublicKey(),
@@ -101,7 +101,7 @@ class ZapAction {
           relayMinCountPerPubKey: settingProvider
               .broadcastToInboxMaxCount);
       relays.addAll(inboxRelaySet.urls.toSet());
-      relays.removeWhere((element) => relayManager.blockedRelays.contains(element));
+      relays.removeWhere((element) => ndk.blockedRelays().contains(element));
     }
 
     return await Zap.getInvoiceCode(

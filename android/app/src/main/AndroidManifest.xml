@@ -1,5 +1,4 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="yana.nostr">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <application
         android:name="${applicationName}"
@@ -48,6 +47,11 @@
                 <!-- Accepts URIs that begin with YOUR_SCHEME://YOUR_HOST -->
                 <data android:scheme="https://"
                     android:host="yana.do"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:scheme="lightning" />
             </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />

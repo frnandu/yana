@@ -1,4 +1,4 @@
-import 'package:dart_ndk/nips/nip02/contact_list.dart';
+import 'package:ndk/domain_layer/entities/contact_list.dart';
 import 'package:flutter/material.dart';
 import 'package:yana/nostr/nip172/community_id.dart';
 import 'package:yana/utils/router_path.dart';

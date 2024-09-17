@@ -1,15 +1,13 @@
-import 'package:dart_ndk/nips/nip01/event.dart';
-import 'package:dart_ndk/nips/nip01/filter.dart';
-import 'package:dart_ndk/request.dart';
+import 'package:ndk/domain_layer/entities/filter.dart';
+import 'package:ndk/domain_layer/entities/nip_01_event.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
+import 'package:ndk/ndk.dart';
 import 'package:yana/nostr/nip172/community_id.dart';
 import 'package:yana/nostr/nip172/community_info.dart';
 
 import '../main.dart';
 import '../nostr/event_kind.dart' as kind;
 import '../utils/later_function.dart';
-import '../utils/string_util.dart';
 
 class CommunityInfoProvider extends ChangeNotifier with LaterFunction {
   Map<String, CommunityInfo> _cache = {};
@@ -49,7 +47,7 @@ class CommunityInfoProvider extends ChangeNotifier with LaterFunction {
     List<CommunityId> ids = [];
     for (var idStr in _needPullIds) {
       var communityId = CommunityId.fromString(idStr);
-      if (communityId!=null) {
+      if (communityId != null) {
         ids.add(communityId);
       }
 
@@ -64,10 +62,10 @@ class CommunityInfoProvider extends ChangeNotifier with LaterFunction {
     var filter = Filter(kinds: [
       kind.EventKind.COMMUNITY_DEFINITION,
     ], authors: ids.map((e) => e.pubkey).toList());
-    relayManager.query(filter, myInboxRelaySet!).then((request) {
-      request.stream.listen((event) {
-        _onEvent(event);
-      });
+    NdkResponse response =
+        ndk.requests.query(filters: [filter], relaySet: myInboxRelaySet!);
+    response.stream.listen((event) {
+      _onEvent(event);
     });
 
     for (var pubkey in _needPullIds) {

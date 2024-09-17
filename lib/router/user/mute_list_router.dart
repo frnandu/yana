@@ -1,13 +1,10 @@
 import 'dart:convert';
 
-import 'package:dart_ndk/nips/nip01/event.dart';
-import 'package:dart_ndk/nips/nip01/filter.dart';
-import 'package:dart_ndk/nips/nip01/helpers.dart';
-import 'package:dart_ndk/nips/nip01/metadata.dart';
-import 'package:dart_ndk/nips/nip51/nip51.dart';
-import 'package:dart_ndk/relay.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:ndk/ndk.dart';
+import 'package:ndk/shared/helpers/relay_helper.dart';
+import 'package:ndk/shared/nips/nip01/helpers.dart';
 import 'package:provider/provider.dart';
 import 'package:yana/main.dart';
 import 'package:yana/provider/filter_provider.dart';
@@ -93,7 +90,7 @@ class _MuteListRouter extends State<MuteListRouter> with SingleTickerProviderSta
             //   onChanged: (value) {
             //     print("!!!!!!!!!!!!!! $value");
             //     setState(() {
-            //       relaySet = relayManager.getCachedNip51RelaySet(value!, loggedUserSigner!);
+            //       relaySet =ndk.relays.getCachedNip51RelaySet(value!, loggedUserSigner!);
             //       selectedList = value!;
             //     });
             //   },
@@ -107,7 +104,7 @@ class _MuteListRouter extends State<MuteListRouter> with SingleTickerProviderSta
         ),
         child: RefreshIndicator(
           onRefresh: () async {
-            Nip51List? refreshedList = await relayManager.getSingleNip51List(muteList!.kind, loggedUserSigner!, forceRefresh: true);
+            Nip51List? refreshedList = await ndk.lists.getSingleNip51List(muteList!.kind, loggedUserSigner!, forceRefresh: true);
             refreshedList ??= Nip51List(pubKey: muteList!.pubKey, kind: muteList!.kind, elements: [], createdAt: Helpers.now);
             filterProvider.muteList = refreshedList;
             filterProvider.notifyListeners();
@@ -126,7 +123,7 @@ class _MuteListRouter extends State<MuteListRouter> with SingleTickerProviderSta
                     decoration: InputDecoration(
                       prefixIcon: const Icon(Icons.lan),
                       hintText: "profile name, pubkey, hashtag or word",
-                      suffixIcon: Relay.clean(controller.text) != null
+                      suffixIcon: cleanRelayUrl(controller.text) != null
                           ? PopupMenuButton<String>(
                               icon: const Icon(Icons.add),
                               tooltip: "more",
@@ -187,8 +184,8 @@ class _MuteListRouter extends State<MuteListRouter> with SingleTickerProviderSta
                   bool? result = await ConfirmDialog.show(context, "Confirm remove ${element.value} from list");
                   if (result != null && result) {
                     EasyLoading.show(status: 'Removing from list and broadcasting...', maskType: EasyLoadingMaskType.black, dismissOnTap: true);
-                    muteList = await relayManager.broadcastRemoveNip51ListElement(
-                        muteList!.kind, element.tag, element.value, myOutboxRelaySet!.urls, loggedUserSigner!);
+                    muteList = await ndk.lists.broadcastRemoveNip51ListElement(
+                        muteList!.kind, element.tag, element.value, myOutboxRelaySet!.urls, loggedUserSigner);
                     filterProvider.muteList = muteList;
                     filterProvider.notifyListeners();
                     EasyLoading.dismiss();
@@ -227,12 +224,10 @@ class _MuteListRouter extends State<MuteListRouter> with SingleTickerProviderSta
           filterMap = Filter(kinds: [Metadata.KIND], limit: 10).toMap();
           filterMap!["search"] = search;
           List<String> relaysWithNip50 = searchRelays.isNotEmpty ? searchRelays : ["wss://relay.nostr.band", "wss://relay.noshere.com"];
-          relayManager.requestRelays(relaysWithNip50, Filter.fromMap(filterMap!), timeout: 10).then((request) {
-            request.stream.listen((event) {
-              onQueryEvent(search, event);
-            });
+          NdkResponse response = ndk.requests.query(explicitRelays: relaysWithNip50, filters: [Filter.fromMap(filterMap!)]);
+          response.stream.listen((event) {
+            onQueryEvent(search, event);
           });
-          // });
         }
       }
     }
@@ -253,16 +248,16 @@ class _MuteListRouter extends State<MuteListRouter> with SingleTickerProviderSta
   }
 
   int compareRelays(RelayMetadata r1, RelayMetadata r2) {
-    Relay? relay1 = relayManager.getRelay(r1.url!);
-    Relay? relay2 = relayManager!.getRelay(r2.url!);
+    Relay? relay1 =ndk.relays.getRelay(r1.url!);
+    Relay? relay2 = ndk.relays.getRelay(r2.url!);
     if (relay1 == null) {
       return 1;
     }
     if (relay2 == null) {
       return -1;
     }
-    bool a1 = relayManager.isRelayConnected(r1.url!);
-    bool a2 = relayManager.isRelayConnected(r2.url!);
+    bool a1 =ndk.relays.isRelayConnected(r1.url!);
+    bool a2 =ndk.relays.isRelayConnected(r2.url!);
     if (a1) {
       return a2 ? (r2.count != null ? r2.count!.compareTo(r1.count!) : 0) : -1;
     }
@@ -283,7 +278,7 @@ class _MuteListRouter extends State<MuteListRouter> with SingleTickerProviderSta
     if (result != null && result) {
       EasyLoading.show(status: 'Broadcasting mute list...', maskType: EasyLoadingMaskType.black, dismissOnTap: true);
 
-      muteList = await relayManager.broadcastAddNip51ListElement(muteList!.kind, element.tag, element.value, myOutboxRelaySet!.urls, loggedUserSigner!, private: private);
+      muteList = await ndk.lists.broadcastAddNip51ListElement(muteList!.kind, element.tag, element.value, myOutboxRelaySet!.urls, private: private, loggedUserSigner);
       filterProvider.muteList = muteList;
       filterProvider.notifyListeners();
       EasyLoading.dismiss();

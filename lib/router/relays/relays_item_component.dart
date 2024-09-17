@@ -1,13 +1,12 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
-import 'package:dart_ndk/relay.dart';
+import 'package:ndk/domain_layer/entities/read_write_marker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:ndk/domain_layer/entities/relay.dart';
 import 'package:yana/main.dart';
 import 'package:yana/utils/router_path.dart';
 import 'package:yana/utils/router_util.dart';
 
-import '../../i18n/i18n.dart';
 import '../../ui/confirm_dialog.dart';
 import '../../utils/base.dart';
 import '../../utils/hash_util.dart';
@@ -43,7 +42,7 @@ class RelaysItemComponent extends StatelessWidget {
     Color? borderLeftColor;
     if (showConnection && relay != null) {
       borderLeftColor = Colors.red;
-      if (relayManager.isRelayConnected(relay!.url)) {
+      if (ndk.relays.isRelayConnected(relay!.url)) {
         borderLeftColor = Colors.green;
       } else if (relay!.connecting) {
         borderLeftColor = Colors.yellow;
@@ -173,7 +172,7 @@ class RelaysItemComponent extends StatelessWidget {
                                           iconColor: Colors.lightGreen,
                                           textColor: Colors.lightGreen,
                                           iconData: Icons.lan_outlined,
-                                          num: "${relay!.stats.connections}",
+                                          num: "${relay!.stats.activeRequests}",
                                         )),
                                     Container(
                                         margin: const EdgeInsets.only(right: Base.BASE_PADDING_HALF),

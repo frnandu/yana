@@ -1,14 +1,16 @@
 import 'dart:async';
 
-import 'package:dart_ndk/nips/nip01/event.dart';
-import 'package:dart_ndk/nips/nip01/metadata.dart';
-import 'package:dart_ndk/nips/nip11/relay_info.dart';
-import 'package:dart_ndk/relay.dart';
+import 'package:ndk/domain_layer/entities/metadata.dart';
+import 'package:ndk/domain_layer/entities/nip_01_event.dart';
+import 'package:ndk/domain_layer/entities/relay.dart';
+import 'package:ndk/domain_layer/entities/relay_info.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:ndk/shared/helpers/relay_helper.dart';
 import 'package:protocol_handler/protocol_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:yana/provider/dm_provider.dart';
+import 'package:yana/provider/nwc_provider.dart';
 import 'package:yana/provider/pc_router_fake_provider.dart';
 import 'package:yana/router/follow/notifications_router.dart';
 import 'package:yana/ui/cust_state.dart';
@@ -85,7 +87,7 @@ class _IndexRouter extends CustState<IndexRouter>
     // String log = 'Url received: $url)';
     // print(log);
     if (StringUtil.isNotBlank(url)) {
-      if (url.startsWith("nostr+walletconnect://")) {
+      if (url.startsWith(NwcProvider.NWC_PROTOCOL_PREFIX)) {
         Future.delayed(const Duration(microseconds: 1), () async {
           await nwcProvider.connect(url);
           bool canPop = Navigator.canPop(context);
@@ -97,6 +99,8 @@ class _IndexRouter extends CustState<IndexRouter>
             RouterUtil.router(context, RouterPath.WALLET);
           }
         });
+      } else if (url.startsWith("lightning:")) {
+        RouterUtil.router(context, RouterPath.WALLET_SEND, url.split(":").last);
       } else if (url.startsWith("nostr:")) {
         RegExpMatch? match = Nip19.nip19regex.firstMatch(url);
 
@@ -130,7 +134,7 @@ class _IndexRouter extends CustState<IndexRouter>
             }
           } else if (NIP19Tlv.isNrelay(key)) {
             var nrelay = NIP19Tlv.decodeNrelay(key);
-            String? url = nrelay != null ? Relay.clean(nrelay.addr) : null;
+            String? url = nrelay != null ? cleanRelayUrl(nrelay.addr) : null;
             if (url != null) {
               // inline
               Relay relay = Relay(url);
@@ -142,7 +146,7 @@ class _IndexRouter extends CustState<IndexRouter>
             if (nevent != null) {
               if (nevent.relays!=null && nevent.relays!.isNotEmpty) {
                 // TODO allowReconnectRelays is false, WTF?
-                // await relayManager.reconnectRelays(nevent.relays!);
+                // await ndk.relays.reconnectRelays(nevent.relays!);
               }
               RouterUtil.router(context, RouterPath.THREAD_DETAIL, nevent.id);
             }

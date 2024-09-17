@@ -1,9 +1,7 @@
 import 'dart:async';
 
-import 'package:dart_ndk/nips/nip01/event.dart';
-import 'package:dart_ndk/nips/nip01/filter.dart';
-import 'package:dart_ndk/nips/nip01/helpers.dart';
-import 'package:dart_ndk/request.dart';
+import 'package:ndk/ndk.dart';
+import 'package:ndk/shared/nips/nip01/helpers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:provider/provider.dart';
@@ -22,7 +20,6 @@ import '../../../utils/peddingevents_later_function.dart';
 import '../../../utils/platform_util.dart';
 
 class GlobalsEventsRouter extends StatefulWidget {
-
   GlobalsEventsRouter({super.key});
 
   @override
@@ -36,7 +33,7 @@ class _GlobalsEventsRouter extends KeepAliveCustState<GlobalsEventsRouter>
   ScrollController scrollController = ScrollController();
   EventMemBox eventBox = EventMemBox();
 
-  NostrRequest? subscription;
+  NdkResponse? subscription;
 
   int? _initTime = DateTime.now().millisecondsSinceEpoch ~/ 1000 - 3600;
 
@@ -63,7 +60,7 @@ class _GlobalsEventsRouter extends KeepAliveCustState<GlobalsEventsRouter>
 
     var main = RefreshIndicator(
         onRefresh: () async {
-          until= null;
+          until = null;
           refresh();
         },
         child: EventDeleteCallback(
@@ -133,38 +130,42 @@ class _GlobalsEventsRouter extends KeepAliveCustState<GlobalsEventsRouter>
   int howManySecondsToLoadBack = 600;
 
   Future<void> refresh() async {
-    var filter = Filter(kinds: queryEventKinds(), until: until, since: (until!=null? until!: Helpers.now) - howManySecondsToLoadBack, limit: 100);
-    if (subscription!=null) {
-      await relayManager.closeNostrRequest(subscription!);
+    var filter = Filter(
+        kinds: queryEventKinds(),
+        until: until,
+        since:
+            (until != null ? until! : Helpers.now) - howManySecondsToLoadBack,
+        limit: 100);
+    if (subscription != null) {
+      ndk.relays.closeSubscription(subscription!.requestId);
     }
 
-    await relayManager.reconnectRelays(myInboxRelaySet!.urls);
+    await ndk.relays.reconnectRelays(myInboxRelaySet!.urls);
 
-    subscription = await relayManager!.query(
-        filter, myInboxRelaySet!, splitRequestsByPubKeyMappings: false);
+    subscription = ndk.requests.query(name: "global", filters: [filter], relaySet: myInboxRelaySet!);
     subscription!.stream.listen((event) {
-        if (eventBox.isEmpty()) {
-          laterTimeMS = 200;
-        } else {
-          laterTimeMS = 1000;
-        }
+      if (eventBox.isEmpty()) {
+        laterTimeMS = 200;
+      } else {
+        laterTimeMS = 1000;
+      }
 
-        later(event, (list) {
-          print("Received GLOBAL ${list.length} events");
-          setState(() {
-            eventBox.addList(list);
-            if (eventBox.newestEvent != null) {
-              _initTime = eventBox.newestEvent!.createdAt;
-            }
-          });
-        }, null);
+      later(event, (list) {
+        print("Received GLOBAL ${list.length} events");
+        setState(() {
+          eventBox.addList(list);
+          if (eventBox.newestEvent != null) {
+            _initTime = eventBox.newestEvent!.createdAt;
+          }
+        });
+      }, null);
     });
   }
 
   void unsubscribe() async {
     try {
-      if (subscription!=null) {
-        await relayManager.closeNostrRequest(subscription!);
+      if (subscription != null) {
+        ndk.relays.closeSubscription(subscription!.requestId);
       }
     } catch (e) {}
   }

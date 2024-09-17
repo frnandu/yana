@@ -1,12 +1,13 @@
 import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:dart_ndk/models/pubkey_mapping.dart';
-import 'package:dart_ndk/nips/nip51/nip51.dart';
-import 'package:dart_ndk/relay.dart';
+import 'package:ndk/domain_layer/entities/nip_51_list.dart';
+import 'package:ndk/domain_layer/entities/pubkey_mapping.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:ndk/domain_layer/entities/relay.dart';
+import 'package:ndk/shared/helpers/relay_helper.dart';
 import 'package:provider/provider.dart';
 import 'package:yana/main.dart';
 import 'package:yana/provider/relay_provider.dart';
@@ -61,7 +62,7 @@ class _UserRelayRouter extends State<UserRelayRouter>
       relays!.sort((r1, r2) => compareRelays(r1, r2));
     }
     relays!.forEach((element) {
-      element.url = Relay.clean(element.url!);
+      element.url = cleanRelayUrl(element.url!);
     });
 
     return Scaffold(
@@ -87,7 +88,7 @@ class _UserRelayRouter extends State<UserRelayRouter>
                   relays!.isNotEmpty &&
                   relays![0].count != null &&
                   feedRelaySet != null) {
-                await relayManager.reconnectRelays(feedRelaySet!.urls);
+                await ndk.relays.reconnectRelays(feedRelaySet!.urls);
                 relayProvider.notifyListeners();
                 setState(() {
                   if (kDebugMode) {
@@ -126,7 +127,7 @@ class _UserRelayRouter extends State<UserRelayRouter>
                   },
                 );
                 // }, selector: (context, provider) {
-                //   return relayManager.isRelayConnected(relayMetadata.url!);
+                //   returnndk.relays.isRelayConnected(relayMetadata.url!);
                 // });
               },
               itemCount: relays!.length,
@@ -136,16 +137,16 @@ class _UserRelayRouter extends State<UserRelayRouter>
   }
 
   int compareRelays(RelayMetadata r1, RelayMetadata r2) {
-    Relay? relay1 = relayManager.getRelay(r1.url!);
-    Relay? relay2 = relayManager!.getRelay(r2.url!);
+    Relay? relay1 =ndk.relays.getRelay(r1.url!);
+    Relay? relay2 = ndk.relays.getRelay(r2.url!);
     if (relay1 == null) {
       return 1;
     }
     if (relay2 == null) {
       return -1;
     }
-    bool a1 = relayManager.isRelayConnected(r1.url!);
-    bool a2 = relayManager.isRelayConnected(r2.url!);
+    bool a1 =ndk.relays.isRelayConnected(r1.url!);
+    bool a2 =ndk.relays.isRelayConnected(r2.url!);
     if (a1) {
       return a2 ? (r2.count != null ? r2.count!.compareTo(r1.count!) : 0) : -1;
     }
@@ -262,7 +263,7 @@ class RelayMetadataComponent extends StatelessWidget {
           ),
         ));
       }
-      bool blocked = relayManager.blockedRelays.contains(relayMetadata!.url);
+      bool blocked =ndk.relays.blockedRelays.contains(relayMetadata!.url);
       if (blocked) {
         rightButtons.add(PopupMenuButton<String>(
           icon: const Icon(Icons.not_interested, color: Colors.red),
@@ -279,14 +280,14 @@ class RelayMetadataComponent extends StatelessWidget {
                   status: 'Removing from list and broadcasting...',
                   maskType: EasyLoadingMaskType.black,
                   dismissOnTap: true);
-              Nip51List? relayList = await relayManager
-                  .broadcastRemoveNip51Relay(
+              Nip51List? relayList = await ndk
+                  .lists.broadcastRemoveNip51Relay(
                       Nip51List.BLOCKED_RELAYS,
                       relayMetadata!.url!,
                       myOutboxRelaySet!.urls,
-                      loggedUserSigner!,
+                      loggedUserSigner,
                       defaultRelaysIfEmpty: []);
-              relayManager.blockedRelays = relayList!.allRelays!;
+             ndk.relays.blockedRelays = relayList!.allRelays!;
               relayProvider.notifyListeners();
               EasyLoading.dismiss();
             }
@@ -313,13 +314,13 @@ class RelayMetadataComponent extends StatelessWidget {
                     maskType: EasyLoadingMaskType.black,
                     dismissOnTap: true);
                 Nip51List blocked =
-                    await relayManager.broadcastAddNip51ListRelay(
+                    await ndk.lists.broadcastAddNip51ListRelay(
                         Nip51List.BLOCKED_RELAYS,
                         relayMetadata!.url!,
                         myOutboxRelaySet!.urls,
-                        loggedUserSigner!,
+                        loggedUserSigner,
                         private: value == "private" ? true : false);
-                relayManager.blockedRelays = blocked.allRelays!;
+               ndk.relays.blockedRelays = blocked.allRelays!;
                 EasyLoading.dismiss();
                 if (onBlock != null) {
                   onBlock!(relayMetadata!.url!);
@@ -337,7 +338,7 @@ class RelayMetadataComponent extends StatelessWidget {
     //   ],
     // ),
     //
-    Relay? relay = relayManager.getRelay(relayMetadata!.url!);
+    Relay? relay =ndk.relays.getRelay(relayMetadata!.url!);
     Widget imageWidget;
 
     String? iconUrl;

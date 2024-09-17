@@ -1,4 +1,4 @@
-import 'package:dart_ndk/nips/nip01/metadata.dart';
+import 'package:ndk/domain_layer/entities/metadata.dart';
 import 'package:flutter/material.dart';
 
 import '../../main.dart';
@@ -96,8 +96,8 @@ class SearchMentionUserItemComponent extends StatelessWidget {
     required this.width,
     required this.onTap,
     this.popupMenuButton,
-    this.showNip05,
-    this.showLnAddress
+    this.showNip05=true,
+    this.showLnAddress=false
   });
 
   @override

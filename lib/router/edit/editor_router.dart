@@ -1,12 +1,12 @@
-import 'package:dart_ndk/models/relay_set.dart';
-import 'package:dart_ndk/nips/nip01/event.dart';
-import 'package:dart_ndk/nips/nip01/metadata.dart';
-import 'package:dart_ndk/read_write.dart';
-import 'package:dart_ndk/relay.dart';
+import 'package:ndk/domain_layer/entities/metadata.dart';
+import 'package:ndk/domain_layer/entities/nip_01_event.dart';
+import 'package:ndk/domain_layer/entities/read_write.dart';
+import 'package:ndk/domain_layer/entities/relay_set.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:intl/intl.dart';
+import 'package:ndk/shared/helpers/relay_helper.dart';
 import 'package:pointycastle/ecc/api.dart';
 import 'package:yana/main.dart';
 import 'package:yana/nostr/nip172/community_id.dart';
@@ -39,9 +39,9 @@ class EditorRouter extends StatefulWidget {
   // dm arg
   String? pubkey;
 
-  List<dynamic> tags = [];
+  List<List<String>> tags = [];
 
-  List<dynamic> tagsAddedWhenSend = [];
+  List<List<String>> tagsAddedWhenSend = [];
 
   List<dynamic> tagPs = [];
 
@@ -60,8 +60,8 @@ class EditorRouter extends StatefulWidget {
 
   static Future<Nip01Event?> open(
     BuildContext context, {
-    List<dynamic>? tags,
-    List<dynamic>? tagsAddedWhenSend,
+    List<List<String>>? tags,
+    List<List<String>>? tagsAddedWhenSend,
     List<dynamic>? tagPs,
     String? pubkey,
     List<quill.BlockEmbed>? initEmbeds,
@@ -210,9 +210,9 @@ class _EditorRouter extends CustState<EditorRouter> with EditorMixin {
           margin: EdgeInsets.only(left: 10, bottom: Base.BASE_PADDING_HALF),
           child: Row(
             children: [
-              Icon(Icons.timer_outlined),
+              const Icon(Icons.timer_outlined),
               Container(
-                margin: EdgeInsets.only(left: 4),
+                margin: const EdgeInsets.only(left: 4),
                 child: Text(
                   dateFormate.format(createdAt!),
                 ),
@@ -346,15 +346,15 @@ class _EditorRouter extends CustState<EditorRouter> with EditorMixin {
                 List<String> pubKeys = Nip01Event.getTags(widget.tagPs, "p");
                 if (pubKeys.length == 1) {
                   for (var element in (await getInboxRelays(pubKeys.first))) {
-                    String? cleanUrl = Relay.clean(element);
+                    String? cleanUrl = cleanRelayUrl(element);
                     if (cleanUrl!=null) {
                       relays.add(cleanUrl);
                     }
                   }
                 } else if (pubKeys.isNotEmpty) {
                   EasyLoading.show(status: 'Calculating inbox relays of participants...', maskType: EasyLoadingMaskType.black, dismissOnTap: true);
-                  RelaySet inboxRelaySet = await relayManager
-                      .calculateRelaySet(
+                  RelaySet inboxRelaySet = await ndk
+                      .relaySets.calculateRelaySet(
                       name: "replyInboxRelaySet",
                       ownerPubKey: loggedUserSigner!.getPublicKey(),
                       pubKeys: pubKeys,
@@ -362,17 +362,17 @@ class _EditorRouter extends CustState<EditorRouter> with EditorMixin {
                       relayMinCountPerPubKey: settingProvider
                           .broadcastToInboxMaxCount);
                   inboxRelaySet.urls.forEach((element) {
-                    String? cleanUrl = Relay.clean(element);
+                    String? cleanUrl = cleanRelayUrl(element);
                     if (cleanUrl!=null) {
                       relays.add(cleanUrl);
                     }
                   });
 
-                  relays.removeWhere((element) => relayManager.blockedRelays.contains(element));
+                  relays.removeWhere((element) =>ndk.relays.blockedRelays.contains(element));
                   EasyLoading.dismiss();
                 }
               }
-              // relays.removeWhere((element) => Relay.clean(element)==null);
+              // relays.removeWhere((element) => cleanRelayUrl(element)==null);
               List<String>? results = await showDialog(
                 context: context,
                 builder: (BuildContext context) {
@@ -595,18 +595,18 @@ class _EditorRouter extends CustState<EditorRouter> with EditorMixin {
   }
 
   @override
-  List getTags() {
+  List<List<String>> getTags() {
     return widget.tags;
   }
 
   @override
-  List getTagsAddedWhenSend() {
+  List<List<String>> getTagsAddedWhenSend() {
     if ((notifyItems == null || notifyItems!.isEmpty) &&
         editorNotifyItems.isEmpty) {
       return widget.tagsAddedWhenSend;
     }
 
-    List<dynamic> list = [];
+    List<List<String>> list = [];
     list.addAll(widget.tagsAddedWhenSend);
     for (var item in notifyItems!) {
       if (item.selected) {

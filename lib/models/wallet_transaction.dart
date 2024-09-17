@@ -1,3 +1,5 @@
+import 'package:yana/nostr/nip47/nwc_notification.dart';
+
 class WalletTransaction {
   String type;
   String invoice;
@@ -44,6 +46,8 @@ class WalletTransaction {
     );
   }
 
+  get isIncoming => type == NwcNotification.INCOMING;
+
   Map<String, dynamic> toJson() {
     return {
       'type': type,
@@ -59,5 +63,21 @@ class WalletTransaction {
       'settled_at': settled_at,
       'metadata': metadata,
     };
+  }
+
+  static fromNotification(NwcNotification notification) {
+    return WalletTransaction(type: notification.type,
+        invoice: notification.invoice,
+        amount: notification.amount,
+        fees_paid: notification.feesPaid,
+        created_at: notification.createdAt,
+        description: notification.description,
+        description_hash: notification.descriptionHash,
+        preimage: notification.preimage,
+        payment_hash: notification.paymentHash,
+        expires_at: notification.expiresAt,
+        settled_at: notification.settledAt,
+        metadata: notification.metadata??''
+    );
   }
 }

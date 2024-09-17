@@ -1,7 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:dart_ndk/nips/nip01/metadata.dart';
-import 'package:dart_ndk/relay.dart';
-import 'package:dart_ndk/nips/nip11/relay_info.dart';
+import 'package:ndk/domain_layer/entities/metadata.dart';
+import 'package:ndk/domain_layer/entities/relay.dart';
+import 'package:ndk/domain_layer/entities/relay_info.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:yana/main.dart';
@@ -35,12 +35,12 @@ class _RelayInfoRouter extends State<RelayInfoRouter> {
     var titleFontSize = themeData.textTheme.bodyLarge!.fontSize;
 
     var relayItf = RouterUtil.routerArgs(context);
-    if (relayItf == null || !(relayItf is Relay)) {
+    if (relayItf == null || relayItf is! Relay) {
       RouterUtil.back(context);
       return Container();
     }
 
-    var relay = relayItf as Relay;
+    var relay = relayItf;
 
     if (relayInfo==null) {
       if (relay.info == null) {

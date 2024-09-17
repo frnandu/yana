@@ -1,4 +1,4 @@
-import 'package:dart_ndk/nips/nip02/contact_list.dart';
+import 'package:ndk/domain_layer/entities/contact_list.dart';
 import 'package:flutter/material.dart';
 
 import '../../i18n/i18n.dart';
