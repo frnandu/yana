@@ -275,7 +275,8 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
       _followersSubscription = ndk.requests.query(
         //ndk.relays.bootstrapRelays.toList()
         //   ..addAll(myInboxRelaySet!.urls),
-        idPrefix: "user-stats-followers-",
+        name: "user-stats-followers",
+        timeout: 60,
         filters: [filter],
         relaySet: myInboxRelaySet!,
       );
@@ -317,10 +318,11 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
       _zapsSubscription = ndk.requests.query(
         //ndk.relays.bootstrapRelays.toList()
         //   ..addAll(myInboxRelaySet!.urls),
-        idPrefix: "zap-receipts-",
+        name: "zap-receipts",
         filters: [
           Filter(kinds: [EventKind.ZAP_RECEIPT], pTags: [widget.pubkey])
         ],
+        timeout: 60,
         relaySet: myInboxRelaySet!,
       );
       _zapsSubscription!.stream.listen(

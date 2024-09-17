@@ -185,7 +185,7 @@ class FollowEventProvider extends ChangeNotifier
       await ndk.relays.reconnectRelays(myInboxRelaySet!.urls);
     }
     subscription = ndk.requests.subscription(
-        idPrefix: "feed-sub-",
+        name: "feed-sub",
         filters: [filter],
         relaySet: (feedRelaySet != null && settingProvider.gossip == 1)
             ? feedRelaySet!
@@ -291,7 +291,7 @@ class FollowEventProvider extends ChangeNotifier
 
     ndk.requests
         .query(
-            idPrefix: "feed-old-tags",
+            name: "feed-old-tags",
             filters: [
               Filter(
                   kinds: queryEventKinds(),
@@ -306,7 +306,7 @@ class FollowEventProvider extends ChangeNotifier
     });
     ndk.requests
         .query(
-            idPrefix: "feed-old-communities",
+            name: "feed-old-communities",
             filters: [
               Filter(
                   kinds: queryEventKinds(),
@@ -321,7 +321,7 @@ class FollowEventProvider extends ChangeNotifier
     });
     ndk.requests
         .query(
-            idPrefix: "feed-old-events",
+            name: "feed-old-events",
             filters: [
               Filter(
                   kinds: queryEventKinds(),

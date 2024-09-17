@@ -55,12 +55,12 @@ class NewNotificationsProvider extends ChangeNotifier
     );
     await for (final event in ndk.requests
         .query(
-            idPrefix: "new-notifications-",
+            name: "new-notifications",
             filters: [filter],
             relaySet: myInboxRelaySet!)
         .stream) {
-      Metadata? metadata = await ndk.metadatas.loadMetadata(event.pubKey);
-      handleEvent(event, metadata);
+      // TODO fix this since it was screwing over received events to handle (metadata mixed)
+      handleEvent(event, await ndk.metadatas.loadMetadata(event.pubKey));
     }
   }
 

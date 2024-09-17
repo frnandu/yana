@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:ndk/ndk.dart';
+import 'package:ndk/shared/logger/logger.dart';
 
 import '../main.dart';
 import '../models/event_reactions.dart';
@@ -69,7 +70,8 @@ class EventReactionsProvider extends ChangeNotifier
     if (replies == null || force) {
       /// TODO use other relaySet if gossip
       NdkResponse response = ndk.requests.query(
-          idPrefix: "event-reations-thread-replies",
+          name: "event-reations-thread-replies",
+          timeout: 5,
           filters: [
             Filter(eTags: [id], kinds: [Nip01Event.TEXT_NODE_KIND])
           ],
@@ -134,11 +136,18 @@ class EventReactionsProvider extends ChangeNotifier
     }
     // print(
     //     "---------------- reactions subscriptions: ${subscriptions.length}");
-    NdkResponse response = ndk.requests.query(idPrefix: "event-reations-", filters: [filter], relaySet:  relaySet);
+    NdkResponse response = ndk.requests.query(
+        name: "event-reactions",
+        timeout: 5,
+        filters: [filter],
+        explicitRelays: myInboxRelaySet?.urls
+    );//, relaySet:  relaySet);
     // subscriptions[eventId] = response;
 
-    response.stream.listen((event) {
+    response.stream.timeout(const Duration(seconds: 10)).listen((event) {
       _handleSingleEvent2(event);
+    }).onError((error) {
+      Logger.log.f("!!!!!!!!!!!!!!!!!!! $error");
     });
     // TODO should use other relays inbox for pubKey....
   }

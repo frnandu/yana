@@ -142,7 +142,7 @@ class _GlobalsEventsRouter extends KeepAliveCustState<GlobalsEventsRouter>
 
     await ndk.relays.reconnectRelays(myInboxRelaySet!.urls);
 
-    subscription = ndk.requests.query(idPrefix: "global-", filters: [filter], relaySet: myInboxRelaySet!);
+    subscription = ndk.requests.query(name: "global", filters: [filter], relaySet: myInboxRelaySet!);
     subscription!.stream.listen((event) {
       if (eventBox.isEmpty()) {
         laterTimeMS = 200;

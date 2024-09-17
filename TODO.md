@@ -97,13 +97,10 @@
 - rust event verifier
 - published on zap.store with self-signing
 - choose currency for wallet on settings
-- thread single event fix
 
-- loading thread....
+- loading thread (on outbox true?)....
 - event multiple sources
-- fix nip65 on notifications WTF? 
-- fix require unlock to use error 
-- refresh relay list
+- fix require unlock to use error
 
 =====
 - nostr.wine-compatible translations service integration
@@ -111,10 +108,8 @@
 - make reactions live again with subscriptions or some other way
 - show progress of broadcasting note on relays with retry if some fail
 - handle event deletions coming from relays, should delete in cache
-- don't validate signature for events cached on DB
 - when following someone new and gossip=1, ask confirmation for that user's relay list acceptance, and eventual blocking some relays
 - too much notifications of reactions to replies of replies of post where you're tagged
-- WTF nwc needs fresh relayManager for get_info/get_balance??
 - include relay hints on nevent and stuff
 - lists on profiles
 - custom lists/sets nip51

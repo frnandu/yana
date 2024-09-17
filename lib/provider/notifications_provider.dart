@@ -32,7 +32,7 @@ class NotificationsProvider extends ChangeNotifier with PenddingEventsLaterFunct
   }
 
   Future<void> loadCached() async {
-    List<Nip01Event>? cachedEvents = cacheManager.loadEvents(pTag: loggedUserSigner!.getPublicKey());
+    List<Nip01Event>? cachedEvents = cacheManager.loadEvents(kinds: notificationsProvider.queryEventKinds(), pTag: loggedUserSigner!.getPublicKey());
     print("NOTIFICATIONS loaded ${cachedEvents.length} events from cache DB");
     onEvents(cachedEvents, saveToCache: false);
   }
@@ -94,7 +94,7 @@ class NotificationsProvider extends ChangeNotifier with PenddingEventsLaterFunct
 
       await ndk.relays.reconnectRelays(myInboxRelaySet!.urls);
 
-      subscription = ndk.requests.subscription(idPrefix:"notifications-sub-", filters: [filter], relaySet: myInboxRelaySet!);
+      subscription = ndk.requests.subscription(name:"notifications-sub", filters: [filter], relaySet: myInboxRelaySet!);
       subscription!.stream.listen((event) {
         onEvent(event);
       });

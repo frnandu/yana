@@ -107,7 +107,7 @@ class NwcProvider extends ChangeNotifier {
     await ndk.relays.reconnectRelay(relay);
     ndk
         .requests.query(
-            idPrefix: "nwc-",
+            name: "nwc",
             explicitRelays: [relay],
             filters: [filter],
             cacheRead: false,
@@ -281,7 +281,7 @@ class NwcProvider extends ChangeNotifier {
           Filter(kinds: [EventKind.ZAP_RECEIPT], eTags: [payInvoiceEventId]);
       Nip01Event? zapReceipt;
       NdkResponse subscription = ndk.requests.subscription(
-          idPrefix: "nwc-pay-invoice-sub-",
+          name: "nwc-pay-invoice-sub-",
           explicitRelays: [relay!],
           filters: [filter],
           cacheRead: false,
@@ -345,7 +345,7 @@ class NwcProvider extends ChangeNotifier {
           pTags: [nwcSigner.getPublicKey()],
           eTags: [event.id]);
       NdkResponse subscription = ndk.requests.subscription(
-          idPrefix: "nwc-make-invoice-sub-",
+          name: "nwc-make-invoice-sub",
           explicitRelays: [relay!],
           filters: [filter],
           cacheRead: false,
@@ -395,31 +395,22 @@ class NwcProvider extends ChangeNotifier {
       await ndk.relays.reconnectRelay(relay!);
 
       NdkResponse subscription = ndk.requests.subscription(
-          idPrefix: "nwc-responses-sub-",
+          name: "nwc-sub",
           explicitRelays: [relay!],
           filters: [Filter(
-            kinds: [NwcKind.RESPONSE],
+            kinds: [NwcKind.NOTIFICATION, NwcKind.RESPONSE],
             authors: [walletPubKey!],
             pTags: [nwcSigner.getPublicKey()],
           )],
           cacheRead: false,
           cacheWrite: false);
       subscription.stream.listen((event) async {
-        await onResponse(event);
-      });
-
-      NdkResponse subscription2 = ndk.requests.subscription(
-          idPrefix: "nwc-notifications-sub-",
-          explicitRelays: [relay!],
-          filters: [Filter(
-            kinds: [NwcKind.NOTIFICATION],
-            authors: [walletPubKey!],
-            pTags: [nwcSigner.getPublicKey()],
-          )],
-          cacheRead: false,
-          cacheWrite: false);
-      subscription2.stream.listen((event) async {
-        await onNotification(event);
+        if (event.kind == NwcKind.NOTIFICATION) {
+          await onNotification(event);
+        } else if (event.kind == NwcKind.RESPONSE) {
+          await onResponse(event);
+        }
+        // else ignore
       });
     }
   }
