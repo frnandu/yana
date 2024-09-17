@@ -266,7 +266,7 @@ Future<void> initProvidersAndStuff() async {
 
       if (myInboxRelaySet == null) {
         await ndk.relays.connect();
-        UserRelayList? userRelayList = await ndk.getSingleUserRelayList(loggedUserSigner!.getPublicKey());
+        UserRelayList? userRelayList = await ndk.userRelayLists.getSingleUserRelayList(loggedUserSigner!.getPublicKey());
         if (userRelayList != null) {
           createMyRelaySets(userRelayList);
         }
@@ -293,7 +293,7 @@ Future<void> initProvidersAndStuff() async {
 Future<void> initRelays({bool newKey = false}) async {
   await ndk.relays.connect();
 
-  UserRelayList? userRelayList = !newKey ? await ndk.getSingleUserRelayList(loggedUserSigner!.getPublicKey()) : null;
+  UserRelayList? userRelayList = !newKey ? await ndk.userRelayLists.getSingleUserRelayList(loggedUserSigner!.getPublicKey()) : null;
   if (userRelayList == null) {
     int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
     userRelayList = UserRelayList(
@@ -340,7 +340,7 @@ Future<void> initRelays({bool newKey = false}) async {
         EasyLoading.showToast("Calculating feed relays from contact's outboxes...",
             dismissOnTap: true, duration: const Duration(seconds: 15), maskType: EasyLoadingMaskType.black);
 
-        feedRelaySet = await ndk.calculateRelaySet(
+        feedRelaySet = await ndk.relaySets.calculateRelaySet(
             name: "feed",
             ownerPubKey: loggedUserSigner!.getPublicKey(),
             pubKeys: contactList.contacts,
@@ -375,7 +375,7 @@ Future<void> initRelays({bool newKey = false}) async {
 
 Future<List<String>> getInboxRelays(String pubKey) async {
   List<String> urlsToBroadcast = [];
-  UserRelayList? userRelayList = await ndk.getSingleUserRelayList(pubKey!);
+  UserRelayList? userRelayList = await ndk.userRelayLists.getSingleUserRelayList(pubKey!);
   if (userRelayList != null) {
     urlsToBroadcast = userRelayList.readUrls.toList();
   }

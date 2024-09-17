@@ -417,7 +417,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
               }
             });
             try {
-              Nip51List? list = await ndk.getSingleNip51List(
+              Nip51List? list = await ndk.lists.getSingleNip51List(
                   Nip51List.MUTE, loggedUserSigner!);
               finished = true;
               RouterUtil.router(
@@ -471,7 +471,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
               }
             });
             try {
-              Nip51List? list = await ndk.getSingleNip51List(
+              Nip51List? list = await ndk.lists.getSingleNip51List(
                   Nip51List.BLOCKED_RELAYS, loggedUserSigner!);
               finished = true;
               RouterUtil.router(
@@ -518,7 +518,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
               }
             });
             try {
-              Nip51List? list = await ndk.getSingleNip51List(
+              Nip51List? list = await ndk.lists.getSingleNip51List(
                   Nip51List.SEARCH_RELAYS, loggedUserSigner!);
               finished = true;
               RouterUtil.router(

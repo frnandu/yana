@@ -92,7 +92,7 @@ class ZapAction {
     Set<String> relays = {};
     relays.addAll(myOutboxRelaySet!.urls.toList());
     if (settingProvider.inboxForReactions == 1) {
-      RelaySet inboxRelaySet = await ndk
+      RelaySet inboxRelaySet = await ndk.relaySets
           .calculateRelaySet(
           name: "replyInboxRelaySet",
           ownerPubKey: loggedUserSigner!.getPublicKey(),

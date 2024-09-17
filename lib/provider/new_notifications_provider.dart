@@ -59,7 +59,7 @@ class NewNotificationsProvider extends ChangeNotifier
             filters: [filter],
             relaySet: myInboxRelaySet!)
         .stream) {
-      Metadata? metadata = await ndk.getSingleMetadata(event.pubKey);
+      Metadata? metadata = await ndk.metadatas.loadMetadata(event.pubKey);
       handleEvent(event, metadata);
     }
   }

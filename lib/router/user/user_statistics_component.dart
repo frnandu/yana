@@ -65,7 +65,7 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
 
   void load() async {
     refreshContactListIfNeededAsync(widget.pubkey);
-    await ndk.loadMissingRelayListsFromNip65OrNip02([widget.pubkey],
+    await ndk.userRelayLists.loadMissingRelayListsFromNip65OrNip02([widget.pubkey],
         forceRefresh: true).then(
       (value) {
         userRelayList = cacheManager.loadUserRelayList(widget.pubkey);

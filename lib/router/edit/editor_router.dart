@@ -354,7 +354,7 @@ class _EditorRouter extends CustState<EditorRouter> with EditorMixin {
                 } else if (pubKeys.isNotEmpty) {
                   EasyLoading.show(status: 'Calculating inbox relays of participants...', maskType: EasyLoadingMaskType.black, dismissOnTap: true);
                   RelaySet inboxRelaySet = await ndk
-                      .calculateRelaySet(
+                      .relaySets.calculateRelaySet(
                       name: "replyInboxRelaySet",
                       ownerPubKey: loggedUserSigner!.getPublicKey(),
                       pubKeys: pubKeys,

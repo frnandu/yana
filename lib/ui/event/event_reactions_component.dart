@@ -384,8 +384,7 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
           relays.addAll(await getInboxRelays(pubKeys.first));
         } else if (pubKeys.isNotEmpty) {
           EasyLoading.show(status: 'Calculating inbox relays of participants...', maskType: EasyLoadingMaskType.black, dismissOnTap: true);
-          RelaySet inboxRelaySet = await ndk
-              .calculateRelaySet(
+          RelaySet inboxRelaySet = await ndk.relaySets.calculateRelaySet(
               name: "replyInboxRelaySet",
               ownerPubKey: loggedUserSigner!.getPublicKey(),
               pubKeys: pubKeys,
@@ -420,7 +419,7 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
       setState(() {
         muting = true;
       });
-      Nip51List muteList = await ndk.broadcastAddNip51ListElement(Nip51List.MUTE, Nip51List.PUB_KEY, widget.event.pubKey, myOutboxRelaySet!.urls, private: value=="mute-private");
+      Nip51List muteList = await ndk.lists.broadcastAddNip51ListElement(Nip51List.MUTE, Nip51List.PUB_KEY, widget.event.pubKey, myOutboxRelaySet!.urls, loggedUserSigner,  private: value=="mute-private");
       filterProvider.muteList = muteList;
       filterProvider.notifyListeners();
       setState(() {

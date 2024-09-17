@@ -104,7 +104,7 @@ class _MuteListRouter extends State<MuteListRouter> with SingleTickerProviderSta
         ),
         child: RefreshIndicator(
           onRefresh: () async {
-            Nip51List? refreshedList = await ndk.getSingleNip51List(muteList!.kind, loggedUserSigner!, forceRefresh: true);
+            Nip51List? refreshedList = await ndk.lists.getSingleNip51List(muteList!.kind, loggedUserSigner!, forceRefresh: true);
             refreshedList ??= Nip51List(pubKey: muteList!.pubKey, kind: muteList!.kind, elements: [], createdAt: Helpers.now);
             filterProvider.muteList = refreshedList;
             filterProvider.notifyListeners();
@@ -184,8 +184,8 @@ class _MuteListRouter extends State<MuteListRouter> with SingleTickerProviderSta
                   bool? result = await ConfirmDialog.show(context, "Confirm remove ${element.value} from list");
                   if (result != null && result) {
                     EasyLoading.show(status: 'Removing from list and broadcasting...', maskType: EasyLoadingMaskType.black, dismissOnTap: true);
-                    muteList = await ndk.broadcastRemoveNip51ListElement(
-                        muteList!.kind, element.tag, element.value, myOutboxRelaySet!.urls);
+                    muteList = await ndk.lists.broadcastRemoveNip51ListElement(
+                        muteList!.kind, element.tag, element.value, myOutboxRelaySet!.urls, loggedUserSigner);
                     filterProvider.muteList = muteList;
                     filterProvider.notifyListeners();
                     EasyLoading.dismiss();
@@ -278,7 +278,7 @@ class _MuteListRouter extends State<MuteListRouter> with SingleTickerProviderSta
     if (result != null && result) {
       EasyLoading.show(status: 'Broadcasting mute list...', maskType: EasyLoadingMaskType.black, dismissOnTap: true);
 
-      muteList = await ndk.broadcastAddNip51ListElement(muteList!.kind, element.tag, element.value, myOutboxRelaySet!.urls, private: private);
+      muteList = await ndk.lists.broadcastAddNip51ListElement(muteList!.kind, element.tag, element.value, myOutboxRelaySet!.urls, private: private, loggedUserSigner);
       filterProvider.muteList = muteList;
       filterProvider.notifyListeners();
       EasyLoading.dismiss();

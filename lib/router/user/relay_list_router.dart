@@ -108,7 +108,7 @@ class _RelayListRouter extends State<RelayListRouter> with SingleTickerProviderS
         ),
         child: RefreshIndicator(
           onRefresh: () async {
-            Nip51List? refreshedList = await ndk.getSingleNip51List(relayList!.kind, loggedUserSigner!, forceRefresh: true);
+            Nip51List? refreshedList = await ndk.lists.getSingleNip51List(relayList!.kind, loggedUserSigner!, forceRefresh: true);
             refreshedList ??= Nip51List(pubKey: relayList!.pubKey, kind: relayList!.kind, elements: [], createdAt: Helpers.now);
             setState(() {
               relayList = refreshedList;
@@ -166,7 +166,7 @@ class _RelayListRouter extends State<RelayListRouter> with SingleTickerProviderS
                   bool? result = await ConfirmDialog.show(context, "Confirm remove ${url} from list");
                   if (result != null && result) {
                     EasyLoading.show(status: 'Removing from list and broadcasting...', maskType: EasyLoadingMaskType.black, dismissOnTap: true);
-                    relayList = await ndk.broadcastRemoveNip51Relay(relayList!.kind, url, myOutboxRelaySet!.urls, defaultRelaysIfEmpty: relayList!.allRelays);
+                    relayList = await ndk.lists.broadcastRemoveNip51Relay(relayList!.kind, url, myOutboxRelaySet!.urls, loggedUserSigner, defaultRelaysIfEmpty: relayList!.allRelays);
                     if (relayList!.kind == Nip51List.SEARCH_RELAYS) {
                       searchRelays = relayList!.allRelays!;
                     } else if (relayList!.kind == Nip51List.BLOCKED_RELAYS) {
@@ -244,7 +244,7 @@ class _RelayListRouter extends State<RelayListRouter> with SingleTickerProviderS
     bool? result = await ConfirmDialog.show(context, "Confirm add ${private ? "private" : "public"} ${url} to list");
     if (result != null && result) {
       EasyLoading.show(status: 'Broadcasting relay list...', maskType: EasyLoadingMaskType.black, dismissOnTap: true);
-      relayList = await ndk.broadcastAddNip51ListRelay(relayList!.kind, url, myOutboxRelaySet!.urls, private: private);
+      relayList = await ndk.lists.broadcastAddNip51ListRelay(relayList!.kind, url, myOutboxRelaySet!.urls, loggedUserSigner, private: private);
       if (relayList!.kind == Nip51List.SEARCH_RELAYS) {
         searchRelays = relayList!.allRelays!;
         await ndk.relays.reconnectRelays(searchRelays);

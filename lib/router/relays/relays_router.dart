@@ -49,7 +49,7 @@ class _RelaysRouter extends CustState<RelaysRouter> with WhenStopFunction {
     // set.addAll(myOutboxRelaySet!.urls);
 
     userRelayList = cacheManager.loadUserRelayList(loggedUserSigner!.getPublicKey());
-    userRelayList ??= await ndk.getSingleUserRelayList(loggedUserSigner!.getPublicKey(), forceRefresh: true);
+    userRelayList ??= await ndk.userRelayLists.getSingleUserRelayList(loggedUserSigner!.getPublicKey(), forceRefresh: true);
     userRelayList ??= UserRelayList(
         pubKey: loggedUserSigner!.getPublicKey(),
         relays: {for (String url in ndk.relays.bootstrapRelays) url: ReadWriteMarker.readWrite},
@@ -101,7 +101,7 @@ class _RelaysRouter extends CustState<RelaysRouter> with WhenStopFunction {
               child: RefreshIndicator(
                   onRefresh: () async {
                     UserRelayList? oldRelayList = cacheManager.loadUserRelayList(loggedUserSigner!.getPublicKey());
-                    UserRelayList? userRelayList = await ndk.getSingleUserRelayList(loggedUserSigner!.getPublicKey(), forceRefresh: true);
+                    UserRelayList? userRelayList = await ndk.userRelayLists.getSingleUserRelayList(loggedUserSigner!.getPublicKey(), forceRefresh: true);
                     if (userRelayList != null && (oldRelayList == null || oldRelayList.createdAt < userRelayList.createdAt)) {
                       createMyRelaySets(userRelayList);
                     }

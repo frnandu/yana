@@ -467,7 +467,7 @@ class _SearchRouter extends CustState<SearchRouter>
         searchAbles.add(SearchActions.openPubkey);
         metadatasFromSearch.clear();
 
-        ndk.getSingleMetadata(Nip19.decode(text)).then((metadata) {
+        ndk.metadatas.loadMetadata(Nip19.decode(text)).then((metadata) {
           setState(() {
             if (metadata != null) {
               metadatasFromSearch = [metadata];

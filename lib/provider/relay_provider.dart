@@ -59,17 +59,17 @@ class RelayProvider extends ChangeNotifier {
   }
 
   Future<Nip51Set?> getNip51RelaySet(String name) async {
-    Nip51Set? r = await ndk.getCachedNip51RelaySet(name, loggedUserSigner!);
+    Nip51Set? r = await ndk.lists.getCachedNip51RelaySet(name, loggedUserSigner!);
     if (r == null) {
-      ndk.getSingleNip51RelaySet(name, loggedUserSigner!);
+      ndk.lists.getSingleNip51RelaySet(name, loggedUserSigner!);
     }
     return r;
   }
 
   Future<Nip51List?> getNip51List(int kind) async {
-    Nip51List? r = await ndk.getCachedNip51List(kind, loggedUserSigner!);
+    Nip51List? r = await ndk.lists.getCachedNip51List(kind, loggedUserSigner!);
     if (r == null) {
-      ndk.getSingleNip51List(kind, loggedUserSigner!);
+      ndk.lists.getSingleNip51List(kind, loggedUserSigner!);
     }
     return r;
   }
@@ -81,7 +81,7 @@ class RelayProvider extends ChangeNotifier {
   Future<void> addRelay(String relayAddr) async {
     ReadWriteMarker marker = ReadWriteMarker.readWrite;
     if (myOutboxRelaySet != null && !myOutboxRelaySet!.urls.contains(relayAddr) && myInboxRelaySet!=null && !myInboxRelaySet!.urls.contains(relayAddr)) {
-      UserRelayList userRelayList = await ndk.broadcastAddNip65Relay(relayAddr, marker, myOutboxRelaySet!.urls);
+      UserRelayList userRelayList = await ndk.userRelayLists.broadcastAddNip65Relay(relayAddr, marker, myOutboxRelaySet!.urls, loggedUserSigner);
       createMyRelaySets(userRelayList);
       await cacheManager.saveRelaySet(myOutboxRelaySet!);
       await cacheManager.saveRelaySet(myInboxRelaySet!);
@@ -91,7 +91,7 @@ class RelayProvider extends ChangeNotifier {
   }
 
   Future<void> removeRelay(String url) async {
-    UserRelayList? userRelayList = await ndk.broadcastRemoveNip65Relay(url, myOutboxRelaySet!.urls);
+    UserRelayList? userRelayList = await ndk.userRelayLists.broadcastRemoveNip65Relay(url, myOutboxRelaySet!.urls, loggedUserSigner);
     if (userRelayList != null) {
       createMyRelaySets(userRelayList);
       await cacheManager.saveRelaySet(myOutboxRelaySet!);
@@ -106,7 +106,7 @@ class RelayProvider extends ChangeNotifier {
     relays.addAll(DEFAULT_BOOTSTRAP_RELAYS);
     relays.addAll(myOutboxRelaySet!.urls);
 
-    UserRelayList? userRelayList = await ndk.broadcastUpdateNip65RelayMarker(url, marker, relays);
+    UserRelayList? userRelayList = await ndk.userRelayLists.broadcastUpdateNip65RelayMarker(url, marker, relays, loggedUserSigner);
 
     if (userRelayList != null) {
       createMyRelaySets(userRelayList);
@@ -123,7 +123,7 @@ class RelayProvider extends ChangeNotifier {
   }
 
   Future<RelaySet> recalculateFeedRelaySet() async {
-    RelaySet newRelaySet = await ndk.calculateRelaySet(
+    RelaySet newRelaySet = await ndk.relaySets.calculateRelaySet(
         name: "feed",
         ownerPubKey: loggedUserSigner!.getPublicKey(),
         pubKeys: contactListProvider.contacts(),

@@ -103,7 +103,7 @@ class _RelaySetRouter extends State<RelaySetRouter> with SingleTickerProviderSta
         ),
         child: RefreshIndicator(
           onRefresh: () async {
-            Nip51Set? refreshedRelaySet = await ndk.getSingleNip51RelaySet(relaySet!.name, loggedUserSigner!, forceRefresh: true);
+            Nip51Set? refreshedRelaySet = await ndk.lists.getSingleNip51RelaySet(relaySet!.name, loggedUserSigner!, forceRefresh: true);
             refreshedRelaySet ??= Nip51Set(pubKey: relaySet!.pubKey, name: relaySet!.name, createdAt: Helpers.now, elements: []);
             setState(() {
               relaySet = refreshedRelaySet;
@@ -157,7 +157,7 @@ class _RelaySetRouter extends State<RelaySetRouter> with SingleTickerProviderSta
                   bool? result = await ConfirmDialog.show(context, "Confirm add ${url} to list");
                   if (result != null && result) {
                     EasyLoading.show(status: 'Removing from list and broadcasting...', maskType: EasyLoadingMaskType.black, dismissOnTap: true);
-                    relaySet = await ndk.broadcastRemoveNip51SetRelay(url, relaySet!.name, myOutboxRelaySet!.urls,
+                    relaySet = await ndk.lists.broadcastRemoveNip51SetRelay(url, relaySet!.name, myOutboxRelaySet!.urls, loggedUserSigner,
                         defaultRelaysIfEmpty: relaySet!.allRelays);
                     relayProvider.notifyListeners();
                     EasyLoading.dismiss();
@@ -232,7 +232,7 @@ class _RelaySetRouter extends State<RelaySetRouter> with SingleTickerProviderSta
     bool? result = await ConfirmDialog.show(context, "Confirm add ${url} to list");
     if (result != null && result) {
       EasyLoading.show(status: 'Broadcasting relay list...', maskType: EasyLoadingMaskType.black, dismissOnTap: true);
-      relaySet = await ndk.broadcastAddNip51SetRelay(url, relaySet!.name, myOutboxRelaySet!.urls, private: false);
+      relaySet = await ndk.lists.broadcastAddNip51SetRelay(url, relaySet!.name, myOutboxRelaySet!.urls, loggedUserSigner, private: false);
       relayProvider.notifyListeners();
       EasyLoading.dismiss();
       setState(() {
