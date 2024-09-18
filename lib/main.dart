@@ -61,6 +61,7 @@ import 'package:yana/utils/image/cache_manager_builder.dart';
 import 'package:yana/utils/platform_util.dart';
 
 import '/js/js_helper.dart' as js;
+import 'data_layer/repositories/cache_manager/db_cache_manager.dart';
 import 'i18n/i18n.dart';
 import 'nostr/client_utils/keys.dart';
 import 'nostr/nip19/nip19.dart';

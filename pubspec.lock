@@ -1305,12 +1305,10 @@ packages:
   ndk:
     dependency: "direct main"
     description:
-      path: "."
-      ref: master
-      resolved-ref: dae306d85bf3f03a330c29a18c2f6f65fa9bcc29
-      url: "https://github.com/relaystr/dart_ndk.git"
-    source: git
-    version: "0.1.0"
+      path: "../dart_ndk"
+      relative: true
+    source: path
+    version: "0.1.0-dev9"
   nested:
     dependency: transitive
     description:
@@ -1483,10 +1481,10 @@ packages:
     dependency: "direct main"
     description:
       name: photo_manager
-      sha256: e29619443803c40385ee509abc7937835d9b5122f899940080d28b2dceed59c1
+      sha256: "1e8bbe46a6858870e34c976aafd85378bed221ce31c1201961eba9ad3d94df9f"
       url: "https://pub.dev"
     source: hosted
-    version: "3.3.0"
+    version: "3.2.3"
   photo_manager_image_provider:
     dependency: transitive
     description:
@@ -1610,12 +1608,11 @@ packages:
   rust_lib_ndk:
     dependency: transitive
     description:
-      path: rust_builder
-      ref: master
-      resolved-ref: dae306d85bf3f03a330c29a18c2f6f65fa9bcc29
-      url: "https://github.com/relaystr/dart_ndk.git"
-    source: git
-    version: "0.0.1"
+      name: rust_lib_ndk
+      sha256: e0a79fe2ba0e289666141ef9ba0701592e1692df6e607ff57c9daf7502e7e6f0
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.0.2"
   rxdart:
     dependency: transitive
     description:
