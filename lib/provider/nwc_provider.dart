@@ -40,6 +40,8 @@ class NwcProvider extends ChangeNotifier {
   static const String BOLT11_PREFIX = "lnbc";
   static const String NWC_PROTOCOL_PREFIX = "nostr+walletconnect://";
 
+  NdkResponse? subscription;
+
   Future<void> init() async {
     // TODO make this multi account aware
     String? perms = sharedPreferences.getString(DataKey.NWC_PERMISSIONS);
@@ -105,8 +107,8 @@ class NwcProvider extends ChangeNotifier {
     await settingProvider.setNwcSecret(secret!);
     var filter = Filter(kinds: [NwcKind.INFO_REQUEST], authors: [walletPubKey]);
     await ndk.relays.reconnectRelay(relay);
-    ndk
-        .requests.query(
+    ndk.requests
+        .query(
             name: "nwc",
             explicitRelays: [relay],
             filters: [filter],
@@ -114,8 +116,8 @@ class NwcProvider extends ChangeNotifier {
             cacheWrite: false)
         .stream
         .listen((event) async {
-          await onInfoRequest(event, onConnect);
-        });
+      await onInfoRequest(event, onConnect);
+    });
   }
 
   Future<void> onInfoRequest(Nip01Event event, Function? onConnect) async {
@@ -141,7 +143,7 @@ class NwcProvider extends ChangeNotifier {
       if (permissions.contains(NwcCommand.LIST_TRANSACTIONS)) {
         await requestListTransactions();
       }
-      if (onConnect!=null) {
+      if (onConnect != null) {
         onConnect.call();
       }
       notifyListeners();
@@ -155,6 +157,10 @@ class NwcProvider extends ChangeNotifier {
     sharedPreferences.remove(DataKey.NWC_PERMISSIONS);
     sharedPreferences.remove(DataKey.NWC_RELAY);
     sharedPreferences.remove(DataKey.NWC_PUB_KEY);
+    if (subscription!=null) {
+      ndk.relays.closeSubscription(subscription!.requestId);
+      subscription = null;
+    }
     balance = null;
     maxAmount = null;
     uri = null;
@@ -184,7 +190,8 @@ class NwcProvider extends ChangeNotifier {
 
   Future<void> requestBalance() async {
     if (isConnected) {
-      fiatCurrencyRate = await RatesUtil.fiatCurrency(settingProvider.currency!);
+      fiatCurrencyRate =
+          await RatesUtil.fiatCurrency(settingProvider.currency!);
 
       EventSigner nwcSigner = Bip340EventSigner(secret, getPublicKey(secret!));
 
@@ -207,7 +214,8 @@ class NwcProvider extends ChangeNotifier {
   Future<void> requestListTransactions(
       {int limit = 100, int offset = 0, bool unpaid = false}) async {
     if (isConnected) {
-      fiatCurrencyRate = await RatesUtil.fiatCurrency(settingProvider.currency!);
+      fiatCurrencyRate =
+          await RatesUtil.fiatCurrency(settingProvider.currency!);
       EventSigner nwcSigner = Bip340EventSigner(secret!, getPublicKey(secret!));
 
       var content =
@@ -273,27 +281,10 @@ class NwcProvider extends ChangeNotifier {
   Future<void> handlePayInvoiceResponse(Map<String, dynamic> data) async {
     String? preImage = data['result']['preimage'];
     if (payInvoiceEventId != null) {
-      EasyLoading.showSuccess("Zap payed",
-          duration: const Duration(seconds: 2));
       String payInvoiceEventId = this.payInvoiceEventId!;
-      // get ZAP receipt
-      var filter =
-          Filter(kinds: [EventKind.ZAP_RECEIPT], eTags: [payInvoiceEventId]);
-      Nip01Event? zapReceipt;
-      NdkResponse subscription = ndk.requests.subscription(
-          name: "nwc-pay-invoice-sub-",
-          explicitRelays: [relay!],
-          filters: [filter],
-          cacheRead: false,
-          cacheWrite: false);
-      subscription.stream.listen((event) async {
-        ndk.relays.closeSubscription(subscription.requestId);
-        if (zapReceipt == null || zapReceipt!.createdAt < event.createdAt) {
-          zapReceipt = event;
-          eventReactionsProvider.addZap(payInvoiceEventId, event);
-        }
+      Future.delayed(const Duration(seconds: 2), () {
+        eventReactionsProvider.subscription(payInvoiceEventId, null, [EventKind.ZAP_RECEIPT]);
       });
-      // await eventReactionsProvider.subscription(payInvoiceEventId!, null, [EventKind.ZAP_RECEIPT]);
     }
     NwcNotification notification = NwcNotification(
         type: NwcNotification.OUTGOING,
@@ -313,8 +304,6 @@ class NwcProvider extends ChangeNotifier {
     payInvoiceEventId = null;
     onZapped = null;
   }
-
-
 
   Future<void> makeInvoice(
       int amountInMsats,
@@ -389,22 +378,24 @@ class NwcProvider extends ChangeNotifier {
   Future<void> subscribeToNotificationsAndResponses() async {
     if (StringUtil.isNotBlank(walletPubKey) &&
         StringUtil.isNotBlank(relay) &&
-        StringUtil.isNotBlank(secret)) {
+        StringUtil.isNotBlank(secret) && subscription==null) {
       EventSigner nwcSigner = Bip340EventSigner(secret!, getPublicKey(secret!));
 
       await ndk.relays.reconnectRelay(relay!);
 
-      NdkResponse subscription = ndk.requests.subscription(
+      subscription = ndk.requests.subscription(
           name: "nwc-sub",
           explicitRelays: [relay!],
-          filters: [Filter(
-            kinds: [NwcKind.NOTIFICATION, NwcKind.RESPONSE],
-            authors: [walletPubKey!],
-            pTags: [nwcSigner.getPublicKey()],
-          )],
+          filters: [
+            Filter(
+              kinds: [NwcKind.NOTIFICATION, NwcKind.RESPONSE],
+              authors: [walletPubKey!],
+              pTags: [nwcSigner.getPublicKey()],
+            )
+          ],
           cacheRead: false,
           cacheWrite: false);
-      subscription.stream.listen((event) async {
+      subscription!.stream.listen((event) async {
         if (event.kind == NwcKind.NOTIFICATION) {
           await onNotification(event);
         } else if (event.kind == NwcKind.RESPONSE) {
@@ -527,12 +518,11 @@ class NwcProvider extends ChangeNotifier {
         receivingInvoice = null;
         settledInvoiceCallback = null;
       } else {
-        if (paymentReceivedCallback!=null) {
+        if (paymentReceivedCallback != null) {
           paymentReceivedCallback!.call(notification);
         } else {
           EasyLoading.showSuccess(
-              "Payment received ${notification.amount /
-                  1000} sats (fees:${notification.feesPaid / 1000})",
+              "Payment received ${notification.amount / 1000} sats (fees:${notification.feesPaid / 1000})",
               duration: const Duration(seconds: 2));
         }
       }

@@ -100,6 +100,7 @@
 
 - loading thread (on outbox true?)....
 - event multiple sources
+- zaps not working!!!
 - lists (mute/blocked relays/search relays) not working properly
 - fix require unlock to use error
 - nwc wallet with fresh key (empty metadata)

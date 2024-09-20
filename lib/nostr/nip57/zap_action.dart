@@ -23,7 +23,7 @@ class ZapAction {
       return;
     }
     bool sendWithWallet = false;
-    if (await nwcProvider.isConnected) {
+    if (nwcProvider.isConnected) {
       int? balance = await nwcProvider.getBalance;
       if (balance!=null && balance > 10) {
         await nwcProvider.payInvoice(invoiceCode!, eventId, onZapped);

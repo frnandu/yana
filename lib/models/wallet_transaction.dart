@@ -59,7 +59,7 @@ class WalletTransaction {
     return null;
   }
 
-  String? get payerData
+  String? get payerData => null; // TODO
 
   Map<String, dynamic> toJson() {
     return {

@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:bech32/bech32.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:ndk/domain_layer/entities/nip_01_event.dart';
 import 'package:ndk/domain_layer/repositories/event_signer.dart';
 
@@ -104,7 +105,11 @@ class Zap {
       tags.add(["poll_option", pollOption!]);
     }
     var event = Nip01Event(pubKey: signer.getPublicKey(), kind: kind.EventKind.ZAP_REQUEST, tags: tags, content: eventContent);
-    signer.sign(event);
+    await signer.sign(event);
+    if (StringUtil.isBlank(event.sig)) {
+      EasyLoading.showError("Zap request is not signed", duration: const Duration(seconds: 5));
+      return null;
+    }
     log(jsonEncode(event));
     var eventStr = Uri.encodeQueryComponent(jsonEncode(event));
     callback += "&nostr=$eventStr";
