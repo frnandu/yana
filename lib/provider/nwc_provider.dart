@@ -256,21 +256,6 @@ class NwcProvider extends ChangeNotifier {
           kind: NwcKind.REQUEST,
           tags: tags,
           content: encrypted);
-      // var filter = Filter(
-      //     kinds: [NwcKind.RESPONSE],
-      //     authors: [walletPubKey!],
-      //     pTags: [nwcSigner.getPublicKey()],
-      //     eTags: [event.id]);
-      // NdkResponse subscription = ndk.subscription(
-      //     relays: [relay],
-      //     filters: [filter],
-      //     cacheRead: false,
-      //     cacheWrite: false);
-      //
-      // subscription.stream.listen((event) async {
-      //   ndk.relays.closeSubscription(subscription.requestId);
-      //   await onPayInvoiceResponse(event, onZapped);
-      // });
       await ndk.relays.broadcastEvent(event, [relay!], nwcSigner);
     } else {
       EasyLoading.showError("missing pubKey and/or relay for connecting",
@@ -301,6 +286,7 @@ class NwcProvider extends ChangeNotifier {
     }
     notifyListeners();
     requestBalance();
+    requestListTransactions();
     payInvoiceEventId = null;
     onZapped = null;
   }

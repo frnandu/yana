@@ -195,7 +195,10 @@ class _WalletRouter extends State<WalletRouter> {
           if (nwcProvider.canListTransaction) {
             list.add(const SizedBox(height: 16));
             list.add(Expanded(
-                child: Selector<NwcProvider, List<WalletTransaction>>(
+                child: RefreshIndicator(
+                    onRefresh: () async {
+                      nwcProvider.requestListTransactions();
+                    },child: Selector<NwcProvider, List<WalletTransaction>>(
                     builder: (context, transactions, child) {
               return transactions != null && transactions.isNotEmpty
                   ? ListView.builder(
@@ -243,7 +246,7 @@ class _WalletRouter extends State<WalletRouter> {
                   : Container();
             }, selector: (context, _provider) {
               return _provider.transactions;
-            })));
+            }))));
             // list.add(RefreshIndicator(
             //   onRefresh: () async {
             //     nwcProvider.requestListTransactions();
