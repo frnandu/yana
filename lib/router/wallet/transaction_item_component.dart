@@ -7,6 +7,7 @@ import 'package:yana/main.dart';
 import 'package:yana/models/wallet_transaction.dart';
 import 'package:yana/provider/nwc_provider.dart';
 
+import '../../ui/user_pic_component.dart';
 import '../../utils/base.dart';
 
 class TransactionItemComponent extends StatefulWidget {
@@ -48,6 +49,8 @@ class _TransactionItemComponent extends State<TransactionItemComponent> {
                 .truncateToDouble() /
             100
         : null;
+    String? zapperPubKey = widget.transaction.zapperPubKey;
+
     return Container(
         margin: const EdgeInsets.only(
             left: Base.BASE_PADDING,
@@ -65,7 +68,11 @@ class _TransactionItemComponent extends State<TransactionItemComponent> {
           mainAxisAlignment: MainAxisAlignment.end,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Container(
+            zapperPubKey!=null? UserPicComponent(
+              pubkey: zapperPubKey,
+              width: 50,
+            ):
+            Container( width: 50,
                 decoration: ShapeDecoration(
                   color: outgoing
                       ? const Color(0x4fE26842)

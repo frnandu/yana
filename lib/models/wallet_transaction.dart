@@ -1,3 +1,4 @@
+import 'package:yana/nostr/event_kind.dart';
 import 'package:yana/nostr/nip47/nwc_notification.dart';
 
 class WalletTransaction {
@@ -47,6 +48,18 @@ class WalletTransaction {
   }
 
   get isIncoming => type == NwcNotification.INCOMING;
+
+  String? get zapperPubKey {
+    if (metadata!=null && metadata['nostr']!=null) {
+      Map<String, dynamic> nostr = metadata['nostr'];
+      if (nostr['kind']==EventKind.ZAP_REQUEST && nostr['pubkey']!=null) {
+        return nostr['pubkey'];
+      }
+    }
+    return null;
+  }
+
+  String? get payerData
 
   Map<String, dynamic> toJson() {
     return {

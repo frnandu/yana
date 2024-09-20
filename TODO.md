@@ -100,7 +100,9 @@
 
 - loading thread (on outbox true?)....
 - event multiple sources
+- lists (mute/blocked relays/search relays) not working properly
 - fix require unlock to use error
+- nwc wallet with fresh key (empty metadata)
 
 =====
 - nostr.wine-compatible translations service integration

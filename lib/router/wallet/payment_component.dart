@@ -1,11 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
+import 'package:ndk/domain_layer/entities/metadata.dart';
+import 'package:provider/provider.dart';
 import 'package:yana/models/wallet_transaction.dart';
 import 'package:yana/nostr/nip47/nwc_notification.dart';
 
 import '../../main.dart';
+import '../../provider/metadata_provider.dart';
+import '../../ui/name_component.dart';
+import '../../ui/user_pic_component.dart';
 import '../../utils/base.dart';
+import '../../utils/router_path.dart';
+import '../../utils/router_util.dart';
 import '../../utils/string_util.dart';
 
 class PaymentDetailsComponent extends StatefulWidget {
@@ -35,6 +42,8 @@ class _PaymentDetailsComponent extends State<PaymentDetailsComponent> {
     // int feesPaid = (paid!.feesPaid / 1000).round();
     int amount = (widget.paid!.amount / 1000).round();
     // TODO: implement build
+    String? zapperPubKey = widget.paid!.zapperPubKey;
+
     return Container(
         padding: const EdgeInsets.all(10),
         child: Column(
@@ -75,20 +84,65 @@ class _PaymentDetailsComponent extends State<PaymentDetailsComponent> {
               height: 18.0,
             ),
             Divider(color: Colors.grey[800]),
-        Container(
-          decoration: ShapeDecoration(
-            color: widget.paid!.isIncoming? const Color(0x4f47A66D): const Color(0x4fE26842),
-            shape: const CircleBorder(side: BorderSide.none),
-            // borderRadius: BorderRadius.circular(16),
-            // ),
-          ),
-          padding: const EdgeInsets.all(Base.BASE_PADDING),
-          child:
-          Icon(
-                widget.paid!.isIncoming? Icons.call_received:Icons.call_made,
-              color: widget.paid!.isIncoming ? const Color(0xFF47A66D): const Color(0xFFE26842),
-              size: 100.0,
-            )),
+            zapperPubKey != null
+                ? Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      Text(
+                        'from: ',
+                        style:
+                            TextStyle(fontSize: 16.0, color: Colors.grey[700]),
+                      ),
+                      Selector<MetadataProvider, Metadata?>(
+                        builder: (context, metadata, child) {
+                          return GestureDetector(
+                              onTap: () {
+                                RouterUtil.router(
+                                    context, RouterPath.USER, zapperPubKey);
+                              },
+                              child: NameComponent(
+                                pubkey: zapperPubKey,
+                                metadata: metadata,
+                              ));
+                        },
+                        selector: (context, _provider) {
+                          return _provider.getMetadata(zapperPubKey);
+                        },
+                      )
+                    ],
+                  )
+                : Container(),
+            const SizedBox(
+              height: 18.0,
+            ),
+            zapperPubKey != null
+                ? GestureDetector(
+                    onTap: () {
+                      RouterUtil.router(context, RouterPath.USER, zapperPubKey);
+                    },
+                    child: UserPicComponent(
+                      pubkey: zapperPubKey,
+                      width: 100,
+                    ))
+                : Container(
+                    decoration: ShapeDecoration(
+                      color: widget.paid!.isIncoming
+                          ? const Color(0x4f47A66D)
+                          : const Color(0x4fE26842),
+                      shape: const CircleBorder(side: BorderSide.none),
+                      // borderRadius: BorderRadius.circular(16),
+                      // ),
+                    ),
+                    padding: const EdgeInsets.all(Base.BASE_PADDING),
+                    child: Icon(
+                      widget.paid!.isIncoming
+                          ? Icons.call_received
+                          : Icons.call_made,
+                      color: widget.paid!.isIncoming
+                          ? const Color(0xFF47A66D)
+                          : const Color(0xFFE26842),
+                      size: 100.0,
+                    )),
             const SizedBox(height: 20.0),
             RichText(
               text: TextSpan(
@@ -162,7 +216,7 @@ class _PaymentDetailsComponent extends State<PaymentDetailsComponent> {
                                 fontSize: 16.0, color: Colors.grey[700]))),
                     Flexible(
                         child: Text(
-                      "${(widget.paid!.fees_paid!/1000).toStringAsFixed(0)} sats",
+                      "${(widget.paid!.fees_paid! / 1000).toStringAsFixed(0)} sats",
                     ))
                   ])
                 : Container(),
@@ -198,7 +252,7 @@ class _PaymentDetailsComponent extends State<PaymentDetailsComponent> {
                               await Clipboard.setData(ClipboardData(
                                       text: widget.paid!.preimage!))
                                   .then((_) {
-                                    print("a");
+                                print("a");
                               });
                             },
                             child: SelectableText(
