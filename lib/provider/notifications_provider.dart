@@ -1,8 +1,8 @@
 import 'dart:async';
 
+import 'package:flutter/material.dart';
 import 'package:ndk/ndk.dart';
 import 'package:ndk/shared/nips/nip25/reactions.dart';
-import 'package:flutter/material.dart';
 import 'package:yana/provider/data_util.dart';
 
 import '../main.dart';
@@ -107,16 +107,21 @@ class NotificationsProvider extends ChangeNotifier with PenddingEventsLaterFunct
     }, null);
   }
 
-  void onEvents(list, {bool saveToCache = true}) {
+  void onEvents(List<Nip01Event> list, {bool saveToCache = true}) {
     list = list.where((element) => element.pubKey != loggedUserSigner?.getPublicKey()).toList();
     List<Nip01Event> toSave = [];
-    for (var event in list) {
-      if (timestamp != null && event.createdAt > timestamp!) {
-        newNotificationsProvider.handleEvent(event, null);
-      } else {
-        var result = eventBox.addList([event]);
-        if (result) {
-          toSave.add(event);
+    for (Nip01Event event in list) {
+      if (
+        // event.kind!=kind.EventKind.ZAP_RECEIPT &&
+          (event.pTags.length==1 || event.pTags.any((tagValues) => tagValues.contains(loggedUserSigner!.getPublicKey()) && tagValues.contains("mention")))
+        ) {
+        if (timestamp != null && event.createdAt > timestamp!) {
+          newNotificationsProvider.handleEvent(event, null);
+        } else {
+          var result = eventBox.addList([event]);
+          if (result) {
+            toSave.add(event);
+          }
         }
       }
     }
