@@ -397,8 +397,10 @@ class _ThreadDetailRouter extends CustState<ThreadDetailRouter> with PenddingEve
 
     later(event, (list) {
       box.addList(list);
-      //listToTree();
-      eventReactionsProvider.onEvents(list);
+      setState(() {
+        rootSubList = listToTree();
+      });
+      // eventReactionsProvider.addReply(list);
     }, null);
   }
 
@@ -406,9 +408,6 @@ class _ThreadDetailRouter extends CustState<ThreadDetailRouter> with PenddingEve
   void dispose() {
     super.dispose();
     disposeLater();
-    if (sourceEvent != null) {
-      eventReactionsProvider.removePendding(sourceEvent!.id);
-    }
     sourceEvent = null;
   }
 

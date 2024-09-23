@@ -464,21 +464,18 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
   void dispose() {
     super.dispose();
     var id = widget.event.id;
-    eventReactionsProvider.removePendding(id);
   }
 
   @override
   void deactivate() {
     super.deactivate();
     var id = widget.event.id;
-    eventReactionsProvider.removePendding(id);
   }
 
   @override
   void activate() {
     super.activate();
     var id = widget.event.id;
-    // eventReactionsProvider.removePendding(id);
   }
 
   Future<void> onCommmentTap() async {
@@ -518,7 +515,6 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
     var event = await EditorRouter.open(context,
         tags: tags, tagsAddedWhenSend: tagsAddedWhenSend, tagPs: tagPs, pubkey:widget.event.pubKey);
     if (event != null) {
-      eventReactionsProvider.addEventAndHandle(event);
       var callback = EventReplyCallback.of(context);
       if (callback != null) {
         callback.onReply(event);

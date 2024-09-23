@@ -98,12 +98,7 @@
 - published on zap.store with self-signing
 - choose currency for wallet on settings
 
-- loading thread (on outbox true?)....
 - event multiple sources
-- zaps not working!!!
-- lists (mute/blocked relays/search relays) not working properly
-- fix require unlock to use error
-- nwc wallet with fresh key (empty metadata)
 
 =====
 - nostr.wine-compatible translations service integration

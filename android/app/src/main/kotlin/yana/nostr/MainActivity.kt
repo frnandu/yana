@@ -1,7 +1,7 @@
 package yana.nostr
-import io.flutter.embedding.android.FlutterActivity
+import io.flutter.embedding.android.FlutterFragmentActivity
 
-class MainActivity: FlutterActivity() {
+class MainActivity: FlutterFragmentActivity() {
 //class MainActivity : FlutterFragmentActivity() {
 //    private val CHANNEL = "flutter.native/helper"
 //

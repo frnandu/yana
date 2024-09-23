@@ -1,5 +1,6 @@
 import 'package:back_button_interceptor/back_button_interceptor.dart';
 import 'package:flutter/material.dart';
+import 'package:ndk/domain_layer/entities/metadata.dart';
 import 'package:provider/provider.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:yana/main.dart';
@@ -14,6 +15,7 @@ import '../../../ui/appbar4stack.dart';
 import '../../ui/button.dart';
 import '../../utils/router_path.dart';
 import '../../utils/router_util.dart';
+import '../../utils/string_util.dart';
 import 'bitcoin_amount.dart';
 
 class WalletRouter extends StatefulWidget {
@@ -160,11 +162,13 @@ class _WalletRouter extends State<WalletRouter> {
                                 height: 70,
                                 // before: const Icon(Icons.call_received_rounded),
                                 onTap: () async {
-                                  RouterUtil.router(
-                                      context, RouterPath.WALLET_RECEIVE);
-                                  //
-                                  // confettiController.play();
-                                  // //_nwcProvider.onPayInvoiceResponse(event, onZapped)
+                                  Metadata? metadata = metadataProvider.getMetadata(loggedUserSigner!.getPublicKey());
+                                  if (metadata != null && StringUtil.isNotBlank(metadata!.lud16)) {
+                                    RouterUtil.router(
+                                        context, RouterPath.WALLET_RECEIVE);
+                                  } else {
+                                    RouterUtil.router(context, RouterPath.WALLET_RECEIVE_INVOICE);
+                                  }
                                 }))
                         : Container(),
                     _nwcProvider.canMakeInvoice && _nwcProvider.canPayInvoice

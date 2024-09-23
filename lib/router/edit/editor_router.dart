@@ -22,6 +22,7 @@ import 'package:yana/utils/base.dart';
 import 'package:yana/utils/router_util.dart';
 
 import '../../i18n/i18n.dart';
+import '../../nostr/event_relation.dart';
 import '../../ui/cust_state.dart';
 import '../../ui/editor/cust_embed_types.dart';
 import '../../ui/editor/custom_emoji_embed_builder.dart';
@@ -535,7 +536,7 @@ class _EditorRouter extends CustState<EditorRouter> with EditorMixin {
   }
 
   bool isReply() {
-    for (var tag in getTags()) {
+    for (var tag in getTagsAddedWhenSend()) {
       if (tag.length > 1) {
         var key = tag[0];
         var value = tag[1];
@@ -566,6 +567,13 @@ class _EditorRouter extends CustState<EditorRouter> with EditorMixin {
           EasyLoading.showError('Failed...');
           return;
         }
+        if (reply) {
+          EventRelation relation = EventRelation.fromEvent(event);
+          if (relation.rootId != null) {
+            eventReactionsProvider.addReply(relation.rootId!, event);
+          }
+        }
+        await cacheManager.saveEvent(event);
         EasyLoading.showSuccess('Success!');
         RouterUtil.back(context, event);
       } finally {

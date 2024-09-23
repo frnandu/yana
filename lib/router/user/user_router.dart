@@ -109,7 +109,9 @@ class _UserRouter extends CustState<UserRouter> with PenddingEventsLaterFunction
           until = null;
 
           pubkey = arg;
-          doQuery();
+          if (subscription==null) {
+            doQuery();
+          }
         }
       }
     }
@@ -176,19 +178,6 @@ class _UserRouter extends CustState<UserRouter> with PenddingEventsLaterFunction
                   followsYou: followsYou,
                 ),
               ),
-              // Container(
-              //     margin: const EdgeInsets.only(top: Base.BASE_PADDING_HALF),
-              //     padding: const EdgeInsets.only(
-              //       left: Base.BASE_PADDING * 2,
-              //       bottom: Base.BASE_PADDING / 2,
-              //       top: Base.BASE_PADDING / 2,
-              //     ),
-              //     decoration: BoxDecoration(
-              //         border: Border(
-              //             top: BorderSide(
-              //               width: 1,
-              //               color: themeData.hintColor,
-              //             )))),
               SliverToBoxAdapter(
                 child: SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
@@ -270,6 +259,7 @@ class _UserRouter extends CustState<UserRouter> with PenddingEventsLaterFunction
 
   @override
   void deactivate() {
+    super.deactivate();
     unSubscribe();
   }
 
@@ -281,9 +271,29 @@ class _UserRouter extends CustState<UserRouter> with PenddingEventsLaterFunction
     disposeLater();
   }
 
+  @override
+  void activate() {
+    super.activate();
+    if (subscription==null) {
+      doQuery();
+    }
+  }
+
+  @override
+  void reassemble() {
+    super.reassemble();
+    if (subscription==null) {
+      doQuery();
+    }
+  }
+
+
+
   void unSubscribe() {
     if (subscription != null) {
       ndk.relays.closeSubscription(subscription!.requestId);
+      subscription = null;
+      box.clear();
     }
   }
 
@@ -300,46 +310,47 @@ class _UserRouter extends CustState<UserRouter> with PenddingEventsLaterFunction
 
   @override
   void doQuery() {
-    if (box.isEmpty()) {
-      List<Nip01Event>? cachedEvents = cacheManager.loadEvents(pubKeys: [
-        pubkey!
-      ], kinds: [
-        Nip01Event.TEXT_NODE_KIND,
-        // kind.EventKind.REPOST,
-        // kind.EventKind.GENERIC_REPOST,
-        // kind.EventKind.LONG_FORM,
-        // kind.EventKind.FILE_HEADER,
-        // kind.EventKind.POLL,
-      ]); //queryEventKinds());
-      print("USER loaded ${cachedEvents.length} events from cache DB");
-      for (var event in cachedEvents) {
-        onEvent(event, saveToCache: false);
+    if (subscription==null) {
+      if (box.isEmpty()) {
+        List<Nip01Event>? cachedEvents = cacheManager.loadEvents(pubKeys: [
+          pubkey!
+        ], kinds: [
+          Nip01Event.TEXT_NODE_KIND,
+          // kind.EventKind.REPOST,
+          // kind.EventKind.GENERIC_REPOST,
+          // kind.EventKind.LONG_FORM,
+          // kind.EventKind.FILE_HEADER,
+          // kind.EventKind.POLL,
+        ]); //queryEventKinds());
+        print("USER loaded ${cachedEvents.length} events from cache DB");
+        for (var event in cachedEvents) {
+          onEvent(event, saveToCache: false);
+        }
       }
-    }
 
-    if (myInboxRelaySet == null || myOutboxRelaySet == null) {
-      return;
-    }
-    preQuery();
-    unSubscribe();
+      if (myInboxRelaySet == null || myOutboxRelaySet == null) {
+        return;
+      }
+      preQuery();
 
-    // load event from relay
-    var filter = Filter(
-      kinds: queryEventKinds(),
-      until: until,
-      authors: [pubkey!],
-      limit: queryLimit,
-    );
-    RelaySet relaySet = myInboxRelaySet!;
-    if (pubkey == loggedUserSigner!.getPublicKey()) {
-      relaySet = myOutboxRelaySet!;
-    } else if (feedRelaySet != null && settingProvider.gossip == 1) {
-      relaySet = feedRelaySet!;
+      var filter = Filter(
+        kinds: queryEventKinds(),
+        until: until,
+        authors: [pubkey!],
+        limit: queryLimit,
+      );
+      RelaySet relaySet = myInboxRelaySet!;
+      if (pubkey == loggedUserSigner!.getPublicKey()) {
+        relaySet = myOutboxRelaySet!;
+      } else if (feedRelaySet != null && settingProvider.gossip == 1) {
+        relaySet = feedRelaySet!;
+      }
+      subscription = ndk.requests.subscription(
+          name: "user-sub", filters: [filter], relaySet: relaySet);
+      subscription!.stream.listen((event) {
+        onEvent(event, saveToCache: pubkey == loggedUserSigner!.getPublicKey());
+      });
     }
-    subscription = ndk.requests.subscription(name:"user-sub",filters: [filter], relaySet: relaySet);
-    subscription!.stream.listen((event) {
-      onEvent(event, saveToCache: pubkey == loggedUserSigner!.getPublicKey());
-    });
   }
 
   @override

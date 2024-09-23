@@ -307,26 +307,25 @@ Future<void> initRelays({bool newKey = false}) async {
   createMyRelaySets(userRelayList);
   await ndk.relays.connect(urls: userRelayList.urls);
 
-  // TODO
-  // ndk.getSingleNip51List(Nip51List.MUTE, loggedUserSigner!).then((list) {
-  //   filterProvider.muteList = list;
-  //  ndk.relays.eventFilters.add(filterProvider);
-  //  ndk.relays.blockedRelays = [];
-  //   ndk.getSingleNip51List(Nip51List.BLOCKED_RELAYS, loggedUserSigner!).then((blockedRelays) {
-  //     if (blockedRelays!=null) {
-  //      ndk.relays.blockedRelays = blockedRelays.allRelays!;
-  //       relayProvider.notifyListeners();
-  //     }
-  //     searchRelays = [];
-  //     ndk.getSingleNip51List(Nip51List.SEARCH_RELAYS, loggedUserSigner!).then((searchRelaySet)  {
-  //       if (searchRelaySet!=null) {
-  //         searchRelays = searchRelaySet.allRelays!;
-  //         for (var url in searchRelays) {ndk.relays.connectRelay(url);}
-  //         relayProvider.notifyListeners();
-  //       }
-  //     });
-  //   },);
-  // },);
+  ndk.lists.getSingleNip51List(Nip51List.MUTE, loggedUserSigner!).then((list) {
+    filterProvider.muteList = list;
+   ndk.relays.eventFilters.add(filterProvider);
+   ndk.relays.blockedRelays = [];
+    ndk.lists.getSingleNip51List(Nip51List.BLOCKED_RELAYS, loggedUserSigner!).then((blockedRelays) {
+      if (blockedRelays!=null) {
+       ndk.relays.blockedRelays = blockedRelays.allRelays!;
+        relayProvider.notifyListeners();
+      }
+      searchRelays = [];
+      ndk.lists.getSingleNip51List(Nip51List.SEARCH_RELAYS, loggedUserSigner!).then((searchRelaySet)  {
+        if (searchRelaySet!=null) {
+          searchRelays = searchRelaySet.allRelays!;
+          for (var url in searchRelays) {ndk.relays.connectRelay(url);}
+          relayProvider.notifyListeners();
+        }
+      });
+    },);
+  },);
 
   print("Loading contact list...");
   ContactList? contactList = !newKey ? await ndk.follows.getContactList(loggedUserSigner!.getPublicKey()) : null;

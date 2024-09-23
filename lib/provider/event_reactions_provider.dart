@@ -72,6 +72,7 @@ class EventReactionsProvider extends ChangeNotifier
       NdkResponse response = ndk.requests.query(
           name: "event-reations-thread-replies",
           timeout: 5,
+          relaySet: myInboxRelaySet,
           filters: [
             Filter(eTags: [id], kinds: [Nip01Event.TEXT_NODE_KIND])
           ],
@@ -108,6 +109,7 @@ class EventReactionsProvider extends ChangeNotifier
     if (_repliesMap[id] != null) {
       _repliesMap[id]!.add(reply);
     }
+    notifyListeners();
   }
 
   Future<void> subscription(
@@ -174,92 +176,9 @@ class EventReactionsProvider extends ChangeNotifier
       //   subscription(event.id, event.pubKey, null);
       // }
       var now = DateTime.now();
-      // check dataTime if need to update
-      // if (now.millisecondsSinceEpoch - er.dataTime.millisecondsSinceEpoch >
-      //     update_time) {
-      //   _penddingIds[id] = 1;
-      //   // later(laterFunc, null);
-      //   whenStop(laterFunc);
-      // }
-      // set the access time, remove cache base on this time.
       er.access(now);
     }
     return er;
-  }
-
-  void laterFunc() {
-    if (_penddingIds.isNotEmpty) {
-      _doPull();
-    }
-    if (_penddingEvents.isNotEmpty) {
-      _handleEvent();
-    }
-  }
-
-  Map<String, int> _penddingIds = {};
-
-  void _doPull() {
-    if (_penddingIds.isEmpty) {
-      return;
-    }
-
-    var filter = Filter(eTags: _penddingIds.keys.toList());
-    _penddingIds.clear();
-// TODO use dart_ndk
-//    nostr!.query([filter.toMap()], onEvent);
-  }
-
-  void addEventAndHandle(Nip01Event event) {
-    onEvent(event);
-    laterFunc();
-  }
-
-  void onEvent(Nip01Event event) {
-    _penddingEvents.add(event);
-  }
-
-  void onEvents(List<Nip01Event> events) {
-    _penddingEvents.addAll(events);
-  }
-
-  List<Nip01Event> _penddingEvents = [];
-
-  void _handleEvent() {
-    bool updated = false;
-
-    for (var event in _penddingEvents) {
-      updated = updated || _handleSingleEvent(event);
-    }
-    _penddingEvents.clear();
-
-    if (updated) {
-      notifyListeners();
-    }
-  }
-
-  bool _handleSingleEvent(Nip01Event event) {
-    bool updated = false;
-    for (var tag in event.tags) {
-      if (tag.length > 1) {
-        var tagType = tag[0] as String;
-        if (tagType == "e") {
-          var id = tag[1] as String;
-          var er = _eventReactionsMap[id];
-          if (er == null) {
-            er = EventReactions(id);
-            _eventReactionsMap[id] = er;
-          } else {
-            er = er.clone();
-            _eventReactionsMap[id] = er;
-          }
-
-          if (er.onEvent(event)) {
-            updated = true;
-          }
-        }
-      }
-    }
-    return updated;
   }
 
   bool _handleSingleEvent2(Nip01Event event) {
@@ -288,14 +207,6 @@ class EventReactionsProvider extends ChangeNotifier
       notifyListeners();
     }
     return updated;
-  }
-
-  void removePendding(String eventId) async {
-    // _penddingIds.remove(eventId);
-    // if (subscriptions[eventId] != null) {
-    //   ndk.relays.closeSubscription(subscriptions[eventId]!.requestId);
-    //   subscriptions.remove(eventId);
-    // }
   }
 
   void clear() {

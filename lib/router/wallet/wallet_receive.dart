@@ -200,8 +200,6 @@ class _WalletReceiveRouter extends State<WalletReceiveRouter> {
               RouterUtil.router(context, RouterPath.WALLET_RECEIVE_INVOICE);
             }));
       }
-      // TODO
-      // no lud16 set, go directly to create invoice
     } else {
       double? fiatAmount = fiatCurrencyRate != null
           ? ((paid!.amount / 100000000000) * fiatCurrencyRate!["value"])
