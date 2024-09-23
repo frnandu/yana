@@ -89,63 +89,63 @@ jobs:
 #        run: flutter build appbundle
 
 
-  build_linux:
-    needs: release
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-java@v2
-        with:
-          distribution: 'zulu'
-          java-version: '17'
-          cache: 'gradle'
-      - uses: subosito/flutter-action@v2
-        with:
-          flutter-version: '3.22.3'
-          channel: 'stable'
-          cache: true
-          cache-key: 'flutter-:os:-:channel:-:version:-:arch:-:hash:' # optional, change this to force refresh cache
-          cache-path: '${{ runner.tool_cache }}/flutter/:channel:-:version:-:arch:' # optional, change this to specify the cache path
-          architecture: x64 # optional, x64 or arm64
-      - run: |
-          sudo apt-get update -y
-          sudo apt-get install -y ninja-build libgtk-3-dev libfuse2 libsecret-1-dev libjsoncpp-dev libsecret-1-0 libsecret-tools
-      - run: flutter config --enable-linux-desktop
-      - run: flutter pub get
-      - run: flutter build linux
-      - run: dart pub global activate flutter_distributor
-      - run: flutter_distributor package --platform linux --targets deb
-      - run: cp dist/*/*.deb yana-${{ github.ref_name }}-linux-x86_64.deb
-      #- run: flutter_distributor package --platform linux --targets appimage
-
-      - run: wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
-      - run: chmod +x  appimagetool-x86_64.AppImage
-      - run: cp -r build/linux/x64/release/bundle/* Yana.AppDir/
-      - run: cp -r assets/imgs/logo/logo-new.png Yana.AppDir/logo.png
-      - run: ./appimagetool-x86_64.AppImage Yana.AppDir/
-
-      # LINUX APPIMAGE
-      - name: Upload appImage to release
-        id: upload-release-asset-appimage
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ needs.release.outputs.upload_url }}
-          asset_path: Yana-x86_64.AppImage
-          asset_name: yana-${{ github.ref_name }}-linux-x86_64.AppImage
-          asset_content_type: application/zip
-      # LINUX DEB
-      - name: Upload deb to release
-        id: upload-release-asset-deb
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ needs.release.outputs.upload_url }}
-          asset_path: yana-${{ github.ref_name }}-linux-x86_64.deb
-          asset_name: yana-${{ github.ref_name }}-linux-x86_64.deb
-          asset_content_type: application/zip
+#  build_linux:
+#    needs: release
+#    runs-on: ubuntu-latest
+#    steps:
+#      - uses: actions/checkout@v3
+#      - uses: actions/setup-java@v2
+#        with:
+#          distribution: 'zulu'
+#          java-version: '17'
+#          cache: 'gradle'
+#      - uses: subosito/flutter-action@v2
+#        with:
+#          flutter-version: '3.22.3'
+#          channel: 'stable'
+#          cache: true
+#          cache-key: 'flutter-:os:-:channel:-:version:-:arch:-:hash:' # optional, change this to force refresh cache
+#          cache-path: '${{ runner.tool_cache }}/flutter/:channel:-:version:-:arch:' # optional, change this to specify the cache path
+#          architecture: x64 # optional, x64 or arm64
+#      - run: |
+#          sudo apt-get update -y
+#          sudo apt-get install -y ninja-build libgtk-3-dev libfuse2 libsecret-1-dev libjsoncpp-dev libsecret-1-0 libsecret-tools
+#      - run: flutter config --enable-linux-desktop
+#      - run: flutter pub get
+#      - run: flutter build linux
+#      - run: dart pub global activate flutter_distributor
+#      - run: flutter_distributor package --platform linux --targets deb
+#      - run: cp dist/*/*.deb yana-${{ github.ref_name }}-linux-x86_64.deb
+#      #- run: flutter_distributor package --platform linux --targets appimage
+#
+#      - run: wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
+#      - run: chmod +x  appimagetool-x86_64.AppImage
+#      - run: cp -r build/linux/x64/release/bundle/* Yana.AppDir/
+#      - run: cp -r assets/imgs/logo/logo-new.png Yana.AppDir/logo.png
+#      - run: ./appimagetool-x86_64.AppImage Yana.AppDir/
+#
+#      # LINUX APPIMAGE
+#      - name: Upload appImage to release
+#        id: upload-release-asset-appimage
+#        uses: actions/upload-release-asset@v1
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#        with:
+#          upload_url: ${{ needs.release.outputs.upload_url }}
+#          asset_path: Yana-x86_64.AppImage
+#          asset_name: yana-${{ github.ref_name }}-linux-x86_64.AppImage
+#          asset_content_type: application/zip
+#      # LINUX DEB
+#      - name: Upload deb to release
+#        id: upload-release-asset-deb
+#        uses: actions/upload-release-asset@v1
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#        with:
+#          upload_url: ${{ needs.release.outputs.upload_url }}
+#          asset_path: yana-${{ github.ref_name }}-linux-x86_64.deb
+#          asset_name: yana-${{ github.ref_name }}-linux-x86_64.deb
+#          asset_content_type: application/zip
 
 
       #  build_linux:
@@ -222,33 +222,33 @@ jobs:
         with:
           release_id: ${{ needs.release.outputs.id }}
 
-  dockerimage:
-    name: Push Docker image to Docker Hub
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out the repo
-        uses: actions/checkout@v3
-
-      - name: Log in to Docker Hub
-        uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-
-      - name: Extract metadata (tags, labels) for Docker
-        id: meta
-        uses: docker/metadata-action@9ec57ed1fcdbf14dcef7dfbe97b2010124a938b7
-        with:
-          images: fmar/yana
-
-      - name: Build and push Docker image
-        uses: docker/build-push-action@3b5e8027fcad23fda98b2e3ac259d8d67585f671
-        with:
-          context: .
-          file: ./Dockerfile
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+#  dockerimage:
+#    name: Push Docker image to Docker Hub
+#    runs-on: ubuntu-latest
+#    steps:
+#      - name: Check out the repo
+#        uses: actions/checkout@v3
+#
+#      - name: Log in to Docker Hub
+#        uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a
+#        with:
+#          username: ${{ secrets.DOCKER_USERNAME }}
+#          password: ${{ secrets.DOCKER_PASSWORD }}
+#
+#      - name: Extract metadata (tags, labels) for Docker
+#        id: meta
+#        uses: docker/metadata-action@9ec57ed1fcdbf14dcef7dfbe97b2010124a938b7
+#        with:
+#          images: fmar/yana
+#
+#      - name: Build and push Docker image
+#        uses: docker/build-push-action@3b5e8027fcad23fda98b2e3ac259d8d67585f671
+#        with:
+#          context: .
+#          file: ./Dockerfile
+#          push: true
+#          tags: ${{ steps.meta.outputs.tags }}
+#          labels: ${{ steps.meta.outputs.labels }}
 
 
 #LINUX ->  flutter_distributor package --platform linux --targets appimage
