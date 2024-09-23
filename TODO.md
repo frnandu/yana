@@ -98,9 +98,8 @@
 - published on zap.store with self-signing
 - choose currency for wallet on settings
 
-- event multiple sources
-
 =====
+- event multiple sources
 - nostr.wine-compatible translations service integration
 - make thread detail subscription of new replies work
 - make reactions live again with subscriptions or some other way
