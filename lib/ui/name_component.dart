@@ -79,7 +79,7 @@ class _NameComponnet extends State<NameComponent> {
     if (StringUtil.isNotBlank(name) && name.trim().toLowerCase()!=displayName.trim().toLowerCase()) {
       nameList.add(WidgetSpan(
         child: Container(
-          margin: EdgeInsets.only(left: 2),
+          margin: const EdgeInsets.only(left: 2),
           child: Text(
             StringUtil.breakWord("@$name"),
             style: TextStyle(

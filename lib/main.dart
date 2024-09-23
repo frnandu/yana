@@ -162,7 +162,7 @@ Map<String, dynamic>? fiatCurrencyRate;
 
 AppLifecycleState appState = AppLifecycleState.resumed;
 
-get loggedUserSigner => ndk.config.eventSigner;
+EventSigner? get loggedUserSigner => ndk.config.eventSigner;
 
 AmberFlutterDS amberFlutterDS = AmberFlutterDS(Amberflutter());
 late CacheManager cacheManager;

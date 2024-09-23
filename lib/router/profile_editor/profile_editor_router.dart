@@ -321,7 +321,7 @@ class _ProfileEditorRouter extends CustState<ProfileEditorRouter> {
     metadata!.lud16 = lud16Controller.text;
     metadata!.lud06 = lud06Controller.text;
 
-    await ndk.metadatas.broadcastMetadata(metadata!, myOutboxRelaySet!.urls, loggedUserSigner);
+    await ndk.metadatas.broadcastMetadata(metadata!, myOutboxRelaySet!.urls, loggedUserSigner!);
     metadataProvider.notifyListeners();
     setState(() {
       broadcasting = false;

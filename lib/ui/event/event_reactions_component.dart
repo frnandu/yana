@@ -419,7 +419,7 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
       setState(() {
         muting = true;
       });
-      Nip51List muteList = await ndk.lists.broadcastAddNip51ListElement(Nip51List.MUTE, Nip51List.PUB_KEY, widget.event.pubKey, myOutboxRelaySet!.urls, loggedUserSigner,  private: value=="mute-private");
+      Nip51List muteList = await ndk.lists.broadcastAddNip51ListElement(Nip51List.MUTE, Nip51List.PUB_KEY, widget.event.pubKey, myOutboxRelaySet!.urls, loggedUserSigner!,  private: value=="mute-private");
       filterProvider.muteList = muteList;
       filterProvider.notifyListeners();
       setState(() {

@@ -154,7 +154,7 @@ class _QrcodeDialog extends State<QrcodeDialog> {
 
   void _doCopy(String text) {
     Clipboard.setData(ClipboardData(text: text)).then((_) {
-      EasyLoading.show(status: I18n.of(context).key_has_been_copy);
+      EasyLoading.show(status: I18n.of(context).key_has_been_copied);
     });
   }
 }

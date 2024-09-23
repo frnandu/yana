@@ -78,14 +78,14 @@ class ContactListProvider extends ChangeNotifier {
 
   Future<void> addContact(String contact) async {
     await ndk.follows
-        .broadcastAddContact(contact, myOutboxRelaySet!.urls, loggedUserSigner);
+        .broadcastAddContact(contact, myOutboxRelaySet!.urls, loggedUserSigner!);
 
     notifyListeners();
   }
 
   Future<void> removeContact(String pubKey) async {
     await ndk.follows.broadcastRemoveContact(
-        pubKey, myOutboxRelaySet!.urls, loggedUserSigner);
+        pubKey, myOutboxRelaySet!.urls, loggedUserSigner!);
     notifyListeners();
   }
 
@@ -132,13 +132,13 @@ class ContactListProvider extends ChangeNotifier {
 
   Future<void> addTag(String tag) async {
     await ndk.follows
-        .broadcastAddFollowedTag(tag, myOutboxRelaySet!.urls, loggedUserSigner);
+        .broadcastAddFollowedTag(tag, myOutboxRelaySet!.urls, loggedUserSigner!);
     notifyListeners();
   }
 
   Future<void> removeTag(String tag) async {
     await ndk.follows.broadcastRemoveFollowedTag(
-        tag, myOutboxRelaySet!.urls, loggedUserSigner);
+        tag, myOutboxRelaySet!.urls, loggedUserSigner!);
     notifyListeners();
   }
 
@@ -157,13 +157,13 @@ class ContactListProvider extends ChangeNotifier {
 
   void addCommunity(String tag) async {
     await ndk.follows.broadcastAddFollowedCommunity(
-        tag, myOutboxRelaySet!.urls, loggedUserSigner);
+        tag, myOutboxRelaySet!.urls, loggedUserSigner!);
     notifyListeners();
   }
 
   void removeCommunity(String tag) async {
     await ndk.follows.broadcastRemoveFollowedCommunity(
-        tag, myOutboxRelaySet!.urls, loggedUserSigner);
+        tag, myOutboxRelaySet!.urls, loggedUserSigner!);
     notifyListeners();
   }
 }

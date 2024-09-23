@@ -285,7 +285,7 @@ class RelayMetadataComponent extends StatelessWidget {
                       Nip51List.BLOCKED_RELAYS,
                       relayMetadata!.url!,
                       myOutboxRelaySet!.urls,
-                      loggedUserSigner,
+                      loggedUserSigner!,
                       defaultRelaysIfEmpty: []);
              ndk.relays.blockedRelays = relayList!.allRelays!;
               relayProvider.notifyListeners();
@@ -318,7 +318,7 @@ class RelayMetadataComponent extends StatelessWidget {
                         Nip51List.BLOCKED_RELAYS,
                         relayMetadata!.url!,
                         myOutboxRelaySet!.urls,
-                        loggedUserSigner,
+                        loggedUserSigner!,
                         private: value == "private" ? true : false);
                ndk.relays.blockedRelays = blocked.allRelays!;
                 EasyLoading.dismiss();

@@ -185,7 +185,7 @@ class _MuteListRouter extends State<MuteListRouter> with SingleTickerProviderSta
                   if (result != null && result) {
                     EasyLoading.show(status: 'Removing from list and broadcasting...', maskType: EasyLoadingMaskType.black, dismissOnTap: true);
                     muteList = await ndk.lists.broadcastRemoveNip51ListElement(
-                        muteList!.kind, element.tag, element.value, myOutboxRelaySet!.urls, loggedUserSigner);
+                        muteList!.kind, element.tag, element.value, myOutboxRelaySet!.urls, loggedUserSigner!);
                     filterProvider.muteList = muteList;
                     filterProvider.notifyListeners();
                     EasyLoading.dismiss();
@@ -278,7 +278,7 @@ class _MuteListRouter extends State<MuteListRouter> with SingleTickerProviderSta
     if (result != null && result) {
       EasyLoading.show(status: 'Broadcasting mute list...', maskType: EasyLoadingMaskType.black, dismissOnTap: true);
 
-      muteList = await ndk.lists.broadcastAddNip51ListElement(muteList!.kind, element.tag, element.value, myOutboxRelaySet!.urls, private: private, loggedUserSigner);
+      muteList = await ndk.lists.broadcastAddNip51ListElement(muteList!.kind, element.tag, element.value, myOutboxRelaySet!.urls, private: private, loggedUserSigner!);
       filterProvider.muteList = muteList;
       filterProvider.notifyListeners();
       EasyLoading.dismiss();

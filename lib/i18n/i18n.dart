@@ -689,10 +689,10 @@ class I18n {
   }
 
   /// `key has been copy!`
-  String get key_has_been_copy {
+  String get key_has_been_copied {
     return Intl.message(
-      'key has been copy!',
-      name: 'key_has_been_copy',
+      'key has been copied!',
+      name: 'key_has_been_copied',
       desc: '',
       args: [],
     );
@@ -883,16 +883,6 @@ class I18n {
     return Intl.message(
       'The key is a random string that resembles your account password. Anyone with this key can access and control your account.',
       name: 'The_key_is_a_random_string_that_resembles_',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Copy Key`
-  String get Copy_Key {
-    return Intl.message(
-      'Copy to clipboard',
-      name: 'Copy_Key',
       desc: '',
       args: [],
     );
