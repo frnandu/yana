@@ -43,6 +43,7 @@ import 'package:yana/provider/nwc_provider.dart';
 import 'package:yana/router/login/login_router.dart';
 import 'package:yana/router/relays/relay_info_router.dart';
 import 'package:yana/router/search/search_router.dart';
+import 'package:yana/router/setting/wallet_settings_router.dart';
 import 'package:yana/router/user/followed_router.dart';
 import 'package:yana/router/user/followed_tags_list_router.dart';
 import 'package:yana/router/user/mute_list_router.dart';
@@ -718,6 +719,7 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
       RouterPath.RELAYS: (context) => const RelaysRouter(),
       RouterPath.PROFILE_EDITOR: (context) => const ProfileEditorRouter(),
       RouterPath.SETTING: (context) => SettingRouter(indexReload: reload),
+      RouterPath.SETTINGS_WALLET: (context) => const WalletSettingsRouter(),
       RouterPath.QRSCANNER: (context) => const QRScannerRouter(),
       RouterPath.RELAY_INFO: (context) => const RelayInfoRouter(),
       RouterPath.FOLLOWED_TAGS_LIST: (context) => const FollowedTagsListRouter(),

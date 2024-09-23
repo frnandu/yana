@@ -574,7 +574,7 @@ class _WalletRouter extends State<WalletRouter> {
                       nwcProvider.disconnect();
                     });
                   } else if (value == "settings") {
-                    RouterUtil.router(context, RouterPath.SETTING);
+                    RouterUtil.router(context, RouterPath.SETTINGS_WALLET);
                   }
                 }))
         : Container();

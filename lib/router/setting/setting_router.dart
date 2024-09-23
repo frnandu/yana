@@ -624,39 +624,14 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
     ));
 
     List<AbstractSettingsTile> walletTiles = [];
-    if (nwcProvider.isConnected) {
-      walletTiles.add(SettingsTile.navigation(
-        onPressed: (context) async {
-          await pickFiatCurrency();
-        },
-        leading: const Icon(Icons.currency_exchange),
-        trailing: Text(settingProvider.currency!.toUpperCase()),
-        title: const Text("Choose Fiat Currency"),
-      ));
-
-      walletTiles.add(SettingsTile.navigation(
-        trailing: const Text(""),
-        onPressed: (context) async {
-          var result = await ConfirmDialog.show(context, "Are you sure?");
-          if (result == true) {
-            setState(() {
-              nwcProvider.disconnect();
-            });
-          }
-        },
-        leading: const Icon(Icons.remove_circle_outline),
-        title: const Text("Disconnect Nostr Wallet Connect"),
-      ));
-    } else {
-      walletTiles.add(SettingsTile.navigation(
-        trailing: const Text(""),
-        onPressed: (context) async {
-          RouterUtil.router(context, RouterPath.WALLET);
-        },
-        leading: const Icon(Icons.wallet),
-        title: const Text("Connect Nostr Wallet Connect"),
-      ));
-    }
+    walletTiles.add(SettingsTile.navigation(
+      onPressed: (context) async {
+        RouterUtil.router(context, RouterPath.SETTINGS_WALLET);
+      },
+      leading: const Icon(Icons.wallet),
+      trailing: const Icon(Icons.navigate_next),
+      title: const Text("Wallet Settings"),
+    ));
 
     List<AbstractSettingsTile> accountTiles = [];
 
