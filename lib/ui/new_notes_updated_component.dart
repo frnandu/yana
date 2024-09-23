@@ -8,11 +8,11 @@ import '../main.dart';
 
 class NewNotesUpdatedComponent extends StatelessWidget {
   Function? onTap;
-  String text;
+  String _text;
 
   List<Nip01Event> newEvents;
 
-  NewNotesUpdatedComponent({super.key, required this.newEvents, required this.text, this.onTap});
+  NewNotesUpdatedComponent({super.key, required this.newEvents, required String text, this.onTap}) : _text = text;
 
   @override
   Widget build(BuildContext context) {
@@ -63,7 +63,7 @@ class NewNotesUpdatedComponent extends StatelessWidget {
                   return UserPicComponent(pubkey: pubKey, width: width + 10);
                 }).toList(), //
               ),
-              Text(text,style: TextStyle(color: textColor),
+              Text(_text,style: TextStyle(color: textColor),
               )
             ]))
     );

@@ -9,9 +9,9 @@ import '../simple_name_component.dart';
 import 'content_str_link_component.dart';
 
 class ContentMentionUserComponent extends StatefulWidget {
-  String pubkey;
+  String _pubkey;
 
-  ContentMentionUserComponent({super.key, required this.pubkey});
+  ContentMentionUserComponent({super.key, required String pubkey}) : _pubkey = pubkey;
 
   @override
   State<StatefulWidget> createState() {
@@ -25,18 +25,18 @@ class _ContentMentionUserComponent extends State<ContentMentionUserComponent> {
     return Selector<MetadataProvider, Metadata?>(
       builder: (context, metadata, child) {
         String name =
-            SimpleNameComponent.getSimpleName(widget.pubkey, metadata);
+            SimpleNameComponent.getSimpleName(widget._pubkey, metadata);
 
         return ContentStrLinkComponent(
           str: "$name",
           showUnderline: false,
           onTap: () {
-            RouterUtil.router(context, RouterPath.USER, widget.pubkey);
+            RouterUtil.router(context, RouterPath.USER, widget._pubkey);
           },
         );
       },
       selector: (context, _provider) {
-        return _provider.getMetadata(widget.pubkey);
+        return _provider.getMetadata(widget._pubkey);
       },
     );
   }

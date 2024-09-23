@@ -10,6 +10,7 @@ import '../models/db/db_relay_set.dart';
 import '../models/db/db_user_relay_list.dart';
 
 class IsarDbDs {
+  // the isar obj
   late Isar isar;
 
   IsarDbDs();

@@ -10,7 +10,7 @@ class BedgeComponent extends StatelessWidget {
 
   BadgeDefinition badgeDefinition;
 
-  BedgeComponent({
+  BedgeComponent({super.key,
     required this.badgeDefinition,
   });
 

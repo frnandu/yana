@@ -58,22 +58,6 @@ class RelayProvider extends ChangeNotifier {
     return "";
   }
 
-  Future<Nip51Set?> getNip51RelaySet(String name) async {
-    Nip51Set? r = await ndk.lists.getCachedNip51RelaySet(name, loggedUserSigner!);
-    if (r == null) {
-      ndk.lists.getSingleNip51RelaySet(name, loggedUserSigner!);
-    }
-    return r;
-  }
-
-  Future<Nip51List?> getNip51List(int kind) async {
-    Nip51List? r = await ndk.lists.getCachedNip51List(kind, loggedUserSigner!);
-    if (r == null) {
-      ndk.lists.getSingleNip51List(kind, loggedUserSigner!);
-    }
-    return r;
-  }
-
   void onRelayStatusChange() {
     notifyListeners();
   }

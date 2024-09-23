@@ -8,26 +8,26 @@ import 'metadata_top_component.dart';
 import 'user_badges_component.dart';
 
 class MetadataComponent extends StatefulWidget {
-  String pubKey;
+  final String _pubKey;
 
-  Metadata? metadata;
+  final Metadata? _metadata;
 
-  bool jumpable;
+  final bool _jumpable;
 
-  bool showBadges;
+  final bool _showBadges;
 
-  bool userPicturePreview;
+  final bool _userPicturePreview;
 
-  bool followsYou;
+  final bool _followsYou;
 
-  MetadataComponent({super.key,
-    required this.pubKey,
-    this.metadata,
-    this.jumpable = false,
-    this.showBadges = false,
-    this.userPicturePreview = false,
-    this.followsYou = false
-  });
+  const MetadataComponent({super.key,
+    required String pubKey,
+    Metadata? metadata,
+    bool jumpable = false,
+    bool showBadges = false,
+    bool userPicturePreview = false,
+    bool followsYou = false
+  }) : _pubKey = pubKey, _metadata = metadata, _jumpable = jumpable, _showBadges = showBadges, _userPicturePreview = userPicturePreview, _followsYou = followsYou;
 
   @override
   State<StatefulWidget> createState() {
@@ -41,22 +41,22 @@ class _MetadataComponent extends State<MetadataComponent> {
     List<Widget> mainList = [];
 
     mainList.add(MetadataTopComponent(
-      pubkey: widget.pubKey,
-      metadata: widget.metadata,
-      jumpable: widget.jumpable,
-      userPicturePreview: widget.userPicturePreview,
-      followsYou:  widget.followsYou,
+      pubkey: widget._pubKey,
+      metadata: widget._metadata,
+      jumpable: widget._jumpable,
+      userPicturePreview: widget._userPicturePreview,
+      followsYou:  widget._followsYou,
     ));
 
-    if (widget.showBadges) {
+    if (widget._showBadges) {
       mainList.add(UserBadgesComponent(
-        pubkey: widget.pubKey,
+        pubkey: widget._pubKey,
       ));
     }
     var themeData = Theme.of(context);
 
-    if (widget.metadata != null &&
-        StringUtil.isNotBlank(widget.metadata!.about)) {
+    if (widget._metadata != null &&
+        StringUtil.isNotBlank(widget._metadata!.about)) {
       mainList.add(
         Container(
           width: double.maxFinite,
@@ -74,7 +74,7 @@ class _MetadataComponent extends State<MetadataComponent> {
               mainAxisSize: MainAxisSize.min,
               children: ContentDecoder.decode(
                 context,
-                widget.metadata!.about!,
+                widget._metadata!.about!,
                 null,
                 showLinkPreview: false,
               ),
