@@ -110,11 +110,25 @@ class NotificationsProvider extends ChangeNotifier with PenddingEventsLaterFunct
   void onEvents(List<Nip01Event> list, {bool saveToCache = true}) {
     list = list.where((element) => element.pubKey != loggedUserSigner?.getPublicKey()).toList();
     List<Nip01Event> toSave = [];
+    List<Nip01Event> loggedUserEvents = [];
     for (Nip01Event event in list) {
-      if (
-        // event.kind!=kind.EventKind.ZAP_RECEIPT &&
-          (event.pTags.length==1 || event.pTags.any((tagValues) => tagValues.contains(loggedUserSigner!.getPublicKey()) && tagValues.contains("mention")))
-        ) {
+      bool accept = false;
+      if (event.pTags.length == 1 || event.pTags.any((tagValues) => tagValues.contains(loggedUserSigner!.getPublicKey()) && tagValues.contains("mention")))  {
+        accept = true;
+      } else {
+        List<String> replyETags = event.replyETags;
+        if (replyETags.length!=1) {
+          accept = false;
+        } else {
+          if (loggedUserEvents.isEmpty) {
+            loggedUserEvents = cacheManager.loadEvents(
+                pubKeys: [loggedUserSigner!.getPublicKey()]);
+          }
+          accept = replyETags.length == 1 &&
+              loggedUserEvents.any((event) => event.id == replyETags.first);
+        }
+      }
+      if (accept) {
         if (timestamp != null && event.createdAt > timestamp!) {
           newNotificationsProvider.handleEvent(event, null);
         } else {

@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 0.15.0-rc5+3005
+version: 0.15.0+3006
 versionCode: 3000
 
 environment:
@@ -125,7 +125,7 @@ dependencies:
   lottie: ^3.1.2
   bolt11_decoder: ^1.0.2
 
-  ndk: ^0.1.0-dev92
+  ndk: ^0.1.0-dev94
 #  ndk:
 #    git:
 #      url: https://github.com/relaystr/dart_ndk.git
