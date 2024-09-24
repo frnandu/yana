@@ -124,10 +124,10 @@ Use https://sideloadly.io/ to sideload the yana-version-ios.ipa file onto your i
 Some initial code was used from nostrmo[^1] project.
 
 
-70% - <a href="https://nostr.com/npub1xpuz4qerklyck9evtg40wgrthq5rce2mumwuuygnxcg6q02lz9ms275ams">fmar <img width="20" height="20" src="https://nostr.build/i/27747076d9db02572ee4b71110615a08900e7a0be52f477bc977fa4a65edbaf6.jpg"></a> (code)\
-10% - <a href="https://nostr.com/npub1m0sxqk5uwvtjhtt4yw3j0v3k6402fd35aq8832gp8kmer78atvkq9vgcru">Saunter <img width="20" height="20" src="https://m.primal.net/KcjB.jpg"></a> (UX + UI)\
-10% - <a href="https://nostr.com/npub1xzeq653ms8wkekfnr49kgnzwrq7ykeljkrsf7fyh7ham9t6sl72q7v4dhh">Zitron <img width="20" height="20" src="https://miro.medium.com/v2/resize:fit:640/1*x8phlldoLeDQxXMuKViHpA.jpeg"></a> (graphics + UX)\
-10% - <a href="https://nostr.com/npub14wxtsrj7g2jugh70pfkzjln43vgn4p7655pgky9j9w9d75u465pqvagcye">Tomek ⚡ K <img width="20" height="20" src="https://pbs.twimg.com/profile_images/1369075278610395137/4Yp1YYNe.jpg"></a> (PR + Marketing)
+70% - <a href="https://njump.me/npub1xpuz4qerklyck9evtg40wgrthq5rce2mumwuuygnxcg6q02lz9ms275ams">fmar <img width="20" height="20" src="https://nostr.build/i/27747076d9db02572ee4b71110615a08900e7a0be52f477bc977fa4a65edbaf6.jpg"></a> (code)\
+10% - <a href="https://njump.me/npub1m0sxqk5uwvtjhtt4yw3j0v3k6402fd35aq8832gp8kmer78atvkq9vgcru">Saunter <img width="20" height="20" src="https://m.primal.net/KcjB.jpg"></a> (UX + UI)\
+10% - <a href="https://njump.me/npub1xzeq653ms8wkekfnr49kgnzwrq7ykeljkrsf7fyh7ham9t6sl72q7v4dhh">Zitron <img width="20" height="20" src="https://miro.medium.com/v2/resize:fit:640/1*x8phlldoLeDQxXMuKViHpA.jpeg"></a> (graphics + UX)\
+10% - <a href="https://njump.me/npub14wxtsrj7g2jugh70pfkzjln43vgn4p7655pgky9j9w9d75u465pqvagcye">Tomek ⚡ K <img width="20" height="20" src="https://pbs.twimg.com/profile_images/1369075278610395137/4Yp1YYNe.jpg"></a> (PR + Marketing)
 
 
 ## Join
