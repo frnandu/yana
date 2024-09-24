@@ -1305,11 +1305,10 @@ packages:
   ndk:
     dependency: "direct main"
     description:
-      name: ndk
-      sha256: b1d936052008dc2233fd3af42f0a9bce0383689e40b4dbcdeab820b529197325
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.1.0-dev96"
+      path: "../dart_ndk"
+      relative: true
+    source: path
+    version: "0.1.0-dev98"
   nested:
     dependency: transitive
     description:
