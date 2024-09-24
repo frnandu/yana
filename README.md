@@ -46,37 +46,9 @@ Verify the signature of the .apk file:
 
 Compare this with the SHA256 found on nostr profile for [Yana](https://nostr.com/npub1gp4xzpmluelsakjtayc4wtzj97fhj5kakqjvsannu00xkdlf4x8s0xdqyq)
 
-*I strongly recommend [Obtainium](https://github.com/ImranR98/Obtainium) for keeping up-to-date with new releases.*
-
 ### - iOS
 
 Use https://sideloadly.io/ to sideload the yana-version-ios.ipa file onto your ios device.
-
-### - Web
-
-You can run your own web version using docker
-
-    docker run -d --name yana -p 8080:80  fmar/yana
-
-And then go to https://127.0.0.1:8080
-
-You can also check out my hosted version at https://app.yana.do
-
-[Planned](https://github.com/frnandu/yana/issues/34) also an Umbrel Store package so it is simple to install and run it for umbrel users 
-
-### - Linux
-Run Appimage file
-or install deb file from releases:
-
-    sudo dpkg -i <deb-file>
-
-*Snap comming soon*
-
-### - Windows
-*Comming later*
-
-### - MacOS
-*Comming later*
 
 ## Current Features + Roadmap
 
