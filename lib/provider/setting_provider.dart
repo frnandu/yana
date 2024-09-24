@@ -265,7 +265,7 @@ class SettingProvider extends ChangeNotifier {
 
   String? get translateTarget => _settingData!.translateTarget;
 
-  String? get currency => _settingData!.currency;
+  String? get currency => _settingData!.currency?? "usd";
 
   Map<String, int> _translateSourceArgsMap = {};
 

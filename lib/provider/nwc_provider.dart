@@ -4,6 +4,7 @@ import 'package:bip340/bip340.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:ndk/ndk.dart';
+import 'package:ndk/shared/logger/logger.dart';
 import 'package:ndk/shared/nips/nip04/nip04.dart';
 import 'package:yana/models/wallet_transaction.dart';
 import 'package:yana/nostr/nip47/nwc_notification.dart';
@@ -41,6 +42,7 @@ class NwcProvider extends ChangeNotifier {
   static const String NWC_PROTOCOL_PREFIX = "nostr+walletconnect://";
 
   NdkResponse? subscription;
+  EventSigner? nwcSigner;
 
   Future<void> init() async {
     // TODO make this multi account aware
@@ -63,23 +65,17 @@ class NwcProvider extends ChangeNotifier {
   bool get canListTransaction =>
       permissions.contains(NwcCommand.LIST_TRANSACTIONS);
 
-  Future<void> reload() async {
-    await init();
-    notifyListeners();
-  }
-
+  /// get wallet balance in sats
   int? get getBalance => balance;
 
   bool get canMakeInvoice => permissions.contains(NwcCommand.MAKE_INVOICE);
 
   bool get canPayInvoice => permissions.contains(NwcCommand.PAY_INVOICE);
 
-  bool get isConnected =>
-      StringUtil.isNotBlank(relay) &&
-      StringUtil.isNotBlank(walletPubKey) &&
-      permissions.isNotEmpty &&
-      StringUtil.isNotBlank(secret);
+  /// is the wallet connected
+  bool get isConnected => nwcSigner!=null;
 
+  /// connect the wallet
   Future<void> connect(String nwc, {Function? onConnect}) async {
     nwc = nwc.replaceAll("yana:", "nostr+walletconnect:");
     Uri uri = Uri.parse(nwc.replaceAll("nostr+walletconnect:", "https:"));
@@ -106,10 +102,10 @@ class NwcProvider extends ChangeNotifier {
     await settingProvider.setNwc(nwc);
     await settingProvider.setNwcSecret(secret!);
     var filter = Filter(kinds: [NwcKind.INFO_REQUEST], authors: [walletPubKey]);
-    await ndk.relays.reconnectRelay(relay);
+    // await ndk.relays.reconnectRelay(relay);
     ndk.requests
         .query(
-            name: "nwc",
+            name: "nwc-info",
             explicitRelays: [relay],
             filters: [filter],
             cacheRead: false,
@@ -125,6 +121,7 @@ class NwcProvider extends ChangeNotifier {
         StringUtil.isNotBlank(event.content)) {
       walletPubKey = event.pubKey;
       relay = event.sources[0];
+      nwcSigner = Bip340EventSigner(secret!, getPublicKey(secret!));
       sharedPreferences.setString(DataKey.NWC_PERMISSIONS, event.content);
       sharedPreferences.setString(DataKey.NWC_RELAY, relay!);
       sharedPreferences.setString(DataKey.NWC_PUB_KEY, walletPubKey!);
@@ -150,6 +147,7 @@ class NwcProvider extends ChangeNotifier {
     }
   }
 
+  /// disconnect the wallet
   Future<void> disconnect() async {
     sharedPreferences.setString(DataKey.NWC_PERMISSIONS, "");
     await settingProvider.setNwc(null);
@@ -165,13 +163,13 @@ class NwcProvider extends ChangeNotifier {
     maxAmount = null;
     uri = null;
     permissions = [];
+    nwcSigner = null;
     notifyListeners();
   }
 
+  /// request get info from wallet
   Future<void> requestGetInfo() async {
     if (isConnected) {
-      EventSigner nwcSigner = Bip340EventSigner(secret!, getPublicKey(secret!));
-
       var encrypted = Nip04.encrypt(
           secret!, walletPubKey!, '{"method":"${NwcCommand.GET_INFO}"}');
 
@@ -184,55 +182,65 @@ class NwcProvider extends ChangeNotifier {
           tags: tags,
           content: encrypted);
       await ndk.relays.reconnectRelay(relay!);
-      await ndk.broadcastEvent(event, [relay!], signer: nwcSigner);
+      await ndk.relays.broadcastEvent(event, [relay!], nwcSigner!);
     }
   }
 
+  /// request balance from wallet
   Future<void> requestBalance() async {
     if (isConnected) {
-      fiatCurrencyRate =
-          await RatesUtil.fiatCurrency(settingProvider.currency!);
+      try {
+        fiatCurrencyRate =
+        await RatesUtil.fiatCurrency(settingProvider.currency!);
 
-      EventSigner nwcSigner = Bip340EventSigner(secret, getPublicKey(secret!));
+        var encrypted = Nip04.encrypt(
+            secret!, walletPubKey!, '{"method":"${NwcCommand.GET_BALANCE}"}');
 
-      var encrypted = Nip04.encrypt(
-          secret!, walletPubKey!, '{"method":"${NwcCommand.GET_BALANCE}"}');
-
-      List<List<String>> tags = [
-        ["p", walletPubKey!]
-      ];
-      final event = Nip01Event(
-          pubKey: nwcSigner.getPublicKey(),
-          kind: NwcKind.REQUEST,
-          tags: tags,
-          content: encrypted);
-      await ndk.relays.reconnectRelay(relay!);
-      await ndk.relays.broadcastEvent(event, [relay!], nwcSigner);
+        List<List<String>> tags = [
+          ["p", walletPubKey!]
+        ];
+        final event = Nip01Event(
+            pubKey: nwcSigner!.getPublicKey(),
+            kind: NwcKind.REQUEST,
+            tags: tags,
+            content: encrypted);
+        await ndk.relays.reconnectRelay(relay!);
+        await ndk.relays.broadcastEvent(event, [relay!], nwcSigner!);
+      } catch (e) {
+        print(e);
+        Logger.log.e(e);
+      }
     }
   }
 
+  /// request list of transactions
   Future<void> requestListTransactions(
       {int limit = 100, int offset = 0, bool unpaid = false}) async {
     if (isConnected) {
-      fiatCurrencyRate =
-          await RatesUtil.fiatCurrency(settingProvider.currency!);
-      EventSigner nwcSigner = Bip340EventSigner(secret!, getPublicKey(secret!));
+      try {
+        fiatCurrencyRate =
+        await RatesUtil.fiatCurrency(settingProvider.currency!);
 
-      var content =
-          '{"method":"${NwcCommand.LIST_TRANSACTIONS}", "params":{ "limit": $limit, "offset":$offset, "unpaid":$unpaid }}';
-      var encrypted = Nip04.encrypt(secret!, walletPubKey!, content);
+        var content =
+            '{"method":"${NwcCommand
+            .LIST_TRANSACTIONS}", "params":{ "limit": $limit, "offset":$offset, "unpaid":$unpaid }}';
+        var encrypted = Nip04.encrypt(secret!, walletPubKey!, content);
 
-      List<List<String>> tags = [
-        ["p", walletPubKey!]
-      ];
-      final event = Nip01Event(
-          pubKey: nwcSigner.getPublicKey(),
-          kind: NwcKind.REQUEST,
-          tags: tags,
-          content: encrypted);
+        List<List<String>> tags = [
+          ["p", walletPubKey!]
+        ];
+        final event = Nip01Event(
+            pubKey: nwcSigner!.getPublicKey(),
+            kind: NwcKind.REQUEST,
+            tags: tags,
+            content: encrypted);
 
-      await ndk.relays.reconnectRelay(relay!);
-      await ndk.relays.broadcastEvent(event, [relay!], nwcSigner);
+        await ndk.relays.reconnectRelay(relay!);
+        await ndk.relays.broadcastEvent(event, [relay!], nwcSigner!);
+      } catch (e) {
+        print(e);
+        Logger.log.e(e);
+      }
     }
   }
 
@@ -241,7 +249,6 @@ class NwcProvider extends ChangeNotifier {
     if (StringUtil.isNotBlank(walletPubKey) &&
         StringUtil.isNotBlank(relay) &&
         StringUtil.isNotBlank(secret)) {
-      EventSigner nwcSigner = Bip340EventSigner(secret!, getPublicKey(secret!));
 
       payInvoiceEventId = eventId;
       this.onZapped = onZapped;
@@ -256,7 +263,7 @@ class NwcProvider extends ChangeNotifier {
           kind: NwcKind.REQUEST,
           tags: tags,
           content: encrypted);
-      await ndk.relays.broadcastEvent(event, [relay!], nwcSigner);
+      await ndk.relays.broadcastEvent(event, [relay!], nwcSigner!);
     } else {
       EasyLoading.showError("missing pubKey and/or relay for connecting",
           duration: const Duration(seconds: 5));
@@ -301,7 +308,6 @@ class NwcProvider extends ChangeNotifier {
     if (StringUtil.isNotBlank(walletPubKey) &&
         StringUtil.isNotBlank(relay) &&
         StringUtil.isNotBlank(secret)) {
-      EventSigner nwcSigner = Bip340EventSigner(secret!, getPublicKey(secret!));
 
       String makeInvoice =
           '{"method":"${NwcCommand.MAKE_INVOICE}", "params": { "amount":${amountInMsats}, "description" : "${description}", "expiry":${expiry}}}';
@@ -317,7 +323,7 @@ class NwcProvider extends ChangeNotifier {
       var filter = Filter(
           kinds: [NwcKind.RESPONSE],
           authors: [walletPubKey!],
-          pTags: [nwcSigner.getPublicKey()],
+          pTags: [nwcSigner!.getPublicKey()],
           eTags: [event.id]);
       NdkResponse subscription = ndk.requests.subscription(
           name: "nwc-make-invoice-sub",
@@ -330,7 +336,7 @@ class NwcProvider extends ChangeNotifier {
         await onMakeInvoiceResponse(event, onCreatedInvoice);
       });
       this.settledInvoiceCallback = settledInvoiceCallback;
-      await ndk.relays.broadcastEvent(event, [relay!], nwcSigner);
+      await ndk.relays.broadcastEvent(event, [relay!], nwcSigner!);
     } else {
       EasyLoading.showError("missing pubKey and/or relay for connecting",
           duration: const Duration(seconds: 5));
@@ -365,9 +371,8 @@ class NwcProvider extends ChangeNotifier {
     if (StringUtil.isNotBlank(walletPubKey) &&
         StringUtil.isNotBlank(relay) &&
         StringUtil.isNotBlank(secret) && subscription==null) {
-      EventSigner nwcSigner = Bip340EventSigner(secret!, getPublicKey(secret!));
 
-      await ndk.relays.reconnectRelay(relay!);
+      // await ndk.relays.reconnectRelay(relay!);
 
       subscription = ndk.requests.subscription(
           name: "nwc-sub",
@@ -376,7 +381,7 @@ class NwcProvider extends ChangeNotifier {
             Filter(
               kinds: [NwcKind.NOTIFICATION, NwcKind.RESPONSE],
               authors: [walletPubKey!],
-              pTags: [nwcSigner.getPublicKey()],
+              pTags: [nwcSigner!.getPublicKey()],
             )
           ],
           cacheRead: false,

@@ -34,7 +34,8 @@ class _NwcRouter extends State<NwcRouter> {
       if (nwcSecret == null) {
         if (scanData.code != null &&
             scanData.code!.startsWith(NwcProvider.NWC_PROTOCOL_PREFIX)) {
-          nwcProvider.connect(scanData.code!);
+          await qrController!.stopCamera();
+          await nwcProvider.connect(scanData.code!);
         }
         setState(() {
           nwcSecret = scanData.code;
