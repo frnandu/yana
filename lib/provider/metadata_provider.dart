@@ -78,8 +78,12 @@ class MetadataProvider extends ChangeNotifier with LaterFunction {
     if (relaySet != null) {
       loading = true;
       List<Metadata> loaded = await ndk.metadatas.loadMetadatas(_needUpdateMetadatas, relaySet, onLoad: (metadata) {
+        _needUpdateMetadatas.remove(metadata.pubKey);
         notifyListeners();
       });
+      for(String pubKey in _needUpdateMetadatas) {
+        await cacheManager.saveMetadata(Metadata(pubKey: pubKey));
+      }
       _needUpdateMetadatas.clear();
       loading = false;
 
