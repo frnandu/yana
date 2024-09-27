@@ -98,15 +98,19 @@
 - published on zap.store with self-signing
 - choose currency for wallet on settings
 
-=====
+===== v0.16
+- nostr+walletconnect onboarding with lud16
+- fix not finding metadatas 
+- make thread detail subscription of new replies work
+
+=======
+
 - event multiple sources
 - nostr.wine-compatible translations service integration
-- make thread detail subscription of new replies work
 - make reactions live again with subscriptions or some other way
 - show progress of broadcasting note on relays with retry if some fail
 - handle event deletions coming from relays, should delete in cache
 - when following someone new and gossip=1, ask confirmation for that user's relay list acceptance, and eventual blocking some relays
-- too much notifications of reactions to replies of replies of post where you're tagged
 - include relay hints on nevent and stuff
 - lists on profiles
 - custom lists/sets nip51
