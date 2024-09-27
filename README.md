@@ -39,7 +39,7 @@ height="80">](https://github.com/frnandu/yana/releases)
 
 [<img src="https://blob.satellite.earth/84dde28e6b2f727ddbb85fdf31ce1fc6c2731edb571444e8fbe0cd0b4ebf2ee8" 
 alt="Get it on Zapstore"
-height="60">](https://zap.store)
+height="60">](zapstore://yana.nostr)
 
 ### - Android
 
