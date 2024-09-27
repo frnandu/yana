@@ -33,11 +33,11 @@ Highly recommended https://zap.store (android) which uses nostr keys for signing
 You can also add github repo to [Obtainium](https://github.com/ImranR98/Obtainium),\
 or you can just download them from the release's page and install it directly without a third-party distributor.
 
+<a href="https://zap.store?app=yana.nostr"><img height="60" src="https://blob.satellite.earth/84dde28e6b2f727ddbb85fdf31ce1fc6c2731edb571444e8fbe0cd0b4ebf2ee8"/></a>
+
 [<img src="https://github.com/NeoApplications/Neo-Backup/blob/034b226cea5c1b30eb4f6a6f313e4dadcbb0ece4/badge_github.png?raw=true"
 alt="Get it on GitHub"
 height="80">](https://github.com/frnandu/yana/releases)
-
-<a href="https://zap.store?app=yana.nostr"><img height="60" src="https://blob.satellite.earth/84dde28e6b2f727ddbb85fdf31ce1fc6c2731edb571444e8fbe0cd0b4ebf2ee8"/></a>
 
 ### - Android
 
