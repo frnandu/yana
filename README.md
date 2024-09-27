@@ -37,7 +37,7 @@ or you can just download them from the release's page and install it directly wi
 alt="Get it on GitHub"
 height="80">](https://github.com/frnandu/yana/releases)
 
-<a href="zapstore://yana.nostr"><img height="60" src="https://blob.satellite.earth/84dde28e6b2f727ddbb85fdf31ce1fc6c2731edb571444e8fbe0cd0b4ebf2ee8"/></a>
+<a href="https://zap.store?app=yana.nostr"><img height="60" src="https://blob.satellite.earth/84dde28e6b2f727ddbb85fdf31ce1fc6c2731edb571444e8fbe0cd0b4ebf2ee8"/></a>
 
 ### - Android
 
