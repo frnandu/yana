@@ -41,6 +41,8 @@ height="80">](https://github.com/frnandu/yana/releases)
 alt="Get it on Zapstore"
 height="60">](zapstore://yana.nostr)
 
+<a href="zapstore://yana.nostr"><img height="60" src="https://blob.satellite.earth/84dde28e6b2f727ddbb85fdf31ce1fc6c2731edb571444e8fbe0cd0b4ebf2ee8"></a>
+
 ### - Android
 
 Install by choosing your architecture[^3] from [releases](https://github.com/frnandu/yana/releases).\
