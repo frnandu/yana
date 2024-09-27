@@ -76,13 +76,19 @@ class NwcProvider extends ChangeNotifier {
   bool get isConnected => nwcSigner!=null;
 
   /// connect the wallet
-  Future<void> connect(String nwc, {Function? onConnect}) async {
+  Future<void> connect(String nwc, {Function(String?)? onConnect}) async {
     nwc = nwc.replaceAll("yana:", "nostr+walletconnect:");
     Uri uri = Uri.parse(nwc.replaceAll("nostr+walletconnect:", "https:"));
     String? walletPubKey = uri.host;
     String? relay = uri.queryParameters['relay'];
     secret = uri.queryParameters['secret'];
-    // String? lud16 = uri.queryParameters['lub16'];
+    String? lud16 = uri.queryParameters['lud16'];
+    if (lud16!=null) {
+      Metadata? metadata = metadataProvider.getMetadata(loggedUserSigner!.getPublicKey());
+      if (metadata!=null && metadata.lud16!=lud16) {
+
+      }
+    }
     if (StringUtil.isBlank(relay)) {
       EasyLoading.showError("missing relay parameter",
           duration: const Duration(seconds: 5));
@@ -112,11 +118,11 @@ class NwcProvider extends ChangeNotifier {
             cacheWrite: false)
         .stream
         .listen((event) async {
-      await onInfoRequest(event, onConnect);
+      await onInfoRequest(event, onConnect, lud16);
     });
   }
 
-  Future<void> onInfoRequest(Nip01Event event, Function? onConnect) async {
+  Future<void> onInfoRequest(Nip01Event event, Function? onConnect, String? lud16) async {
     if (event.kind == NwcKind.INFO_REQUEST &&
         StringUtil.isNotBlank(event.content)) {
       walletPubKey = event.pubKey;
@@ -141,7 +147,7 @@ class NwcProvider extends ChangeNotifier {
         await requestListTransactions();
       }
       if (onConnect != null) {
-        onConnect.call();
+        onConnect.call(lud16);
       }
       notifyListeners();
     }

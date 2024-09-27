@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:ndk/data_layer/repositories/signers/bip340_event_signer.dart';
 import 'package:ndk/domain_layer/entities/metadata.dart';
 import 'package:ndk/domain_layer/entities/nip_01_event.dart';
 import 'package:ndk/domain_layer/entities/relay.dart';
@@ -23,8 +24,10 @@ import 'package:yana/utils/string_util.dart';
 import '../../i18n/i18n.dart';
 import '../../main.dart';
 import '../../models/event_mem_box.dart';
+import '../../nostr/client_utils/keys.dart';
 import '../../nostr/nip19/nip19.dart';
 import '../../nostr/nip19/nip19_tlv.dart';
+import '../../provider/data_util.dart';
 import '../../provider/follow_event_provider.dart';
 import '../../provider/follow_new_event_provider.dart';
 import '../../provider/index_provider.dart';
@@ -89,14 +92,37 @@ class _IndexRouter extends CustState<IndexRouter>
     if (StringUtil.isNotBlank(url)) {
       if (url.startsWith(NwcProvider.NWC_PROTOCOL_PREFIX)) {
         Future.delayed(const Duration(microseconds: 1), () async {
-          await nwcProvider.connect(url);
+          bool newAccount = false;
+          if (loggedUserSigner==null) {
+            String priv = generatePrivateKey();
+            sharedPreferences.remove(DataKey.NOTIFICATIONS_TIMESTAMP);
+            sharedPreferences.remove(DataKey.FEED_POSTS_TIMESTAMP);
+            sharedPreferences.remove(DataKey.FEED_REPLIES_TIMESTAMP);
+            notificationsProvider.clear();
+            newNotificationsProvider.clear();
+            followEventProvider.clear();
+            followEventProvider.clear();
+            await settingProvider.addAndChangeKey(priv, true, false, updateUI: false);
+            String publicKey = getPublicKey(priv);
+            ndk.changeEventSigner(Bip340EventSigner(priv, publicKey));
+
+            await initRelays(newKey: true);
+            followEventProvider.loadCachedFeed();
+
+            newAccount = true;
+            firstLogin = true;
+            indexProvider.setCurrentTap(IndexTaps.FOLLOW);
+          }
+          await nwcProvider.connect(url, onConnect: (lud16) async {
+            await metadataProvider.updateLud16IfEmpty(lud16);
+          });
           bool canPop = Navigator.canPop(context);
           // var route = ModalRoute.of(context);
           // if (route != null && route!.settings.name != null && route!.settings.name! == RouterPath.NWC) {
           if (canPop) {
             RouterUtil.back(context);
           } else {
-            RouterUtil.router(context, RouterPath.WALLET);
+            RouterUtil.router(context, newAccount? RouterPath.INDEX : RouterPath.WALLET);
           }
         });
       } else if (url.startsWith("lightning:")) {

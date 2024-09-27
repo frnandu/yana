@@ -35,7 +35,9 @@ class _NwcRouter extends State<NwcRouter> {
         if (scanData.code != null &&
             scanData.code!.startsWith(NwcProvider.NWC_PROTOCOL_PREFIX)) {
           await qrController!.stopCamera();
-          await nwcProvider.connect(scanData.code!);
+          await nwcProvider.connect(scanData.code!, onConnect: (lud16) async {
+            await metadataProvider.updateLud16IfEmpty(lud16);
+          });
         }
         setState(() {
           nwcSecret = scanData.code;
@@ -168,8 +170,9 @@ class _NwcRouter extends State<NwcRouter> {
                                     nwcSecret = clipboardData.text;
                                   });
                                   nwcProvider.connect(clipboardData.text!,
-                                      onConnect: () {
-                                    RouterUtil.back(context);
+                                      onConnect: (lud16) async {
+                                        await metadataProvider.updateLud16IfEmpty(lud16);
+                                        RouterUtil.back(context);
                                   });
                                 }
                               });

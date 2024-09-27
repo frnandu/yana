@@ -1305,11 +1305,10 @@ packages:
   ndk:
     dependency: "direct main"
     description:
-      name: ndk
-      sha256: "41dc39cbe19685395f29fec118cffcf6413bec5874926b03526d7fce6a9e094e"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.1.0-dev99"
+      path: "../dart_ndk"
+      relative: true
+    source: path
+    version: "0.1.0-dev994"
   nested:
     dependency: transitive
     description:
@@ -1610,10 +1609,10 @@ packages:
     dependency: transitive
     description:
       name: rust_lib_ndk
-      sha256: e0a79fe2ba0e289666141ef9ba0701592e1692df6e607ff57c9daf7502e7e6f0
+      sha256: "6d4c296204bc57982a2927030212c706a72f924a0383b1910b84518a66a4b8ab"
       url: "https://pub.dev"
     source: hosted
-    version: "0.0.2"
+    version: "0.0.4-dev002"
   rxdart:
     dependency: transitive
     description:

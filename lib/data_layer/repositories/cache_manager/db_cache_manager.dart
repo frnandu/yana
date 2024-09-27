@@ -110,11 +110,6 @@ class DbCacheManager extends CacheManager {
   }
 
   @override
-  Metadata? loadMetadata(String pubKey) {
-    return isar_ds.isar.dbMetadatas.get(pubKey);
-  }
-
-  @override
   Future<void> removeAllRelaySets() async {
     isar_ds.isar.write((isar) {
       isar.dbRelaySets.clear();
@@ -188,6 +183,11 @@ class DbCacheManager extends CacheManager {
     final duration = endTime.difference(startTime);
     Logger.log.t(
         "SAVED ${metadatas.length} UserMetadatas took ${duration.inMilliseconds} ms");
+  }
+
+  @override
+  Metadata? loadMetadata(String pubKey) {
+    return isar_ds.isar.dbMetadatas.get(pubKey);
   }
 
   @override

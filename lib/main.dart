@@ -168,7 +168,6 @@ EventSigner? get loggedUserSigner => ndk.config.eventSigner;
 AmberFlutterDS amberFlutterDS = AmberFlutterDS(Amberflutter());
 late CacheManager cacheManager;
 Ndk ndk = Ndk(
-  // Bip340EventVerifier(doVerification: false)  :AcinqSecp256k1EventVerifier()
   NdkConfig(eventVerifier: RustEventVerifier(), cache: cacheManager, engine: NdkEngine.RELAY_SETS),
 );
 

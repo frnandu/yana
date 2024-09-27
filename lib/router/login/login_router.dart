@@ -98,13 +98,22 @@ class _LoginRouter extends State<LoginRouter>
     //   ),
     // ));
 
-    var suffixIcon = GestureDetector(
+    var suffixIcons =
+    // Row(children: [
+      GestureDetector(
       onTap: () {
         setState(() {
           obscureText = !obscureText;
         });
       },
       child: Icon(obscureText ? Icons.visibility : Icons.visibility_off),
+    // ),
+    //   GestureDetector(
+    //     onTap: () {
+    //     },
+    //     child: Image.asset("assets/imgs/scan.png", width: 32, height: 32)
+    //   )
+    // ]
     );
     list.add(TextField(
       controller: controller,
@@ -112,7 +121,7 @@ class _LoginRouter extends State<LoginRouter>
         //border: InputBorder.none,
         hintText: s.Input_for_login,
         fillColor: Colors.white,
-        suffixIcon: suffixIcon,
+        suffixIcon: suffixIcons,
       ),
       style: const TextStyle(color: Colors.white),
       obscureText: obscureText,
@@ -242,9 +251,9 @@ class _LoginRouter extends State<LoginRouter>
             height: 40,
             color: Colors.grey,
             alignment: Alignment.center,
-            child: Text(
+            child: const Text(
               "<< cancel",
-              style: const TextStyle(
+              style: TextStyle(
                 fontFamily: 'Geist',
                 color: Colors.white,
                 fontSize: 16,
@@ -256,73 +265,7 @@ class _LoginRouter extends State<LoginRouter>
       ));
 
     }
-    //
-    // mainList.add(Container(
-    //   margin: const EdgeInsets.only(bottom: 100),
-    //   child: GestureDetector(
-    //     onTap: generatePK,
-    //     child: Text(
-    //       s.Generate_a_new_private_key,
-    //       style: TextStyle(
-    //         color: mainColor,
-    //         decoration: TextDecoration.underline,
-    //       ),
-    //     ),
-    //   ),
-    // ));
     if (PlatformUtil.isWeb()) {
-      // // list.add(Row(children: [
-      // //   MouseRegion(
-      // //       cursor: SystemMouseCursors.click,
-      // //       child: GestureDetector(
-      // //           onTap: () {
-      // //             var url = Uri.parse("https://github.com/frnandu/yana/releases");
-      // //             launchUrl(url, mode: LaunchMode.externalApplication);
-      // //           },
-      // //           child: Image.asset("assets/imgs/android.png", width: 100, isAntiAlias:true, filterQuality: FilterQuality.medium))),
-      // //   MouseRegion(
-      // //       cursor: SystemMouseCursors.click,
-      // //       child: GestureDetector(
-      // //           onTap: () {
-      // //             var url = Uri.parse("https://github.com/frnandu/yana/releases");
-      // //             launchUrl(url, mode: LaunchMode.externalApplication);
-      // //           },
-      // //           child: Image.asset("assets/imgs/ios.png", width: 100, isAntiAlias:true))),
-      // //
-      // ],));
-      // var github =
-      //     Image.asset("assets/imgs/github.png", width: 200, isAntiAlias: true);
-      // list.add(MouseRegion(
-      //     cursor: SystemMouseCursors.click,
-      //     child: GestureDetector(
-      //         onTap: () {
-      //           var url = Uri.parse("https://github.com/frnandu/yana/releases");
-      //           launchUrl(url, mode: LaunchMode.externalApplication);
-      //         },
-      //         child: github)));
-      //
-      // var obtainium = Image.asset("assets/imgs/obtainium.png",
-      //     width: 200, isAntiAlias: true);
-      // list.add(MouseRegion(
-      //     cursor: SystemMouseCursors.click,
-      //     child: GestureDetector(
-      //         onTap: () {
-      //           var url = Uri.parse("https://github.com/ImranR98/Obtainium");
-      //           launchUrl(url, mode: LaunchMode.externalApplication);
-      //         },
-      //         child: obtainium)));
-      //
-      // var f_droid = Image.asset(
-      //   "assets/imgs/f-droid.png",
-      //     width: 200
-      // );
-      // list.add(MouseRegion(
-      //                         cursor: SystemMouseCursors.click,
-      //                         child: GestureDetector(onTap: () {
-      //   var url = Uri.parse(
-      //       "TODO");
-      //   launchUrl(url, mode: LaunchMode.externalApplication);
-      // }, child: f_droid)));
     }
     return Scaffold(
       backgroundColor: const Color(0xff281237),

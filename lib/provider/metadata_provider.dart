@@ -1,3 +1,4 @@
+import 'package:ndk/config/bootstrap_relays.dart';
 import 'package:ndk/domain_layer/entities/metadata.dart';
 import 'package:ndk/domain_layer/entities/relay_set.dart';
 import 'package:ndk/shared/nips/nip01/helpers.dart';
@@ -81,9 +82,9 @@ class MetadataProvider extends ChangeNotifier with LaterFunction {
         _needUpdateMetadatas.remove(metadata.pubKey);
         notifyListeners();
       });
-      for(String pubKey in _needUpdateMetadatas) {
-        await cacheManager.saveMetadata(Metadata(pubKey: pubKey));
-      }
+      // for(String pubKey in _needUpdateMetadatas) {
+      //   await cacheManager.saveMetadata(Metadata(pubKey: pubKey));
+      // }
       _needUpdateMetadatas.clear();
       loading = false;
 
@@ -116,5 +117,24 @@ class MetadataProvider extends ChangeNotifier with LaterFunction {
   void clear() {
     cacheManager.removeAllMetadatas();
     cacheManager.removeAllNip05s();
+  }
+
+  Future<void> updateLud16IfEmpty(String? lud16) async {
+    if (loggedUserSigner!=null) {
+      Metadata? metadata = metadataProvider.getMetadata(
+          loggedUserSigner!.getPublicKey());
+      if (metadata!=null) {
+        if (StringUtil.isNotBlank(lud16) && StringUtil.isBlank(metadata.lud16)) {
+          metadata.lud16 = lud16;
+          await ndk.metadatas.broadcastMetadata(
+              metadata, myInboxRelaySet!.urls, loggedUserSigner!);
+        }
+      } else {
+        metadata ??= Metadata(pubKey: loggedUserSigner!.getPublicKey(), lud16: lud16);
+        metadata = await ndk.metadatas.broadcastMetadata(metadata, DEFAULT_BOOTSTRAP_RELAYS, loggedUserSigner!);
+        await cacheManager.saveMetadata(metadata);
+        notifyListeners();
+      }
+    }
   }
 }

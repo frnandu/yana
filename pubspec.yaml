@@ -125,7 +125,7 @@ dependencies:
   lottie: ^3.1.2
   bolt11_decoder: ^1.0.2
 
-  ndk: ^0.1.0-dev99
+  ndk: ^0.1.0-dev995
 #  ndk:
 #    git:
 #      url: https://github.com/relaystr/dart_ndk.git
