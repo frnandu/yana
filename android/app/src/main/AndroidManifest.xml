@@ -61,13 +61,12 @@
                 <!-- Accepts URIs that begin with YOUR_SCHEME://YOUR_HOST -->
                 <data android:scheme="nostr" />
             </intent-filter>
-            <!--Add this-->
-            <service
-                android:name="id.flutter.flutter_background_service.BackgroundService"
-                android:foregroundServiceType="dataSync"
-                />
-            <!--end-->
         </activity>
+        <service
+            android:name="id.flutter.flutter_background_service.BackgroundService"
+            android:foregroundServiceType="dataSync"
+            />
+
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data
