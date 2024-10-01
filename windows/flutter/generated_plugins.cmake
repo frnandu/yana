@@ -13,7 +13,7 @@ list(APPEND FLUTTER_PLUGIN_LIST
   local_auth_windows
   pasteboard
   permission_handler_windows
-  protocol_handler_windows
+  protocol_handler
   screen_retriever
   share_plus
   url_launcher_windows

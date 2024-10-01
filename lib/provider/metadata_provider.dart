@@ -78,7 +78,7 @@ class MetadataProvider extends ChangeNotifier with LaterFunction {
     RelaySet? relaySet = settingProvider.gossip == 1 && feedRelaySet != null ? feedRelaySet : myInboxRelaySet;
     if (relaySet != null) {
       loading = true;
-      List<Metadata> loaded = await ndk.metadatas.loadMetadatas(_needUpdateMetadatas, relaySet, onLoad: (metadata) {
+      List<Metadata> loaded = await ndk.metadata.loadMetadatas(_needUpdateMetadatas, relaySet, onLoad: (metadata) {
         _needUpdateMetadatas.remove(metadata.pubKey);
         notifyListeners();
       });
@@ -126,12 +126,12 @@ class MetadataProvider extends ChangeNotifier with LaterFunction {
       if (metadata!=null) {
         if (StringUtil.isNotBlank(lud16) && StringUtil.isBlank(metadata.lud16)) {
           metadata.lud16 = lud16;
-          await ndk.metadatas.broadcastMetadata(
+          await ndk.metadata.broadcastMetadata(
               metadata, myInboxRelaySet!.urls, loggedUserSigner!);
         }
       } else {
         metadata ??= Metadata(pubKey: loggedUserSigner!.getPublicKey(), lud16: lud16);
-        metadata = await ndk.metadatas.broadcastMetadata(metadata, DEFAULT_BOOTSTRAP_RELAYS, loggedUserSigner!);
+        metadata = await ndk.metadata.broadcastMetadata(metadata, DEFAULT_BOOTSTRAP_RELAYS, loggedUserSigner!);
         await cacheManager.saveMetadata(metadata);
         notifyListeners();
       }

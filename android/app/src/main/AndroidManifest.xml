@@ -61,6 +61,12 @@
                 <!-- Accepts URIs that begin with YOUR_SCHEME://YOUR_HOST -->
                 <data android:scheme="nostr" />
             </intent-filter>
+            <!--Add this-->
+            <service
+                android:name="id.flutter.flutter_background_service.BackgroundService"
+                android:foregroundServiceType="dataSync"
+                />
+            <!--end-->
         </activity>
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
@@ -80,8 +86,8 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.VIBRATE" />
-<!--    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"></uses-permission>-->
-<!--    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CAMERA"></uses-permission>-->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"></uses-permission>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_TYPE_DATA_SYNC"></uses-permission>
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <!-- For apps with targetSDK=31 (Android 12) -->

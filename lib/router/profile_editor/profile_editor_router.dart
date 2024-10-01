@@ -79,7 +79,7 @@ class _ProfileEditorRouter extends CustState<ProfileEditorRouter> {
       if (cached!=null && cached.refreshedTimestamp!=null && cached.refreshedTimestamp! > (DateTime.now().subtract(REFRESH_METADATA_BEFORE_EDIT_DURATION).millisecondsSinceEpoch ~/ 1000)) {
         metadata = cached;
       } else {
-        ndk.metadatas.loadMetadata(
+        ndk.metadata.loadMetadata(
             loggedUserSigner!.getPublicKey(), forceRefresh: true).then((
             metadata) {
           setState(() {
@@ -321,7 +321,7 @@ class _ProfileEditorRouter extends CustState<ProfileEditorRouter> {
     metadata!.lud16 = lud16Controller.text;
     metadata!.lud06 = lud06Controller.text;
 
-    await ndk.metadatas.broadcastMetadata(metadata!, myOutboxRelaySet!.urls, loggedUserSigner!);
+    await ndk.metadata.broadcastMetadata(metadata!, myOutboxRelaySet!.urls, loggedUserSigner!);
     metadataProvider.notifyListeners();
     setState(() {
       broadcasting = false;

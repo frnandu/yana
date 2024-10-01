@@ -117,10 +117,10 @@ packages:
     dependency: "direct main"
     description:
       name: bip340
-      sha256: "2a92f6ed68959f75d67c9a304c17928b9c9449587d4f75ee68f34152f7f69e87"
+      sha256: b7bcd70a860e605046006adaa72bc4f7453f4d31d7ba74a4ad9d5de387a0fc0b
       url: "https://pub.dev"
     source: hosted
-    version: "0.2.0"
+    version: "0.3.0"
   bolt11_decoder:
     dependency: "direct main"
     description:
@@ -1306,10 +1306,10 @@ packages:
     dependency: "direct main"
     description:
       name: ndk
-      sha256: add1328a9279beca49a3be69a879d1bd8673bccb9808f8eb2f7100e1f250f0f4
+      sha256: c77f66332020e66b220d835a71b8270da2c25cee971966947169b00a8b0439ab
       url: "https://pub.dev"
     source: hosted
-    version: "0.1.0-dev995"
+    version: "0.1.1"
   nested:
     dependency: transitive
     description:
@@ -1546,50 +1546,10 @@ packages:
     dependency: "direct main"
     description:
       name: protocol_handler
-      sha256: dc2e2dcb1e0e313c3f43827ec3fa6d98adee6e17edc0c3923ac67efee87479a9
+      sha256: fb1882bd6cf767114f46b4708d1794fcd662e0a9b9b4512519adeaff3f931d7d
       url: "https://pub.dev"
     source: hosted
-    version: "0.2.0"
-  protocol_handler_android:
-    dependency: transitive
-    description:
-      name: protocol_handler_android
-      sha256: "82eb860ca42149e400328f54b85140329a1766d982e94705b68271f6ca73895c"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.2.0"
-  protocol_handler_ios:
-    dependency: transitive
-    description:
-      name: protocol_handler_ios
-      sha256: "0d3a56b8c1926002cb1e32b46b56874759f4dcc8183d389b670864ac041b6ec2"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.2.0"
-  protocol_handler_macos:
-    dependency: transitive
-    description:
-      name: protocol_handler_macos
-      sha256: "6eb8687a84e7da3afbc5660ce046f29d7ecf7976db45a9dadeae6c87147dd710"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.2.0"
-  protocol_handler_platform_interface:
-    dependency: transitive
-    description:
-      name: protocol_handler_platform_interface
-      sha256: "53776b10526fdc25efdf1abcf68baf57fdfdb75342f4101051db521c9e3f3e5b"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.2.0"
-  protocol_handler_windows:
-    dependency: transitive
-    description:
-      name: protocol_handler_windows
-      sha256: d8f3a58938386aca2c76292757392f4d059d09f11439d6d896d876ebe997f2c4
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.2.0"
+    version: "0.1.6"
   provider:
     dependency: "direct main"
     description:
@@ -1650,10 +1610,10 @@ packages:
     dependency: transitive
     description:
       name: rust_lib_ndk
-      sha256: "6d4c296204bc57982a2927030212c706a72f924a0383b1910b84518a66a4b8ab"
+      sha256: f71e61e1a295fbdcac250a88b315518aca1d7a5533684b32e7c9c1b58e989ae7
       url: "https://pub.dev"
     source: hosted
-    version: "0.0.4-dev002"
+    version: "0.1.1"
   rxdart:
     dependency: transitive
     description:

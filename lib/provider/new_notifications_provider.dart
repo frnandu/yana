@@ -60,7 +60,7 @@ class NewNotificationsProvider extends ChangeNotifier
             relaySet: myInboxRelaySet!)
         .stream) {
       // TODO fix this since it was screwing over received events to handle (metadata mixed)
-      handleEvent(event, await ndk.metadatas.loadMetadata(event.pubKey));
+      handleEvent(event, await ndk.metadata.loadMetadata(event.pubKey));
     }
   }
 

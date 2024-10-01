@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 0.15.2+3009
+version: 0.15.1+3008
 versionCode: 3000
 
 environment:
@@ -43,7 +43,7 @@ dependencies:
   shared_preferences: ^2.1.1
   bot_toast: ^4.0.4
   flutter_quill: ^8.6.3
-  bip340: ^0.2.0
+  bip340: ^0.3.0
   string_validator: ^1.0.0
   http: ^1.1.0
   get_time_ago: ^1.2.2
@@ -110,7 +110,7 @@ dependencies:
   scrollable_positioned_list: ^0.3.8
   #js: ^0.6.7
   flutter_svg: ^2.0.7
-  protocol_handler: ^0.2.0
+  protocol_handler: ^0.1.5
   flutter_spinkit: ^5.2.0
   isar: ^4.0.0-dev.14
   isar_flutter_libs: ^4.0.0-dev.14
@@ -125,7 +125,7 @@ dependencies:
   lottie: ^3.1.2
   bolt11_decoder: ^1.0.2
 
-  ndk: ^0.1.0
+  ndk: ^0.1.1
 #  ndk:
 #    git:
 #      url: https://github.com/relaystr/dart_ndk.git
