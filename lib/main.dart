@@ -433,7 +433,7 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   packageInfo = await PackageInfo.fromPlatform();
   try {
-    await protocolHandler.register('nostr+walletconnect');
+    await protocolHandler.register(NwcProvider.NWC_PROTOCOL_PREFIX);
     await protocolHandler.register('lightning');
     await protocolHandler.register('yana');
     await protocolHandler.register('nostr');
