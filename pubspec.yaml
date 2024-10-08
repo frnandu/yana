@@ -48,7 +48,7 @@ dependencies:
   http: ^1.1.0
   get_time_ago: ^1.2.2
   cached_network_image: ^3.3.0
-  photo_manager: ^3.3.0
+  photo_manager: ^3.5.0
   # flutter_launcher_icons: ^0.12.0
   flutter_native_splash: ^2.3.2
   flutter_animate: ^4.1.1+1
@@ -65,7 +65,7 @@ dependencies:
   screenshot: ^3.0.0
   share_plus: ^7.2.1
   video_player: ^2.6.1
-  image_picker: ^1.0.3
+  image_picker: ^1.1.2
   keframe: ^3.0.0
   pretty_qr_code: ^3.3.0
   flutter_link_previewer: ^3.2.1
@@ -148,7 +148,7 @@ dev_dependencies:
   build_runner: ^2.4.6
 
 dependency_overrides:
-  photo_manager: 3.2.3
+#  photo_manager: 3.2.3
 #  rust_lib_ndk:
 #    path: rust_builder
 #  http: ^1.0.0
