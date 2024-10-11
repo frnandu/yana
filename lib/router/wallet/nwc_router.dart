@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:provider/provider.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 import 'package:yana/main.dart';
@@ -37,7 +38,14 @@ class _NwcRouter extends State<NwcRouter> {
           await qrController!.stopCamera();
           await nwcProvider.connect(scanData.code!, onConnect: (lud16) async {
             await metadataProvider.updateLud16IfEmpty(lud16);
-          });
+          }, onError: (error) async {
+            EasyLoading.showError('Error connecting to wallet...${error!}', maskType: EasyLoadingMaskType.black, dismissOnTap: true, duration: const Duration(seconds:7));
+            await qrController!.resumeCamera();
+            setState(() {
+              nwcSecret = null;
+            });
+          }
+          );
         }
         setState(() {
           nwcSecret = scanData.code;

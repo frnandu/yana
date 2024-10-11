@@ -73,19 +73,20 @@ class NwcProvider extends ChangeNotifier {
   bool get canPayInvoice => permissions.contains(NwcCommand.PAY_INVOICE);
 
   /// is the wallet connected
-  bool get isConnected => nwcSigner!=null;
+  bool get isConnected => nwcSigner != null;
 
   /// connect the wallet
-  Future<void> connect(String nwc, {Function(String?)? onConnect}) async {
+  Future<void> connect(String nwc, {Function(String?)? onConnect, Function(String?)? onError}) async {
     nwc = nwc.replaceAll("yana:", "nostr+walletconnect:");
     Uri uri = Uri.parse(nwc.replaceAll("nostr+walletconnect:", "https:"));
     String? walletPubKey = uri.host;
     String? relay = uri.queryParameters['relay'];
     secret = uri.queryParameters['secret'];
     String? lud16 = uri.queryParameters['lud16'];
-    if (lud16!=null) {
-      Metadata? metadata = metadataProvider.getMetadata(loggedUserSigner!.getPublicKey());
-      if (metadata!=null && metadata.lud16!=lud16) {
+    if (lud16 != null) {
+      Metadata? metadata = metadataProvider.getMetadata(
+          loggedUserSigner!.getPublicKey());
+      if (metadata != null && metadata.lud16 != lud16) {
 
       }
     }
@@ -109,20 +110,25 @@ class NwcProvider extends ChangeNotifier {
     await settingProvider.setNwcSecret(secret!);
     var filter = Filter(kinds: [NwcKind.INFO_REQUEST], authors: [walletPubKey]);
     // await ndk.relays.reconnectRelay(relay);
+
     ndk.requests
         .query(
-            name: "nwc-info",
-            explicitRelays: [relay],
-            filters: [filter],
-            cacheRead: false,
-            cacheWrite: false)
+        name: "nwc-info",
+        explicitRelays: [relay],
+        filters: [filter],
+        cacheRead: false,
+        cacheWrite: false)
         .stream
+        .timeout(const Duration(seconds: 10), onTimeout: (sink) {
+      onError?.call("timed out...");
+    })
         .listen((event) async {
       await onInfoRequest(event, onConnect, lud16);
     });
   }
 
-  Future<void> onInfoRequest(Nip01Event event, Function? onConnect, String? lud16) async {
+  Future<void> onInfoRequest(Nip01Event event, Function? onConnect,
+      String? lud16) async {
     if (event.kind == NwcKind.INFO_REQUEST &&
         StringUtil.isNotBlank(event.content)) {
       walletPubKey = event.pubKey;
@@ -161,7 +167,7 @@ class NwcProvider extends ChangeNotifier {
     sharedPreferences.remove(DataKey.NWC_PERMISSIONS);
     sharedPreferences.remove(DataKey.NWC_RELAY);
     sharedPreferences.remove(DataKey.NWC_PUB_KEY);
-    if (subscription!=null) {
+    if (subscription != null) {
       ndk.relays.closeSubscription(subscription!.requestId);
       subscription = null;
     }
@@ -255,12 +261,12 @@ class NwcProvider extends ChangeNotifier {
     if (StringUtil.isNotBlank(walletPubKey) &&
         StringUtil.isNotBlank(relay) &&
         StringUtil.isNotBlank(secret)) {
-
       payInvoiceEventId = eventId;
       this.onZapped = onZapped;
 
       var encrypted = Nip04.encrypt(secret!, walletPubKey!,
-          '{"method":"${NwcCommand.PAY_INVOICE}", "params": { "invoice":"$invoice"}}');
+          '{"method":"${NwcCommand
+              .PAY_INVOICE}", "params": { "invoice":"$invoice"}}');
       List<List<String>> tags = [
         ["p", walletPubKey!]
       ];
@@ -281,7 +287,8 @@ class NwcProvider extends ChangeNotifier {
     if (payInvoiceEventId != null) {
       String payInvoiceEventId = this.payInvoiceEventId!;
       Future.delayed(const Duration(seconds: 2), () {
-        eventReactionsProvider.subscription(payInvoiceEventId, null, [EventKind.ZAP_RECEIPT]);
+        eventReactionsProvider.subscription(
+            payInvoiceEventId, null, [EventKind.ZAP_RECEIPT]);
       });
     }
     NwcNotification notification = NwcNotification(
@@ -304,8 +311,7 @@ class NwcProvider extends ChangeNotifier {
     onZapped = null;
   }
 
-  Future<void> makeInvoice(
-      int amountInMsats,
+  Future<void> makeInvoice(int amountInMsats,
       String? description,
       String? description_hash,
       int expiry,
@@ -314,9 +320,9 @@ class NwcProvider extends ChangeNotifier {
     if (StringUtil.isNotBlank(walletPubKey) &&
         StringUtil.isNotBlank(relay) &&
         StringUtil.isNotBlank(secret)) {
-
       String makeInvoice =
-          '{"method":"${NwcCommand.MAKE_INVOICE}", "params": { "amount":${amountInMsats}, "description" : "${description}", "expiry":${expiry}}}';
+          '{"method":"${NwcCommand
+          .MAKE_INVOICE}", "params": { "amount":${amountInMsats}, "description" : "${description}", "expiry":${expiry}}}';
       var encrypted = Nip04.encrypt(secret!, walletPubKey!, makeInvoice);
       List<List<String>> tags = [
         ["p", walletPubKey!]
@@ -349,8 +355,8 @@ class NwcProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> onMakeInvoiceResponse(
-      Nip01Event event, Function(String) onCreatedInvoice) async {
+  Future<void> onMakeInvoiceResponse(Nip01Event event,
+      Function(String) onCreatedInvoice) async {
     if (event.kind == NwcKind.RESPONSE &&
         StringUtil.isNotBlank(event.content) &&
         StringUtil.isNotBlank(secret) &&
@@ -376,8 +382,7 @@ class NwcProvider extends ChangeNotifier {
   Future<void> subscribeToNotificationsAndResponses() async {
     if (StringUtil.isNotBlank(walletPubKey) &&
         StringUtil.isNotBlank(relay) &&
-        StringUtil.isNotBlank(secret) && subscription==null) {
-
+        StringUtil.isNotBlank(secret) && subscription == null) {
       // await ndk.relays.reconnectRelay(relay!);
 
       subscription = ndk.requests.subscription(
@@ -442,7 +447,7 @@ class NwcProvider extends ChangeNotifier {
     Map<String, dynamic> result = data['result'];
     if (result['notifications'] != null) {
       notifications =
-          List<String>.from(result['notifications'].map((e) => e.toString()));
+      List<String>.from(result['notifications'].map((e) => e.toString()));
       if (notifications != null && notifications.isNotEmpty) {
         // TODO ??
       }
@@ -506,7 +511,7 @@ class NwcProvider extends ChangeNotifier {
 
   void handlePayment(Map<String, dynamic> data) {
     NwcNotification notification =
-        NwcNotification.fromMap(data['notification']);
+    NwcNotification.fromMap(data['notification']);
     if (notification.type == NwcNotification.INCOMING) {
       if (receivingInvoice != null &&
           receivingInvoice == notification.invoice &&
@@ -519,13 +524,16 @@ class NwcProvider extends ChangeNotifier {
           paymentReceivedCallback!.call(notification);
         } else {
           EasyLoading.showSuccess(
-              "Payment received ${notification.amount / 1000} sats (fees:${notification.feesPaid / 1000})",
+              "Payment received ${notification.amount /
+                  1000} sats (fees:${notification.feesPaid / 1000})",
               duration: const Duration(seconds: 2));
         }
       }
     } else {
       EasyLoading.showSuccess(
-          "Payment type=${notification.type} amount=${(notification.amount / 1000).round()} sats (fees:${(notification.feesPaid / 1000).round()})",
+          "Payment type=${notification.type} amount=${(notification.amount /
+              1000).round()} sats (fees:${(notification.feesPaid / 1000)
+              .round()})",
           duration: const Duration(seconds: 2));
     }
     requestBalance();
