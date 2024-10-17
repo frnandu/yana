@@ -147,7 +147,7 @@ dev_dependencies:
   build_runner: ^2.4.6
 
 dependency_overrides:
-  video_player_android: 2.7.0
+  video_player_android: 2.7.7
   photo_manager: 3.2.3
 #  rust_lib_ndk:
 #    path: rust_builder
