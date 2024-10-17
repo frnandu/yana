@@ -2039,10 +2039,10 @@ packages:
     dependency: "direct overridden"
     description:
       name: video_player_android
-      sha256: b5f318087fb009a1425eee29079eb99fbcbd9e2dc480aaa36dc5b6f40f5f8ae1
+      sha256: "340b29bc38b2c341ed3afa08148f3d9f351220403cdd2b3a9eb38b71a4be1a9d"
       url: "https://pub.dev"
     source: hosted
-    version: "2.7.7"
+    version: "2.7.12"
   video_player_avfoundation:
     dependency: transitive
     description:
