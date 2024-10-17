@@ -63,7 +63,7 @@ dependencies:
   webview_flutter: ^4.2.1
   screenshot: ^3.0.0
   share_plus: ^7.2.1
-  video_player: ^2.6.1
+  video_player: ^2.9.2
   image_picker: ^1.1.2
   keframe: ^3.0.0
   pretty_qr_code: ^3.3.0
@@ -147,6 +147,7 @@ dev_dependencies:
   build_runner: ^2.4.6
 
 dependency_overrides:
+  video_player_android: 2.7.0
   photo_manager: 3.2.3
 #  rust_lib_ndk:
 #    path: rust_builder
