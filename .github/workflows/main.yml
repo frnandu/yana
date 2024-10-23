@@ -47,7 +47,7 @@ jobs:
         run: flutter build appbundle
 
       - name: 'Upload apk'
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: yana
           path: build/app/outputs/flutter-apk
