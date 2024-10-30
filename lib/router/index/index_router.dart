@@ -104,7 +104,7 @@ class _IndexRouter extends CustState<IndexRouter>
             followEventProvider.clear();
             await settingProvider.addAndChangeKey(priv, true, false, updateUI: false);
             String publicKey = getPublicKey(priv);
-            ndk.changeEventSigner(Bip340EventSigner(priv, publicKey));
+            ndk.changeEventSigner(Bip340EventSigner(privateKey: priv, publicKey: publicKey));
 
             await initRelays(newKey: true);
             followEventProvider.loadCachedFeed();

@@ -334,8 +334,8 @@ class _LoginRouter extends State<LoginRouter>
       await settingProvider.addAndChangeKey(key, !isPublic, isExternalSigner, updateUI: false);
       bool isPrivate = !isPublic;
       String publicKey = isPrivate ? getPublicKey(key!) : key!;
-      ndk.changeEventSigner(settingProvider.isExternalSignerKey ? AmberEventSigner(publicKey, amberFlutterDS) : isPrivate || !PlatformUtil.isWeb()
-          ? Bip340EventSigner(isPrivate ? key : null, publicKey)
+      ndk.changeEventSigner(settingProvider.isExternalSignerKey ? AmberEventSigner(publicKey: publicKey, amberFlutterDS: amberFlutterDS) : isPrivate || !PlatformUtil.isWeb()
+          ? Bip340EventSigner(privateKey: isPrivate ? key : null, publicKey: publicKey)
           : Nip07EventSigner(await js.getPublicKeyAsync())
       );
 

@@ -133,7 +133,7 @@ class NwcProvider extends ChangeNotifier {
         StringUtil.isNotBlank(event.content)) {
       walletPubKey = event.pubKey;
       relay = event.sources[0];
-      nwcSigner = Bip340EventSigner(secret!, getPublicKey(secret!));
+      nwcSigner = Bip340EventSigner(privateKey: secret!, publicKey: getPublicKey(secret!));
       sharedPreferences.setString(DataKey.NWC_PERMISSIONS, event.content);
       sharedPreferences.setString(DataKey.NWC_RELAY, relay!);
       sharedPreferences.setString(DataKey.NWC_PUB_KEY, walletPubKey!);

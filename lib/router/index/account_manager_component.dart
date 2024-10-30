@@ -149,9 +149,9 @@ class AccountsState extends State<AccountsComponent> {
     bool isPrivate = settingProvider.isPrivateKey;
     String publicKey = isPrivate ? getPublicKey(key!) : key!;
     ndk.changeEventSigner(settingProvider.isExternalSignerKey
-        ? AmberEventSigner(publicKey, amberFlutterDS)
+        ? AmberEventSigner(publicKey: publicKey, amberFlutterDS: amberFlutterDS)
         : isPrivate || !PlatformUtil.isWeb()
-            ? Bip340EventSigner(isPrivate ? key : null, publicKey)
+            ? Bip340EventSigner(privateKey: isPrivate ? key : null, publicKey: publicKey)
             : Nip07EventSigner(await js.getPublicKeyAsync()));
 
     await followEventProvider.loadCachedFeed();

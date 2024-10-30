@@ -124,13 +124,13 @@ dependencies:
   lottie: ^3.1.2
   bolt11_decoder: ^1.0.2
 
-  ndk: ^0.1.2
+#  ndk: ^0.1.2
+  ndk:
+    git:
+      url: https://github.com/relaystr/dart_ndk.git
+      ref: master
 #  ndk:
-#    git:
-#      url: https://github.com/relaystr/dart_ndk.git
-#      ref: master
-#  ndk:
-#    path: ../dart_ndk
+#    path: ../ndk
 
 dev_dependencies:
   flutter_launcher_icons: ^0.14.1
@@ -147,7 +147,7 @@ dev_dependencies:
   build_runner: ^2.4.6
 
 dependency_overrides:
-  video_player_android: 2.7.12
+  video_player_android: 2.7.13
   photo_manager: 3.2.3
 #  rust_lib_ndk:
 #    path: rust_builder

@@ -250,9 +250,9 @@ Future<void> initProvidersAndStuff() async {
         bool isPrivate = settingProvider.isPrivateKey;
         String publicKey = isPrivate ? getPublicKey(key!) : key!;
         ndk.changeEventSigner(settingProvider.isExternalSignerKey
-            ? AmberEventSigner(publicKey, amberFlutterDS)
+            ? AmberEventSigner(publicKey: publicKey, amberFlutterDS: amberFlutterDS)
             : isPrivate || !PlatformUtil.isWeb()
-                ? Bip340EventSigner(isPrivate ? key : null, publicKey)
+                ? Bip340EventSigner(privateKey: isPrivate ? key : null, publicKey: publicKey)
                 : Nip07EventSigner(await js.getPublicKeyAsync()));
       }
       //
@@ -530,10 +530,10 @@ Future<void> main() async {
     bool isPrivate = settingProvider.isPrivateKey;
     String publicKey = isPrivate ? getPublicKey(key!) : key!;
     if (settingProvider.isExternalSignerKey && isExternalSignerInstalled) {
-      ndk.changeEventSigner(AmberEventSigner(publicKey, amberFlutterDS));
+      ndk.changeEventSigner(AmberEventSigner(publicKey: publicKey, amberFlutterDS: amberFlutterDS));
     } else {
       ndk.changeEventSigner(
-          isPrivate || !PlatformUtil.isWeb() ? Bip340EventSigner(isPrivate ? key : null, publicKey) : Nip07EventSigner(await js.getPublicKeyAsync())
+          isPrivate || !PlatformUtil.isWeb() ? Bip340EventSigner(privateKey: isPrivate ? key : null, publicKey: publicKey) : Nip07EventSigner(await js.getPublicKeyAsync())
       );
     }
   }

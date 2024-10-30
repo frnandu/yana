@@ -101,7 +101,7 @@ class ZapAction {
           relayMinCountPerPubKey: settingProvider
               .broadcastToInboxMaxCount);
       relays.addAll(inboxRelaySet.urls.toSet());
-      relays.removeWhere((element) => ndk.blockedRelays().contains(element));
+      relays.removeWhere((element) => ndk.relays.blockedRelays.contains(element));
     }
 
     return await Zap.getInvoiceCode(

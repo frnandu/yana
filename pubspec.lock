@@ -5,10 +5,10 @@ packages:
     dependency: transitive
     description:
       name: _fe_analyzer_shared
-      sha256: "0b2f2bd91ba804e53a61d757b986f89f1f9eaed5b11e4b2f5a2468d86d6c9fc7"
+      sha256: ae92f5d747aee634b87f89d9946000c2de774be1d6ac3e58268224348cd0101a
       url: "https://pub.dev"
     source: hosted
-    version: "67.0.0"
+    version: "61.0.0"
   amberflutter:
     dependency: transitive
     description:
@@ -21,10 +21,10 @@ packages:
     dependency: transitive
     description:
       name: analyzer
-      sha256: "37577842a27e4338429a1cbc32679d508836510b056f1eedf0c8d20e39c1383d"
+      sha256: ea3d8652bda62982addfd92fdc2d0214e5f82e43325104990d4f4c4a2a313562
       url: "https://pub.dev"
     source: hosted
-    version: "6.4.1"
+    version: "5.13.0"
   android_intent_plus:
     dependency: "direct main"
     description:
@@ -341,10 +341,10 @@ packages:
     dependency: transitive
     description:
       name: dart_style
-      sha256: "99e066ce75c89d6b29903d788a7bb9369cf754f7b24bf70bf4b6d6d6b26853b9"
+      sha256: "1efa911ca7086affd35f463ca2fc1799584fb6aa89883cf0af8e3664d6a02d55"
       url: "https://pub.dev"
     source: hosted
-    version: "2.3.6"
+    version: "2.3.2"
   dbus:
     dependency: transitive
     description:
@@ -1305,10 +1305,11 @@ packages:
   ndk:
     dependency: "direct main"
     description:
-      name: ndk
-      sha256: c8cc2468086ec00eba28da3630a873d526013b32ab81599cc1d79ff807023f03
-      url: "https://pub.dev"
-    source: hosted
+      path: "."
+      ref: master
+      resolved-ref: "4083196b987d4ab81c322f53cd911a8c3f9e7468"
+      url: "https://github.com/relaystr/dart_ndk.git"
+    source: git
     version: "0.1.2"
   nested:
     dependency: transitive
@@ -2039,10 +2040,10 @@ packages:
     dependency: "direct overridden"
     description:
       name: video_player_android
-      sha256: "340b29bc38b2c341ed3afa08148f3d9f351220403cdd2b3a9eb38b71a4be1a9d"
+      sha256: "2800d68d6d5b4c22da62453568ed68e63c35bea524d4fa42062e53d6bb591433"
       url: "https://pub.dev"
     source: hosted
-    version: "2.7.12"
+    version: "2.7.13"
   video_player_avfoundation:
     dependency: transitive
     description:

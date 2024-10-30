@@ -436,7 +436,7 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
 
       Set<String> urlsToBroadcast = (await broadcastUrls(widget.event.pubKey)).toSet()..addAll(widget.event.sources);
       await ndk.relays.reconnectRelays(urlsToBroadcast);
-      await ndk!.broadcastDeletion(widget.event.id, urlsToBroadcast, loggedUserSigner!);
+      await ndk!.broadcast.broadcastDeletion(eventId: widget.event.id, customRelays: urlsToBroadcast, customSigner: loggedUserSigner!);
 
       followEventProvider.deleteEvent(widget.event.id);
       notificationsProvider.deleteEvent(widget.event.id);
@@ -567,17 +567,23 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
       if (eventReactions?.myLikeEvents == null ||
           eventReactions!.myLikeEvents!.isEmpty) {
         // like
-        Nip01Event likeEvent = await ndk!.broadcastReaction(
-            widget.event.id, urlsToBroadcast);
-        if (likeEvent != null) {
-          eventReactionsProvider.addLike(widget.event.id, likeEvent);
+        NdkBroadcastResponse response = ndk.broadcast.broadcastReaction(
+            eventId: widget.event.id, customRelays: urlsToBroadcast);
+        if (await response.publishDone) {
+          eventReactionsProvider.addLike(
+              widget.event.id, response.publishedEvent);
         }
       } else {
         for (var event in eventReactions!.myLikeEvents!) {
-          await ndk!.broadcastDeletion(
-              event.id, urlsToBroadcast, loggedUserSigner!);
+          NdkBroadcastResponse response = ndk.broadcast.broadcastDeletion(
+              eventId:
+              event.id,
+              customRelays: urlsToBroadcast,
+              customSigner: loggedUserSigner!);
+          if (await response.publishDone) {
+            eventReactionsProvider.deleteLike(widget.event.id);
+          }
         }
-        eventReactionsProvider.deleteLike(widget.event.id);
       }
     }
   }
