@@ -54,7 +54,7 @@ class _EnumMultiSelectorComponent extends State<EnumMultiSelectorComponent> {
     return Stack(
       alignment: Alignment.center,
       children: [
-        EnumSelectorComponent(list: widget.list, enumItemBuild: enumItemBuild),
+        EnumSelectorComponent(list: widget.list, enumItemBuild: enumItemBuild, showSearchInput: false,),
         Positioned(
           bottom: mediaDataCache.size.height / 20,
           child: GestureDetector(
