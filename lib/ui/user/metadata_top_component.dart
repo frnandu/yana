@@ -1,10 +1,10 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:ndk/ndk.dart';
-import 'package:ndk/entities.dart';
 import 'package:easy_image_viewer/easy_image_viewer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:ndk/entities.dart';
+import 'package:ndk/ndk.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -75,10 +75,15 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
   List<String>? contacts;
   
   @override
-  void initState() async {
+  void initState() {
     super.initState();
-    
-    contacts = await contactListProvider.contacts();
+
+    Future(() async {
+      setState(() async {
+        contacts = await contactListProvider.contacts();
+      }
+      );
+    });
     nip19PubKey = Nip19.encodePubKey(widget.pubkey);
   }
 

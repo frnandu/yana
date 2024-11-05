@@ -27,8 +27,12 @@ class _CommunityInfoComponent extends State<CommunityInfoComponent> {
   bool follows = false;
 
   @override
-  void initState() async {
-    follows = await contactListProvider.followsCommunity(widget.info.communityId.toAString());
+  void initState() {
+    Future(() async {
+      setState(() async {
+        follows = await contactListProvider.followsCommunity(widget.info.communityId.toAString());
+      });
+    });
   }
 
   @override

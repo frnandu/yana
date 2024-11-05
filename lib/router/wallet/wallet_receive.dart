@@ -45,12 +45,15 @@ class _WalletReceiveRouter extends State<WalletReceiveRouter> {
   PanelController panelController = PanelController();
 
   @override
-  void initState() async {
+  void initState() {
     super.initState();
 
-    metadata = await metadataProvider.getMetadata(loggedUserSigner!.getPublicKey());
-    confettiController =
-        ConfettiController(duration: const Duration(seconds: 2));
+    Future(() async {
+      setState(() async {
+        metadata = await metadataProvider.getMetadata(loggedUserSigner!.getPublicKey());
+      });
+    });
+    confettiController = ConfettiController(duration: const Duration(seconds: 2));
     nwcProvider.paymentReceivedCallback = (nwcNotification) {
       setState(() {
         paid = nwcNotification;
@@ -112,8 +115,7 @@ class _WalletReceiveRouter extends State<WalletReceiveRouter> {
                 data: metadata!.lud16!,
                 decoration: const PrettyQrDecoration(
                   // background: Colors.white,
-                  shape:
-                      PrettyQrSmoothSymbol(color: Colors.black, roundFactor: 0),
+                  shape: PrettyQrSmoothSymbol(color: Colors.black, roundFactor: 0),
                   // image: PrettyQrDecorationImage(
                   //   scale: 0.2,
                   //   image: AssetImage('assets/imgs/logo/logo-new.png'),
@@ -178,20 +180,13 @@ class _WalletReceiveRouter extends State<WalletReceiveRouter> {
                   fill: false,
                   onTap: () async {
                     final lnurl = bech32Codec.encode(Bech32(
-                        'LNURL1',
-                        Nip19.convertBits(
-                            utf8.encode(
-                                "https://${lnAddressSplit.last}/.well-known/lnurlp/${lnAddressSplit.first}"),
-                            8,
-                            5,
-                            true)));
+                        'LNURL1', Nip19.convertBits(utf8.encode("https://${lnAddressSplit.last}/.well-known/lnurlp/${lnAddressSplit.first}"), 8, 5, true)));
                     _doPay("lightning:$lnurl");
                   }))
         ]));
         list.add(const SizedBox(height: 15));
         list.add(Button(
-            before: Icon(Icons.receipt_long_outlined,
-                color: themeData.disabledColor),
+            before: Icon(Icons.receipt_long_outlined, color: themeData.disabledColor),
             border: false,
             fill: false,
             fontColor: themeData.disabledColor,
@@ -201,9 +196,7 @@ class _WalletReceiveRouter extends State<WalletReceiveRouter> {
             }));
       }
     } else {
-      double? fiatAmount = fiatCurrencyRate != null
-          ? ((paid!.amount / 100000000000) * fiatCurrencyRate!["value"])
-          : null;
+      double? fiatAmount = fiatCurrencyRate != null ? ((paid!.amount / 100000000000) * fiatCurrencyRate!["value"]) : null;
       // int feesPaid = (paid!.feesPaid / 1000).round();
       int amount = (paid!.amount / 1000).round();
 
@@ -231,8 +224,7 @@ class _WalletReceiveRouter extends State<WalletReceiveRouter> {
                   children: <TextSpan>[
                     TextSpan(
                       text: "+$amount",
-                      style: const TextStyle(
-                          fontSize: 28.0, color: Color(0xff47A66D)),
+                      style: const TextStyle(fontSize: 28.0, color: Color(0xff47A66D)),
                     ),
                     TextSpan(
                       text: ' sat${amount > 1 ? 's' : ''}',
@@ -243,16 +235,12 @@ class _WalletReceiveRouter extends State<WalletReceiveRouter> {
               ),
               const SizedBox(height: 10.0),
               Text(
-                fiatAmount! < 0.01
-                    ? "< ${fiatCurrencyRate?["unit"]}0.01"
-                    : "~${fiatCurrencyRate?["unit"]}${fiatAmount.toStringAsFixed(2)}",
+                fiatAmount! < 0.01 ? "< ${fiatCurrencyRate?["unit"]}0.01" : "~${fiatCurrencyRate?["unit"]}${fiatAmount.toStringAsFixed(2)}",
                 style: const TextStyle(
                   fontSize: 22.0,
                 ),
               ),
-              StringUtil.isNotBlank(paid!.description)
-                  ? const SizedBox(height: 10.0)
-                  : Container(),
+              StringUtil.isNotBlank(paid!.description) ? const SizedBox(height: 10.0) : Container(),
               StringUtil.isNotBlank(paid!.description)
                   ? Text(
                       '${paid!.description}',
@@ -338,9 +326,7 @@ class _WalletReceiveRouter extends State<WalletReceiveRouter> {
                 color: themeData.appBarTheme.backgroundColor!,
                 minHeight: 0,
                 maxHeight: mediaDataCache.size.height - 300,
-                borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(20),
-                    topRight: Radius.circular(20)),
+                borderRadius: const BorderRadius.only(topLeft: Radius.circular(20), topRight: Radius.circular(20)),
                 panel: PaymentDetailsComponent(
                   paid: WalletTransaction.fromNotification(paid!),
                 ))

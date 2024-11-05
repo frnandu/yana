@@ -44,7 +44,11 @@ class _Nip05ValidComponent extends State<Nip05ValidComponent> {
   }
 
   @override
-  void initState() async {
-    valid = await metadataProvider.isNip05Valid(widget.metadata);
+  void initState() {
+    Future(() async {
+      setState(() async {
+        valid = await metadataProvider.isNip05Valid(widget.metadata);
+      });
+    });
   }
 }

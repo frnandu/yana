@@ -41,10 +41,14 @@ class _DMDetailRouter extends CustState<DMDetailRouter> with EditorMixin {
 
   List<String> contacts = [];
   @override
-  void initState() async {
+  void initState() {
     super.initState();
     handleFocusInit();
-    contacts = await contactListProvider.contacts();
+    Future(() async {
+      setState(() async {
+        contacts = await contactListProvider.contacts();
+      });
+    });
   }
 
   @override
