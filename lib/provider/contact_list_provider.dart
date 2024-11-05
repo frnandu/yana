@@ -68,8 +68,8 @@ class ContactListProvider extends ChangeNotifier {
   //followEventProvider.metadataUpdatedCallback(_contactList);
   // }
 
-  ContactList? getContactList(String pubKey) {
-    return cacheManager.loadContactList(pubKey);
+  Future<ContactList?> getContactList(String pubKey) async {
+    return await cacheManager.loadContactList(pubKey);
   }
 
   Future<ContactList?> loadContactList(String pubKey) async {
@@ -89,18 +89,18 @@ class ContactListProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  List<String> contacts() {
-    ContactList? contactList = getContactList(loggedUserSigner!.getPublicKey());
-    return contactList != null ? contactList!.contacts : [];
+  Future<List<String>> contacts() async {
+    ContactList? contactList = await getContactList(loggedUserSigner!.getPublicKey());
+    return contactList != null ? contactList.contacts : [];
   }
 
-  List<String> followedTags() {
-    ContactList? contactList = getContactList(loggedUserSigner!.getPublicKey());
+  Future<List<String>> followedTags() async {
+    ContactList? contactList = await getContactList(loggedUserSigner!.getPublicKey());
     return contactList != null ? contactList!.followedTags : [];
   }
 
-  List<String> followedCommunities() {
-    ContactList? contactList = getContactList(loggedUserSigner!.getPublicKey());
+  Future<List<String>> followedCommunities() async {
+    ContactList? contactList = await getContactList(loggedUserSigner!.getPublicKey());
     return contactList != null ? contactList!.followedCommunities : [];
   }
 
@@ -109,8 +109,7 @@ class ContactListProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  bool containTag(String tag) {
-    ContactList? contactList = getContactList(loggedUserSigner!.getPublicKey());
+  bool containTagInContactList(ContactList? contactList, String tag) {
     if (contactList != null) {
       var list = TopicMap.getList(tag);
       if (list != null) {
@@ -130,6 +129,10 @@ class ContactListProvider extends ChangeNotifier {
     return false;
   }
 
+  Future<bool> containTag(String tag) async {
+    return containTagInContactList(await getContactList(loggedUserSigner!.getPublicKey()), tag);
+  }
+
   Future<void> addTag(String tag) async {
     await ndk.follows
         .broadcastAddFollowedTag(tag, customRelays: myOutboxRelaySet!.urls);
@@ -146,8 +149,8 @@ class ContactListProvider extends ChangeNotifier {
   //   return _contactList!.tagList();
   // }
 
-  bool followsCommunity(String id) {
-    ContactList? contactList = getContactList(loggedUserSigner!.getPublicKey());
+  Future<bool> followsCommunity(String id) async {
+    ContactList? contactList = await getContactList(loggedUserSigner!.getPublicKey());
     if (contactList != null) {
       return contactList!.followedCommunities != null &&
           contactList!.followedCommunities!.contains(id);

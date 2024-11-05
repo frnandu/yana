@@ -5,6 +5,8 @@ import 'package:yana/provider/metadata_provider.dart';
 import 'package:yana/utils/string_util.dart';
 import 'package:provider/provider.dart';
 
+import '../main.dart';
+
 class SimpleNameComponent extends StatefulWidget {
   static String getSimpleName(String pubkey, Metadata? metadata) {
     String? name;
@@ -40,17 +42,15 @@ class SimpleNameComponent extends StatefulWidget {
 class _SimpleNameComponent extends State<SimpleNameComponent> {
   @override
   Widget build(BuildContext context) {
-    return Selector<MetadataProvider, Metadata?>(
-        builder: (context, metadata, child) {
-      var name = SimpleNameComponent.getSimpleName(widget.pubkey, metadata);
-      return Container(
-        child: Text(
-          name,
-          style: widget.textStyle,
-        ),
-      );
-    }, selector: (context, _provider) {
-      return _provider.getMetadata(widget.pubkey);
-    });
+    return FutureBuilder<Metadata?>(
+        future: metadataProvider.getMetadata(widget.pubkey),
+        builder: (context, snapshot) {
+          var metadata = snapshot.data;
+          var name = SimpleNameComponent.getSimpleName(widget.pubkey, metadata);
+          return Text(
+            name,
+            style: widget.textStyle,
+          );
+        });
   }
 }

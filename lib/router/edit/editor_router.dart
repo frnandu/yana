@@ -460,7 +460,7 @@ class _EditorRouter extends CustState<EditorRouter> with EditorMixin {
     }
 
     editorNotifyItems = [];
-    editorController.addListener(() {
+    editorController.addListener(() async {
       bool updated = false;
       Map<String, int> mentionUserMap = {};
 
@@ -483,7 +483,7 @@ class _EditorRouter extends CustState<EditorRouter> with EditorMixin {
             if (word != null && (word[0] == "@" || word.length>1 && word[1] == "@")) {
               widget.mentionWordEditingStart = value.selection.baseOffset - word!.length;
               widget.mentionWordEditingEnd = value.selection.baseOffset;
-              list = cacheManager.searchMetadatas(word.replaceAll("@", ""), 100).toList();
+              list = (await cacheManager.searchMetadatas(word.replaceAll("@", ""), 100)).toList();
             } else {
               widget.mentionWordEditingStart = null;
               widget.mentionWordEditingEnd = null;

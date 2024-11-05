@@ -68,7 +68,7 @@ class EventMainComponent extends StatefulWidget {
 
   bool highlight;
 
-  bool mutedProfile=false;
+  bool mutedProfile = false;
 
   EventRelation? eventRelation;
 
@@ -76,7 +76,6 @@ class EventMainComponent extends StatefulWidget {
     super.key,
     required this.screenshotController,
     required this.event,
-
     this.pagePubkey,
     this.showReplying = true,
     this.textOnTap,
@@ -103,7 +102,6 @@ class _EventMainComponent extends State<EventMainComponent> {
 
   late EventRelation eventRelation;
 
-
   @override
   void initState() {
     super.initState();
@@ -122,8 +120,7 @@ class _EventMainComponent extends State<EventMainComponent> {
       eventRelation = EventRelation.fromEvent(widget.event);
     }
 
-    bool imagePreview = _settingProvider.imagePreview == null ||
-        _settingProvider.imagePreview == OpenStatus.OPEN;
+    bool imagePreview = _settingProvider.imagePreview == null || _settingProvider.imagePreview == OpenStatus.OPEN;
     bool videoPreview = widget.showVideo;
     if (_settingProvider.videoPreview != null) {
       videoPreview = _settingProvider.videoPreview == OpenStatus.OPEN;
@@ -144,19 +141,15 @@ class _EventMainComponent extends State<EventMainComponent> {
     // }
 
     Nip01Event? repostEvent;
-    if ((widget.event.kind == kind.EventKind.REPOST ||
-            widget.event.kind == kind.EventKind.GENERIC_REPOST) &&
-        widget.event.content.contains("\"pubkey\"")) {
+    if ((widget.event.kind == kind.EventKind.REPOST || widget.event.kind == kind.EventKind.GENERIC_REPOST) && widget.event.content.contains("\"pubkey\"")) {
       try {
         var jsonMap = jsonDecode(widget.event.content);
         repostEvent = Nip01Event.fromJson(jsonMap);
 
         // set source to repost event
-        if (repostEvent.id == eventRelation.rootId &&
-            StringUtil.isNotBlank(eventRelation.rootRelayAddr)) {
+        if (repostEvent.id == eventRelation.rootId && StringUtil.isNotBlank(eventRelation.rootRelayAddr)) {
           repostEvent.sources.add(eventRelation.rootRelayAddr!);
-        } else if (repostEvent.id == eventRelation.replyId &&
-            StringUtil.isNotBlank(eventRelation.replyRelayAddr)) {
+        } else if (repostEvent.id == eventRelation.replyId && StringUtil.isNotBlank(eventRelation.replyRelayAddr)) {
           repostEvent.sources.add(eventRelation.replyRelayAddr!);
         }
       } catch (e) {
@@ -258,8 +251,7 @@ class _EventMainComponent extends State<EventMainComponent> {
             onMuteProfile: onMuteProfile,
           ));
         }
-      } else if (widget.event.kind == kind.EventKind.REPOST ||
-          widget.event.kind == kind.EventKind.GENERIC_REPOST) {
+      } else if (widget.event.kind == kind.EventKind.REPOST || widget.event.kind == kind.EventKind.GENERIC_REPOST) {
         list.add(Container(
           alignment: Alignment.centerLeft,
           child: Text("Repost"),
@@ -283,7 +275,7 @@ class _EventMainComponent extends State<EventMainComponent> {
         }
       } else {
         if (widget.showReplying && eventRelation.tagPList.isNotEmpty && eventRelation.tagEList.isNotEmpty) {
-          if (widget.event.kind!=Reaction.KIND) {
+          if (widget.event.kind != Reaction.KIND) {
             var textStyle = TextStyle(
               color: hintColor,
               fontSize: smallTextSize,
@@ -328,13 +320,13 @@ class _EventMainComponent extends State<EventMainComponent> {
             if (eventRelation.replyId != null) {
               list.add(EventQuoteComponent(
                 id: eventRelation.replyId,
-                showReactions: false,//widget.showReactions,
+                showReactions: false, //widget.showReactions,
                 showVideo: widget.showVideo,
               ));
             } else if (eventRelation.rootId != null) {
               list.add(EventQuoteComponent(
                 id: eventRelation.rootId,
-                showReactions: false,//widget.showReactions,
+                showReactions: false, //widget.showReactions,
                 showVideo: widget.showVideo,
               ));
             }
@@ -345,7 +337,7 @@ class _EventMainComponent extends State<EventMainComponent> {
             if (eventRelation.rootId != null) {
               list.add(EventQuoteComponent(
                 id: eventRelation.rootId,
-                showReactions: false,//widget.showReactions,
+                showReactions: false, //widget.showReactions,
                 showVideo: widget.showVideo,
               ));
             }
@@ -402,9 +394,7 @@ class _EventMainComponent extends State<EventMainComponent> {
             if (StringUtil.isNotBlank(m)) {
               if (m!.indexOf("image/") == 0) {
                 list.add(ContentImageComponent(imageUrl: url!));
-              } else if (m.indexOf("video/") == 0 &&
-                  widget.showVideo &&
-                  !PlatformUtil.isPC()) {
+              } else if (m.indexOf("video/") == 0 && widget.showVideo && !PlatformUtil.isPC()) {
                 list.add(ContentVideoComponent(url: url!));
               } else {
                 list.add(ContentLinkComponent(link: url!));
@@ -414,9 +404,7 @@ class _EventMainComponent extends State<EventMainComponent> {
               if (fileType == "image") {
                 list.add(ContentImageComponent(imageUrl: url));
               } else if (fileType == "video" && !PlatformUtil.isPC()) {
-                if (settingProvider.videoPreview != OpenStatus.OPEN &&
-                    (settingProvider.videoPreview == OpenStatus.OPEN ||
-                        widget.showVideo)) {
+                if (settingProvider.videoPreview != OpenStatus.OPEN && (settingProvider.videoPreview == OpenStatus.OPEN || widget.showVideo)) {
                   list.add(ContentVideoComponent(url: url));
                 } else {
                   list.add(ContentLinkComponent(link: url));
@@ -429,12 +417,11 @@ class _EventMainComponent extends State<EventMainComponent> {
         }
         if (widget.event.kind != kind.EventKind.ZAP_RECEIPT && widget.showReactions) {
           list.add(EventReactionsComponent(
-            screenshotController: widget.screenshotController,
-            event: widget.event,
-            eventRelation: eventRelation,
-            showDetailBtn: widget.showDetailBtn,
-            onMuteProfile: onMuteProfile
-          ));
+              screenshotController: widget.screenshotController,
+              event: widget.event,
+              eventRelation: eventRelation,
+              showDetailBtn: widget.showDetailBtn,
+              onMuteProfile: onMuteProfile));
         } else {
           list.add(Container(
             height: Base.BASE_PADDING,
@@ -470,8 +457,7 @@ class _EventMainComponent extends State<EventMainComponent> {
           ),
           GestureDetector(
             onTap: () {
-              RouterUtil.router(context, RouterPath.COMMUNITY_DETAIL,
-                  eventRelation.communityId);
+              RouterUtil.router(context, RouterPath.COMMUNITY_DETAIL, eventRelation.communityId);
             },
             child: Text(
               eventRelation.communityId!.title,
@@ -521,7 +507,10 @@ class _EventMainComponent extends State<EventMainComponent> {
     ));
 
     if (widget.addDivider) {
-      eventAllList.add(Container(color: themeData.disabledColor, padding: const EdgeInsets.only(bottom: 1),));
+      eventAllList.add(Container(
+        color: themeData.disabledColor,
+        padding: const EdgeInsets.only(bottom: 1),
+      ));
     }
 
     return Column(
@@ -534,8 +523,7 @@ class _EventMainComponent extends State<EventMainComponent> {
 
   bool hideLongContent = false;
 
-  Widget buildContentWidget(
-      SettingProvider _settingProvider, bool imagePreview, bool videoPreview) {
+  Widget buildContentWidget(SettingProvider _settingProvider, bool imagePreview, bool videoPreview) {
     List<Widget> content = ContentDecoder.decode(
       context,
       null,
@@ -652,8 +640,7 @@ class _EventMainComponent extends State<EventMainComponent> {
             } else if (NIP19Tlv.isNrelay(link)) {
               var nrelay = NIP19Tlv.decodeNrelay(link);
               if (nrelay != null) {
-                var result = await ConfirmDialog.show(
-                    context, I18n.of(context).Add_this_relay_to_local);
+                var result = await ConfirmDialog.show(context, I18n.of(context).Add_this_relay_to_local);
                 if (result == true) {
                   await relayProvider.addRelay(nrelay.addr);
                 }
@@ -669,8 +656,7 @@ class _EventMainComponent extends State<EventMainComponent> {
     var s = I18n.of(context);
 
     return Container(
-      margin:
-          EdgeInsets.only(bottom: Base.BASE_PADDING, top: Base.BASE_PADDING),
+      margin: EdgeInsets.only(bottom: Base.BASE_PADDING, top: Base.BASE_PADDING),
       width: double.maxFinite,
       child: Column(
         children: [
@@ -719,7 +705,7 @@ class _EventMainComponent extends State<EventMainComponent> {
 
   onMuteProfile() {
     setState(() {
-      widget.mutedProfile=true;
+      widget.mutedProfile = true;
     });
   }
 }
@@ -739,42 +725,40 @@ class _EventReplyingcomponent extends State<EventReplyingcomponent> {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () {
-        RouterUtil.router(context, RouterPath.USER, widget.pubkey);
-      },
-      child: Selector<MetadataProvider, Metadata?>(
-        builder: (context, metadata, child) {
-          var themeData = Theme.of(context);
-          var hintColor = themeData.hintColor;
-          var smallTextSize = themeData.textTheme.bodySmall!.fontSize;
-          String nip19Name = Nip19.encodeSimplePubKey(widget.pubkey);
-          String displayName = "";
-
-          if (metadata != null) {
-            if (StringUtil.isNotBlank(metadata.displayName)) {
-              displayName = metadata.displayName!;
-            } else if (StringUtil.isNotBlank(metadata.name)) {
-              displayName = metadata.name!;
-            }
-          }
-
-          if (StringUtil.isBlank(displayName)) {
-            displayName = nip19Name;
-          }
-
-          return Text(
-            displayName,
-            style: TextStyle(
-              color: hintColor,
-              fontSize: smallTextSize,
-              // fontWeight: FontWeight.bold,
-            ),
-          );
+        onTap: () {
+          RouterUtil.router(context, RouterPath.USER, widget.pubkey);
         },
-        selector: (context, _provider) {
-          return _provider.getMetadata(widget.pubkey);
-        },
-      ),
+        child: FutureBuilder<Metadata?>(
+            future: metadataProvider.getMetadata(widget.pubkey),
+            builder: (context, snapshot) {
+              var metadata = snapshot.data;
+              var themeData = Theme.of(context);
+              var hintColor = themeData.hintColor;
+              var smallTextSize = themeData.textTheme.bodySmall!.fontSize;
+              String nip19Name = Nip19.encodeSimplePubKey(widget.pubkey);
+              String displayName = "";
+
+              if (metadata != null) {
+                if (StringUtil.isNotBlank(metadata.displayName)) {
+                  displayName = metadata.displayName!;
+                } else if (StringUtil.isNotBlank(metadata.name)) {
+                  displayName = metadata.name!;
+                }
+              }
+
+              if (StringUtil.isBlank(displayName)) {
+                displayName = nip19Name;
+              }
+
+              return Text(
+                displayName,
+                style: TextStyle(
+                  color: hintColor,
+                  fontSize: smallTextSize,
+                  // fontWeight: FontWeight.bold,
+                ),
+              );
+            })
     );
   }
 }

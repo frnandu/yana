@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../i18n/i18n.dart';
+import '../../main.dart';
 import '../../provider/metadata_provider.dart';
 import '../../ui/editor/search_mention_user_component.dart';
 import '../../utils/base.dart';
@@ -12,7 +13,6 @@ import '../../utils/router_util.dart';
 import '../../utils/string_util.dart';
 
 class FollowedRouter extends StatefulWidget {
-
   List<String>? pubkeys;
   String? title;
 
@@ -28,7 +28,6 @@ class FollowedRouter extends StatefulWidget {
 
 class _FollowedRouter extends State<FollowedRouter> {
   ScrollController scrollController = ScrollController();
-
 
   @override
   Widget build(BuildContext context) {
@@ -56,28 +55,19 @@ class _FollowedRouter extends State<FollowedRouter> {
         }
 
         return Container(
-          margin: const EdgeInsets.only(bottom: Base.BASE_PADDING_HALF),
-          child: Selector<MetadataProvider, Metadata?>(
-            builder: (context, metadata, child) {
-              return  metadata != null
+            margin: const EdgeInsets.only(bottom: Base.BASE_PADDING_HALF),
+            child: FutureBuilder<Metadata?>(
+                future: metadataProvider.getMetadata(pubkey),
+                builder: (context, snapshot) {
+                  return snapshot.hasData != null
                       ? SearchMentionUserItemComponent(
-                          metadata: metadata!,
+                          metadata: snapshot.data!,
                           onTap: (metadata) {
                             RouterUtil.router(context, RouterPath.USER, pubkey);
                           },
                           width: 400)
                       : Container();
-                  // MetadataComponent(
-                  //   pubKey: pubkey,
-                  //   metadata: metadata,
-                  //   jumpable: true,
-                  // ),
-            },
-            selector: (context, _provider) {
-              return _provider.getMetadata(pubkey);
-            },
-          ),
-        );
+                }));
       },
       itemCount: widget.pubkeys!.length,
     );
@@ -94,7 +84,7 @@ class _FollowedRouter extends State<FollowedRouter> {
           ),
         ),
         title: Text(
-          widget.title??s.Followers,
+          widget.title ?? s.Followers,
           style: TextStyle(
             fontSize: titleFontSize,
             fontWeight: FontWeight.bold,

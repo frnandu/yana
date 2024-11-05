@@ -1,6 +1,4 @@
-import 'package:isar/isar.dart';
 
-@deprecated // use UserRelayList of RelaySet
 class RelayMetadata {
   String? url;
 
@@ -8,7 +6,6 @@ class RelayMetadata {
 
   bool? write;
 
-  @ignore
   int? count;
 
   RelayMetadata();
@@ -20,7 +17,6 @@ class RelayMetadata {
     this.count
   });
 
-  @ignore
   bool get isValidWss {
     String a = url!=null ? url!.trim() : "";
     return a.startsWith("wss://") || a.startsWith("ws://");

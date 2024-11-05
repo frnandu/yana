@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:yana/provider/metadata_provider.dart';
 import 'package:provider/provider.dart';
 
+import '../../main.dart';
 import '../../ui/simple_name_component.dart';
 import '../../utils/base.dart';
 
@@ -33,17 +34,15 @@ class _EditorNotifyItemComponent extends State<EditorNotifyItemComponent> {
     var textColor = themeData.appBarTheme.titleTextStyle!.color;
 
     List<Widget> list = [];
-    list.add(Selector<MetadataProvider, Metadata?>(
-        builder: (context, metadata, child) {
-      String name =
-          SimpleNameComponent.getSimpleName(widget.item.pubkey, metadata);
-      return Text(
-        name,
-        style: TextStyle(color: textColor),
-      );
-    }, selector: (context, _provider) {
-      return _provider.getMetadata(widget.item.pubkey);
-    }));
+    list.add(FutureBuilder<Metadata?>(
+        future: metadataProvider.getMetadata(widget.item.pubkey),
+        builder: (context, snapshot) {
+          String name = SimpleNameComponent.getSimpleName(widget.item.pubkey, snapshot.data);
+          return Text(
+            name,
+            style: TextStyle(color: textColor),
+          );
+        }));
 
     list.add(SizedBox(
       width: 24,

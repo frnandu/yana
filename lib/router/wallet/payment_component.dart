@@ -36,9 +36,7 @@ class _PaymentDetailsComponent extends State<PaymentDetailsComponent> {
     }
     var themeData = Theme.of(context);
 
-    double? fiatAmount = fiatCurrencyRate != null
-        ? ((widget.paid!.amount / 100000000000) * fiatCurrencyRate!["value"])
-        : null;
+    double? fiatAmount = fiatCurrencyRate != null ? ((widget.paid!.amount / 100000000000) * fiatCurrencyRate!["value"]) : null;
     // int feesPaid = (paid!.feesPaid / 1000).round();
     int amount = (widget.paid!.amount / 1000).round();
     // TODO: implement build
@@ -57,10 +55,7 @@ class _PaymentDetailsComponent extends State<PaymentDetailsComponent> {
                 Container(
                   width: 30,
                   height: 5,
-                  decoration: BoxDecoration(
-                      color: Colors.grey[800],
-                      borderRadius:
-                          const BorderRadius.all(Radius.circular(12.0))),
+                  decoration: BoxDecoration(color: Colors.grey[800], borderRadius: const BorderRadius.all(Radius.circular(12.0))),
                 ),
               ],
             ),
@@ -90,25 +85,21 @@ class _PaymentDetailsComponent extends State<PaymentDetailsComponent> {
                     children: <Widget>[
                       Text(
                         'from: ',
-                        style:
-                            TextStyle(fontSize: 16.0, color: Colors.grey[700]),
+                        style: TextStyle(fontSize: 16.0, color: Colors.grey[700]),
                       ),
-                      Selector<MetadataProvider, Metadata?>(
-                        builder: (context, metadata, child) {
-                          return GestureDetector(
-                              onTap: () {
-                                RouterUtil.router(
-                                    context, RouterPath.USER, zapperPubKey);
-                              },
-                              child: NameComponent(
-                                pubkey: zapperPubKey,
-                                metadata: metadata,
-                              ));
-                        },
-                        selector: (context, _provider) {
-                          return _provider.getMetadata(zapperPubKey);
-                        },
-                      )
+                      FutureBuilder<Metadata?>(
+                          future: metadataProvider.getMetadata(zapperPubKey),
+                          builder: (context, snapshot) {
+                            var metadata = snapshot.data;
+                            return GestureDetector(
+                                onTap: () {
+                                  RouterUtil.router(context, RouterPath.USER, zapperPubKey);
+                                },
+                                child: NameComponent(
+                                  pubkey: zapperPubKey,
+                                  metadata: metadata,
+                                ));
+                          })
                     ],
                   )
                 : Container(),
@@ -126,21 +117,15 @@ class _PaymentDetailsComponent extends State<PaymentDetailsComponent> {
                     ))
                 : Container(
                     decoration: ShapeDecoration(
-                      color: widget.paid!.isIncoming
-                          ? const Color(0x4f47A66D)
-                          : const Color(0x4fE26842),
+                      color: widget.paid!.isIncoming ? const Color(0x4f47A66D) : const Color(0x4fE26842),
                       shape: const CircleBorder(side: BorderSide.none),
                       // borderRadius: BorderRadius.circular(16),
                       // ),
                     ),
                     padding: const EdgeInsets.all(Base.BASE_PADDING),
                     child: Icon(
-                      widget.paid!.isIncoming
-                          ? Icons.call_received
-                          : Icons.call_made,
-                      color: widget.paid!.isIncoming
-                          ? const Color(0xFF47A66D)
-                          : const Color(0xFFE26842),
+                      widget.paid!.isIncoming ? Icons.call_received : Icons.call_made,
+                      color: widget.paid!.isIncoming ? const Color(0xFF47A66D) : const Color(0xFFE26842),
                       size: 100.0,
                     )),
             const SizedBox(height: 20.0),
@@ -149,11 +134,7 @@ class _PaymentDetailsComponent extends State<PaymentDetailsComponent> {
                 children: <TextSpan>[
                   TextSpan(
                     text: "${widget.paid!.isIncoming ? '+' : '-'}$amount",
-                    style: TextStyle(
-                        fontSize: 28.0,
-                        color: widget.paid!.isIncoming
-                            ? const Color(0xff47A66D)
-                            : const Color(0xFFE26842)),
+                    style: TextStyle(fontSize: 28.0, color: widget.paid!.isIncoming ? const Color(0xff47A66D) : const Color(0xFFE26842)),
                   ),
                   TextSpan(
                     text: ' sat${amount > 1 ? 's' : ''}',
@@ -164,9 +145,7 @@ class _PaymentDetailsComponent extends State<PaymentDetailsComponent> {
             ),
             const SizedBox(height: 10.0),
             Text(
-              fiatAmount == null || fiatAmount < 0.01
-                  ? "< ${fiatCurrencyRate?["unit"]}0.01"
-                  : "${fiatCurrencyRate?["unit"]}${fiatAmount.toStringAsFixed(2)}",
+              fiatAmount == null || fiatAmount < 0.01 ? "< ${fiatCurrencyRate?["unit"]}0.01" : "${fiatCurrencyRate?["unit"]}${fiatAmount.toStringAsFixed(2)}",
               style: TextStyle(fontSize: 22.0, color: Colors.grey[700]),
             ),
             const SizedBox(height: 20.0),
@@ -174,13 +153,8 @@ class _PaymentDetailsComponent extends State<PaymentDetailsComponent> {
                 ? Row(
                     children: [
                       SizedBox(
-                          width: mediaDataCache.size.width / 2 - 30,
-                          child: Text("Date & Time",
-                              style: TextStyle(
-                                  fontSize: 16.0, color: Colors.grey[700]))),
-                      Text(dateFormater.format(
-                          DateTime.fromMillisecondsSinceEpoch(
-                              widget.paid!.created_at! * 1000)))
+                          width: mediaDataCache.size.width / 2 - 30, child: Text("Date & Time", style: TextStyle(fontSize: 16.0, color: Colors.grey[700]))),
+                      Text(dateFormater.format(DateTime.fromMillisecondsSinceEpoch(widget.paid!.created_at! * 1000)))
                     ],
                   )
                 : Container(),
@@ -188,19 +162,11 @@ class _PaymentDetailsComponent extends State<PaymentDetailsComponent> {
               height: 5,
             ),
             Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              SizedBox(
-                  width: mediaDataCache.size.width / 2 - 30,
-                  child: Text("Description",
-                      style:
-                          TextStyle(fontSize: 16.0, color: Colors.grey[700]))),
+              SizedBox(width: mediaDataCache.size.width / 2 - 30, child: Text("Description", style: TextStyle(fontSize: 16.0, color: Colors.grey[700]))),
               Flexible(
                   child: Text(
-                StringUtil.isNotBlank(widget.paid!.description)
-                    ? widget.paid!.description!
-                    : 'None',
-                style: StringUtil.isBlank(widget.paid!.description)
-                    ? TextStyle(fontSize: 16.0, color: Colors.grey[700])
-                    : null,
+                StringUtil.isNotBlank(widget.paid!.description) ? widget.paid!.description! : 'None',
+                style: StringUtil.isBlank(widget.paid!.description) ? TextStyle(fontSize: 16.0, color: Colors.grey[700]) : null,
               ))
             ]),
             // TODO notes from metadata?
@@ -209,11 +175,7 @@ class _PaymentDetailsComponent extends State<PaymentDetailsComponent> {
             ),
             widget.paid!.fees_paid != null && widget.paid!.fees_paid! > 0
                 ? Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    SizedBox(
-                        width: mediaDataCache.size.width / 2 - 30,
-                        child: Text("Fee",
-                            style: TextStyle(
-                                fontSize: 16.0, color: Colors.grey[700]))),
+                    SizedBox(width: mediaDataCache.size.width / 2 - 30, child: Text("Fee", style: TextStyle(fontSize: 16.0, color: Colors.grey[700]))),
                     Flexible(
                         child: Text(
                       "${(widget.paid!.fees_paid! / 1000).toStringAsFixed(0)} sats",
@@ -225,11 +187,7 @@ class _PaymentDetailsComponent extends State<PaymentDetailsComponent> {
             ),
             StringUtil.isNotBlank(widget.paid!.payment_hash)
                 ? Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    SizedBox(
-                        width: mediaDataCache.size.width / 2 - 30,
-                        child: Text("Payment Hash",
-                            style: TextStyle(
-                                fontSize: 16.0, color: Colors.grey[700]))),
+                    SizedBox(width: mediaDataCache.size.width / 2 - 30, child: Text("Payment Hash", style: TextStyle(fontSize: 16.0, color: Colors.grey[700]))),
                     Flexible(
                         child: Text(
                       widget.paid!.payment_hash!,
@@ -242,16 +200,11 @@ class _PaymentDetailsComponent extends State<PaymentDetailsComponent> {
             StringUtil.isNotBlank(widget.paid!.preimage)
                 ? Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
                     SizedBox(
-                        width: mediaDataCache.size.width / 2 - 30,
-                        child: Text("Payment Preimage",
-                            style: TextStyle(
-                                fontSize: 16.0, color: Colors.grey[700]))),
+                        width: mediaDataCache.size.width / 2 - 30, child: Text("Payment Preimage", style: TextStyle(fontSize: 16.0, color: Colors.grey[700]))),
                     Flexible(
                         child: GestureDetector(
                             onTap: () async {
-                              await Clipboard.setData(ClipboardData(
-                                      text: widget.paid!.preimage!))
-                                  .then((_) {
+                              await Clipboard.setData(ClipboardData(text: widget.paid!.preimage!)).then((_) {
                                 print("a");
                               });
                             },

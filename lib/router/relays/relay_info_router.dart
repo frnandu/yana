@@ -126,8 +126,9 @@ class _RelayInfoRouter extends State<RelayInfoRouter> {
     if (StringUtil.isNotBlank(relayInfo!.pubKey)) {
       list.add(RelayInfoItemComponent(
         title: "Owner",
-        child: Selector<MetadataProvider, Metadata?>(
-          builder: (context, metadata, child) {
+        child: FutureBuilder<Metadata?>(future: metadataProvider.getMetadata(relayInfo!.pubKey),
+          builder: (context, snapshot) {
+          var metadata = snapshot.data;
             List<Widget> list = [];
 
             Widget? imageWidget;
@@ -169,12 +170,10 @@ class _RelayInfoRouter extends State<RelayInfoRouter> {
                 children: list,
               ),
             );
-          },
-          selector: (context, _provider) {
-            return _provider.getMetadata(relayInfo!.pubKey);
-          },
+
+          })
         ),
-      ));
+      );
     }
 
     list.add(RelayInfoItemComponent(

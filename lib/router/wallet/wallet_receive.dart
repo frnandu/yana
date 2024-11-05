@@ -45,10 +45,10 @@ class _WalletReceiveRouter extends State<WalletReceiveRouter> {
   PanelController panelController = PanelController();
 
   @override
-  void initState() {
+  void initState() async {
     super.initState();
 
-    metadata = metadataProvider.getMetadata(loggedUserSigner!.getPublicKey());
+    metadata = await metadataProvider.getMetadata(loggedUserSigner!.getPublicKey());
     confettiController =
         ConfettiController(duration: const Duration(seconds: 2));
     nwcProvider.paymentReceivedCallback = (nwcNotification) {

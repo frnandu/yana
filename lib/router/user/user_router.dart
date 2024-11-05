@@ -109,7 +109,7 @@ class _UserRouter extends CustState<UserRouter> with PenddingEventsLaterFunction
           until = null;
 
           pubkey = arg;
-          if (subscription==null) {
+          if (subscription == null) {
             doQuery();
           }
         }
@@ -126,111 +126,106 @@ class _UserRouter extends CustState<UserRouter> with PenddingEventsLaterFunction
     var themeData = Theme.of(context);
     var cardColor = themeData.cardColor;
 
-    return Selector<MetadataProvider, Metadata?>(
-      shouldRebuild: (previous, next) {
-        return previous != next;
-      },
-      selector: (context, _metadataProvider) {
-        return _metadataProvider.getMetadata(pubkey!);
-      },
-      builder: (context, metadata, child) {
-        Color? appbarBackgroundColor = Colors.transparent;
-        if (showAppbarBG) {
-          appbarBackgroundColor = Colors.white.withOpacity(0.5);
-        }
-        Widget? appbarTitle;
-        if (showTitle) {
-          String nip19Name = Nip19.encodeSimplePubKey(pubkey!);
-          String displayName = nip19Name;
-          if (metadata != null) {
-            if (StringUtil.isNotBlank(metadata.getName())) {
-              displayName = metadata.getName()!;
-            }
-
-            appbarTitle = Container(
-              alignment: Alignment.center,
-              child: Text(
-                displayName,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                ),
-              ),
-            );
+    return FutureBuilder<Metadata?>(
+        future: metadataProvider.getMetadata(pubkey!),
+        builder: (context, snapshot) {
+          var metadata = snapshot.data;
+          Color? appbarBackgroundColor = Colors.transparent;
+          if (showAppbarBG) {
+            appbarBackgroundColor = Colors.white.withOpacity(0.5);
           }
-        }
-        var appBar = Appbar4Stack(
-          backgroundColor: appbarBackgroundColor,
-          title: appbarTitle,
-        );
+          Widget? appbarTitle;
+          if (showTitle) {
+            String nip19Name = Nip19.encodeSimplePubKey(pubkey!);
+            String displayName = nip19Name;
+            if (metadata != null) {
+              if (StringUtil.isNotBlank(metadata.getName())) {
+                displayName = metadata.getName()!;
+              }
 
-        Widget main = NestedScrollView(
-          key: globalKey,
-          controller: _controller,
-          headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
-            return <Widget>[
-              SliverToBoxAdapter(
-                child: MetadataComponent(
-                  pubKey: pubkey!,
-                  metadata: metadata,
-                  showBadges: true,
-                  userPicturePreview: true,
-                  followsYou: followsYou,
-                ),
-              ),
-              SliverToBoxAdapter(
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: UserStatisticsComponent(
-                    pubkey: pubkey!,
-                    // userNostr: userNostr,
-                    onContactListLoaded: (contactList) {
-                      if (!disposed && loggedUserSigner != null && contactList.contacts.contains(loggedUserSigner!.getPublicKey())) {
-                        setState(() {
-                          followsYou = true;
-                        });
-                      }
-                    },
+              appbarTitle = Container(
+                alignment: Alignment.center,
+                child: Text(
+                  displayName,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
                   ),
                 ),
+              );
+            }
+          }
+          var appBar = Appbar4Stack(
+            backgroundColor: appbarBackgroundColor,
+            title: appbarTitle,
+          );
+
+          Widget main = NestedScrollView(
+            key: globalKey,
+            controller: _controller,
+            headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
+              return <Widget>[
+                SliverToBoxAdapter(
+                  child: MetadataComponent(
+                    pubKey: pubkey!,
+                    metadata: metadata,
+                    showBadges: true,
+                    userPicturePreview: true,
+                    followsYou: followsYou,
+                  ),
+                ),
+                SliverToBoxAdapter(
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: UserStatisticsComponent(
+                      pubkey: pubkey!,
+                      // userNostr: userNostr,
+                      onContactListLoaded: (contactList) {
+                        if (!disposed && loggedUserSigner != null && contactList.contacts.contains(loggedUserSigner!.getPublicKey())) {
+                          setState(() {
+                            followsYou = true;
+                          });
+                        }
+                      },
+                    ),
+                  ),
+                ),
+              ];
+            },
+            body: MediaQuery.removePadding(
+              removeTop: true,
+              context: context,
+              child: ListView.builder(
+                itemBuilder: (BuildContext context, int index) {
+                  var event = box.get(index);
+                  if (event == null) {
+                    return null;
+                  }
+                  return EventListComponent(
+                    event: event,
+                    showVideo: _settingProvider.videoPreview == OpenStatus.OPEN,
+                  );
+                },
+                itemCount: box.length(),
               ),
-            ];
-          },
-          body: MediaQuery.removePadding(
-            removeTop: true,
-            context: context,
-            child: ListView.builder(
-              itemBuilder: (BuildContext context, int index) {
-                var event = box.get(index);
-                if (event == null) {
-                  return null;
-                }
-                return EventListComponent(
-                  event: event,
-                  showVideo: _settingProvider.videoPreview == OpenStatus.OPEN,
-                );
-              },
-              itemCount: box.length(),
             ),
-          ),
-        );
+          );
 
-        return Scaffold(
-            backgroundColor: themeData.scaffoldBackgroundColor,
-            body: Stack(
-              children: [
-                main,
-                Positioned(
-                  top: paddingTop,
-                  child: Container(
-                    width: maxWidth,
-                    child: appBar,
+          return Scaffold(
+              backgroundColor: themeData.scaffoldBackgroundColor,
+              body: Stack(
+                children: [
+                  main,
+                  Positioned(
+                    top: paddingTop,
+                    child: Container(
+                      width: maxWidth,
+                      child: appBar,
+                    ),
                   ),
-                ),
-              ],
-            ));
-      },
-    );
+                ],
+              ));
+        });
   }
 
   @override
@@ -274,7 +269,7 @@ class _UserRouter extends CustState<UserRouter> with PenddingEventsLaterFunction
   @override
   void activate() {
     super.activate();
-    if (subscription==null) {
+    if (subscription == null) {
       doQuery();
     }
   }
@@ -282,12 +277,10 @@ class _UserRouter extends CustState<UserRouter> with PenddingEventsLaterFunction
   @override
   void reassemble() {
     super.reassemble();
-    if (subscription==null) {
+    if (subscription == null) {
       doQuery();
     }
   }
-
-
 
   void unSubscribe() {
     if (subscription != null) {
@@ -310,47 +303,48 @@ class _UserRouter extends CustState<UserRouter> with PenddingEventsLaterFunction
 
   @override
   void doQuery() {
-    if (subscription==null) {
-      if (box.isEmpty()) {
-        List<Nip01Event>? cachedEvents = cacheManager.loadEvents(pubKeys: [
-          pubkey!
-        ], kinds: [
-          Nip01Event.TEXT_NODE_KIND,
-          // kind.EventKind.REPOST,
-          // kind.EventKind.GENERIC_REPOST,
-          // kind.EventKind.LONG_FORM,
-          // kind.EventKind.FILE_HEADER,
-          // kind.EventKind.POLL,
-        ]); //queryEventKinds());
-        print("USER loaded ${cachedEvents.length} events from cache DB");
-        for (var event in cachedEvents) {
-          onEvent(event, saveToCache: false);
+    Future(() async {
+      if (subscription == null) {
+        if (box.isEmpty()) {
+          List<Nip01Event>? cachedEvents = await cacheManager.loadEvents(pubKeys: [
+            pubkey!
+          ], kinds: [
+            Nip01Event.TEXT_NODE_KIND,
+            // kind.EventKind.REPOST,
+            // kind.EventKind.GENERIC_REPOST,
+            // kind.EventKind.LONG_FORM,
+            // kind.EventKind.FILE_HEADER,
+            // kind.EventKind.POLL,
+          ]); //queryEventKinds());
+          print("USER loaded ${cachedEvents.length} events from cache DB");
+          for (var event in cachedEvents) {
+            onEvent(event, saveToCache: false);
+          }
         }
-      }
 
-      if (myInboxRelaySet == null || myOutboxRelaySet == null) {
-        return;
-      }
-      preQuery();
+        if (myInboxRelaySet == null || myOutboxRelaySet == null) {
+          return;
+        }
+        preQuery();
 
-      var filter = Filter(
-        kinds: queryEventKinds(),
-        until: until,
-        authors: [pubkey!],
-        limit: queryLimit,
-      );
-      RelaySet relaySet = myInboxRelaySet!;
-      if (pubkey == loggedUserSigner!.getPublicKey()) {
-        relaySet = myOutboxRelaySet!;
-      } else if (feedRelaySet != null && settingProvider.gossip == 1) {
-        relaySet = feedRelaySet!;
+        var filter = Filter(
+          kinds: queryEventKinds(),
+          until: until,
+          authors: [pubkey!],
+          limit: queryLimit,
+        );
+        RelaySet relaySet = myInboxRelaySet!;
+        if (pubkey == loggedUserSigner!.getPublicKey()) {
+          relaySet = myOutboxRelaySet!;
+        } else if (feedRelaySet != null && settingProvider.gossip == 1) {
+          relaySet = feedRelaySet!;
+        }
+        subscription = ndk.requests.subscription(name: "user-sub", filters: [filter], relaySet: relaySet);
+        subscription!.stream.listen((event) {
+          onEvent(event, saveToCache: pubkey == loggedUserSigner!.getPublicKey());
+        });
       }
-      subscription = ndk.requests.subscription(
-          name: "user-sub", filters: [filter], relaySet: relaySet);
-      subscription!.stream.listen((event) {
-        onEvent(event, saveToCache: pubkey == loggedUserSigner!.getPublicKey());
-      });
-    }
+    });
   }
 
   @override

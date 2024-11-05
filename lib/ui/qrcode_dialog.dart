@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:screenshot/screenshot.dart';
 import 'package:yana/nostr/nip19/nip19.dart';
 
+import '../main.dart';
 import '../utils/base.dart';
 import '../i18n/i18n.dart';
 import '../provider/metadata_provider.dart';
@@ -47,32 +48,28 @@ class _QrcodeDialog extends State<QrcodeDialog> {
 
     List<Widget> list = [];
     var nip19Pubkey = Nip19.encodePubKey(widget.pubkey);
-    Widget topWidget = Selector<MetadataProvider, Metadata?>(
-      builder: (context, metadata, child) {
-
-        return Container(
-          width: QR_WIDTH,
-          margin: const EdgeInsets.only(
-            left: Base.BASE_PADDING_HALF,
-            right: Base.BASE_PADDING_HALF,
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                margin: EdgeInsets.only(left: Base.BASE_PADDING_HALF),
-                child: Container(
-                  width: QR_WIDTH - IMAGE_WIDTH - Base.BASE_PADDING_HALF,
+    Widget topWidget = FutureBuilder<Metadata?>(
+        future: metadataProvider.getMetadata(widget.pubkey),
+        builder: (context, snapshot) {
+          return Container(
+            width: QR_WIDTH,
+            margin: const EdgeInsets.only(
+              left: Base.BASE_PADDING_HALF,
+              right: Base.BASE_PADDING_HALF,
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  margin: EdgeInsets.only(left: Base.BASE_PADDING_HALF),
+                  child: Container(
+                    width: QR_WIDTH - IMAGE_WIDTH - Base.BASE_PADDING_HALF,
+                  ),
                 ),
-              ),
-            ],
-          ),
-        );
-      },
-      selector: (content, _provider) {
-        return _provider.getMetadata(widget.pubkey);
-      },
-    );
+              ],
+            ),
+          );
+        });
     list.add(topWidget);
     list.add(Container(
       margin: const EdgeInsets.only(

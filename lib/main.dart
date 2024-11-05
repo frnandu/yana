@@ -335,7 +335,7 @@ Future<void> initRelays({bool newKey = false}) async {
 
     print("Loaded ${contactList.contacts.length} contacts...");
     if (settingProvider.gossip == 1) {
-      feedRelaySet = cacheManager.loadRelaySet("feed", loggedUserSigner!.getPublicKey());
+      feedRelaySet = await cacheManager.loadRelaySet("feed", loggedUserSigner!.getPublicKey());
       if (feedRelaySet == null) {
         EasyLoading.showToast("Calculating feed relays from contact's outboxes...",
             dismissOnTap: true, duration: const Duration(seconds: 15), maskType: EasyLoadingMaskType.black);

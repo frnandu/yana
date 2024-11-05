@@ -84,7 +84,7 @@ class NwcProvider extends ChangeNotifier {
     secret = uri.queryParameters['secret'];
     String? lud16 = uri.queryParameters['lud16'];
     if (lud16 != null) {
-      Metadata? metadata = metadataProvider.getMetadata(
+      Metadata? metadata = await metadataProvider.getMetadata(
           loggedUserSigner!.getPublicKey());
       if (metadata != null && metadata.lud16 != lud16) {
 

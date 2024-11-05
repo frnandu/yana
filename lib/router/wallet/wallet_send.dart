@@ -84,7 +84,7 @@ class _WalletSendRouter extends State<WalletSendRouter> {
         makeInvoiceError = null;
       });
     });
-    recipientInputcontroller.addListener(() {
+    recipientInputcontroller.addListener(() async {
       setState(() {
         makeInvoiceError = null;
       });
@@ -106,7 +106,7 @@ class _WalletSendRouter extends State<WalletSendRouter> {
           recipientAddress = t;
         });
       } else if (t.isNotEmpty) {
-        List<Metadata> list = cacheManager.searchMetadatas(t, 100).toList();
+        List<Metadata> list = (await cacheManager.searchMetadatas(t, 100)).toList();
         if (list.length != mentionResults.length) {
           setState(() {
             mentionResults = list;

@@ -67,9 +67,9 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
     refreshContactListIfNeededAsync(widget.pubkey);
     await ndk.userRelayLists.loadMissingRelayListsFromNip65OrNip02([widget.pubkey],
         forceRefresh: true).then(
-      (value) {
-        userRelayList = cacheManager.loadUserRelayList(widget.pubkey);
-        contactList = cacheManager.loadContactList(widget.pubkey);
+      (value) async {
+        userRelayList = await cacheManager.loadUserRelayList(widget.pubkey);
+        contactList = await cacheManager.loadContactList(widget.pubkey);
         if (!_disposed) {
           setState(() {
             if (widget.onContactListLoaded != null && contactList != null) {
@@ -85,8 +85,8 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
     }
   }
 
-  void refreshContactListIfNeededAsync(String pubkey) {
-    contactList = cacheManager.loadContactList(pubkey);
+  void refreshContactListIfNeededAsync(String pubkey) async {
+    contactList = await cacheManager.loadContactList(pubkey);
     int sometimeAgo = DateTime.now()
             .subtract(REFRESH_METADATA_DURATION)
             .millisecondsSinceEpoch ~/

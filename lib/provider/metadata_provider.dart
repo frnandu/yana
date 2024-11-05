@@ -40,8 +40,8 @@ class MetadataProvider extends ChangeNotifier with LaterFunction {
     later(_laterCallback, null);
   }
 
-  Metadata? getMetadata(String pubKey) {
-    var metadata = cacheManager.loadMetadata(pubKey);
+  Future<Metadata?> getMetadata(String pubKey) async {
+    var metadata = await cacheManager.loadMetadata(pubKey);
     if (metadata != null) {
       return metadata;
     }
@@ -54,9 +54,9 @@ class MetadataProvider extends ChangeNotifier with LaterFunction {
 
   static const NIP05_NEEDS_UPDATE_DURATION = const Duration(days: 7);
 
-  bool? isNip05Valid(Metadata metadata) {
+  Future<bool?> isNip05Valid(Metadata metadata) async {
     if (StringUtil.isNotBlank(metadata.nip05)) {
-      Nip05? nip05 = cacheManager.loadNip05(metadata.pubKey);
+      Nip05? nip05 = await cacheManager.loadNip05(metadata.pubKey);
       if (nip05 == null || nip05.needsUpdate(NIP05_NEEDS_UPDATE_DURATION)) {
         if (!_needUpdateNip05s.contains(metadata)) {
           _needUpdateNip05s.add(metadata);
@@ -102,7 +102,7 @@ class MetadataProvider extends ChangeNotifier with LaterFunction {
 
     List<Metadata> doCheck = List.of(_needUpdateNip05s);
     for (var metadata in doCheck) {
-      Nip05? nip05 = cacheManager.loadNip05(metadata.pubKey);
+      Nip05? nip05 = await cacheManager.loadNip05(metadata.pubKey);
       bool valid = await Nip05.check(metadata.nip05!, metadata.pubKey);
       nip05 ??= Nip05(pubKey: metadata.pubKey, nip05: metadata.nip05!, valid: valid, updatedAt: Helpers.now);
       nip05.valid = valid;
@@ -121,17 +121,16 @@ class MetadataProvider extends ChangeNotifier with LaterFunction {
 
   Future<void> updateLud16IfEmpty(String? lud16) async {
     if (loggedUserSigner!=null) {
-      Metadata? metadata = metadataProvider.getMetadata(
-          loggedUserSigner!.getPublicKey());
+      Metadata? metadata = await metadataProvider.getMetadata(loggedUserSigner!.getPublicKey());
       if (metadata!=null) {
         if (StringUtil.isNotBlank(lud16) && StringUtil.isBlank(metadata.lud16)) {
           metadata.lud16 = lud16;
           await ndk.metadata.broadcastMetadata(
-              metadata, myInboxRelaySet!.urls, loggedUserSigner!);
+              metadata, specificRelays: myInboxRelaySet!.urls);
         }
       } else {
         metadata ??= Metadata(pubKey: loggedUserSigner!.getPublicKey(), lud16: lud16);
-        metadata = await ndk.metadata.broadcastMetadata(metadata, DEFAULT_BOOTSTRAP_RELAYS, loggedUserSigner!);
+        metadata = await ndk.metadata.broadcastMetadata(metadata, specificRelays: DEFAULT_BOOTSTRAP_RELAYS);
         await cacheManager.saveMetadata(metadata);
         notifyListeners();
       }

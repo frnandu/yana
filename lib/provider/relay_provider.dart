@@ -101,16 +101,16 @@ class RelayProvider extends ChangeNotifier {
     }
   }
 
-  UserRelayList? getUserRelayList(String publicKey) {
-    return cacheManager.loadUserRelayList(loggedUserSigner!.getPublicKey());
-//    userRelayList ??= await ndk.relays.getSingleUserRelayList(loggedUserSigner!.getPublicKey(), forceRefresh: true);
-  }
+//   UserRelayList? getUserRelayList(String publicKey) {
+//     return cacheManager.loadUserRelayList(loggedUserSigner!.getPublicKey());
+// //    userRelayList ??= await ndk.relays.getSingleUserRelayList(loggedUserSigner!.getPublicKey(), forceRefresh: true);
+//   }
 
   Future<RelaySet> recalculateFeedRelaySet() async {
     RelaySet newRelaySet = await ndk.relaySets.calculateRelaySet(
         name: "feed",
         ownerPubKey: loggedUserSigner!.getPublicKey(),
-        pubKeys: contactListProvider.contacts(),
+        pubKeys: await contactListProvider.contacts(),
         direction: RelayDirection.outbox,
         relayMinCountPerPubKey: settingProvider.followeesRelayMinCount);
     if (newRelaySet.urls.isNotEmpty) {

@@ -13,7 +13,8 @@ import '../simple_name_component.dart';
 class ReactionEventMetadataComponent extends StatefulWidget {
   String pubkey;
 
-  ReactionEventMetadataComponent({super.key,
+  ReactionEventMetadataComponent({
+    super.key,
     required this.pubkey,
   });
 
@@ -23,67 +24,66 @@ class ReactionEventMetadataComponent extends StatefulWidget {
   }
 }
 
-class _ReactionEventMetadataComponent
-    extends State<ReactionEventMetadataComponent> {
+class _ReactionEventMetadataComponent extends State<ReactionEventMetadataComponent> {
   static const double IMAGE_WIDTH = 30;
 
   @override
   Widget build(BuildContext context) {
-    return Selector<MetadataProvider, Metadata?>(
-        builder: (context, metadata, child) {
-      List<Widget> list = [];
+    return FutureBuilder<Metadata?>(
+        future: metadataProvider.getMetadata(widget.pubkey),
+        builder: (context, snapshot) {
+          var metadata = snapshot.data;
+          List<Widget> list = [];
 
-      var name = SimpleNameComponent.getSimpleName(widget.pubkey, metadata);
+          var name = SimpleNameComponent.getSimpleName(widget.pubkey, metadata);
 
-      Widget? imageWidget;
-      if (metadata != null) {
-        if (StringUtil.isNotBlank(metadata.picture)) {
-          imageWidget = CachedNetworkImage(
-            imageUrl: metadata.picture!,
+          Widget? imageWidget;
+          if (metadata != null) {
+            if (StringUtil.isNotBlank(metadata.picture)) {
+              imageWidget = CachedNetworkImage(
+                imageUrl: metadata.picture!,
+                width: IMAGE_WIDTH,
+                height: IMAGE_WIDTH,
+                fit: BoxFit.cover,
+                placeholder: (context, url) => const CircularProgressIndicator(),
+                errorWidget: (context, url, error) => const Icon(Icons.error),
+                cacheManager: localCacheManager,
+              );
+            }
+          }
+
+          list.add(Container(
             width: IMAGE_WIDTH,
             height: IMAGE_WIDTH,
-            fit: BoxFit.cover,
-            placeholder: (context, url) => const CircularProgressIndicator(),
-            errorWidget: (context, url, error) => const Icon(Icons.error),
-            cacheManager: localCacheManager,
+            clipBehavior: Clip.hardEdge,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(IMAGE_WIDTH / 2),
+              color: Colors.grey,
+            ),
+            child: imageWidget,
+          ));
+
+          list.add(Container(
+            margin: EdgeInsets.only(left: 5),
+            child: Text(
+              name,
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ));
+
+          return GestureDetector(
+            onTap: () {
+              RouterUtil.router(context, RouterPath.USER, widget.pubkey);
+            },
+            child: Container(
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: list,
+              ),
+            ),
           );
-        }
-      }
-
-      list.add(Container(
-        width: IMAGE_WIDTH,
-        height: IMAGE_WIDTH,
-        clipBehavior: Clip.hardEdge,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(IMAGE_WIDTH / 2),
-          color: Colors.grey,
-        ),
-        child: imageWidget,
-      ));
-
-      list.add(Container(
-        margin: EdgeInsets.only(left: 5),
-        child: Text(
-          name,
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ));
-
-      return GestureDetector(
-        onTap: () {
-          RouterUtil.router(context, RouterPath.USER, widget.pubkey);
-        },
-        child: Container(
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: list,
-          ),
-        ),
-      );
-    }, selector: (context, _provider) {
-      return _provider.getMetadata(widget.pubkey);
-    });
+        });
   }
 }

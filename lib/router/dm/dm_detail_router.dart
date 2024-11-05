@@ -39,10 +39,12 @@ class _DMDetailRouter extends CustState<DMDetailRouter> with EditorMixin {
 
   String content = '';
 
+  List<String> contacts = [];
   @override
-  void initState() {
+  void initState() async {
     super.initState();
     handleFocusInit();
+    contacts = await contactListProvider.contacts();
   }
 
   @override
@@ -61,21 +63,18 @@ class _DMDetailRouter extends CustState<DMDetailRouter> with EditorMixin {
     }
     detail = arg as DMSessionDetail;
 
-    var nameComponnet = Selector<MetadataProvider, Metadata?>(
-      builder: (context, metadata, child) {
-        return GestureDetector(
-            onTap: () {
-              RouterUtil.router(context, RouterPath.USER, detail!.dmSession.pubkey);
-            },
-            child: NameComponent(
-              pubkey: detail!.dmSession.pubkey,
-              metadata: metadata,
-            ));
-      },
-      selector: (context, _provider) {
-        return _provider.getMetadata(detail!.dmSession.pubkey);
-      },
-    );
+    var nameComponnet =
+      FutureBuilder<Metadata?>(future: metadataProvider.getMetadata(detail!.dmSession.pubkey),
+        builder: (context, snapshot) {
+          return GestureDetector(
+              onTap: () {
+                RouterUtil.router(context, RouterPath.USER, detail!.dmSession.pubkey);
+              },
+              child: NameComponent(
+                pubkey: detail!.dmSession.pubkey,
+                metadata: snapshot.data,
+              ));
+        });
 
     var localPubkey = loggedUserSigner!.getPublicKey();
 
@@ -206,7 +205,7 @@ class _DMDetailRouter extends CustState<DMDetailRouter> with EditorMixin {
     );
 
     if (detail!.info == null && detail!.dmSession.newestEvent != null) {
-      if (!contactListProvider.contacts().contains(detail!.dmSession.pubkey)) {
+      if (!contacts.contains(detail!.dmSession.pubkey)) {
         main = SizedBox(
           width: double.maxFinite,
           height: double.maxFinite,

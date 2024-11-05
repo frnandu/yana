@@ -114,7 +114,7 @@ class DMProvider extends ChangeNotifier with PenddingEventsLaterFunction {
 
     this.localPubkey = localPubkey;
     // var keyIndex = settingProvider.privateKeyIndex!;
-    List<Nip01Event>? events = cacheManager.loadEvents(kinds: [kind.EventKind.DIRECT_MESSAGE]);
+    List<Nip01Event>? events = await cacheManager.loadEvents(kinds: [kind.EventKind.DIRECT_MESSAGE]);
 
     events = events.where((element) => element.pubKey == localPubkey || element.pTags.contains(localPubkey)).toList();
     // await EventDB.list(
@@ -159,7 +159,7 @@ class DMProvider extends ChangeNotifier with PenddingEventsLaterFunction {
 
       var info = infoMap[pubkey];
       var detail = DMSessionDetail(session, info: info);
-      if (contactListProvider.contacts().contains(pubkey)) {
+      if ((await contactListProvider.contacts()).contains(pubkey)) {
         _followingList.add(detail);
       } else {
         if (info != null && info.known == 1) {
@@ -217,7 +217,7 @@ class DMProvider extends ChangeNotifier with PenddingEventsLaterFunction {
     return null;
   }
 
-  bool _addEvent(String localPubkey, Nip01Event event) {
+  Future<bool> _addEvent(String localPubkey, Nip01Event event) async {
     var pubkey = _getPubkey(localPubkey, event);
     if (StringUtil.isBlank(pubkey)) {
       return false;
@@ -230,7 +230,7 @@ class DMProvider extends ChangeNotifier with PenddingEventsLaterFunction {
       if (this.localPubkey != null) {
         var detail = DMSessionDetail(session);
         var pubkey = _getPubkey(localPubkey, event);
-        if (contactListProvider.contacts().contains(pubkey)) {
+        if ((await contactListProvider.contacts()).contains(pubkey)) {
           _followingList.add(detail);
         } else {
           _unknownList.add(detail);
@@ -284,7 +284,7 @@ class DMProvider extends ChangeNotifier with PenddingEventsLaterFunction {
     later(event, eventLaterHandle, null);
   }
 
-  void eventLaterHandle(List<Nip01Event> events, {bool updateUI = true}) {
+  void eventLaterHandle(List<Nip01Event> events, {bool updateUI = true}) async {
     bool updated = false;
     // var keyIndex = settingProvider.privateKeyIndex!;
     // if (kDebugMode) {
@@ -292,7 +292,7 @@ class DMProvider extends ChangeNotifier with PenddingEventsLaterFunction {
     // }
     List<Nip01Event> toSave = [];
     for (var event in events) {
-      var addResult = _addEvent(localPubkey!, event);
+      var addResult = await _addEvent(localPubkey!, event);
       // save to local
       if (addResult) {
         toSave.add(event);

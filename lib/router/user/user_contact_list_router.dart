@@ -30,10 +30,11 @@ class _UserContactListRouter extends State<UserContactListRouter> {
       var arg = RouterUtil.routerArgs(context);
       if (arg != null) {
         pubKey = arg as String;
-        contactListProvider.loadContactList(pubKey!).then((value) {
-          setState(() {
-          });
-        },);
+        contactListProvider.loadContactList(pubKey!).then(
+          (value) {
+            setState(() {});
+          },
+        );
       }
     }
     var themeData = Theme.of(context);
@@ -58,17 +59,14 @@ class _UserContactListRouter extends State<UserContactListRouter> {
             ),
           ),
         ),
-        body:  Selector<ContactListProvider, ContactList?>(
-            builder: (context, contactList, child) {
-              if (contactList!=null) {
+        body: FutureBuilder<ContactList?>(
+            future: _contactListProvider.getContactList(pubKey!),
+            builder: (context, snapshot) {
+              var contactList = snapshot.data;
+              if (contactList != null) {
                 return UserContactListComponent(contactList: contactList);
               }
               return Container();
-            },
-            selector: (context, _provider) {
-              return contactListProvider.getContactList(pubKey!);
-            }
-        )
-    );
+            }));
   }
 }

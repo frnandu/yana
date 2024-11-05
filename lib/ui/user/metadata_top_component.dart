@@ -72,10 +72,13 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
 
   late String nip19PubKey;
 
+  List<String>? contacts;
+  
   @override
-  void initState() {
+  void initState() async {
     super.initState();
-
+    
+    contacts = await contactListProvider.contacts();
     nip19PubKey = Nip19.encodePubKey(widget.pubkey);
   }
 
@@ -321,7 +324,7 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
               }
             },
             selector: (context, _provider) {
-              return _provider.contacts().contains(widget.pubkey);
+              return contacts!=null ? contacts!.contains(widget.pubkey) : false;
             },
           ));
         }
@@ -365,7 +368,7 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
                 EasyLoading.dismiss();
                 RouterUtil.back(context);
               } else if (value == "share") {
-                UserRelayList? userRelayList = cacheManager.loadUserRelayList(widget.pubkey);
+                UserRelayList? userRelayList = await cacheManager.loadUserRelayList(widget.pubkey);
                 List<String> relays = ndk.config.bootstrapRelays;
                 if (userRelayList!=null && userRelayList.relays!=null) {
                   relays = userRelayList!.relays!.keys!.toList();

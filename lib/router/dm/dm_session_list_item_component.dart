@@ -11,6 +11,7 @@ import 'package:yana/utils/base.dart';
 import 'package:yana/utils/router_path.dart';
 import 'package:yana/utils/router_util.dart';
 
+import '../../main.dart';
 import '../../utils/string_util.dart';
 
 class DMSessionListItemComponent extends StatefulWidget {
@@ -64,7 +65,7 @@ class _DMSessionListItemComponent extends State<DMSessionListItemComponent> {
     );
 
     var lastEvent = dmSession.newestEvent!;
-   decryptContent();
+    decryptContent();
 
     bool hasNewMessage = widget.detail.hasNewMessage();
 
@@ -117,27 +118,22 @@ class _DMSessionListItemComponent extends State<DMSessionListItemComponent> {
                       Expanded(
                           child: SizedBox(
                               width: 200,
-                              child: Selector<MetadataProvider, Metadata?>(
-                                builder: (context, metadata, child) {
-                                  return NameComponent(
-                                    pubkey: dmSession.pubkey,
-                                    showNip05: false,
-                                    metadata: metadata,
-                                  );
-                                },
-                                selector: (context, _provider) {
-                                  return _provider.getMetadata(
-                                      widget.detail.dmSession.pubkey);
-                                },
-                              ))),
+                              child: FutureBuilder<Metadata?>(
+                                  future: metadataProvider.getMetadata(widget.detail.dmSession.pubkey),
+                                  builder: (context, snapshot) {
+                                    return NameComponent(
+                                      pubkey: dmSession.pubkey,
+                                      showNip05: false,
+                                      metadata: snapshot.data,
+                                    );
+                                  }))),
                       // Expanded(
                       //   child:
                       Container(
-                        padding: const EdgeInsets.only(left:Base.BASE_PADDING),
+                        padding: const EdgeInsets.only(left: Base.BASE_PADDING),
                         alignment: Alignment.centerRight,
                         child: Text(
-                          GetTimeAgo.parse(DateTime.fromMillisecondsSinceEpoch(
-                              lastEvent.createdAt * 1000 ), pattern: "dd MMM HH:mm"),
+                          GetTimeAgo.parse(DateTime.fromMillisecondsSinceEpoch(lastEvent.createdAt * 1000), pattern: "dd MMM HH:mm"),
                           style: TextStyle(
                             fontSize: smallTextSize,
                             color: themeData.disabledColor,

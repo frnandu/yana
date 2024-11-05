@@ -45,8 +45,8 @@ class _WalletReceiveRouter extends State<WalletReceiveInvoiceRouter> {
   bool satsInput = true;
 
   @override
-  void initState() {
-    metadata = metadataProvider.getMetadata(loggedUserSigner!.getPublicKey());
+  void initState() async {
+    metadata = await metadataProvider.getMetadata(loggedUserSigner!.getPublicKey());
 
     amountInputcontroller.addListener(() {
       setState(() {

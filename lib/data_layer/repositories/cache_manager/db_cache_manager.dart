@@ -42,12 +42,12 @@ class DbCacheManager extends CacheManager {
   }
 
   @override
-  UserRelayList? loadUserRelayList(String pubKey) {
+  Future<UserRelayList?> loadUserRelayList(String pubKey) async {
     return isar_ds.isar.dbUserRelayLists.get(pubKey);
   }
 
   @override
-  RelaySet? loadRelaySet(String name, String pubKey) {
+  Future<RelaySet?> loadRelaySet(String name, String pubKey) async {
     return isar_ds.isar.dbRelaySets.get(RelaySet.buildId(name, pubKey));
   }
 
@@ -80,7 +80,7 @@ class DbCacheManager extends CacheManager {
   }
 
   @override
-  ContactList? loadContactList(String pubKey) {
+  Future<ContactList?> loadContactList(String pubKey) async {
     return isar_ds.isar.dbContactLists.get(pubKey);
   }
 
@@ -186,17 +186,17 @@ class DbCacheManager extends CacheManager {
   }
 
   @override
-  Metadata? loadMetadata(String pubKey) {
+  Future<Metadata?> loadMetadata(String pubKey) async {
     return isar_ds.isar.dbMetadatas.get(pubKey);
   }
 
   @override
-  List<Metadata?> loadMetadatas(List<String> pubKeys) {
+  Future<List<Metadata?>> loadMetadatas(List<String> pubKeys) async {
     return isar_ds.isar.dbMetadatas.getAll(pubKeys);
   }
 
   @override
-  Iterable<Metadata> searchMetadatas(String search, int limit) {
+  Future<Iterable<Metadata>> searchMetadatas(String search, int limit) async {
     return isar_ds.isar.dbMetadatas
         .where()
         .splitDisplayNameWordsElementStartsWith(search)
@@ -247,12 +247,12 @@ class DbCacheManager extends CacheManager {
   }
 
   @override
-  List<Nip05?> loadNip05s(List<String> pubKeys) {
+  Future<List<Nip05?>> loadNip05s(List<String> pubKeys) async {
     return isar_ds.isar.dbNip05s.getAll(pubKeys);
   }
 
   @override
-  Nip05? loadNip05(String pubKey) {
+  Future<Nip05?> loadNip05(String pubKey) async {
     return isar_ds.isar.dbNip05s.get(pubKey);
   }
 
@@ -307,13 +307,13 @@ class DbCacheManager extends CacheManager {
   // }
 
   @override
-  List<Nip01Event> loadEvents({
+  Future<List<Nip01Event>> loadEvents({
     List<String>? pubKeys,
     List<int>? kinds,
     String? pTag,
     int? since,
     int? until,
-  }) {
+  }) async {
     if (since != null || until != null) {
       throw Exception("since | until not implemented");
     }
@@ -336,7 +336,7 @@ class DbCacheManager extends CacheManager {
   }
 
   @override
-  Nip01Event? loadEvent(String id) {
+  Future<Nip01Event?> loadEvent(String id) async {
     Nip01Event? event = isar_ds.isar.dbEvents.get(id);
     return eventFilter == null || (event != null && eventFilter!.filter(event))
         ? event

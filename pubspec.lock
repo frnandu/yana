@@ -529,6 +529,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.1.0"
+  flat_buffers:
+    dependency: transitive
+    description:
+      name: flat_buffers
+      sha256: "380bdcba5664a718bfd4ea20a45d39e13684f5318fcd8883066a55e21f37f4c3"
+      url: "https://pub.dev"
+    source: hosted
+    version: "23.5.26"
   flutter:
     dependency: "direct main"
     description: flutter
@@ -1305,11 +1313,9 @@ packages:
   ndk:
     dependency: "direct main"
     description:
-      path: "."
-      ref: master
-      resolved-ref: "4083196b987d4ab81c322f53cd911a8c3f9e7468"
-      url: "https://github.com/relaystr/dart_ndk.git"
-    source: git
+      path: "../ndk"
+      relative: true
+    source: path
     version: "0.1.2"
   nested:
     dependency: transitive
@@ -1327,6 +1333,22 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.2"
+  objectbox:
+    dependency: transitive
+    description:
+      name: objectbox
+      sha256: ea823f4bf1d0a636e7aa50b43daabb64dd0fbd80b85a033016ccc1bc4f76f432
+      url: "https://pub.dev"
+    source: hosted
+    version: "4.0.3"
+  objectbox_flutter_libs:
+    dependency: transitive
+    description:
+      name: objectbox_flutter_libs
+      sha256: c91350bbbce5e6c2038255760b5be988faead004c814f833c2cd137445c6ae70
+      url: "https://pub.dev"
+    source: hosted
+    version: "4.0.3"
   octo_image:
     dependency: transitive
     description:
