@@ -3,7 +3,9 @@ import 'package:ndk/shared/nips/nip01/helpers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:provider/provider.dart';
 import 'package:yana/nostr/upload/uploader.dart';
+import 'package:yana/provider/metadata_provider.dart';
 import 'package:yana/utils/platform_util.dart';
 import 'package:yana/utils/router_util.dart';
 import 'package:yana/utils/string_util.dart';
@@ -62,6 +64,8 @@ class _ProfileEditorRouter extends CustState<ProfileEditorRouter> {
     if (broadcasting) {
       return loader("Broadcasting metadata to relays...");
     }
+    var _metadataProvider = Provider.of<MetadataProvider>(context);
+
     var s = I18n.of(context);
     var themeData = Theme.of(context);
     var cardColor = themeData.cardColor;
@@ -70,26 +74,27 @@ class _ProfileEditorRouter extends CustState<ProfileEditorRouter> {
 
     return FutureBuilder<Metadata?>(
         future: Future(() async {
-          Metadata? cached = await cacheManager.loadMetadata(loggedUserSigner!.getPublicKey());
+          Metadata? cached = metadata ?? await metadataProvider.getMetadata(loggedUserSigner!.getPublicKey());
           if (cached != null &&
               cached.refreshedTimestamp != null &&
               cached.refreshedTimestamp! > (DateTime.now().subtract(REFRESH_METADATA_BEFORE_EDIT_DURATION).millisecondsSinceEpoch ~/ 1000)) {
-            metadata = cached;
+              metadata = cached;
           } else {
             await ndk.metadata.loadMetadata(loggedUserSigner!.getPublicKey(), forceRefresh: true).then(
               (metadata) {
                 metadata ??= Metadata(pubKey: loggedUserSigner!.getPublicKey());
-                this.metadata = metadata;
+                return this.metadata;
               },
             ).timeout(const Duration(seconds: 6), onTimeout: () {
               metadata ??= Metadata(pubKey: loggedUserSigner!.getPublicKey(), updatedAt: Helpers.now);
+              return metadata;
             });
             EasyLoading.show(status: "Refreshing metadata from relays...", maskType: EasyLoadingMaskType.black);
             return metadata;
           }
         }),
         builder: (context, snapshot) {
-          if (snapshot.hasData!=null) {
+          if (snapshot.hasData) {
             EasyLoading.dismiss();
             metadata = snapshot.data;
 
