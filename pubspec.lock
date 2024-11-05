@@ -1313,9 +1313,11 @@ packages:
   ndk:
     dependency: "direct main"
     description:
-      path: "../ndk"
-      relative: true
-    source: path
+      path: "."
+      ref: isar
+      resolved-ref: "899614b85cbf7f18b0690df65565acd5256072f0"
+      url: "https://github.com/relaystr/ndk.git"
+    source: git
     version: "0.1.2"
   nested:
     dependency: transitive
