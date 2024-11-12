@@ -338,7 +338,12 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
                 followEventProvider.clear();
                 settingProvider.addAndChangeKey(widget.pubkey, false, false, updateUI: true);
                 String publicKey = widget.pubkey;
-                ndk.changeEventSigner(Bip340EventSigner(privateKey: null, publicKey: publicKey));
+                ndk = Ndk(
+                    NdkConfig(
+                      eventVerifier: RustEventVerifier(),
+                      cache: cacheManager,
+                      eventSigner: Bip340EventSigner(privateKey: null, publicKey: publicKey),
+                    ));
                 await initRelays(newKey: false);
                 followEventProvider.loadCachedFeed();
                 nwcProvider.init();

@@ -1,18 +1,16 @@
 import 'dart:developer';
 
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:ndk/data_layer/repositories/signers/amber_event_signer.dart';
-import 'package:ndk/data_layer/repositories/signers/bip340_event_signer.dart';
-import 'package:ndk/domain_layer/entities/metadata.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:ndk/ndk.dart';
 import 'package:provider/provider.dart';
-import 'package:yana/provider/metadata_provider.dart';
 import 'package:yana/provider/setting_provider.dart';
 import 'package:yana/ui/name_component.dart';
 import 'package:yana/ui/point_component.dart';
 import 'package:yana/utils/router_util.dart';
 
+import '/js/js_helper.dart' as js;
 import '../../i18n/i18n.dart';
 import '../../main.dart';
 import '../../nostr/client_utils/keys.dart';
@@ -24,7 +22,6 @@ import '../../utils/base.dart';
 import '../../utils/platform_util.dart';
 import '../../utils/router_path.dart';
 import '../../utils/string_util.dart';
-import '/js/js_helper.dart' as js;
 import 'index_drawer_content.dart';
 
 class AccountsComponent extends StatefulWidget {
@@ -148,11 +145,17 @@ class AccountsState extends State<AccountsComponent> {
     String? key = settingProvider.key;
     bool isPrivate = settingProvider.isPrivateKey;
     String publicKey = isPrivate ? getPublicKey(key!) : key!;
-    ndk.changeEventSigner(settingProvider.isExternalSignerKey
+    EventSigner eventSigner = settingProvider.isExternalSignerKey
         ? AmberEventSigner(publicKey: publicKey, amberFlutterDS: amberFlutterDS)
         : isPrivate || !PlatformUtil.isWeb()
             ? Bip340EventSigner(privateKey: isPrivate ? key : null, publicKey: publicKey)
-            : Nip07EventSigner(await js.getPublicKeyAsync()));
+            : Nip07EventSigner(await js.getPublicKeyAsync());
+    ndk = Ndk(
+        NdkConfig(
+          eventVerifier: RustEventVerifier(),
+          cache: cacheManager,
+          eventSigner: eventSigner,
+        ));
 
     await followEventProvider.loadCachedFeed();
     initRelays(newKey: false);

@@ -125,12 +125,12 @@ dependencies:
   bolt11_decoder: ^1.0.2
 
 #  ndk: ^0.1.2
-  ndk:
-    git:
-      url: https://github.com/relaystr/ndk.git
-      ref: isar
 #  ndk:
-#    path: ../ndk
+#    git:
+#      url: https://github.com/relaystr/ndk.git
+#      ref: master
+  ndk:
+    path: ../ndk
 
 dev_dependencies:
   flutter_launcher_icons: ^0.14.1
@@ -296,8 +296,10 @@ flutter:
 flutter_launcher_icons:
   image_path_ios: 'assets/imgs/logo/logo-new.png'
   image_path_android: 'assets/imgs/logo/logo-new.png'
-  image_path: "assets/images/logo.png"
+  image_path: 'assets/imgs/logo/logo-new.png'
   min_sdk_android: 21
+  adaptive_icon_foreground: "assets/imgs/logo/logo-new.png" # Set the foreground image (same or different from image_path)
+  adaptive_icon_background: "#5F8F3C"
   android: true
   ios: true
   windows:

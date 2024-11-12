@@ -7,6 +7,7 @@ import 'package:ndk/domain_layer/entities/relay.dart';
 import 'package:ndk/domain_layer/entities/relay_info.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:ndk/ndk.dart';
 import 'package:ndk/shared/helpers/relay_helper.dart';
 import 'package:protocol_handler/protocol_handler.dart';
 import 'package:provider/provider.dart';
@@ -104,7 +105,12 @@ class _IndexRouter extends CustState<IndexRouter>
             followEventProvider.clear();
             await settingProvider.addAndChangeKey(priv, true, false, updateUI: false);
             String publicKey = getPublicKey(priv);
-            ndk.changeEventSigner(Bip340EventSigner(privateKey: priv, publicKey: publicKey));
+            ndk = Ndk(
+                NdkConfig(
+                  eventVerifier: RustEventVerifier(),
+                  cache: cacheManager,
+                  eventSigner: Bip340EventSigner(privateKey: priv, publicKey: publicKey),
+                ));
 
             await initRelays(newKey: true);
             followEventProvider.loadCachedFeed();

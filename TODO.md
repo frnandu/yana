@@ -92,11 +92,11 @@
 - ~~add conversation participants relays for zaps when using inbox model~~
 
 ===== v0.15
-- Full NWC Wallet: send, receive, list of transactions
-- Wallet balance in FIAT (choose currency) from coingecko/kraken?
-- rust event verifier
-- published on zap.store with self-signing
-- choose currency for wallet on settings
+- ~~Full NWC Wallet: send, receive, list of transactions~~
+- ~~Wallet balance in FIAT (choose currency) from coingecko/kraken?~~
+- ~~rust event verifier~~
+- ~~published on zap.store with self-signing~~
+- ~~choose currency for wallet on settings~~
 
 ===== v0.16
 - nostr+walletconnect onboarding with lud16

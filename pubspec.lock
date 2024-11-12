@@ -832,10 +832,10 @@ packages:
     dependency: transitive
     description:
       name: flutter_rust_bridge
-      sha256: "0ad5079de35d317650fec59b26cb4d0c116ebc2ce703a29f9367513b8a91c287"
+      sha256: fb9d3c9395eae3c71d4fe3ec343b9f30636c9988150c8bb33b60047549b34e3d
       url: "https://pub.dev"
     source: hosted
-    version: "2.5.0"
+    version: "2.6.0"
   flutter_secure_storage:
     dependency: "direct main"
     description:
@@ -1313,12 +1313,10 @@ packages:
   ndk:
     dependency: "direct main"
     description:
-      path: "."
-      ref: isar
-      resolved-ref: "899614b85cbf7f18b0690df65565acd5256072f0"
-      url: "https://github.com/relaystr/ndk.git"
-    source: git
-    version: "0.1.2"
+      path: "../ndk"
+      relative: true
+    source: path
+    version: "0.1.3"
   nested:
     dependency: transitive
     description:
@@ -1635,10 +1633,10 @@ packages:
     dependency: transitive
     description:
       name: rust_lib_ndk
-      sha256: "7e14dea16bdc5cf1c0db12ce3714571f925602c2974844676aacf06a8b569f9b"
+      sha256: "5bb8f455cebd72a174d0974651bacfaacb7638960ac9029d741d0dc4dd123e71"
       url: "https://pub.dev"
     source: hosted
-    version: "0.1.2"
+    version: "0.1.3"
   rxdart:
     dependency: transitive
     description:

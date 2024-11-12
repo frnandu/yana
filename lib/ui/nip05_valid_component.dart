@@ -17,38 +17,33 @@ class Nip05ValidComponent extends StatefulWidget {
 }
 
 class _Nip05ValidComponent extends State<Nip05ValidComponent> {
-  bool? valid;
 
   @override
   Widget build(BuildContext context) {
     var themeData = Theme.of(context);
     var smallTextSize = themeData.textTheme.bodySmall!.fontSize;
 
-    Color iconColor = Colors.red;
-    var iconData = Icons.warning_amber_outlined;
-    if (valid == null) {
-      iconColor = Colors.yellow;
-      iconData = Icons.downloading;
-    } else if (valid!) {
-      iconColor = Colors.grey;
-      iconData = Icons.verified;
-    }
+    return FutureBuilder<bool?>(
+        future: metadataProvider.isNip05Valid(widget.metadata),
+        builder: (context, snapshot) {
+          bool? valid = snapshot.data;
+          Color iconColor = Colors.red;
+          var iconData = Icons.warning_amber_outlined;
+          if (valid == null) {
+            iconColor = Colors.yellow;
+            iconData = Icons.downloading;
+          } else if (valid) {
+            iconColor = Colors.grey;
+            iconData = Icons.verified;
+          }
 
-    return Container(
-        margin: const EdgeInsets.only(top: 2),
-        child: Icon(
-          iconData,
-          color: iconColor,
-          size: smallTextSize,
-        ));
-  }
-
-  @override
-  void initState() {
-    Future(() async {
-      setState(() async {
-        valid = await metadataProvider.isNip05Valid(widget.metadata);
-      });
-    });
+          return Container(
+              margin: const EdgeInsets.only(top: 2),
+              child: Icon(
+                iconData,
+                color: iconColor,
+                size: smallTextSize,
+              ));
+        });
   }
 }

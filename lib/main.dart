@@ -4,11 +4,9 @@ import 'dart:ui';
 
 import 'package:amberflutter/amberflutter.dart';
 import 'package:awesome_notifications/awesome_notifications.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
-import 'package:flutter_background_service_android/flutter_background_service_android.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart' as FlutterCacheManager;
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -18,9 +16,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:isar/isar.dart' as isar;
 import 'package:ndk/config/bootstrap_relays.dart';
-import 'package:ndk/data_layer/data_sources/amber_flutter.dart';
-import 'package:ndk/data_layer/repositories/signers/amber_event_signer.dart';
-import 'package:ndk/data_layer/repositories/verifiers/rust_event_verifier.dart';
+import 'package:ndk/data_layer/db/object_box/db_object_box.dart';
 import 'package:ndk/domain_layer/entities/pubkey_mapping.dart';
 import 'package:ndk/domain_layer/entities/read_write_marker.dart';
 import 'package:ndk/domain_layer/entities/user_relay_list.dart';
@@ -249,20 +245,27 @@ Future<void> initProvidersAndStuff() async {
       if (StringUtil.isNotBlank(key)) {
         bool isPrivate = settingProvider.isPrivateKey;
         String publicKey = isPrivate ? getPublicKey(key!) : key!;
-        ndk.changeEventSigner(settingProvider.isExternalSignerKey
+        EventSigner eventSigner = settingProvider.isExternalSignerKey
             ? AmberEventSigner(publicKey: publicKey, amberFlutterDS: amberFlutterDS)
             : isPrivate || !PlatformUtil.isWeb()
                 ? Bip340EventSigner(privateKey: isPrivate ? key : null, publicKey: publicKey)
-                : Nip07EventSigner(await js.getPublicKeyAsync()));
+                : Nip07EventSigner(await js.getPublicKeyAsync());
+        ndk = Ndk(
+            NdkConfig(
+              eventVerifier: RustEventVerifier(),
+              cache: cacheManager,
+              eventSigner: eventSigner,
+            ));
       }
       //
       // loggedUserSigner = Bip340EventSigner(settingProvider.key!, getPublicKey(settingProvider.key!));
       filterProvider = FilterProvider.getInstance();
       ndk.relays.eventFilters.add(filterProvider);
-      DbCacheManager dbCacheManager = DbCacheManager();
-      await dbCacheManager.init(directory: PlatformUtil.isWeb() ? isar.Isar.sqliteInMemory : (await getApplicationDocumentsDirectory()).path);
+      // DbCacheManager dbCacheManager = DbCacheManager();
+      // await dbCacheManager.init(directory: PlatformUtil.isWeb() ? isar.Isar.sqliteInMemory : (await getApplicationDocumentsDirectory()).path);
+      DbObjectBox dbCacheManager = DbObjectBox();
       cacheManager = dbCacheManager;
-      dbCacheManager.eventFilter = filterProvider;
+      // dbCacheManager.eventFilter = filterProvider;
       //ndk.relays.eventVerifier = HybridEventVerifier();
 
       if (myInboxRelaySet == null) {
@@ -440,9 +443,11 @@ Future<void> main() async {
   } catch (err) {
     print(err);
   }
-  DbCacheManager dbCacheManager = DbCacheManager();
+  DbObjectBox dbCacheManager = DbObjectBox();
+  cacheManager = dbCacheManager;
+  // DbCacheManager dbCacheManager = DbCacheManager();
   try {
-    await dbCacheManager.init(directory: PlatformUtil.isWeb() ? isar.Isar.sqliteInMemory : (await getApplicationDocumentsDirectory()).path);
+    // await dbCacheManager.init(directory: PlatformUtil.isWeb() ? isar.Isar.sqliteInMemory : (await getApplicationDocumentsDirectory()).path);
     cacheManager = dbCacheManager;
   } catch (e) {
     cacheManager = MemCacheManager();
@@ -529,13 +534,20 @@ Future<void> main() async {
   if (StringUtil.isNotBlank(key)) {
     bool isPrivate = settingProvider.isPrivateKey;
     String publicKey = isPrivate ? getPublicKey(key!) : key!;
+    EventSigner? eventSigner;
     if (settingProvider.isExternalSignerKey && isExternalSignerInstalled) {
-      ndk.changeEventSigner(AmberEventSigner(publicKey: publicKey, amberFlutterDS: amberFlutterDS));
+      eventSigner = AmberEventSigner(publicKey: publicKey, amberFlutterDS: amberFlutterDS);
     } else {
-      ndk.changeEventSigner(
+      eventSigner =
           isPrivate || !PlatformUtil.isWeb() ? Bip340EventSigner(privateKey: isPrivate ? key : null, publicKey: publicKey) : Nip07EventSigner(await js.getPublicKeyAsync())
-      );
+      ;
     }
+    ndk = Ndk(
+        NdkConfig(
+          eventVerifier: RustEventVerifier(),
+          cache: cacheManager,
+          eventSigner: eventSigner,
+        ));
   }
 
   if (loggedUserSigner != null) {
