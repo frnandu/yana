@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:yana/utils/platform_util.dart';
 
 import '../main.dart';
+import '../nostr/client_utils/keys.dart';
 import '../utils/base.dart';
 import '../utils/base_consts.dart';
 import '../utils/theme_style.dart';
@@ -39,11 +40,14 @@ class SettingProvider extends ChangeNotifier {
 
   Map<String, bool> _keyIsExternalSignerMap = {};
 
-  final String KEYS_MAP = "private_keys_map";
-  final String IS_PRIVATE_MAP = "keys_is_private_map";
-  final String IS_EXTERNAL_SIGNER_MAP = "keys_is_external_map";
-  final String NWC_URI = "nwc_uri";
-  final String NWC_SECRET = "nwc_secret";
+  int? _privateKeyIndex;
+
+  final KEYS_MAP = "private_keys_map";
+  final IS_PRIVATE_MAP = "keys_is_private_map";
+  final IS_EXTERNAL_SIGNER_MAP = "keys_is_external_map";
+  final NWC_URI = "nwc_uri";
+  final NWC_SECRET = "nwc_secret";
+  final USER_PUBKEY = "user_pubkey";
 
   static Future<SettingProvider> getInstance() async {
     if (_settingProvider == null) {
@@ -55,40 +59,81 @@ class SettingProvider extends ChangeNotifier {
     return _settingProvider!;
   }
 
-  Future<void> _init() async {
-    String? settingStr = _sharedPreferences!.getString(DataKey.SETTING);
-    if (StringUtil.isNotBlank(settingStr)) {
-      var jsonMap = json.decode(settingStr!);
-      if (jsonMap != null) {
-        var setting = SettingData.fromJson(jsonMap);
-        _settingData = setting;
-        _keyMap.clear();
+  Future<void> _loadKeys() async {
+    _keyMap.clear();
 
-        String? keyMapJson = await secureStorage.read(key: KEYS_MAP);
-        String? keyIsPrivateMapJson= await secureStorage.read(key: IS_PRIVATE_MAP);
-        String? keyIsExternalSignerMapJson = await secureStorage.read(key: IS_EXTERNAL_SIGNER_MAP);
-        if (StringUtil.isNotBlank(keyMapJson)) {
-          try {
-            var jsonKeyMap = jsonDecode(keyMapJson!);
-            var isPrivateJsonKeyMap = keyIsPrivateMapJson!=null?jsonDecode(keyIsPrivateMapJson!):null;
-            var isExternalJsonKeyMap = keyIsExternalSignerMapJson != null ? jsonDecode(keyIsExternalSignerMapJson) : null;
-            if (jsonKeyMap != null) {
-              for (var entry in (jsonKeyMap as Map<String, dynamic>).entries) {
-                _keyMap[entry.key] = entry.value;
-                _keyIsPrivateMap[entry.key] = isPrivateJsonKeyMap!=null && isPrivateJsonKeyMap[entry.key];
-                _keyIsExternalSignerMap[entry.key] = isExternalJsonKeyMap != null && isExternalJsonKeyMap[entry.key];
-              }
-            }
-          } catch (e) {
-            log("secureStorage reading key KEYS_MAP jsonDecode error");
-            log(e.toString());
+    String? keyMapJson = await secureStorage.read(key: KEYS_MAP);
+    String? keyIsPrivateMapJson = await secureStorage.read(key: IS_PRIVATE_MAP);
+    String? keyIsExternalSignerMapJson =
+        await secureStorage.read(key: IS_EXTERNAL_SIGNER_MAP);
+    if (StringUtil.isNotBlank(keyMapJson)) {
+      try {
+        var jsonKeyMap = jsonDecode(keyMapJson!);
+        var isPrivateJsonKeyMap = keyIsPrivateMapJson != null
+            ? jsonDecode(keyIsPrivateMapJson)
+            : null;
+        var isExternalJsonKeyMap = keyIsExternalSignerMapJson != null
+            ? jsonDecode(keyIsExternalSignerMapJson)
+            : null;
+        if (jsonKeyMap != null) {
+          for (var entry in (jsonKeyMap as Map<String, dynamic>).entries) {
+            _keyMap[entry.key] = entry.value;
+            _keyIsPrivateMap[entry.key] =
+                isPrivateJsonKeyMap != null && isPrivateJsonKeyMap[entry.key];
+            _keyIsExternalSignerMap[entry.key] =
+                isExternalJsonKeyMap != null && isExternalJsonKeyMap[entry.key];
           }
         }
+      } catch (e) {
+        log("secureStorage reading key KEYS_MAP jsonDecode error");
+        log(e.toString());
+      }
+    }
+  }
+
+  String _prefixKey(String userKey, String prefkey) {
+    return '${userKey}_$prefkey';
+  }
+
+  void _loadSettings(String? userKey) {
+    if (StringUtil.isNotBlank(key)) {
+      final settingStr =
+          _sharedPreferences!.getString(_prefixKey(userKey!, DataKey.SETTING));
+      if (StringUtil.isNotBlank(settingStr)) {
+        final jsonMap = json.decode(settingStr!);
+        if (jsonMap != null) {
+          final setting = SettingData.fromJson(jsonMap);
+          _settingData = setting;
+          notifyListeners();
+          return;
+        }
+      }
+      return;
+    }
+    _settingData = SettingData();
+  }
+
+  void _setKeyIndex(String? userKey) {
+    if (userKey == null) return;
+
+    for (final entry in _keyMap.entries) {
+      final keyValue = entry.value;
+      final entryKey = entry.key;
+
+      if (keyValue == userKey ||
+          (_keyIsPrivateMap[keyValue] == true &&
+              getPublicKey(keyValue) == userKey)) {
+        _privateKeyIndex = int.parse(entryKey);
         return;
       }
     }
+  }
 
-    _settingData = SettingData();
+  Future<void> _init() async {
+    final userKey = _sharedPreferences!.getString(USER_PUBKEY);
+    _loadSettings(userKey);
+    await _loadKeys();
+    _setKeyIndex(userKey);
   }
 
   Future<void> reload() async {
@@ -102,29 +147,30 @@ class SettingProvider extends ChangeNotifier {
   Map<String, bool> get keyIsPrivateMap => _keyIsPrivateMap;
 
   String? get key {
-    if (_settingData!.privateKeyIndex != null &&
-        _keyMap.isNotEmpty) {
-      return _keyMap[_settingData!.privateKeyIndex.toString()];
+    if (_privateKeyIndex != null && _keyMap.isNotEmpty) {
+      return _keyMap[_privateKeyIndex.toString()];
     }
     return null;
   }
 
   bool get isExternalSignerKey {
-    return _keyIsExternalSignerMap[_settingData!.privateKeyIndex.toString()] ?? false;
+    return _keyIsExternalSignerMap[_privateKeyIndex.toString()] ?? false;
   }
+
   bool isExternalSignerKeyIndex(int index) {
     return _keyIsExternalSignerMap[index.toString()] ?? false;
   }
 
   bool get isPrivateKey {
-    return _keyIsPrivateMap[_settingData!.privateKeyIndex.toString()] ?? false;
+    return _keyIsPrivateMap[_privateKeyIndex.toString()] ?? false;
   }
 
   bool isPrivateKeyIndex(int index) {
     return _keyIsPrivateMap[index.toString()] ?? false;
   }
 
-  Future<int> addAndChangeKey(String key, bool isPrivate, bool isExternalSigner, {bool updateUI = false}) async {
+  Future<int> addAndChangeKey(String key, bool isPrivate, bool isExternalSigner,
+      {bool updateUI = false}) async {
     int? findIndex;
     var entries = _keyMap.entries;
     for (var entry in entries) {
@@ -146,11 +192,14 @@ class SettingProvider extends ChangeNotifier {
         _keyIsPrivateMap[index] = isPrivate;
         _keyIsExternalSignerMap[index] = isExternalSigner;
 
-        _settingData!.privateKeyIndex = i;
+        _privateKeyIndex = i;
 
-        await secureStorage.write(key: KEYS_MAP,value: json.encode(_keyMap));
-        await secureStorage.write(key: IS_PRIVATE_MAP,value: json.encode(_keyIsPrivateMap));
-        await secureStorage.write(key: IS_EXTERNAL_SIGNER_MAP,value: json.encode(_keyIsExternalSignerMap));
+        await secureStorage.write(key: KEYS_MAP, value: json.encode(_keyMap));
+        await secureStorage.write(
+            key: IS_PRIVATE_MAP, value: json.encode(_keyIsPrivateMap));
+        await secureStorage.write(
+            key: IS_EXTERNAL_SIGNER_MAP,
+            value: json.encode(_keyIsExternalSignerMap));
         saveAndNotifyListeners(updateUI: updateUI);
 
         return i;
@@ -165,7 +214,7 @@ class SettingProvider extends ChangeNotifier {
   }
 
   Future<void> setNwc(String? uri) async {
-    await secureStorage.write(key: NWC_URI,value: uri);
+    await secureStorage.write(key: NWC_URI, value: uri);
   }
 
   Future<String?> getNwcSecret() async {
@@ -173,20 +222,20 @@ class SettingProvider extends ChangeNotifier {
   }
 
   Future<void> setNwcSecret(String? secret) async {
-    await secureStorage.write(key: NWC_SECRET,value: secret);
+    await secureStorage.write(key: NWC_SECRET, value: secret);
   }
 
   void removeKey(int index) {
     var indexStr = index.toString();
     _keyMap.remove(indexStr);
-    secureStorage.write(key: KEYS_MAP,value: json.encode(_keyMap));
-    if (_settingData!.privateKeyIndex == index) {
+    secureStorage.write(key: KEYS_MAP, value: json.encode(_keyMap));
+    if (_privateKeyIndex == index) {
       if (_keyMap.isEmpty) {
-        _settingData!.privateKeyIndex = null;
+        _privateKeyIndex = null;
       } else {
         // find a index
         var keyIndex = _keyMap.keys.first;
-        _settingData!.privateKeyIndex = int.tryParse(keyIndex);
+        _privateKeyIndex = int.tryParse(keyIndex);
       }
     }
 
@@ -195,7 +244,7 @@ class SettingProvider extends ChangeNotifier {
 
   SettingData get settingData => _settingData!;
 
-  int? get privateKeyIndex => _settingData!.privateKeyIndex;
+  int? get privateKeyIndex => _privateKeyIndex;
 
   // String? get privateKeyMap => _settingData!.privateKeyMap;
 
@@ -208,7 +257,8 @@ class SettingProvider extends ChangeNotifier {
 
   bool get backgroundService => _settingData!.backgroundService ?? true;
 
-  bool get notificationsReactions => _settingData!.notificationsReactions ?? true;
+  bool get notificationsReactions =>
+      _settingData!.notificationsReactions ?? true;
 
   bool get notificationsReposts => _settingData!.notificationsReposts ?? true;
 
@@ -228,11 +278,15 @@ class SettingProvider extends ChangeNotifier {
 
   int? get gossip => _settingData!.gossip ?? OpenStatus.CLOSE;
 
-  int? get inboxForReactions => _settingData!.inboxForReactions ?? OpenStatus.CLOSE;
+  int? get inboxForReactions =>
+      _settingData!.inboxForReactions ?? OpenStatus.CLOSE;
 
-  int get followeesRelayMinCount => _settingData!.followeesRelayMinCount ?? DEFAULT_FOLLOWEES_RELAY_MIN_COUNT;
+  int get followeesRelayMinCount =>
+      _settingData!.followeesRelayMinCount ?? DEFAULT_FOLLOWEES_RELAY_MIN_COUNT;
 
-  int get broadcastToInboxMaxCount => _settingData!.broadcastToInboxMaxCount ?? DEFAULT_BROADCAST_TO_INBOX_MAX_COUNT;
+  int get broadcastToInboxMaxCount =>
+      _settingData!.broadcastToInboxMaxCount ??
+      DEFAULT_BROADCAST_TO_INBOX_MAX_COUNT;
 
   /// i18n
   String? get i18n => _settingData!.i18n;
@@ -253,8 +307,7 @@ class SettingProvider extends ChangeNotifier {
 
   int? get openTranslate => _settingData!.openTranslate;
 
-  static const ALL_SUPPORT_LANGUAGES =
-      "en";
+  static const ALL_SUPPORT_LANGUAGES = "en";
 
   String? get translateSourceArgs {
     if (StringUtil.isNotBlank(_settingData!.translateSourceArgs)) {
@@ -265,7 +318,7 @@ class SettingProvider extends ChangeNotifier {
 
   String? get translateTarget => _settingData!.translateTarget;
 
-  String? get currency => _settingData!.currency?? "usd";
+  String? get currency => _settingData!.currency ?? "usd";
 
   Map<String, int> _translateSourceArgsMap = {};
 
@@ -299,7 +352,6 @@ class SettingProvider extends ChangeNotifier {
 
   int? get tableMode => _settingData!.tableMode;
 
-
   int? get autoOpenSensitive => _settingData!.autoOpenSensitive;
 
   set settingData(SettingData o) {
@@ -308,8 +360,9 @@ class SettingProvider extends ChangeNotifier {
   }
 
   set privateKeyIndex(int? o) {
-    _settingData!.privateKeyIndex = o;
-    saveAndNotifyListeners();
+    _privateKeyIndex = o;
+    final pubKey = isPrivateKey ? getPublicKey(key!) : key!;
+    _loadSettings(pubKey);
   }
 
   // set privateKeyMap(String? o) {
@@ -485,7 +538,11 @@ class SettingProvider extends ChangeNotifier {
     var m = _settingData!.toJson();
     var jsonStr = json.encode(m);
     // print(jsonStr);
-    await _sharedPreferences!.setString(DataKey.SETTING, jsonStr);
+
+    final pubKey = isPrivateKey ? getPublicKey(key!) : key!;
+    await _sharedPreferences!.setString(USER_PUBKEY, pubKey);
+    await _sharedPreferences!
+        .setString(_prefixKey(pubKey, DataKey.SETTING), jsonStr);
     _settingProvider!._reloadTranslateSourceArgs();
 
     if (updateUI) {
@@ -495,8 +552,6 @@ class SettingProvider extends ChangeNotifier {
 }
 
 class SettingData {
-  int? privateKeyIndex;
-
   // String? privateKeyMap;
   //
   // String? encryptPrivateKeyMap;
@@ -569,7 +624,6 @@ class SettingData {
   late int updatedTime;
 
   SettingData({
-    this.privateKeyIndex,
     // this.privateKeyMap,
     this.lockOpen = OpenStatus.CLOSE,
     this.defaultIndex,
@@ -605,7 +659,6 @@ class SettingData {
   });
 
   SettingData.fromJson(Map<String, dynamic> json) {
-    privateKeyIndex = json['privateKeyIndex'];
     // privateKeyMap = json['privateKeyMap'];
     // encryptPrivateKeyMap = json['encryptPrivateKeyMap'];
     if (json['lockOpen'] != null) {
@@ -647,12 +700,12 @@ class SettingData {
     } else {
       inboxForReactions = 0;
     }
-    if (json['followeesRelayMinCount']!=null) {
+    if (json['followeesRelayMinCount'] != null) {
       followeesRelayMinCount = json['followeesRelayMinCount'];
     } else {
       followeesRelayMinCount = SettingProvider.DEFAULT_FOLLOWEES_RELAY_MIN_COUNT;
     }
-    if (json['broadcastToInboxMaxCount']!=null) {
+    if (json['broadcastToInboxMaxCount'] != null) {
       broadcastToInboxMaxCount = json['broadcastToInboxMaxCount'];
     } else {
       broadcastToInboxMaxCount = SettingProvider.DEFAULT_BROADCAST_TO_INBOX_MAX_COUNT;
@@ -682,7 +735,6 @@ class SettingData {
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['privateKeyIndex'] = this.privateKeyIndex;
     // data['privateKeyMap'] = this.privateKeyMap;
     // data['encryptPrivateKeyMap'] = this.encryptPrivateKeyMap;
     data['lockOpen'] = this.lockOpen;
