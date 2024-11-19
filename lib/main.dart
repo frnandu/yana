@@ -16,7 +16,9 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:isar/isar.dart' as isar;
 import 'package:ndk/config/bootstrap_relays.dart';
-import 'package:ndk/data_layer/db/object_box/db_object_box.dart';
+import 'package:ndk/data_layer/data_sources/amber_flutter.dart';
+import 'package:ndk/data_layer/repositories/cache_manager/isar_cache_manager.dart';
+import 'package:ndk/data_layer/repositories/signers/amber_event_signer.dart';
 import 'package:ndk/domain_layer/entities/pubkey_mapping.dart';
 import 'package:ndk/domain_layer/entities/read_write_marker.dart';
 import 'package:ndk/domain_layer/entities/user_relay_list.dart';
@@ -58,7 +60,6 @@ import 'package:yana/utils/image/cache_manager_builder.dart';
 import 'package:yana/utils/platform_util.dart';
 
 import '/js/js_helper.dart' as js;
-import 'data_layer/repositories/cache_manager/db_cache_manager.dart';
 import 'i18n/i18n.dart';
 import 'nostr/client_utils/keys.dart';
 import 'nostr/nip19/nip19.dart';
@@ -261,11 +262,11 @@ Future<void> initProvidersAndStuff() async {
       // loggedUserSigner = Bip340EventSigner(settingProvider.key!, getPublicKey(settingProvider.key!));
       filterProvider = FilterProvider.getInstance();
       ndk.relays.eventFilters.add(filterProvider);
-      // DbCacheManager dbCacheManager = DbCacheManager();
-      // await dbCacheManager.init(directory: PlatformUtil.isWeb() ? isar.Isar.sqliteInMemory : (await getApplicationDocumentsDirectory()).path);
-      DbObjectBox dbCacheManager = DbObjectBox();
-      cacheManager = dbCacheManager;
-      // dbCacheManager.eventFilter = filterProvider;
+      IsarCacheManager dbCacheManager = IsarCacheManager();
+      await dbCacheManager.init(directory: PlatformUtil.isWeb() ? isar.Isar.sqliteInMemory : (await getApplicationDocumentsDirectory()).path);
+      // DbObjectBox dbCacheManager = DbObjectBox();
+      // cacheManager = dbCacheManager;
+      dbCacheManager.eventFilter = filterProvider;
       //ndk.relays.eventVerifier = HybridEventVerifier();
 
       if (myInboxRelaySet == null) {
@@ -443,11 +444,11 @@ Future<void> main() async {
   } catch (err) {
     print(err);
   }
-  DbObjectBox dbCacheManager = DbObjectBox();
-  cacheManager = dbCacheManager;
-  // DbCacheManager dbCacheManager = DbCacheManager();
+  // DbObjectBox dbCacheManager = DbObjectBox();
+  // cacheManager = dbCacheManager;
+  IsarCacheManager dbCacheManager = IsarCacheManager();
   try {
-    // await dbCacheManager.init(directory: PlatformUtil.isWeb() ? isar.Isar.sqliteInMemory : (await getApplicationDocumentsDirectory()).path);
+    await dbCacheManager.init(directory: PlatformUtil.isWeb() ? isar.Isar.sqliteInMemory : (await getApplicationDocumentsDirectory()).path);
     cacheManager = dbCacheManager;
   } catch (e) {
     cacheManager = MemCacheManager();

@@ -131,6 +131,10 @@ dependencies:
 #      ref: master
   ndk:
     path: ../ndk
+#    path: ../ndk/packages/ndk
+#
+#  ndk_amber:
+#    path: ../ndk/packages/ndk_amber
 
 dev_dependencies:
   flutter_launcher_icons: ^0.14.1

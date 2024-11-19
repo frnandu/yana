@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:ndk/data_layer/repositories/signers/amber_event_signer.dart';
 import 'package:ndk/ndk.dart';
 import 'package:provider/provider.dart';
 import 'package:yana/provider/setting_provider.dart';
@@ -169,7 +170,9 @@ class AccountsState extends State<AccountsComponent> {
     if (settingProvider.privateKeyIndex != index) {
       EasyLoading.show(status: "Logging out...", maskType: EasyLoadingMaskType.black);
       clearCurrentMemInfo();
-      ndk.changeEventSigner(null);
+      ndk = Ndk(
+        NdkConfig(eventVerifier: RustEventVerifier(), cache: cacheManager),
+      );
 
       settingProvider.privateKeyIndex = index;
 
@@ -198,7 +201,9 @@ class AccountsState extends State<AccountsComponent> {
           RouterUtil.back(context);
         }
       } else {
-        ndk.changeEventSigner(null);
+        ndk = Ndk(
+          NdkConfig(eventVerifier: RustEventVerifier(), cache: cacheManager),
+        );
       }
     }
 

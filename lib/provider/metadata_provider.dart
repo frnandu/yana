@@ -1,9 +1,6 @@
-import 'package:ndk/config/bootstrap_relays.dart';
-import 'package:ndk/domain_layer/entities/metadata.dart';
-import 'package:ndk/domain_layer/entities/relay_set.dart';
-import 'package:ndk/shared/nips/nip01/helpers.dart';
-import 'package:ndk/shared/nips/nip05/nip05.dart';
 import 'package:flutter/material.dart';
+import 'package:ndk/config/bootstrap_relays.dart';
+import 'package:ndk/entities.dart';
 
 import '../main.dart';
 import '../utils/later_function.dart';
@@ -25,13 +22,9 @@ class MetadataProvider extends ChangeNotifier with LaterFunction {
     if (_needUpdateMetadatas.isNotEmpty) {
       _loadNeedingUpdateMetadatas();
     }
-    if (_needUpdateNip05s.isNotEmpty) {
-      _loadNeedingUpdateNip05s();
-    }
   }
 
   List<String> _needUpdateMetadatas = [];
-  List<Metadata> _needUpdateNip05s = [];
 
   void update(String pubkey) {
     if (!_needUpdateMetadatas.contains(pubkey)) {
@@ -56,15 +49,8 @@ class MetadataProvider extends ChangeNotifier with LaterFunction {
 
   Future<bool?> isNip05Valid(Metadata metadata) async {
     if (StringUtil.isNotBlank(metadata.nip05)) {
-      Nip05? nip05 = await cacheManager.loadNip05(metadata.pubKey);
-      if (nip05 == null || nip05.needsUpdate(NIP05_NEEDS_UPDATE_DURATION)) {
-        if (!_needUpdateNip05s.contains(metadata)) {
-          _needUpdateNip05s.add(metadata);
-          later(_laterCallback, null);
-          return null;
-        }
-      }
-      return nip05?.valid;
+      Nip05 nip05 = await ndk.nip05.check(nip05: metadata.nip05!, pubkey: metadata.pubKey);
+      return nip05.valid;
     }
     return null;
   }
@@ -94,29 +80,8 @@ class MetadataProvider extends ChangeNotifier with LaterFunction {
     }
   }
 
-  void _loadNeedingUpdateNip05s() async {
-    if (_needUpdateNip05s.isEmpty) {
-      return;
-    }
-    List<Nip05> toSave = [];
-
-    List<Metadata> doCheck = List.of(_needUpdateNip05s);
-    for (var metadata in doCheck) {
-      Nip05? nip05 = await cacheManager.loadNip05(metadata.pubKey);
-      bool valid = await Nip05.check(metadata.nip05!, metadata.pubKey);
-      nip05 ??= Nip05(pubKey: metadata.pubKey, nip05: metadata.nip05!, valid: valid, updatedAt: Helpers.now);
-      nip05.valid = valid;
-      nip05.updatedAt = Helpers.now;
-      toSave.add(nip05);
-    }
-    await cacheManager.saveNip05s(toSave);
-    _needUpdateNip05s.clear();
-    notifyListeners();
-  }
-
   void clear() {
     cacheManager.removeAllMetadatas();
-    cacheManager.removeAllNip05s();
   }
 
   Future<void> updateLud16IfEmpty(String? lud16) async {
