@@ -98,9 +98,12 @@
 - published on zap.store with self-signing
 - choose currency for wallet on settings
 
-===== v0.16
+===== v0.16 DONE
 - nostr+walletconnect onboarding with lud16
-- fix not finding metadatas 
+- fix not finding metadatas
+
+
+===== v0.16 TODO
 - make thread detail subscription of new replies work
 
 =======
