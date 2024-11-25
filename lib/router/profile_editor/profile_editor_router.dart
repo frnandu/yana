@@ -3,7 +3,9 @@ import 'package:ndk/shared/nips/nip01/helpers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:provider/provider.dart';
 import 'package:yana/nostr/upload/uploader.dart';
+import 'package:yana/provider/metadata_provider.dart';
 import 'package:yana/utils/platform_util.dart';
 import 'package:yana/utils/router_util.dart';
 import 'package:yana/utils/string_util.dart';
@@ -35,7 +37,7 @@ class _ProfileEditorRouter extends CustState<ProfileEditorRouter> {
   TextEditingController lud06Controller = TextEditingController();
 
   Metadata? metadata;
-  bool broadcasting=false;
+  bool broadcasting = false;
 
   Duration REFRESH_METADATA_BEFORE_EDIT_DURATION = const Duration(minutes: 5);
 
@@ -45,22 +47,16 @@ class _ProfileEditorRouter extends CustState<ProfileEditorRouter> {
 
   Widget loader(String text) {
     var themeData = Theme.of(context);
-    return Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Text(text,
-              style: TextStyle(color: themeData.textTheme.bodyMedium!.color,
-                  decoration: TextDecoration.none,
-                  fontFamily: 'Geist',
-                  fontWeight: FontWeight.normal,
-                  fontSize: 20)),
-          const SizedBox(height: 50),
-          SpinKitFadingCircle(
-            color: themeData.textTheme.bodyMedium!.color,
-            size: 100.0,
-          )
-        ]);
+    return Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.center, children: [
+      Text(text,
+          style: TextStyle(
+              color: themeData.textTheme.bodyMedium!.color, decoration: TextDecoration.none, fontFamily: 'Geist', fontWeight: FontWeight.normal, fontSize: 20)),
+      const SizedBox(height: 50),
+      SpinKitFadingCircle(
+        color: themeData.textTheme.bodyMedium!.color,
+        size: 100.0,
+      )
+    ]);
   }
 
   @override
@@ -68,214 +64,218 @@ class _ProfileEditorRouter extends CustState<ProfileEditorRouter> {
     if (broadcasting) {
       return loader("Broadcasting metadata to relays...");
     }
+    var _metadataProvider = Provider.of<MetadataProvider>(context);
+
     var s = I18n.of(context);
     var themeData = Theme.of(context);
     var cardColor = themeData.cardColor;
     var mainColor = themeData.primaryColor;
     var textColor = themeData.textTheme.bodyMedium!.color;
 
-    if (metadata == null) {
-      Metadata? cached = cacheManager.loadMetadata(loggedUserSigner!.getPublicKey());
-      if (cached!=null && cached.refreshedTimestamp!=null && cached.refreshedTimestamp! > (DateTime.now().subtract(REFRESH_METADATA_BEFORE_EDIT_DURATION).millisecondsSinceEpoch ~/ 1000)) {
-        metadata = cached;
-      } else {
-        ndk.metadata.loadMetadata(
-            loggedUserSigner!.getPublicKey(), forceRefresh: true).then((
-            metadata) {
-          setState(() {
-            metadata ??= Metadata(pubKey: loggedUserSigner!.getPublicKey());
-            this.metadata = metadata;
-          });
-        },).timeout(const Duration(seconds: 6), onTimeout: () {
-          setState(() {
-            metadata ??= Metadata(pubKey: loggedUserSigner!.getPublicKey(),
-                updatedAt: Helpers.now);
-          });
-        });
-        EasyLoading.show(status: "Refreshing metadata from relays...", maskType: EasyLoadingMaskType.black);
-        return Container();
-      }
-    } else {
-      EasyLoading.dismiss();
-    }
+    return FutureBuilder<Metadata?>(
+        future: Future(() async {
+          Metadata? cached = metadata ?? await metadataProvider.getMetadata(loggedUserSigner!.getPublicKey());
+          if (cached != null &&
+              cached.refreshedTimestamp != null &&
+              cached.refreshedTimestamp! > (DateTime.now().subtract(REFRESH_METADATA_BEFORE_EDIT_DURATION).millisecondsSinceEpoch ~/ 1000)) {
+              metadata = cached;
+          } else {
+            await ndk.metadata.loadMetadata(loggedUserSigner!.getPublicKey(), forceRefresh: true).then(
+              (metadata) {
+                metadata ??= Metadata(pubKey: loggedUserSigner!.getPublicKey());
+                return this.metadata;
+              },
+            ).timeout(const Duration(seconds: 6), onTimeout: () {
+              metadata ??= Metadata(pubKey: loggedUserSigner!.getPublicKey(), updatedAt: Helpers.now);
+              return metadata;
+            });
+            EasyLoading.show(status: "Refreshing metadata from relays...", maskType: EasyLoadingMaskType.black);
+            return metadata;
+          }
+        }),
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            EasyLoading.dismiss();
+            metadata = snapshot.data;
 
-    displayNameController.text = getText(metadata!.displayName);
-    nameController.text = getText(metadata!.name);
-    aboutController.text = getText(metadata!.about);
-    pictureController.text = getText(metadata!.picture);
-    bannerController.text = getText(metadata!.banner);
-    websiteController.text = getText(metadata!.website);
-    nip05Controller.text = getText(metadata!.nip05);
-    lud16Controller.text = getText(metadata!.lud16);
-    lud06Controller.text = getText(metadata!.lud06);
+            displayNameController.text = getText(metadata!.displayName);
+            nameController.text = getText(metadata!.name);
+            aboutController.text = getText(metadata!.about);
+            pictureController.text = getText(metadata!.picture);
+            bannerController.text = getText(metadata!.banner);
+            websiteController.text = getText(metadata!.website);
+            nip05Controller.text = getText(metadata!.nip05);
+            lud16Controller.text = getText(metadata!.lud16);
+            lud06Controller.text = getText(metadata!.lud06);
 
-    var submitBtn = TextButton(
-      onPressed: profileSave,
-      style: const ButtonStyle(),
-      child: Text(
-        s.Submit,
-        style: TextStyle(
-          color: textColor,
-          fontSize: 16,
-        ),
-      ),
-    );
-
-    Color? appbarBackgroundColor = Colors.transparent;
-    var appBar = Appbar4Stack(
-      backgroundColor: appbarBackgroundColor,
-      // title: appbarTitle,
-      action: Container(
-        margin: const EdgeInsets.only(right: Base.BASE_PADDING),
-        child: submitBtn,
-      ),
-    );
-
-    var margin = const EdgeInsets.only(bottom: Base.BASE_PADDING);
-    var padding = const EdgeInsets.only(left: 20, right: 20);
-
-    List<Widget> list = [];
-
-    if (PlatformUtil.isTableMode()) {
-      list.add(Container(
-        height: 30,
-      ));
-    }
-
-    list.add(Container(
-      margin: margin,
-      padding: padding,
-      child: Row(children: [
-        Expanded(
-          child: TextField(
-            controller: displayNameController,
-            decoration: InputDecoration(labelText: s.Display_Name),
-          ),
-        ),
-        Container(
-          margin: const EdgeInsets.only(
-            left: Base.BASE_PADDING_HALF,
-            right: Base.BASE_PADDING_HALF,
-          ),
-          child: const Text(" @ "),
-        ),
-        Expanded(
-          child: TextField(
-            controller: nameController,
-            decoration: InputDecoration(labelText: s.Name),
-          ),
-        ),
-      ]),
-    ));
-
-    list.add(Container(
-      margin: margin,
-      padding: padding,
-      child: TextField(
-        minLines: 2,
-        maxLines: 10,
-        controller: aboutController,
-        decoration: InputDecoration(labelText: s.About),
-      ),
-    ));
-
-    list.add(Container(
-      margin: margin,
-      padding: padding,
-      child: TextField(
-        controller: pictureController,
-        decoration: InputDecoration(
-          prefixIcon: GestureDetector(
-            onTap: pickPicture,
-            child: Icon(Icons.image),
-          ),
-          labelText: s.Picture,
-        ),
-      ),
-    ));
-
-    list.add(Container(
-      margin: margin,
-      padding: padding,
-      child: TextField(
-        controller: bannerController,
-        decoration: InputDecoration(
-          prefixIcon: GestureDetector(
-            onTap: pickBanner,
-            child: Icon(Icons.image),
-          ),
-          labelText: s.Banner,
-        ),
-      ),
-    ));
-
-    list.add(Container(
-      margin: margin,
-      padding: padding,
-      child: TextField(
-        controller: websiteController,
-        decoration: InputDecoration(labelText: s.Website),
-      ),
-    ));
-
-    list.add(Container(
-      margin: margin,
-      padding: padding,
-      child: TextField(
-        controller: nip05Controller,
-        decoration: InputDecoration(labelText: s.Nip05),
-      ),
-    ));
-
-    list.add(Container(
-      margin: margin,
-      padding: padding,
-      child: TextField(
-        controller: lud16Controller,
-        decoration: InputDecoration(
-            labelText: s.Lud16, hintText: "walletname@walletservice.com"),
-      ),
-    ));
-
-    // list.add(Container(
-    //   margin: margin,
-    //   padding: padding,
-    //   child: TextField(
-    //     controller: lud06Controller,
-    //     decoration: InputDecoration(labelText: "Lnurl"),
-    //   ),
-    // ));
-
-    return Scaffold(
-      body: Stack(
-        children: [
-          Container(
-            width: mediaDataCache.size.width,
-            height: mediaDataCache.size.height - mediaDataCache.padding.top,
-            margin: EdgeInsets.only(top: mediaDataCache.padding.top),
-            child: Container(
-              color: cardColor,
-              padding: EdgeInsets.only(
-                  top: mediaDataCache.padding.top + Base.BASE_PADDING),
-              child: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: list,
+            var submitBtn = TextButton(
+              onPressed: profileSave,
+              style: const ButtonStyle(),
+              child: Text(
+                s.Submit,
+                style: TextStyle(
+                  color: textColor,
+                  fontSize: 16,
                 ),
               ),
-            ),
-          ),
-          Positioned(
-            top: mediaDataCache.padding.top,
-            left: 0,
-            right: 0,
-            child: Container(
-              child: appBar,
-            ),
-          ),
-        ],
-      ),
-    );
+            );
+
+            Color? appbarBackgroundColor = Colors.transparent;
+            var appBar = Appbar4Stack(
+              backgroundColor: appbarBackgroundColor,
+              // title: appbarTitle,
+              action: Container(
+                margin: const EdgeInsets.only(right: Base.BASE_PADDING),
+                child: submitBtn,
+              ),
+            );
+
+            var margin = const EdgeInsets.only(bottom: Base.BASE_PADDING);
+            var padding = const EdgeInsets.only(left: 20, right: 20);
+
+            List<Widget> list = [];
+
+            if (PlatformUtil.isTableMode()) {
+              list.add(Container(
+                height: 30,
+              ));
+            }
+
+            list.add(Container(
+              margin: margin,
+              padding: padding,
+              child: Row(children: [
+                Expanded(
+                  child: TextField(
+                    controller: displayNameController,
+                    decoration: InputDecoration(labelText: s.Display_Name),
+                  ),
+                ),
+                Container(
+                  margin: const EdgeInsets.only(
+                    left: Base.BASE_PADDING_HALF,
+                    right: Base.BASE_PADDING_HALF,
+                  ),
+                  child: const Text(" @ "),
+                ),
+                Expanded(
+                  child: TextField(
+                    controller: nameController,
+                    decoration: InputDecoration(labelText: s.Name),
+                  ),
+                ),
+              ]),
+            ));
+
+            list.add(Container(
+              margin: margin,
+              padding: padding,
+              child: TextField(
+                minLines: 2,
+                maxLines: 10,
+                controller: aboutController,
+                decoration: InputDecoration(labelText: s.About),
+              ),
+            ));
+
+            list.add(Container(
+              margin: margin,
+              padding: padding,
+              child: TextField(
+                controller: pictureController,
+                decoration: InputDecoration(
+                  prefixIcon: GestureDetector(
+                    onTap: pickPicture,
+                    child: Icon(Icons.image),
+                  ),
+                  labelText: s.Picture,
+                ),
+              ),
+            ));
+
+            list.add(Container(
+              margin: margin,
+              padding: padding,
+              child: TextField(
+                controller: bannerController,
+                decoration: InputDecoration(
+                  prefixIcon: GestureDetector(
+                    onTap: pickBanner,
+                    child: Icon(Icons.image),
+                  ),
+                  labelText: s.Banner,
+                ),
+              ),
+            ));
+
+            list.add(Container(
+              margin: margin,
+              padding: padding,
+              child: TextField(
+                controller: websiteController,
+                decoration: InputDecoration(labelText: s.Website),
+              ),
+            ));
+
+            list.add(Container(
+              margin: margin,
+              padding: padding,
+              child: TextField(
+                controller: nip05Controller,
+                decoration: InputDecoration(labelText: s.Nip05),
+              ),
+            ));
+
+            list.add(Container(
+              margin: margin,
+              padding: padding,
+              child: TextField(
+                controller: lud16Controller,
+                decoration: InputDecoration(labelText: s.Lud16, hintText: "walletname@walletservice.com"),
+              ),
+            ));
+
+            // list.add(Container(
+            //   margin: margin,
+            //   padding: padding,
+            //   child: TextField(
+            //     controller: lud06Controller,
+            //     decoration: InputDecoration(labelText: "Lnurl"),
+            //   ),
+            // ));
+
+            return Scaffold(
+              body: Stack(
+                children: [
+                  Container(
+                    width: mediaDataCache.size.width,
+                    height: mediaDataCache.size.height - mediaDataCache.padding.top,
+                    margin: EdgeInsets.only(top: mediaDataCache.padding.top),
+                    child: Container(
+                      color: cardColor,
+                      padding: EdgeInsets.only(top: mediaDataCache.padding.top + Base.BASE_PADDING),
+                      child: SingleChildScrollView(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: list,
+                        ),
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    top: mediaDataCache.padding.top,
+                    left: 0,
+                    right: 0,
+                    child: Container(
+                      child: appBar,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }
+          return Container();
+        });
   }
 
   Future<void> pickPicture() async {
@@ -314,14 +314,14 @@ class _ProfileEditorRouter extends CustState<ProfileEditorRouter> {
     metadata!.displayName = displayNameController.text;
     metadata!.name = nameController.text;
     metadata!.about = aboutController.text;
-    metadata!.picture  = pictureController.text;
+    metadata!.picture = pictureController.text;
     metadata!.banner = bannerController.text;
     metadata!.website = websiteController.text;
     metadata!.nip05 = nip05Controller.text;
     metadata!.lud16 = lud16Controller.text;
     metadata!.lud06 = lud06Controller.text;
 
-    await ndk.metadata.broadcastMetadata(metadata!, myOutboxRelaySet!.urls, loggedUserSigner!);
+    await ndk.metadata.broadcastMetadata(metadata!, specificRelays: myOutboxRelaySet!.urls);
     metadataProvider.notifyListeners();
     setState(() {
       broadcasting = false;
@@ -331,6 +331,5 @@ class _ProfileEditorRouter extends CustState<ProfileEditorRouter> {
   }
 
   @override
-  Future<void> onReady(BuildContext context) async {
-  }
+  Future<void> onReady(BuildContext context) async {}
 }

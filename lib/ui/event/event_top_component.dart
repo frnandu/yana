@@ -28,9 +28,11 @@ class EventTopComponent extends StatefulWidget {
   String? pagePubkey;
   Color? color;
 
-  EventTopComponent({super.key,
+  EventTopComponent({
+    super.key,
     required this.event,
-    this.pagePubkey, this.color,
+    this.pagePubkey,
+    this.color,
   });
 
   @override
@@ -41,7 +43,6 @@ class EventTopComponent extends StatefulWidget {
 
 class _EventTopComponent extends State<EventTopComponent> {
   static const double IMAGE_WIDTH = 50;
-
 
   @override
   void initState() {
@@ -69,9 +70,9 @@ class _EventTopComponent extends State<EventTopComponent> {
     }
     List<GestureDetector> relayIcons = [];
     widget.event.sources.forEach((source) {
-      Relay? relay =ndk.relays.relays[source];
-      relay ??=ndk.relays.relays[cleanRelayUrl(source)];
-      Container? relayIcon = relay != null ? getRelayIcon(relay,13) : null;
+      Relay? relay = ndk.relays.relays[source];
+      relay ??= ndk.relays.relays[cleanRelayUrl(source)];
+      Container? relayIcon = relay != null ? getRelayIcon(relay, 13) : null;
       if (relayIcon != null) {
         relayIcons.add(GestureDetector(
             onTap: () async {
@@ -94,87 +95,82 @@ class _EventTopComponent extends State<EventTopComponent> {
       distance = 3;
     }
 
+    return FutureBuilder<Metadata?>(
+        future: metadataProvider.getMetadata(pubkey),
+        builder: (context, snapshot) {
+          var metadata = snapshot.data;
+          var themeData = Theme.of(context);
 
-    return Selector<MetadataProvider, Metadata?>(
-      shouldRebuild: (previous, next) {
-        return previous != next;
-      },
-      selector: (context, _metadataProvider) {
-        return _metadataProvider.getMetadata(pubkey);
-      },
-      builder: (context, metadata, child) {
-        var themeData = Theme.of(context);
-
-        Widget? imageWidget = UserPicComponent(
-          pubkey: widget.event.pubKey,
-          width: IMAGE_WIDTH,
-        );
-        return Container(
-          color: widget.color,
-          padding: const EdgeInsets.only(
-            left: Base.BASE_PADDING,
-            right: Base.BASE_PADDING,
-            bottom: Base.BASE_PADDING_HALF,
-          ),
-          child: Row(
-            children: [
-              jumpWrap(Container(
-                width: IMAGE_WIDTH,
-                height: IMAGE_WIDTH,
-                child: imageWidget,
-              )),
-              Expanded(
-                child: Container(
-                  padding: const EdgeInsets.only(left: Base.BASE_PADDING_HALF),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        margin: const EdgeInsets.only(bottom: 2),
-                        child: jumpWrap(
-                          NameComponent(
-                            pubkey: widget.event.pubKey,
-                            metadata: metadata,
-                          ),
-                        ),
-                      ),
-                      Row(
-                        children: [
-                          Text(
-                            (GetTimeAgo.parse(DateTime.fromMillisecondsSinceEpoch(widget.event.createdAt * 1000)) + " in "),
-                            style: TextStyle(
-                              fontSize: smallTextSize,
-                              color: themeData.hintColor,
+          Widget? imageWidget = UserPicComponent(
+            pubkey: widget.event.pubKey,
+            width: IMAGE_WIDTH,
+          );
+          return Container(
+            color: widget.color,
+            padding: const EdgeInsets.only(
+              left: Base.BASE_PADDING,
+              right: Base.BASE_PADDING,
+              bottom: Base.BASE_PADDING_HALF,
+            ),
+            child: Row(
+              children: [
+                jumpWrap(Container(
+                  width: IMAGE_WIDTH,
+                  height: IMAGE_WIDTH,
+                  child: imageWidget,
+                )),
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.only(left: Base.BASE_PADDING_HALF),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          margin: const EdgeInsets.only(bottom: 2),
+                          child: jumpWrap(
+                            NameComponent(
+                              pubkey: widget.event.pubKey,
+                              metadata: metadata,
                             ),
                           ),
-                        ]..add(GestureDetector(onTap: () async { await showRelaysPopup();}, child: RowSuper(
-                            innerDistance: distance, //,
-                            outerDistance: 5.0,
-                            children: relayIcons
-                            )
-                          )
                         ),
+                        Row(
+                          children: [
+                            Text(
+                              (GetTimeAgo.parse(DateTime.fromMillisecondsSinceEpoch(widget.event.createdAt * 1000)) + " in "),
+                              style: TextStyle(
+                                fontSize: smallTextSize,
+                                color: themeData.hintColor,
+                              ),
+                            ),
+                          ]..add(GestureDetector(
+                              onTap: () async {
+                                await showRelaysPopup();
+                              },
+                              child: RowSuper(
+                                  innerDistance: distance, //,
+                                  outerDistance: 5.0,
+                                  children: relayIcons))),
 
-                        // ..add(GestureDetector(onTap: () { showRelaysPopup();}, child: Text(
-                        //       "${widget.event.sources.length}",
-                        //       style: TextStyle(
-                        //         fontSize: smallTextSize,
-                        //         color: themeData.hintColor,
-                        //       )),
-                        //     ))
-                        //       ..add(GestureDetector(onTap: () { showRelaysPopup();}, child: Icon(Icons.lan_outlined, color: themeData.hintColor, size: 15,)))
-                        //   //..addAll(relayIcons)
-                      )
-                    ],
+                          // ..add(GestureDetector(onTap: () { showRelaysPopup();}, child: Text(
+                          //       "${widget.event.sources.length}",
+                          //       style: TextStyle(
+                          //         fontSize: smallTextSize,
+                          //         color: themeData.hintColor,
+                          //       )),
+                          //     ))
+                          //       ..add(GestureDetector(onTap: () { showRelaysPopup();}, child: Icon(Icons.lan_outlined, color: themeData.hintColor, size: 15,)))
+                          //   //..addAll(relayIcons)
+                        )
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
+              ],
+            ),
+          );
+        });
   }
 
   Widget jumpWrap(Widget c) {
@@ -228,7 +224,7 @@ class _EventTopComponent extends State<EventTopComponent> {
   }
 
   loadRelayInfos() async {
-    await Future.wait(widget.event.sources.map((url) =>ndk.relays.getRelayInfo(cleanRelayUrl(url)!)));
+    await Future.wait(widget.event.sources.map((url) => ndk.relays.getRelayInfo(cleanRelayUrl(url)!)));
     // setState(() {});
   }
 
@@ -237,17 +233,23 @@ class _EventTopComponent extends State<EventTopComponent> {
       await loadRelayInfos();
 
       List<EnumObj>? relays = widget.event.sources.map((source) {
-        Relay? relay =ndk.relays.relays[source];
-        relay ??=ndk.relays.relays[cleanRelayUrl(source)];
+        Relay? relay = ndk.relays.relays[source];
+        relay ??= ndk.relays.relays[cleanRelayUrl(source)];
         return EnumObj(
           source,
           null,
-          widget: Row(children: [relay != null ? getRelayIcon(relay, 25)! : Container(), const SizedBox(width: 10,), Text(source.replaceAll("wss://", ""))]),
+          widget: Row(children: [
+            relay != null ? getRelayIcon(relay, 25)! : Container(),
+            const SizedBox(
+              width: 10,
+            ),
+            Text(source.replaceAll("wss://", ""))
+          ]),
         );
       }).toList();
       EnumObj? resultEnumObj = await EnumSelectorComponent.show(context, relays!);
       if (resultEnumObj != null) {
-        RouterUtil.router(context, RouterPath.RELAY_INFO,ndk.relays.relays[resultEnumObj.value]);
+        RouterUtil.router(context, RouterPath.RELAY_INFO, ndk.relays.relays[resultEnumObj.value]);
       }
     }
   }

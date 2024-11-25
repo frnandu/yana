@@ -22,6 +22,8 @@ class FollowedCommunitiesRouter extends StatefulWidget {
 class _FollowedCommunitiesRouter extends State<FollowedCommunitiesRouter> {
   ContactList? contactList;
 
+  bool? follows;
+
   @override
   Widget build(BuildContext context) {
     if (contactList == null) {
@@ -69,34 +71,33 @@ class _FollowedCommunitiesRouter extends State<FollowedCommunitiesRouter> {
               child: Row(children: [
                 Text(id.title),
                 Expanded(child: Container()),
-                Selector<ContactListProvider, bool>(
-                    builder: (context, exist, child) {
-                  IconData iconData = Icons.star_border;
-                  Color? color;
-                  if (exist) {
-                    iconData = Icons.star;
-                    color = Colors.yellow;
-                  }
-                  return GestureDetector(
-                    onTap: () {
+                FutureBuilder<bool?>(
+                    future: contactListProvider.followsCommunity(id.toAString()),
+                    builder: (context, snapshot) {
+                      bool exist = snapshot.hasData && snapshot.data!;
+                      IconData iconData = Icons.star_border;
+                      Color? color;
                       if (exist) {
-                        contactListProvider.removeCommunity(id.toAString());
-                      } else {
-                        contactListProvider.addCommunity(id.toAString());
+                        iconData = Icons.star;
+                        color = Colors.yellow;
                       }
-                    },
-                    child: Container(
-                      margin:
-                          const EdgeInsets.only(left: Base.BASE_PADDING_HALF),
-                      child: Icon(
-                        iconData,
-                        color: color,
-                      ),
-                    ),
-                  );
-                }, selector: (context, _provider) {
-                  return _provider.followsCommunity(id.toAString());
-                })
+                      return GestureDetector(
+                        onTap: () {
+                          if (exist) {
+                            contactListProvider.removeCommunity(id.toAString());
+                          } else {
+                            contactListProvider.addCommunity(id.toAString());
+                          }
+                        },
+                        child: Container(
+                          margin: const EdgeInsets.only(left: Base.BASE_PADDING_HALF),
+                          child: Icon(
+                            iconData,
+                            color: color,
+                          ),
+                        ),
+                      );
+                    })
               ])),
         );
 

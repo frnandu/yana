@@ -569,10 +569,10 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
         // like
         NdkBroadcastResponse response = ndk.broadcast.broadcastReaction(
             eventId: widget.event.id, customRelays: urlsToBroadcast);
-        if (await response.publishDone) {
+        // if (await response.publishDone) {
           eventReactionsProvider.addLike(
               widget.event.id, response.publishedEvent);
-        }
+        // }
       } else {
         for (var event in eventReactions!.myLikeEvents!) {
           NdkBroadcastResponse response = ndk.broadcast.broadcastDeletion(
@@ -580,9 +580,9 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
               event.id,
               customRelays: urlsToBroadcast,
               customSigner: loggedUserSigner!);
-          if (await response.publishDone) {
+          // if (await response.publishDone) {
             eventReactionsProvider.deleteLike(widget.event.id);
-          }
+          // }
         }
       }
     }

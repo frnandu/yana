@@ -52,7 +52,7 @@ class ZapAction {
       BuildContext context, int sats, String pubkey,
       {String? eventId, String? pollOption, String? comment}) async {
     var s = I18n.of(context);
-    var metadata = metadataProvider.getMetadata(pubkey);
+    var metadata = await metadataProvider.getMetadata(pubkey);
     if (metadata == null) {
       EasyLoading.show(status: s.Metadata_can_not_be_found);
       return null;

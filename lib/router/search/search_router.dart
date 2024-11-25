@@ -322,7 +322,7 @@ class _SearchRouter extends CustState<SearchRouter>
     // subscribeId = null;
   }
 
-  void onEditingComplete() {
+  void onEditingComplete() async {
     // hideKeyBoard();
     searchAction = SearchActions.searchPubkeyEvent;
 
@@ -411,14 +411,14 @@ class _SearchRouter extends CustState<SearchRouter>
   List<Metadata> metadatasFromCache = [];
   List<Metadata> metadatasFromSearch = [];
 
-  searchMetadataFromCache() {
+  searchMetadataFromCache() async {
     // hideKeyBoard();
     metadatasFromCache.clear();
     searchAction = SearchActions.searchMetadataFromCache;
 
     var text = controller.text;
     if (StringUtil.isNotBlank(text)) {
-      var list = cacheManager.searchMetadatas(text, searchCacheLimit);
+      var list = await cacheManager.searchMetadatas(text, searchCacheLimit);
       setState(() {
         metadatasFromCache = list.toList();
       });
@@ -449,7 +449,7 @@ class _SearchRouter extends CustState<SearchRouter>
 
   String lastText = "";
 
-  checkInput() {
+  checkInput() async {
     searchAction = null;
     searchAbles.clear();
     metadatasFromCache.clear();
@@ -462,7 +462,7 @@ class _SearchRouter extends CustState<SearchRouter>
     // }
 
     if (StringUtil.isNotBlank(text)) {
-      searchMetadataFromCache();
+      await searchMetadataFromCache();
       if (Nip19.isPubkey(text)) {
         searchAbles.add(SearchActions.openPubkey);
         metadatasFromSearch.clear();

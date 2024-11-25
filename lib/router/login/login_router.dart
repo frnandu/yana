@@ -4,6 +4,7 @@ import 'package:ndk/data_layer/repositories/signers/bip340_event_signer.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:ndk/ndk.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:yana/utils/platform_util.dart';
 
@@ -334,10 +335,16 @@ class _LoginRouter extends State<LoginRouter>
       await settingProvider.addAndChangeKey(key, !isPublic, isExternalSigner, updateUI: false);
       bool isPrivate = !isPublic;
       String publicKey = isPrivate ? getPublicKey(key!) : key!;
-      ndk.changeEventSigner(settingProvider.isExternalSignerKey ? AmberEventSigner(publicKey: publicKey, amberFlutterDS: amberFlutterDS) : isPrivate || !PlatformUtil.isWeb()
+      EventSigner eventSigner = settingProvider.isExternalSignerKey ? AmberEventSigner(publicKey: publicKey, amberFlutterDS: amberFlutterDS) : isPrivate || !PlatformUtil.isWeb()
           ? Bip340EventSigner(privateKey: isPrivate ? key : null, publicKey: publicKey)
           : Nip07EventSigner(await js.getPublicKeyAsync())
-      );
+      ;
+      ndk = Ndk(
+          NdkConfig(
+            eventVerifier: RustEventVerifier(),
+            cache: cacheManager,
+            eventSigner: eventSigner
+          ));
 
       await initRelayManager(isPublic ? key : getPublicKey(key), newKey);
     } catch (e) {

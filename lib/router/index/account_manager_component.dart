@@ -1,18 +1,17 @@
 import 'dart:developer';
 
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:ndk/data_layer/repositories/signers/amber_event_signer.dart';
-import 'package:ndk/data_layer/repositories/signers/bip340_event_signer.dart';
-import 'package:ndk/domain_layer/entities/metadata.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:ndk/data_layer/repositories/signers/amber_event_signer.dart';
+import 'package:ndk/ndk.dart';
 import 'package:provider/provider.dart';
-import 'package:yana/provider/metadata_provider.dart';
 import 'package:yana/provider/setting_provider.dart';
 import 'package:yana/ui/name_component.dart';
 import 'package:yana/ui/point_component.dart';
 import 'package:yana/utils/router_util.dart';
 
+import '/js/js_helper.dart' as js;
 import '../../i18n/i18n.dart';
 import '../../main.dart';
 import '../../nostr/client_utils/keys.dart';
@@ -24,7 +23,6 @@ import '../../utils/base.dart';
 import '../../utils/platform_util.dart';
 import '../../utils/router_path.dart';
 import '../../utils/string_util.dart';
-import '/js/js_helper.dart' as js;
 import 'index_drawer_content.dart';
 
 class AccountsComponent extends StatefulWidget {
@@ -148,11 +146,17 @@ class AccountsState extends State<AccountsComponent> {
     String? key = settingProvider.key;
     bool isPrivate = settingProvider.isPrivateKey;
     String publicKey = isPrivate ? getPublicKey(key!) : key!;
-    ndk.changeEventSigner(settingProvider.isExternalSignerKey
+    EventSigner eventSigner = settingProvider.isExternalSignerKey
         ? AmberEventSigner(publicKey: publicKey, amberFlutterDS: amberFlutterDS)
         : isPrivate || !PlatformUtil.isWeb()
             ? Bip340EventSigner(privateKey: isPrivate ? key : null, publicKey: publicKey)
-            : Nip07EventSigner(await js.getPublicKeyAsync()));
+            : Nip07EventSigner(await js.getPublicKeyAsync());
+    ndk = Ndk(
+        NdkConfig(
+          eventVerifier: RustEventVerifier(),
+          cache: cacheManager,
+          eventSigner: eventSigner,
+        ));
 
     await followEventProvider.loadCachedFeed();
     initRelays(newKey: false);
@@ -166,7 +170,9 @@ class AccountsState extends State<AccountsComponent> {
     if (settingProvider.privateKeyIndex != index) {
       EasyLoading.show(status: "Logging out...", maskType: EasyLoadingMaskType.black);
       clearCurrentMemInfo();
-      ndk.changeEventSigner(null);
+      ndk = Ndk(
+        NdkConfig(eventVerifier: RustEventVerifier(), cache: cacheManager),
+      );
 
       settingProvider.privateKeyIndex = index;
 
@@ -195,7 +201,9 @@ class AccountsState extends State<AccountsComponent> {
           RouterUtil.back(context);
         }
       } else {
-        ndk.changeEventSigner(null);
+        ndk = Ndk(
+          NdkConfig(eventVerifier: RustEventVerifier(), cache: cacheManager),
+        );
       }
     }
 
@@ -286,133 +294,134 @@ class _AccountManagerItemComponent extends State<AccountManagerItemComponent> {
       cardColor = Colors.grey[300];
     }
 
-    return Selector<MetadataProvider, Metadata?>(builder: (context, metadata, child) {
-      Color currentColor = Colors.green;
-      List<Widget> list = [];
-      // if (metadata==null) {
-      //   return Container();
-      // }
-      String? nip19PubKey;
-      try {
-        nip19PubKey = pubkey != null ? Nip19.encodePubKey(pubkey!) : null;
-      } catch (e) {
-        return Container();
-      }
+    return FutureBuilder<Metadata?>(
+        future: metadataProvider.getMetadata(pubkey!),
+        builder: (context, snapshot) {
+          var metadata = snapshot.data;
+          Color currentColor = Colors.green;
+          List<Widget> list = [];
+          // if (metadata==null) {
+          //   return Container();
+          // }
+          String? nip19PubKey;
+          try {
+            nip19PubKey = pubkey != null ? Nip19.encodePubKey(pubkey!) : null;
+          } catch (e) {
+            return Container();
+          }
 
-      Widget? imageWidget;
+          Widget? imageWidget;
 
-      String? url = metadata != null && StringUtil.isNotBlank(metadata.picture) ? metadata.picture : StringUtil.robohash(pubkey!);
+          String? url = metadata != null && StringUtil.isNotBlank(metadata.picture) ? metadata.picture : StringUtil.robohash(pubkey!);
 
-      if (url != null) {
-        imageWidget = CachedNetworkImage(
-          imageUrl: url,
-          width: IMAGE_WIDTH,
-          height: IMAGE_WIDTH,
-          fit: BoxFit.cover,
-          placeholder: (context, url) => const CircularProgressIndicator(),
-          errorWidget: (context, url, error) => const Icon(Icons.error),
-          cacheManager: localCacheManager,
-        );
-      }
-      list.add(Container(
-        width: 24,
-        alignment: Alignment.centerLeft,
-        child: Container(
-            width: 15,
-            margin: const EdgeInsets.only(right: 10),
-            child: widget.isCurrent
-                ? PointComponent(
-                    width: 15,
-                    color: currentColor,
-                  )
-                : GestureDetector(
-                    onTap: onLoginTap,
-                    child: Icon(Icons.login, color: themeData.disabledColor),
-                  )),
-      ));
-      list.add(Container(
-        width: IMAGE_WIDTH,
-        height: IMAGE_WIDTH,
-        margin: const EdgeInsets.only(left: 10),
-        clipBehavior: Clip.hardEdge,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(IMAGE_WIDTH / 2),
-          color: Colors.grey,
-        ),
-        child: imageWidget,
-      ));
-
-      list.add(Container(
-        margin: const EdgeInsets.only(left: 5, right: 5),
-        child: NameComponent(
-          pubkey: pubkey!,
-          fontColor: widget.isCurrent ? null : themeData.hintColor,
-          metadata: metadata,
-        ),
-      ));
-      if (settingProvider.isExternalSignerKeyIndex(widget.index)) {
-        list.add(Container(
-            width: 50,
+          if (url != null) {
+            imageWidget = CachedNetworkImage(
+              imageUrl: url,
+              width: IMAGE_WIDTH,
+              height: IMAGE_WIDTH,
+              fit: BoxFit.cover,
+              placeholder: (context, url) => const CircularProgressIndicator(),
+              errorWidget: (context, url, error) => const Icon(Icons.error),
+              cacheManager: localCacheManager,
+            );
+          }
+          list.add(Container(
+            width: 24,
             alignment: Alignment.centerLeft,
-            child: const Text(
-              "(external)",
-              style: TextStyle(fontWeight: FontWeight.w100, fontSize: 10),
-            )));
-      } else if (!settingProvider.isPrivateKeyIndex(widget.index)) {
-        list.add(Container(
-            width: 50,
-            alignment: Alignment.centerLeft,
-            child: const Text(
-              "(read only)",
-              style: TextStyle(fontWeight: FontWeight.w100, fontSize: 10),
-            )));
-      }
-      list.add(Expanded(
-          child: Container(
-        padding: const EdgeInsets.only(
-          left: Base.BASE_PADDING_HALF,
-          right: Base.BASE_PADDING_HALF,
-          top: 4,
-          bottom: 4,
-        ),
-        decoration: BoxDecoration(
-          color: cardColor,
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Text(
-          nip19PubKey!,
-          overflow: TextOverflow.ellipsis,
-        ),
-      )));
+            child: Container(
+                width: 15,
+                margin: const EdgeInsets.only(right: 10),
+                child: widget.isCurrent
+                    ? PointComponent(
+                        width: 15,
+                        color: currentColor,
+                      )
+                    : GestureDetector(
+                        onTap: onLoginTap,
+                        child: Icon(Icons.login, color: themeData.disabledColor),
+                      )),
+          ));
+          list.add(Container(
+            width: IMAGE_WIDTH,
+            height: IMAGE_WIDTH,
+            margin: const EdgeInsets.only(left: 10),
+            clipBehavior: Clip.hardEdge,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(IMAGE_WIDTH / 2),
+              color: Colors.grey,
+            ),
+            child: imageWidget,
+          ));
 
-      list.add(GestureDetector(
-        onTap: onLogout,
-        child: Container(
-          padding: const EdgeInsets.only(left: 5),
-          height: LINE_HEIGHT,
-          child: Icon(Icons.close, color: widget.isCurrent ? null : themeData.disabledColor),
-        ),
-      ));
+          list.add(Container(
+            margin: const EdgeInsets.only(left: 5, right: 5),
+            child: NameComponent(
+              pubkey: pubkey!,
+              fontColor: widget.isCurrent ? null : themeData.hintColor,
+              metadata: metadata,
+            ),
+          ));
+          if (settingProvider.isExternalSignerKeyIndex(widget.index)) {
+            list.add(Container(
+                width: 50,
+                alignment: Alignment.centerLeft,
+                child: const Text(
+                  "(external)",
+                  style: TextStyle(fontWeight: FontWeight.w100, fontSize: 10),
+                )));
+          } else if (!settingProvider.isPrivateKeyIndex(widget.index)) {
+            list.add(Container(
+                width: 50,
+                alignment: Alignment.centerLeft,
+                child: const Text(
+                  "(read only)",
+                  style: TextStyle(fontWeight: FontWeight.w100, fontSize: 10),
+                )));
+          }
+          list.add(Expanded(
+              child: Container(
+            padding: const EdgeInsets.only(
+              left: Base.BASE_PADDING_HALF,
+              right: Base.BASE_PADDING_HALF,
+              top: 4,
+              bottom: 4,
+            ),
+            decoration: BoxDecoration(
+              color: cardColor,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Text(
+              nip19PubKey!,
+              overflow: TextOverflow.ellipsis,
+            ),
+          )));
 
-      return GestureDetector(
-        onTap: onLoginTap,
-        behavior: HitTestBehavior.translucent,
-        child: Container(
-          height: LINE_HEIGHT,
-          width: double.maxFinite,
-          padding: const EdgeInsets.only(
-            left: Base.BASE_PADDING * 2,
-            right: Base.BASE_PADDING * 2,
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: list,
-          ),
-        ),
-      );
-    }, selector: (context, _provider) {
-      return pubkey != null ? _provider.getMetadata(pubkey!) : null;
-    });
+          list.add(GestureDetector(
+            onTap: onLogout,
+            child: Container(
+              padding: const EdgeInsets.only(left: 5),
+              height: LINE_HEIGHT,
+              child: Icon(Icons.close, color: widget.isCurrent ? null : themeData.disabledColor),
+            ),
+          ));
+
+          return GestureDetector(
+            onTap: onLoginTap,
+            behavior: HitTestBehavior.translucent,
+            child: Container(
+              height: LINE_HEIGHT,
+              width: double.maxFinite,
+              padding: const EdgeInsets.only(
+                left: Base.BASE_PADDING * 2,
+                right: Base.BASE_PADDING * 2,
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: list,
+              ),
+            ),
+          );
+        });
   }
 
   void onLogout() async {

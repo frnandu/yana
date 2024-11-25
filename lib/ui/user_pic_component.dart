@@ -12,7 +12,8 @@ class UserPicComponent extends StatefulWidget {
 
   double width;
 
-  UserPicComponent({super.key,
+  UserPicComponent({
+    super.key,
     required this.pubkey,
     required this.width,
   });
@@ -26,12 +27,14 @@ class UserPicComponent extends StatefulWidget {
 class _UserPicComponent extends State<UserPicComponent> {
   @override
   Widget build(BuildContext context) {
-    return Selector<MetadataProvider, Metadata?>(
-      builder: (context, metadata, child) {
-        Widget? imageWidget;
-        String? url = metadata != null && StringUtil.isNotBlank(metadata.picture) ? metadata.picture : StringUtil.robohash(widget.pubkey);
+    return FutureBuilder<Metadata?>(
+        future: metadataProvider.getMetadata(widget.pubkey),
+        builder: (context, snapshot) {
+          var metadata = snapshot.data;
+          Widget? imageWidget;
+          String? url = metadata != null && StringUtil.isNotBlank(metadata.picture) ? metadata.picture : StringUtil.robohash(widget.pubkey);
 
-        if (url != null) {
+          if (url != null) {
             imageWidget = CachedNetworkImage(
               imageUrl: url,
               width: widget.width,
@@ -41,22 +44,17 @@ class _UserPicComponent extends State<UserPicComponent> {
               errorWidget: (context, url, error) => Icon(Icons.error),
               cacheManager: localCacheManager,
             );
-        }
-        return Container(
-          width: widget.width,
-          height: widget.width,
-          clipBehavior: Clip.hardEdge,
-          decoration: BoxDecoration(
-
-            borderRadius: BorderRadius.circular(widget.width / 2),
-            color: Colors.grey,
-          ),
-          child: imageWidget,
-        );
-      },
-      selector: (context, _provider) {
-        return _provider.getMetadata(widget.pubkey);
-      },
-    );
+          }
+          return Container(
+            width: widget.width,
+            height: widget.width,
+            clipBehavior: Clip.hardEdge,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(widget.width / 2),
+              color: Colors.grey,
+            ),
+            child: imageWidget,
+          );
+        });
   }
 }

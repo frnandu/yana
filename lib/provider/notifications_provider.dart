@@ -32,7 +32,7 @@ class NotificationsProvider extends ChangeNotifier with PenddingEventsLaterFunct
   }
 
   Future<void> loadCached() async {
-    List<Nip01Event>? cachedEvents = cacheManager.loadEvents(kinds: notificationsProvider.queryEventKinds(), pTag: loggedUserSigner!.getPublicKey());
+    List<Nip01Event>? cachedEvents = await cacheManager.loadEvents(kinds: notificationsProvider.queryEventKinds(), pTag: loggedUserSigner!.getPublicKey());
     print("NOTIFICATIONS loaded ${cachedEvents.length} events from cache DB");
     onEvents(cachedEvents, saveToCache: false);
   }
@@ -107,7 +107,7 @@ class NotificationsProvider extends ChangeNotifier with PenddingEventsLaterFunct
     }, null);
   }
 
-  void onEvents(List<Nip01Event> list, {bool saveToCache = true}) {
+  void onEvents(List<Nip01Event> list, {bool saveToCache = true}) async {
     list = list.where((element) => element.pubKey != loggedUserSigner?.getPublicKey()).toList();
     List<Nip01Event> toSave = [];
     List<Nip01Event> loggedUserEvents = [];
@@ -121,7 +121,7 @@ class NotificationsProvider extends ChangeNotifier with PenddingEventsLaterFunct
           accept = false;
         } else {
           if (loggedUserEvents.isEmpty) {
-            loggedUserEvents = cacheManager.loadEvents(
+            loggedUserEvents = await cacheManager.loadEvents(
                 pubKeys: [loggedUserSigner!.getPublicKey()]);
           }
           accept = replyETags.length == 1 &&

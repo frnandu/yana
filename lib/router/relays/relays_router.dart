@@ -33,7 +33,7 @@ class _RelaysRouter extends CustState<RelaysRouter> with WhenStopFunction {
   UserRelayList? userRelayList;
   List<String> searchResults = [];
   ItemScrollController itemScrollController = ItemScrollController();
-  bool disposed=false;
+  bool disposed = false;
 
   @override
   void initState() {
@@ -48,14 +48,14 @@ class _RelaysRouter extends CustState<RelaysRouter> with WhenStopFunction {
     // set.addAll(myInboxRelaySet!.urls);
     // set.addAll(myOutboxRelaySet!.urls);
 
-    userRelayList = cacheManager.loadUserRelayList(loggedUserSigner!.getPublicKey());
+    userRelayList = await cacheManager.loadUserRelayList(loggedUserSigner!.getPublicKey());
     userRelayList ??= await ndk.userRelayLists.getSingleUserRelayList(loggedUserSigner!.getPublicKey(), forceRefresh: true);
     userRelayList ??= UserRelayList(
         pubKey: loggedUserSigner!.getPublicKey(),
         relays: {for (String url in ndk.relays.bootstrapRelays) url: ReadWriteMarker.readWrite},
         createdAt: Helpers.now,
         refreshedTimestamp: Helpers.now);
-    await Future.wait(userRelayList!.urls.map((url) =>ndk.relays.getRelayInfo(cleanRelayUrl(url)!)));
+    await Future.wait(userRelayList!.urls.map((url) => ndk.relays.getRelayInfo(cleanRelayUrl(url)!)));
 
     /// TODO check if widget is not disposed already...
 
@@ -100,7 +100,7 @@ class _RelaysRouter extends CustState<RelaysRouter> with WhenStopFunction {
               ),
               child: RefreshIndicator(
                   onRefresh: () async {
-                    UserRelayList? oldRelayList = cacheManager.loadUserRelayList(loggedUserSigner!.getPublicKey());
+                    UserRelayList? oldRelayList = await cacheManager.loadUserRelayList(loggedUserSigner!.getPublicKey());
                     UserRelayList? userRelayList = await ndk.userRelayLists.getSingleUserRelayList(loggedUserSigner!.getPublicKey(), forceRefresh: true);
                     if (userRelayList != null && (oldRelayList == null || oldRelayList.createdAt < userRelayList.createdAt)) {
                       createMyRelaySets(userRelayList);
@@ -117,77 +117,67 @@ class _RelaysRouter extends CustState<RelaysRouter> with WhenStopFunction {
                     // await ndk.relays.reconnectRelays(userRelayList!.urls);
                     setState(() {});
                   },
-                  child: Selector<RelayProvider, UserRelayList?>(
-                    selector: (BuildContext, RelayProvider) {
-                      return relayProvider.getUserRelayList(loggedUserSigner!.getPublicKey());
-                    },
-                    builder: (BuildContext context, UserRelayList? userRelayList, Widget? child) {
-                      userRelayList ??= UserRelayList(
-                          pubKey: loggedUserSigner!.getPublicKey(),
-                          relays: {for (String url in ndk.relays.bootstrapRelays) url: ReadWriteMarker.readWrite},
-                          createdAt: Helpers.now,
-                          refreshedTimestamp: Helpers.now);
-                      return userRelayList == null
-                          ? Container()
-                          : ListView.builder(
-                              itemBuilder: (context, index) {
-                                int total = userRelayList!.relays.length;
-                                if (index == total && loggedUserSigner!.canSign()) {
-                                  return Column(children: [
-                                    TextField(
-                                      controller: controller,
-                                      onEditingComplete: onEditingComplete,
-                                      decoration: InputDecoration(
-                                        prefixIcon: const Icon(Icons.lan),
-                                        hintText: "start typing relay name or URL",
-                                        suffixIcon: cleanRelayUrl(controller.text) != null
-                                            ? IconButton(
-                                          icon: const Icon(Icons.add),
-                                          onPressed: () async {
-                                            addRelay(controller.text);
-                                          },
-                                        )
-                                            : null,
-                                      ),
-                                    ),
-                                    searchResults.isNotEmpty
-                                        ? SizedBox(
-                                            height: 300,
-                                            child: ListView.builder(
-                                        physics: const BouncingScrollPhysics(),
-                                        shrinkWrap: true,
-                                        itemBuilder: (context, index) {
-                                          return SearchRelayItemComponent(
-                                            url: searchResults[index],
-                                            width: 400,
-                                            onTap: (url) {
-                                              addRelay(url);
-                                              //replaceMentionUser(metadata.pubKey);
+                  child: userRelayList == null
+                      ? Container()
+                      : ListView.builder(
+                          itemBuilder: (context, index) {
+                            int total = userRelayList!.relays.length;
+                            if (index == total && loggedUserSigner!.canSign()) {
+                              return Column(children: [
+                                TextField(
+                                  controller: controller,
+                                  onEditingComplete: onEditingComplete,
+                                  decoration: InputDecoration(
+                                    prefixIcon: const Icon(Icons.lan),
+                                    hintText: "start typing relay name or URL",
+                                    suffixIcon: cleanRelayUrl(controller.text) != null
+                                        ? IconButton(
+                                            icon: const Icon(Icons.add),
+                                            onPressed: () async {
+                                              addRelay(controller.text);
                                             },
-                                          );
-                                        },
-                                        itemCount: searchResults.length))
-                                        :Container()
-                                  ]);
-                                }
+                                          )
+                                        : null,
+                                  ),
+                                ),
+                                searchResults.isNotEmpty
+                                    ? SizedBox(
+                                        height: 300,
+                                        child: ListView.builder(
+                                            physics: const BouncingScrollPhysics(),
+                                            shrinkWrap: true,
+                                            itemBuilder: (context, index) {
+                                              return SearchRelayItemComponent(
+                                                url: searchResults[index],
+                                                width: 400,
+                                                onTap: (url) {
+                                                  addRelay(url);
+                                                  //replaceMentionUser(metadata.pubKey);
+                                                },
+                                              );
+                                            },
+                                            itemCount: searchResults.length))
+                                    : Container()
+                              ]);
+                            }
 
-                                var url = userRelayList!.urls.toList()[index];
-                                ReadWriteMarker? marker = userRelayList!.relays[url]!;
-                                return ndk.relays.getRelay(url)!=null? RelaysItemComponent(
-                                  url: url,
-                                  relay:ndk.relays.getRelay(url)!,
-                                  marker: marker,
-                                  showConnection: true,
-                                  showStats: true,
-                                  onRemove: () async {
-                                    await loadRelayInfos();
-                                  },
-                                ):Container();
-                              },
-                              itemCount: (userRelayList != null ? userRelayList!.relays.length : 0) + (loggedUserSigner!.canSign() ? 1 : 0),
-                            );
-                    },
-                  ))),
+                            var url = userRelayList!.urls.toList()[index];
+                            ReadWriteMarker? marker = userRelayList!.relays[url]!;
+                            return ndk.relays.getRelay(url) != null
+                                ? RelaysItemComponent(
+                                    url: url,
+                                    relay: ndk.relays.getRelay(url)!,
+                                    marker: marker,
+                                    showConnection: true,
+                                    showStats: true,
+                                    onRemove: () async {
+                                      await loadRelayInfos();
+                                    },
+                                  )
+                                : Container();
+                          },
+                          itemCount: (userRelayList != null ? userRelayList!.relays.length : 0) + (loggedUserSigner!.canSign() ? 1 : 0),
+                        ))),
         ),
         // loggedUserSigner!.canSign()
         //     ? TextField(
@@ -207,13 +197,14 @@ class _RelaysRouter extends CustState<RelaysRouter> with WhenStopFunction {
       ]),
     );
   }
+
   void onEditingComplete() async {
     // itemScrollController.jumpTo(index: userRelayList!.relays.length-1);
     List<String> result = await relayProvider.findRelays(controller.text);
     for (var url in result) {
-      if (ndk.relays.getRelay(url)==null ||ndk.relays.getRelay(url)!.info==null) {
-       ndk.relays.relays[url] = Relay(url);
-       ndk.relays.getRelayInfo(url).then((value) {
+      if (ndk.relays.getRelay(url) == null || ndk.relays.getRelay(url)!.info == null) {
+        ndk.relays.relays[url] = Relay(url);
+        ndk.relays.getRelayInfo(url).then((value) {
           if (!disposed) {
             setState(() {});
           }
@@ -222,16 +213,16 @@ class _RelaysRouter extends CustState<RelaysRouter> with WhenStopFunction {
     }
 
     setState(() {
-      searchResults = result ;
+      searchResults = result;
     });
   }
-
 
   @override
   void dispose() {
     super.dispose();
     disposed = true;
   }
+
   // Future<void> add(String url) async {
   //   String? cleanUrl = cleanRelayUrl(url);
   //   if (cleanUrl==null) {
@@ -261,8 +252,13 @@ class _RelaysRouter extends CustState<RelaysRouter> with WhenStopFunction {
 
   Future<void> addRelay(String url) async {
     String? cleanUrl = cleanRelayUrl(url);
-    if (cleanUrl==null) {
-      EasyLoading.showError("Invalid address wss://<host>:<port> or ws://<host>:<port>", dismissOnTap: true, duration: const Duration(seconds: 5), maskType: EasyLoadingMaskType.black,);
+    if (cleanUrl == null) {
+      EasyLoading.showError(
+        "Invalid address wss://<host>:<port> or ws://<host>:<port>",
+        dismissOnTap: true,
+        duration: const Duration(seconds: 5),
+        maskType: EasyLoadingMaskType.black,
+      );
       return;
     }
     if (userRelayList!.relays.keys!.any((element) => cleanRelayUrl(element) == cleanUrl)) {
@@ -289,9 +285,7 @@ class _RelaysRouter extends CustState<RelaysRouter> with WhenStopFunction {
       EasyLoading.dismiss();
       controller.clear();
       FocusScope.of(context).unfocus();
-      setState(() {
-
-      });
+      setState(() {});
     }
   }
 

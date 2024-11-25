@@ -2,6 +2,7 @@ import 'package:ndk/entities.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../main.dart';
 import '../../provider/metadata_provider.dart';
 import '../../utils/router_path.dart';
 import '../../utils/router_util.dart';
@@ -22,22 +23,19 @@ class ContentMentionUserComponent extends StatefulWidget {
 class _ContentMentionUserComponent extends State<ContentMentionUserComponent> {
   @override
   Widget build(BuildContext context) {
-    return Selector<MetadataProvider, Metadata?>(
-      builder: (context, metadata, child) {
-        String name =
-            SimpleNameComponent.getSimpleName(widget._pubkey, metadata);
+    return FutureBuilder<Metadata?>(
+        future: metadataProvider.getMetadata(widget._pubkey),
+        builder: (context, snapshot) {
+          var metadata = snapshot.data;
+          String name = SimpleNameComponent.getSimpleName(widget._pubkey, metadata);
 
-        return ContentStrLinkComponent(
-          str: "$name",
-          showUnderline: false,
-          onTap: () {
-            RouterUtil.router(context, RouterPath.USER, widget._pubkey);
-          },
-        );
-      },
-      selector: (context, _provider) {
-        return _provider.getMetadata(widget._pubkey);
-      },
-    );
+          return ContentStrLinkComponent(
+            str: "$name",
+            showUnderline: false,
+            onTap: () {
+              RouterUtil.router(context, RouterPath.USER, widget._pubkey);
+            },
+          );
+        });
   }
 }

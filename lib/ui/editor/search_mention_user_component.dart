@@ -66,11 +66,11 @@ class _SearchMentionUserComponent extends State<SearchMentionUserComponent>
 
   List<Metadata> metadatas = [];
 
-  void handleSearch(String? text) {
+  void handleSearch(String? text) async {
     metadatas.clear();
 
     if (StringUtil.isNotBlank(text)) {
-      var list = cacheManager.searchMetadatas(text!, searchMemLimit).toList();
+      var list = (await cacheManager.searchMetadatas(text!, searchMemLimit)).toList();
       metadatas = list;
     }
 

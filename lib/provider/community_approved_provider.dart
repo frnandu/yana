@@ -13,22 +13,22 @@ class CommunityApprovedProvider extends ChangeNotifier with LaterFunction {
 
   List<Nip01Event> penddingEvents = [];
 
-  bool check(String pubkey, String eid, {CommunityId? communityId}) {
-    if (_approvedMap[eid] != null || communityId == null) {
-      return true;
-    }
-
-    if (contactListProvider.contacts().contains(pubkey) ||
-        pubkey == loggedUserSigner!.getPublicKey()) {
-      return true;
-    }
-
-    // plan to query
-    eids.add(eid);
-    later(laterFunction, null);
-
-    return false;
-  }
+  // bool check(String pubkey, String eid, {CommunityId? communityId}) {
+  //   if (_approvedMap[eid] != null || communityId == null) {
+  //     return true;
+  //   }
+  //
+  //   if (contactListProvider.contacts().contains(pubkey) ||
+  //       pubkey == loggedUserSigner!.getPublicKey()) {
+  //     return true;
+  //   }
+  //
+  //   // plan to query
+  //   eids.add(eid);
+  //   later(laterFunction, null);
+  //
+  //   return false;
+  // }
 
   void laterFunction() {
     if (eids.isNotEmpty) {

@@ -3,6 +3,7 @@ import 'package:ndk/domain_layer/entities/metadata.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../main.dart';
 import '../../provider/metadata_provider.dart';
 import '../../ui/editor/search_mention_user_component.dart';
 import '../../utils/base.dart';
@@ -35,28 +36,19 @@ class _UserContactListComponent extends State<UserContactListComponent> {
       itemBuilder: (context, index) {
         var contact = list![index];
         return Container(
-          margin: EdgeInsets.only(bottom: Base.BASE_PADDING_HALF),
-          child: Selector<MetadataProvider, Metadata?>(
-            builder: (context, metadata, child) {
-              return  metadata != null
+            margin: const EdgeInsets.only(bottom: Base.BASE_PADDING_HALF),
+            child: FutureBuilder<Metadata?>(
+                future: metadataProvider.getMetadata(contact),
+                builder: (context, snapshot) {
+                  return snapshot.hasData != null
                       ? SearchMentionUserItemComponent(
-                          metadata: metadata!,
+                          metadata: snapshot.data!,
                           onTap: (metadata) {
                             RouterUtil.router(context, RouterPath.USER, metadata.pubKey);
                           },
                           width: 400)
                       : Container();
-                  // child: MetadataComponent(
-                  //   pubKey: contact.publicKey,
-                  //   metadata: metadata,
-                  //   jumpable: true,
-                  // ),
-            },
-            selector: (context, _provider) {
-              return _provider.getMetadata(contact);
-            },
-          ),
-        );
+                }));
       },
       itemCount: list!.length,
     );

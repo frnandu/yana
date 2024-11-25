@@ -1,6 +1,7 @@
 import 'package:ndk/entities.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:yana/main.dart';
 
 import '../provider/metadata_provider.dart';
 
@@ -16,32 +17,33 @@ class Nip05ValidComponent extends StatefulWidget {
 }
 
 class _Nip05ValidComponent extends State<Nip05ValidComponent> {
+
   @override
   Widget build(BuildContext context) {
     var themeData = Theme.of(context);
     var smallTextSize = themeData.textTheme.bodySmall!.fontSize;
 
-    return Container(
-        margin: const EdgeInsets.only(top:2),
-        child: Selector<MetadataProvider, bool?>(
-        builder: (context, valid, child) {
-      Color iconColor = Colors.red;
-      var iconData = Icons.warning_amber_outlined;
-      if (valid==null) {
-        iconColor = Colors.yellow;
-        iconData = Icons.downloading;
-      } else if (valid) {
-        iconColor = Colors.grey ;
-        iconData = Icons.verified;
-      }
+    return FutureBuilder<bool?>(
+        future: metadataProvider.isNip05Valid(widget.metadata),
+        builder: (context, snapshot) {
+          bool? valid = snapshot.data;
+          Color iconColor = Colors.red;
+          var iconData = Icons.warning_amber_outlined;
+          if (valid == null) {
+            iconColor = Colors.yellow;
+            iconData = Icons.downloading;
+          } else if (valid) {
+            iconColor = Colors.grey;
+            iconData = Icons.verified;
+          }
 
-      return Icon(
-        iconData,
-        color: iconColor,
-        size: smallTextSize,
-      );
-    }, selector: (context, _provider) {
-      return _provider.isNip05Valid(widget.metadata);
-    }));
+          return Container(
+              margin: const EdgeInsets.only(top: 2),
+              child: Icon(
+                iconData,
+                color: iconColor,
+                size: smallTextSize,
+              ));
+        });
   }
 }

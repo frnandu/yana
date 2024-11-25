@@ -24,6 +24,17 @@ class CommunityInfoComponent extends StatefulWidget {
 class _CommunityInfoComponent extends State<CommunityInfoComponent> {
   static const double IMAGE_WIDTH = 40;
 
+  bool follows = false;
+
+  @override
+  void initState() {
+    Future(() async {
+      setState(() async {
+        follows = await contactListProvider.followsCommunity(widget.info.communityId.toAString());
+      });
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     var themeData = Theme.of(context);
@@ -42,47 +53,40 @@ class _CommunityInfoComponent extends State<CommunityInfoComponent> {
       );
     }
 
-    Widget followBtn =
-        Selector<ContactListProvider, bool>(builder: (context, exist, child) {
-      IconData iconData = Icons.star_border;
-      Color? color;
-      if (exist) {
-        iconData = Icons.star;
-        color = Colors.yellow;
-      }
+    IconData iconData = Icons.star_border;
+    Color? color;
+    if (follows) {
+      iconData = Icons.star;
+      color = Colors.yellow;
+    }
 
-      return GestureDetector(
-        onTap: () async {
-          bool finished = false;
-          Future.delayed(const Duration(seconds: 1),() {
-            if (!finished) {
-              EasyLoading.show(status: "Refreshing from relays before action...", maskType: EasyLoadingMaskType.black);
-            }
-          });
-          if (exist) {
-            contactListProvider
-                .removeCommunity(widget.info.communityId.toAString());
-          } else {
-            contactListProvider
-                .addCommunity(widget.info.communityId.toAString());
+    Widget followBtn = GestureDetector(
+      onTap: () async {
+        bool finished = false;
+        Future.delayed(const Duration(seconds: 1), () {
+          if (!finished) {
+            EasyLoading.show(status: "Refreshing from relays before action...", maskType: EasyLoadingMaskType.black);
           }
-          finished = true;
-          EasyLoading.dismiss();
-        },
-        child: Container(
-          margin: const EdgeInsets.only(
-            left: Base.BASE_PADDING_HALF,
-            right: Base.BASE_PADDING_HALF,
-          ),
-          child: Icon(
-            iconData,
-            color: color,
-          ),
+        });
+        if (follows) {
+          contactListProvider.removeCommunity(widget.info.communityId.toAString());
+        } else {
+          contactListProvider.addCommunity(widget.info.communityId.toAString());
+        }
+        finished = true;
+        EasyLoading.dismiss();
+      },
+      child: Container(
+        margin: const EdgeInsets.only(
+          left: Base.BASE_PADDING_HALF,
+          right: Base.BASE_PADDING_HALF,
         ),
-      );
-    }, selector: (context, _provider) {
-      return _provider.followsCommunity(widget.info.communityId.toAString());
-    });
+        child: Icon(
+          iconData,
+          color: color,
+        ),
+      ),
+    );
 
     List<Widget> list = [
       Container(

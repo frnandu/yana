@@ -162,7 +162,7 @@ class _WalletRouter extends State<WalletRouter> {
                                 height: 70,
                                 // before: const Icon(Icons.call_received_rounded),
                                 onTap: () async {
-                                  Metadata? metadata = metadataProvider.getMetadata(loggedUserSigner!.getPublicKey());
+                                  Metadata? metadata = await metadataProvider.getMetadata(loggedUserSigner!.getPublicKey());
                                   if (metadata != null && StringUtil.isNotBlank(metadata!.lud16)) {
                                     RouterUtil.router(
                                         context, RouterPath.WALLET_RECEIVE);

@@ -1,10 +1,10 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:ndk/ndk.dart';
-import 'package:ndk/entities.dart';
 import 'package:easy_image_viewer/easy_image_viewer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:ndk/entities.dart';
+import 'package:ndk/ndk.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -72,10 +72,18 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
 
   late String nip19PubKey;
 
+  List<String>? contacts;
+
   @override
   void initState() {
     super.initState();
 
+    Future(() async {
+      List<String>? a = await contactListProvider.contacts();
+      setState(() {
+        contacts = a;
+      });
+    });
     nip19PubKey = Nip19.encodePubKey(widget.pubkey);
   }
 
@@ -91,8 +99,7 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
     var _filterProvider = Provider.of<FilterProvider>(context);
     var bannerHeight = maxWidth / 3;
     if (PlatformUtil.isTableMode()) {
-      bannerHeight =
-          MetadataTopComponent.getPcBannerHeight(mediaDataCache.size.height);
+      bannerHeight = MetadataTopComponent.getPcBannerHeight(mediaDataCache.size.height);
     }
 
     String nip19Name = Nip19.encodeSimplePubKey(widget.pubkey);
@@ -110,10 +117,7 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
     }
 
     Widget? imageWidget;
-    String? url = widget.metadata != null &&
-            StringUtil.isNotBlank(widget.metadata?.picture)
-        ? widget.metadata?.picture
-        : StringUtil.robohash(widget.pubkey);
+    String? url = widget.metadata != null && StringUtil.isNotBlank(widget.metadata?.picture) ? widget.metadata?.picture : StringUtil.robohash(widget.pubkey);
 
     if (url != null) {
       imageWidget = CachedNetworkImage(
@@ -127,8 +131,7 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
       );
     }
     Widget? bannerImage;
-    if (widget.metadata != null &&
-        StringUtil.isNotBlank(widget.metadata!.banner)) {
+    if (widget.metadata != null && StringUtil.isNotBlank(widget.metadata!.banner)) {
       bannerImage = CachedNetworkImage(
         imageUrl: widget.metadata!.banner!,
         width: maxWidth,
@@ -149,8 +152,7 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
       )
     ];
 
-    if (widget.pubkey == loggedUserSigner!.getPublicKey() &&
-        loggedUserSigner!.canSign()) {
+    if (widget.pubkey == loggedUserSigner!.getPublicKey() && loggedUserSigner!.canSign()) {
       topBtnList.add(wrapBtn(
         MetadataIconBtn(
           iconData: Icons.edit_square,
@@ -166,8 +168,7 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
           // }
           );
     }
-    if (widget.followsYou &&
-        widget.pubkey != loggedUserSigner!.getPublicKey()) {
+    if (widget.followsYou && widget.pubkey != loggedUserSigner!.getPublicKey()) {
       topBtnList.add(
           // MetadataIconDataComp(
           //   leftWidget: Container(),
@@ -180,9 +181,8 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
                 color: themeData.dividerColor,
                 borderRadius: BorderRadius.circular(20),
               ),
-              padding:
-                  const EdgeInsets.only(top: 4, bottom: 4, left: 6, right: 5),
-              margin: const EdgeInsets.only(right: 3, top:8),
+              padding: const EdgeInsets.only(top: 4, bottom: 4, left: 6, right: 5),
+              margin: const EdgeInsets.only(right: 3, top: 8),
               child: Text(
                 "follows you",
                 style: TextStyle(
@@ -200,9 +200,7 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
     )));
 
     if (!widget.condensedIcons) {
-      if (widget.metadata != null &&
-          (StringUtil.isNotBlank(widget.metadata!.lud06) ||
-              StringUtil.isNotBlank(widget.metadata!.lud16))) {
+      if (widget.metadata != null && (StringUtil.isNotBlank(widget.metadata!.lud06) || StringUtil.isNotBlank(widget.metadata!.lud16))) {
         topBtnList.add(wrapBtn(PopupMenuButton<int>(
           itemBuilder: (context) {
             return [
@@ -210,60 +208,42 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
                 value: 21,
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.bolt, color: Colors.orange),
-                    Text(" Zap 21")
-                  ],
+                  children: [Icon(Icons.bolt, color: Colors.orange), Text(" Zap 21")],
                 ),
               ),
               const PopupMenuItem(
                 value: 69,
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.bolt, color: Colors.orange),
-                    Text(" Zap 69")
-                  ],
+                  children: [Icon(Icons.bolt, color: Colors.orange), Text(" Zap 69")],
                 ),
               ),
               const PopupMenuItem(
                 value: 210,
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.bolt, color: Colors.orange),
-                    Text(" Zap 210")
-                  ],
+                  children: [Icon(Icons.bolt, color: Colors.orange), Text(" Zap 210")],
                 ),
               ),
               const PopupMenuItem(
                 value: 420,
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.bolt, color: Colors.orange),
-                    Text(" Zap 420")
-                  ],
+                  children: [Icon(Icons.bolt, color: Colors.orange), Text(" Zap 420")],
                 ),
               ),
               const PopupMenuItem(
                 value: 2100,
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.bolt, color: Colors.orange),
-                    Text(" Zap 2100")
-                  ],
+                  children: [Icon(Icons.bolt, color: Colors.orange), Text(" Zap 2100")],
                 ),
               ),
               const PopupMenuItem(
                 value: 4200,
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.bolt, color: Colors.orange),
-                    Text(" Zap 4200")
-                  ],
+                  children: [Icon(Icons.bolt, color: Colors.orange), Text(" Zap 4200")],
                 ),
               ),
             ];
@@ -321,14 +301,13 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
               }
             },
             selector: (context, _provider) {
-              return _provider.contacts().contains(widget.pubkey);
+              return contacts != null ? contacts!.contains(widget.pubkey) : false;
             },
           ));
         }
         topBtnList.add(Container(
           margin: const EdgeInsets.only(top: Base.BASE_PADDING, right: 4),
-          child:
-          PopupMenuButton<String>(
+          child: PopupMenuButton<String>(
             tooltip: "more",
             itemBuilder: (context) {
               List<PopupMenuEntry<String>> list = [
@@ -336,18 +315,20 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
                   value: "login_as",
                   child: Text("Login as ${displayName}"),
                 ),
-                const PopupMenuItem(value:"share", child: Text("Share..."))];
+                const PopupMenuItem(value: "share", child: Text("Share..."))
+              ];
               if (filterProvider.isMutedPubKey(widget.pubkey)) {
-                list.add(const PopupMenuItem(value:"unmute", child: Text("Unmute profile")));
+                list.add(const PopupMenuItem(value: "unmute", child: Text("Unmute profile")));
               } else {
-                list.add(const PopupMenuItem(value:"mute-public", child: Text("Mute profile (public)")));
-                list.add(const PopupMenuItem(value:"mute-private", child: Text("Mute profile (private)")));
+                list.add(const PopupMenuItem(value: "mute-public", child: Text("Mute profile (public)")));
+                list.add(const PopupMenuItem(value: "mute-private", child: Text("Mute profile (private)")));
               }
               return list;
             },
             onSelected: (value) async {
               if (value == "login_as") {
-                EasyLoading.showToast("Logging in as ${displayName}...", dismissOnTap: true,  duration: const Duration(seconds: 5), maskType: EasyLoadingMaskType.black);
+                EasyLoading.showToast("Logging in as ${displayName}...",
+                    dismissOnTap: true, duration: const Duration(seconds: 5), maskType: EasyLoadingMaskType.black);
                 sharedPreferences.remove(DataKey.NOTIFICATIONS_TIMESTAMP);
                 sharedPreferences.remove(DataKey.FEED_POSTS_TIMESTAMP);
                 sharedPreferences.remove(DataKey.FEED_REPLIES_TIMESTAMP);
@@ -357,7 +338,12 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
                 followEventProvider.clear();
                 settingProvider.addAndChangeKey(widget.pubkey, false, false, updateUI: true);
                 String publicKey = widget.pubkey;
-                ndk.changeEventSigner(Bip340EventSigner(privateKey: null, publicKey: publicKey));
+                ndk = Ndk(
+                    NdkConfig(
+                      eventVerifier: RustEventVerifier(),
+                      cache: cacheManager,
+                      eventSigner: Bip340EventSigner(privateKey: null, publicKey: publicKey),
+                    ));
                 await initRelays(newKey: false);
                 followEventProvider.loadCachedFeed();
                 nwcProvider.init();
@@ -365,24 +351,26 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
                 EasyLoading.dismiss();
                 RouterUtil.back(context);
               } else if (value == "share") {
-                UserRelayList? userRelayList = cacheManager.loadUserRelayList(widget.pubkey);
+                UserRelayList? userRelayList = await cacheManager.loadUserRelayList(widget.pubkey);
                 List<String> relays = ndk.config.bootstrapRelays;
-                if (userRelayList!=null && userRelayList.relays!=null) {
+                if (userRelayList != null && userRelayList.relays != null) {
                   relays = userRelayList!.relays!.keys!.toList();
                 }
                 var nevent = Nprofile(pubkey: widget.pubkey, relays: relays);
 
-                String share = 'https://njump.me/${NIP19Tlv.encodeNprofile(nevent).replaceAll("nostr:","")}';
+                String share = 'https://njump.me/${NIP19Tlv.encodeNprofile(nevent).replaceAll("nostr:", "")}';
                 Share.share(share);
               } else if (value.startsWith("mute-")) {
-                Nip51List muteList = await ndk.lists.broadcastAddNip51ListElement(Nip51List.MUTE, Nip51List.PUB_KEY, widget.pubkey, myOutboxRelaySet!.urls, loggedUserSigner!, private: value=="mute-private");
+                Nip51List muteList = await ndk.lists.broadcastAddNip51ListElement(
+                    Nip51List.MUTE, Nip51List.PUB_KEY, widget.pubkey, myOutboxRelaySet!.urls, loggedUserSigner!,
+                    private: value == "mute-private");
                 filterProvider.muteList = muteList;
                 filterProvider.notifyListeners();
-                setState(() {
-                });
+                setState(() {});
               } else if (value == "unmute") {
-                Nip51List? muteList = await ndk.lists.broadcastRemoveNip51ListElement(Nip51List.MUTE, Nip51List.PUB_KEY, widget.pubkey, myOutboxRelaySet!.urls, loggedUserSigner!);
-                if (muteList!=null) {
+                Nip51List? muteList = await ndk.lists
+                    .broadcastRemoveNip51ListElement(Nip51List.MUTE, Nip51List.PUB_KEY, widget.pubkey, myOutboxRelaySet!.urls, loggedUserSigner!);
+                if (muteList != null) {
                   filterProvider.muteList = muteList;
                   filterProvider.notifyListeners();
                   setState(() {});
@@ -395,9 +383,7 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
               color: Colors.white,
             ),
           ),
-        )
-        );
-
+        ));
       }
     }
 
@@ -452,9 +438,7 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
         width: maxWidth,
         height: bannerHeight,
         color: themeData.cardColor, //Colors.grey.withOpacity(0.5),
-        child: widget.jumpable
-            ? GestureDetector(onTap: jumpToUserRouter, child: bannerImage)
-            : bannerImage));
+        child: widget.jumpable ? GestureDetector(onTap: jumpToUserRouter, child: bannerImage) : bannerImage));
     topList.add(Container(
       height: 50,
       // color: Colors.red,
@@ -544,8 +528,7 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
             height: IMAGE_WIDTH + IMAGE_BORDER * 2,
             width: IMAGE_WIDTH + IMAGE_BORDER * 2,
             decoration: BoxDecoration(
-              borderRadius:
-                  BorderRadius.circular(HALF_IMAGE_WIDTH + IMAGE_BORDER),
+              borderRadius: BorderRadius.circular(HALF_IMAGE_WIDTH + IMAGE_BORDER),
               border: Border.all(
                 width: IMAGE_BORDER,
                 color: scaffoldBackgroundColor,
@@ -587,20 +570,15 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
   }
 
   void userPicturePreview() {
-    String? url = widget.metadata != null &&
-            StringUtil.isNotBlank(widget.metadata?.picture)
-        ? widget.metadata?.picture
-        : StringUtil.robohash(widget.pubkey);
+    String? url = widget.metadata != null && StringUtil.isNotBlank(widget.metadata?.picture) ? widget.metadata?.picture : StringUtil.robohash(widget.pubkey);
 
     if (url != null) {
       List<ImageProvider> imageProviders = [];
       imageProviders.add(CachedNetworkImageProvider(url));
 
-      MultiImageProvider multiImageProvider =
-          MultiImageProvider(imageProviders, initialIndex: 0);
+      MultiImageProvider multiImageProvider = MultiImageProvider(imageProviders, initialIndex: 0);
 
-      ImagePreviewDialog.show(context, multiImageProvider,
-          doubleTapZoomable: true, swipeDismissible: true);
+      ImagePreviewDialog.show(context, multiImageProvider, doubleTapZoomable: true, swipeDismissible: true);
     }
   }
 }
@@ -613,12 +591,7 @@ class MetadataIconBtn extends StatelessWidget {
   IconData iconData;
   Color? iconColor;
 
-  MetadataIconBtn(
-      {super.key,
-      required this.iconData,
-      this.iconColor,
-      this.onTap,
-      this.onLongPress});
+  MetadataIconBtn({super.key, required this.iconData, this.iconColor, this.onTap, this.onLongPress});
 
   @override
   Widget build(BuildContext context) {
@@ -668,7 +641,8 @@ class MetadataTextBtn extends StatelessWidget {
 
   Color? borderColor;
 
-  MetadataTextBtn({super.key,
+  MetadataTextBtn({
+    super.key,
     required this.text,
     required this.onTap,
     this.borderColor,
@@ -680,9 +654,7 @@ class MetadataTextBtn extends StatelessWidget {
       // padding: const EdgeInsets.only(left: 6, right: 6),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20),
-        border: borderColor != null
-            ? Border.all(width: 1, color: borderColor!)
-            : Border.all(width: 1),
+        border: borderColor != null ? Border.all(width: 1, color: borderColor!) : Border.all(width: 1),
       ),
       child: TextButton(
         onPressed: onTap,

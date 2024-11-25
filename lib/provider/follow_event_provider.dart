@@ -39,8 +39,8 @@ class FollowEventProvider extends ChangeNotifier
   }
 
   Future<void> loadCachedFeed() async {
-    List<String> contactsForFeed = contactListProvider.contacts();
-    List<Nip01Event>? cachedEvents = cacheManager.loadEvents(
+    List<String> contactsForFeed = await contactListProvider.contacts();
+    List<Nip01Event>? cachedEvents = await cacheManager.loadEvents(
         pubKeys: contactsForFeed, kinds: queryEventKinds());
     print("FOLLOW loaded ${cachedEvents.length} events from cache DB");
     onEvents(cachedEvents, saveToCache: false);
@@ -144,7 +144,7 @@ class FollowEventProvider extends ChangeNotifier
     doUnscribe();
 
     ContactList? contactList =
-        contactListProvider.getContactList(loggedUserSigner!.getPublicKey());
+        await contactListProvider.getContactList(loggedUserSigner!.getPublicKey());
     List<String> contactsForFeed =
         contactList != null ? contactList.contacts : [];
 
@@ -243,8 +243,8 @@ class FollowEventProvider extends ChangeNotifier
 
   void queryOlder({required int until, List<String>? fallbackTags}) async {
     ContactList? contactList =
-        contactListProvider.getContactList(loggedUserSigner!.getPublicKey());
-    List<String> contactsForFeed = contactListProvider.contacts();
+        await contactListProvider.getContactList(loggedUserSigner!.getPublicKey());
+    List<String> contactsForFeed = await contactListProvider.contacts();
     var filter = Filter(
       kinds: queryEventKinds(),
       authors: contactsForFeed,

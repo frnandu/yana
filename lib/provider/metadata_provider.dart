@@ -1,9 +1,6 @@
-import 'package:ndk/config/bootstrap_relays.dart';
-import 'package:ndk/domain_layer/entities/metadata.dart';
-import 'package:ndk/domain_layer/entities/relay_set.dart';
-import 'package:ndk/shared/nips/nip01/helpers.dart';
-import 'package:ndk/shared/nips/nip05/nip05.dart';
 import 'package:flutter/material.dart';
+import 'package:ndk/config/bootstrap_relays.dart';
+import 'package:ndk/entities.dart';
 
 import '../main.dart';
 import '../utils/later_function.dart';
@@ -25,13 +22,9 @@ class MetadataProvider extends ChangeNotifier with LaterFunction {
     if (_needUpdateMetadatas.isNotEmpty) {
       _loadNeedingUpdateMetadatas();
     }
-    if (_needUpdateNip05s.isNotEmpty) {
-      _loadNeedingUpdateNip05s();
-    }
   }
 
   List<String> _needUpdateMetadatas = [];
-  List<Metadata> _needUpdateNip05s = [];
 
   void update(String pubkey) {
     if (!_needUpdateMetadatas.contains(pubkey)) {
@@ -40,8 +33,8 @@ class MetadataProvider extends ChangeNotifier with LaterFunction {
     later(_laterCallback, null);
   }
 
-  Metadata? getMetadata(String pubKey) {
-    var metadata = cacheManager.loadMetadata(pubKey);
+  Future<Metadata?> getMetadata(String pubKey) async {
+    var metadata = await cacheManager.loadMetadata(pubKey);
     if (metadata != null) {
       return metadata;
     }
@@ -54,17 +47,10 @@ class MetadataProvider extends ChangeNotifier with LaterFunction {
 
   static const NIP05_NEEDS_UPDATE_DURATION = const Duration(days: 7);
 
-  bool? isNip05Valid(Metadata metadata) {
+  Future<bool?> isNip05Valid(Metadata metadata) async {
     if (StringUtil.isNotBlank(metadata.nip05)) {
-      Nip05? nip05 = cacheManager.loadNip05(metadata.pubKey);
-      if (nip05 == null || nip05.needsUpdate(NIP05_NEEDS_UPDATE_DURATION)) {
-        if (!_needUpdateNip05s.contains(metadata)) {
-          _needUpdateNip05s.add(metadata);
-          later(_laterCallback, null);
-          return null;
-        }
-      }
-      return nip05?.valid;
+      Nip05 nip05 = await ndk.nip05.check(nip05: metadata.nip05!, pubkey: metadata.pubKey);
+      return nip05.valid;
     }
     return null;
   }
@@ -94,44 +80,22 @@ class MetadataProvider extends ChangeNotifier with LaterFunction {
     }
   }
 
-  void _loadNeedingUpdateNip05s() async {
-    if (_needUpdateNip05s.isEmpty) {
-      return;
-    }
-    List<Nip05> toSave = [];
-
-    List<Metadata> doCheck = List.of(_needUpdateNip05s);
-    for (var metadata in doCheck) {
-      Nip05? nip05 = cacheManager.loadNip05(metadata.pubKey);
-      bool valid = await Nip05.check(metadata.nip05!, metadata.pubKey);
-      nip05 ??= Nip05(pubKey: metadata.pubKey, nip05: metadata.nip05!, valid: valid, updatedAt: Helpers.now);
-      nip05.valid = valid;
-      nip05.updatedAt = Helpers.now;
-      toSave.add(nip05);
-    }
-    await cacheManager.saveNip05s(toSave);
-    _needUpdateNip05s.clear();
-    notifyListeners();
-  }
-
   void clear() {
     cacheManager.removeAllMetadatas();
-    cacheManager.removeAllNip05s();
   }
 
   Future<void> updateLud16IfEmpty(String? lud16) async {
     if (loggedUserSigner!=null) {
-      Metadata? metadata = metadataProvider.getMetadata(
-          loggedUserSigner!.getPublicKey());
+      Metadata? metadata = await metadataProvider.getMetadata(loggedUserSigner!.getPublicKey());
       if (metadata!=null) {
         if (StringUtil.isNotBlank(lud16) && StringUtil.isBlank(metadata.lud16)) {
           metadata.lud16 = lud16;
           await ndk.metadata.broadcastMetadata(
-              metadata, myInboxRelaySet!.urls, loggedUserSigner!);
+              metadata, specificRelays: myInboxRelaySet!.urls);
         }
       } else {
         metadata ??= Metadata(pubKey: loggedUserSigner!.getPublicKey(), lud16: lud16);
-        metadata = await ndk.metadata.broadcastMetadata(metadata, DEFAULT_BOOTSTRAP_RELAYS, loggedUserSigner!);
+        metadata = await ndk.metadata.broadcastMetadata(metadata, specificRelays: DEFAULT_BOOTSTRAP_RELAYS);
         await cacheManager.saveMetadata(metadata);
         notifyListeners();
       }
