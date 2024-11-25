@@ -112,14 +112,16 @@ class _WalletReceiveRouter extends State<WalletReceiveRouter> {
               color: Colors.white,
             ),
             child: PrettyQrView.data(
+                errorCorrectLevel: QrErrorCorrectLevel.H,
                 data: metadata!.lud16!,
                 decoration: const PrettyQrDecoration(
                   // background: Colors.white,
                   shape: PrettyQrSmoothSymbol(color: Colors.black, roundFactor: 0),
-                  // image: PrettyQrDecorationImage(
-                  //   scale: 0.2,
-                  //   image: AssetImage('assets/imgs/logo/logo-new.png'),
-                  // ),
+                  image: PrettyQrDecorationImage(
+                    scale: 0.30,
+                    padding: EdgeInsets.all(20),
+                    image: AssetImage('assets/imgs/logo/logo-new.png'),
+                  ),
                 ))));
         list.add(const SizedBox(height: 10));
         list.add(UserPicComponent(
