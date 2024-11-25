@@ -127,14 +127,22 @@ dependencies:
 #  ndk: ^0.1.2
   ndk:
     git:
-      url: https://github.com/relaystr/ndk.git
-      ref: master
-#  ndk:
-#    path: ../ndk
-#    path: ../ndk/packages/ndk
-#
-#  ndk_amber:
-#    path: ../ndk/packages/ndk_amber
+      url: https://github.com/relaystr/ndk
+      path: packages/ndk
+      ref: melos-monorepo
+#   path: ../ndk/packages/ndk
+  ndk_amber:
+    git:
+      url: https://github.com/relaystr/ndk
+      path: packages/amber
+      ref: melos-monorepo
+#   path: ../ndk/packages/amber
+  ndk_rust_verifier:
+    git:
+      url: https://github.com/relaystr/ndk
+      path: packages/rust_verifier
+      ref: melos-monorepo
+#   path: ../ndk/packages/rust_verifier
 
 dev_dependencies:
   flutter_launcher_icons: ^0.14.1

@@ -1,19 +1,17 @@
-import 'dart:convert';
-
-import 'package:ndk/ndk.dart';
-import 'package:ndk/shared/nips/nip01/helpers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_font_picker/flutter_font_picker.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:local_auth/local_auth.dart';
+import 'package:ndk/ndk.dart';
+import 'package:ndk/shared/nips/nip01/helpers.dart';
+import 'package:ndk_rust_verifier/ndk_rust_verifier.dart';
 import 'package:provider/provider.dart';
 import 'package:settings_ui/settings_ui.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:yana/nostr/relay_metadata.dart';
 import 'package:yana/provider/filter_provider.dart';
 import 'package:yana/router/index/account_manager_component.dart';
-import 'package:yana/router/wallet/wallet_router.dart';
 import 'package:yana/utils/platform_util.dart';
 import 'package:yana/utils/router_util.dart';
 import 'package:yana/utils/when_stop_function.dart';

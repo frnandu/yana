@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:ndk/ndk.dart';
 import 'package:ndk/shared/helpers/relay_helper.dart';
+import 'package:ndk_rust_verifier/ndk_rust_verifier.dart';
 import 'package:protocol_handler/protocol_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:yana/provider/dm_provider.dart';
