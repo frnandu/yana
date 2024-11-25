@@ -125,12 +125,12 @@ dependencies:
   bolt11_decoder: ^1.0.2
 
 #  ndk: ^0.1.2
-#  ndk:
-#    git:
-#      url: https://github.com/relaystr/ndk.git
-#      ref: master
   ndk:
-    path: ../ndk
+    git:
+      url: https://github.com/relaystr/ndk.git
+      ref: master
+#  ndk:
+#    path: ../ndk
 #    path: ../ndk/packages/ndk
 #
 #  ndk_amber:

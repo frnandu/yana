@@ -65,7 +65,7 @@ class RelayProvider extends ChangeNotifier {
   Future<void> addRelay(String relayAddr) async {
     ReadWriteMarker marker = ReadWriteMarker.readWrite;
     if (myOutboxRelaySet != null && !myOutboxRelaySet!.urls.contains(relayAddr) && myInboxRelaySet!=null && !myInboxRelaySet!.urls.contains(relayAddr)) {
-      UserRelayList userRelayList = await ndk.userRelayLists.broadcastAddNip65Relay(relayAddr, marker, myOutboxRelaySet!.urls, loggedUserSigner!);
+      UserRelayList userRelayList = await ndk.userRelayLists.broadcastAddNip65Relay(relayUrl: relayAddr, marker: marker, broadcastRelays: myOutboxRelaySet!.urls);
       createMyRelaySets(userRelayList);
       await cacheManager.saveRelaySet(myOutboxRelaySet!);
       await cacheManager.saveRelaySet(myInboxRelaySet!);
@@ -75,7 +75,7 @@ class RelayProvider extends ChangeNotifier {
   }
 
   Future<void> removeRelay(String url) async {
-    UserRelayList? userRelayList = await ndk.userRelayLists.broadcastRemoveNip65Relay(url, myOutboxRelaySet!.urls, loggedUserSigner!);
+    UserRelayList? userRelayList = await ndk.userRelayLists.broadcastRemoveNip65Relay(relayUrl: url, specificRelays: myOutboxRelaySet!.urls);
     if (userRelayList != null) {
       createMyRelaySets(userRelayList);
       await cacheManager.saveRelaySet(myOutboxRelaySet!);
@@ -90,7 +90,7 @@ class RelayProvider extends ChangeNotifier {
     relays.addAll(DEFAULT_BOOTSTRAP_RELAYS);
     relays.addAll(myOutboxRelaySet!.urls);
 
-    UserRelayList? userRelayList = await ndk.userRelayLists.broadcastUpdateNip65RelayMarker(url, marker, relays, loggedUserSigner!);
+    UserRelayList? userRelayList = await ndk.userRelayLists.broadcastUpdateNip65RelayMarker(relayUrl: url, marker: marker);
 
     if (userRelayList != null) {
       createMyRelaySets(userRelayList);
