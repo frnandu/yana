@@ -16,6 +16,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:isar/isar.dart' as isar;
 import 'package:ndk/config/bootstrap_relays.dart';
+import 'package:ndk/entities.dart';
 import 'package:ndk_amber/data_layer/data_sources/amber_flutter.dart';
 import 'package:ndk/data_layer/repositories/cache_manager/isar_cache_manager.dart';
 import 'package:ndk_amber/data_layer/repositories/signers/amber_event_signer.dart';
@@ -299,7 +300,39 @@ Future<void> initProvidersAndStuff() async {
 Future<void> initRelays({bool newKey = false}) async {
   await ndk.relays.connect();
 
-  UserRelayList? userRelayList = !newKey ? await ndk.userRelayLists.getSingleUserRelayList(loggedUserSigner!.getPublicKey()) : null;
+  final Ndk ndk2 = Ndk(
+    NdkConfig(
+      eventVerifier: Bip340EventVerifier(),
+      cache: MemCacheManager(),
+    ),
+  );
+
+  final UserRelayList? response = await ndk2.userRelayLists.getSingleUserRelayList(
+      '30782a8323b7c98b172c5a2af7206bb8283c655be6ddce11133611a03d5f1177');
+
+  // read entity
+  print("RELAYS:");
+  print(response?.relays.length ?? "no relays");
+  print(response!.toNip65());
+
+
+  await for (final event in (ndk.requests.query(
+//                timeout: missingPubKeys.length > 1 ? 10 : 3,
+      filters: [
+        Filter(
+            authors: [loggedUserSigner!.getPublicKey()],
+            kinds: [Nip65.KIND, ContactList.KIND])
+      ])).stream) {
+    print("$event");
+  }
+
+    // await ndk.userRelayLists.loadMissingRelayListsFromNip65OrNip02([loggedUserSigner!.getPublicKey()],
+    //   onProgress: (stepName, count, total) {
+    //     print("step $stepName, count $count total $total");
+    //   });
+  UserRelayList? userRelayList = await cacheManager.loadUserRelayList(loggedUserSigner!.getPublicKey());
+
+  // UserRelayList? userRelayList = !newKey ? await ndk.userRelayLists.getSingleUserRelayList(loggedUserSigner!.getPublicKey()) : null;
   if (userRelayList == null) {
     int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
     userRelayList = UserRelayList(

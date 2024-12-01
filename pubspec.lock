@@ -1305,30 +1305,27 @@ packages:
   ndk:
     dependency: "direct main"
     description:
-      path: "packages/ndk"
-      ref: melos-monorepo
-      resolved-ref: "7011ee15891bf3d32bd16ae7a85412714b19e116"
-      url: "https://github.com/relaystr/ndk"
-    source: git
-    version: "0.1.3"
+      name: ndk
+      sha256: fbf4486ede0748f472ea463e35839afdbea8568c6116411dc2988cbf7f60eb9f
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.2.0-dev001"
   ndk_amber:
     dependency: "direct main"
     description:
-      path: "packages/amber"
-      ref: melos-monorepo
-      resolved-ref: "7011ee15891bf3d32bd16ae7a85412714b19e116"
-      url: "https://github.com/relaystr/ndk"
-    source: git
-    version: "0.1.3"
+      name: ndk_amber
+      sha256: b2485ffa21bc5efaa11a4fec509f0e7c3e3955e03efa80aa138a82dabd133799
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.2.0-dev001"
   ndk_rust_verifier:
     dependency: "direct main"
     description:
-      path: "packages/rust_verifier"
-      ref: melos-monorepo
-      resolved-ref: "7011ee15891bf3d32bd16ae7a85412714b19e116"
-      url: "https://github.com/relaystr/ndk"
-    source: git
-    version: "0.1.3"
+      name: ndk_rust_verifier
+      sha256: "69776eb5054196aba77ba7c1f61f0fcd9ad3ccad77ff64d995fa51d00d1ec683"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.2.0-dev001"
   nested:
     dependency: transitive
     description:

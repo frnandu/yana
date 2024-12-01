@@ -125,20 +125,20 @@ dependencies:
   bolt11_decoder: ^1.0.2
 
 #  ndk: ^0.1.2
-  ndk:
-    git:
-      url: https://github.com/relaystr/ndk
-      path: packages/ndk
-#   path: ../ndk/packages/ndk
-  ndk_amber:
-    git:
-      url: https://github.com/relaystr/ndk
-      path: packages/amber
+  ndk: 0.2.0-dev001
+    #    git:
+#      url: https://github.com/relaystr/ndk
+#      path: packages/ndk
+#    path: ../ndk/packages/ndk
+  ndk_amber: 0.2.0-dev001
+    #    git:
+#      url: https://github.com/relaystr/ndk
+#      path: packages/amber
 #   path: ../ndk/packages/amber
-  ndk_rust_verifier:
-    git:
-      url: https://github.com/relaystr/ndk
-      path: packages/rust_verifier
+  ndk_rust_verifier: 0.2.0-dev001
+#    git:
+#      url: https://github.com/relaystr/ndk
+#      path: packages/rust_verifier
 #   path: ../ndk/packages/rust_verifier
 
 dev_dependencies:
