@@ -17,7 +17,6 @@ import 'package:intl/intl.dart';
 import 'package:isar/isar.dart' as isar;
 import 'package:ndk/config/bootstrap_relays.dart';
 import 'package:ndk/data_layer/data_sources/amber_flutter.dart';
-import 'package:ndk/data_layer/repositories/cache_manager/isar_cache_manager.dart';
 import 'package:ndk/data_layer/repositories/signers/amber_event_signer.dart';
 import 'package:ndk/domain_layer/entities/pubkey_mapping.dart';
 import 'package:ndk/domain_layer/entities/read_write_marker.dart';
@@ -262,11 +261,11 @@ Future<void> initProvidersAndStuff() async {
       // loggedUserSigner = Bip340EventSigner(settingProvider.key!, getPublicKey(settingProvider.key!));
       filterProvider = FilterProvider.getInstance();
       ndk.relays.eventFilters.add(filterProvider);
-      IsarCacheManager dbCacheManager = IsarCacheManager();
-      await dbCacheManager.init(directory: PlatformUtil.isWeb() ? isar.Isar.sqliteInMemory : (await getApplicationDocumentsDirectory()).path);
+      // IsarCacheManager dbCacheManager = IsarCacheManager();
+      // await dbCacheManager.init(directory: PlatformUtil.isWeb() ? isar.Isar.sqliteInMemory : (await getApplicationDocumentsDirectory()).path);
       // DbObjectBox dbCacheManager = DbObjectBox();
       // cacheManager = dbCacheManager;
-      dbCacheManager.eventFilter = filterProvider;
+      // dbCacheManager.eventFilter = filterProvider;
       //ndk.relays.eventVerifier = HybridEventVerifier();
 
       if (myInboxRelaySet == null) {
@@ -446,14 +445,14 @@ Future<void> main() async {
   }
   // DbObjectBox dbCacheManager = DbObjectBox();
   // cacheManager = dbCacheManager;
-  IsarCacheManager dbCacheManager = IsarCacheManager();
-  try {
-    await dbCacheManager.init(directory: PlatformUtil.isWeb() ? isar.Isar.sqliteInMemory : (await getApplicationDocumentsDirectory()).path);
-    cacheManager = dbCacheManager;
-  } catch (e) {
+  // IsarCacheManager dbCacheManager = IsarCacheManager();
+  // try {
+    // await dbCacheManager.init(directory: PlatformUtil.isWeb() ? isar.Isar.sqliteInMemory : (await getApplicationDocumentsDirectory()).path);
+    // cacheManager = dbCacheManager;
+  // } catch (e) {
     cacheManager = MemCacheManager();
-    print(e);
-  }
+    // print(e);
+  // }
   //ndk.relays.eventVerifier = HybridEventVerifier();
 
   if (!PlatformUtil.isWeb() && PlatformUtil.isPC()) {

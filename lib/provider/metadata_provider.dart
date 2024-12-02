@@ -49,8 +49,8 @@ class MetadataProvider extends ChangeNotifier with LaterFunction {
 
   Future<bool?> isNip05Valid(Metadata metadata) async {
     if (StringUtil.isNotBlank(metadata.nip05)) {
-      Nip05 nip05 = await ndk.nip05.check(nip05: metadata.nip05!, pubkey: metadata.pubKey);
-      return nip05.valid;
+      // Nip05 nip05 = await ndk.nip05.check(nip05: metadata.nip05!, pubkey: metadata.pubKey);
+      return false;//nip05.valid;
     }
     return null;
   }
