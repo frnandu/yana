@@ -29,11 +29,11 @@ This will eventually allow each contributor to spend more time on the project.
 
 # Freedom Tech
 It will not be constrained to imperialist distributors, such as Apple Store or Google Store.\
-Highly recommended https://zap.store (android) which uses nostr keys for signing and web-of-trust.\
+Highly recommended https://zapstore.dev (android) which uses nostr keys for signing and web-of-trust.\
 You can also add github repo to [Obtainium](https://github.com/ImranR98/Obtainium),\
 or you can just download them from the release's page and install it directly without a third-party distributor.
 
-<a href="https://zap.store?app=yana.nostr"><img height="60" src="https://blob.satellite.earth/84dde28e6b2f727ddbb85fdf31ce1fc6c2731edb571444e8fbe0cd0b4ebf2ee8"/></a>
+<a href="https://zapstore.dev?app=yana.nostr"><img height="60" src="https://blob.satellite.earth/84dde28e6b2f727ddbb85fdf31ce1fc6c2731edb571444e8fbe0cd0b4ebf2ee8"/></a>
 
 [<img src="https://github.com/NeoApplications/Neo-Backup/blob/034b226cea5c1b30eb4f6a6f313e4dadcbb0ece4/badge_github.png?raw=true"
 alt="Get it on GitHub"
