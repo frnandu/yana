@@ -79,7 +79,7 @@ class NotificationsProvider extends ChangeNotifier with PenddingEventsLaterFunct
 
   void startSubscription({bool refreshed = false}) async {
     if (subscription != null) {
-      ndk.relays.closeSubscription(subscription!.requestId);
+      ndk.requests.closeSubscription(subscription!.requestId);
     }
     int? since;
     if (!refreshed) {

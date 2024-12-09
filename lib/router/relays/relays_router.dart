@@ -52,7 +52,7 @@ class _RelaysRouter extends CustState<RelaysRouter> with WhenStopFunction {
     userRelayList ??= await ndk.userRelayLists.getSingleUserRelayList(loggedUserSigner!.getPublicKey(), forceRefresh: true);
     userRelayList ??= UserRelayList(
         pubKey: loggedUserSigner!.getPublicKey(),
-        relays: {for (String url in ndk.relays.bootstrapRelays) url: ReadWriteMarker.readWrite},
+        relays: {for (String url in ndk.config.bootstrapRelays) url: ReadWriteMarker.readWrite},
         createdAt: Helpers.now,
         refreshedTimestamp: Helpers.now);
     await Future.wait(userRelayList!.urls.map((url) => ndk.relays.getRelayInfo(cleanRelayUrl(url)!)));
@@ -163,10 +163,10 @@ class _RelaysRouter extends CustState<RelaysRouter> with WhenStopFunction {
 
                             var url = userRelayList!.urls.toList()[index];
                             ReadWriteMarker? marker = userRelayList!.relays[url]!;
-                            return ndk.relays.getRelay(url) != null
+                            return ndk.relays.getRelayConnectivity(url) != null
                                 ? RelaysItemComponent(
                                     url: url,
-                                    relay: ndk.relays.getRelay(url)!,
+                                    relay: ndk.relays.getRelayConnectivity(url)!,
                                     marker: marker,
                                     showConnection: true,
                                     showStats: true,
@@ -202,8 +202,7 @@ class _RelaysRouter extends CustState<RelaysRouter> with WhenStopFunction {
     // itemScrollController.jumpTo(index: userRelayList!.relays.length-1);
     List<String> result = await relayProvider.findRelays(controller.text);
     for (var url in result) {
-      if (ndk.relays.getRelay(url) == null || ndk.relays.getRelay(url)!.info == null) {
-        ndk.relays.relays[url] = Relay(url);
+      if (ndk.relays.getRelayConnectivity(url) == null || ndk.relays.getRelayConnectivity(url)!.relayInfo == null) {
         ndk.relays.getRelayInfo(url).then((value) {
           if (!disposed) {
             setState(() {});

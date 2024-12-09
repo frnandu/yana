@@ -153,7 +153,7 @@ class _TagDetailRouter extends CustState<TagDetailRouter>
 
   void doQuery() async {
     if (subscription!=null) {
-      ndk.relays.closeSubscription(subscription!.requestId);
+      ndk.requests.closeSubscription(subscription!.requestId);
     }
     var plainTag = tag!.replaceFirst("#", "");
     var filter = Filter(kinds: [
@@ -190,7 +190,7 @@ class _TagDetailRouter extends CustState<TagDetailRouter>
     disposeLater();
 
     try {
-      ndk.relays.closeSubscription(subscription!.requestId);
+      ndk.requests.closeSubscription(subscription!.requestId);
     } catch (e) {
       print(e);
     }

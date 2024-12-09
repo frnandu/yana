@@ -41,7 +41,7 @@ class RelayProvider extends ChangeNotifier {
     if (myOutboxRelaySet!=null) {
       set.addAll(myOutboxRelaySet!.urls);
     }
-    String result = "${ndk.relays.getConnectedRelays(set).length}/${set.length}";
+    String result = "${ndk.relays.connectedRelays.where((relay) => set.contains(relay.url)).length}/${set.length}";
     // result +=",${relayManager.webSockets.keys.where((element) =>ndk.relays.isWebSocketOpen(element)).length}";
     // String result =
     //     "${nostr!.activeRelays().length}/${nostr!.allRelays().length}";
@@ -53,7 +53,7 @@ class RelayProvider extends ChangeNotifier {
 
   String feedRelaysNumStr() {
     if (feedRelaySet != null) {
-      return "${ndk.relays.getConnectedRelays(feedRelaySet!.urls).length}/${feedRelaySet!.urls.length}";
+      return "${ndk.relays.connectedRelays.where((relay) => feedRelaySet!.urls.contains(relay.url)).length}/${feedRelaySet!.urls.length}";
     }
     return "";
   }
@@ -69,7 +69,7 @@ class RelayProvider extends ChangeNotifier {
       createMyRelaySets(userRelayList);
       await cacheManager.saveRelaySet(myOutboxRelaySet!);
       await cacheManager.saveRelaySet(myInboxRelaySet!);
-      await ndk.relays.connect(urls: userRelayList.urls);
+      await ndk.relays.reconnectRelays(userRelayList.urls);
       notifyListeners();
     }
   }
@@ -80,7 +80,7 @@ class RelayProvider extends ChangeNotifier {
       createMyRelaySets(userRelayList);
       await cacheManager.saveRelaySet(myOutboxRelaySet!);
       await cacheManager.saveRelaySet(myInboxRelaySet!);
-      await ndk.relays.connect(urls: userRelayList.urls);
+      await ndk.relays.reconnectRelays(userRelayList.urls);
       notifyListeners();
     }
   }
@@ -122,10 +122,6 @@ class RelayProvider extends ChangeNotifier {
       notifyListeners();
     }
     return newRelaySet;
-  }
-
-  List<String> getBlockedRelays() {
-    return ndk.relays.blockedRelays;
   }
 
   List<String> getSearchRelays() {

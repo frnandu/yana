@@ -1,4 +1,4 @@
-import 'package:ndk/data_layer/repositories/signers/amber_event_signer.dart';
+import 'package:ndk_amber/data_layer/repositories/signers/amber_event_signer.dart';
 import 'package:ndk/domain_layer/entities/metadata.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';

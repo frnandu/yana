@@ -3,6 +3,7 @@ import 'package:ndk/domain_layer/entities/read_write_marker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:ndk/domain_layer/entities/relay.dart';
+import 'package:ndk/domain_layer/entities/relay_connectivity.dart';
 import 'package:yana/main.dart';
 import 'package:yana/utils/router_path.dart';
 import 'package:yana/utils/router_util.dart';
@@ -14,7 +15,7 @@ import '../../utils/store_util.dart';
 import '../../utils/string_util.dart';
 
 class RelaysItemComponent extends StatelessWidget {
-  Relay? relay;
+  RelayConnectivity? relay;
   String url;
   bool showConnection;
   bool showStats;
@@ -44,7 +45,7 @@ class RelaysItemComponent extends StatelessWidget {
       borderLeftColor = Colors.red;
       if (ndk.relays.isRelayConnected(relay!.url)) {
         borderLeftColor = Colors.green;
-      } else if (relay!.connecting) {
+      } else if (relay!.relay.connecting) {
         borderLeftColor = Colors.yellow;
       }
     }
@@ -58,7 +59,7 @@ class RelaysItemComponent extends StatelessWidget {
     } else if (url.startsWith("wss://relay.snort.social")) {
       iconUrl = "https://snort.social/favicon.ico";
     } else {
-      iconUrl = relay != null && relay!.info != null && StringUtil.isNotBlank(relay!.info!.icon) ? relay!.info!.icon : StringUtil.robohash(HashUtil.md5(url));
+      iconUrl = relay != null && relay!.relayInfo != null && StringUtil.isNotBlank(relay!.relayInfo!.icon) ? relay!.relayInfo!.icon : StringUtil.robohash(HashUtil.md5(url));
     }
 
     imageWidget = Container(
@@ -102,7 +103,7 @@ class RelaysItemComponent extends StatelessWidget {
 
     return GestureDetector(
         onTap: () {
-          if (relay != null && relay!.info != null) {
+          if (relay != null && relay!.relayInfo != null) {
             RouterUtil.router(context, RouterPath.RELAY_INFO, relay);
           }
         },

@@ -257,7 +257,7 @@ class DMProvider extends ChangeNotifier with PenddingEventsLaterFunction {
       return;
     }
     if (subscription != null) {
-      ndk.relays.closeSubscription(subscription!.requestId);
+      ndk.requests.closeSubscription(subscription!.requestId);
     }
     var sentFilter = Filter(
       kinds: [kind.EventKind.DIRECT_MESSAGE],
