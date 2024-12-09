@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:bip340/bip340.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:ndk/domain_layer/entities/connection_source.dart';
 import 'package:ndk/ndk.dart';
 import 'package:ndk/shared/logger/logger.dart';
 import 'package:ndk/shared/nips/nip04/nip04.dart';
@@ -168,7 +169,7 @@ class NwcProvider extends ChangeNotifier {
     sharedPreferences.remove(DataKey.NWC_RELAY);
     sharedPreferences.remove(DataKey.NWC_PUB_KEY);
     if (subscription != null) {
-      ndk.relays.closeSubscription(subscription!.requestId);
+      ndk.requests.closeSubscription(subscription!.requestId);
       subscription = null;
     }
     balance = null;
@@ -193,8 +194,9 @@ class NwcProvider extends ChangeNotifier {
           kind: NwcKind.REQUEST,
           tags: tags,
           content: encrypted);
-      await ndk.relays.reconnectRelay(relay!);
-      await ndk.relays.broadcastEvent(event, [relay!], nwcSigner!);
+      await ndk.relays.reconnectRelay(relay!, connectionSource: ConnectionSource.EXPLICIT);
+      NdkBroadcastResponse response = ndk.broadcast.broadcast(nostrEvent: event, specificRelays: [relay!], customSigner: nwcSigner!);
+      await response.broadcastDoneFuture;
     }
   }
 
@@ -216,8 +218,9 @@ class NwcProvider extends ChangeNotifier {
             kind: NwcKind.REQUEST,
             tags: tags,
             content: encrypted);
-        await ndk.relays.reconnectRelay(relay!);
-        await ndk.relays.broadcastEvent(event, [relay!], nwcSigner!);
+        await ndk.relays.reconnectRelay(relay!, connectionSource: ConnectionSource.EXPLICIT);
+        NdkBroadcastResponse response = ndk.broadcast.broadcast(nostrEvent: event, specificRelays: [relay!], customSigner: nwcSigner!);
+        await response.broadcastDoneFuture;
       } catch (e) {
         print(e);
         Logger.log.e(e);
@@ -247,8 +250,9 @@ class NwcProvider extends ChangeNotifier {
             tags: tags,
             content: encrypted);
 
-        await ndk.relays.reconnectRelay(relay!);
-        await ndk.relays.broadcastEvent(event, [relay!], nwcSigner!);
+        await ndk.relays.reconnectRelay(relay!, connectionSource: ConnectionSource.EXPLICIT);
+        NdkBroadcastResponse response = ndk.broadcast.broadcast(nostrEvent: event, specificRelays: [relay!], customSigner: nwcSigner!);
+        await response.broadcastDoneFuture;
       } catch (e) {
         print(e);
         Logger.log.e(e);
@@ -275,7 +279,8 @@ class NwcProvider extends ChangeNotifier {
           kind: NwcKind.REQUEST,
           tags: tags,
           content: encrypted);
-      await ndk.relays.broadcastEvent(event, [relay!], nwcSigner!);
+      NdkBroadcastResponse response = ndk.broadcast.broadcast(nostrEvent: event, specificRelays: [relay!], customSigner: nwcSigner!);
+      await response.broadcastDoneFuture;
     } else {
       EasyLoading.showError("missing pubKey and/or relay for connecting",
           duration: const Duration(seconds: 5));
@@ -344,11 +349,12 @@ class NwcProvider extends ChangeNotifier {
           cacheRead: false,
           cacheWrite: false);
       subscription.stream.listen((event) async {
-        ndk.relays.closeSubscription(subscription.requestId);
+        ndk.requests.closeSubscription(subscription.requestId);
         await onMakeInvoiceResponse(event, onCreatedInvoice);
       });
       this.settledInvoiceCallback = settledInvoiceCallback;
-      await ndk.relays.broadcastEvent(event, [relay!], nwcSigner!);
+      NdkBroadcastResponse response = ndk.broadcast.broadcast(nostrEvent: event, specificRelays: [relay!], customSigner: nwcSigner!);
+      await response.broadcastDoneFuture;
     } else {
       EasyLoading.showError("missing pubKey and/or relay for connecting",
           duration: const Duration(seconds: 5));

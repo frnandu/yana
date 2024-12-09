@@ -7,6 +7,7 @@ import 'package:ndk/domain_layer/entities/relay.dart';
 import 'package:ndk/domain_layer/entities/relay_info.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:ndk/entities.dart';
 import 'package:ndk/ndk.dart';
 import 'package:ndk/shared/helpers/relay_helper.dart';
 import 'package:ndk_rust_verifier/ndk_rust_verifier.dart';
@@ -170,8 +171,7 @@ class _IndexRouter extends CustState<IndexRouter>
             String? url = nrelay != null ? cleanRelayUrl(nrelay.addr) : null;
             if (url != null) {
               // inline
-              Relay relay = Relay(url);
-              relay.info = await RelayInfo.get(url);
+              Relay relay = Relay(url: url, connectionSource: ConnectionSource.EXPLICIT);
               RouterUtil.router(context, RouterPath.RELAY_INFO, relay);
             }
           } else if (NIP19Tlv.isNevent(key)) {

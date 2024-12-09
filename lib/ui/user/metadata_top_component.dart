@@ -363,14 +363,14 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
                 Share.share(share);
               } else if (value.startsWith("mute-")) {
                 Nip51List muteList = await ndk.lists.broadcastAddNip51ListElement(
-                    Nip51List.MUTE, Nip51List.PUB_KEY, widget.pubkey, myOutboxRelaySet!.urls, loggedUserSigner!,
+                    Nip51List.MUTE, Nip51List.PUB_KEY, widget.pubkey, myOutboxRelaySet!.urls,
                     private: value == "mute-private");
                 filterProvider.muteList = muteList;
                 filterProvider.notifyListeners();
                 setState(() {});
               } else if (value == "unmute") {
                 Nip51List? muteList = await ndk.lists
-                    .broadcastRemoveNip51ListElement(Nip51List.MUTE, Nip51List.PUB_KEY, widget.pubkey, myOutboxRelaySet!.urls, loggedUserSigner!);
+                    .broadcastRemoveNip51ListElement(Nip51List.MUTE, Nip51List.PUB_KEY, widget.pubkey, myOutboxRelaySet!.urls);
                 if (muteList != null) {
                   filterProvider.muteList = muteList;
                   filterProvider.notifyListeners();

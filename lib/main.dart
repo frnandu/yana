@@ -217,13 +217,13 @@ void onStart(ServiceInstance service) async {
           if (value.toString() != "NotificationLifeCycle.Foreground" && myInboxRelaySet != null) {
             appState = AppLifecycleState.inactive;
             ndk.relays.allowReconnectRelays = true;
-            await ndk.relays.connect(urls: myInboxRelaySet!.urls);
+            await ndk.relays.reconnectRelays(myInboxRelaySet!.urls);
             await newNotificationsProvider.queryNew();
             ndk.relays.allowReconnectRelays = false;
             List<String> requestIdsToClose = ndk.relays.globalState.inFlightRequests.keys.toList();
             for (var id in requestIdsToClose) {
               try {
-                ndk.relays.closeSubscription(id);
+                ndk.requests.closeSubscription(id);
               } catch (e) {
                 print(e);
               }
@@ -272,7 +272,7 @@ Future<void> initProvidersAndStuff() async {
       //ndk.relays.eventVerifier = HybridEventVerifier();
 
       if (myInboxRelaySet == null) {
-        await ndk.relays.connect();
+        await ndk.relays.reconnectRelays(ndk.relays.globalState.relays.keys);
         UserRelayList? userRelayList = await ndk.userRelayLists.getSingleUserRelayList(loggedUserSigner!.getPublicKey());
         if (userRelayList != null) {
           createMyRelaySets(userRelayList);
@@ -298,7 +298,7 @@ Future<void> initProvidersAndStuff() async {
 }
 
 Future<void> initRelays({bool newKey = false}) async {
-  await ndk.relays.connect();
+  await ndk.relays.reconnectRelays(ndk.relays.globalState.relays.keys);
 
   final Ndk ndk2 = Ndk(
     NdkConfig(
@@ -342,22 +342,22 @@ Future<void> initRelays({bool newKey = false}) async {
         refreshedTimestamp: now);
   }
   createMyRelaySets(userRelayList);
-  await ndk.relays.connect(urls: userRelayList.urls);
+  await ndk.relays.reconnectRelays(userRelayList.urls);
 
   ndk.lists.getSingleNip51List(Nip51List.MUTE, loggedUserSigner!).then((list) {
     filterProvider.muteList = list;
    ndk.relays.eventFilters.add(filterProvider);
-   ndk.relays.blockedRelays = [];
+   ndk.relays.globalState.blockedRelays = [];
     ndk.lists.getSingleNip51List(Nip51List.BLOCKED_RELAYS, loggedUserSigner!).then((blockedRelays) {
       if (blockedRelays!=null) {
-       ndk.relays.blockedRelays = blockedRelays.allRelays!;
+       ndk.relays.globalState.blockedRelays = blockedRelays.allRelays.toSet();
         relayProvider.notifyListeners();
       }
       searchRelays = [];
       ndk.lists.getSingleNip51List(Nip51List.SEARCH_RELAYS, loggedUserSigner!).then((searchRelaySet)  {
         if (searchRelaySet!=null) {
           searchRelays = searchRelaySet.allRelays!;
-          for (var url in searchRelays) {ndk.relays.connectRelay(url);}
+          for (var url in searchRelays) {ndk.relays.reconnectRelay(url, connectionSource: ConnectionSource.NIP_51_SEARCH);}
           relayProvider.notifyListeners();
         }
       });
@@ -388,7 +388,7 @@ Future<void> initRelays({bool newKey = false}) async {
       } else {
         final startTime = DateTime.now();
         print("connecting ${feedRelaySet!.relaysMap.length} relays");
-        List<bool> connected = await Future.wait(feedRelaySet!.relaysMap.keys.map((url) => ndk.relays.connectRelay(url)));
+        List<bool> connected = await Future.wait(feedRelaySet!.relaysMap.keys.map((url) => ndk.relays.reconnectRelay(url, connectionSource: ConnectionSource.UNKNOWN)));
         final endTime = DateTime.now();
         final duration = endTime.difference(startTime);
         print(
@@ -913,7 +913,7 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
                         String? url = nrelay != null ? cleanRelayUrl(nrelay.addr) : null;
                         if (url != null) {
                           // inline
-                          Relay relay = Relay(url);
+                          Relay relay = Relay(url: url, connectionSource: ConnectionSource.EXPLICIT);
                           jump = MaterialPageRoute(
                               settings: RouteSettings(name: RouterPath.RELAY_INFO, arguments: relay), builder: (context) => const RelayInfoRouter());
                         }
@@ -991,7 +991,7 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
           List<String> requestIdsToClose = ndk.relays.globalState.inFlightRequests.keys.toList();
           for (var id in requestIdsToClose) {
             try {
-              ndk.relays.closeSubscription(id);
+              ndk.requests.closeSubscription(id);
             } catch (e) {
               print(e);
             }
@@ -1030,7 +1030,7 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
           List<String> requestIdsToClose = ndk.relays.globalState.inFlightRequests.keys.toList();
           for (var id in requestIdsToClose) {
             try {
-              ndk.relays.closeSubscription(id);
+              ndk.requests.closeSubscription(id);
             } catch (e) {
               print(e);
             }

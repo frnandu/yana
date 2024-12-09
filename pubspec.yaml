@@ -124,22 +124,9 @@ dependencies:
   lottie: ^3.1.2
   bolt11_decoder: ^1.0.2
 
-#  ndk: ^0.1.2
   ndk: 0.2.0-dev001
-    #    git:
-#      url: https://github.com/relaystr/ndk
-#      path: packages/ndk
-#    path: ../ndk/packages/ndk
   ndk_amber: 0.2.0-dev001
-    #    git:
-#      url: https://github.com/relaystr/ndk
-#      path: packages/amber
-#   path: ../ndk/packages/amber
   ndk_rust_verifier: 0.2.0-dev001
-#    git:
-#      url: https://github.com/relaystr/ndk
-#      path: packages/rust_verifier
-#   path: ../ndk/packages/rust_verifier
 
 dev_dependencies:
   flutter_launcher_icons: ^0.14.1
@@ -171,6 +158,13 @@ dependency_overrides:
       url: https://github.com/holzgeist/flutter_inappwebview
       path: flutter_inappwebview_android
       ref: d89b1d32638b49dfc58c4b7c84153be0c269d057
+  ndk:
+    path: ../ndk/packages/ndk
+  ndk_amber:
+    path: ../ndk/packages/amber
+  ndk_rust_verifier:
+    path: ../ndk/packages/rust_verifier
+
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

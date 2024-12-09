@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:assorted_layout_widgets/assorted_layout_widgets.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:ndk/domain_layer/entities/relay.dart';
+import 'package:ndk/domain_layer/entities/relay_connectivity.dart';
 import 'package:ndk/entities.dart';
 import 'package:flutter/material.dart';
 import 'package:get_time_ago/get_time_ago.dart';
@@ -70,9 +71,9 @@ class _EventTopComponent extends State<EventTopComponent> {
     }
     List<GestureDetector> relayIcons = [];
     widget.event.sources.forEach((source) {
-      Relay? relay = ndk.relays.relays[source];
-      relay ??= ndk.relays.relays[cleanRelayUrl(source)];
-      Container? relayIcon = relay != null ? getRelayIcon(relay, 13) : null;
+      RelayConnectivity? relayConnectivity = ndk.relays.globalState.relays[source];
+      relayConnectivity ??= ndk.relays.globalState.relays[cleanRelayUrl(source)];
+      Container? relayIcon = relayConnectivity != null ? getRelayIcon(relayConnectivity, 13) : null;
       if (relayIcon != null) {
         relayIcons.add(GestureDetector(
             onTap: () async {
@@ -189,16 +190,16 @@ class _EventTopComponent extends State<EventTopComponent> {
     );
   }
 
-  Container? getRelayIcon(Relay relay, double size) {
-    if (relay != null) {
+  Container? getRelayIcon(RelayConnectivity relayConnectivity, double size) {
+    if (relayConnectivity != null) {
       String? iconUrl;
-      if (relay.url.startsWith("wss://relay.damus.io")) {
+      if (relayConnectivity.url.startsWith("wss://relay.damus.io")) {
         iconUrl = "https://damus.io/img/logo.png";
-      } else if (relay.url.startsWith("wss://relay.snort.social")) {
+      } else if (relayConnectivity.url.startsWith("wss://relay.snort.social")) {
         iconUrl = "https://snort.social/favicon.ico";
       } else {
         iconUrl =
-            relay != null && relay.info != null && StringUtil.isNotBlank(relay.info!.icon) ? relay.info!.icon : StringUtil.robohash(HashUtil.md5(relay!.url));
+            relayConnectivity.relayInfo != null && StringUtil.isNotBlank(relayConnectivity.relayInfo!.icon) ? relayConnectivity.relayInfo!.icon : StringUtil.robohash(HashUtil.md5(relayConnectivity.url));
       }
       try {
         return Container(
@@ -213,7 +214,7 @@ class _EventTopComponent extends State<EventTopComponent> {
               height: size,
               fit: BoxFit.cover,
               placeholder: (context, url) => const CircularProgressIndicator(),
-              errorWidget: (context, url, error) => CachedNetworkImage(imageUrl: StringUtil.robohash(HashUtil.md5(relay!.url))),
+              errorWidget: (context, url, error) => CachedNetworkImage(imageUrl: StringUtil.robohash(HashUtil.md5(relayConnectivity!.url))),
               cacheManager: localCacheManager,
             ));
       } catch (e) {
@@ -233,13 +234,13 @@ class _EventTopComponent extends State<EventTopComponent> {
       await loadRelayInfos();
 
       List<EnumObj>? relays = widget.event.sources.map((source) {
-        Relay? relay = ndk.relays.relays[source];
-        relay ??= ndk.relays.relays[cleanRelayUrl(source)];
+        RelayConnectivity? relayConnectivity = ndk.relays.globalState.relays[source];
+        relayConnectivity ??= ndk.relays.globalState.relays[cleanRelayUrl(source)];
         return EnumObj(
           source,
           null,
           widget: Row(children: [
-            relay != null ? getRelayIcon(relay, 25)! : Container(),
+            relayConnectivity != null ? getRelayIcon(relayConnectivity, 25)! : Container(),
             const SizedBox(
               width: 10,
             ),
@@ -249,7 +250,7 @@ class _EventTopComponent extends State<EventTopComponent> {
       }).toList();
       EnumObj? resultEnumObj = await EnumSelectorComponent.show(context, relays!);
       if (resultEnumObj != null) {
-        RouterUtil.router(context, RouterPath.RELAY_INFO, ndk.relays.relays[resultEnumObj.value]);
+        RouterUtil.router(context, RouterPath.RELAY_INFO, ndk.relays.globalState.relays[resultEnumObj.value]!.relay);
       }
     }
   }

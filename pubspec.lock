@@ -429,10 +429,10 @@ packages:
     dependency: transitive
     description:
       name: equatable
-      sha256: c2b87cb7756efdf69892005af546c56c0b5037f54d2a88269b4f347a505e3ca2
+      sha256: "567c64b3cb4cf82397aac55f4f0cbd3ca20d77c6c03bedbc4ceaddc08904aef7"
       url: "https://pub.dev"
     source: hosted
-    version: "2.0.5"
+    version: "2.0.7"
   extended_image:
     dependency: transitive
     description:
@@ -1305,26 +1305,23 @@ packages:
   ndk:
     dependency: "direct main"
     description:
-      name: ndk
-      sha256: fbf4486ede0748f472ea463e35839afdbea8568c6116411dc2988cbf7f60eb9f
-      url: "https://pub.dev"
-    source: hosted
+      path: "../ndk/packages/ndk"
+      relative: true
+    source: path
     version: "0.2.0-dev001"
   ndk_amber:
     dependency: "direct main"
     description:
-      name: ndk_amber
-      sha256: b2485ffa21bc5efaa11a4fec509f0e7c3e3955e03efa80aa138a82dabd133799
-      url: "https://pub.dev"
-    source: hosted
+      path: "../ndk/packages/amber"
+      relative: true
+    source: path
     version: "0.2.0-dev001"
   ndk_rust_verifier:
     dependency: "direct main"
     description:
-      name: ndk_rust_verifier
-      sha256: "69776eb5054196aba77ba7c1f61f0fcd9ad3ccad77ff64d995fa51d00d1ec683"
-      url: "https://pub.dev"
-    source: hosted
+      path: "../ndk/packages/rust_verifier"
+      relative: true
+    source: path
     version: "0.2.0-dev001"
   nested:
     dependency: transitive
