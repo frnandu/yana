@@ -137,8 +137,8 @@ class _UserRelayRouter extends State<UserRelayRouter>
   }
 
   int compareRelays(RelayMetadata r1, RelayMetadata r2) {
-    Relay? relay1 =ndk.relays.getRelay(r1.url!);
-    Relay? relay2 = ndk.relays.getRelay(r2.url!);
+    Relay? relay1 =ndk.relays.getRelayConnectivity(r1.url!)!.relay;
+    Relay? relay2 = ndk.relays.getRelayConnectivity(r2.url!)!.relay;
     if (relay1 == null) {
       return 1;
     }
@@ -263,7 +263,7 @@ class RelayMetadataComponent extends StatelessWidget {
           ),
         ));
       }
-      bool blocked =ndk.relays.blockedRelays.contains(relayMetadata!.url);
+      bool blocked =ndk.relays.globalState.blockedRelays.contains(relayMetadata!.url);
       if (blocked) {
         rightButtons.add(PopupMenuButton<String>(
           icon: const Icon(Icons.not_interested, color: Colors.red),
@@ -285,9 +285,8 @@ class RelayMetadataComponent extends StatelessWidget {
                       Nip51List.BLOCKED_RELAYS,
                       relayMetadata!.url!,
                       myOutboxRelaySet!.urls,
-                      loggedUserSigner!,
                       defaultRelaysIfEmpty: []);
-             ndk.relays.blockedRelays = relayList!.allRelays!;
+             ndk.relays.globalState.blockedRelays = relayList!.allRelays.toSet();
               relayProvider.notifyListeners();
               EasyLoading.dismiss();
             }
@@ -318,9 +317,8 @@ class RelayMetadataComponent extends StatelessWidget {
                         Nip51List.BLOCKED_RELAYS,
                         relayMetadata!.url!,
                         myOutboxRelaySet!.urls,
-                        loggedUserSigner!,
                         private: value == "private" ? true : false);
-               ndk.relays.blockedRelays = blocked.allRelays!;
+               ndk.relays.globalState.blockedRelays = blocked.allRelays.toSet();
                 EasyLoading.dismiss();
                 if (onBlock != null) {
                   onBlock!(relayMetadata!.url!);

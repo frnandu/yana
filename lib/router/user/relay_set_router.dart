@@ -104,7 +104,7 @@ class _RelaySetRouter extends State<RelaySetRouter> with SingleTickerProviderSta
         child: RefreshIndicator(
           onRefresh: () async {
             Nip51Set? refreshedRelaySet = await ndk.lists.getSingleNip51RelaySet(relaySet!.name, loggedUserSigner!, forceRefresh: true);
-            refreshedRelaySet ??= Nip51Set(pubKey: relaySet!.pubKey, name: relaySet!.name, createdAt: Helpers.now, elements: []);
+            refreshedRelaySet ??= Nip51Set(kind: Nip51List.RELAY_SET, pubKey: relaySet!.pubKey, name: relaySet!.name, createdAt: Helpers.now, elements: []);
             setState(() {
               relaySet = refreshedRelaySet;
             });
@@ -157,7 +157,7 @@ class _RelaySetRouter extends State<RelaySetRouter> with SingleTickerProviderSta
                   bool? result = await ConfirmDialog.show(context, "Confirm add ${url} to list");
                   if (result != null && result) {
                     EasyLoading.show(status: 'Removing from list and broadcasting...', maskType: EasyLoadingMaskType.black, dismissOnTap: true);
-                    relaySet = await ndk.lists.broadcastRemoveNip51SetRelay(url, relaySet!.name, myOutboxRelaySet!.urls, loggedUserSigner!,
+                    relaySet = await ndk.lists.broadcastRemoveNip51SetRelay(url, relaySet!.name, myOutboxRelaySet!.urls,
                         defaultRelaysIfEmpty: relaySet!.allRelays);
                     relayProvider.notifyListeners();
                     EasyLoading.dismiss();
@@ -176,8 +176,7 @@ class _RelaySetRouter extends State<RelaySetRouter> with SingleTickerProviderSta
   void onEditingComplete() async {
     List<String> result = await relayProvider.findRelays(controller.text);
     result.forEach((url) {
-      if (ndk.relays.getRelay(url) == null ||ndk.relays.getRelay(url)!.info == null) {
-       ndk.relays.relays[url] = Relay(url);
+      if (ndk.relays.getRelayConnectivity(url) == null ||ndk.relays.getRelayConnectivity(url)!.relayInfo == null) {
        ndk.relays.getRelayInfo(url).then((value) {
           if (!disposed) {
             setState(() {});
@@ -193,8 +192,8 @@ class _RelaySetRouter extends State<RelaySetRouter> with SingleTickerProviderSta
 
 
   int compareRelays(RelayMetadata r1, RelayMetadata r2) {
-    Relay? relay1 =ndk.relays.getRelay(r1.url!);
-    Relay? relay2 = ndk.relays.getRelay(r2.url!);
+    Relay? relay1 =ndk.relays.getRelayConnectivity(r1.url!)!.relay;
+    Relay? relay2 = ndk.relays.getRelayConnectivity(r2.url!)!.relay;
     if (relay1 == null) {
       return 1;
     }
@@ -232,7 +231,7 @@ class _RelaySetRouter extends State<RelaySetRouter> with SingleTickerProviderSta
     bool? result = await ConfirmDialog.show(context, "Confirm add ${url} to list");
     if (result != null && result) {
       EasyLoading.show(status: 'Broadcasting relay list...', maskType: EasyLoadingMaskType.black, dismissOnTap: true);
-      relaySet = await ndk.lists.broadcastAddNip51SetRelay(url, relaySet!.name, myOutboxRelaySet!.urls, loggedUserSigner!, private: false);
+      relaySet = await ndk.lists.broadcastAddNip51SetRelay(url, relaySet!.name, myOutboxRelaySet!.urls, private: false);
       relayProvider.notifyListeners();
       EasyLoading.dismiss();
       setState(() {

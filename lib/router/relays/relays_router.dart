@@ -52,7 +52,7 @@ class _RelaysRouter extends CustState<RelaysRouter> with WhenStopFunction {
     userRelayList ??= await ndk.userRelayLists.getSingleUserRelayList(loggedUserSigner!.getPublicKey(), forceRefresh: true);
     userRelayList ??= UserRelayList(
         pubKey: loggedUserSigner!.getPublicKey(),
-        relays: {for (String url in ndk.relays.bootstrapRelays) url: ReadWriteMarker.readWrite},
+        relays: {for (String url in ndk.config.bootstrapRelays) url: ReadWriteMarker.readWrite},
         createdAt: Helpers.now,
         refreshedTimestamp: Helpers.now);
     await Future.wait(userRelayList!.urls.map((url) => ndk.relays.getRelayInfo(cleanRelayUrl(url)!)));
