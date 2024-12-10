@@ -1308,21 +1308,21 @@ packages:
       path: "../ndk/packages/ndk"
       relative: true
     source: path
-    version: "0.2.0-dev001"
+    version: "0.2.0-dev002"
   ndk_amber:
     dependency: "direct main"
     description:
       path: "../ndk/packages/amber"
       relative: true
     source: path
-    version: "0.2.0-dev001"
+    version: "0.2.0-dev002"
   ndk_rust_verifier:
     dependency: "direct main"
     description:
       path: "../ndk/packages/rust_verifier"
       relative: true
     source: path
-    version: "0.2.0-dev001"
+    version: "0.2.0-dev002"
   nested:
     dependency: transitive
     description:

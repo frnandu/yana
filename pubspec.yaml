@@ -124,9 +124,9 @@ dependencies:
   lottie: ^3.1.2
   bolt11_decoder: ^1.0.2
 
-  ndk: 0.2.0-dev001
-  ndk_amber: 0.2.0-dev001
-  ndk_rust_verifier: 0.2.0-dev001
+  ndk: 0.2.0-dev002
+  ndk_amber: 0.2.0-dev002
+  ndk_rust_verifier: 0.2.0-dev002
 
 dev_dependencies:
   flutter_launcher_icons: ^0.14.1
