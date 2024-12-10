@@ -1,9 +1,10 @@
 import 'package:bolt11_decoder/bolt11_decoder.dart';
 import 'package:confetti/confetti.dart';
 import 'package:flutter/material.dart';
+import 'package:ndk/domain_layer/usecases/nwc/nwc_notification.dart';
+import 'package:ndk/domain_layer/usecases/nwc/responses/pay_invoice_response.dart';
 import 'package:provider/provider.dart';
 import 'package:yana/main.dart';
-import 'package:yana/nostr/nip47/nwc_notification.dart';
 import 'package:yana/provider/nwc_provider.dart';
 import 'package:yana/utils/router_path.dart';
 import 'package:yana/utils/string_util.dart';
@@ -27,7 +28,7 @@ class _WalletSendConfirmRouter extends State<WalletSendConfirmRouter> {
   int? amount;
   String? description;
 
-  NwcNotification? paid;
+  PayInvoiceResponse? paid;
 
   bool sending = false;
 
@@ -283,12 +284,12 @@ class _WalletSendConfirmRouter extends State<WalletSendConfirmRouter> {
   }
 
   void doPay() async {
-    await nwcProvider.payInvoice(invoice!, null, (nwcNotification) async {
+    PayInvoiceResponse? response = await nwcProvider.payInvoice(invoice!);
+    if (response!=null && response.preimage!='') {
       setState(() {
-        paid = nwcNotification;
-        paid!.amount = amount!; // * 1000;
+        paid = response;
       });
       confettiController.play();
-    });
+    };
   }
 }

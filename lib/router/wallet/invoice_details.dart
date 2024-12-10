@@ -7,11 +7,11 @@ import 'package:confetti/confetti.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:ndk/domain_layer/entities/metadata.dart';
+import 'package:ndk/domain_layer/usecases/nwc/nwc_notification.dart';
 import 'package:pretty_qr_code/pretty_qr_code.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:yana/main.dart';
-import 'package:yana/nostr/nip47/nwc_notification.dart';
 import 'package:yana/provider/nwc_provider.dart';
 import 'package:yana/utils/router_path.dart';
 import 'package:yana/utils/string_util.dart';
@@ -48,17 +48,21 @@ class _WalletReceiveRouter extends State<WalletReceiveRouter> {
     });
     confettiController =
         ConfettiController(duration: const Duration(seconds: 2));
-    nwcProvider.paymentReceivedCallback = (nwcNotification) {
-      setState(() {
-        paid = nwcNotification;
+    if (nwcProvider.isConnected) {
+      nwcProvider.connection!.paymentsReceivedStream.listen((notification) {
+        if (payingInvoice!=null && notification.preimage!='' && notification.invoice == payingInvoice) {
+            setState(() {
+              paid = notification;
+            });
+            confettiController.play();
+        }
       });
-      confettiController.play();
-    };
+    }
   }
 
   @override
   void dispose() {
-    nwcProvider.paymentReceivedCallback = null;
+    payingInvoice = null;
     confettiController.dispose();
     super.dispose();
   }

@@ -1,17 +1,17 @@
-import 'package:ndk/shared/nips/nip01/helpers.dart';
 import 'package:flutter/material.dart';
 import 'package:get_time_ago/get_time_ago.dart';
 import 'package:intl/intl.dart';
+import 'package:ndk/domain_layer/usecases/nwc/responses/list_transactions_response.dart';
+import 'package:ndk/shared/nips/nip01/helpers.dart';
 import 'package:provider/provider.dart';
 import 'package:yana/main.dart';
-import 'package:yana/models/wallet_transaction.dart';
 import 'package:yana/provider/nwc_provider.dart';
 
 import '../../ui/user_pic_component.dart';
 import '../../utils/base.dart';
 
 class TransactionItemComponent extends StatefulWidget {
-  final WalletTransaction transaction;
+  final TransactionResult transaction;
 
   const TransactionItemComponent({super.key, required this.transaction});
 
@@ -34,10 +34,10 @@ class _TransactionItemComponent extends State<TransactionItemComponent> {
     bool outgoing = widget.transaction.type == "outgoing";
     var time = "";
     try {
-      time = widget.transaction.settled_at != null
+      time = widget.transaction.settledAt != null
           ? GetTimeAgo.parse(
               DateTime.fromMillisecondsSinceEpoch(
-                  widget.transaction.settled_at! * 1000),
+                  widget.transaction.settledAt! * 1000),
               pattern: "dd.MM.yyyy")
           : "";
     } catch (e) {}

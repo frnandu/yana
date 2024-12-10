@@ -8,11 +8,12 @@ import 'package:flutter/services.dart';
 import 'package:flutter_timer_countdown/flutter_timer_countdown.dart';
 import 'package:lottie/lottie.dart';
 import 'package:ndk/domain_layer/entities/metadata.dart';
+import 'package:ndk/domain_layer/usecases/nwc/nwc_notification.dart';
+import 'package:ndk/domain_layer/usecases/nwc/responses/make_invoice_response.dart';
 import 'package:pretty_qr_code/pretty_qr_code.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:yana/main.dart';
-import 'package:yana/nostr/nip47/nwc_notification.dart';
 import 'package:yana/provider/nwc_provider.dart';
 import 'package:yana/utils/base.dart';
 import 'package:yana/utils/string_util.dart';
@@ -314,14 +315,19 @@ class _WalletReceiveRouter extends State<WalletReceiveInvoiceRouter> {
                   onTap: () async {
                     expiration = 3600;
                     sats = satsInput ? int.parse(amountInputcontroller.text) : fiat.round();
-                    await _nwcProvider.makeInvoice(sats * 1000, descriptionInputcontroller.text, "", expiration!, (invoice) async {
-                      payingInvoice = invoice;
-                    }, (notification) async {
-                      setState(() {
-                        paid = notification;
+
+                    MakeInvoiceResponse? response = await _nwcProvider.makeInvoice(sats, descriptionInputcontroller.text, "", expiration!);
+                    if (response != null) {
+                      nwcProvider.connection!.paymentsReceivedStream.listen((notification) {
+                        if (payingInvoice != null && notification.preimage != '' && notification.invoice == payingInvoice) {
+                          setState(() {
+                            paid = notification;
+                          });
+                          confettiController.play();
+                        }
                       });
-                      confettiController.play();
-                    });
+                      payingInvoice = response.invoice;
+                    }
                   }))
         ]));
       }

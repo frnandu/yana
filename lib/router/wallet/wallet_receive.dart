@@ -7,13 +7,13 @@ import 'package:confetti/confetti.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:ndk/domain_layer/entities/metadata.dart';
+import 'package:ndk/domain_layer/usecases/nwc/nwc_notification.dart';
+import 'package:ndk/domain_layer/usecases/nwc/responses/list_transactions_response.dart';
 import 'package:pretty_qr_code/pretty_qr_code.dart';
 import 'package:provider/provider.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:yana/main.dart';
-import 'package:yana/models/wallet_transaction.dart';
-import 'package:yana/nostr/nip47/nwc_notification.dart';
 import 'package:yana/provider/nwc_provider.dart';
 import 'package:yana/router/wallet/payment_component.dart';
 import 'package:yana/utils/string_util.dart';
@@ -35,9 +35,9 @@ class WalletReceiveRouter extends StatefulWidget {
 
 class _WalletReceiveRouter extends State<WalletReceiveRouter> {
   late ConfettiController confettiController;
-  String? payingInvoice;
   NwcNotification? paid;
   static Bech32Codec bech32Codec = const Bech32Codec();
+  bool disposed = false;
 
   Metadata? metadata;
   bool showInvoiceDetails = false;
@@ -54,17 +54,20 @@ class _WalletReceiveRouter extends State<WalletReceiveRouter> {
       });
     });
     confettiController = ConfettiController(duration: const Duration(seconds: 2));
-    nwcProvider.paymentReceivedCallback = (nwcNotification) {
-      setState(() {
-        paid = nwcNotification;
-      });
-      confettiController.play();
-    };
+    nwcProvider.connection!.paymentsReceivedStream.listen((notification) {
+      // TODO how do we check that this is related to this user's lud16???
+      if (notification.preimage != '' && !disposed) {
+        setState(() {
+          paid = notification;
+        });
+        confettiController.play();
+      }
+    });
   }
 
   @override
   void dispose() {
-    nwcProvider.paymentReceivedCallback = null;
+    disposed = true;
     confettiController.dispose();
     super.dispose();
   }
@@ -330,7 +333,7 @@ class _WalletReceiveRouter extends State<WalletReceiveRouter> {
                 maxHeight: mediaDataCache.size.height - 300,
                 borderRadius: const BorderRadius.only(topLeft: Radius.circular(20), topRight: Radius.circular(20)),
                 panel: PaymentDetailsComponent(
-                  paid: WalletTransaction.fromNotification(paid!),
+                  paid: TransactionResult.fromNotification(paid!),
                 ))
             : Container()
       ]),
