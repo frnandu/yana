@@ -106,7 +106,7 @@ class ContentLnbcComponent extends StatelessWidget {
                 if (await nwcProvider.isConnected) {
                   int? balance = await nwcProvider.getBalance;
                   if (balance!=null && balance > 10) {
-                    await nwcProvider.payInvoice(lnbc, null, (nwcNotification) { });
+                    await nwcProvider.payInvoice(lnbc);
                     sendWithWallet = true;
                   }
                 }
@@ -118,7 +118,7 @@ class ContentLnbcComponent extends StatelessWidget {
                 alignment: Alignment.center,
                 child: Text(
                   s.Pay,
-                  style: TextStyle(
+                  style: const TextStyle(
                     color: Colors.white,
                   ),
                 ),

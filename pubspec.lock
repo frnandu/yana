@@ -85,18 +85,18 @@ packages:
     dependency: "direct main"
     description:
       name: awesome_notifications
-      sha256: d9e46ce7f5171ee1e9b1c5bc6dc40bd77528561f592842ce97ce3a0a9ae155ef
+      sha256: d051ffb694a53da216ff13d02c8ec645d75320048262f7e6b3c1d95a4f54c902
       url: "https://pub.dev"
     source: hosted
-    version: "0.9.3+1"
+    version: "0.10.0"
   awesome_notifications_core:
     dependency: "direct main"
     description:
       name: awesome_notifications_core
-      sha256: "0d67f3539aac87f9052b9eb204bdfbd00893a9d83b5975151098265428332bea"
+      sha256: b77e1b147067572908c9472255913a81aac56d35abdeaaada0d22121f6cd15d1
       url: "https://pub.dev"
     source: hosted
-    version: "0.8.1"
+    version: "0.10.0"
   back_button_interceptor:
     dependency: "direct main"
     description:
