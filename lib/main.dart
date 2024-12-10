@@ -600,7 +600,10 @@ Future<bool> checkBackgroundPermission() async {
       NotificationPermission.Light,
       NotificationPermission.Sound,
       NotificationPermission.PreciseAlarms,
-    ]);
+    ]).then((value) {
+      print(value);
+      return false;
+    });
     if (!allowed) {
       return false;
     }
