@@ -313,6 +313,10 @@ class _WalletReceiveRouter extends State<WalletReceiveInvoiceRouter> {
 
                     MakeInvoiceResponse? response = await _nwcProvider.makeInvoice(sats, descriptionInputcontroller.text, "", expiration!);
                     if (response != null) {
+                      nwcProvider.connection!.notificationStream.stream.listen((notification) {
+                        print(notification);
+                      });
+
                       nwcProvider.connection!.paymentsReceivedStream.listen((notification) {
                         if (payingInvoice != null && notification.preimage != '' && notification.invoice == payingInvoice) {
                           setState(() {

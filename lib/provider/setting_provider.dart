@@ -359,9 +359,12 @@ class SettingProvider extends ChangeNotifier {
   }
 
   set backgroundService(bool? o) {
-    _settingData!.backgroundService = o;
-    saveAndNotifyListeners();
-    initBackgroundService(backgroundService);
+    initBackgroundService(backgroundService).then((allowed) {
+      if (allowed) {
+        _settingData!.backgroundService = o;
+        saveAndNotifyListeners();
+      }
+    });
   }
 
   set notificationsReactions(bool? o) {
