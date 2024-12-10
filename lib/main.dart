@@ -591,13 +591,7 @@ Future<void> main() async {
   runApp(MyApp());
 }
 
-Future<bool> initBackgroundService(bool startOnBoot) async {
-  // await AndroidAlarmManager.initialize();
-  // const int helloAlarmID = 0;
-  // await AndroidAlarmManager.periodic(const Duration(seconds: 10), helloAlarmID, printHello, wakeup: true, exact: true, allowWhileIdle: true, rescheduleOnReboot: true);
-  if (!settingProvider.backgroundService) {
-    return false;
-  }
+Future<bool> checkBackgroundPermission() async {
   bool isAllowed = await AwesomeNotifications().isNotificationAllowed();
   if (!isAllowed) {
     bool allowed = await AwesomeNotifications().requestPermissionToSendNotifications(permissions: [
@@ -611,6 +605,17 @@ Future<bool> initBackgroundService(bool startOnBoot) async {
       return false;
     }
   }
+  return true;
+}
+
+Future<void> initBackgroundService(bool startOnBoot) async {
+  // await AndroidAlarmManager.initialize();
+  // const int helloAlarmID = 0;
+  // await AndroidAlarmManager.periodic(const Duration(seconds: 10), helloAlarmID, printHello, wakeup: true, exact: true, allowWhileIdle: true, rescheduleOnReboot: true);
+  if (!settingProvider.backgroundService) {
+    return;
+  }
+  await checkBackgroundPermission();
   AwesomeNotifications().initialize('resource://drawable/white', [
     NotificationChannel(
       channelGroupKey: 'yana',
@@ -680,7 +685,6 @@ Future<bool> initBackgroundService(bool startOnBoot) async {
   //     newNotificationsProvider.queryNew();
   //   }
   // });
-  return true;
 }
 
 // @pragma('vm:entry-point')

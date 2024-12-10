@@ -99,8 +99,8 @@ dependencies:
 #  flutter_spinkit: ^5.2.0
 #  loading_animation_widget: ^1.2.0
 #  flutter_app_badger: ^1.5.0
-  awesome_notifications_core: ^0.8.0
-  awesome_notifications: any
+  awesome_notifications_core: ^0.10.0
+  awesome_notifications: 0.10.0
   workmanager: ^0.5.1
   flutter_background_service: ^5.0.10
   flutter_local_notifications: ^17.2.2
