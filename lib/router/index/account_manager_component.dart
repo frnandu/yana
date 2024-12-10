@@ -157,6 +157,7 @@ class AccountsState extends State<AccountsComponent> {
           eventVerifier: RustEventVerifier(),
           cache: cacheManager,
           eventSigner: eventSigner,
+          eventOutFilters:  [filterProvider]
         ));
 
     await followEventProvider.loadCachedFeed();
@@ -172,7 +173,7 @@ class AccountsState extends State<AccountsComponent> {
       EasyLoading.show(status: "Logging out...", maskType: EasyLoadingMaskType.black);
       clearCurrentMemInfo();
       ndk = Ndk(
-        NdkConfig(eventVerifier: RustEventVerifier(), cache: cacheManager),
+        NdkConfig(eventVerifier: RustEventVerifier(), cache: cacheManager, eventOutFilters:  [filterProvider]),
       );
 
       settingProvider.privateKeyIndex = index;
@@ -203,7 +204,7 @@ class AccountsState extends State<AccountsComponent> {
         }
       } else {
         ndk = Ndk(
-          NdkConfig(eventVerifier: RustEventVerifier(), cache: cacheManager),
+          NdkConfig(eventVerifier: RustEventVerifier(), cache: cacheManager, eventOutFilters:  [filterProvider]),
         );
       }
     }

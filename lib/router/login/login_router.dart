@@ -343,7 +343,8 @@ class _LoginRouter extends State<LoginRouter>
           NdkConfig(
             eventVerifier: RustEventVerifier(),
             cache: cacheManager,
-            eventSigner: eventSigner
+            eventSigner: eventSigner,
+            eventOutFilters:  [filterProvider]
           ));
 
       await initRelayManager(isPublic ? key : getPublicKey(key), newKey);

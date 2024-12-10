@@ -160,7 +160,7 @@ class _EventMainComponent extends State<EventMainComponent> {
     if (_settingProvider.autoOpenSensitive == OpenStatus.OPEN) {
       showWarning = true;
     }
-    if (widget.mutedProfile || !ndk.relays.filterEvent(widget.event)) {
+    if (widget.mutedProfile || !filterProvider.filter(widget.event)) {
       return Container();
     }
 

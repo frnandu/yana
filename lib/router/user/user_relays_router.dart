@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:ndk/domain_layer/entities/relay.dart';
+import 'package:ndk/domain_layer/entities/relay_connectivity.dart';
 import 'package:ndk/shared/helpers/relay_helper.dart';
 import 'package:provider/provider.dart';
 import 'package:yana/main.dart';
@@ -336,7 +337,7 @@ class RelayMetadataComponent extends StatelessWidget {
     //   ],
     // ),
     //
-    Relay? relay =ndk.relays.getRelay(relayMetadata!.url!);
+    RelayConnectivity? relay =ndk.relays.getRelayConnectivity(relayMetadata!.url!);
     Widget imageWidget;
 
     String? iconUrl;
@@ -347,9 +348,9 @@ class RelayMetadataComponent extends StatelessWidget {
       iconUrl = "https://snort.social/favicon.ico";
     } else {
       iconUrl = relay != null &&
-              relay!.info != null &&
-              StringUtil.isNotBlank(relay!.info!.icon)
-          ? relay!.info!.icon
+              relay.relayInfo != null &&
+              StringUtil.isNotBlank(relay.relayInfo!.icon)
+          ? relay.relayInfo!.icon
           : StringUtil.robohash(HashUtil.md5(relayMetadata!.url!));
     }
 
@@ -398,7 +399,7 @@ class RelayMetadataComponent extends StatelessWidget {
             leftBtn,
             GestureDetector(
               onTap: () {
-                if (relay != null && relay!.info != null) {
+                if (relay != null && relay.relayInfo != null) {
                   RouterUtil.router(context, RouterPath.RELAY_INFO, relay);
                 }
               },
@@ -419,7 +420,7 @@ class RelayMetadataComponent extends StatelessWidget {
                       margin: const EdgeInsets.only(bottom: 2),
                       child: GestureDetector(
                         onTap: () {
-                          if (relay != null && relay!.info != null) {
+                          if (relay != null && relay.relayInfo != null) {
                             RouterUtil.router(
                                 context, RouterPath.RELAY_INFO, relay);
                           }

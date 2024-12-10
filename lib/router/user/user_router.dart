@@ -284,7 +284,7 @@ class _UserRouter extends CustState<UserRouter> with PenddingEventsLaterFunction
 
   void unSubscribe() {
     if (subscription != null) {
-      ndk.relays.closeSubscription(subscription!.requestId);
+      ndk.requests.closeSubscription(subscription!.requestId);
       subscription = null;
       box.clear();
     }

@@ -112,6 +112,7 @@ class _IndexRouter extends CustState<IndexRouter>
                   eventVerifier: RustEventVerifier(),
                   cache: cacheManager,
                   eventSigner: Bip340EventSigner(privateKey: priv, publicKey: publicKey),
+                  eventOutFilters:  [filterProvider]
                 ));
 
             await initRelays(newKey: true);

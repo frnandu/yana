@@ -582,7 +582,8 @@ mixin EditorMixin {
     Iterable<String> urlsToBroadcast = broadcastRelays??await broadcastUrls(null);
     await ndk.relays.reconnectRelays(urlsToBroadcast);
 
-    await ndk.relays.broadcastEvent(event, urlsToBroadcast,loggedUserSigner!);
+    NdkBroadcastResponse response = ndk.broadcast.broadcast(nostrEvent: event, specificRelays: urlsToBroadcast);
+    await response.broadcastDoneFuture;
     return event;
   }
 

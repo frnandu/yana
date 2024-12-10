@@ -167,7 +167,7 @@ EventSigner? get loggedUserSigner => ndk.config.eventSigner;
 AmberFlutterDS amberFlutterDS = AmberFlutterDS(Amberflutter());
 late CacheManager cacheManager;
 Ndk ndk = Ndk(
-  NdkConfig(eventVerifier: RustEventVerifier(), cache: cacheManager, engine: NdkEngine.RELAY_SETS),
+  NdkConfig(eventVerifier: RustEventVerifier(), cache: cacheManager, engine: NdkEngine.JIT, eventOutFilters:  [filterProvider]),
 );
 
 late bool isExternalSignerInstalled;
@@ -258,12 +258,13 @@ Future<void> initProvidersAndStuff() async {
               eventVerifier: RustEventVerifier(),
               cache: cacheManager,
               eventSigner: eventSigner,
+              eventOutFilters:  [filterProvider]
             ));
       }
       //
       // loggedUserSigner = Bip340EventSigner(settingProvider.key!, getPublicKey(settingProvider.key!));
       filterProvider = FilterProvider.getInstance();
-      ndk.relays.eventFilters.add(filterProvider);
+  //    ndk.relays.eventFilters.add(filterProvider);
       IsarCacheManager dbCacheManager = IsarCacheManager();
       await dbCacheManager.init(directory: PlatformUtil.isWeb() ? isar.Isar.sqliteInMemory : (await getApplicationDocumentsDirectory()).path);
       // DbObjectBox dbCacheManager = DbObjectBox();
@@ -300,20 +301,24 @@ Future<void> initProvidersAndStuff() async {
 Future<void> initRelays({bool newKey = false}) async {
   await ndk.relays.reconnectRelays(ndk.relays.globalState.relays.keys);
 
-  final Ndk ndk2 = Ndk(
-    NdkConfig(
-      eventVerifier: Bip340EventVerifier(),
-      cache: MemCacheManager(),
-    ),
-  );
-
-  final UserRelayList? response = await ndk2.userRelayLists.getSingleUserRelayList(
-      '30782a8323b7c98b172c5a2af7206bb8283c655be6ddce11133611a03d5f1177');
-
-  // read entity
-  print("RELAYS:");
-  print(response?.relays.length ?? "no relays");
-  print(response!.toNip65());
+  // CacheManager cache = MemCacheManager();
+  // final Ndk ndk2 = Ndk(
+  //   NdkConfig(
+  //     eventVerifier: Bip340EventVerifier(),
+  //     cache: cache,
+  //     eventOutFilters:  [filterProvider]
+  //   ),
+  // );
+  //
+  // UserRelayList? cached = await cache.loadUserRelayList('30782a8323b7c98b172c5a2af7206bb8283c655be6ddce11133611a03d5f1177');
+  //
+  // final UserRelayList? response = await ndk2.userRelayLists.getSingleUserRelayList(
+  //     '30782a8323b7c98b172c5a2af7206bb8283c655be6ddce11133611a03d5f1177');
+  //
+  // // read entity
+  // print("RELAYS:");
+  // print(response?.relays.length ?? "no relays");
+  // print(response!.toNip65());
 
 
   await for (final event in (ndk.requests.query(
@@ -346,8 +351,8 @@ Future<void> initRelays({bool newKey = false}) async {
 
   ndk.lists.getSingleNip51List(Nip51List.MUTE, loggedUserSigner!).then((list) {
     filterProvider.muteList = list;
-   ndk.relays.eventFilters.add(filterProvider);
-   ndk.relays.globalState.blockedRelays = [];
+   //ndk.relays.eventFilters.add(filterProvider);
+   ndk.relays.globalState.blockedRelays = {};
     ndk.lists.getSingleNip51List(Nip51List.BLOCKED_RELAYS, loggedUserSigner!).then((blockedRelays) {
       if (blockedRelays!=null) {
        ndk.relays.globalState.blockedRelays = blockedRelays.allRelays.toSet();
@@ -582,6 +587,7 @@ Future<void> main() async {
           eventVerifier: RustEventVerifier(),
           cache: cacheManager,
           eventSigner: eventSigner,
+          eventOutFilters:  [filterProvider]
         ));
   }
 

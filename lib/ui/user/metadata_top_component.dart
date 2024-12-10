@@ -344,6 +344,7 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
                       eventVerifier: RustEventVerifier(),
                       cache: cacheManager,
                       eventSigner: Bip340EventSigner(privateKey: null, publicKey: publicKey),
+                      eventOutFilters:  [filterProvider]
                     ));
                 await initRelays(newKey: false);
                 followEventProvider.loadCachedFeed();
