@@ -39,7 +39,6 @@ class _WalletReceiveRouter extends State<WalletReceiveRouter> {
   static Bech32Codec bech32Codec = const Bech32Codec();
   bool disposed = false;
 
-  Metadata? metadata;
   bool showInvoiceDetails = false;
 
   PanelController panelController = PanelController();
@@ -48,11 +47,6 @@ class _WalletReceiveRouter extends State<WalletReceiveRouter> {
   void initState() {
     super.initState();
 
-    Future(() async {
-      setState(() async {
-        metadata = await metadataProvider.getMetadata(loggedUserSigner!.getPublicKey());
-      });
-    });
     confettiController = ConfettiController(duration: const Duration(seconds: 2));
     nwcProvider.connection!.paymentsReceivedStream.listen((notification) {
       // TODO how do we check that this is related to this user's lud16???
@@ -107,8 +101,10 @@ class _WalletReceiveRouter extends State<WalletReceiveRouter> {
     );
 
     List<Widget> list = [];
+    Metadata? metadata;
     if (paid == null) {
-      if (metadata != null && StringUtil.isNotBlank(metadata!.lud16)) {
+      metadata = RouterUtil.routerArgs(context) as Metadata?;
+      if (metadata!=null && StringUtil.isNotBlank(metadata.lud16)) {
         list.add(Container(
             padding: const EdgeInsets.all(20),
             decoration: const BoxDecoration(
@@ -116,7 +112,7 @@ class _WalletReceiveRouter extends State<WalletReceiveRouter> {
             ),
             child: PrettyQrView.data(
                 errorCorrectLevel: QrErrorCorrectLevel.H,
-                data: metadata!.lud16!,
+                data: metadata.lud16!,
                 decoration: const PrettyQrDecoration(
                   // background: Colors.white,
                   shape: PrettyQrSmoothSymbol(color: Colors.black, roundFactor: 0),
@@ -197,7 +193,7 @@ class _WalletReceiveRouter extends State<WalletReceiveRouter> {
             fontColor: themeData.disabledColor,
             text: "Payment Invoice",
             onTap: () async {
-              RouterUtil.router(context, RouterPath.WALLET_RECEIVE_INVOICE);
+              RouterUtil.router(context, RouterPath.WALLET_RECEIVE_INVOICE, metadata);
             }));
       }
     } else {

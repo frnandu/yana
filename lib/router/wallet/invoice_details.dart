@@ -41,11 +41,6 @@ class _WalletReceiveRouter extends State<WalletReceiveRouter> {
   @override
   void initState() {
     super.initState();
-    Future(() async {
-      setState(() async {
-        metadata = await metadataProvider.getMetadata(loggedUserSigner!.getPublicKey());
-      });
-    });
     confettiController =
         ConfettiController(duration: const Duration(seconds: 2));
     if (nwcProvider.isConnected) {
@@ -103,6 +98,7 @@ class _WalletReceiveRouter extends State<WalletReceiveRouter> {
 
     List<Widget> list = [];
     if (paid == null) {
+      metadata = RouterUtil.routerArgs(context) as Metadata?;
       if (metadata != null && StringUtil.isNotBlank(metadata!.lud16)) {
         list.add(Container(
             padding: const EdgeInsets.all(20),
@@ -198,7 +194,7 @@ class _WalletReceiveRouter extends State<WalletReceiveRouter> {
             fontColor: themeData.disabledColor,
             text: "Payment Invoice",
             onTap: () async {
-              RouterUtil.router(context, RouterPath.WALLET_RECEIVE_INVOICE);
+              RouterUtil.router(context, RouterPath.WALLET_RECEIVE_INVOICE, metadata);
             }));
       }
       // TODO

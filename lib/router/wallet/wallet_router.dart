@@ -163,11 +163,11 @@ class _WalletRouter extends State<WalletRouter> {
                                 // before: const Icon(Icons.call_received_rounded),
                                 onTap: () async {
                                   Metadata? metadata = await metadataProvider.getMetadata(loggedUserSigner!.getPublicKey());
-                                  if (metadata != null && StringUtil.isNotBlank(metadata!.lud16)) {
+                                  if (metadata != null && StringUtil.isNotBlank(metadata.lud16)) {
                                     RouterUtil.router(
-                                        context, RouterPath.WALLET_RECEIVE);
+                                        context, RouterPath.WALLET_RECEIVE, metadata);
                                   } else {
-                                    RouterUtil.router(context, RouterPath.WALLET_RECEIVE_INVOICE);
+                                    RouterUtil.router(context, RouterPath.WALLET_RECEIVE_INVOICE, metadata);
                                   }
                                 }))
                         : Container(),

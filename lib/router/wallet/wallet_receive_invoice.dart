@@ -47,11 +47,6 @@ class _WalletReceiveRouter extends State<WalletReceiveInvoiceRouter> {
 
   @override
   void initState() {
-    Future(() async {
-      setState(() async {
-        metadata = await metadataProvider.getMetadata(loggedUserSigner!.getPublicKey());
-      });
-    });
 
     amountInputcontroller.addListener(() {
       setState(() {
@@ -326,7 +321,9 @@ class _WalletReceiveRouter extends State<WalletReceiveInvoiceRouter> {
                           confettiController.play();
                         }
                       });
-                      payingInvoice = response.invoice;
+                      setState(() {
+                        payingInvoice = response.invoice;
+                      });
                     }
                   }))
         ]));
