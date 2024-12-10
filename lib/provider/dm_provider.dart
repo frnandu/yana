@@ -292,7 +292,7 @@ class DMProvider extends ChangeNotifier with PenddingEventsLaterFunction {
     // }
     Set<Nip01Event> copy = events.toSet();
     List<Nip01Event> toSave = [];
-    for (var event in events) {
+    for (var event in copy) {
       var addResult = await _addEvent(localPubkey!, event);
       // save to local
       if (addResult) {
