@@ -6,20 +6,21 @@ import '../utils/router_util.dart';
 
 class EnumSelectorComponent extends StatelessWidget {
   final List<EnumObj> list;
+  final bool showSearchInput;
 
   Widget Function(BuildContext, EnumObj)? enumItemBuild;
 
-  EnumSelectorComponent({
-    required this.list,
-    this.enumItemBuild,
-  });
+  EnumSelectorComponent(
+      {required this.list, this.enumItemBuild, required this.showSearchInput});
 
-  static Future<EnumObj?> show(BuildContext context, List<EnumObj> list) async {
+  static Future<EnumObj?> show(BuildContext context, List<EnumObj> list,
+      {bool showSearchInput = false}) async {
     return await showDialog<EnumObj?>(
       context: context,
       builder: (_context) {
         return EnumSelectorComponent(
           list: list,
+          showSearchInput: showSearchInput,
         );
       },
     );
@@ -44,28 +45,54 @@ class EnumSelectorComponent extends StatelessWidget {
       }
     }
 
-    Widget main = Container(
-      width: double.infinity,
-      padding: const EdgeInsets.only(
-        left: Base.BASE_PADDING,
-        right: Base.BASE_PADDING,
-        top: Base.BASE_PADDING_HALF,
-        bottom: Base.BASE_PADDING_HALF,
-      ),
-      decoration: BoxDecoration(
-        borderRadius: const BorderRadius.all(Radius.circular(15)),
-        color: cardColor,
-      ),
-      constraints: BoxConstraints(
-        maxHeight: maxHeight * 0.8,
-      ),
-      child: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: widgets,
+    Widget main = Column(children: [
+      TextField(
+        autofocus: true,
+        textAlign: TextAlign.center,
+        cursorColor: themeData.primaryColor,
+        style: const TextStyle(fontSize: 80, fontFamily: 'Geist.Mono'),
+        // textDirection: TextDirection.ltr,
+        controller: amountInputcontroller,
+        keyboardType:
+        TextInputType.numberWithOptions(decimal: !satsInput),
+        inputFormatters: <TextInputFormatter>[
+          satsInput
+              ? FilteringTextInputFormatter.digitsOnly
+              : FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))
+        ],
+        decoration: InputDecoration(
+          border: InputBorder.none,
+          hintText: "  0",
+          hintTextDirection: TextDirection.ltr,
+          hintStyle: TextStyle(
+              fontSize: 80,
+              color: themeData.disabledColor,
+              fontFamily: 'Geist.Mono'),
+          contentPadding: const EdgeInsets.only(right: 20),
         ),
       ),
-    );
+      Container(
+          width: double.infinity,
+          padding: const EdgeInsets.only(
+            left: Base.BASE_PADDING,
+            right: Base.BASE_PADDING,
+            top: Base.BASE_PADDING_HALF,
+            bottom: Base.BASE_PADDING_HALF,
+          ),
+          decoration: BoxDecoration(
+            borderRadius: const BorderRadius.all(Radius.circular(15)),
+            color: cardColor,
+          ),
+          constraints: BoxConstraints(
+            maxHeight: maxHeight * 0.8,
+          ),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: widgets,
+            ),
+          ))
+    ]);
 
     return Scaffold(
       backgroundColor: Colors.black.withOpacity(0.2),
