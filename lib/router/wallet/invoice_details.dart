@@ -44,6 +44,9 @@ class _WalletReceiveRouter extends State<WalletReceiveRouter> {
     confettiController =
         ConfettiController(duration: const Duration(seconds: 2));
     if (nwcProvider.isConnected) {
+      nwcProvider.connection!.notificationStream.stream.listen((notification) {
+        print(notification);
+      });
       nwcProvider.connection!.paymentsReceivedStream.listen((notification) {
         if (payingInvoice!=null && notification.preimage!='' && notification.invoice == payingInvoice) {
             setState(() {
