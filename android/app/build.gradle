@@ -14,7 +14,11 @@ if (localPropertiesFile.exists()) {
 
  def keystorePropertiesFile = rootProject.file("key.properties")
  def keystoreProperties = new Properties()
- keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+ if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+ } else {
+    println("Warning: key.properties file not found")
+ }
 
 def flutterVersionCode = localProperties.getProperty('flutter.versionCode')
 if (flutterVersionCode == null) {
@@ -62,10 +66,10 @@ android {
 
     signingConfigs {
         release {
-            keyAlias keystoreProperties['keyAlias']
-            keyPassword keystoreProperties['keyPassword']
-            storeFile file(keystoreProperties['storeFile'])
-            storePassword keystoreProperties['storePassword']
+            keyAlias keystoreProperties.getProperty('keyAlias', 'defaultKeyAlias')
+            keyPassword keystoreProperties.getProperty('keyPassword', 'defaultKeyPassword')
+            storeFile file(keystoreProperties.getProperty('storeFile', 'defaultStoreFile'))
+            storePassword keystoreProperties.getProperty('storePassword', 'defaultStorePassword')
         }
     }
     buildTypes {

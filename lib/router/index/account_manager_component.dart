@@ -3,8 +3,9 @@ import 'dart:developer';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
-import 'package:ndk/data_layer/repositories/signers/amber_event_signer.dart';
+import 'package:ndk_amber/data_layer/repositories/signers/amber_event_signer.dart';
 import 'package:ndk/ndk.dart';
+import 'package:ndk_rust_verifier/ndk_rust_verifier.dart';
 import 'package:provider/provider.dart';
 import 'package:yana/provider/setting_provider.dart';
 import 'package:yana/ui/name_component.dart';
@@ -156,6 +157,7 @@ class AccountsState extends State<AccountsComponent> {
           eventVerifier: RustEventVerifier(),
           cache: cacheManager,
           eventSigner: eventSigner,
+          eventOutFilters:  [filterProvider]
         ));
 
     await followEventProvider.loadCachedFeed();
@@ -171,7 +173,7 @@ class AccountsState extends State<AccountsComponent> {
       EasyLoading.show(status: "Logging out...", maskType: EasyLoadingMaskType.black);
       clearCurrentMemInfo();
       ndk = Ndk(
-        NdkConfig(eventVerifier: RustEventVerifier(), cache: cacheManager),
+        NdkConfig(eventVerifier: RustEventVerifier(), cache: cacheManager, eventOutFilters:  [filterProvider]),
       );
 
       settingProvider.privateKeyIndex = index;
@@ -202,7 +204,7 @@ class AccountsState extends State<AccountsComponent> {
         }
       } else {
         ndk = Ndk(
-          NdkConfig(eventVerifier: RustEventVerifier(), cache: cacheManager),
+          NdkConfig(eventVerifier: RustEventVerifier(), cache: cacheManager, eventOutFilters:  [filterProvider]),
         );
       }
     }

@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:ndk/domain_layer/entities/relay.dart';
+import 'package:ndk/domain_layer/entities/relay_connectivity.dart';
 import 'package:ndk/shared/helpers/relay_helper.dart';
 import 'package:provider/provider.dart';
 import 'package:yana/main.dart';
@@ -137,8 +138,8 @@ class _UserRelayRouter extends State<UserRelayRouter>
   }
 
   int compareRelays(RelayMetadata r1, RelayMetadata r2) {
-    Relay? relay1 =ndk.relays.getRelay(r1.url!);
-    Relay? relay2 = ndk.relays.getRelay(r2.url!);
+    Relay? relay1 =ndk.relays.getRelayConnectivity(r1.url!)!.relay;
+    Relay? relay2 = ndk.relays.getRelayConnectivity(r2.url!)!.relay;
     if (relay1 == null) {
       return 1;
     }
@@ -263,7 +264,7 @@ class RelayMetadataComponent extends StatelessWidget {
           ),
         ));
       }
-      bool blocked =ndk.relays.blockedRelays.contains(relayMetadata!.url);
+      bool blocked =ndk.relays.globalState.blockedRelays.contains(relayMetadata!.url);
       if (blocked) {
         rightButtons.add(PopupMenuButton<String>(
           icon: const Icon(Icons.not_interested, color: Colors.red),
@@ -285,9 +286,8 @@ class RelayMetadataComponent extends StatelessWidget {
                       Nip51List.BLOCKED_RELAYS,
                       relayMetadata!.url!,
                       myOutboxRelaySet!.urls,
-                      loggedUserSigner!,
                       defaultRelaysIfEmpty: []);
-             ndk.relays.blockedRelays = relayList!.allRelays!;
+             ndk.relays.globalState.blockedRelays = relayList!.allRelays.toSet();
               relayProvider.notifyListeners();
               EasyLoading.dismiss();
             }
@@ -318,9 +318,8 @@ class RelayMetadataComponent extends StatelessWidget {
                         Nip51List.BLOCKED_RELAYS,
                         relayMetadata!.url!,
                         myOutboxRelaySet!.urls,
-                        loggedUserSigner!,
                         private: value == "private" ? true : false);
-               ndk.relays.blockedRelays = blocked.allRelays!;
+               ndk.relays.globalState.blockedRelays = blocked.allRelays.toSet();
                 EasyLoading.dismiss();
                 if (onBlock != null) {
                   onBlock!(relayMetadata!.url!);
@@ -338,7 +337,7 @@ class RelayMetadataComponent extends StatelessWidget {
     //   ],
     // ),
     //
-    Relay? relay =ndk.relays.getRelay(relayMetadata!.url!);
+    RelayConnectivity? relay =ndk.relays.getRelayConnectivity(relayMetadata!.url!);
     Widget imageWidget;
 
     String? iconUrl;
@@ -349,9 +348,9 @@ class RelayMetadataComponent extends StatelessWidget {
       iconUrl = "https://snort.social/favicon.ico";
     } else {
       iconUrl = relay != null &&
-              relay!.info != null &&
-              StringUtil.isNotBlank(relay!.info!.icon)
-          ? relay!.info!.icon
+              relay.relayInfo != null &&
+              StringUtil.isNotBlank(relay.relayInfo!.icon)
+          ? relay.relayInfo!.icon
           : StringUtil.robohash(HashUtil.md5(relayMetadata!.url!));
     }
 
@@ -400,7 +399,7 @@ class RelayMetadataComponent extends StatelessWidget {
             leftBtn,
             GestureDetector(
               onTap: () {
-                if (relay != null && relay!.info != null) {
+                if (relay != null && relay.relayInfo != null) {
                   RouterUtil.router(context, RouterPath.RELAY_INFO, relay);
                 }
               },
@@ -421,7 +420,7 @@ class RelayMetadataComponent extends StatelessWidget {
                       margin: const EdgeInsets.only(bottom: 2),
                       child: GestureDetector(
                         onTap: () {
-                          if (relay != null && relay!.info != null) {
+                          if (relay != null && relay.relayInfo != null) {
                             RouterUtil.router(
                                 context, RouterPath.RELAY_INFO, relay);
                           }

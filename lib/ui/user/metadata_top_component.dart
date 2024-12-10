@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:ndk/entities.dart';
 import 'package:ndk/ndk.dart';
+import 'package:ndk_rust_verifier/ndk_rust_verifier.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -343,6 +344,7 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
                       eventVerifier: RustEventVerifier(),
                       cache: cacheManager,
                       eventSigner: Bip340EventSigner(privateKey: null, publicKey: publicKey),
+                      eventOutFilters:  [filterProvider]
                     ));
                 await initRelays(newKey: false);
                 followEventProvider.loadCachedFeed();
@@ -362,14 +364,14 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
                 Share.share(share);
               } else if (value.startsWith("mute-")) {
                 Nip51List muteList = await ndk.lists.broadcastAddNip51ListElement(
-                    Nip51List.MUTE, Nip51List.PUB_KEY, widget.pubkey, myOutboxRelaySet!.urls, loggedUserSigner!,
+                    Nip51List.MUTE, Nip51List.PUB_KEY, widget.pubkey, myOutboxRelaySet!.urls,
                     private: value == "mute-private");
                 filterProvider.muteList = muteList;
                 filterProvider.notifyListeners();
                 setState(() {});
               } else if (value == "unmute") {
                 Nip51List? muteList = await ndk.lists
-                    .broadcastRemoveNip51ListElement(Nip51List.MUTE, Nip51List.PUB_KEY, widget.pubkey, myOutboxRelaySet!.urls, loggedUserSigner!);
+                    .broadcastRemoveNip51ListElement(Nip51List.MUTE, Nip51List.PUB_KEY, widget.pubkey, myOutboxRelaySet!.urls);
                 if (muteList != null) {
                   filterProvider.muteList = muteList;
                   filterProvider.notifyListeners();

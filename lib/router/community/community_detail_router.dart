@@ -164,7 +164,7 @@ class _CommunityDetailRouter extends CustState<CommunityDetailRouter> with Pendd
 
   void queryEvents() async {
     if (subscription!=null) {
-      ndk.relays.closeSubscription(subscription!.requestId);
+      ndk.requests.closeSubscription(subscription!.requestId);
     }
     var filter = Filter(kinds: [
       Nip01Event.TEXT_NODE_KIND,
@@ -194,7 +194,7 @@ class _CommunityDetailRouter extends CustState<CommunityDetailRouter> with Pendd
     disposeLater();
 
     if (subscription!=null) {
-      ndk.relays.closeSubscription(subscription!.requestId);
+      ndk.requests.closeSubscription(subscription!.requestId);
     }
   }
 

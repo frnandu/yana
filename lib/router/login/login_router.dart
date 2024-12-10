@@ -1,10 +1,10 @@
 import 'package:amberflutter/amberflutter.dart';
-import 'package:ndk/data_layer/repositories/signers/amber_event_signer.dart';
-import 'package:ndk/data_layer/repositories/signers/bip340_event_signer.dart';
+import 'package:ndk_amber/data_layer/repositories/signers/amber_event_signer.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:ndk/ndk.dart';
+import 'package:ndk_rust_verifier/ndk_rust_verifier.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:yana/utils/platform_util.dart';
 
@@ -343,7 +343,8 @@ class _LoginRouter extends State<LoginRouter>
           NdkConfig(
             eventVerifier: RustEventVerifier(),
             cache: cacheManager,
-            eventSigner: eventSigner
+            eventSigner: eventSigner,
+            eventOutFilters:  [filterProvider]
           ));
 
       await initRelayManager(isPublic ? key : getPublicKey(key), newKey);

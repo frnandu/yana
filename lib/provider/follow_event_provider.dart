@@ -338,16 +338,16 @@ class FollowEventProvider extends ChangeNotifier
 
   void doUnscribe() {
     if (subscription != null) {
-      ndk.relays.closeSubscription(subscription!.requestId);
+      ndk.requests.closeSubscription(subscription!.requestId);
     }
     if (subscriptionTags != null) {
-      ndk.relays.closeSubscription(subscriptionTags!.requestId);
+      ndk.requests.closeSubscription(subscriptionTags!.requestId);
     }
     if (subscriptionCommunities != null) {
-      ndk.relays.closeSubscription(subscriptionCommunities!.requestId);
+      ndk.requests.closeSubscription(subscriptionCommunities!.requestId);
     }
     if (subscriptionEvents != null) {
-      ndk.relays.closeSubscription(subscriptionEvents!.requestId);
+      ndk.requests.closeSubscription(subscriptionEvents!.requestId);
     }
   }
 

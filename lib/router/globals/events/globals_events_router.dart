@@ -137,7 +137,7 @@ class _GlobalsEventsRouter extends KeepAliveCustState<GlobalsEventsRouter>
             (until != null ? until! : Helpers.now) - howManySecondsToLoadBack,
         limit: 100);
     if (subscription != null) {
-      ndk.relays.closeSubscription(subscription!.requestId);
+      ndk.requests.closeSubscription(subscription!.requestId);
     }
 
     await ndk.relays.reconnectRelays(myInboxRelaySet!.urls);
@@ -165,7 +165,7 @@ class _GlobalsEventsRouter extends KeepAliveCustState<GlobalsEventsRouter>
   void unsubscribe() async {
     try {
       if (subscription != null) {
-        ndk.relays.closeSubscription(subscription!.requestId);
+        ndk.requests.closeSubscription(subscription!.requestId);
       }
     } catch (e) {}
   }

@@ -369,7 +369,7 @@ class _EditorRouter extends CustState<EditorRouter> with EditorMixin {
                     }
                   });
 
-                  relays.removeWhere((element) =>ndk.relays.blockedRelays.contains(element));
+                  relays.removeWhere((element) =>ndk.relays.globalState.blockedRelays.contains(element));
                   EasyLoading.dismiss();
                 }
               }

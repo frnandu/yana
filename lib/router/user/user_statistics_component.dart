@@ -362,11 +362,11 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
     super.dispose();
     _disposed = true;
     if (_followersSubscription != null) {
-      ndk.relays.closeSubscription(_followersSubscription!.requestId);
+      ndk.requests.closeSubscription(_followersSubscription!.requestId);
       _followersSubscription = null;
     }
     if (_zapsSubscription != null) {
-      ndk.relays.closeSubscription(_zapsSubscription!.requestId);
+      ndk.requests.closeSubscription(_zapsSubscription!.requestId);
       _zapsSubscription = null;
     }
   }

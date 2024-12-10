@@ -392,26 +392,28 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
               relayMinCountPerPubKey: settingProvider
                   .broadcastToInboxMaxCount);
           relays.addAll(inboxRelaySet.urls.toSet());
-          relays.removeWhere((element) =>ndk.relays.blockedRelays.contains(element));
+          relays.removeWhere((element) =>ndk.relays.globalState.blockedRelays.contains(element));
           EasyLoading.dismiss();
         }
       }
-      List<String>? results = await showDialog(
+      List<String>? choosenRelays = await showDialog(
         context: context,
         builder: (BuildContext context) {
           return MultiSelect(items: relays!.toList(), selectedItems: relays!.toList().take(myOutboxRelaySet!.urls.length+settingProvider
               .broadcastToInboxMaxCount).toList(), sending: false,);
         },
       );
-      if (results!=null && results.isNotEmpty) {
+      if (choosenRelays!=null && choosenRelays.isNotEmpty) {
         // await showDialog(
         //   context: context,
         //   builder: (BuildContext context) {
         //     return MultiSelect(items: results!, selectedItems: [], sending: true,);
         //   },
         // );
-        await ndk.relays.broadcastEvent(widget.event, results, loggedUserSigner!);
-        widget.event.sources.addAll(results);
+        NdkBroadcastResponse response = ndk.broadcast.broadcast(nostrEvent: widget.event, specificRelays: choosenRelays);
+        await response.broadcastDoneFuture;
+        // TODO check responses to see which relays successfull and which returned errors
+        widget.event.sources.addAll(choosenRelays);
         cacheManager.saveEvent(widget.event);
       }
 
@@ -419,7 +421,7 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
       setState(() {
         muting = true;
       });
-      Nip51List muteList = await ndk.lists.broadcastAddNip51ListElement(Nip51List.MUTE, Nip51List.PUB_KEY, widget.event.pubKey, myOutboxRelaySet!.urls, loggedUserSigner!,  private: value=="mute-private");
+      Nip51List muteList = await ndk.lists.broadcastAddNip51ListElement(Nip51List.MUTE, Nip51List.PUB_KEY, widget.event.pubKey, myOutboxRelaySet!.urls, private: value=="mute-private");
       filterProvider.muteList = muteList;
       filterProvider.notifyListeners();
       setState(() {
@@ -546,9 +548,9 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
         Iterable<String> urlsToBroadcast = await broadcastUrls(widget.event.pubKey);
         await ndk.relays.reconnectRelays(urlsToBroadcast);
 
-        await ndk.relays.broadcastEvent(
-            event, urlsToBroadcast, loggedUserSigner!);
-
+        NdkBroadcastResponse response = ndk.broadcast.broadcast( nostrEvent: event, specificRelays: urlsToBroadcast);
+        await response.broadcastDoneFuture;
+        // TODO handle response success
         eventReactionsProvider.addRepost(widget.event.id);
 
       } else if (value == "quote") {
@@ -571,7 +573,7 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
             eventId: widget.event.id, customRelays: urlsToBroadcast);
         // if (await response.publishDone) {
           eventReactionsProvider.addLike(
-              widget.event.id, response.publishedEvent);
+              widget.event.id, response.publishEvent);
         // }
       } else {
         for (var event in eventReactions!.myLikeEvents!) {
