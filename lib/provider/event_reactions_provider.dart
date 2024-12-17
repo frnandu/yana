@@ -71,7 +71,7 @@ class EventReactionsProvider extends ChangeNotifier
       /// TODO use other relaySet if gossip
       NdkResponse response = ndk.requests.query(
           name: "event-reations-thread-replies",
-          timeout: 5,
+          timeout: const Duration(seconds: 5),
           relaySet: myInboxRelaySet,
           filters: [
             Filter(eTags: [id], kinds: [Nip01Event.TEXT_NODE_KIND])
@@ -140,7 +140,7 @@ class EventReactionsProvider extends ChangeNotifier
     //     "---------------- reactions subscriptions: ${subscriptions.length}");
     NdkResponse response = ndk.requests.query(
         name: "event-reactions",
-        timeout: 5,
+        timeout: const Duration(seconds: 5),
         filters: [filter],
         explicitRelays: myInboxRelaySet?.urls
     );//, relaySet:  relaySet);

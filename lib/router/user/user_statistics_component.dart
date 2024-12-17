@@ -276,7 +276,7 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
         //ndk.relays.bootstrapRelays.toList()
         //   ..addAll(myInboxRelaySet!.urls),
         name: "user-stats-followers",
-        timeout: 60,
+        timeout: const Duration(seconds: 60),
         filters: [filter],
         relaySet: myInboxRelaySet!,
       );
@@ -322,7 +322,7 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
         filters: [
           Filter(kinds: [EventKind.ZAP_RECEIPT], pTags: [widget.pubkey])
         ],
-        timeout: 60,
+        timeout: const Duration(seconds: 60),
         relaySet: myInboxRelaySet!,
       );
       _zapsSubscription!.stream.listen(

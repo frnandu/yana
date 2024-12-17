@@ -105,11 +105,9 @@ class ZapAction {
     }
 
     return await Zap.getInvoiceCode(
-      lnurl: lnurl!,
       lud16Link: lud16Link!,
       sats: sats,
       recipientPubkey: pubkey,
-      signer: loggedUserSigner!,
       relays: relays,
       eventId: eventId,
       pollOption: pollOption,

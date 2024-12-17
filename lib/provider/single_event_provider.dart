@@ -32,7 +32,7 @@ class SingleEventProvider extends ChangeNotifier with LaterFunction {
 
     NdkResponse response = ndk.requests.query(
         name:"single-event",
-        timeout: 2,
+        timeout: const Duration(seconds: 2),
         filters: [Filter(ids: [id])],
         explicitRelays: myInboxRelaySet?.urls
     );
