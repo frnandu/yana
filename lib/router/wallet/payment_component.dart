@@ -2,12 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:ndk/domain_layer/entities/metadata.dart';
-import 'package:provider/provider.dart';
-import 'package:yana/models/wallet_transaction.dart';
-import 'package:yana/nostr/nip47/nwc_notification.dart';
+import 'package:ndk/domain_layer/usecases/nwc/responses/list_transactions_response.dart';
 
 import '../../main.dart';
-import '../../provider/metadata_provider.dart';
 import '../../ui/name_component.dart';
 import '../../ui/user_pic_component.dart';
 import '../../utils/base.dart';
@@ -16,7 +13,7 @@ import '../../utils/router_util.dart';
 import '../../utils/string_util.dart';
 
 class PaymentDetailsComponent extends StatefulWidget {
-  final WalletTransaction? paid;
+  final TransactionResult? paid;
 
   const PaymentDetailsComponent({super.key, this.paid});
 
@@ -149,12 +146,12 @@ class _PaymentDetailsComponent extends State<PaymentDetailsComponent> {
               style: TextStyle(fontSize: 22.0, color: Colors.grey[700]),
             ),
             const SizedBox(height: 20.0),
-            widget.paid!.created_at != null
+            widget.paid!.createdAt >0
                 ? Row(
                     children: [
                       SizedBox(
                           width: mediaDataCache.size.width / 2 - 30, child: Text("Date & Time", style: TextStyle(fontSize: 16.0, color: Colors.grey[700]))),
-                      Text(dateFormater.format(DateTime.fromMillisecondsSinceEpoch(widget.paid!.created_at! * 1000)))
+                      Text(dateFormater.format(DateTime.fromMillisecondsSinceEpoch(widget.paid!.createdAt * 1000)))
                     ],
                   )
                 : Container(),
@@ -173,24 +170,24 @@ class _PaymentDetailsComponent extends State<PaymentDetailsComponent> {
             const SizedBox(
               height: 5,
             ),
-            widget.paid!.fees_paid != null && widget.paid!.fees_paid! > 0
+            widget.paid!.feesPaid! > 0
                 ? Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
                     SizedBox(width: mediaDataCache.size.width / 2 - 30, child: Text("Fee", style: TextStyle(fontSize: 16.0, color: Colors.grey[700]))),
                     Flexible(
                         child: Text(
-                      "${(widget.paid!.fees_paid! / 1000).toStringAsFixed(0)} sats",
+                      "${(widget.paid!.feesPaid! / 1000).toStringAsFixed(0)} sats",
                     ))
                   ])
                 : Container(),
             const SizedBox(
               height: 5,
             ),
-            StringUtil.isNotBlank(widget.paid!.payment_hash)
+            StringUtil.isNotBlank(widget.paid!.paymentHash)
                 ? Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
                     SizedBox(width: mediaDataCache.size.width / 2 - 30, child: Text("Payment Hash", style: TextStyle(fontSize: 16.0, color: Colors.grey[700]))),
                     Flexible(
                         child: Text(
-                      widget.paid!.payment_hash!,
+                      widget.paid!.paymentHash,
                     ))
                   ])
                 : Container(),

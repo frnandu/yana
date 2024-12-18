@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:ndk/domain_layer/usecases/nwc/responses/list_transactions_response.dart';
 import 'package:provider/provider.dart';
 import 'package:yana/main.dart';
-import 'package:yana/models/wallet_transaction.dart';
 import 'package:yana/provider/nwc_provider.dart';
 import 'package:yana/router/wallet/transaction_item_component.dart';
 
@@ -90,9 +90,10 @@ class _TransactionsRouter extends State<TransactionsRouter> {
     Widget main =
       RefreshIndicator(
               onRefresh: () async {
-                nwcProvider.requestListTransactions(limit: 20);
+                ListTransactionsResponse response = await nwcProvider.listTransactions(limit: 20, unpaid: false);
+                _nwcProvider.cachedListTransactionsResponse  = response;
               },
-              child: Selector<NwcProvider, List<WalletTransaction>>(
+              child: Selector<NwcProvider, List<TransactionResult>?>(
                 builder: (context, transactions, child) {
                   return transactions!=null && transactions.isNotEmpty ? ListView.builder(
                     itemBuilder: (context, index) {
