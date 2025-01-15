@@ -167,9 +167,9 @@ class _RelayListRouter extends State<RelayListRouter> with SingleTickerProviderS
                   if (result != null && result) {
                     EasyLoading.show(status: 'Removing from list and broadcasting...', maskType: EasyLoadingMaskType.black, dismissOnTap: true);
                     relayList = await ndk.lists.broadcastRemoveNip51Relay(relayList!.kind, url, myOutboxRelaySet!.urls, defaultRelaysIfEmpty: relayList!.allRelays);
-                    if (relayList!.kind == Nip51List.SEARCH_RELAYS) {
-                      searchRelays = relayList!.allRelays!;
-                    } else if (relayList!.kind == Nip51List.BLOCKED_RELAYS) {
+                    if (relayList!.kind == Nip51List.kSearchRelays) {
+                      searchRelays = relayList!.allRelays;
+                    } else if (relayList!.kind == Nip51List.kBlockedRelays) {
                      ndk.relays.globalState.blockedRelays = relayList!.allRelays.toSet();
                     }
                     relayProvider.notifyListeners();
@@ -187,7 +187,7 @@ class _RelayListRouter extends State<RelayListRouter> with SingleTickerProviderS
   }
 
   void onEditingComplete() async {
-    List<String> result = await relayProvider.findRelays(controller.text, nip: relayList!.kind == Nip51List.SEARCH_RELAYS ? Nip50.NIP : null);
+    List<String> result = await relayProvider.findRelays(controller.text, nip: relayList!.kind == Nip51List.kSearchRelays ? Nip50.kNip : null);
     result.forEach((url) {
       if (ndk.relays.getRelayConnectivity(url) == null ||ndk.relays.getRelayConnectivity(url)!.relayInfo == null) {
        ndk.relays.getRelayInfo(url).then((value) {
@@ -244,10 +244,10 @@ class _RelayListRouter extends State<RelayListRouter> with SingleTickerProviderS
     if (result != null && result) {
       EasyLoading.show(status: 'Broadcasting relay list...', maskType: EasyLoadingMaskType.black, dismissOnTap: true);
       relayList = await ndk.lists.broadcastAddNip51ListRelay(relayList!.kind, url, myOutboxRelaySet!.urls, private: private);
-      if (relayList!.kind == Nip51List.SEARCH_RELAYS) {
+      if (relayList!.kind == Nip51List.kSearchRelays) {
         searchRelays = relayList!.allRelays!;
         await ndk.relays.reconnectRelays(searchRelays);
-      } else if (relayList!.kind == Nip51List.BLOCKED_RELAYS) {
+      } else if (relayList!.kind == Nip51List.kBlockedRelays) {
        ndk.relays.globalState.blockedRelays = relayList!.allRelays.toSet();
       }
       relayProvider.notifyListeners();

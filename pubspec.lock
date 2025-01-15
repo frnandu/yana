@@ -329,6 +329,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.0.5"
+  cryptography:
+    dependency: transitive
+    description:
+      name: cryptography
+      sha256: d146b76d33d94548cf035233fbc2f4338c1242fa119013bead807d033fc4ae05
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.7.0"
   csslib:
     dependency: transitive
     description:
@@ -417,6 +425,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.5.1"
+  elliptic:
+    dependency: transitive
+    description:
+      name: elliptic
+      sha256: "0c303d810603953a65dc39c4c542fb7538defd9e212403c54c266140819523b6"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.3.11"
   emoji_picker_flutter:
     dependency: "direct main"
     description:
@@ -477,10 +493,10 @@ packages:
     dependency: "direct main"
     description:
       name: file_picker
-      sha256: be325344c1f3070354a1d84a231a1ba75ea85d413774ec4bdf444c023342e030
+      sha256: c904b4ab56d53385563c7c39d8e9fa9af086f91495dfc48717ad84a42c3cf204
       url: "https://pub.dev"
     source: hosted
-    version: "5.5.0"
+    version: "8.1.7"
   file_saver:
     dependency: "direct main"
     description:
@@ -625,12 +641,11 @@ packages:
   flutter_inappwebview_android:
     dependency: "direct overridden"
     description:
-      path: flutter_inappwebview_android
-      ref: d89b1d32638b49dfc58c4b7c84153be0c269d057
-      resolved-ref: d89b1d32638b49dfc58c4b7c84153be0c269d057
-      url: "https://github.com/holzgeist/flutter_inappwebview"
-    source: git
-    version: "1.0.13"
+      name: flutter_inappwebview_android
+      sha256: "62557c15a5c2db5d195cb3892aab74fcaec266d7b86d59a6f0027abd672cddba"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.1.3"
   flutter_inappwebview_internal_annotations:
     dependency: transitive
     description:
@@ -659,10 +674,10 @@ packages:
     dependency: transitive
     description:
       name: flutter_inappwebview_platform_interface
-      sha256: "545fd4c25a07d2775f7d5af05a979b2cac4fbf79393b0a7f5d33ba39ba4f6187"
+      sha256: cf5323e194096b6ede7a1ca808c3e0a078e4b33cc3f6338977d75b4024ba2500
       url: "https://pub.dev"
     source: hosted
-    version: "1.0.10"
+    version: "1.3.0+1"
   flutter_inappwebview_web:
     dependency: transitive
     description:
@@ -1305,24 +1320,35 @@ packages:
   ndk:
     dependency: "direct main"
     description:
-      path: "../ndk/packages/ndk"
-      relative: true
-    source: path
-    version: "0.2.0-dev005"
+      name: ndk
+      sha256: "07c284a14e7800513743a84c911a546dcfcdc0c0ce2def4895c4e4c2286f159e"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.2.4"
   ndk_amber:
     dependency: "direct main"
     description:
-      path: "../ndk/packages/amber"
-      relative: true
-    source: path
-    version: "0.2.0-dev002"
+      name: ndk_amber
+      sha256: "8624bf6e92aac7ea8aa77287d38d9da3a2db3ad9707ef1f0336138dfee49196c"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.2.0"
+  ndk_isar:
+    dependency: "direct main"
+    description:
+      name: ndk_isar
+      sha256: "5e67fa36d56d258854a5d19660402267c181d90d2df3ff59d87c723f9d8b45b8"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.2.0"
   ndk_rust_verifier:
     dependency: "direct main"
     description:
-      path: "../ndk/packages/rust_verifier"
-      relative: true
-    source: path
-    version: "0.2.0-dev002"
+      name: ndk_rust_verifier
+      sha256: d38721fcc72cbc2a21de10647363efc04135389d893f37f073877c235d3adfba
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.2.0"
   nested:
     dependency: transitive
     description:
@@ -2249,5 +2275,5 @@ packages:
     source: hosted
     version: "9.0.4"
 sdks:
-  dart: ">=3.4.0 <3.11.0"
-  flutter: ">=3.22.0"
+  dart: ">=3.5.0 <3.11.0"
+  flutter: ">=3.24.0"

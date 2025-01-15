@@ -344,7 +344,8 @@ class _LoginRouter extends State<LoginRouter>
             eventVerifier: RustEventVerifier(),
             cache: cacheManager,
             eventSigner: eventSigner,
-            eventOutFilters:  [filterProvider]
+            eventOutFilters:  [filterProvider],
+            logLevel: logLevel
           ));
 
       await initRelayManager(isPublic ? key : getPublicKey(key), newKey);

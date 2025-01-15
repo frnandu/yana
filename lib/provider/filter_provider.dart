@@ -37,7 +37,7 @@ class FilterProvider extends ChangeNotifier implements EventFilter {
 
   @override
   bool filter(Nip01Event event) {
-    return (event.kind==Metadata.KIND || !isMutedPubKey(event.pubKey)) && (event.kind==Reaction.KIND || !hasMutedWord(event.content)) && !hasMutedHashtag(event);
+    return (event.kind==Metadata.kKind || !isMutedPubKey(event.pubKey)) && (event.kind==Reaction.kKind || !hasMutedWord(event.content)) && !hasMutedHashtag(event);
   }
 
   bool isMutedPubKey(String pubKey) {

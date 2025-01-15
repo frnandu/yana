@@ -94,7 +94,7 @@ class NewNotificationsProvider extends ChangeNotifier
               }
               String name =
                   metadata != null ? metadata.getName() : event.pubKey;
-              if (event.kind == Reaction.KIND) {
+              if (event.kind == Reaction.kKind) {
                 title = "$name reacted ${event.content.replaceAll('+', '❤')}";
                 if (otherEvent != null) {
                   body = otherEvent.content;

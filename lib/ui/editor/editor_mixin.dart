@@ -574,7 +574,7 @@ mixin EditorMixin {
           createdAt: createdAt!=null? createdAt!.millisecondsSinceEpoch ~/ 1000: 0);
     } else {
       // text note
-      event = Nip01Event(pubKey: loggedUserSigner!.getPublicKey(), kind: Nip01Event.TEXT_NODE_KIND, tags: allTags, content:result,
+      event = Nip01Event(pubKey: loggedUserSigner!.getPublicKey(), kind: Nip01Event.kTextNodeKind, tags: allTags, content:result,
           createdAt: createdAt!=null ? createdAt!.millisecondsSinceEpoch ~/ 1000: 0);
     }
     // TODO what about more people that might take part in the thread conversation?

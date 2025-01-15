@@ -118,7 +118,7 @@ class _GlobalsEventsRouter extends KeepAliveCustState<GlobalsEventsRouter>
 
   List<int> queryEventKinds() {
     return [
-      Nip01Event.TEXT_NODE_KIND,
+      Nip01Event.kTextNodeKind,
       EventKind.REPOST,
       EventKind.GENERIC_REPOST,
       EventKind.LONG_FORM,

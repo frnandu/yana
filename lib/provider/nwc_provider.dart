@@ -60,7 +60,7 @@ class NwcProvider extends ChangeNotifier {
         onConnect.call(connection.uri.lud16);
       }
       connection.notificationStream.stream.listen((notification) async {
-        if (notification.type == NwcNotification.PAYMENT_RECEIVED) {
+        if (notification.type == NwcNotification.kPaymentReceived) {
           await refreshWallet();
         }
       });

@@ -18,7 +18,7 @@ import 'package:isar/isar.dart' as isar;
 import 'package:ndk/config/bootstrap_relays.dart';
 import 'package:ndk/entities.dart';
 import 'package:ndk_amber/data_layer/data_sources/amber_flutter.dart';
-import 'package:ndk/data_layer/repositories/cache_manager/isar_cache_manager.dart';
+import 'package:ndk_isar/data_layer/repositories/cache_manager/isar_cache_manager.dart';
 import 'package:ndk_amber/data_layer/repositories/signers/amber_event_signer.dart';
 import 'package:ndk/domain_layer/entities/pubkey_mapping.dart';
 import 'package:ndk/domain_layer/entities/read_write_marker.dart';
@@ -166,8 +166,9 @@ EventSigner? get loggedUserSigner => ndk.config.eventSigner;
 
 AmberFlutterDS amberFlutterDS = AmberFlutterDS(Amberflutter());
 late CacheManager cacheManager;
+final logLevel = Logger.logLevels.debug;
 Ndk ndk = Ndk(
-  NdkConfig(eventVerifier: RustEventVerifier(), cache: cacheManager, engine: NdkEngine.JIT, eventOutFilters: [filterProvider]),
+  NdkConfig(eventVerifier: RustEventVerifier(), cache: cacheManager, eventOutFilters: [filterProvider], logLevel: logLevel),
 );
 
 late bool isExternalSignerInstalled;
@@ -253,7 +254,7 @@ Future<void> initProvidersAndStuff() async {
             : isPrivate || !PlatformUtil.isWeb()
                 ? Bip340EventSigner(privateKey: isPrivate ? key : null, publicKey: publicKey)
                 : Nip07EventSigner(await js.getPublicKeyAsync());
-        ndk = Ndk(NdkConfig(eventVerifier: RustEventVerifier(), cache: cacheManager, eventSigner: eventSigner, eventOutFilters: [filterProvider]));
+        ndk = Ndk(NdkConfig(eventVerifier: RustEventVerifier(), cache: cacheManager, eventSigner: eventSigner, eventOutFilters: [filterProvider], logLevel: logLevel));
       }
       //
       // loggedUserSigner = Bip340EventSigner(settingProvider.key!, getPublicKey(settingProvider.key!));
@@ -317,7 +318,7 @@ Future<void> initRelays({bool newKey = false}) async {
   await for (final event in (ndk.requests.query(
 //                timeout: missingPubKeys.length > 1 ? 10 : 3,
       filters: [
-        Filter(authors: [loggedUserSigner!.getPublicKey()], kinds: [Nip65.KIND, ContactList.KIND])
+        Filter(authors: [loggedUserSigner!.getPublicKey()], kinds: [Nip65.kKind, ContactList.kKind])
       ])).stream) {
     print("$event");
   }
@@ -340,23 +341,23 @@ Future<void> initRelays({bool newKey = false}) async {
   createMyRelaySets(userRelayList);
   await ndk.relays.reconnectRelays(userRelayList.urls);
 
-  ndk.lists.getSingleNip51List(Nip51List.MUTE, loggedUserSigner!).then(
+  ndk.lists.getSingleNip51List(Nip51List.kMute, loggedUserSigner!).then(
     (list) {
       filterProvider.muteList = list;
       //ndk.relays.eventFilters.add(filterProvider);
       ndk.relays.globalState.blockedRelays = {};
-      ndk.lists.getSingleNip51List(Nip51List.BLOCKED_RELAYS, loggedUserSigner!).then(
+      ndk.lists.getSingleNip51List(Nip51List.kBlockedRelays, loggedUserSigner!).then(
         (blockedRelays) {
           if (blockedRelays != null) {
             ndk.relays.globalState.blockedRelays = blockedRelays.allRelays.toSet();
             relayProvider.notifyListeners();
           }
           searchRelays = [];
-          ndk.lists.getSingleNip51List(Nip51List.SEARCH_RELAYS, loggedUserSigner!).then((searchRelaySet) {
+          ndk.lists.getSingleNip51List(Nip51List.kSearchRelays, loggedUserSigner!).then((searchRelaySet) {
             if (searchRelaySet != null) {
               searchRelays = searchRelaySet.allRelays!;
               for (var url in searchRelays) {
-                ndk.relays.reconnectRelay(url, connectionSource: ConnectionSource.NIP_51_SEARCH);
+                ndk.relays.reconnectRelay(url, connectionSource: ConnectionSource.nip51Search);
               }
               relayProvider.notifyListeners();
             }
@@ -391,7 +392,7 @@ Future<void> initRelays({bool newKey = false}) async {
         final startTime = DateTime.now();
         print("connecting ${feedRelaySet!.relaysMap.length} relays");
         List<bool> connected =
-            await Future.wait(feedRelaySet!.relaysMap.keys.map((url) => ndk.relays.reconnectRelay(url, connectionSource: ConnectionSource.UNKNOWN)));
+            await Future.wait(feedRelaySet!.relaysMap.keys.map((url) => ndk.relays.reconnectRelay(url, connectionSource: ConnectionSource.unknown)));
         final endTime = DateTime.now();
         final duration = endTime.difference(startTime);
         print(
@@ -407,11 +408,11 @@ Future<void> initRelays({bool newKey = false}) async {
   );
   dmProvider.initDMSessions(loggedUserSigner!.getPublicKey());
   metadataProvider.notifyListeners();
-  try {
-    if (PlatformUtil.isAndroid() || PlatformUtil.isIOS()) {
-      initBackgroundService(settingProvider.backgroundService);
-    }
-  } catch (e) {}
+  // try {
+  //   if (PlatformUtil.isAndroid() || PlatformUtil.isIOS()) {
+  //     initBackgroundService(settingProvider.backgroundService);
+  //   }
+  // } catch (e) {}
 }
 
 Future<List<String>> getInboxRelays(String pubKey) async {
@@ -580,7 +581,7 @@ Future<void> main() async {
           ? Bip340EventSigner(privateKey: isPrivate ? key : null, publicKey: publicKey)
           : Nip07EventSigner(await js.getPublicKeyAsync());
     }
-    ndk = Ndk(NdkConfig(eventVerifier: RustEventVerifier(), cache: cacheManager, eventSigner: eventSigner, eventOutFilters: [filterProvider]));
+    ndk = Ndk(NdkConfig(eventVerifier: RustEventVerifier(), cache: cacheManager, eventSigner: eventSigner, eventOutFilters: [filterProvider], logLevel: logLevel));
   }
 
   if (loggedUserSigner != null) {
@@ -923,7 +924,7 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
                         String? url = nrelay != null ? cleanRelayUrl(nrelay.addr) : null;
                         if (url != null) {
                           // inline
-                          Relay relay = Relay(url: url, connectionSource: ConnectionSource.EXPLICIT);
+                          Relay relay = Relay(url: url, connectionSource: ConnectionSource.explicit);
                           jump = MaterialPageRoute(
                               settings: RouteSettings(name: RouterPath.RELAY_INFO, arguments: relay), builder: (context) => const RelayInfoRouter());
                         }
@@ -939,13 +940,13 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
                       } else if (NIP19Tlv.isNaddr(key)) {
                         var naddr = NIP19Tlv.decodeNaddr(key);
                         if (naddr != null) {
-                          if (StringUtil.isNotBlank(naddr.id) && naddr.kind == Nip01Event.TEXT_NODE_KIND) {
+                          if (StringUtil.isNotBlank(naddr.id) && naddr.kind == Nip01Event.kTextNodeKind) {
                             jump = MaterialPageRoute(
                                 settings: RouteSettings(name: RouterPath.THREAD_DETAIL, arguments: naddr.id),
                                 builder: (context) => ThreadDetailRouter(
                                       eventId: naddr.id,
                                     ));
-                          } else if (StringUtil.isNotBlank(naddr.author) && naddr.kind == Metadata.KIND) {
+                          } else if (StringUtil.isNotBlank(naddr.author) && naddr.kind == Metadata.kKind) {
                             jump =
                                 MaterialPageRoute(settings: RouteSettings(name: RouterPath.USER, arguments: naddr.author), builder: (context) => UserRouter());
                           }

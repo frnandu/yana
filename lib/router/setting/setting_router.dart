@@ -416,7 +416,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
             });
             try {
               Nip51List? list = await ndk.lists.getSingleNip51List(
-                  Nip51List.MUTE, loggedUserSigner!);
+                  Nip51List.kMute, loggedUserSigner!);
               finished = true;
               RouterUtil.router(
                   context,
@@ -424,7 +424,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
                   list ??
                       Nip51List(
                           pubKey: loggedUserSigner!.getPublicKey(),
-                          kind: Nip51List.MUTE,
+                          kind: Nip51List.kMute,
                           elements: [],
                           createdAt: Helpers.now));
             } finally {
@@ -436,7 +436,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
                 RouterPath.MUTE_LIST,
                 Nip51List(
                     pubKey: loggedUserSigner!.getPublicKey(),
-                    kind: Nip51List.MUTE,
+                    kind: Nip51List.kMute,
                     elements: [],
                     createdAt: Helpers.now));
           }
@@ -470,7 +470,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
             });
             try {
               Nip51List? list = await ndk.lists.getSingleNip51List(
-                  Nip51List.BLOCKED_RELAYS, loggedUserSigner!);
+                  Nip51List.kBlockedRelays, loggedUserSigner!);
               finished = true;
               RouterUtil.router(
                   context,
@@ -478,7 +478,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
                   list ??
                       Nip51List(
                           pubKey: loggedUserSigner!.getPublicKey(),
-                          kind: Nip51List.BLOCKED_RELAYS,
+                          kind: Nip51List.kBlockedRelays,
                           elements: [],
                           createdAt: Helpers.now));
             } finally {
@@ -490,7 +490,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
                 RouterPath.RELAY_LIST,
                 Nip51List(
                     pubKey: loggedUserSigner!.getPublicKey(),
-                    kind: Nip51List.BLOCKED_RELAYS,
+                    kind: Nip51List.kBlockedRelays,
                     elements: [],
                     createdAt: Helpers.now));
           }
@@ -517,7 +517,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
             });
             try {
               Nip51List? list = await ndk.lists.getSingleNip51List(
-                  Nip51List.SEARCH_RELAYS, loggedUserSigner!);
+                  Nip51List.kSearchRelays, loggedUserSigner!);
               finished = true;
               RouterUtil.router(
                   context,
@@ -525,7 +525,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
                   list ??
                       Nip51List(
                           pubKey: loggedUserSigner!.getPublicKey(),
-                          kind: Nip51List.SEARCH_RELAYS,
+                          kind: Nip51List.kSearchRelays,
                           elements: [],
                           createdAt: Helpers.now));
             } finally {
@@ -537,7 +537,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
                 RouterPath.RELAY_LIST,
                 Nip51List(
                     pubKey: loggedUserSigner!.getPublicKey(),
-                    kind: Nip51List.SEARCH_RELAYS,
+                    kind: Nip51List.kSearchRelays,
                     elements: [],
                     createdAt: Helpers.now));
           }
@@ -645,7 +645,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
             metadataProvider.clear();
           } else {
             ndk = Ndk(
-              NdkConfig(eventVerifier: RustEventVerifier(), cache: cacheManager, eventOutFilters:  [filterProvider]),
+              NdkConfig(eventVerifier: RustEventVerifier(), cache: cacheManager, eventOutFilters:  [filterProvider], logLevel: logLevel),
             );
           }
         }
@@ -1159,7 +1159,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
   //       var filter = Filter(authors: [
   //         loggedUserSigner!.getPublicKey()
   //       ], kinds: [
-  //         Nip01Event.TEXT_NODE_KIND,
+  //         Nip01Event.kTextNodeKind,
   //         kind.EventKind.REPOST,
   //         kind.EventKind.GENERIC_REPOST,
   //       ]);

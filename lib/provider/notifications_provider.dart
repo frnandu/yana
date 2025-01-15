@@ -59,11 +59,11 @@ class NotificationsProvider extends ChangeNotifier with PenddingEventsLaterFunct
 
   List<int> queryEventKinds() {
     List<int> kinds = [
-      Nip01Event.TEXT_NODE_KIND,
+      Nip01Event.kTextNodeKind,
       kind.EventKind.LONG_FORM,
     ];
     if (settingProvider.notificationsReactions) {
-      kinds.add(Reaction.KIND);
+      kinds.add(Reaction.kKind);
     }
     if (settingProvider.notificationsReposts) {
       kinds.add(kind.EventKind.REPOST);
