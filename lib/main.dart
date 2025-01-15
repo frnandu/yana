@@ -854,7 +854,7 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
             value: nwcProvider,
           ),
         ],
-        child: HomeComponent(
+        child: SafeArea(child: HomeComponent(
           locale: _locale,
           theme: defaultTheme,
           child: Sizer(
@@ -969,7 +969,7 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
               );
             },
           ),
-        ));
+        )));
   }
 
   @override
