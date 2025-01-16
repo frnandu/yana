@@ -194,36 +194,54 @@ mixin EditorMixin {
         onBackspacePressed: null,
         // textEditingController:
         //     textEditionController, // pass here the same [TextEditingController] that is connected to your input field, usually a [TextFormField]
-        config: Config(
-          columns: 10,
-          emojiSizeMax: 20 * (PlatformUtil.isIOS() ? 1.30 : 1.0),
-          verticalSpacing: 0,
-          horizontalSpacing: 0,
-          gridPadding: EdgeInsets.zero,
-          initCategory: Category.RECENT,
-          bgColor: Color(0xFFF2F2F2),
-          indicatorColor: mainColor,
-          iconColor: Colors.grey,
-          iconColorSelected: mainColor,
-          backspaceColor: mainColor,
-          skinToneDialogBgColor: Colors.white,
-          skinToneIndicatorColor: Colors.grey,
-          enableSkinTones: true,
-          // showRecentsTab: true,
-          recentTabBehavior: RecentTabBehavior.RECENT,
-          recentsLimit: 30,
-          emojiTextStyle:
-              PlatformUtil.isWeb() ? GoogleFonts.notoColorEmoji() : null,
-          noRecents: Text(
-            'No Recents',
-            style: TextStyle(fontSize: 14, color: Colors.black26),
-            textAlign: TextAlign.center,
-          ), // Needs to be const Widget
-          loadingIndicator: const SizedBox.shrink(), // Needs to be const Widget
-          tabIndicatorAnimDuration: kTabScrollDuration,
-          categoryIcons: const CategoryIcons(),
-          buttonMode: ButtonMode.MATERIAL,
+        config:
+        const Config(
+          height: 256,
+          checkPlatformCompatibility: true,
+          emojiViewConfig: EmojiViewConfig(
+            // Issue: https://github.com/flutter/flutter/issues/28894
+            emojiSizeMax: 28 *1.0,
+          ),
+          viewOrderConfig: ViewOrderConfig(
+            top: EmojiPickerItem.categoryBar,
+            middle: EmojiPickerItem.emojiView,
+            bottom: EmojiPickerItem.searchBar,
+          ),
+          skinToneConfig: SkinToneConfig(),
+          categoryViewConfig: CategoryViewConfig(),
+          bottomActionBarConfig: BottomActionBarConfig(),
+          searchViewConfig: SearchViewConfig(),
         ),
+        // Config(
+        //   columns: 10,
+        //   emojiSizeMax: 20 * (PlatformUtil.isIOS() ? 1.30 : 1.0),
+        //   verticalSpacing: 0,
+        //   horizontalSpacing: 0,
+        //   gridPadding: EdgeInsets.zero,
+        //   initCategory: Category.RECENT,
+        //   bgColor: Color(0xFFF2F2F2),
+        //   indicatorColor: mainColor,
+        //   iconColor: Colors.grey,
+        //   iconColorSelected: mainColor,
+        //   backspaceColor: mainColor,
+        //   skinToneDialogBgColor: Colors.white,
+        //   skinToneIndicatorColor: Colors.grey,
+        //   enableSkinTones: true,
+        //   // showRecentsTab: true,
+        //   recentTabBehavior: RecentTabBehavior.RECENT,
+        //   recentsLimit: 30,
+        //   emojiTextStyle:
+        //       PlatformUtil.isWeb() ? GoogleFonts.notoColorEmoji() : null,
+        //   noRecents: Text(
+        //     'No Recents',
+        //     style: TextStyle(fontSize: 14, color: Colors.black26),
+        //     textAlign: TextAlign.center,
+        //   ), // Needs to be const Widget
+        //   loadingIndicator: const SizedBox.shrink(), // Needs to be const Widget
+        //   tabIndicatorAnimDuration: kTabScrollDuration,
+        //   categoryIcons: const CategoryIcons(),
+        //   buttonMode: ButtonMode.MATERIAL,
+        // ),
       ),
     );
   }
