@@ -341,7 +341,7 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
                 String publicKey = widget.pubkey;
                 ndk = Ndk(
                     NdkConfig(
-                      eventVerifier: RustEventVerifier(),
+                      eventVerifier: eventVerifier,
                       cache: cacheManager,
                       eventSigner: Bip340EventSigner(privateKey: null, publicKey: publicKey),
                       eventOutFilters:  [filterProvider]

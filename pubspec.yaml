@@ -158,8 +158,8 @@ dependency_overrides:
 #      url: https://github.com/holzgeist/flutter_inappwebview
 #      path: flutter_inappwebview_android
 #      ref: d89b1d32638b49dfc58c4b7c84153be0c269d057
-#  ndk:
-#      path: ../ndk/packages/ndk
+  ndk:
+      path: ../ndk/packages/ndk
 #  ndk_amber:
 #    path: ../ndk/packages/amber
 #  ndk_rust_verifier:

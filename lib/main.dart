@@ -166,10 +166,11 @@ EventSigner? get loggedUserSigner => ndk?.config.eventSigner;
 
 AmberFlutterDS amberFlutterDS = AmberFlutterDS(Amberflutter());
 late CacheManager cacheManager;
-final logLevel = Logger.logLevels.trace;
+final logLevel = Logger.logLevels.debug;
+final eventVerifier = RustEventVerifier();
 Ndk ndk = Ndk.emptyBootstrapRelaysConfig();// = Ndk(
 //   NdkConfig(
-//       eventVerifier: RustEventVerifier(),
+//       eventVerifier: eventVerifier,
 //       cache: cacheManager,
 //       // eventOutFilters: [filterProvider],
 //       logLevel: logLevel),
@@ -264,7 +265,7 @@ void onStart(ServiceInstance service) async {
 //                 : Nip07EventSigner(await js.getPublicKeyAsync());
 //         await ndk.destroy();
 //         ndk = Ndk(NdkConfig(
-//             eventVerifier: RustEventVerifier(),
+//             eventVerifier: eventVerifier,
 //             cache: cacheManager,
 //             eventSigner: eventSigner,
 //             // eventOutFilters: [filterProvider],
@@ -661,7 +662,7 @@ Future<void> main() async {
           : Nip07EventSigner(await js.getPublicKeyAsync());
     }
     ndk = Ndk(NdkConfig(
-        eventVerifier: RustEventVerifier(),
+        eventVerifier: eventVerifier,
         cache: cacheManager,
         eventSigner: eventSigner,
         eventOutFilters: [filterProvider],

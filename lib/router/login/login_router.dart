@@ -344,20 +344,20 @@ class _LoginRouter extends State<LoginRouter>
       ;
       await ndk.destroy();
       ndk = Ndk(NdkConfig(
-          eventVerifier: RustEventVerifier(),
+          eventVerifier: eventVerifier,
           cache: cacheManager,
           eventSigner: eventSigner,
           eventOutFilters: [filterProvider],
           logLevel: logLevel));
-      NdkResponse response = ndk.requests.query(
-          timeout: const Duration(seconds: 10),
-          filters: [
-            Filter(
-                authors: ["30782a8323b7c98b172c5a2af7206bb8283c655be6ddce11133611a03d5f1177"],
-                kinds: [Nip65.kKind])
-          ]);
-      List<Nip01Event> events = await response.future.timeout(Duration(seconds: 10));
-      print(events);
+      // NdkResponse response = ndk.requests.query(
+      //     timeout: const Duration(seconds: 10),
+      //     filters: [
+      //       Filter(
+      //           authors: ["30782a8323b7c98b172c5a2af7206bb8283c655be6ddce11133611a03d5f1177"],
+      //           kinds: [Nip65.kKind])
+      //     ]);
+      // List<Nip01Event> events = await response.future.timeout(Duration(seconds: 10));
+      // print(events);
 
       await initRelayManager(isPublic ? key : getPublicKey(key), newKey);
     } catch (e) {

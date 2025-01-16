@@ -644,9 +644,8 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
                 routerBack: true, context: context);
             metadataProvider.clear();
           } else {
-            ndk = Ndk(
-              NdkConfig(eventVerifier: RustEventVerifier(), cache: cacheManager, eventOutFilters:  [filterProvider], logLevel: logLevel),
-            );
+            await ndk.destroy();
+            ndk = Ndk.emptyBootstrapRelaysConfig();
           }
         }
       },

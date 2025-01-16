@@ -155,7 +155,7 @@ class AccountsState extends State<AccountsComponent> {
     await ndk.destroy();
     ndk = Ndk(
         NdkConfig(
-          eventVerifier: RustEventVerifier(),
+          eventVerifier: eventVerifier,
           cache: cacheManager,
           eventSigner: eventSigner,
           eventOutFilters:  [filterProvider],
@@ -174,26 +174,24 @@ class AccountsState extends State<AccountsComponent> {
     if (settingProvider.privateKeyIndex != index) {
       EasyLoading.show(status: "Logging out...", maskType: EasyLoadingMaskType.black);
       clearCurrentMemInfo();
-      ndk = Ndk(
-        NdkConfig(eventVerifier: RustEventVerifier(), cache: cacheManager, eventOutFilters:  [filterProvider], logLevel: logLevel),
-      );
+      ndk.destroy().then((a) {
+        ndk = Ndk.emptyBootstrapRelaysConfig();
+        settingProvider.privateKeyIndex = index;
 
-      settingProvider.privateKeyIndex = index;
-
-      // signOut complete
-      if (settingProvider.key != null) {
-        // use next privateKey to login
-        doLogin();
-        settingProvider.notifyListeners();
-        RouterUtil.back(context);
-      }
+        // signOut complete
+        if (settingProvider.key != null) {
+          // use next privateKey to login
+          doLogin();
+          settingProvider.notifyListeners();
+          RouterUtil.back(context);
+        }
+      });
     }
   }
 
   static void onLogoutTap(int index, {bool routerBack = true, required BuildContext context}) {
     var oldIndex = settingProvider.privateKeyIndex;
     clearLocalData(index);
-
     if (oldIndex == index) {
       clearCurrentMemInfo();
       if (settingProvider.keyMap.isNotEmpty) {
@@ -205,9 +203,9 @@ class AccountsState extends State<AccountsComponent> {
           RouterUtil.back(context);
         }
       } else {
-        ndk = Ndk(
-          NdkConfig(eventVerifier: RustEventVerifier(), cache: cacheManager, eventOutFilters:  [filterProvider], logLevel: logLevel),
-        );
+        ndk.destroy().then((a) {
+          ndk = Ndk.emptyBootstrapRelaysConfig();
+        });
       }
     }
 

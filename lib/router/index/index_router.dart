@@ -109,7 +109,7 @@ class _IndexRouter extends CustState<IndexRouter>
             String publicKey = getPublicKey(priv);
             ndk = Ndk(
                 NdkConfig(
-                  eventVerifier: RustEventVerifier(),
+                  eventVerifier: eventVerifier,
                   cache: cacheManager,
                   eventSigner: Bip340EventSigner(privateKey: priv, publicKey: publicKey),
                   eventOutFilters:  [filterProvider],
