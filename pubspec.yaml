@@ -125,7 +125,7 @@ dependencies:
 
   ndk: 0.2.5
   ndk_amber: 0.2.0
-  ndk_rust_verifier: 0.2.0
+  ndk_rust_verifier: 0.2.1
   ndk_isar: 0.2.0
 
 dev_dependencies:

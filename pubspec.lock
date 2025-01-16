@@ -1334,10 +1334,10 @@ packages:
     dependency: "direct main"
     description:
       name: ndk_rust_verifier
-      sha256: d38721fcc72cbc2a21de10647363efc04135389d893f37f073877c235d3adfba
+      sha256: feafd5e5f278bb3bd851b35f92f6e19de72e0e556f0576421251c2199a537439
       url: "https://pub.dev"
     source: hosted
-    version: "0.2.0"
+    version: "0.2.1"
   nested:
     dependency: transitive
     description:
