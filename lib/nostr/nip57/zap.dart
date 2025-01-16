@@ -4,7 +4,7 @@ import 'dart:developer';
 import 'package:bech32/bech32.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:ndk/domain_layer/entities/nip_01_event.dart';
-import 'package:ndk/domain_layer/repositories/event_signer.dart';
+import 'package:yana/main.dart';
 
 import '../../utils/dio_util.dart';
 import '../../utils/string_util.dart';
@@ -54,17 +54,14 @@ class Zap {
   }
 
   static Future<String?> getInvoiceCode({
-    required String lnurl,
     required String lud16Link,
     required int sats,
     required String recipientPubkey,
     String? eventId,
-    required EventSigner signer,
     required Iterable<String> relays,
     String? pollOption,
     String? comment,
   }) async {
-    // var lnurlLink = decodeLud06Link(lnurl);
     var lnurlResponse = await getLnurlResponse(lud16Link);
     if (lnurlResponse == null) {
       return null;
@@ -95,7 +92,6 @@ class Zap {
     var tags = [
       ["relays", ...relays],
       ["amount", amount.toString()],
-      ["lnurl", lnurl],
       ["p", recipientPubkey],
     ];
     if (StringUtil.isNotBlank(eventId)) {
@@ -104,8 +100,8 @@ class Zap {
     if (StringUtil.isNotBlank(pollOption)) {
       tags.add(["poll_option", pollOption!]);
     }
-    var event = Nip01Event(pubKey: signer.getPublicKey(), kind: kind.EventKind.ZAP_REQUEST, tags: tags, content: eventContent);
-    await signer.sign(event);
+    var event = Nip01Event(pubKey: loggedUserSigner!.getPublicKey(), kind: kind.EventKind.ZAP_REQUEST, tags: tags, content: eventContent);
+    await loggedUserSigner!.sign(event);
     if (StringUtil.isBlank(event.sig)) {
       EasyLoading.showError("Zap request is not signed", duration: const Duration(seconds: 5));
       return null;
@@ -113,7 +109,6 @@ class Zap {
     log(jsonEncode(event));
     var eventStr = Uri.encodeQueryComponent(jsonEncode(event));
     callback += "&nostr=$eventStr";
-    callback += "&lnurl=$lnurl";
 
     log("getInvoice callback $callback");
 

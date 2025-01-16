@@ -23,7 +23,6 @@ Also to learn more deeply about [Nostr](https://github.com/nostr-protocol/nostr)
 Each amount of funding will be distributed among the contributors according to the amount of contribution. \
 This will eventually allow each contributor to spend more time on the project.
 
-[See current contributors distribution](#contributors)
 
 ## Installation
 
