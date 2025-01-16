@@ -7,12 +7,10 @@ import 'package:ndk/domain_layer/usecases/nwc/consts/nwc_method.dart';
 import 'package:ndk/domain_layer/usecases/nwc/consts/transaction_type.dart';
 import 'package:ndk/domain_layer/usecases/nwc/nwc_notification.dart';
 import 'package:ndk/ndk.dart';
-import 'package:ndk/shared/logger/logger.dart';
 
 import '../main.dart';
 import '../utils/rates.dart';
 import '../utils/string_util.dart';
-import 'data_util.dart';
 
 class NwcProvider extends ChangeNotifier {
   static const int BTC_IN_SATS = 100000000;

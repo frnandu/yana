@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
-import 'package:flutter_font_picker/flutter_font_picker.dart';
+// import 'package:flutter_font_picker/flutter_font_picker.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:ndk/ndk.dart';
@@ -1017,31 +1017,31 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
     }
   }
 
-  Future pickFontEnum() async {
-    EnumObj? resultEnumObj =
-        await EnumSelectorComponent.show(context, fontEnumList!);
-    if (resultEnumObj != null) {
-      if (resultEnumObj.value == true) {
-        pickFont();
-      } else {
-        settingProvider.fontFamily = null;
-        widget.indexReload();
-      }
-    }
-  }
+  // Future pickFontEnum() async {
+  //   EnumObj? resultEnumObj =
+  //       await EnumSelectorComponent.show(context, fontEnumList!);
+  //   if (resultEnumObj != null) {
+  //     if (resultEnumObj.value == true) {
+  //       pickFont();
+  //     } else {
+  //       settingProvider.fontFamily = null;
+  //       widget.indexReload();
+  //     }
+  //   }
+  // }
 
-  void pickFont() {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => FontPicker(
-          onFontChanged: (PickerFont font) {
-            settingProvider.fontFamily = font.fontFamily;
-            widget.indexReload();
-          },
-        ),
-      ),
-    );
-  }
+  // void pickFont() {
+  //   Navigator.of(context).push(
+  //     MaterialPageRoute(
+  //       builder: (context) => FontPicker(
+  //         onFontChanged: (PickerFont font) {
+  //           settingProvider.fontFamily = font.fontFamily;
+  //           widget.indexReload();
+  //         },
+  //       ),
+  //     ),
+  //   );
+  // }
 
   List<EnumObj> fontSizeList = [
     EnumObj(20.0, "20"),

@@ -152,6 +152,7 @@ class AccountsState extends State<AccountsComponent> {
         : isPrivate || !PlatformUtil.isWeb()
             ? Bip340EventSigner(privateKey: isPrivate ? key : null, publicKey: publicKey)
             : Nip07EventSigner(await js.getPublicKeyAsync());
+    await ndk.destroy();
     ndk = Ndk(
         NdkConfig(
           eventVerifier: RustEventVerifier(),
