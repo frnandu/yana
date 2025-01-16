@@ -19,7 +19,7 @@ We believe that by using a good gossip model it helps increase nostr decentraliz
 
 So how does Yana implement specifically these models?
 
-Yana uses https://github.com/relaystr/dart_ndk lib for nostr interaction and relay connectivity management.
+Yana uses https://github.com/relaystr/ndk lib for nostr interaction and relay connectivity management.
 
 The currently implemented features in the lib are:
 
