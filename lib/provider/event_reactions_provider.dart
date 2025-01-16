@@ -74,7 +74,7 @@ class EventReactionsProvider extends ChangeNotifier
           timeout: const Duration(seconds: 5),
           relaySet: myInboxRelaySet,
           filters: [
-            Filter(eTags: [id], kinds: [Nip01Event.TEXT_NODE_KIND])
+            Filter(eTags: [id], kinds: [Nip01Event.kTextNodeKind])
           ],
       // TODO which relays for thread replies???? depends on event author + relay hints from event maybe?
       //    relaySet: myInboxRelaySet!

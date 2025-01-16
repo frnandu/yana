@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 0.15.2+3009
+version: 0.15.3+3009
 versionCode: 3000
 
 environment:
@@ -46,87 +46,87 @@ dependencies:
   bip340: ^0.3.0
   string_validator: ^1.0.0
   http: ^1.1.0
-  get_time_ago: ^1.2.2
-  cached_network_image: ^3.3.0
-  photo_manager: ^3.5.0
+  get_time_ago: ^2.1.1
+  cached_network_image: ^3.4.1
+  photo_manager: ^3.6.3
   flutter_native_splash: ^2.3.2
   flutter_animate: ^4.1.1+1
   bech32: ^0.2.2
   hex: ^0.2.0
-  wechat_assets_picker: ^8.5.0
-  file_picker: ^5.3.1
+  #wechat_assets_picker: ^8.5.0
+  file_picker: ^8.1.7
   dio: ^5.1.2
   dio_cookie_manager: ^3.0.0
-  emoji_picker_flutter: ^1.6.1
+  emoji_picker_flutter: ^4.2.0
   widget_size: ^1.0.0
-  sizer: ^2.0.15
+  sizer: ^3.0.5
   webview_flutter: ^4.2.1
   screenshot: ^3.0.0
-  share_plus: ^7.2.1
+  share_plus: ^10.1.4
   video_player: ^2.9.2
   image_picker: ^1.1.2
   keframe: ^3.0.0
   pretty_qr_code: ^3.3.0
   flutter_link_previewer: ^3.2.1
   easy_image_viewer: ^1.2.1
-  android_intent_plus: ^4.0.1
+  android_intent_plus: ^5.2.2
   url_launcher: ^6.1.11
   flutter_placeholder_textlines: ^1.2.0
-  google_fonts: ^5.1.0
-  flutter_font_picker: ^1.3.0
+  google_fonts: ^6.2.1
+  #flutter_font_picker: ^1.3.0
   local_auth: ^2.1.6
   crypto: ^3.0.3
-  mime: ^1.0.4
+  mime: ^2.0.0
   pretty_dio_logger: ^1.3.1
-  flutter_markdown: ^0.6.14
-  window_manager: ^0.3.4
+  flutter_markdown: ^0.7.5
+  window_manager: ^0.4.3
   qr_code_scanner: ^1.0.1
 #  mobile_scanner: ^5.2.1
   image_gallery_saver: ^2.0.3
-  permission_handler: ^10.2.0
+  permission_handler: ^11.3.1
   file_saver: ^0.2.4
   youtube_player_flutter: ^9.0.3
   auto_size_text_field: ^2.2.1
   numberpicker: ^2.1.2
   table_calendar: ^3.0.9
-  intl: ^0.18.1
+  intl: ^0.20.1
   device_info_plus: ^9.0.2
-  package_info_plus: ^4.1.0
-  assorted_layout_widgets: ^8.0.4
-  flutter_secure_storage: ^9.0.0
+  package_info_plus: ^8.1.3
+  assorted_layout_widgets: ^10.4.4
+  flutter_secure_storage: ^9.2.4
   settings_ui: ^2.0.2
   tuple: ^2.0.2
 #  flutter_spinkit: ^5.2.0
 #  loading_animation_widget: ^1.2.0
 #  flutter_app_badger: ^1.5.0
-  awesome_notifications_core: ^0.8.0
-  awesome_notifications: any
+  awesome_notifications_core: ^0.10.0
+  awesome_notifications: 0.10.0
   workmanager: ^0.5.1
   flutter_background_service: ^5.0.10
-  flutter_local_notifications: ^17.2.2
+  flutter_local_notifications: ^18.0.1
 #  flutter_isolate: ^2.0.4
 #  secp256k1: ^0.3.0
   scrollable_positioned_list: ^0.3.8
   #js: ^0.6.7
   flutter_svg: ^2.0.7
-  protocol_handler: ^0.1.5
+  protocol_handler: ^0.2.0
   flutter_spinkit: ^5.2.0
   isar: ^4.0.0-dev.14
   isar_flutter_libs: ^4.0.0-dev.14
   path_provider: ^2.1.1
   flutter_easyloading: ^3.0.5
   visibility_detector: ^0.4.0
-  #uni_links: ^0.5.1
-  confetti: ^0.7.0
+  confetti: ^0.8.0
   flutter_timer_countdown: ^1.0.7
   sliding_up_panel: ^2.0.0+1
-  back_button_interceptor: ^7.0.3
+  back_button_interceptor: ^8.0.3
   lottie: ^3.1.2
   bolt11_decoder: ^1.0.2
 
-  ndk: 0.2.0-dev002
-  ndk_amber: 0.2.0-dev002
-  ndk_rust_verifier: 0.2.0-dev002
+  ndk: 0.2.5
+  ndk_amber: 0.2.0
+  ndk_rust_verifier: 0.2.1
+  ndk_isar: 0.2.0
 
 dev_dependencies:
   flutter_launcher_icons: ^0.14.1
@@ -139,12 +139,12 @@ dev_dependencies:
   # activated in the `analysis_options.yaml` file located at the root of your
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
-  flutter_lints: ^4.0.0
+  flutter_lints: ^5.0.0
   build_runner: ^2.4.6
 
 dependency_overrides:
   video_player_android: 2.7.13
-  photo_manager: 3.2.3
+  #photo_manager: 3.2.3
 #  rust_lib_ndk:
 #    path: rust_builder
 #  http: ^1.0.0
@@ -153,17 +153,17 @@ dependency_overrides:
   intl: ^0.19.0
   flutter_colorpicker: 1.1.0
   # TODO: Recheck once flutter_inappwebview version >6.0.0 is released
-  flutter_inappwebview_android:
-    git:
-      url: https://github.com/holzgeist/flutter_inappwebview
-      path: flutter_inappwebview_android
-      ref: d89b1d32638b49dfc58c4b7c84153be0c269d057
+  flutter_inappwebview_android: ^1.1.3
+#    git:
+#      url: https://github.com/holzgeist/flutter_inappwebview
+#      path: flutter_inappwebview_android
+#      ref: d89b1d32638b49dfc58c4b7c84153be0c269d057
   ndk:
-    path: ../ndk/packages/ndk
-  ndk_amber:
-    path: ../ndk/packages/amber
-  ndk_rust_verifier:
-    path: ../ndk/packages/rust_verifier
+      path: ../ndk/packages/ndk
+#  ndk_amber:
+#    path: ../ndk/packages/amber
+#  ndk_rust_verifier:
+#    path: ../ndk/packages/rust_verifier
 
 
 # For information on the generic Dart part of this file, see the

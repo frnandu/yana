@@ -341,7 +341,7 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
                 String publicKey = widget.pubkey;
                 ndk = Ndk(
                     NdkConfig(
-                      eventVerifier: RustEventVerifier(),
+                      eventVerifier: eventVerifier,
                       cache: cacheManager,
                       eventSigner: Bip340EventSigner(privateKey: null, publicKey: publicKey),
                       eventOutFilters:  [filterProvider]
@@ -364,14 +364,14 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
                 Share.share(share);
               } else if (value.startsWith("mute-")) {
                 Nip51List muteList = await ndk.lists.broadcastAddNip51ListElement(
-                    Nip51List.MUTE, Nip51List.PUB_KEY, widget.pubkey, myOutboxRelaySet!.urls,
+                    Nip51List.kMute, Nip51List.kPubkey, widget.pubkey, myOutboxRelaySet!.urls,
                     private: value == "mute-private");
                 filterProvider.muteList = muteList;
                 filterProvider.notifyListeners();
                 setState(() {});
               } else if (value == "unmute") {
                 Nip51List? muteList = await ndk.lists
-                    .broadcastRemoveNip51ListElement(Nip51List.MUTE, Nip51List.PUB_KEY, widget.pubkey, myOutboxRelaySet!.urls);
+                    .broadcastRemoveNip51ListElement(Nip51List.kMute, Nip51List.kPubkey, widget.pubkey, myOutboxRelaySet!.urls);
                 if (muteList != null) {
                   filterProvider.muteList = muteList;
                   filterProvider.notifyListeners();

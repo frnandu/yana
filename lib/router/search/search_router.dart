@@ -117,7 +117,7 @@ class _SearchRouter extends CustState<SearchRouter>
           } else {
             var event = events[
                 index - metadatasFromCache.length - metadatasFromSearch.length];
-            if (event.kind == Metadata.KIND) {
+            if (event.kind == Metadata.kKind) {
               /// TODO use dart_ndk
               // var jsonObj = jsonDecode(event.content);
               // metadata = Metadata.fromJson(jsonObj);
@@ -255,13 +255,13 @@ class _SearchRouter extends CustState<SearchRouter>
   }
 
   List<int> searchEventKinds = [
-    Nip01Event.TEXT_NODE_KIND,
+    Nip01Event.kTextNodeKind,
     kind.EventKind.REPOST,
     kind.EventKind.GENERIC_REPOST,
     kind.EventKind.LONG_FORM,
     kind.EventKind.FILE_HEADER,
     kind.EventKind.POLL,
-    Metadata.KIND,
+    Metadata.kKind,
     kind.EventKind.COMMUNITY_DEFINITION
   ];
 
@@ -303,7 +303,7 @@ class _SearchRouter extends CustState<SearchRouter>
   }
 
   void onQueryEvent(Nip01Event event) {
-    if (event.kind == Metadata.KIND) {
+    if (event.kind == Metadata.kKind) {
       var jsonObj = jsonDecode(event.content);
       Metadata metadata = Metadata.fromJson(jsonObj);
       metadata.pubKey = event.pubKey;

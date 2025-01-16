@@ -167,7 +167,7 @@ class _CommunityDetailRouter extends CustState<CommunityDetailRouter> with Pendd
       ndk.requests.closeSubscription(subscription!.requestId);
     }
     var filter = Filter(kinds: [
-      Nip01Event.TEXT_NODE_KIND,
+      Nip01Event.kTextNodeKind,
       kind.EventKind.LONG_FORM,
       kind.EventKind.FILE_HEADER,
       kind.EventKind.POLL,

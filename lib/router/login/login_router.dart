@@ -1,4 +1,5 @@
 import 'package:amberflutter/amberflutter.dart';
+import 'package:ndk/domain_layer/entities/nip_65.dart';
 import 'package:ndk_amber/data_layer/repositories/signers/amber_event_signer.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -316,8 +317,10 @@ class _LoginRouter extends State<LoginRouter>
   }
 
   Future<void> doLogin(String key, bool pubOnly, bool newKey, bool isExternalSigner) async {
+    EasyLoading.showToast("Initializing...", dismissOnTap: true,  duration: const Duration(seconds: 15), maskType: EasyLoadingMaskType.black);
+
     if (StringUtil.isBlank(key)) {
-      EasyLoading.show(status: I18n.of(context).Private_key_is_null);
+      EasyLoading.showError(I18n.of(context).Private_key_is_null, dismissOnTap: true, duration: const Duration(seconds:3));
       return;
     }
     try {
@@ -339,13 +342,22 @@ class _LoginRouter extends State<LoginRouter>
           ? Bip340EventSigner(privateKey: isPrivate ? key : null, publicKey: publicKey)
           : Nip07EventSigner(await js.getPublicKeyAsync())
       ;
-      ndk = Ndk(
-          NdkConfig(
-            eventVerifier: RustEventVerifier(),
-            cache: cacheManager,
-            eventSigner: eventSigner,
-            eventOutFilters:  [filterProvider]
-          ));
+      await ndk.destroy();
+      ndk = Ndk(NdkConfig(
+          eventVerifier: eventVerifier,
+          cache: cacheManager,
+          eventSigner: eventSigner,
+          eventOutFilters: [filterProvider],
+          logLevel: logLevel));
+      // NdkResponse response = ndk.requests.query(
+      //     timeout: const Duration(seconds: 10),
+      //     filters: [
+      //       Filter(
+      //           authors: ["30782a8323b7c98b172c5a2af7206bb8283c655be6ddce11133611a03d5f1177"],
+      //           kinds: [Nip65.kKind])
+      //     ]);
+      // List<Nip01Event> events = await response.future.timeout(Duration(seconds: 10));
+      // print(events);
 
       await initRelayManager(isPublic ? key : getPublicKey(key), newKey);
     } catch (e) {
@@ -367,12 +379,13 @@ class _LoginRouter extends State<LoginRouter>
   }
 
   Future<void> initRelayManager( String publicKey, bool newKey) async {
-    EasyLoading.showToast("Relaying other stuff...", dismissOnTap: true,  duration: const Duration(seconds: 15), maskType: EasyLoadingMaskType.black);
     await initRelays(newKey: newKey);
+    await EasyLoading.dismiss();
+    await EasyLoading.showToast("loading feed...", dismissOnTap: true,  duration: const Duration(seconds: 15), maskType: EasyLoadingMaskType.black);
     followEventProvider.loadCachedFeed();
     nwcProvider.init();
     settingProvider.notifyListeners();
-    EasyLoading.dismiss();
+    await EasyLoading.dismiss();
 
     firstLogin = true;
     indexProvider.setCurrentTap(IndexTaps.FOLLOW);

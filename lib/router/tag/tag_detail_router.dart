@@ -157,7 +157,7 @@ class _TagDetailRouter extends CustState<TagDetailRouter>
     }
     var plainTag = tag!.replaceFirst("#", "");
     var filter = Filter(kinds: [
-      Nip01Event.TEXT_NODE_KIND,
+      Nip01Event.kTextNodeKind,
       kind.EventKind.LONG_FORM,
       kind.EventKind.FILE_HEADER,
       kind.EventKind.POLL,

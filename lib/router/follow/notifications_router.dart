@@ -81,7 +81,7 @@ class _NotificationsRouter extends KeepAliveCustState<NotificationsRouter>
             if (event.kind == kind.EventKind.ZAP_RECEIPT &&
                 StringUtil.isBlank(event.content)) {
               return ZapEventListComponent(event: event);
-            } else if (event.kind == Reaction.KIND) {
+            } else if (event.kind == Reaction.kKind) {
               return ReactionEventListComponent(
                 event: event,
                 text: "reacted ${event.content}    ",
@@ -90,7 +90,7 @@ class _NotificationsRouter extends KeepAliveCustState<NotificationsRouter>
             } else {
               return EventListComponent(
                 event: event,
-                showReactions: event.kind != Reaction.KIND,
+                showReactions: event.kind != Reaction.kKind,
                 showVideo: _settingProvider.videoPreview == OpenStatus.OPEN,
               );
             }

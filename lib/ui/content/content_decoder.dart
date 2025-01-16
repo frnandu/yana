@@ -414,7 +414,7 @@ class ContentDecoder {
       } else if (NIP19Tlv.isNaddr(key)) {
         var naddr = NIP19Tlv.decodeNaddr(key);
         if (naddr != null) {
-          if (StringUtil.isNotBlank(naddr.id) && naddr.kind == Nip01Event.TEXT_NODE_KIND) {
+          if (StringUtil.isNotBlank(naddr.id) && naddr.kind == Nip01Event.kTextNodeKind) {
             // block
             handledStr = _closeHandledStr(handledStr, inlines);
             _closeInlines(inlines, list, textOnTap: textOnTap);
@@ -423,7 +423,7 @@ class ContentDecoder {
               showVideo: showVideo,
             );
             list.add(widget);
-          } else if (StringUtil.isNotBlank(naddr.author) && naddr.kind == Metadata.KIND) {
+          } else if (StringUtil.isNotBlank(naddr.author) && naddr.kind == Metadata.kKind) {
             // inline
             handledStr = _closeHandledStr(handledStr, inlines);
             inlines.add(ContentMentionUserComponent(pubkey: naddr.author));

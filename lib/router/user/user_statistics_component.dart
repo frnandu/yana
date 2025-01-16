@@ -270,7 +270,7 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
     if (followedMap == null) {
       followedMap = {};
 
-      Filter filter = Filter(kinds: [ContactList.KIND], pTags: [widget.pubkey]);
+      Filter filter = Filter(kinds: [ContactList.kKind], pTags: [widget.pubkey]);
 
       _followersSubscription = ndk.requests.query(
         //ndk.relays.bootstrapRelays.toList()

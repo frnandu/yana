@@ -104,7 +104,7 @@ class _RelaySetRouter extends State<RelaySetRouter> with SingleTickerProviderSta
         child: RefreshIndicator(
           onRefresh: () async {
             Nip51Set? refreshedRelaySet = await ndk.lists.getSingleNip51RelaySet(relaySet!.name, loggedUserSigner!, forceRefresh: true);
-            refreshedRelaySet ??= Nip51Set(kind: Nip51List.RELAY_SET, pubKey: relaySet!.pubKey, name: relaySet!.name, createdAt: Helpers.now, elements: []);
+            refreshedRelaySet ??= Nip51Set(kind: Nip51List.kRelaySet, pubKey: relaySet!.pubKey, name: relaySet!.name, createdAt: Helpers.now, elements: []);
             setState(() {
               relaySet = refreshedRelaySet;
             });

@@ -292,7 +292,7 @@ class _UserRouter extends CustState<UserRouter> with PenddingEventsLaterFunction
 
   List<int> queryEventKinds() {
     return [
-      Nip01Event.TEXT_NODE_KIND,
+      Nip01Event.kTextNodeKind,
       kind.EventKind.REPOST,
       kind.EventKind.GENERIC_REPOST,
       kind.EventKind.LONG_FORM,
@@ -309,7 +309,7 @@ class _UserRouter extends CustState<UserRouter> with PenddingEventsLaterFunction
           List<Nip01Event>? cachedEvents = await cacheManager.loadEvents(pubKeys: [
             pubkey!
           ], kinds: [
-            Nip01Event.TEXT_NODE_KIND,
+            Nip01Event.kTextNodeKind,
             // kind.EventKind.REPOST,
             // kind.EventKind.GENERIC_REPOST,
             // kind.EventKind.LONG_FORM,

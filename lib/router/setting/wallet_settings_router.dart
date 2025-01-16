@@ -1,20 +1,8 @@
-import 'dart:convert';
-
-import 'package:ndk/ndk.dart';
-import 'package:ndk/shared/nips/nip01/helpers.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_easyloading/flutter_easyloading.dart';
-import 'package:flutter_font_picker/flutter_font_picker.dart';
-import 'package:flutter_spinkit/flutter_spinkit.dart';
-import 'package:local_auth/local_auth.dart';
+// import 'package:flutter_font_picker/flutter_font_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:settings_ui/settings_ui.dart';
-import 'package:url_launcher/url_launcher.dart';
-import 'package:yana/nostr/relay_metadata.dart';
 import 'package:yana/provider/filter_provider.dart';
-import 'package:yana/router/index/account_manager_component.dart';
-import 'package:yana/router/wallet/wallet_router.dart';
-import 'package:yana/utils/platform_util.dart';
 import 'package:yana/utils/router_util.dart';
 import 'package:yana/utils/when_stop_function.dart';
 
@@ -24,16 +12,10 @@ import '../../models/currency.dart';
 import '../../provider/relay_provider.dart';
 import '../../provider/setting_provider.dart';
 import '../../ui/confirm_dialog.dart';
-import '../../ui/enum_multi_selector_component.dart';
 import '../../ui/enum_selector_component.dart';
-import '../../utils/auth_util.dart';
 import '../../utils/base_consts.dart';
-import '../../utils/image_services.dart';
-import '../../utils/locale_util.dart';
 import '../../utils/rates.dart';
 import '../../utils/router_path.dart';
-import '../../utils/string_util.dart';
-import '../../utils/theme_style.dart';
 
 class WalletSettingsRouter extends StatefulWidget {
 

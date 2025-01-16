@@ -109,10 +109,11 @@ class _IndexRouter extends CustState<IndexRouter>
             String publicKey = getPublicKey(priv);
             ndk = Ndk(
                 NdkConfig(
-                  eventVerifier: RustEventVerifier(),
+                  eventVerifier: eventVerifier,
                   cache: cacheManager,
                   eventSigner: Bip340EventSigner(privateKey: priv, publicKey: publicKey),
-                  eventOutFilters:  [filterProvider]
+                  eventOutFilters:  [filterProvider],
+                  logLevel: logLevel
                 ));
 
             await initRelays(newKey: true);
@@ -172,7 +173,7 @@ class _IndexRouter extends CustState<IndexRouter>
             String? url = nrelay != null ? cleanRelayUrl(nrelay.addr) : null;
             if (url != null) {
               // inline
-              Relay relay = Relay(url: url, connectionSource: ConnectionSource.EXPLICIT);
+              Relay relay = Relay(url: url, connectionSource: ConnectionSource.explicit);
               RouterUtil.router(context, RouterPath.RELAY_INFO, relay);
             }
           } else if (NIP19Tlv.isNevent(key)) {
@@ -187,9 +188,9 @@ class _IndexRouter extends CustState<IndexRouter>
           } else if (NIP19Tlv.isNaddr(key)) {
             var naddr = NIP19Tlv.decodeNaddr(key);
             if (naddr != null) {
-              if (StringUtil.isNotBlank(naddr.id) && naddr.kind == Nip01Event.TEXT_NODE_KIND) {
+              if (StringUtil.isNotBlank(naddr.id) && naddr.kind == Nip01Event.kTextNodeKind) {
                 RouterUtil.router(context, RouterPath.THREAD_DETAIL, naddr.id);
-              } else if (StringUtil.isNotBlank(naddr.author) && naddr.kind == Metadata.KIND) {
+              } else if (StringUtil.isNotBlank(naddr.author) && naddr.kind == Metadata.kKind) {
                 RouterUtil.router(context, RouterPath.USER, naddr.author);
               }
             }

@@ -140,7 +140,7 @@ class _MuteListRouter extends State<MuteListRouter> with SingleTickerProviderSta
                               physics: const BouncingScrollPhysics(),
                               shrinkWrap: true,
                               itemBuilder: (context, index) {
-                                if (searchResults[index].tag == Nip51List.PUB_KEY) {
+                                if (searchResults[index].tag == Nip51List.kPubkey) {
                                   return FutureBuilder<Metadata?>(
                                       future: metadataProvider.getMetadata(searchResults[index].value),
                                       builder: (context, snapshot) {
@@ -209,20 +209,20 @@ class _MuteListRouter extends State<MuteListRouter> with SingleTickerProviderSta
       if (search.indexOf("npub") == 0) {
         try {
           var result = Nip19.decode(search);
-          searchResults.add(Nip51ListElement(tag: Nip51List.PUB_KEY, value: result, private: true));
+          searchResults.add(Nip51ListElement(tag: Nip51List.kPubkey, value: result, private: true));
         } catch (e) {}
       } else if (search.startsWith("#")) {
         String hashtag = search.replaceAll("#", "").trim();
         if (hashtag.isNotEmpty) {
-          searchResults.add(Nip51ListElement(tag: Nip51List.HASHTAG, value: hashtag, private: true));
+          searchResults.add(Nip51ListElement(tag: Nip51List.kHashtag, value: hashtag, private: true));
         }
       } else {
-        searchResults.add(Nip51ListElement(tag: Nip51List.WORD, value: search, private: true));
+        searchResults.add(Nip51ListElement(tag: Nip51List.kWord, value: search, private: true));
         Iterable<Metadata> searchMetadatas = await cacheManager.searchMetadatas(search, 10);
-        searchResults.addAll(searchMetadatas.map((metadata) => Nip51ListElement(tag: Nip51List.PUB_KEY, value: metadata.pubKey, private: true)));
+        searchResults.addAll(searchMetadatas.map((metadata) => Nip51ListElement(tag: Nip51List.kPubkey, value: metadata.pubKey, private: true)));
         if (searchResults.length < 3) {
           Map<String, dynamic>? filterMap;
-          filterMap = Filter(kinds: [Metadata.KIND], limit: 10).toMap();
+          filterMap = Filter(kinds: [Metadata.kKind], limit: 10).toMap();
           filterMap!["search"] = search;
           List<String> relaysWithNip50 = searchRelays.isNotEmpty ? searchRelays : ["wss://relay.nostr.band", "wss://relay.noshere.com"];
           NdkResponse response = ndk.requests.query(explicitRelays: relaysWithNip50, filters: [Filter.fromMap(filterMap!)]);
@@ -236,12 +236,12 @@ class _MuteListRouter extends State<MuteListRouter> with SingleTickerProviderSta
   }
 
   void onQueryEvent(String searched, Nip01Event event) async {
-    if (event.kind == Metadata.KIND && controller.text.trim() == searched && !disposed && !(await contactListProvider.contacts()).contains(event.pubKey)) {
+    if (event.kind == Metadata.kKind && controller.text.trim() == searched && !disposed && !(await contactListProvider.contacts()).contains(event.pubKey)) {
       var jsonObj = jsonDecode(event.content);
       Metadata metadata = Metadata.fromJson(jsonObj);
       metadata.pubKey = event.pubKey;
       metadataProvider.getMetadata(event.pubKey);
-      searchResults.add(Nip51ListElement(tag: Nip51List.PUB_KEY, value: event.pubKey, private: true));
+      searchResults.add(Nip51ListElement(tag: Nip51List.kPubkey, value: event.pubKey, private: true));
       setState(() {});
     }
   }
@@ -374,7 +374,7 @@ class MuteListElementComponent extends StatelessWidget {
                 children: [
                   Container(
                       margin: const EdgeInsets.only(bottom: 2, left: 5),
-                      child: element.tag == Nip51List.PUB_KEY
+                      child: element.tag == Nip51List.kPubkey
                           ? FutureBuilder<Metadata?>(
                               future: metadataProvider.getMetadata(element.value),
                               builder: (context, snapshot) {
@@ -428,7 +428,7 @@ class Nip51ListElementSearchComponent extends StatelessWidget {
       padding: const EdgeInsets.all(Base.BASE_PADDING_HALF),
       child: GestureDetector(
           onTap: () async {
-            if (element.tag == Nip51List.HASHTAG) {
+            if (element.tag == Nip51List.kHashtag) {
               var plainTag = element.value.replaceFirst("#", "");
               RouterUtil.router(context, RouterPath.TAG_DETAIL, plainTag);
             }
@@ -436,7 +436,7 @@ class Nip51ListElementSearchComponent extends StatelessWidget {
           child: Row(
             children: [
               Icon(
-                element.tag == Nip51List.HASHTAG ? Icons.tag : Icons.format_color_text,
+                element.tag == Nip51List.kHashtag ? Icons.tag : Icons.format_color_text,
                 color: themeData.appBarTheme.titleTextStyle!.color,
               ),
               Expanded(

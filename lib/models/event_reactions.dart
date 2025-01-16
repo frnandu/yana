@@ -100,7 +100,7 @@ class EventReactions implements FindEventInterface {
     if (eventIdMap[id] == null) {
       eventIdMap[id] = 1;
 
-      if (event.kind == Nip01Event.TEXT_NODE_KIND) {
+      if (event.kind == Nip01Event.kTextNodeKind) {
         if (event.pubKey == loggedUserSigner!.getPublicKey()) {
           hasMyReply = true;
         }
@@ -113,7 +113,7 @@ class EventReactions implements FindEventInterface {
         }
         repostNum++;
         reposts.add(event);
-      } else if (event.kind == Reaction.KIND) {
+      } else if (event.kind == Reaction.kKind) {
         if (event.content == "-") {
           likeNum--;
         } else {

@@ -275,7 +275,7 @@ class _EventMainComponent extends State<EventMainComponent> {
         }
       } else {
         if (widget.showReplying && eventRelation.tagPList.isNotEmpty && eventRelation.tagEList.isNotEmpty) {
-          if (widget.event.kind != Reaction.KIND) {
+          if (widget.event.kind != Reaction.kKind) {
             var textStyle = TextStyle(
               color: hintColor,
               fontSize: smallTextSize,
@@ -363,7 +363,7 @@ class _EventMainComponent extends State<EventMainComponent> {
           }
         }
 
-        if (widget.event.kind != Metadata.KIND && widget.event.kind != Reaction.KIND) {
+        if (widget.event.kind != Metadata.kKind && widget.event.kind != Reaction.kKind) {
           list.add(
             buildContentWidget(_settingProvider, imagePreview, videoPreview),
           );

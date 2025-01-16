@@ -1,10 +1,10 @@
 import 'package:back_button_interceptor/back_button_interceptor.dart';
 import 'package:flutter/material.dart';
 import 'package:ndk/domain_layer/entities/metadata.dart';
+import 'package:ndk/domain_layer/usecases/nwc/responses/list_transactions_response.dart';
 import 'package:provider/provider.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:yana/main.dart';
-import 'package:yana/models/wallet_transaction.dart';
 import 'package:yana/provider/nwc_provider.dart';
 import 'package:yana/provider/setting_provider.dart';
 import 'package:yana/router/wallet/payment_component.dart';
@@ -33,7 +33,7 @@ class _WalletRouter extends State<WalletRouter> {
   ScrollController scrollController = ScrollController();
   PanelController panelController = PanelController();
 
-  WalletTransaction? transactionDetails;
+  TransactionResult? transactionDetails;
 
   String formatBitcoinNumber(double bitcoin) {
     // Convert the number to a string with 2 decimal places
@@ -163,11 +163,11 @@ class _WalletRouter extends State<WalletRouter> {
                                 // before: const Icon(Icons.call_received_rounded),
                                 onTap: () async {
                                   Metadata? metadata = await metadataProvider.getMetadata(loggedUserSigner!.getPublicKey());
-                                  if (metadata != null && StringUtil.isNotBlank(metadata!.lud16)) {
+                                  if (metadata != null && StringUtil.isNotBlank(metadata.lud16)) {
                                     RouterUtil.router(
-                                        context, RouterPath.WALLET_RECEIVE);
+                                        context, RouterPath.WALLET_RECEIVE, metadata);
                                   } else {
-                                    RouterUtil.router(context, RouterPath.WALLET_RECEIVE_INVOICE);
+                                    RouterUtil.router(context, RouterPath.WALLET_RECEIVE_INVOICE, metadata);
                                   }
                                 }))
                         : Container(),
@@ -201,8 +201,9 @@ class _WalletRouter extends State<WalletRouter> {
             list.add(Expanded(
                 child: RefreshIndicator(
                     onRefresh: () async {
-                      nwcProvider.requestListTransactions();
-                    },child: Selector<NwcProvider, List<WalletTransaction>>(
+                      ListTransactionsResponse response = await nwcProvider.listTransactions(limit: 20, unpaid: false);
+                      _nwcProvider.cachedListTransactionsResponse  = response;
+                    },child: Selector<NwcProvider, List<TransactionResult>?>(
                     builder: (context, transactions, child) {
               return transactions != null && transactions.isNotEmpty
                   ? ListView.builder(

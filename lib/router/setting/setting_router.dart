@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
-import 'package:flutter_font_picker/flutter_font_picker.dart';
+// import 'package:flutter_font_picker/flutter_font_picker.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:ndk/ndk.dart';
@@ -416,7 +416,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
             });
             try {
               Nip51List? list = await ndk.lists.getSingleNip51List(
-                  Nip51List.MUTE, loggedUserSigner!);
+                  Nip51List.kMute, loggedUserSigner!);
               finished = true;
               RouterUtil.router(
                   context,
@@ -424,7 +424,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
                   list ??
                       Nip51List(
                           pubKey: loggedUserSigner!.getPublicKey(),
-                          kind: Nip51List.MUTE,
+                          kind: Nip51List.kMute,
                           elements: [],
                           createdAt: Helpers.now));
             } finally {
@@ -436,7 +436,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
                 RouterPath.MUTE_LIST,
                 Nip51List(
                     pubKey: loggedUserSigner!.getPublicKey(),
-                    kind: Nip51List.MUTE,
+                    kind: Nip51List.kMute,
                     elements: [],
                     createdAt: Helpers.now));
           }
@@ -470,7 +470,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
             });
             try {
               Nip51List? list = await ndk.lists.getSingleNip51List(
-                  Nip51List.BLOCKED_RELAYS, loggedUserSigner!);
+                  Nip51List.kBlockedRelays, loggedUserSigner!);
               finished = true;
               RouterUtil.router(
                   context,
@@ -478,7 +478,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
                   list ??
                       Nip51List(
                           pubKey: loggedUserSigner!.getPublicKey(),
-                          kind: Nip51List.BLOCKED_RELAYS,
+                          kind: Nip51List.kBlockedRelays,
                           elements: [],
                           createdAt: Helpers.now));
             } finally {
@@ -490,7 +490,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
                 RouterPath.RELAY_LIST,
                 Nip51List(
                     pubKey: loggedUserSigner!.getPublicKey(),
-                    kind: Nip51List.BLOCKED_RELAYS,
+                    kind: Nip51List.kBlockedRelays,
                     elements: [],
                     createdAt: Helpers.now));
           }
@@ -517,7 +517,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
             });
             try {
               Nip51List? list = await ndk.lists.getSingleNip51List(
-                  Nip51List.SEARCH_RELAYS, loggedUserSigner!);
+                  Nip51List.kSearchRelays, loggedUserSigner!);
               finished = true;
               RouterUtil.router(
                   context,
@@ -525,7 +525,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
                   list ??
                       Nip51List(
                           pubKey: loggedUserSigner!.getPublicKey(),
-                          kind: Nip51List.SEARCH_RELAYS,
+                          kind: Nip51List.kSearchRelays,
                           elements: [],
                           createdAt: Helpers.now));
             } finally {
@@ -537,7 +537,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
                 RouterPath.RELAY_LIST,
                 Nip51List(
                     pubKey: loggedUserSigner!.getPublicKey(),
-                    kind: Nip51List.SEARCH_RELAYS,
+                    kind: Nip51List.kSearchRelays,
                     elements: [],
                     createdAt: Helpers.now));
           }
@@ -644,9 +644,8 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
                 routerBack: true, context: context);
             metadataProvider.clear();
           } else {
-            ndk = Ndk(
-              NdkConfig(eventVerifier: RustEventVerifier(), cache: cacheManager, eventOutFilters:  [filterProvider]),
-            );
+            await ndk.destroy();
+            ndk = Ndk.emptyBootstrapRelaysConfig();
           }
         }
       },
@@ -1017,31 +1016,31 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
     }
   }
 
-  Future pickFontEnum() async {
-    EnumObj? resultEnumObj =
-        await EnumSelectorComponent.show(context, fontEnumList!);
-    if (resultEnumObj != null) {
-      if (resultEnumObj.value == true) {
-        pickFont();
-      } else {
-        settingProvider.fontFamily = null;
-        widget.indexReload();
-      }
-    }
-  }
+  // Future pickFontEnum() async {
+  //   EnumObj? resultEnumObj =
+  //       await EnumSelectorComponent.show(context, fontEnumList!);
+  //   if (resultEnumObj != null) {
+  //     if (resultEnumObj.value == true) {
+  //       pickFont();
+  //     } else {
+  //       settingProvider.fontFamily = null;
+  //       widget.indexReload();
+  //     }
+  //   }
+  // }
 
-  void pickFont() {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => FontPicker(
-          onFontChanged: (PickerFont font) {
-            settingProvider.fontFamily = font.fontFamily;
-            widget.indexReload();
-          },
-        ),
-      ),
-    );
-  }
+  // void pickFont() {
+  //   Navigator.of(context).push(
+  //     MaterialPageRoute(
+  //       builder: (context) => FontPicker(
+  //         onFontChanged: (PickerFont font) {
+  //           settingProvider.fontFamily = font.fontFamily;
+  //           widget.indexReload();
+  //         },
+  //       ),
+  //     ),
+  //   );
+  // }
 
   List<EnumObj> fontSizeList = [
     EnumObj(20.0, "20"),
@@ -1159,7 +1158,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
   //       var filter = Filter(authors: [
   //         loggedUserSigner!.getPublicKey()
   //       ], kinds: [
-  //         Nip01Event.TEXT_NODE_KIND,
+  //         Nip01Event.kTextNodeKind,
   //         kind.EventKind.REPOST,
   //         kind.EventKind.GENERIC_REPOST,
   //       ]);
