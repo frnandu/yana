@@ -108,9 +108,12 @@
 - fix jumping of list scrolling WTF!?!
 - fix timeout zapping nwc !?
 
-===== v0.16
+===== v0.16 DONE
 - nostr+walletconnect onboarding with lud16
-- fix not finding metadatas 
+- fix not finding metadatas
+
+
+===== v0.16 TODO
 - make thread detail subscription of new replies work
 
 =======
