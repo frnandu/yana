@@ -192,6 +192,7 @@ class AccountsState extends State<AccountsComponent> {
   static void onLogoutTap(int index, {bool routerBack = true, required BuildContext context}) {
     var oldIndex = settingProvider.privateKeyIndex;
     clearLocalData(index);
+    nwcProvider.disconnect();
     if (oldIndex == index) {
       clearCurrentMemInfo();
       if (settingProvider.keyMap.isNotEmpty) {
