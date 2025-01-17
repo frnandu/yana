@@ -98,6 +98,11 @@
 - ~~published on zap.store with self-signing~~
 - ~~choose currency for wallet on settings~~
 
+=== v0.15.3
+- ~~fix relay connectivity~~
+- ~~fix remembering nwc connection~~
+- fix videos not working
+
 ===== v0.16
 - nostr+walletconnect onboarding with lud16
 - fix not finding metadatas 

@@ -31,7 +31,7 @@ class NwcProvider extends ChangeNotifier {
 
   Future<void> init() async {
     String? uri = await settingProvider.getNwc();
-    if (StringUtil.isNotBlank(uri)) {
+    if (StringUtil.isNotBlank(uri) && connection==null) {
       await connect(uri!, doGetInfo: false);
     }
   }
@@ -53,6 +53,7 @@ class NwcProvider extends ChangeNotifier {
     nwc = nwc.replaceAll("yana:", "nostr+walletconnect:");
     await ndk.nwc.connect(nwc, doGetInfoMethod: doGetInfo!).then((connection) async {
       this.connection = connection;
+      settingProvider.setNwc(nwc);
       await refreshWallet();
       if (onConnect != null) {
         onConnect.call(connection.uri.lud16);
