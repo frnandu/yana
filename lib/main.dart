@@ -1104,7 +1104,10 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance!.addObserver(this);
+    WidgetsBinding.instance.addObserver(this);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      settingProvider.addListener(reload);
+    });
     // SystemTimer.run();
   }
 
@@ -1112,7 +1115,8 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
   void dispose() {
     super.dispose();
     // SystemTimer.stopTask();
-    WidgetsBinding.instance!.removeObserver(this);
+    settingProvider.removeListener(reload);
+    WidgetsBinding.instance.removeObserver(this);
   }
 
   @override
