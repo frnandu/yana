@@ -101,7 +101,12 @@
 === v0.15.3
 - ~~fix relay connectivity~~
 - ~~fix remembering nwc connection~~
-- fix videos not working
+- ~~fix videos not working~~
+- fix edit profile
+- fix list of followin/followers
+- fix loading of metadatas, sometimes doesn't update quickly?!?
+- fix jumping of list scrolling WTF!?!
+- fix timeout zapping nwc !?
 
 ===== v0.16
 - nostr+walletconnect onboarding with lud16
