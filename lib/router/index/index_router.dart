@@ -1,17 +1,9 @@
 import 'dart:async';
 
-import 'package:ndk/data_layer/repositories/signers/bip340_event_signer.dart';
-import 'package:ndk/domain_layer/entities/metadata.dart';
-import 'package:ndk/domain_layer/entities/nip_01_event.dart';
-import 'package:ndk/domain_layer/entities/relay.dart';
-import 'package:ndk/domain_layer/entities/relay_info.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:ndk/entities.dart';
-import 'package:ndk/ndk.dart';
 import 'package:ndk/shared/helpers/relay_helper.dart';
-import 'package:ndk_rust_verifier/ndk_rust_verifier.dart';
-import 'package:protocol_handler/protocol_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:yana/provider/dm_provider.dart';
 import 'package:yana/provider/nwc_provider.dart';
@@ -60,7 +52,7 @@ class IndexRouter extends StatefulWidget {
 }
 
 class _IndexRouter extends CustState<IndexRouter>
-    with TickerProviderStateMixin, ProtocolListener{
+    with TickerProviderStateMixin {
   static double DRAWER_WIDTH = 300;
 
   late TabController followTabController;
@@ -74,7 +66,6 @@ class _IndexRouter extends CustState<IndexRouter>
     super.initState();
     int followInitTab = 0;
     int globalsInitTab = 0;
-    protocolHandler.addListener(this);
 
     if (settingProvider.defaultTab != null) {
       if (settingProvider.defaultIndex == 1) {
@@ -88,15 +79,34 @@ class _IndexRouter extends CustState<IndexRouter>
         TabController(initialIndex: followInitTab, length: 3, vsync: this);
     dmTabController = TabController(length: 3, vsync: this);
   }
-  @override
+
+  // @override
   void onProtocolUrlReceived(String url) async {
     // String log = 'Url received: $url)';
     // print(log);
     if (StringUtil.isNotBlank(url)) {
-      if (url.startsWith(NwcProvider.NWC_PROTOCOL_PREFIX)) {
+      if (url.startsWith("yana://?value=")) {
+        Uri uri = Uri.parse(url);
+        String? nwc = uri.queryParameters["value"];
+
+        if (nwc != null && nwc.startsWith(NwcProvider.NWC_PROTOCOL_PREFIX)) {
+          await nwcProvider.connect(nwc, onConnect: (lud16) async {
+            await metadataProvider.updateLud16IfEmpty(lud16);
+          });
+          bool canPop = Navigator.canPop(context);
+          // var route = ModalRoute.of(context);
+          // if (route != null && route!.settings.name != null && route!.settings.name! == RouterPath.NWC) {
+          if (canPop) {
+            RouterUtil.back(context);
+          } else {
+            RouterUtil.router(
+                context, RouterPath.WALLET);
+          }
+        }
+      } else if (url.startsWith(NwcProvider.NWC_PROTOCOL_PREFIX)) {
         Future.delayed(const Duration(microseconds: 1), () async {
           bool newAccount = false;
-          if (loggedUserSigner==null) {
+          if (loggedUserSigner == null) {
             String priv = generatePrivateKey();
             sharedPreferences.remove(DataKey.NOTIFICATIONS_TIMESTAMP);
             sharedPreferences.remove(DataKey.FEED_POSTS_TIMESTAMP);
@@ -105,16 +115,10 @@ class _IndexRouter extends CustState<IndexRouter>
             newNotificationsProvider.clear();
             followEventProvider.clear();
             followEventProvider.clear();
-            await settingProvider.addAndChangeKey(priv, true, false, updateUI: false);
+            await settingProvider.addAndChangeKey(priv, true, false,
+                updateUI: false);
             String publicKey = getPublicKey(priv);
-            ndk = Ndk(
-                NdkConfig(
-                  eventVerifier: eventVerifier,
-                  cache: cacheManager,
-                  eventSigner: Bip340EventSigner(privateKey: priv, publicKey: publicKey),
-                  eventOutFilters:  [filterProvider],
-                  logLevel: logLevel
-                ));
+            ndk.accounts.loginPrivateKey(pubkey: publicKey, privkey: priv);
 
             await initRelays(newKey: true);
             followEventProvider.loadCachedFeed();
@@ -132,7 +136,8 @@ class _IndexRouter extends CustState<IndexRouter>
           if (canPop) {
             RouterUtil.back(context);
           } else {
-            RouterUtil.router(context, newAccount? RouterPath.INDEX : RouterPath.WALLET);
+            RouterUtil.router(
+                context, newAccount ? RouterPath.INDEX : RouterPath.WALLET);
           }
         });
       } else if (url.startsWith("lightning:")) {
@@ -173,13 +178,14 @@ class _IndexRouter extends CustState<IndexRouter>
             String? url = nrelay != null ? cleanRelayUrl(nrelay.addr) : null;
             if (url != null) {
               // inline
-              Relay relay = Relay(url: url, connectionSource: ConnectionSource.explicit);
+              Relay relay =
+                  Relay(url: url, connectionSource: ConnectionSource.explicit);
               RouterUtil.router(context, RouterPath.RELAY_INFO, relay);
             }
           } else if (NIP19Tlv.isNevent(key)) {
             var nevent = NIP19Tlv.decodeNevent(key);
             if (nevent != null) {
-              if (nevent.relays!=null && nevent.relays!.isNotEmpty) {
+              if (nevent.relays != null && nevent.relays!.isNotEmpty) {
                 // TODO allowReconnectRelays is false, WTF?
                 // await ndk.relays.reconnectRelays(nevent.relays!);
               }
@@ -188,9 +194,11 @@ class _IndexRouter extends CustState<IndexRouter>
           } else if (NIP19Tlv.isNaddr(key)) {
             var naddr = NIP19Tlv.decodeNaddr(key);
             if (naddr != null) {
-              if (StringUtil.isNotBlank(naddr.id) && naddr.kind == Nip01Event.kTextNodeKind) {
+              if (StringUtil.isNotBlank(naddr.id) &&
+                  naddr.kind == Nip01Event.kTextNodeKind) {
                 RouterUtil.router(context, RouterPath.THREAD_DETAIL, naddr.id);
-              } else if (StringUtil.isNotBlank(naddr.author) && naddr.kind == Metadata.kKind) {
+              } else if (StringUtil.isNotBlank(naddr.author) &&
+                  naddr.kind == Metadata.kKind) {
                 RouterUtil.router(context, RouterPath.USER, naddr.author);
               }
             }
@@ -199,7 +207,6 @@ class _IndexRouter extends CustState<IndexRouter>
       }
     }
   }
-
 
   @override
   Future<void> onReady(BuildContext context) async {
@@ -213,7 +220,8 @@ class _IndexRouter extends CustState<IndexRouter>
   }
 
   bool unlock = false;
-  var badgeTextStyle = const TextStyle(color: Colors.white, fontFamily: "Roboto");
+  var badgeTextStyle =
+      const TextStyle(color: Colors.white, fontFamily: "Roboto");
 
   @override
   Widget doBuild(BuildContext context) {
@@ -223,12 +231,13 @@ class _IndexRouter extends CustState<IndexRouter>
     var s = I18n.of(context);
 
     if (loggedUserSigner == null) {
-      return LoginRouter(canGoBack: false,);
+      return LoginRouter(
+        canGoBack: false,
+      );
     }
     var _followEventProvider = Provider.of<FollowEventProvider>(context);
     var _followEventNewProvider = Provider.of<FollowNewEventProvider>(context);
     var _indexProvider = Provider.of<IndexProvider>(context);
-
 
     if (!unlock) {
       return const Scaffold();
@@ -293,7 +302,8 @@ class _IndexRouter extends CustState<IndexRouter>
                 }
                 return Badge(
                     offset: const Offset(16, -4),
-                    label: Text(eventMemBox.length().toString(),style: badgeTextStyle),
+                    label: Text(eventMemBox.length().toString(),
+                        style: badgeTextStyle),
                     backgroundColor: themeData.primaryColor,
                     child: text);
               },
@@ -316,7 +326,8 @@ class _IndexRouter extends CustState<IndexRouter>
                 }
                 return Badge(
                     offset: const Offset(16, -4),
-                    label: Text(eventMemBox.length().toString(), style: badgeTextStyle),
+                    label: Text(eventMemBox.length().toString(),
+                        style: badgeTextStyle),
                     backgroundColor: themeData.primaryColor,
                     child: text);
               },
@@ -365,10 +376,7 @@ class _IndexRouter extends CustState<IndexRouter>
             alignment: Alignment.center,
             child: Selector<DMProvider, int>(
               builder: (context, count, child) {
-                Text text = Text(
-                  s.Following,
-                  style: titleTextStyle
-                );
+                Text text = Text(s.Following, style: titleTextStyle);
                 if (count <= 0) {
                   return text;
                 }
@@ -412,10 +420,7 @@ class _IndexRouter extends CustState<IndexRouter>
               alignment: Alignment.center,
               child: Selector<DMProvider, int>(
                 builder: (context, count, child) {
-                  Text text = Text(
-                    s.Requests,
-                    style: titleTextStyle
-                  );
+                  Text text = Text(s.Requests, style: titleTextStyle);
                   if (count <= 0) {
                     return text;
                   }
@@ -435,8 +440,7 @@ class _IndexRouter extends CustState<IndexRouter>
     }
 
     var addBtn = FloatingActionButton(
-      shape: const CircleBorder(
-      ),
+      shape: const CircleBorder(),
       backgroundColor: themeData.primaryColor,
       child: const Icon(Icons.add),
       onPressed: () {
@@ -556,22 +560,23 @@ class _IndexRouter extends CustState<IndexRouter>
       return Scaffold(
           body: mainIndex,
           extendBody: true,
-          floatingActionButton:  loggedUserSigner!=null && loggedUserSigner!.canSign() ? AnimatedOpacity(
-            opacity: _scrollingDown ? 0 : 1,
-            curve: Curves.fastOutSlowIn,
-            duration: const Duration(milliseconds: 400),
-            child: addBtn,
-          )
-          //
-          //     AnimatedContainer(
-          //         curve: Curves.ease,
-          //         duration: const Duration(milliseconds: 200),
-          //         height: _scrollingDown ? 0.0 : 100,
-          //         child:
-          //     addBtn
-          // )
-          :Container()
-          ,
+          floatingActionButton:
+              loggedUserSigner != null && loggedUserSigner!.canSign()
+                  ? AnimatedOpacity(
+                      opacity: _scrollingDown ? 0 : 1,
+                      curve: Curves.fastOutSlowIn,
+                      duration: const Duration(milliseconds: 400),
+                      child: addBtn,
+                    )
+                  //
+                  //     AnimatedContainer(
+                  //         curve: Curves.ease,
+                  //         duration: const Duration(milliseconds: 200),
+                  //         height: _scrollingDown ? 0.0 : 100,
+                  //         child:
+                  //     addBtn
+                  // )
+                  : Container(),
           floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
           drawer: Drawer(
             child: IndexDrawerContentComponent(reload: widget.reload),
@@ -602,5 +607,4 @@ class _IndexRouter extends CustState<IndexRouter>
       }
     });
   }
-
 }

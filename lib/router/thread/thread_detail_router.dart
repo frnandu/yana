@@ -150,15 +150,17 @@ class _ThreadDetailRouter extends CustState<ThreadDetailRouter> with PenddingEve
           }
           return false;
         }).toList());
-        setState(() {
-          rootSubList = listToTree();
-        });
-        if (sourceIdx == null && replies.length > 5) {
-          Future.delayed(const Duration(milliseconds: 500), () {
-            if (sourceIdx != null) {
-              itemScrollController.jumpTo(index: sourceIdx!);
-            }
+        if (sourceEvent!=null) {
+          setState(() {
+            rootSubList = listToTree();
           });
+          if (sourceIdx == null && replies.length > 5) {
+            Future.delayed(const Duration(milliseconds: 500), () {
+              if (sourceIdx != null) {
+                itemScrollController.jumpTo(index: sourceIdx!);
+              }
+            });
+          }
         }
       },
     );

@@ -26,7 +26,6 @@ class _NwcRouter extends State<NwcRouter> {
   QRViewController? qrController;
   bool disposed = false;
 
-
   String? nwcSecret;
 
   void _onQRViewCreated(QRViewController controller) {
@@ -38,14 +37,17 @@ class _NwcRouter extends State<NwcRouter> {
           await qrController!.stopCamera();
           await nwcProvider.connect(scanData.code!, onConnect: (lud16) async {
             await metadataProvider.updateLud16IfEmpty(lud16);
+            RouterUtil.back(context);
           }, onError: (error) async {
-            EasyLoading.showError('Error connecting to wallet...${error!}', maskType: EasyLoadingMaskType.black, dismissOnTap: true, duration: const Duration(seconds:7));
+            EasyLoading.showError('Error connecting to wallet...${error!}',
+                maskType: EasyLoadingMaskType.black,
+                dismissOnTap: true,
+                duration: const Duration(seconds: 7));
             await qrController!.resumeCamera();
             setState(() {
               nwcSecret = null;
             });
-          }
-          );
+          });
         }
         setState(() {
           nwcSecret = scanData.code;
@@ -160,8 +162,7 @@ class _NwcRouter extends State<NwcRouter> {
                               ? const Row(children: [
                                   SizedBox(width: 50),
                                   // Lottie.asset("assets/animations/spinner.json")
-                                  CircularProgressIndicator(
-                                    color: Colors.white
+                                  CircularProgressIndicator(color: Colors.white
                                       //     //   strokeWidth: 2.0,
                                       )
                                 ])
@@ -179,8 +180,19 @@ class _NwcRouter extends State<NwcRouter> {
                                   });
                                   nwcProvider.connect(clipboardData.text!,
                                       onConnect: (lud16) async {
-                                        await metadataProvider.updateLud16IfEmpty(lud16);
-                                        RouterUtil.back(context);
+                                    await metadataProvider
+                                        .updateLud16IfEmpty(lud16);
+                                    RouterUtil.back(context);
+                                  }, onError: (error) async {
+                                    EasyLoading.showError(
+                                        'Error connecting to wallet...${error!}',
+                                        maskType: EasyLoadingMaskType.black,
+                                        dismissOnTap: true,
+                                        duration: const Duration(seconds: 7));
+                                    await qrController!.resumeCamera();
+                                    setState(() {
+                                      nwcSecret = null;
+                                    });
                                   });
                                 }
                               });

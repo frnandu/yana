@@ -166,7 +166,7 @@ class FollowEventProvider extends ChangeNotifier
       if (fallbackContacts != null && fallbackContacts.isNotEmpty) {
         filter.authors = fallbackContacts;
       } else if (fallbackTags != null && fallbackTags.isNotEmpty) {
-        filter.tTags = fallbackTags;
+        filter.setTag("#t",fallbackTags);
       } else {
         return;
       }
@@ -259,7 +259,7 @@ class FollowEventProvider extends ChangeNotifier
       }
       filter.authors = null;
       if (fallbackTags != null && fallbackTags.isNotEmpty) {
-        filter.tTags = fallbackTags;
+        filter.setTag("#t",fallbackTags);
       } else {
         return;
       }

@@ -4,8 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:ndk/entities.dart';
-import 'package:ndk/ndk.dart';
-import 'package:ndk_rust_verifier/ndk_rust_verifier.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -339,13 +337,14 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
                 followEventProvider.clear();
                 settingProvider.addAndChangeKey(widget.pubkey, false, false, updateUI: true);
                 String publicKey = widget.pubkey;
-                ndk = Ndk(
-                    NdkConfig(
-                      eventVerifier: eventVerifier,
-                      cache: cacheManager,
-                      eventSigner: Bip340EventSigner(privateKey: null, publicKey: publicKey),
-                      eventOutFilters:  [filterProvider]
-                    ));
+                ndk.accounts.loginPublicKey(pubkey: publicKey);
+                // ndk = Ndk(
+                //     NdkConfig(
+                //       eventVerifier: eventVerifier,
+                //       cache: cacheManager,
+                //       eventSigner: Bip340EventSigner(privateKey: null, publicKey: publicKey),
+                //       eventOutFilters:  [filterProvider]
+                //     ));
                 await initRelays(newKey: false);
                 followEventProvider.loadCachedFeed();
                 nwcProvider.init();

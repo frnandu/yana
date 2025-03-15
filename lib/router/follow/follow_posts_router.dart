@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_list_view/flutter_list_view.dart';
 import 'package:provider/provider.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 import 'package:yana/main.dart';
@@ -77,21 +78,37 @@ class _FollowPostsRouter extends KeepAliveCustState<FollowPostsRouter>
             followEventProvider.setPostsTimestampToNewestAndSave();
           }
         },
-        child: ListView.builder(
-          controller: _controller,
-          itemBuilder: (BuildContext context, int index) {
-            var event = events[index];
-            // Map<String, dynamic> map = event.toJson();
-            // map['content']=event.content+event.sources.toString();
-            // var e = Nip01Event.fromJson(map);
-            // e.sources = event.sources;
-            return EventListComponent(
-              event: event,
-              showVideo: _settingProvider.videoPreview == OpenStatus.OPEN,
-            );
-          },
-          itemCount: events.length,
-        ));
+        child:
+        FlutterListView(
+        delegate: FlutterListViewDelegate(
+        (BuildContext context, int index) {
+                var event = events[index];
+                // Map<String, dynamic> map = event.toJson();
+                // map['content']=event.content+event.sources.toString();
+                // var e = Nip01Event.fromJson(map);
+                // e.sources = event.sources;
+                return EventListComponent(
+                  event: event,
+                  showVideo: _settingProvider.videoPreview == OpenStatus.OPEN,
+                );
+        },
+        childCount:events.length
+        ))
+      // ListView.builder(
+      //     controller: _controller,
+      //     itemBuilder: (BuildContext context, int index) {
+      //       var event = events[index];
+      //       // Map<String, dynamic> map = event.toJson();
+      //       // map['content']=event.content+event.sources.toString();
+      //       // var e = Nip01Event.fromJson(map);
+      //       // e.sources = event.sources;
+      //       return EventListComponent(
+      //         event: event,
+      //         showVideo: _settingProvider.videoPreview == OpenStatus.OPEN,
+      //       );
+      //     },
+      //     itemCount: events.length,
+        );
 
     // var main = SingleChildScrollView(
     //     controller: _controller,

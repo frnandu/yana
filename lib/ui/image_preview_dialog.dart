@@ -6,8 +6,7 @@ import 'package:easy_image_viewer/easy_image_viewer.dart';
 import 'package:file_saver/file_saver.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:image_gallery_saver/image_gallery_saver.dart';
-import 'package:permission_handler/permission_handler.dart';
+import 'package:image_gallery_saver_plus/image_gallery_saver_plus.dart';
 import 'package:yana/utils/image_tool.dart';
 
 import '../i18n/i18n.dart';
@@ -97,7 +96,7 @@ class _ImagePreviewDialog extends State<ImagePreviewDialog> {
   DismissDirection _dismissDirection = DismissDirection.down;
   void Function()? _internalPageChangeListener;
   late final PageController _pageController;
-  bool tapDownload=false;
+  bool tapDownload = false;
 
   /// This is needed because of https://github.com/thesmythgroup/easy_image_viewer/issues/27
   /// When no global key was used, the state was re-created on the initial zoom, which
@@ -129,7 +128,7 @@ class _ImagePreviewDialog extends State<ImagePreviewDialog> {
 
   @override
   Widget build(BuildContext context) {
-    if(!PlatformUtil.isTableModeWithoutSetting()) {
+    if (!PlatformUtil.isTableModeWithoutSetting()) {
       SystemChrome.setPreferredOrientations([
         DeviceOrientation.portraitUp,
         DeviceOrientation.portraitDown,
@@ -146,23 +145,24 @@ class _ImagePreviewDialog extends State<ImagePreviewDialog> {
           }
         },
         child: Scaffold(
-          backgroundColor: Colors.black, //widget.backgroundColor.withOpacity(0.5),
+          backgroundColor:
+              Colors.black, //widget.backgroundColor.withOpacity(0.5),
           body: Stack(
               clipBehavior: Clip.none,
               alignment: Alignment.center,
               children: <Widget>[
                 EasyImageViewPager(
-                    easyImageProvider: widget.imageProvider,
-                    pageController: _pageController,
-                    doubleTapZoomable: widget.doubleTapZoomable,
-                    // onScaleChanged: (scale) {
-                    //   setState(() {
-                    //     _dismissDirection = scale <= 1.0
-                    //         ? DismissDirection.down
-                    //         : DismissDirection.none;
-                    //   });
-                    // }
-                    ),
+                  easyImageProvider: widget.imageProvider,
+                  pageController: _pageController,
+                  doubleTapZoomable: widget.doubleTapZoomable,
+                  // onScaleChanged: (scale) {
+                  //   setState(() {
+                  //     _dismissDirection = scale <= 1.0
+                  //         ? DismissDirection.down
+                  //         : DismissDirection.none;
+                  //   });
+                  // }
+                ),
                 Positioned(
                     top: 20,
                     right: 5,
@@ -211,7 +211,7 @@ class _ImagePreviewDialog extends State<ImagePreviewDialog> {
     //       key: const Key('dismissible_easy_image_viewer_dialog'),
     //       child: popScopeAwareDialog);
     // } else {
-      return popScopeAwareDialog;
+    return popScopeAwareDialog;
     // }
   }
 
@@ -239,7 +239,7 @@ class _ImagePreviewDialog extends State<ImagePreviewDialog> {
     if (imageAsBytes != null) {
       if (!isPc) {
         var result =
-            await ImageGallerySaver.saveImage(imageAsBytes, quality: 100);
+            await ImageGallerySaverPlus.saveImage(imageAsBytes, quality: 100);
         if (result != null && result is Map && result["isSuccess"]) {
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
             duration: const Duration(seconds: 3),
@@ -253,7 +253,8 @@ class _ImagePreviewDialog extends State<ImagePreviewDialog> {
           bytes: imageAsBytes,
           ext: ".png",
         );
-        EasyLoading.show(status: "${I18n.of(context).Image_save_success} $result");
+        EasyLoading.show(
+            status: "${I18n.of(context).Image_save_success} $result");
       }
     }
   }

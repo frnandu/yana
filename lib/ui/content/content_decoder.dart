@@ -331,7 +331,7 @@ class ContentDecoder {
         index++;
       }
 
-      list.add(Container(
+      list.add(SizedBox(
         height: CONTENT_IMAGE_LIST_HEIGHT,
         width: double.infinity,
         child: CustomScrollView(

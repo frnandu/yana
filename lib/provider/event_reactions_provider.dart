@@ -185,9 +185,9 @@ class EventReactionsProvider extends ChangeNotifier
     bool updated = false;
     for (var tag in event.tags) {
       if (tag.length > 1) {
-        var tagType = tag[0] as String;
+        var tagType = tag[0];
         if (tagType == "e") {
-          var id = tag[1] as String;
+          var id = tag[1];
           var er = _eventReactionsMap[id];
           if (er == null) {
             er = EventReactions(id);

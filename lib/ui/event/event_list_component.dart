@@ -1,17 +1,14 @@
 import 'dart:convert';
 
-import 'package:ndk/domain_layer/entities/nip_01_event.dart';
 import 'package:flutter/material.dart';
+import 'package:ndk/domain_layer/entities/nip_01_event.dart';
 import 'package:yana/main.dart';
-import 'package:yana/provider/community_approved_provider.dart';
 import 'package:yana/utils/string_util.dart';
-import 'package:provider/provider.dart';
-import 'package:screenshot/screenshot.dart';
 
 import '../../nostr/event_kind.dart' as kind;
 import '../../nostr/event_relation.dart';
+import '../../nostr/nip19/nip19.dart';
 import '../../nostr/nip57/zap_num_util.dart';
-import '../../utils/base.dart';
 import '../../utils/number_format_util.dart';
 import '../../utils/router_path.dart';
 import '../../utils/router_util.dart';
@@ -59,7 +56,7 @@ class EventListComponent extends StatefulWidget {
 }
 
 class _EventListComponent extends State<EventListComponent> {
-  ScreenshotController screenshotController = ScreenshotController();
+  // ScreenshotController screenshotController = ScreenshotController();
 
   @override
   Widget build(BuildContext context) {
@@ -69,10 +66,9 @@ class _EventListComponent extends State<EventListComponent> {
 
     Widget main =
     // Text(widget.event.content);
-
-    Screenshot(
-      controller: screenshotController,
-      child:
+    // Screenshot(
+      // controller: screenshotController,
+      // child:
       Container(
         color: cardColor,
         margin: const EdgeInsets.only(bottom: 1),
@@ -80,7 +76,7 @@ class _EventListComponent extends State<EventListComponent> {
         //   top: Base.BASE_PADDING,
         // ),
         child: EventMainComponent(
-          screenshotController: screenshotController,
+          // screenshotController: screenshotController,
           event: widget.event,
           pagePubkey: widget.pagePubkey,
           textOnTap: widget.jumpable ? jumpToThread : null,
@@ -92,8 +88,7 @@ class _EventListComponent extends State<EventListComponent> {
           showCommunity: widget.showCommunity,
           eventRelation: eventRelation,
         ),
-      ),
-    );
+      );
 
     if (widget.event.kind == kind.EventKind.ZAP_RECEIPT) {
       var zapNum = ZapNumUtil.getNumFromZapEvent(widget.event);
@@ -147,7 +142,7 @@ class _EventListComponent extends State<EventListComponent> {
     if (widget.jumpable) {
       return GestureDetector(
         onTap: jumpToThread,
-        child: main,
+        child: main
       );
     } else {
       return main;

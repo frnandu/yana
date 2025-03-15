@@ -210,7 +210,7 @@ class DMProvider extends ChangeNotifier with PenddingEventsLaterFunction {
 
     for (var tag in event.tags) {
       if (tag[0] == "p") {
-        return tag[1] as String;
+        return tag[1];
       }
     }
 

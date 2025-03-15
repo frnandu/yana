@@ -1,13 +1,12 @@
 import 'dart:convert';
 
-import 'package:ndk/entities.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:ndk/entities.dart';
 import 'package:provider/provider.dart';
-import 'package:screenshot/screenshot.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:yana/ui/zap_gen_dialog.dart';
 
@@ -30,7 +29,7 @@ import '../event_delete_callback.dart';
 import '../event_reply_callback.dart';
 
 class EventReactionsComponent extends StatefulWidget {
-  ScreenshotController screenshotController;
+  // ScreenshotController screenshotController;
 
   Nip01Event event;
 
@@ -41,7 +40,7 @@ class EventReactionsComponent extends StatefulWidget {
   bool showDetailBtn;
 
   EventReactionsComponent({
-    required this.screenshotController,
+    // required this.screenshotController,
     required this.event,
     required this.eventRelation,
     this.showDetailBtn = true,

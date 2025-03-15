@@ -107,8 +107,15 @@
 - fix loading of metadatas, sometimes doesn't update quickly?!?
 - fix jumping of list scrolling WTF!?!
 - fix timeout zapping nwc !?
+- fix not remembering already cached events from feed
 
 ===== v0.16
+- use listview to fix flickering
+- use ImageTileView
+
+
+
+
 - nostr+walletconnect onboarding with lud16
 - fix not finding metadatas 
 - make thread detail subscription of new replies work

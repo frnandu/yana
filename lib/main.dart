@@ -14,20 +14,15 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:get_time_ago/get_time_ago.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
-import 'package:isar/isar.dart' as isar;
 import 'package:ndk/config/bootstrap_relays.dart';
 import 'package:ndk/entities.dart';
-import 'package:ndk_amber/data_layer/data_sources/amber_flutter.dart';
-import 'package:ndk_isar/data_layer/repositories/cache_manager/isar_cache_manager.dart';
-import 'package:ndk_amber/data_layer/repositories/signers/amber_event_signer.dart';
-import 'package:ndk/domain_layer/entities/pubkey_mapping.dart';
-import 'package:ndk/domain_layer/entities/read_write_marker.dart';
-import 'package:ndk/domain_layer/entities/user_relay_list.dart';
 import 'package:ndk/ndk.dart';
 import 'package:ndk/shared/helpers/relay_helper.dart';
-import 'package:ndk_rust_verifier/ndk_rust_verifier.dart';
+import 'package:ndk_amber/data_layer/data_sources/amber_flutter.dart';
+import 'package:ndk_amber/data_layer/repositories/signers/amber_event_signer.dart';
+import 'package:ndk_objectbox/data_layer/db/object_box/db_object_box.dart';
+// import 'package:ndk_rust_verifier/ndk_rust_verifier.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:protocol_handler/protocol_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -162,19 +157,20 @@ Map<String, dynamic>? fiatCurrencyRate;
 
 AppLifecycleState appState = AppLifecycleState.resumed;
 
-EventSigner? get loggedUserSigner => ndk?.config.eventSigner;
+EventSigner? get loggedUserSigner => ndk.accounts.getLoggedAccount()?.signer;
 
 AmberFlutterDS amberFlutterDS = AmberFlutterDS(Amberflutter());
 late CacheManager cacheManager;
 final logLevel = Logger.logLevels.debug;
-final eventVerifier = RustEventVerifier();
-Ndk ndk = Ndk.emptyBootstrapRelaysConfig();// = Ndk(
-//   NdkConfig(
-//       eventVerifier: eventVerifier,
-//       cache: cacheManager,
-//       // eventOutFilters: [filterProvider],
-//       logLevel: logLevel),
-// );
+final eventVerifier = Bip340EventVerifier();//RustEventVerifier();
+Ndk ndk =
+//Ndk.emptyBootstrapRelaysConfig();// = Ndk(
+Ndk( NdkConfig(
+      eventVerifier: eventVerifier,
+      cache: cacheManager,
+      // eventOutFilters: [filterProvider],
+      logLevel: logLevel),
+);
 
 late bool isExternalSignerInstalled;
 
@@ -227,15 +223,15 @@ void onStart(ServiceInstance service) async {
             await ndk.relays.reconnectRelays(myInboxRelaySet!.urls);
             await newNotificationsProvider.queryNew();
             ndk.relays.allowReconnectRelays = false;
-            List<String> requestIdsToClose =
-                ndk.relays.globalState.inFlightRequests.keys.toList();
-            for (var id in requestIdsToClose) {
-              try {
-                ndk.requests.closeSubscription(id);
-              } catch (e) {
-                print(e);
-              }
-            }
+            // List<String> requestIdsToClose =
+            //     ndk.relays.globalState.inFlightRequests.keys.toList();
+            // for (var id in requestIdsToClose) {
+              // try {
+              //   ndk.requests.closeSubscription(id);
+              // } catch (e) {
+              //   print(e);
+              // }
+            // }
             await ndk.relays.closeAllTransports();
           }
         });
@@ -402,7 +398,7 @@ Future<void> initRelays({bool newKey = false}) async {
               .getSingleNip51List(Nip51List.kSearchRelays, loggedUserSigner!)
               .then((searchRelaySet) {
             if (searchRelaySet != null) {
-              searchRelays = searchRelaySet.allRelays!;
+              searchRelays = searchRelaySet.allRelays;
               for (var url in searchRelays) {
                 ndk.relays.reconnectRelay(url,
                     connectionSource: ConnectionSource.nip51Search);
@@ -479,7 +475,7 @@ Future<void> initRelays({bool newKey = false}) async {
 Future<List<String>> getInboxRelays(String pubKey) async {
   List<String> urlsToBroadcast = [];
   UserRelayList? userRelayList =
-      await ndk.userRelayLists.getSingleUserRelayList(pubKey!);
+      await ndk.userRelayLists.getSingleUserRelayList(pubKey);
   if (userRelayList != null) {
     urlsToBroadcast = userRelayList.readUrls.toList();
   }
@@ -631,12 +627,14 @@ Future<void> main() async {
   communityInfoProvider = CommunityInfoProvider();
   nwcProvider = NwcProvider();
 
-  IsarCacheManager dbCacheManager = IsarCacheManager();
+  // IsarCacheManager dbCacheManager = IsarCacheManager();
+  DbObjectBox dbCacheManager = DbObjectBox();
   try {
-    await dbCacheManager.init(
-        directory: PlatformUtil.isWeb()
-            ? isar.Isar.sqliteInMemory
-            : (await getApplicationDocumentsDirectory()).path);
+    await dbCacheManager.dbRdy;
+    // await dbCacheManager.init(
+    //     directory: PlatformUtil.isWeb()
+    //         ? isar.Isar.sqliteInMemory
+    //         : (await getApplicationDocumentsDirectory()).path);
     cacheManager = dbCacheManager;
   } catch (e) {
     cacheManager = MemCacheManager();
@@ -661,12 +659,12 @@ Future<void> main() async {
               privateKey: isPrivate ? key : null, publicKey: publicKey)
           : Nip07EventSigner(await js.getPublicKeyAsync());
     }
-    ndk = Ndk(NdkConfig(
-        eventVerifier: eventVerifier,
-        cache: cacheManager,
-        eventSigner: eventSigner,
-        eventOutFilters: [filterProvider],
-        logLevel: logLevel));
+    ndk.accounts.loginExternalSigner(signer: eventSigner);
+    // ndk = Ndk(NdkConfig(
+    //     eventVerifier: eventVerifier,
+    //     cache: cacheManager,
+    //     eventOutFilters: [filterProvider],
+    //     logLevel: logLevel));
   }
 
   if (loggedUserSigner != null) {
@@ -952,7 +950,8 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
             value: nwcProvider,
           ),
         ],
-        child: SafeArea(
+        child:
+        SafeArea(
             child: HomeComponent(
           locale: _locale,
           theme: defaultTheme,
@@ -1098,7 +1097,9 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
               );
             },
           ),
-        )));
+        )
+    )
+    );
   }
 
   @override
@@ -1133,11 +1134,11 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
         List<String> requestIdsToClose =
             ndk.relays.globalState.inFlightRequests.keys.toList();
         for (var id in requestIdsToClose) {
-          try {
-            ndk.requests.closeSubscription(id);
-          } catch (e) {
-            print(e);
-          }
+          // try {
+          //   ndk.requests.closeSubscription(id);
+          // } catch (e) {
+          //   print(e);
+          // }
         }
         // await ndk.relays.closeAllSockets();
 

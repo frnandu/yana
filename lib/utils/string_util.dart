@@ -6,7 +6,8 @@ class StringUtil {
 
   static String robohash(String str) {
     // robohash.v0l.io does not set CORS origin *
-    return PlatformUtil.isWeb() ? 'https://robohash.org/'+str: "https://robohash.v0l.io/$str.png";
+    // return PlatformUtil.isWeb() ? 'https://robohash.org/'+str: "https://robohash.v0l.io/$str.png";
+    return 'https://robohash.org/'+str;
   }
   static bool isNotBlank(String? str) {
     if (str != null && str != "") {

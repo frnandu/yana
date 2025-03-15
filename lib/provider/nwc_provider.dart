@@ -51,7 +51,7 @@ class NwcProvider extends ChangeNotifier {
   /// connect the wallet
   Future<void> connect(String nwc, {Function(String?)? onConnect, Function(String?)? onError, bool? doGetInfo = true}) async {
     nwc = nwc.replaceAll("yana:", "nostr+walletconnect:");
-    await ndk.nwc.connect(nwc, doGetInfoMethod: doGetInfo!).then((connection) async {
+    await ndk.nwc.connect(nwc, doGetInfoMethod: doGetInfo!, onError: onError).then((connection) async {
       this.connection = connection;
       settingProvider.setNwc(nwc);
       await refreshWallet();

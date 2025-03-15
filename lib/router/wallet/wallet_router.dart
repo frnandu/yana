@@ -1,7 +1,15 @@
+import 'dart:io';
+
+import 'package:android_intent_plus/android_intent.dart';
 import 'package:back_button_interceptor/back_button_interceptor.dart';
 import 'package:flutter/material.dart';
+import 'package:ndk/domain_layer/entities/connection_source.dart';
 import 'package:ndk/domain_layer/entities/metadata.dart';
+import 'package:ndk/domain_layer/entities/nip_01_event.dart';
+import 'package:ndk/domain_layer/entities/relay.dart';
 import 'package:ndk/domain_layer/usecases/nwc/responses/list_transactions_response.dart';
+import 'package:ndk/shared/helpers/relay_helper.dart';
+import 'package:protocol_handler/protocol_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:yana/main.dart';
@@ -12,7 +20,12 @@ import 'package:yana/router/wallet/transaction_item_component.dart';
 import 'package:yana/utils/base.dart';
 
 import '../../../ui/appbar4stack.dart';
+import '../../nostr/client_utils/keys.dart';
+import '../../nostr/nip19/nip19.dart';
+import '../../nostr/nip19/nip19_tlv.dart';
+import '../../provider/data_util.dart';
 import '../../ui/button.dart';
+import '../../utils/index_taps.dart';
 import '../../utils/router_path.dart';
 import '../../utils/router_util.dart';
 import '../../utils/string_util.dart';
@@ -27,7 +40,7 @@ class WalletRouter extends StatefulWidget {
   }
 }
 
-class _WalletRouter extends State<WalletRouter> {
+class _WalletRouter extends State<WalletRouter> with ProtocolListener {
   TextEditingController nwcInputController = TextEditingController();
 
   ScrollController scrollController = ScrollController();
@@ -54,11 +67,131 @@ class _WalletRouter extends State<WalletRouter> {
     return formattedBitcoin;
   }
 
-
   @override
   void initState() {
     super.initState();
+    protocolHandler.addListener(this);
     BackButtonInterceptor.add(myInterceptor);
+  }
+
+  @override
+  void onProtocolUrlReceived(String url) async {
+    // String log = 'Url received: $url)';
+    // print(log);
+    if (StringUtil.isNotBlank(url)) {
+      if (url.startsWith("yana://?value=")) {
+        Uri uri = Uri.parse(url);
+        String? nwc = uri.queryParameters["value"];
+
+        if (nwc != null && nwc.startsWith(NwcProvider.NWC_PROTOCOL_PREFIX)) {
+          await nwcProvider.connect(nwc, onConnect: (lud16) async {
+            await metadataProvider.updateLud16IfEmpty(lud16);
+          });
+          setState(() {});
+        }
+      } else if (url.startsWith(NwcProvider.NWC_PROTOCOL_PREFIX)) {
+        Future.delayed(const Duration(microseconds: 1), () async {
+          bool newAccount = false;
+          if (loggedUserSigner == null) {
+            String priv = generatePrivateKey();
+            sharedPreferences.remove(DataKey.NOTIFICATIONS_TIMESTAMP);
+            sharedPreferences.remove(DataKey.FEED_POSTS_TIMESTAMP);
+            sharedPreferences.remove(DataKey.FEED_REPLIES_TIMESTAMP);
+            notificationsProvider.clear();
+            newNotificationsProvider.clear();
+            followEventProvider.clear();
+            followEventProvider.clear();
+            await settingProvider.addAndChangeKey(priv, true, false,
+                updateUI: false);
+            String publicKey = getPublicKey(priv);
+            ndk.accounts.loginPrivateKey(pubkey: publicKey, privkey: priv);
+
+            await initRelays(newKey: true);
+            followEventProvider.loadCachedFeed();
+
+            newAccount = true;
+            firstLogin = true;
+            indexProvider.setCurrentTap(IndexTaps.FOLLOW);
+          }
+          await nwcProvider.connect(url, onConnect: (lud16) async {
+            await metadataProvider.updateLud16IfEmpty(lud16);
+          });
+          bool canPop = Navigator.canPop(context);
+          // var route = ModalRoute.of(context);
+          // if (route != null && route!.settings.name != null && route!.settings.name! == RouterPath.NWC) {
+          if (canPop) {
+            RouterUtil.back(context);
+          } else {
+            RouterUtil.router(
+                context, newAccount ? RouterPath.INDEX : RouterPath.WALLET);
+          }
+        });
+      } else if (url.startsWith("lightning:")) {
+        RouterUtil.router(context, RouterPath.WALLET_SEND, url.split(":").last);
+      } else if (url.startsWith("nostr:")) {
+        RegExpMatch? match = Nip19.nip19regex.firstMatch(url);
+
+        if (match != null) {
+          var key = match.group(2)! + match.group(3)!;
+          String? otherStr;
+
+          if (Nip19.isPubkey(key)) {
+            // inline
+            // mention user
+            if (key.length > Nip19.NPUB_LENGTH) {
+              otherStr = key.substring(Nip19.NPUB_LENGTH);
+              key = key.substring(0, Nip19.NPUB_LENGTH);
+            }
+            key = Nip19.decode(key);
+            RouterUtil.router(context, RouterPath.USER, key);
+          } else if (Nip19.isNoteId(key)) {
+            // block
+            if (key.length > Nip19.NOTEID_LENGTH) {
+              otherStr = key.substring(Nip19.NOTEID_LENGTH);
+              key = key.substring(0, Nip19.NOTEID_LENGTH);
+            }
+            key = Nip19.decode(key);
+            RouterUtil.router(context, RouterPath.THREAD_DETAIL, key);
+          } else if (NIP19Tlv.isNprofile(key)) {
+            var nprofile = NIP19Tlv.decodeNprofile(key);
+            if (nprofile != null) {
+              // inline
+              // mention user
+              RouterUtil.router(context, RouterPath.USER, nprofile.pubkey);
+            }
+          } else if (NIP19Tlv.isNrelay(key)) {
+            var nrelay = NIP19Tlv.decodeNrelay(key);
+            String? url = nrelay != null ? cleanRelayUrl(nrelay.addr) : null;
+            if (url != null) {
+              // inline
+              Relay relay =
+                  Relay(url: url, connectionSource: ConnectionSource.explicit);
+              RouterUtil.router(context, RouterPath.RELAY_INFO, relay);
+            }
+          } else if (NIP19Tlv.isNevent(key)) {
+            var nevent = NIP19Tlv.decodeNevent(key);
+            if (nevent != null) {
+              if (nevent.relays != null && nevent.relays!.isNotEmpty) {
+                // TODO allowReconnectRelays is false, WTF?
+                // await ndk.relays.reconnectRelays(nevent.relays!);
+              }
+              RouterUtil.router(context, RouterPath.THREAD_DETAIL, nevent.id);
+            }
+          } else if (NIP19Tlv.isNaddr(key)) {
+            var naddr = NIP19Tlv.decodeNaddr(key);
+            if (naddr != null) {
+              if (StringUtil.isNotBlank(naddr.id) &&
+                  naddr.kind == Nip01Event.kTextNodeKind) {
+                RouterUtil.router(context, RouterPath.THREAD_DETAIL, naddr.id);
+              } else if (StringUtil.isNotBlank(naddr.author) &&
+                  naddr.kind == Metadata.kKind) {
+                RouterUtil.router(context, RouterPath.USER, naddr.author);
+              }
+            }
+          }
+        }
+      }
+    }
   }
 
   @override
@@ -81,6 +214,7 @@ class _WalletRouter extends State<WalletRouter> {
     var _settingsProvider = Provider.of<SettingProvider>(context);
 
     var themeData = Theme.of(context);
+    bool albygoing = false;
 
     Color? appbarBackgroundColor = themeData.canvasColor;
 
@@ -162,12 +296,18 @@ class _WalletRouter extends State<WalletRouter> {
                                 height: 70,
                                 // before: const Icon(Icons.call_received_rounded),
                                 onTap: () async {
-                                  Metadata? metadata = await metadataProvider.getMetadata(loggedUserSigner!.getPublicKey());
-                                  if (metadata != null && StringUtil.isNotBlank(metadata.lud16)) {
-                                    RouterUtil.router(
-                                        context, RouterPath.WALLET_RECEIVE, metadata);
+                                  Metadata? metadata =
+                                      await metadataProvider.getMetadata(
+                                          loggedUserSigner!.getPublicKey());
+                                  if (metadata != null &&
+                                      StringUtil.isNotBlank(metadata.lud16)) {
+                                    RouterUtil.router(context,
+                                        RouterPath.WALLET_RECEIVE, metadata);
                                   } else {
-                                    RouterUtil.router(context, RouterPath.WALLET_RECEIVE_INVOICE, metadata);
+                                    RouterUtil.router(
+                                        context,
+                                        RouterPath.WALLET_RECEIVE_INVOICE,
+                                        metadata);
                                   }
                                 }))
                         : Container(),
@@ -201,57 +341,60 @@ class _WalletRouter extends State<WalletRouter> {
             list.add(Expanded(
                 child: RefreshIndicator(
                     onRefresh: () async {
-                      ListTransactionsResponse response = await nwcProvider.listTransactions(limit: 20, unpaid: false);
-                      _nwcProvider.cachedListTransactionsResponse  = response;
-                    },child: Selector<NwcProvider, List<TransactionResult>?>(
-                    builder: (context, transactions, child) {
-              return transactions != null && transactions.isNotEmpty
-                  ? ListView.builder(
-                      itemBuilder: (context, index) {
-                        // if (index == transactions.length) {
-                        //   return GestureDetector(
-                        //       onTap: () {
-                        //         RouterUtil.router(context, RouterPath.WALLET_TRANSACTIONS);
-                        //       },
-                        //       // child:
-                        //       // Expanded(
-                        //       child: MouseRegion(
-                        //           cursor: SystemMouseCursors.click,
-                        //           child: Container(
-                        //             margin: const EdgeInsets.only(top: Base.BASE_PADDING),
-                        //             padding: const EdgeInsets.all(Base.BASE_PADDING),
-                        //             height: 60.0,
-                        //             // decoration: const BoxDecoration(
-                        //             //     gradient: LinearGradient(
-                        //             //         colors: [Color(0xffFFDE6E), Colors.orange]),
-                        //             //     borderRadius: BorderRadius.all(Radius.circular(20.0))),
-                        //             child: const Center(
-                        //                 child: Row(
-                        //                     mainAxisAlignment: MainAxisAlignment.center,
-                        //                     children: [
-                        //                       Text('List all transactions >>',
-                        //                           style: TextStyle(color: Colors.white))
-                        //                     ])),
-                        //           ))
-                        //     // ),
-                        //   );
-                        // }
-                        return GestureDetector(
-                            onTap: () async {
-                              setState(() {
-                                transactionDetails = transactions[index];
-                              });
-                              await panelController.open();
-                            },
-                            child: TransactionItemComponent(
-                                transaction: transactions[index]));
-                      },
-                      itemCount: transactions.length,
-                    )
-                  : Container();
-            }, selector: (context, _provider) {
-              return _provider.transactions;
-            }))));
+                      ListTransactionsResponse response = await nwcProvider
+                          .listTransactions(limit: 20, unpaid: false);
+                      _nwcProvider.cachedListTransactionsResponse = response;
+                    },
+                    child: Selector<NwcProvider, List<TransactionResult>?>(
+                        builder: (context, transactions, child) {
+                      return transactions != null && transactions.isNotEmpty
+                          ? ListView.builder(
+                              itemBuilder: (context, index) {
+                                // if (index == transactions.length) {
+                                //   return GestureDetector(
+                                //       onTap: () {
+                                //         RouterUtil.router(context, RouterPath.WALLET_TRANSACTIONS);
+                                //       },
+                                //       // child:
+                                //       // Expanded(
+                                //       child: MouseRegion(
+                                //           cursor: SystemMouseCursors.click,
+                                //           child: Container(
+                                //             margin: const EdgeInsets.only(top: Base.BASE_PADDING),
+                                //             padding: const EdgeInsets.all(Base.BASE_PADDING),
+                                //             height: 60.0,
+                                //             // decoration: const BoxDecoration(
+                                //             //     gradient: LinearGradient(
+                                //             //         colors: [Color(0xffFFDE6E), Colors.orange]),
+                                //             //     borderRadius: BorderRadius.all(Radius.circular(20.0))),
+                                //             child: const Center(
+                                //                 child: Row(
+                                //                     mainAxisAlignment: MainAxisAlignment.center,
+                                //                     children: [
+                                //                       Text('List all transactions >>',
+                                //                           style: TextStyle(color: Colors.white))
+                                //                     ])),
+                                //           ))
+                                //     // ),
+                                //   );
+                                // }
+                                return GestureDetector(
+                                    onTap: () async {
+                                      setState(() {
+                                        transactionDetails =
+                                            transactions[index];
+                                      });
+                                      await panelController.open();
+                                    },
+                                    child: TransactionItemComponent(
+                                        transaction: transactions[index]));
+                              },
+                              itemCount: transactions.length,
+                            )
+                          : Container();
+                    }, selector: (context, _provider) {
+                      return _provider.transactions;
+                    }))));
             // list.add(RefreshIndicator(
             //   onRefresh: () async {
             //     nwcProvider.requestListTransactions();
@@ -297,29 +440,6 @@ class _WalletRouter extends State<WalletRouter> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        SizedBox(
-                          width: 80,
-                          height: 80,
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              SizedBox(
-                                width: 80,
-                                height: 80,
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Image.asset("assets/imgs/nwc.png"),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
                         Container(
                           width: double.infinity,
                           // height: 112,
@@ -362,14 +482,84 @@ class _WalletRouter extends State<WalletRouter> {
                             ],
                           ),
                         ),
+                        SizedBox(
+                          width: 80,
+                          height: 80,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              SizedBox(
+                                width: 80,
+                                height: 80,
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Image.asset("assets/imgs/albygo.png"),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                         Row(
                           mainAxisSize: MainAxisSize.min,
                           mainAxisAlignment: MainAxisAlignment.center,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Button(
-                              text: "Start",
-                              fontSize: 20,
+                              text: "Alby Go",
+                              fontSize: 18,
+                              width: 200,
+                              onTap: () async {
+                                albygoing = true;
+                                if (Platform.isAndroid) {
+                                  AndroidIntent intent = AndroidIntent(
+                                    action: 'action_view',
+                                    data:
+                                        "nostrnwc://bla?appname=Yana\&appicon=https%3A%2F%2Fyana.do%2Fimages%2Flogo-new.png\&callback=yana%3A%2F%2F",
+                                  );
+                                  await intent.launch();
+                                }
+                              },
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: 20),
+                        SizedBox(
+                          width: 80,
+                          height: 80,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              SizedBox(
+                                width: 80,
+                                height: 80,
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Image.asset("assets/imgs/nwc.png"),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Button(
+                              text: "NWC manual",
+                              fontSize: 18,
                               width: 200,
                               onTap: () {
                                 RouterUtil.router(context, RouterPath.NWC);
@@ -509,7 +699,9 @@ class _WalletRouter extends State<WalletRouter> {
     return Scaffold(
         appBar: appBarNew,
         backgroundColor: themeData.cardColor,
-        body: Stack(children: [main, SlidingUpPanel(
+        body: Stack(children: [
+          main,
+          SlidingUpPanel(
             controller: panelController,
             backdropEnabled: true,
             color: themeData.appBarTheme.backgroundColor!,
@@ -518,9 +710,10 @@ class _WalletRouter extends State<WalletRouter> {
             borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(20), topRight: Radius.circular(20)),
             panel: PaymentDetailsComponent(
-                    paid: transactionDetails,
-                  ),
-            )]));
+              paid: transactionDetails,
+            ),
+          )
+        ]));
 
     return Scaffold(
       body: Stack(
@@ -561,7 +754,8 @@ class _WalletRouter extends State<WalletRouter> {
                 tooltip: "settings",
                 itemBuilder: (context) {
                   List<PopupMenuEntry<String>> list = [
-                    const PopupMenuItem(value: "settings", child: Text("Settings")),
+                    const PopupMenuItem(
+                        value: "settings", child: Text("Settings")),
                   ];
                   if (nwcProvider.isConnected) {
                     list.add(

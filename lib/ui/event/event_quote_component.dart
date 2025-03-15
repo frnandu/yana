@@ -1,7 +1,6 @@
 import 'package:ndk/domain_layer/entities/nip_01_event.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:screenshot/screenshot.dart';
 
 import '../../i18n/i18n.dart';
 import '../../provider/single_event_provider.dart';
@@ -34,7 +33,7 @@ class EventQuoteComponent extends StatefulWidget {
 }
 
 class _EventQuoteComponent extends CustState<EventQuoteComponent> {
-  ScreenshotController screenshotController = ScreenshotController();
+  // ScreenshotController screenshotController = ScreenshotController();
 
   @override
   Widget doBuild(BuildContext context) {
@@ -89,7 +88,7 @@ class _EventQuoteComponent extends CustState<EventQuoteComponent> {
           },
           behavior: HitTestBehavior.translucent,
           child: EventMainComponent(
-            screenshotController: screenshotController,
+            // screenshotController: screenshotController,
             event: event,
             addDivider: false,
             showReactions: widget.showReactions,
