@@ -3,9 +3,8 @@ import 'dart:developer';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
-import 'package:ndk_amber/data_layer/repositories/signers/amber_event_signer.dart';
 import 'package:ndk/ndk.dart';
-import 'package:ndk_rust_verifier/ndk_rust_verifier.dart';
+import 'package:ndk_amber/data_layer/repositories/signers/amber_event_signer.dart';
 import 'package:provider/provider.dart';
 import 'package:yana/provider/setting_provider.dart';
 import 'package:yana/ui/name_component.dart';
@@ -153,14 +152,14 @@ class AccountsState extends State<AccountsComponent> {
             ? Bip340EventSigner(privateKey: isPrivate ? key : null, publicKey: publicKey)
             : Nip07EventSigner(await js.getPublicKeyAsync());
     await ndk.destroy();
-    ndk = Ndk(
-        NdkConfig(
-          eventVerifier: eventVerifier,
-          cache: cacheManager,
-          eventSigner: eventSigner,
-          eventOutFilters:  [filterProvider],
-          logLevel: logLevel
-        ));
+    // ndk = Ndk(
+    //     NdkConfig(
+    //       eventVerifier: eventVerifier,
+    //       cache: cacheManager,
+    //       eventOutFilters:  [filterProvider],
+    //       logLevel: logLevel
+    //     ));
+    ndk.accounts.loginExternalSigner(signer: eventSigner);
 
     await followEventProvider.loadCachedFeed();
     initRelays(newKey: false);

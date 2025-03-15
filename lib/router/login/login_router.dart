@@ -1,14 +1,13 @@
 import 'package:amberflutter/amberflutter.dart';
-import 'package:ndk/domain_layer/entities/nip_65.dart';
-import 'package:ndk_amber/data_layer/repositories/signers/amber_event_signer.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:ndk/ndk.dart';
-import 'package:ndk_rust_verifier/ndk_rust_verifier.dart';
+import 'package:ndk_amber/data_layer/repositories/signers/amber_event_signer.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:yana/utils/platform_util.dart';
 
+import '/js/js_helper.dart' as js;
 import '../../i18n/i18n.dart';
 import '../../main.dart';
 import '../../nostr/client_utils/keys.dart';
@@ -20,7 +19,6 @@ import '../../utils/index_taps.dart';
 import '../../utils/router_util.dart';
 import '../../utils/string_util.dart';
 import '../index/account_manager_component.dart';
-import '/js/js_helper.dart' as js;
 
 class LoginRouter extends StatefulWidget {
 
@@ -342,13 +340,13 @@ class _LoginRouter extends State<LoginRouter>
           ? Bip340EventSigner(privateKey: isPrivate ? key : null, publicKey: publicKey)
           : Nip07EventSigner(await js.getPublicKeyAsync())
       ;
-      await ndk.destroy();
-      ndk = Ndk(NdkConfig(
-          eventVerifier: eventVerifier,
-          cache: cacheManager,
-          eventSigner: eventSigner,
-          eventOutFilters: [filterProvider],
-          logLevel: logLevel));
+      // await ndk.destroy();
+      // ndk = Ndk(NdkConfig(
+      //     eventVerifier: eventVerifier,
+      //     cache: cacheManager,
+      //     eventOutFilters: [filterProvider],
+      //     logLevel: logLevel));
+      ndk.accounts.loginExternalSigner(signer: eventSigner);
       // NdkResponse response = ndk.requests.query(
       //     timeout: const Duration(seconds: 10),
       //     filters: [

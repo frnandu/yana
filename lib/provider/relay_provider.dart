@@ -75,7 +75,7 @@ class RelayProvider extends ChangeNotifier {
   }
 
   Future<void> removeRelay(String url) async {
-    UserRelayList? userRelayList = await ndk.userRelayLists.broadcastRemoveNip65Relay(relayUrl: url, specificRelays: myOutboxRelaySet!.urls);
+    UserRelayList? userRelayList = await ndk.userRelayLists.broadcastRemoveNip65Relay(relayUrl: url, broadcastRelays: myOutboxRelaySet!.urls);
     if (userRelayList != null) {
       createMyRelaySets(userRelayList);
       await cacheManager.saveRelaySet(myOutboxRelaySet!);
@@ -90,7 +90,7 @@ class RelayProvider extends ChangeNotifier {
     relays.addAll(DEFAULT_BOOTSTRAP_RELAYS);
     relays.addAll(myOutboxRelaySet!.urls);
 
-    UserRelayList? userRelayList = await ndk.userRelayLists.broadcastUpdateNip65RelayMarker(relayUrl: url, marker: marker);
+    UserRelayList? userRelayList = await ndk.userRelayLists.broadcastUpdateNip65RelayMarker(relayUrl: url, marker: marker, broadcastRelays: relays);
 
     if (userRelayList != null) {
       createMyRelaySets(userRelayList);

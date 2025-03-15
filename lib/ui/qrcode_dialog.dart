@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:pretty_qr_code/pretty_qr_code.dart';
 import 'package:provider/provider.dart';
-import 'package:screenshot/screenshot.dart';
 import 'package:yana/nostr/nip19/nip19.dart';
 
 import '../main.dart';
@@ -38,7 +37,7 @@ class _QrcodeDialog extends State<QrcodeDialog> {
   static const double IMAGE_WIDTH = 40;
   static const double QR_WIDTH = 255;
 
-  ScreenshotController screenshotController = ScreenshotController();
+  // ScreenshotController screenshotController = ScreenshotController();
 
   @override
   Widget build(BuildContext context) {
@@ -105,9 +104,10 @@ class _QrcodeDialog extends State<QrcodeDialog> {
 
     var main = Stack(
       children: [
-        Screenshot(
-          controller: screenshotController,
-          child: Container(
+        // Screenshot(
+        //   controller: screenshotController,
+        //   child:
+          Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
               color: cardColor,
@@ -118,7 +118,7 @@ class _QrcodeDialog extends State<QrcodeDialog> {
               children: list,
             ),
           ),
-        ),
+        // ),
       ],
     );
 

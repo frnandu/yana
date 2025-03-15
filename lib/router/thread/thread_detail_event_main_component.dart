@@ -1,10 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:screenshot/screenshot.dart';
-import 'package:yana/main.dart';
 import 'package:yana/router/thread/thread_detail_event.dart';
 import 'package:yana/ui/event/event_main_component.dart';
-
-import '../../utils/base.dart';
 
 class ThreadDetailItemMainComponent extends StatefulWidget {
   static double BORDER_LEFT_WIDTH = 2;
@@ -33,7 +29,7 @@ class ThreadDetailItemMainComponent extends StatefulWidget {
 }
 
 class _ThreadDetailItemMainComponent extends State<ThreadDetailItemMainComponent> {
-  ScreenshotController screenshotController = ScreenshotController();
+  // ScreenshotController screenshotController = ScreenshotController();
 
 
   @override
@@ -69,7 +65,7 @@ class _ThreadDetailItemMainComponent extends State<ThreadDetailItemMainComponent
     var hintColor = themeData.hintColor;
 
     var currentMainEvent = EventMainComponent(
-      screenshotController: screenshotController,
+      // screenshotController: screenshotController,
       event: widget.item.event,
       showReplying: false,
       highlight: widget.sourceEventId == widget.item.event.id,

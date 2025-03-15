@@ -5,7 +5,6 @@ import 'package:ndk/shared/nips/nip25/reactions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:provider/provider.dart';
-import 'package:screenshot/screenshot.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:yana/ui/content/content_video_component.dart';
 import 'package:yana/utils/platform_util.dart';
@@ -40,7 +39,7 @@ import 'event_reactions_component.dart';
 import 'event_top_component.dart';
 
 class EventMainComponent extends StatefulWidget {
-  ScreenshotController screenshotController;
+  // ScreenshotController screenshotController;
 
   Nip01Event event;
 
@@ -74,7 +73,7 @@ class EventMainComponent extends StatefulWidget {
 
   EventMainComponent({
     super.key,
-    required this.screenshotController,
+    // required this.screenshotController,
     required this.event,
     this.pagePubkey,
     this.showReplying = true,
@@ -99,12 +98,116 @@ class EventMainComponent extends StatefulWidget {
 
 class _EventMainComponent extends State<EventMainComponent> {
   bool showWarning = false;
+  late List<String> _imageLinks;
+  late Set<String> _profileHexIdentifiers;
+  final Map<String, WidgetSpan> _memoizedNoteReferences = {};
+  bool _isContentRevealed = false;
+  final GlobalKey _contentKey = GlobalKey();
+
+  bool _isExpanded = false;
+  final double _collapsedHeight = 250.0;
+  bool _shouldShowButton = false;
 
   late EventRelation eventRelation;
+
+  List<String> _extractImages(Nip01Event note) {
+    List<String> imageLinks = [];
+    RegExp exp = RegExp(r"(https?:\/\/[^\s]+)");
+    Iterable<RegExpMatch> matches = exp.allMatches(note.content);
+    for (var match in matches) {
+      var link = match.group(0);
+      if (link!.endsWith(".jpg") ||
+          link.endsWith(".jpeg") ||
+          link.endsWith(".png") ||
+          link.endsWith(".webp") ||
+          link.contains(".avif") ||
+          link.endsWith(".gif")) {
+        imageLinks.add(link);
+      }
+    }
+    return imageLinks;
+  }
+
+  void _parseContent() {
+    _imageLinks = _extractImages(widget.event);
+    _profileHexIdentifiers =
+        _extractProfileHexIdentifiers(widget.event.content);
+  }
+
+  Set<String> _extractProfileHexIdentifiers(String content) {
+    final profileRegex = RegExp(r'nostr:(nprofile|npub)[a-zA-Z0-9]+');
+    return profileRegex
+        .allMatches(content)
+        .map((match) => _extractHexFromProfileLink(
+            match.group(0)!.replaceAll('nostr:', '')))
+        .toSet();
+  }
+
+  String _extractHexFromProfileLink(String link) {
+    if (link.startsWith('nprofile')) {
+      Nprofile? nprofile = NIP19Tlv.decodeNprofile(link);
+      return nprofile != null ? nprofile.pubkey : "";
+    } else if (link.startsWith('npub')) {
+      final decoded = Nip19.decode(link);
+      return decoded[0] ?? '';
+    }
+    return '';
+  }
+
+  void _checkIfContentExceedsHeight() {
+    // Wait for next frame to ensure rendering is complete
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // print("check mounted:$mounted for ${widget.event.content}");
+      if (!mounted) return;
+      // Use a GlobalKey to get the actual rendered size
+      final RenderBox? contentBox = _contentKey.currentContext?.findRenderObject() as RenderBox?;
+      if (contentBox != null) {
+        final double contentHeight = contentBox.size.height;
+        setState(() {
+          // print("    `---- $contentHeight > $_collapsedHeight  = ${contentHeight > _collapsedHeight}");
+          _shouldShowButton = contentHeight > _collapsedHeight;
+        });
+      }
+    });
+  }
+  // void _checkIfContentExceedsHeight() {
+  //   // Calculate the total content height
+  //   final textHeight = _calculateTextHeight(widget.event.content);
+  //   final imageHeight = _imageLinks.isEmpty ? 0 : 200; // Image height + spacing
+  //   final totalHeight = textHeight + imageHeight;
+  //
+  //   // If content exceeds collapsed height, show the button; + image height so post with images get more space
+  //   if (totalHeight > _collapsedHeight + imageHeight) {
+  //     setState(() {
+  //       _shouldShowButton = true;
+  //     });
+  //   }
+  // }
+
+  double _calculateTextHeight(String text) {
+    final TextPainter textPainter = TextPainter(
+      text: TextSpan(
+        text: text,
+        style: const TextStyle(color: Color(0xFFE1E8ED), fontSize: 17),
+      ),
+      maxLines: null,
+      textDirection: TextDirection.ltr,
+    )..layout(maxWidth: MediaQuery.of(context).size.width - 60);
+
+    return textPainter.height;
+  }
 
   @override
   void initState() {
     super.initState();
+    _parseContent();
+
+    // // Check if content needs "Show More" button after first layout
+    // WidgetsBinding.instance.addPostFrameCallback((_) {
+    //   if (mounted)
+    _checkIfContentExceedsHeight();
+    // });
+
     if (widget.eventRelation == null) {
       eventRelation = EventRelation.fromEvent(widget.event);
     } else {
@@ -120,7 +223,8 @@ class _EventMainComponent extends State<EventMainComponent> {
       eventRelation = EventRelation.fromEvent(widget.event);
     }
 
-    bool imagePreview = _settingProvider.imagePreview == null || _settingProvider.imagePreview == OpenStatus.OPEN;
+    bool imagePreview = _settingProvider.imagePreview == null ||
+        _settingProvider.imagePreview == OpenStatus.OPEN;
     bool videoPreview = widget.showVideo;
     if (_settingProvider.videoPreview != null) {
       videoPreview = _settingProvider.videoPreview == OpenStatus.OPEN;
@@ -141,15 +245,19 @@ class _EventMainComponent extends State<EventMainComponent> {
     // }
 
     Nip01Event? repostEvent;
-    if ((widget.event.kind == kind.EventKind.REPOST || widget.event.kind == kind.EventKind.GENERIC_REPOST) && widget.event.content.contains("\"pubkey\"")) {
+    if ((widget.event.kind == kind.EventKind.REPOST ||
+            widget.event.kind == kind.EventKind.GENERIC_REPOST) &&
+        widget.event.content.contains("\"pubkey\"")) {
       try {
         var jsonMap = jsonDecode(widget.event.content);
         repostEvent = Nip01Event.fromJson(jsonMap);
 
         // set source to repost event
-        if (repostEvent.id == eventRelation.rootId && StringUtil.isNotBlank(eventRelation.rootRelayAddr)) {
+        if (repostEvent.id == eventRelation.rootId &&
+            StringUtil.isNotBlank(eventRelation.rootRelayAddr)) {
           repostEvent.sources.add(eventRelation.rootRelayAddr!);
-        } else if (repostEvent.id == eventRelation.replyId && StringUtil.isNotBlank(eventRelation.replyRelayAddr)) {
+        } else if (repostEvent.id == eventRelation.replyId &&
+            StringUtil.isNotBlank(eventRelation.replyRelayAddr)) {
           repostEvent.sources.add(eventRelation.replyRelayAddr!);
         }
       } catch (e) {
@@ -242,16 +350,18 @@ class _EventMainComponent extends State<EventMainComponent> {
             child: RepaintBoundary(child: markdownWidget),
           ));
         }
+
         if (widget.showReactions) {
           list.add(EventReactionsComponent(
-            screenshotController: widget.screenshotController,
+            // screenshotController: widget.screenshotController,
             event: widget.event,
             eventRelation: eventRelation,
             showDetailBtn: widget.showDetailBtn,
             onMuteProfile: onMuteProfile,
           ));
         }
-      } else if (widget.event.kind == kind.EventKind.REPOST || widget.event.kind == kind.EventKind.GENERIC_REPOST) {
+      } else if (widget.event.kind == kind.EventKind.REPOST ||
+          widget.event.kind == kind.EventKind.GENERIC_REPOST) {
         list.add(Container(
           alignment: Alignment.centerLeft,
           child: Text("Repost"),
@@ -274,7 +384,9 @@ class _EventMainComponent extends State<EventMainComponent> {
           );
         }
       } else {
-        if (widget.showReplying && eventRelation.tagPList.isNotEmpty && eventRelation.tagEList.isNotEmpty) {
+        if (widget.showReplying &&
+            eventRelation.tagPList.isNotEmpty &&
+            eventRelation.tagEList.isNotEmpty) {
           if (widget.event.kind != Reaction.kKind) {
             var textStyle = TextStyle(
               color: hintColor,
@@ -363,7 +475,8 @@ class _EventMainComponent extends State<EventMainComponent> {
           }
         }
 
-        if (widget.event.kind != Metadata.kKind && widget.event.kind != Reaction.kKind) {
+        if (widget.event.kind != Metadata.kKind &&
+            widget.event.kind != Reaction.kKind) {
           list.add(
             buildContentWidget(_settingProvider, imagePreview, videoPreview),
           );
@@ -394,7 +507,9 @@ class _EventMainComponent extends State<EventMainComponent> {
             if (StringUtil.isNotBlank(m)) {
               if (m!.indexOf("image/") == 0) {
                 list.add(ContentImageComponent(imageUrl: url!));
-              } else if (m.indexOf("video/") == 0 && widget.showVideo && !PlatformUtil.isPC()) {
+              } else if (m.indexOf("video/") == 0 &&
+                  widget.showVideo &&
+                  !PlatformUtil.isPC()) {
                 list.add(ContentVideoComponent(url: url!));
               } else {
                 list.add(ContentLinkComponent(link: url!));
@@ -404,7 +519,9 @@ class _EventMainComponent extends State<EventMainComponent> {
               if (fileType == "image") {
                 list.add(ContentImageComponent(imageUrl: url));
               } else if (fileType == "video" && !PlatformUtil.isPC()) {
-                if (settingProvider.videoPreview != OpenStatus.OPEN && (settingProvider.videoPreview == OpenStatus.OPEN || widget.showVideo)) {
+                if (settingProvider.videoPreview != OpenStatus.OPEN &&
+                    (settingProvider.videoPreview == OpenStatus.OPEN ||
+                        widget.showVideo)) {
                   list.add(ContentVideoComponent(url: url));
                 } else {
                   list.add(ContentLinkComponent(link: url));
@@ -415,9 +532,48 @@ class _EventMainComponent extends State<EventMainComponent> {
             }
           }
         }
-        if (widget.event.kind != kind.EventKind.ZAP_RECEIPT && widget.showReactions) {
+
+        final textHeight = _calculateTextHeight(widget.event.content);
+        final imageHeight = _imageLinks.isEmpty ? 0 : 200; // Image height + spacing
+        final totalHeight = textHeight + imageHeight;
+
+        // Show More button if needed
+        // list.add(Text(
+        //     "${totalHeight} > ${_collapsedHeight} + ${imageHeight} = ${totalHeight > _collapsedHeight + imageHeight}, shouldShowButton:${_shouldShowButton} _isExpanded:${_isExpanded}"));
+        if (_shouldShowButton) {
+          list.add(const SizedBox(height: 8));
+          list.add(
+            GestureDetector(
+              onTap: () {
+                setState(() {
+                  _isExpanded = !_isExpanded;
+                });
+              },
+              child: Center(
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                  decoration: BoxDecoration(
+                    color: themeData.primaryColor.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    _isExpanded ? "Show Less" : "Show More",
+                    style: TextStyle(
+                      color: themeData.primaryColor,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          );
+        }
+
+        if (widget.event.kind != kind.EventKind.ZAP_RECEIPT &&
+            widget.showReactions) {
           list.add(EventReactionsComponent(
-              screenshotController: widget.screenshotController,
+              // screenshotController: widget.screenshotController,
               event: widget.event,
               eventRelation: eventRelation,
               showDetailBtn: widget.showDetailBtn,
@@ -457,7 +613,8 @@ class _EventMainComponent extends State<EventMainComponent> {
           ),
           GestureDetector(
             onTap: () {
-              RouterUtil.router(context, RouterPath.COMMUNITY_DETAIL, eventRelation.communityId);
+              RouterUtil.router(context, RouterPath.COMMUNITY_DETAIL,
+                  eventRelation.communityId);
             },
             child: Text(
               eventRelation.communityId!.title,
@@ -514,16 +671,17 @@ class _EventMainComponent extends State<EventMainComponent> {
     }
 
     return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: eventAllList,
-    );
+        // mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: eventAllList);
   }
 
   bool forceShowLongContnet = false;
 
   bool hideLongContent = false;
 
-  Widget buildContentWidget(SettingProvider _settingProvider, bool imagePreview, bool videoPreview) {
+  Widget buildContentWidget(
+      SettingProvider _settingProvider, bool imagePreview, bool videoPreview) {
     List<Widget> content = ContentDecoder.decode(
       context,
       null,
@@ -536,13 +694,33 @@ class _EventMainComponent extends State<EventMainComponent> {
     );
 
     var main = SizedBox(
-      width: double.maxFinite,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: content,
-      ),
-    );
+            width: double.maxFinite,
+            child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  // Only apply max height when not expanded AND content needs to be constrained
+                  maxHeight: !_isExpanded && _shouldShowButton? _collapsedHeight: double.infinity
+                ),
+                child:
+                ClipRect(
+                  // Only clip when not expanded and should show button
+                  clipBehavior: (!_isExpanded && _shouldShowButton)
+                      ? Clip.hardEdge
+                      : Clip.none,
+                  child:
+    SingleChildScrollView(
+    physics: NeverScrollableScrollPhysics(),
+    child: Column(
+        key: _contentKey,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: content),
+                    // content,
+                    // Column(
+                    //     crossAxisAlignment: CrossAxisAlignment.start,
+                    //     mainAxisSize: MainAxisSize.min,
+                    //     children: content,
+                )))
+        )
+        ;
 
     return main;
   }
@@ -640,7 +818,8 @@ class _EventMainComponent extends State<EventMainComponent> {
             } else if (NIP19Tlv.isNrelay(link)) {
               var nrelay = NIP19Tlv.decodeNrelay(link);
               if (nrelay != null) {
-                var result = await ConfirmDialog.show(context, I18n.of(context).Add_this_relay_to_local);
+                var result = await ConfirmDialog.show(
+                    context, I18n.of(context).Add_this_relay_to_local);
                 if (result == true) {
                   await relayProvider.addRelay(nrelay.addr);
                 }
@@ -656,7 +835,8 @@ class _EventMainComponent extends State<EventMainComponent> {
     var s = I18n.of(context);
 
     return Container(
-      margin: EdgeInsets.only(bottom: Base.BASE_PADDING, top: Base.BASE_PADDING),
+      margin:
+          EdgeInsets.only(bottom: Base.BASE_PADDING, top: Base.BASE_PADDING),
       width: double.maxFinite,
       child: Column(
         children: [
@@ -758,7 +938,6 @@ class _EventReplyingcomponent extends State<EventReplyingcomponent> {
                   // fontWeight: FontWeight.bold,
                 ),
               );
-            })
-    );
+            }));
   }
 }

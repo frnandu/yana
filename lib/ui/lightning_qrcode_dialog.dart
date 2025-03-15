@@ -5,7 +5,6 @@ import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:pretty_qr_code/pretty_qr_code.dart';
-import 'package:screenshot/screenshot.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../utils/base.dart';
@@ -38,7 +37,7 @@ class LightningQrcodeDialog extends StatefulWidget {
 class _LightningQrcodeDialog extends State<LightningQrcodeDialog> {
   static const double IMAGE_WIDTH = 40;
   static const double QR_WIDTH = 200;
-  ScreenshotController screenshotController = ScreenshotController();
+  // ScreenshotController screenshotController = ScreenshotController();
 
   @override
   Widget build(BuildContext context) {
@@ -114,9 +113,10 @@ class _LightningQrcodeDialog extends State<LightningQrcodeDialog> {
 
     var main = Stack(
       children: [
-        Screenshot(
-          controller: screenshotController,
-          child: Container(
+        // Screenshot(
+        //   controller: screenshotController,
+        //   child:
+          Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
               color: cardColor,
@@ -127,7 +127,7 @@ class _LightningQrcodeDialog extends State<LightningQrcodeDialog> {
               children: list,
             ),
           ),
-        ),
+        // ),
       ],
     );
 
