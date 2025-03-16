@@ -114,7 +114,6 @@
 - ~~Long posts should be cut and have "show more"~~
 - ~~NIP-42 relay auth~~
 
-
 Planned improvements for YANA include:\
 - Separate settings and wallets for each account.\
 - User selection for image services when uploading files.\
