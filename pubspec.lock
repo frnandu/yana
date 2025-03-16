@@ -1327,7 +1327,7 @@ packages:
     description:
       path: "packages/ndk"
       ref: HEAD
-      resolved-ref: e6b93039ee50a00f5a787c9fa1bdebc0ea09e40a
+      resolved-ref: "49ffb5a81c41311d58977ed09c341213f95e3eb5"
       url: "https://github.com/relaystr/ndk.git"
     source: git
     version: "0.3.2"
@@ -1339,6 +1339,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.3.0"
+  ndk_isar:
+    dependency: "direct main"
+    description:
+      name: ndk_isar
+      sha256: "5e67fa36d56d258854a5d19660402267c181d90d2df3ff59d87c723f9d8b45b8"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.2.0"
   ndk_objectbox:
     dependency: "direct main"
     description:

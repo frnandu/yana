@@ -114,10 +114,6 @@
 - ~~Long posts should be cut and have "show more"~~
 - ~~NIP-42 relay auth~~
 
-- editing profile (refreshing metadata) does NOT work!
-- fix search not working
-
-
 
 Planned improvements for YANA include:\
 - Separate settings and wallets for each account.\

@@ -80,18 +80,20 @@ class _ProfileEditorRouter extends CustState<ProfileEditorRouter> {
               cached.refreshedTimestamp! > (DateTime.now().subtract(REFRESH_METADATA_BEFORE_EDIT_DURATION).millisecondsSinceEpoch ~/ 1000)) {
               metadata = cached;
           } else {
+            EasyLoading.show(status: "Refreshing metadata from relays...", maskType: EasyLoadingMaskType.black, dismissOnTap: true);
             await ndk.metadata.loadMetadata(loggedUserSigner!.getPublicKey(), forceRefresh: true).then(
               (metadata) {
                 metadata ??= Metadata(pubKey: loggedUserSigner!.getPublicKey());
+                EasyLoading.dismiss();
                 return this.metadata;
               },
             ).timeout(const Duration(seconds: 6), onTimeout: () {
               metadata ??= Metadata(pubKey: loggedUserSigner!.getPublicKey(), updatedAt: Helpers.now);
+              EasyLoading.dismiss();
               return metadata;
             });
-            EasyLoading.show(status: "Refreshing metadata from relays...", maskType: EasyLoadingMaskType.black);
-            return metadata;
           }
+          return metadata;
         }),
         builder: (context, snapshot) {
           if (snapshot.hasData) {
