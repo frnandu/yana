@@ -110,12 +110,25 @@
 - fix not remembering already cached events from feed
 
 ===== v0.16
-- use listview to fix flickering
-- use ImageTileView
+- ~~NWC alby go 1-click connection~~
+- ~~Long posts should be cut and have "show more"~~
+- ~~NIP-42 relay auth~~
+
+- editing profile (refreshing metadata) does NOT work!
+- fix search not working
 
 
 
+Planned improvements for YANA include:\
+- Separate settings and wallets for each account.\
+- User selection for image services when uploading files.\
+- Display the note being replied to.\
+- Introduce release flavors, starting with a YANA Wallet APK focused solely on wallet functionality.\
+- Implement NIP-13 Proof of Work for mobile devices.\
+- Apply a new design for the feed, onboarding, and modules prepared by Saunter.\
 
+
+- filter notification about your own zapping!
 - nostr+walletconnect onboarding with lud16
 - fix not finding metadatas 
 - make thread detail subscription of new replies work

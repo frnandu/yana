@@ -1,3 +1,4 @@
+import 'package:flutter_list_view/flutter_list_view.dart';
 import 'package:ndk/domain_layer/entities/nip_01_event.dart';
 import 'package:ndk/shared/nips/nip25/reactions.dart';
 import 'package:flutter/material.dart';
@@ -33,7 +34,7 @@ class _EventDetailRouter extends State<EventDetailRouter> {
 
   bool showTitle = false;
 
-  final ScrollController _controller = ScrollController();
+  final FlutterListViewController _controller = FlutterListViewController();
 
   double rootEventHeight = 120;
 
@@ -120,9 +121,10 @@ class _EventDetailRouter extends State<EventDetailRouter> {
           return event2.createdAt - event1.createdAt;
         });
 
-        Widget main = ListView.builder(
-          controller: _controller,
-          itemBuilder: (context, index) {
+        Widget main = FlutterListView(
+            controller: _controller,
+            delegate:
+            FlutterListViewDelegate((BuildContext context, int index) {
             if (index == 0) {
               return WidgetSize(
                 child: mainEventWidget!,
@@ -146,8 +148,8 @@ class _EventDetailRouter extends State<EventDetailRouter> {
 
             return Container();
           },
-          itemCount: allEvent.length + 1,
-        );
+          childCount: allEvent.length + 1,
+        ));
 
         if (PlatformUtil.isTableMode()) {
           main = GestureDetector(

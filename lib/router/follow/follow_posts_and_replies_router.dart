@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_list_view/flutter_list_view.dart';
 import 'package:provider/provider.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 import 'package:yana/main.dart';
@@ -26,7 +27,7 @@ class FollowPostsAndRepliesRouter extends StatefulWidget {
 
 class _FollowPostsAndRepliesRouter
     extends KeepAliveCustState<FollowPostsAndRepliesRouter> with LoadMoreEvent {
-  ScrollController _controller = ScrollController();
+  FlutterListViewController _controller = FlutterListViewController();
 
   @override
   void initState() {
@@ -74,17 +75,19 @@ class _FollowPostsAndRepliesRouter
             followEventProvider.setRepliesTimestampToNewestAndSave;
           }
         },
-        child: ListView.builder(
-          controller: _controller,
-          itemBuilder: (BuildContext context, int index) {
+        child:
+        FlutterListView(
+            controller: _controller,
+            delegate:
+            FlutterListViewDelegate((BuildContext context, int index) {
             var event = events[index];
             return EventListComponent(
               event: event,
               showVideo: _settingProvider.videoPreview == OpenStatus.OPEN,
             );
           },
-          itemCount: events.length,
-        ));
+          childCount: events.length,
+        )));
 
     Widget ri = RefreshIndicator(
       onRefresh: () async {

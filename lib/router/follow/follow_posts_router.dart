@@ -29,7 +29,8 @@ class FollowPostsRouter extends StatefulWidget {
 
 class _FollowPostsRouter extends KeepAliveCustState<FollowPostsRouter>
     with LoadMoreEvent {
-  ScrollController _controller = ScrollController();
+  // ScrollController _controller = ScrollController();
+  FlutterListViewController _controller = FlutterListViewController();
 
   //int _initTime = DateTime.now().millisecondsSinceEpoch ~/ 1000;
 
@@ -74,40 +75,24 @@ class _FollowPostsRouter extends KeepAliveCustState<FollowPostsRouter>
     var main = VisibilityDetector(
         key: const Key('feed-posts'),
         onVisibilityChanged: (visibilityInfo) {
-          if (visibilityInfo.visibleFraction==0.0) {
+          if (visibilityInfo.visibleFraction == 0.0) {
             followEventProvider.setPostsTimestampToNewestAndSave();
           }
         },
-        child:
-        FlutterListView(
-        delegate: FlutterListViewDelegate(
-        (BuildContext context, int index) {
-                var event = events[index];
-                // Map<String, dynamic> map = event.toJson();
-                // map['content']=event.content+event.sources.toString();
-                // var e = Nip01Event.fromJson(map);
-                // e.sources = event.sources;
-                return EventListComponent(
-                  event: event,
-                  showVideo: _settingProvider.videoPreview == OpenStatus.OPEN,
-                );
-        },
-        childCount:events.length
-        ))
-      // ListView.builder(
-      //     controller: _controller,
-      //     itemBuilder: (BuildContext context, int index) {
-      //       var event = events[index];
-      //       // Map<String, dynamic> map = event.toJson();
-      //       // map['content']=event.content+event.sources.toString();
-      //       // var e = Nip01Event.fromJson(map);
-      //       // e.sources = event.sources;
-      //       return EventListComponent(
-      //         event: event,
-      //         showVideo: _settingProvider.videoPreview == OpenStatus.OPEN,
-      //       );
-      //     },
-      //     itemCount: events.length,
+        child: FlutterListView(
+          controller: _controller,
+            delegate:
+                FlutterListViewDelegate((BuildContext context, int index) {
+          var event = events[index];
+          // Map<String, dynamic> map = event.toJson();
+          // map['content']=event.content+event.sources.toString();
+          // var e = Nip01Event.fromJson(map);
+          // e.sources = event.sources;
+          return EventListComponent(
+            event: event,
+            showVideo: _settingProvider.videoPreview == OpenStatus.OPEN,
+          );
+        }, childCount: events.length))
         );
 
     // var main = SingleChildScrollView(
@@ -190,7 +175,7 @@ class _FollowPostsRouter extends KeepAliveCustState<FollowPostsRouter>
   @override
   void doQuery() {
     preQuery();
-    if (until!=null) {
+    if (until != null) {
       followEventProvider.queryOlder(until: until!);
     }
   }
@@ -201,6 +186,5 @@ class _FollowPostsRouter extends KeepAliveCustState<FollowPostsRouter>
   }
 
   @override
-  Future<void> onReady(BuildContext context) async {
-  }
+  Future<void> onReady(BuildContext context) async {}
 }

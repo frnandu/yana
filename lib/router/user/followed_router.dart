@@ -1,3 +1,4 @@
+import 'package:flutter_list_view/flutter_list_view.dart';
 import 'package:ndk/domain_layer/entities/metadata.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -27,7 +28,7 @@ class FollowedRouter extends StatefulWidget {
 }
 
 class _FollowedRouter extends State<FollowedRouter> {
-  ScrollController scrollController = ScrollController();
+  final scrollController = FlutterListViewController();
 
   @override
   Widget build(BuildContext context) {
@@ -46,31 +47,33 @@ class _FollowedRouter extends State<FollowedRouter> {
     var themeData = Theme.of(context);
     var titleFontSize = themeData.textTheme.bodyLarge!.fontSize;
 
-    var listView = ListView.builder(
-      controller: scrollController,
-      itemBuilder: (context, index) {
-        var pubkey = widget.pubkeys![index];
-        if (StringUtil.isBlank(pubkey)) {
-          return Container();
-        }
+    var listView = FlutterListView(
+        controller: scrollController,
+        delegate: FlutterListViewDelegate(
+          (BuildContext context, int index) {
+            var pubkey = widget.pubkeys![index];
+            if (StringUtil.isBlank(pubkey)) {
+              return Container();
+            }
 
-        return Container(
-            margin: const EdgeInsets.only(bottom: Base.BASE_PADDING_HALF),
-            child: FutureBuilder<Metadata?>(
-                future: metadataProvider.getMetadata(pubkey),
-                builder: (context, snapshot) {
-                  return snapshot.hasData != null
-                      ? SearchMentionUserItemComponent(
-                          metadata: snapshot.data!,
-                          onTap: (metadata) {
-                            RouterUtil.router(context, RouterPath.USER, pubkey);
-                          },
-                          width: 400)
-                      : Container();
-                }));
-      },
-      itemCount: widget.pubkeys!.length,
-    );
+            return Container(
+                margin: const EdgeInsets.only(bottom: Base.BASE_PADDING_HALF),
+                child: FutureBuilder<Metadata?>(
+                    future: metadataProvider.getMetadata(pubkey),
+                    builder: (context, snapshot) {
+                      return snapshot.hasData
+                          ? SearchMentionUserItemComponent(
+                              metadata: snapshot.data!,
+                              onTap: (metadata) {
+                                RouterUtil.router(
+                                    context, RouterPath.USER, pubkey);
+                              },
+                              width: 400)
+                          : Container();
+                    }));
+          },
+          childCount: widget.pubkeys!.length,
+        ));
 
     var main = Scaffold(
       appBar: AppBar(

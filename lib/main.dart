@@ -21,7 +21,7 @@ import 'package:ndk/shared/helpers/relay_helper.dart';
 import 'package:ndk_amber/data_layer/data_sources/amber_flutter.dart';
 import 'package:ndk_amber/data_layer/repositories/signers/amber_event_signer.dart';
 import 'package:ndk_objectbox/data_layer/db/object_box/db_object_box.dart';
-// import 'package:ndk_rust_verifier/ndk_rust_verifier.dart';
+import 'package:ndk_rust_verifier/ndk_rust_verifier.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:protocol_handler/protocol_handler.dart';
 import 'package:provider/provider.dart';
@@ -162,7 +162,7 @@ EventSigner? get loggedUserSigner => ndk.accounts.getLoggedAccount()?.signer;
 AmberFlutterDS amberFlutterDS = AmberFlutterDS(Amberflutter());
 late CacheManager cacheManager;
 final logLevel = Logger.logLevels.debug;
-final eventVerifier = Bip340EventVerifier();//RustEventVerifier();
+final eventVerifier = RustEventVerifier();
 Ndk ndk =
 //Ndk.emptyBootstrapRelaysConfig();// = Ndk(
 Ndk( NdkConfig(

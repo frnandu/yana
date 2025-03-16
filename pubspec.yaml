@@ -123,13 +123,19 @@ dependencies:
   back_button_interceptor: ^8.0.3
   lottie: ^3.1.2
   bolt11_decoder: ^1.0.2
+  flutter_list_view: ^1.1.29
+
+# camelus
+#  ndk: ^0.3.0
+#  ndk_rust_verifier: ^0.2.3
+#  ndk_amber: ^0.2.0
+#  ndk_objectbox: ^0.2.1
 
   ndk: 0.3.2
+  ndk_rust_verifier: 0.3.1
   ndk_amber: 0.3.0
-#  ndk_rust_verifier: 0.3.0
 #  ndk_isar: 0.2.0
-  ndk_objectbox: 0.2.2
-  flutter_list_view: ^1.1.29
+  ndk_objectbox: 0.2.3
 
 dev_dependencies:
   flutter_launcher_icons: ^0.14.1
@@ -161,14 +167,25 @@ dependency_overrides:
 #      url: https://github.com/holzgeist/flutter_inappwebview
 #      path: flutter_inappwebview_android
 #      ref: d89b1d32638b49dfc58c4b7c84153be0c269d057
-  ndk:
-      path: ../ndk/packages/ndk
+#  ndk:
+#      path: ../ndk/packages/ndk
 #  ndk_amber:
 #    path: ../ndk/packages/amber
+#  ndk_objectbox:
+#    path: ../ndk/packages/objectbox
 #  ndk_rust_verifier:
 #    path: ../ndk/packages/rust_verifier
 #  rust_lib_ndk:
 #    path: ../ndk/packages/rust_verifier/rust_builder
+
+  ndk:
+    git:
+      url: https://github.com/relaystr/ndk.git
+      path: packages/ndk
+#  ndk_rust_verifier:
+#    git:
+#      url: https://github.com/relaystr/ndk.git
+#      path: packages/rust_verifier
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

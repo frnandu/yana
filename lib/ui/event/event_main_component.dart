@@ -99,14 +99,12 @@ class EventMainComponent extends StatefulWidget {
 class _EventMainComponent extends State<EventMainComponent> {
   bool showWarning = false;
   late List<String> _imageLinks;
-  late Set<String> _profileHexIdentifiers;
-  final Map<String, WidgetSpan> _memoizedNoteReferences = {};
-  bool _isContentRevealed = false;
   final GlobalKey _contentKey = GlobalKey();
+  double textHeight = 0;
 
   bool _isExpanded = false;
   final double _collapsedHeight = 250.0;
-  bool _shouldShowButton = false;
+  // bool _shouldShowButton = false;
 
   late EventRelation eventRelation;
 
@@ -130,42 +128,49 @@ class _EventMainComponent extends State<EventMainComponent> {
 
   void _parseContent() {
     _imageLinks = _extractImages(widget.event);
-    _profileHexIdentifiers =
-        _extractProfileHexIdentifiers(widget.event.content);
+
+    // _profileHexIdentifiers =
+    //     _extractProfileHexIdentifiers(widget.event.content);
   }
 
-  Set<String> _extractProfileHexIdentifiers(String content) {
-    final profileRegex = RegExp(r'nostr:(nprofile|npub)[a-zA-Z0-9]+');
-    return profileRegex
-        .allMatches(content)
-        .map((match) => _extractHexFromProfileLink(
-            match.group(0)!.replaceAll('nostr:', '')))
-        .toSet();
-  }
-
-  String _extractHexFromProfileLink(String link) {
-    if (link.startsWith('nprofile')) {
-      Nprofile? nprofile = NIP19Tlv.decodeNprofile(link);
-      return nprofile != null ? nprofile.pubkey : "";
-    } else if (link.startsWith('npub')) {
-      final decoded = Nip19.decode(link);
-      return decoded[0] ?? '';
-    }
-    return '';
-  }
+  // Set<String> _extractProfileHexIdentifiers(String content) {
+  //   final profileRegex = RegExp(r'nostr:(nprofile|npub)[a-zA-Z0-9]+');
+  //   return profileRegex
+  //       .allMatches(content)
+  //       .map((match) => _extractHexFromProfileLink(
+  //           match.group(0)!.replaceAll('nostr:', '')))
+  //       .toSet();
+  // }
+  //
+  // String _extractHexFromProfileLink(String link) {
+  //   if (link.startsWith('nprofile')) {
+  //     Nprofile? nprofile = NIP19Tlv.decodeNprofile(link);
+  //     return nprofile != null ? nprofile.pubkey : "";
+  //   } else if (link.startsWith('npub')) {
+  //     final decoded = Nip19.decode(link);
+  //     return decoded[0] ?? '';
+  //   }
+  //   return '';
+  // }
 
   void _checkIfContentExceedsHeight() {
     // Wait for next frame to ensure rendering is complete
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       // print("check mounted:$mounted for ${widget.event.content}");
       if (!mounted) return;
-      // Use a GlobalKey to get the actual rendered size
+      // setState(() {
+      //   textHeight = _calculateTextHeight(widget.event.content);
+      // });
+
+      // textHeight = _calculateTextHeight(widget.event.content);
+      // // Use a GlobalKey to get the actual rendered size
       final RenderBox? contentBox = _contentKey.currentContext?.findRenderObject() as RenderBox?;
       if (contentBox != null) {
-        final double contentHeight = contentBox.size.height;
         setState(() {
           // print("    `---- $contentHeight > $_collapsedHeight  = ${contentHeight > _collapsedHeight}");
-          _shouldShowButton = contentHeight > _collapsedHeight;
+          textHeight = contentBox.size.height;
+          // _shouldShowButton = contentHeight > _collapsedHeight;
         });
       }
     });
@@ -533,14 +538,15 @@ class _EventMainComponent extends State<EventMainComponent> {
           }
         }
 
-        final textHeight = _calculateTextHeight(widget.event.content);
         final imageHeight = _imageLinks.isEmpty ? 0 : 200; // Image height + spacing
         final totalHeight = textHeight + imageHeight;
 
+        final shouldShowButton = totalHeight > _collapsedHeight + imageHeight;
+
         // Show More button if needed
         // list.add(Text(
-        //     "${totalHeight} > ${_collapsedHeight} + ${imageHeight} = ${totalHeight > _collapsedHeight + imageHeight}, shouldShowButton:${_shouldShowButton} _isExpanded:${_isExpanded}"));
-        if (_shouldShowButton) {
+        //     "${totalHeight} > ${_collapsedHeight} + ${imageHeight} = ${totalHeight > _collapsedHeight + imageHeight}, shouldShowButton:${shouldShowButton} _isExpanded:${_isExpanded}"));
+        if (shouldShowButton) {
           list.add(const SizedBox(height: 8));
           list.add(
             GestureDetector(
@@ -692,18 +698,22 @@ class _EventMainComponent extends State<EventMainComponent> {
       showLinkPreview: _settingProvider.linkPreview == OpenStatus.OPEN,
       imageListMode: widget.imageListMode,
     );
+    final imageHeight = _imageLinks.isEmpty ? 0 : 200; // Image height + spacing
+    final totalHeight = textHeight + imageHeight;
+
+    final shouldShowButton = totalHeight > _collapsedHeight + imageHeight;
 
     var main = SizedBox(
             width: double.maxFinite,
             child: ConstrainedBox(
                 constraints: BoxConstraints(
                   // Only apply max height when not expanded AND content needs to be constrained
-                  maxHeight: !_isExpanded && _shouldShowButton? _collapsedHeight: double.infinity
+                  maxHeight: !_isExpanded && shouldShowButton? _collapsedHeight: double.infinity
                 ),
                 child:
                 ClipRect(
                   // Only clip when not expanded and should show button
-                  clipBehavior: (!_isExpanded && _shouldShowButton)
+                  clipBehavior: (!_isExpanded && shouldShowButton)
                       ? Clip.hardEdge
                       : Clip.none,
                   child:

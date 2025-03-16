@@ -1,3 +1,4 @@
+import 'package:flutter_list_view/flutter_list_view.dart';
 import 'package:ndk/shared/nips/nip25/reactions.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -32,14 +33,14 @@ class NotificationsRouter extends StatefulWidget {
 
 class _NotificationsRouter extends KeepAliveCustState<NotificationsRouter>
     with LoadMoreEvent {
-  final ScrollController _controller = ScrollController();
+  final FlutterListViewController _controller = FlutterListViewController();
 
   @override
   void initState() {
     super.initState();
     bindLoadMoreScroll(_controller);
     _controller.addListener(() {
-      if (notificationsProvider.timestamp==null) {
+      if (notificationsProvider.timestamp == null) {
         notificationsProvider.setTimestampToNewestAndSave();
       }
     });
@@ -73,31 +74,31 @@ class _NotificationsRouter extends KeepAliveCustState<NotificationsRouter>
             notificationsProvider.setTimestampToNewestAndSave();
           }
         },
-        child: ListView.builder(
-          controller: _controller,
-          itemBuilder: (BuildContext context, int index) {
-            var event = events[index];
-            event.content = event.content.replaceAll('+', '❤');
-            if (event.kind == kind.EventKind.ZAP_RECEIPT &&
-                StringUtil.isBlank(event.content)) {
-              return ZapEventListComponent(event: event);
-            } else if (event.kind == Reaction.kKind) {
-              return ReactionEventListComponent(
-                event: event,
-                text: "reacted ${event.content}    ",
-                renderRootEvent: true,
-              );
-            } else {
-              return EventListComponent(
-                event: event,
-                showReactions: event.kind != Reaction.kKind,
-                showVideo: _settingProvider.videoPreview == OpenStatus.OPEN,
-              );
-            }
-          },
-          itemCount: events.length,
-        )
-    );
+        child: FlutterListView(
+            controller: _controller,
+            delegate: FlutterListViewDelegate(
+              (BuildContext context, int index) {
+                var event = events[index];
+                event.content = event.content.replaceAll('+', '❤');
+                if (event.kind == kind.EventKind.ZAP_RECEIPT &&
+                    StringUtil.isBlank(event.content)) {
+                  return ZapEventListComponent(event: event);
+                } else if (event.kind == Reaction.kKind) {
+                  return ReactionEventListComponent(
+                    event: event,
+                    text: "reacted ${event.content}    ",
+                    renderRootEvent: true,
+                  );
+                } else {
+                  return EventListComponent(
+                    event: event,
+                    showReactions: event.kind != Reaction.kKind,
+                    showVideo: _settingProvider.videoPreview == OpenStatus.OPEN,
+                  );
+                }
+              },
+              childCount: events.length,
+            )));
 
     Widget ri = RefreshIndicator(
       onRefresh: () async {

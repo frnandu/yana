@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter_list_view/flutter_list_view.dart';
 import 'package:ndk/ndk.dart';
 import 'package:ndk/shared/nips/nip01/helpers.dart';
 import 'package:flutter/material.dart';
@@ -30,7 +31,7 @@ class GlobalsEventsRouter extends StatefulWidget {
 
 class _GlobalsEventsRouter extends KeepAliveCustState<GlobalsEventsRouter>
     with PenddingEventsLaterFunction, LoadMoreEvent {
-  ScrollController scrollController = ScrollController();
+  FlutterListViewController scrollController = FlutterListViewController();
   EventMemBox eventBox = EventMemBox();
 
   NdkResponse? subscription;
@@ -65,19 +66,19 @@ class _GlobalsEventsRouter extends KeepAliveCustState<GlobalsEventsRouter>
         },
         child: EventDeleteCallback(
           onDeleteCallback: onDeleteCallback,
-          child: ListView.builder(
-            // physics: const PositionRetainedScrollPhysics(),
+          child: FlutterListView(
             controller: scrollController,
-            itemBuilder: (context, index) {
+            delegate: FlutterListViewDelegate(
+                  (BuildContext context, int index) {
               var event = list[index];
               return EventListComponent(
                 event: event,
                 showVideo: _settingProvider.videoPreview == OpenStatus.OPEN,
               );
             },
-            itemCount: list.length,
+            childCount: list.length,
           ),
-        ));
+        )));
 
     if (PlatformUtil.isTableMode()) {
       return GestureDetector(

@@ -1,10 +1,9 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_list_view/flutter_list_view.dart';
 import 'package:ndk/domain_layer/entities/contact_list.dart';
 import 'package:ndk/domain_layer/entities/metadata.dart';
-import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 
 import '../../main.dart';
-import '../../provider/metadata_provider.dart';
 import '../../ui/editor/search_mention_user_component.dart';
 import '../../utils/base.dart';
 import '../../utils/platform_util.dart';
@@ -23,7 +22,7 @@ class UserContactListComponent extends StatefulWidget {
 }
 
 class _UserContactListComponent extends State<UserContactListComponent> {
-  ScrollController _controller = ScrollController();
+  final _controller = FlutterListViewController();
 
   List<String>? list;
 
@@ -31,16 +30,17 @@ class _UserContactListComponent extends State<UserContactListComponent> {
   Widget build(BuildContext context) {
     list ??= widget.contactList.contacts;
 
-    Widget main = ListView.builder(
-      controller: _controller,
-      itemBuilder: (context, index) {
+    Widget main = FlutterListView(
+        controller: _controller,
+        delegate: FlutterListViewDelegate(
+              (BuildContext context, int index) {
         var contact = list![index];
         return Container(
             margin: const EdgeInsets.only(bottom: Base.BASE_PADDING_HALF),
             child: FutureBuilder<Metadata?>(
                 future: metadataProvider.getMetadata(contact),
                 builder: (context, snapshot) {
-                  return snapshot.hasData != null
+                  return snapshot.hasData
                       ? SearchMentionUserItemComponent(
                           metadata: snapshot.data!,
                           onTap: (metadata) {
@@ -50,8 +50,8 @@ class _UserContactListComponent extends State<UserContactListComponent> {
                       : Container();
                 }));
       },
-      itemCount: list!.length,
-    );
+      childCount: list!.length,
+    ));
 
     if (PlatformUtil.isTableMode()) {
       main = GestureDetector(

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_list_view/flutter_list_view.dart';
 import 'package:ndk/ndk.dart';
 import 'package:provider/provider.dart';
 import 'package:yana/provider/filter_provider.dart';
@@ -33,7 +34,8 @@ class UserRouter extends StatefulWidget {
   }
 }
 
-class _UserRouter extends CustState<UserRouter> with PenddingEventsLaterFunction, LoadMoreEvent {
+class _UserRouter extends CustState<UserRouter>
+    with PenddingEventsLaterFunction, LoadMoreEvent {
   final GlobalKey<NestedScrollViewState> globalKey = GlobalKey();
 
   ScrollController _controller = ScrollController();
@@ -163,7 +165,8 @@ class _UserRouter extends CustState<UserRouter> with PenddingEventsLaterFunction
           Widget main = NestedScrollView(
             key: globalKey,
             controller: _controller,
-            headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
+            headerSliverBuilder:
+                (BuildContext context, bool innerBoxIsScrolled) {
               return <Widget>[
                 SliverToBoxAdapter(
                   child: MetadataComponent(
@@ -181,7 +184,10 @@ class _UserRouter extends CustState<UserRouter> with PenddingEventsLaterFunction
                       pubkey: pubkey!,
                       // userNostr: userNostr,
                       onContactListLoaded: (contactList) {
-                        if (!disposed && loggedUserSigner != null && contactList.contacts.contains(loggedUserSigner!.getPublicKey())) {
+                        if (!disposed &&
+                            loggedUserSigner != null &&
+                            contactList.contacts
+                                .contains(loggedUserSigner!.getPublicKey())) {
                           setState(() {
                             followsYou = true;
                           });
@@ -195,8 +201,9 @@ class _UserRouter extends CustState<UserRouter> with PenddingEventsLaterFunction
             body: MediaQuery.removePadding(
               removeTop: true,
               context: context,
-              child: ListView.builder(
-                itemBuilder: (BuildContext context, int index) {
+              child: FlutterListView(
+                  delegate: FlutterListViewDelegate(
+                (BuildContext context, int index) {
                   var event = box.get(index);
                   if (event == null) {
                     return null;
@@ -206,8 +213,8 @@ class _UserRouter extends CustState<UserRouter> with PenddingEventsLaterFunction
                     showVideo: _settingProvider.videoPreview == OpenStatus.OPEN,
                   );
                 },
-                itemCount: box.length(),
-              ),
+                childCount: box.length(),
+              )),
             ),
           );
 
@@ -306,7 +313,8 @@ class _UserRouter extends CustState<UserRouter> with PenddingEventsLaterFunction
     Future(() async {
       if (subscription == null) {
         if (box.isEmpty()) {
-          List<Nip01Event>? cachedEvents = await cacheManager.loadEvents(pubKeys: [
+          List<Nip01Event>? cachedEvents =
+              await cacheManager.loadEvents(pubKeys: [
             pubkey!
           ], kinds: [
             Nip01Event.kTextNodeKind,
@@ -339,9 +347,11 @@ class _UserRouter extends CustState<UserRouter> with PenddingEventsLaterFunction
         } else if (feedRelaySet != null && settingProvider.gossip == 1) {
           relaySet = feedRelaySet!;
         }
-        subscription = ndk.requests.subscription(name: "user-sub", filters: [filter], relaySet: relaySet);
+        subscription = ndk.requests.subscription(
+            name: "user-sub", filters: [filter], relaySet: relaySet);
         subscription!.stream.listen((event) {
-          onEvent(event, saveToCache: pubkey == loggedUserSigner!.getPublicKey());
+          onEvent(event,
+              saveToCache: pubkey == loggedUserSigner!.getPublicKey());
         });
       }
     });

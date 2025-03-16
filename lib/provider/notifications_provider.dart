@@ -32,7 +32,7 @@ class NotificationsProvider extends ChangeNotifier with PenddingEventsLaterFunct
   }
 
   Future<void> loadCached() async {
-    List<Nip01Event>? cachedEvents = await cacheManager.loadEvents(kinds: notificationsProvider.queryEventKinds(), pTag: loggedUserSigner!.getPublicKey());
+    List<Nip01Event> cachedEvents = await cacheManager.loadEvents(kinds: notificationsProvider.queryEventKinds(), pTag: loggedUserSigner!.getPublicKey());
     print("NOTIFICATIONS loaded ${cachedEvents.length} events from cache DB");
     onEvents(cachedEvents, saveToCache: false);
   }
