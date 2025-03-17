@@ -151,7 +151,6 @@ class AccountsState extends State<AccountsComponent> {
         : isPrivate || !PlatformUtil.isWeb()
             ? Bip340EventSigner(privateKey: isPrivate ? key : null, publicKey: publicKey)
             : Nip07EventSigner(await js.getPublicKeyAsync());
-    await ndk.requests.closeAllSubscription();
     // await ndk.destroy();
     // ndk = Ndk(
     //     NdkConfig(
@@ -179,18 +178,17 @@ class AccountsState extends State<AccountsComponent> {
     if (settingProvider.privateKeyIndex != index) {
       EasyLoading.show(status: "Logging out...", maskType: EasyLoadingMaskType.black);
       clearCurrentMemInfo();
-      // ndk.destroy().then((a) {
-      //   ndk = Ndk.emptyBootstrapRelaysConfig();
-        settingProvider.privateKeyIndex = index;
+      ndk.requests.closeAllSubscription();
+      ndk.accounts.logout();
+      settingProvider.privateKeyIndex = index;
 
-        // signOut complete
-        if (settingProvider.key != null) {
-          // use next privateKey to login
-          doLogin();
-          settingProvider.notifyListeners();
-          RouterUtil.back(context);
-        }
-      // });
+      // signOut complete
+      if (settingProvider.key != null) {
+        // use next privateKey to login
+        doLogin();
+        settingProvider.notifyListeners();
+        RouterUtil.back(context);
+      }
     }
   }
 
@@ -200,6 +198,8 @@ class AccountsState extends State<AccountsComponent> {
     nwcProvider.disconnect();
     if (oldIndex == index) {
       clearCurrentMemInfo();
+      ndk.requests.closeAllSubscription();
+      ndk.accounts.logout();
       if (settingProvider.keyMap.isNotEmpty) {
         settingProvider.privateKeyIndex = int.tryParse(settingProvider.keyMap.keys.first);
         if (settingProvider.key != null) {
@@ -208,11 +208,6 @@ class AccountsState extends State<AccountsComponent> {
           settingProvider.notifyListeners();
           RouterUtil.back(context);
         }
-      } else {
-        ndk.requests.closeAllSubscription();
-        // ndk.destroy().then((a) {
-        //   ndk = Ndk.emptyBootstrapRelaysConfig();
-        // });
       }
     }
 
