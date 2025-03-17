@@ -28,24 +28,27 @@ class RelayProvider extends ChangeNotifier {
     }
     return ndk.relays.isRelayConnecting(cleanedUrl)
         ? WebSocket.connecting
-        :ndk.relays.isRelayConnected(cleanedUrl)
+        : ndk.relays.isRelayConnected(cleanedUrl)
             ? WebSocket.open
             : WebSocket.closed;
   }
 
   String relayNumStr() {
     Set<String> set = {};
-    if (myInboxRelaySet!=null) {
+    if (myInboxRelaySet != null) {
       set.addAll(myInboxRelaySet!.urls);
     }
-    if (myOutboxRelaySet!=null) {
+    if (myOutboxRelaySet != null) {
       set.addAll(myOutboxRelaySet!.urls);
     }
-    String result = "${ndk.relays.connectedRelays.where((relay) => set.contains(relay.url)).length}/${set.length}";
+    String result =
+        "${ndk.relays.connectedRelays.where((relay) => set.contains(relay.url)).length}/${set.length}";
     // result +=",${relayManager.webSockets.keys.where((element) =>ndk.relays.isWebSocketOpen(element)).length}";
     // String result =
     //     "${nostr!.activeRelays().length}/${nostr!.allRelays().length}";
-    if (settingProvider.gossip == 1 && feedRelaySet != null && feedRelaySet!.urls.isNotEmpty) {
+    if (settingProvider.gossip == 1 &&
+        feedRelaySet != null &&
+        feedRelaySet!.urls.isNotEmpty) {
       result += " (feed ${feedRelaysNumStr()})";
     }
     return result;
@@ -64,8 +67,15 @@ class RelayProvider extends ChangeNotifier {
 
   Future<void> addRelay(String relayAddr) async {
     ReadWriteMarker marker = ReadWriteMarker.readWrite;
-    if (myOutboxRelaySet != null && !myOutboxRelaySet!.urls.contains(relayAddr) && myInboxRelaySet!=null && !myInboxRelaySet!.urls.contains(relayAddr)) {
-      UserRelayList userRelayList = await ndk.userRelayLists.broadcastAddNip65Relay(relayUrl: relayAddr, marker: marker, broadcastRelays: myOutboxRelaySet!.urls);
+    if (myOutboxRelaySet != null &&
+        !myOutboxRelaySet!.urls.contains(relayAddr) &&
+        myInboxRelaySet != null &&
+        !myInboxRelaySet!.urls.contains(relayAddr)) {
+      UserRelayList userRelayList = await ndk.userRelayLists
+          .broadcastAddNip65Relay(
+              relayUrl: relayAddr,
+              marker: marker,
+              broadcastRelays: myOutboxRelaySet!.urls);
       createMyRelaySets(userRelayList);
       await cacheManager.saveRelaySet(myOutboxRelaySet!);
       await cacheManager.saveRelaySet(myInboxRelaySet!);
@@ -75,7 +85,9 @@ class RelayProvider extends ChangeNotifier {
   }
 
   Future<void> removeRelay(String url) async {
-    UserRelayList? userRelayList = await ndk.userRelayLists.broadcastRemoveNip65Relay(relayUrl: url, broadcastRelays: myOutboxRelaySet!.urls);
+    UserRelayList? userRelayList = await ndk.userRelayLists
+        .broadcastRemoveNip65Relay(
+            relayUrl: url, broadcastRelays: myOutboxRelaySet!.urls);
     if (userRelayList != null) {
       createMyRelaySets(userRelayList);
       await cacheManager.saveRelaySet(myOutboxRelaySet!);
@@ -90,7 +102,9 @@ class RelayProvider extends ChangeNotifier {
     relays.addAll(DEFAULT_BOOTSTRAP_RELAYS);
     relays.addAll(myOutboxRelaySet!.urls);
 
-    UserRelayList? userRelayList = await ndk.userRelayLists.broadcastUpdateNip65RelayMarker(relayUrl: url, marker: marker, broadcastRelays: relays);
+    UserRelayList? userRelayList = await ndk.userRelayLists
+        .broadcastUpdateNip65RelayMarker(
+            relayUrl: url, marker: marker, broadcastRelays: relays);
 
     if (userRelayList != null) {
       createMyRelaySets(userRelayList);
@@ -106,13 +120,14 @@ class RelayProvider extends ChangeNotifier {
 // //    userRelayList ??= await ndk.relays.getSingleUserRelayList(loggedUserSigner!.getPublicKey(), forceRefresh: true);
 //   }
 
-  Future<RelaySet> recalculateFeedRelaySet() async {
+  Future<RelaySet> recalculateFeedRelaySet({Function(String, int, int)? onProgress}) async {
     RelaySet newRelaySet = await ndk.relaySets.calculateRelaySet(
         name: "feed",
         ownerPubKey: loggedUserSigner!.getPublicKey(),
         pubKeys: await contactListProvider.contacts(),
         direction: RelayDirection.outbox,
-        relayMinCountPerPubKey: settingProvider.followeesRelayMinCount);
+        relayMinCountPerPubKey: settingProvider.followeesRelayMinCount,
+        onProgress: onProgress);
     if (newRelaySet.urls.isNotEmpty) {
       feedRelaySet = newRelaySet;
       feedRelaySet!.name = "feed";
@@ -129,19 +144,24 @@ class RelayProvider extends ChangeNotifier {
   }
 
   List<String>? relaysFromApi;
-  Map<int,List<String>?> relaysFromApiByNip = {};
+  Map<int, List<String>?> relaysFromApiByNip = {};
 
-  Uri relaysApiUri = Uri.parse("https://api.nostr.watch/v1/online").replace(scheme: 'https');
+  Uri relaysApiUri =
+      Uri.parse("https://api.nostr.watch/v1/online").replace(scheme: 'https');
 
   Future<bool> fetchRelaysFromApi() async {
     try {
       var response = await http.get(relaysApiUri);
 
       if (response.body != null) {
-        final data = jsonDecode(
-            utf8.decode(response.bodyBytes)) as List<dynamic>;
+        final data =
+            jsonDecode(utf8.decode(response.bodyBytes)) as List<dynamic>;
         if (data != null) {
-          relaysFromApi = data.map((e) => e.toString(),).toList();
+          relaysFromApi = data
+              .map(
+                (e) => e.toString(),
+              )
+              .toList();
         }
       }
     } catch (e) {
@@ -154,14 +174,19 @@ class RelayProvider extends ChangeNotifier {
 
   Future<List<String>?> fetchRelaysFromApiByNip(int nip) async {
     try {
-      Uri relaysApiUri = Uri.parse("https://api.nostr.watch/v1/nip/${nip}").replace(scheme: 'https');
+      Uri relaysApiUri = Uri.parse("https://api.nostr.watch/v1/nip/${nip}")
+          .replace(scheme: 'https');
       var response = await http.get(relaysApiUri);
 
       if (response.body != null) {
-        final data = jsonDecode(
-            utf8.decode(response.bodyBytes)) as List<dynamic>;
+        final data =
+            jsonDecode(utf8.decode(response.bodyBytes)) as List<dynamic>;
         if (data != null) {
-          return data.map((e) => e.toString(),).toList();
+          return data
+              .map(
+                (e) => e.toString(),
+              )
+              .toList();
         }
       }
     } catch (e) {
@@ -172,19 +197,18 @@ class RelayProvider extends ChangeNotifier {
     return null;
   }
 
-
   Future<List<String>> findRelays(String text, {int? nip}) async {
     if (text.trim().isNotEmpty) {
       List<String>? relays;
-      if (nip==null) {
+      if (nip == null) {
         if (relaysFromApi == null) {
           await fetchRelaysFromApi();
         }
         relays = relaysFromApi;
       } else {
         relays = relaysFromApiByNip[nip];
-        if (relays==null) {
-          relaysFromApiByNip[nip] =  await fetchRelaysFromApiByNip(nip);
+        if (relays == null) {
+          relaysFromApiByNip[nip] = await fetchRelaysFromApiByNip(nip);
         }
         relays = relaysFromApiByNip[nip];
       }
@@ -192,16 +216,20 @@ class RelayProvider extends ChangeNotifier {
       set.addAll(relays!);
       return set
           .where((element) =>
-              text.length>=3 &&
-              element.replaceAll("wss://", "").replaceAll("ws://", "").contains(text) ||
-                  element.replaceAll("wss://", "").replaceAll("ws://", "").startsWith(text) ||
-                  element.startsWith(text)
-      )
+              text.length >= 3 &&
+                  element
+                      .replaceAll("wss://", "")
+                      .replaceAll("ws://", "")
+                      .contains(text) ||
+              element
+                  .replaceAll("wss://", "")
+                  .replaceAll("ws://", "")
+                  .startsWith(text) ||
+              element.startsWith(text))
           .toList();
     }
     return [];
   }
-
 
 // Relay genRelay(String relayAddr) {
 //   var relayStatus = relayStatusMap[relayAddr];
