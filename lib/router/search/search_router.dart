@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:flutter_list_view/flutter_list_view.dart';
 import 'package:ndk/ndk.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -46,7 +47,7 @@ class _SearchRouter extends CustState<SearchRouter>
 
   ScrollController loadableScrollController = ScrollController();
 
-  ScrollController scrollController = ScrollController();
+  final scrollController = FlutterListViewController();
 
   FocusNode focusNode = FocusNode();
 
@@ -104,9 +105,10 @@ class _SearchRouter extends CustState<SearchRouter>
     bool? loadable = true;
     var events = eventMemBox.all();
     // print("contacts: ${metadatasFromCache.length} profile: ${metadatasFromSearch.length} events: ${events.length}");
-    Widget body = ListView.builder(
+    Widget body = FlutterListView(
         controller: scrollController,
-        itemBuilder: (BuildContext context, int index) {
+        delegate:
+        FlutterListViewDelegate((BuildContext context, int index) {
           Metadata? metadata;
 
           if (index < metadatasFromCache.length) {
@@ -147,9 +149,9 @@ class _SearchRouter extends CustState<SearchRouter>
           }
           return Container();
         },
-        itemCount: metadatasFromCache.length +
+        childCount: metadatasFromCache.length +
             metadatasFromSearch.length +
-            events.length);
+            events.length));
 
     if (StringUtil.isBlank(controller.text)) {
       // bool anyNip50 = myInboxRelaySet!=null &&ndk.relays.getConnectedRelays(myInboxRelaySet!.urls).any((relay) => relay.info!=null && relay.info!.nips!=null && relay.info!.nips.contains(50));
@@ -450,6 +452,9 @@ class _SearchRouter extends CustState<SearchRouter>
   String lastText = "";
 
   checkInput() async {
+    if (lastText == controller.text) {
+      return;
+    }
     searchAction = null;
     searchAbles.clear();
     metadatasFromCache.clear();

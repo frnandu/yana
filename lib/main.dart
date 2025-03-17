@@ -14,18 +14,15 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:get_time_ago/get_time_ago.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
-import 'package:isar/isar.dart' as isar;
 import 'package:ndk/config/bootstrap_relays.dart';
 import 'package:ndk/entities.dart';
 import 'package:ndk/ndk.dart';
 import 'package:ndk/shared/helpers/relay_helper.dart';
 import 'package:ndk_amber/data_layer/data_sources/amber_flutter.dart';
 import 'package:ndk_amber/data_layer/repositories/signers/amber_event_signer.dart';
-import 'package:ndk_isar/data_layer/repositories/cache_manager/isar_cache_manager.dart';
 import 'package:ndk_objectbox/data_layer/db/object_box/db_object_box.dart';
 import 'package:ndk_rust_verifier/ndk_rust_verifier.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:protocol_handler/protocol_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -192,6 +189,14 @@ FlutterBackgroundService? backgroundService;
 // late FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
 
 int c = 0;
+
+const DEFAULT_BLOSSOM_SERVERS = [
+  // 'https://nostr.download',
+  'https://blossom.f7z.io',
+  'https://blossom.primal.net',
+  'https://cdn.nostrcheck.me'
+  // 'https://files.v0l.io',
+];
 
 @pragma('vm:entry-point')
 void onStart(ServiceInstance service) async {
@@ -380,7 +385,6 @@ Future<void> initRelays({bool newKey = false}) async {
   //     dismissOnTap: true,
   //     duration: const Duration(seconds: 15),
   //     maskType: EasyLoadingMaskType.black);
-  await ndk.relays.reconnectRelays(userRelayList.urls);
 
   ndk.lists.getSingleNip51List(Nip51List.kMute, loggedUserSigner!).then(
     (list) {
@@ -630,14 +634,14 @@ Future<void> main() async {
   communityInfoProvider = CommunityInfoProvider();
   nwcProvider = NwcProvider();
 
-  IsarCacheManager dbCacheManager = IsarCacheManager();
-  // DbObjectBox dbCacheManager = DbObjectBox();
+  // IsarCacheManager dbCacheManager = IsarCacheManager();
+  DbObjectBox dbCacheManager = DbObjectBox();
   try {
-    // await dbCacheManager.dbRdy;
-    await dbCacheManager.init(
-        directory: PlatformUtil.isWeb()
-            ? isar.Isar.sqliteInMemory
-            : (await getApplicationDocumentsDirectory()).path);
+    await dbCacheManager.dbRdy;
+    // await dbCacheManager.init(
+    //     directory: PlatformUtil.isWeb()
+    //         ? isar.Isar.sqliteInMemory
+    //         : (await getApplicationDocumentsDirectory()).path);
     cacheManager = dbCacheManager;
   } catch (e) {
     cacheManager = MemCacheManager();
@@ -663,13 +667,7 @@ Future<void> main() async {
           : Nip07EventSigner(await js.getPublicKeyAsync());
     }
     ndk.accounts.loginExternalSigner(signer: eventSigner);
-    // ndk = Ndk(NdkConfig(
-    //     eventVerifier: eventVerifier,
-    //     cache: cacheManager,
-    //     eventOutFilters: [filterProvider],
-    //     logLevel: logLevel));
   }
-
   if (loggedUserSigner != null) {
     followEventProvider.loadCachedFeed();
     initRelays();

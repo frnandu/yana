@@ -449,6 +449,19 @@ class FollowEventProvider extends ChangeNotifier
     if (addedPosts || addedReplies) {
       if (toSave.isNotEmpty) {
         cacheManager.saveEvents(toSave);
+      //   contactListProvider.contacts().then((contacts) {
+      //     cacheManager.loadEvents(pubKeys:  contacts, kinds: [toSave.first.kind]).then((a) {
+      //       print(a);
+      //       a.forEach((e) {
+      //         if (!contacts.contains(e.pubKey)) {
+      //           final metadata = metadataProvider.getMetadata(e.pubKey).then((
+      //               m) {
+      //             // print(m);
+      //           });
+      //         }
+      //       });
+      //     });
+      //   });
       }
       notifyListeners();
     }

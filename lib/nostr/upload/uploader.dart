@@ -1,14 +1,14 @@
+import 'dart:io';
+
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:mime/mime.dart';
-// import 'package:wechat_assets_picker/wechat_assets_picker.dart';
+import 'package:yana/nostr/upload/remove_image_metadata.dart';
 import 'package:yana/utils/platform_util.dart';
 import 'package:yana/utils/string_util.dart';
 
 import '../../utils/base64.dart';
-import '../../utils/image_services.dart';
-import 'nostr_build_uploader.dart';
-import 'nostrimg_com_uploader.dart';
 
 class Uploader {
   // static Future<String?> pickAndUpload(BuildContext context) async {
@@ -36,19 +36,30 @@ class Uploader {
     return fileType!;
   }
 
-  static Future<String?> pick(BuildContext context) async {
+  static Future<List<String?>> pick(BuildContext context) async {
     if (PlatformUtil.isPC() || PlatformUtil.isWeb()) {
       FilePickerResult? result = await FilePicker.platform.pickFiles();
 
       if (result != null) {
         if (PlatformUtil.isWeb() && result.files.single.bytes != null) {
-          return BASE64.toBase64(result.files.single.bytes!);
+          return [BASE64.toBase64(result.files.single.bytes!)];
         }
 
-        return result.files.single.path;
+        return [result.files.single.path];
       }
 
-      return null;
+      return [];
+    }
+    final ImagePicker picker = ImagePicker();
+    final result = await picker.pickMultiImage();
+
+    try {
+      for (final image in result) {
+        await RemoveImageMetadata.fileToMemFile(File(image.path));
+      }
+      return result.map((a) => a.path).toList();
+    } catch (e) {
+      // TODO
     }
     // var assets = await AssetPicker.pickAssets(
     //   context,
@@ -60,16 +71,6 @@ class Uploader {
     //   return file!.path;
     // }
 
-    return null;
-  }
-
-  static Future<String?> upload(String localPath,
-      {String? imageService}) async {
-    // if (imageService == ImageServices.NOSTRIMG_COM) {
-    //   return await NostrimgComUploader.upload(localPath);
-    // } else if (imageService == ImageServices.NOSTR_BUILD) {
-      return await NostrBuildUploader.upload(localPath);
-    // }
-    // return await NostrimgComUploader.upload(localPath);
+    return [];
   }
 }

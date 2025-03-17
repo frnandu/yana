@@ -643,8 +643,9 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
                 routerBack: true, context: context);
             metadataProvider.clear();
           } else {
-            await ndk.destroy();
-            ndk = Ndk.emptyBootstrapRelaysConfig();
+            await ndk.requests.closeAllSubscription();
+            // await ndk.destroy();
+            // ndk = Ndk.emptyBootstrapRelaysConfig();
           }
         }
       },

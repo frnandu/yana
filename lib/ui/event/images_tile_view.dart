@@ -14,7 +14,7 @@ class ImagesTileView extends StatelessWidget {
     super.key,
     required this.images,
     this.galleryBottomWidget,
-    this.maxHeight = 200,
+    this.maxHeight = 600,
   });
 
   @override
@@ -23,7 +23,7 @@ class ImagesTileView extends StatelessWidget {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        double aspectRatio = imageCount > 1 ? 1 : 16 / 9;
+        double aspectRatio = 1;//imageCount > 1 ? 1 : 16 / 9;
         double widgetHeight = constraints.maxWidth / aspectRatio;
 
         widgetHeight = widgetHeight > maxHeight ? maxHeight : widgetHeight;
@@ -31,7 +31,7 @@ class ImagesTileView extends StatelessWidget {
         return ClipRRect(
           borderRadius: BorderRadius.circular(10),
           child: SizedBox(
-            height: widgetHeight,
+            height: maxHeight,
             child: _buildImageGrid(imageCount, constraints.maxWidth, context),
           ),
         );
@@ -84,7 +84,7 @@ class ImagesTileView extends StatelessWidget {
           children: [
             CachedNetworkImage(
               imageUrl: images[index],
-              fit: BoxFit.cover,
+              fit: BoxFit.fitWidth,
               placeholder: (context, url) => _imageLoading(),
               errorWidget: (context, url, error) => const Icon(Icons.error),
             ),
@@ -136,11 +136,11 @@ Widget _imageLoading() {
   return Container(
     decoration: BoxDecoration(
       borderRadius: BorderRadius.circular(8),
-      color: Colors.grey,
+      color: Colors.black,
     ),
     child: Center(
       child: CircularProgressIndicator(
-        color: Colors.grey,
+        color: Colors.white,
       ),
     ),
   );
