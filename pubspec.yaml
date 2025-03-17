@@ -82,7 +82,8 @@ dependencies:
   flutter_markdown: ^0.7.5
   window_manager: ^0.4.3
   qr_code_scanner: ^1.0.1
-#  mobile_scanner: ^5.2.1
+  image: ^4.5.3
+  #  mobile_scanner: ^5.2.1
   image_gallery_saver_plus: ^4.0.1 #: ^2.0.3
   permission_handler: ^11.3.1
   file_saver: ^0.2.4

@@ -4,7 +4,6 @@ import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter/material.dart';
 import 'package:yana/models/custom_emoji.dart';
 
-import '../../nostr/upload/uploader.dart';
 import '../../utils/base.dart';
 import '../../i18n/i18n.dart';
 import '../../main.dart';
@@ -157,7 +156,9 @@ class _CustomEmojiAddDialog extends State<CustomEmojiAddDialog> {
   }
 
   Future<void> pickPicture() async {
-    filepath = await Uploader.pick(context);
+    // final images = await Uploader.pick(context);
+    // filepath = images!=null?images[0]:null;
+    // TODO
     setState(() {});
   }
 
@@ -180,18 +181,18 @@ class _CustomEmojiAddDialog extends State<CustomEmojiAddDialog> {
 
     EasyLoading.show(status: "...");
     try {
-      var imagePath = await Uploader.upload(
-        filepath!,
-        imageService: settingProvider.imageService,
-      );
-      log("$text $imagePath");
-
-      if (StringUtil.isBlank(imagePath)) {
-        EasyLoading.show(status: s.Upload_fail);
-        return;
-      }
-
-      filepath = imagePath;
+      // var imagePath = await Uploader.upload(
+      //   filepath!,
+      //   imageService: settingProvider.imageService,
+      // );
+      // log("$text $imagePath");
+      //
+      // if (StringUtil.isBlank(imagePath)) {
+      //   EasyLoading.show(status: s.Upload_fail);
+      //   return;
+      // }
+      //
+      // filepath = imagePath;
     } finally {
       EasyLoading.dismiss();
     }

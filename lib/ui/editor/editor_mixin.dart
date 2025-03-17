@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:auto_size_text_field/auto_size_text_field.dart';
+import 'package:mime/mime.dart';
 import 'package:ndk/entities.dart';
 import 'package:ndk/shared/nips/nip01/helpers.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
@@ -19,6 +22,7 @@ import '../../models/custom_emoji.dart';
 import '../../nostr/event_kind.dart' as kind;
 import '../../nostr/nip19/nip19.dart';
 import '../../nostr/nip19/nip19_tlv.dart';
+import '../../nostr/upload/mem_file.dart';
 import '../../nostr/upload/uploader.dart';
 import '../../router/edit/poll_input_component.dart';
 import '../../router/index/index_app_bar.dart';
@@ -265,8 +269,10 @@ mixin EditorMixin {
   }
 
   Future<void> pickImage() async {
-    var filepath = await Uploader.pick(getContext());
-    _imageSubmitted(filepath);
+    final filepaths = await Uploader.pick(getContext());
+    for (final filepath in filepaths) {
+      _imageSubmitted(filepath);
+    }
   }
 
   void _imageSubmitted(String? value) {
@@ -460,12 +466,25 @@ mixin EditorMixin {
           if (StringUtil.isNotBlank(value) && value is String) {
             if (value.indexOf("http") != 0) {
               // this is a local image, update it first
-              var imagePath = await Uploader.upload(
-                value,
-                imageService: settingProvider.imageService,
+              File file = File(value);
+              final bytes = await file.readAsBytes();
+              final mimeType = lookupMimeType(file.path);
+              final filename = file.path.split('/').last;
+              if (mimeType == null || mimeType.isEmpty) {
+                throw Exception("No mime type found");
+              }
+
+              final uploadResponse = await ndk.files.upload(
+                file: NdkFile(data: bytes, mimeType: mimeType),
+                serverUrls: DEFAULT_BLOSSOM_SERVERS
               );
-              if (StringUtil.isNotBlank(imagePath)) {
-                value = imagePath;
+
+              // var imagePath = await Uploader.upload(
+              //   value,
+              //   imageService: settingProvider.imageService,
+              // );
+              if (uploadResponse!=null && uploadResponse.length>0 && uploadResponse.first.success) {
+                value = uploadResponse.first.descriptor!.url;
               } else {
                 EasyLoading.show(status: I18n.of(context).Upload_fail);
                 return null;

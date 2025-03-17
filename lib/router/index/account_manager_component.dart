@@ -151,7 +151,8 @@ class AccountsState extends State<AccountsComponent> {
         : isPrivate || !PlatformUtil.isWeb()
             ? Bip340EventSigner(privateKey: isPrivate ? key : null, publicKey: publicKey)
             : Nip07EventSigner(await js.getPublicKeyAsync());
-    await ndk.destroy();
+    await ndk.requests.closeAllSubscription();
+    // await ndk.destroy();
     // ndk = Ndk(
     //     NdkConfig(
     //       eventVerifier: eventVerifier,
@@ -159,8 +160,13 @@ class AccountsState extends State<AccountsComponent> {
     //       eventOutFilters:  [filterProvider],
     //       logLevel: logLevel
     //     ));
-    ndk.accounts.loginExternalSigner(signer: eventSigner);
+    if (ndk.accounts.hasAccount(eventSigner.getPublicKey())) {
+      ndk.accounts.switchAccount(pubkey: eventSigner.getPublicKey());
+    } else {
+      ndk.accounts.loginExternalSigner(signer: eventSigner);
+    }
 
+    followEventProvider.clear();
     await followEventProvider.loadCachedFeed();
     initRelays(newKey: false);
     notificationsProvider.notifyListeners();
@@ -173,8 +179,8 @@ class AccountsState extends State<AccountsComponent> {
     if (settingProvider.privateKeyIndex != index) {
       EasyLoading.show(status: "Logging out...", maskType: EasyLoadingMaskType.black);
       clearCurrentMemInfo();
-      ndk.destroy().then((a) {
-        ndk = Ndk.emptyBootstrapRelaysConfig();
+      // ndk.destroy().then((a) {
+      //   ndk = Ndk.emptyBootstrapRelaysConfig();
         settingProvider.privateKeyIndex = index;
 
         // signOut complete
@@ -184,7 +190,7 @@ class AccountsState extends State<AccountsComponent> {
           settingProvider.notifyListeners();
           RouterUtil.back(context);
         }
-      });
+      // });
     }
   }
 
@@ -203,9 +209,10 @@ class AccountsState extends State<AccountsComponent> {
           RouterUtil.back(context);
         }
       } else {
-        ndk.destroy().then((a) {
-          ndk = Ndk.emptyBootstrapRelaysConfig();
-        });
+        ndk.requests.closeAllSubscription();
+        // ndk.destroy().then((a) {
+        //   ndk = Ndk.emptyBootstrapRelaysConfig();
+        // });
       }
     }
 
@@ -226,7 +233,7 @@ class AccountsState extends State<AccountsComponent> {
     dmProvider.clear();
     noticeProvider.clear();
     contactListProvider.clear();
-    cacheManager.removeAllEvents();
+    // cacheManager.removeAllEvents();
 
     eventReactionsProvider.clear();
     linkPreviewDataProvider.clear();

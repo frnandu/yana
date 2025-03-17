@@ -113,6 +113,15 @@
 - ~~NWC alby go 1-click connection~~
 - ~~Long posts should be cut and have "show more"~~
 - ~~NIP-42 relay auth~~
+- ~~multi file upload~~
+
+- fix broadcast
+- fix metadata not loading in some places!!
+- logging out and into one of the remaining account doesn't work
+
+- fix gossip
+- fix background service?!?! | hide background service from settings
+
 
 Planned improvements for YANA include:\
 - Separate settings and wallets for each account.\

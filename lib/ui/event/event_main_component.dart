@@ -98,20 +98,20 @@ class EventMainComponent extends StatefulWidget {
 
 class _EventMainComponent extends State<EventMainComponent> {
   bool showWarning = false;
-  late List<String> _imageLinks;
+  List<String> _imageLinks = [];
   final GlobalKey _contentKey = GlobalKey();
   double textHeight = 0;
 
   bool _isExpanded = false;
-  final double _collapsedHeight = 250.0;
+  final double _collapsedHeight = 500.0;
   // bool _shouldShowButton = false;
 
   late EventRelation eventRelation;
 
-  List<String> _extractImages(Nip01Event note) {
+  List<String> _extractImages(String content) {
     List<String> imageLinks = [];
     RegExp exp = RegExp(r"(https?:\/\/[^\s]+)");
-    Iterable<RegExpMatch> matches = exp.allMatches(note.content);
+    Iterable<RegExpMatch> matches = exp.allMatches(content);
     for (var match in matches) {
       var link = match.group(0);
       if (link!.endsWith(".jpg") ||
@@ -119,6 +119,7 @@ class _EventMainComponent extends State<EventMainComponent> {
           link.endsWith(".png") ||
           link.endsWith(".webp") ||
           link.contains(".avif") ||
+          link.contains(".mp4") ||
           link.endsWith(".gif")) {
         imageLinks.add(link);
       }
@@ -127,7 +128,7 @@ class _EventMainComponent extends State<EventMainComponent> {
   }
 
   void _parseContent() {
-    _imageLinks = _extractImages(widget.event);
+    _imageLinks = _extractImages(widget.event.content);
 
     // _profileHexIdentifiers =
     //     _extractProfileHexIdentifiers(widget.event.content);
@@ -163,16 +164,18 @@ class _EventMainComponent extends State<EventMainComponent> {
       //   textHeight = _calculateTextHeight(widget.event.content);
       // });
 
-      // textHeight = _calculateTextHeight(widget.event.content);
+      // final a = _calculateTextHeight(widget.event.content);
       // // Use a GlobalKey to get the actual rendered size
-      final RenderBox? contentBox = _contentKey.currentContext?.findRenderObject() as RenderBox?;
-      if (contentBox != null) {
+      // final RenderBox? contentBox = _contentKey.currentContext?.findRenderObject() as RenderBox?;
+      // if (contentBox != null) {
         setState(() {
           // print("    `---- $contentHeight > $_collapsedHeight  = ${contentHeight > _collapsedHeight}");
-          textHeight = contentBox.size.height;
+          _parseContent();
+          // textHeight = 100+a;
+          // textHeight = contentBox.size.height;
           // _shouldShowButton = contentHeight > _collapsedHeight;
         });
-      }
+      // }
     });
   }
   // void _checkIfContentExceedsHeight() {
@@ -205,7 +208,6 @@ class _EventMainComponent extends State<EventMainComponent> {
   @override
   void initState() {
     super.initState();
-    _parseContent();
 
     // // Check if content needs "Show More" button after first layout
     // WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -226,6 +228,9 @@ class _EventMainComponent extends State<EventMainComponent> {
     if (eventRelation.id != widget.event.id) {
       // change when thread root load lazy
       eventRelation = EventRelation.fromEvent(widget.event);
+    }
+    if (textHeight==0) {
+      textHeight = _calculateTextHeight(widget.event.content)+1;
     }
 
     bool imagePreview = _settingProvider.imagePreview == null ||
@@ -545,7 +550,7 @@ class _EventMainComponent extends State<EventMainComponent> {
 
         // Show More button if needed
         // list.add(Text(
-        //     "${totalHeight} > ${_collapsedHeight} + ${imageHeight} = ${totalHeight > _collapsedHeight + imageHeight}, shouldShowButton:${shouldShowButton} _isExpanded:${_isExpanded}"));
+        //     "${totalHeight} > ${_collapsedHeight} + ${imageHeight} = ${totalHeight > _collapsedHeight + imageHeight}, shouldShowButton:${shouldShowButton} _isExpanded:${_isExpanded}, imageLinks:$_imageLinks  "));
         if (shouldShowButton) {
           list.add(const SizedBox(height: 8));
           list.add(

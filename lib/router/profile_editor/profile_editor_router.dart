@@ -1,4 +1,8 @@
+import 'dart:io';
+
+import 'package:mime/mime.dart';
 import 'package:ndk/domain_layer/entities/metadata.dart';
+import 'package:ndk/domain_layer/entities/ndk_file.dart';
 import 'package:ndk/shared/nips/nip01/helpers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
@@ -281,32 +285,47 @@ class _ProfileEditorRouter extends CustState<ProfileEditorRouter> {
   }
 
   Future<void> pickPicture() async {
-    var filepath = await pickImageAndUpload();
-    if (StringUtil.isNotBlank(filepath)) {
-      pictureController.text = filepath!;
+    var filepaths = await pickImageAndUpload();
+    for (final filepath in filepaths) {
+      if (StringUtil.isNotBlank(filepath)) {
+        pictureController.text = filepath!;
+      }
     }
   }
 
   Future<void> pickBanner() async {
-    var filepath = await pickImageAndUpload();
-    if (StringUtil.isNotBlank(filepath)) {
-      bannerController.text = filepath!;
+    var filepaths = await pickImageAndUpload();
+    for (final filepath in filepaths) {
+      if (StringUtil.isNotBlank(filepath)) {
+        bannerController.text = filepath!;
+      }
     }
   }
 
-  Future<String?> pickImageAndUpload() async {
+  Future<List<String?>> pickImageAndUpload() async {
     if (PlatformUtil.isWeb()) {
       // TODO ban image update at web temp
-      return null;
+      return [];
     }
 
-    var filepath = await Uploader.pick(context);
-    if (StringUtil.isNotBlank(filepath)) {
-      return await Uploader.upload(
-        filepath!,
-        imageService: settingProvider.imageService,
-      );
+    var filepaths = await Uploader.pick(context);
+    for (final filepath in filepaths) {
+      if (filepath!=null) {
+        File file = File(filepath);
+        final bytes = await file.readAsBytes();
+        final mimeType = lookupMimeType(file.path);
+        final filename = file.path.split('/').last;
+        if (mimeType == null || mimeType.isEmpty) {
+          throw Exception("No mime type found");
+        }
+
+        final uploadResponse = await ndk.files.upload(
+          file: NdkFile(data: bytes, mimeType: mimeType),
+          serverUrls: DEFAULT_BLOSSOM_SERVERS
+        );
+      }
     }
+    return filepaths;
   }
 
   void profileSave() async {
