@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+
 // import 'package:flutter_font_picker/flutter_font_picker.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:ndk/ndk.dart';
 import 'package:ndk/shared/nips/nip01/helpers.dart';
+import 'package:percent_indicator/linear_percent_indicator.dart';
 import 'package:provider/provider.dart';
 import 'package:settings_ui/settings_ui.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -48,6 +50,9 @@ class SettingRouter extends StatefulWidget {
 
 class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
   bool loadingGossipRelays = false;
+  String? gossipStatus;
+  int gossipCount = 0;
+  int gossipTotal = 0;
 
   Uri OUTBOX_MODEL_INFO_URL =
       Uri.parse("https://github.com/frnandu/yana/blob/master/GOSSIP.md");
@@ -344,12 +349,33 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
                     context, RouterPath.USER_RELAYS, filteredRelays);
               }
             },
-            leading: Container(
-                margin: const EdgeInsets.only(left: 20),
-                child: Text(
-                  "Feed Connected / Total relays ",
-                  style: TextStyle(color: themeData.disabledColor),
-                )),
+            leading: loadingGossipRelays
+                ? Padding(
+                    padding: EdgeInsets.all(15.0),
+                    child: LinearPercentIndicator(
+                      width: MediaQuery.of(context).size.width - 100,
+                      animation: false,
+                      lineHeight: 40.0,
+                      backgroundColor: themeData.disabledColor,
+
+                      percent: gossipTotal > 0 ? gossipCount / gossipTotal : 0,
+                      center: Text("$gossipStatus $gossipCount/$gossipTotal",
+                        style: TextStyle(color: Colors.black),),
+                      linearStrokeCap: LinearStrokeCap.roundAll,
+                      progressColor: themeData.primaryColor,
+                    ))
+                : Container(
+                    margin: const EdgeInsets.only(left: 20),
+                    child: Text(
+                      "Outbox feed relays for all contacts: ",
+                      style: TextStyle(color: themeData.disabledColor),
+                    )),
+            // Container(
+            //     margin: const EdgeInsets.only(left: 20),
+            //     child: Text(
+            //       ,
+            //       style: TextStyle(color: themeData.disabledColor),
+            //     )),
             trailing: loadingGossipRelays
                 ? Container()
                 : Icon(Icons.navigate_next, color: themeData.disabledColor),
@@ -366,7 +392,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
                 style: TextStyle(color: themeData.disabledColor),
               );
             }, selector: (context, _provider) {
-              return _provider.feedRelaysNumStr();
+              return "${feedRelaySet!=null?feedRelaySet!.urls.length:0}";//_provider.feedRelaysNumStr();
             })),
       );
     }
@@ -414,8 +440,8 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
               }
             });
             try {
-              Nip51List? list = await ndk.lists.getSingleNip51List(
-                  Nip51List.kMute, loggedUserSigner!);
+              Nip51List? list = await ndk.lists
+                  .getSingleNip51List(Nip51List.kMute, loggedUserSigner!);
               finished = true;
               RouterUtil.router(
                   context,
@@ -819,6 +845,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
       // });
     }
   }
+
   String getFlagEmoji(String countryCode) {
     // Check if the country code is exactly two letters
     if (countryCode.length != 2) {
@@ -832,12 +859,14 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
     int flagOffset = 0x1F1E6; // Unicode offset for regional indicator 'A'
     int asciiOffset = 0x41; // ASCII value for 'A'
 
-    String firstChar = String.fromCharCode(flagOffset + countryCode.codeUnitAt(0) - asciiOffset);
-    String secondChar = String.fromCharCode(flagOffset + countryCode.codeUnitAt(1) - asciiOffset);
+    String firstChar = String.fromCharCode(
+        flagOffset + countryCode.codeUnitAt(0) - asciiOffset);
+    String secondChar = String.fromCharCode(
+        flagOffset + countryCode.codeUnitAt(1) - asciiOffset);
 
     return firstChar + secondChar; // Combine the two regional indicator symbols
   }
-  
+
   Future pickFiatCurrency() async {
     List<EnumObj> objs = [];
     Map<String, dynamic>? rates = await RatesUtil.fiatCurrencies();
@@ -846,24 +875,21 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
 
     rates!.forEach((key, map) {
       if (map['type'] == 'fiat') {
-        Currency? currency = currencies != null ? currencies[key.toUpperCase()] : null;
-        objs.add(EnumObj(
-            key,
-             "(${map['name']} ${map['unit']})",
-            widget:
-                RichText(text: TextSpan(children: [
-                  TextSpan(
-                    text: "${key.toUpperCase()} ",
-                  ),
-                  TextSpan(
-                    text: " ${currency!=null?getFlagEmoji(currency!.countryCode):''}"
-                  ),
-                  TextSpan(
-                    text: " ${map['name']}",
-                    style: TextStyle(color: Colors.grey[700])
-                  )
-                ]))
-            ));
+        Currency? currency =
+            currencies != null ? currencies[key.toUpperCase()] : null;
+        objs.add(EnumObj(key, "(${map['name']} ${map['unit']})",
+            widget: RichText(
+                text: TextSpan(children: [
+              TextSpan(
+                text: "${key.toUpperCase()} ",
+              ),
+              TextSpan(
+                  text:
+                      " ${currency != null ? getFlagEmoji(currency!.countryCode) : ''}"),
+              TextSpan(
+                  text: " ${map['name']}",
+                  style: TextStyle(color: Colors.grey[700]))
+            ]))));
       }
     });
 
@@ -1359,7 +1385,14 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
     setState(() {
       loadingGossipRelays = true;
     });
-    await relayProvider.recalculateFeedRelaySet();
+    RelaySet newRelaySet = await relayProvider.recalculateFeedRelaySet(
+        onProgress: (status, count, total) {
+      setState(() {
+        gossipStatus = status;
+        gossipCount = count;
+        gossipTotal = total;
+      });
+    });
     setState(() {
       loadingGossipRelays = false;
     });
