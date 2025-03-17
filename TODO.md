@@ -102,16 +102,11 @@
 - ~~fix relay connectivity~~
 - ~~fix remembering nwc connection~~
 - ~~fix videos not working~~
-- fix edit profile
-- fix list of followin/followers
-- fix loading of metadatas, sometimes doesn't update quickly?!?
-- fix jumping of list scrolling WTF!?!
-- fix timeout zapping nwc !?
-- fix not remembering already cached events from feed
 
 ===== v0.16
 - ~~NWC alby go 1-click connection~~
 - ~~Long posts should be cut and have "show more"~~
+- ~~fix edit profile~~
 - ~~NIP-42 relay auth~~
 - ~~multi file upload~~
 - ~~upload to blossom servers~~
@@ -121,13 +116,14 @@
 - fix background service?!?! | hide background service from settings
 
 
-Planned improvements for YANA include:\
+===== v0.17
+- fix loading of metadatas, sometimes doesn't update quickly?!?
+- Apply a new design for the feed, onboarding, and modules prepared by Saunter.\
 - Separate settings and wallets for each account.\
 - User selection for image services when uploading files.\
 - Display the note being replied to.\
 - Introduce release flavors, starting with a YANA Wallet APK focused solely on wallet functionality.\
 - Implement NIP-13 Proof of Work for mobile devices.\
-- Apply a new design for the feed, onboarding, and modules prepared by Saunter.\
 
 
 - filter notification about your own zapping!
