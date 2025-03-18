@@ -1380,10 +1380,9 @@ packages:
   ndk_objectbox:
     dependency: "direct main"
     description:
-      name: ndk_objectbox
-      sha256: f2bd04299ed34b99a01957c46eb6ff495c0bdcde068d382cbb8b8a222f67e132
-      url: "https://pub.dev"
-    source: hosted
+      path: "../ndk/packages/objectbox"
+      relative: true
+    source: path
     version: "0.2.3"
   ndk_rust_verifier:
     dependency: "direct main"
