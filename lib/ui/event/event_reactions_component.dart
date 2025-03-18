@@ -64,7 +64,7 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
 
     var s = I18n.of(context);
     var themeData = Theme.of(context);
-    var fontSize = themeData.textTheme.bodyMedium!.fontSize!;
+    var fontSize = themeData.textTheme.bodyLarge!.fontSize!;
     var mediumFontSize = themeData.textTheme.bodyMedium!.fontSize;
     var popFontStyle = TextStyle(
       fontSize: mediumFontSize,
@@ -641,7 +641,7 @@ class EventReactionNumComponent extends StatelessWidget {
     Widget? main;
     var iconWidget = Icon(
       iconData,
-      size: 20,
+      size: 25,
       color: color,
     );
     if (num != 0) {
