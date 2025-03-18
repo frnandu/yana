@@ -112,6 +112,7 @@
 - ~~upload to blossom servers~~
 - ~~video player fullscreen~~
 
+- download video
 - make back button work in profile
 - too much ongoing requests/subscriptions (reactions/?)
 - fix gossip
