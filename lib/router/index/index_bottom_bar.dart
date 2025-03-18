@@ -24,6 +24,8 @@ class IndexBottomBar extends StatefulWidget {
 class _IndexBottomBar extends State<IndexBottomBar> {
   var badgeTextStyle = const TextStyle(color: Colors.white, fontFamily: "Roboto");
 
+  final badgeSize = 6.0;
+
   @override
   Widget build(BuildContext context) {
     var themeData = Theme.of(context);
@@ -44,10 +46,11 @@ class _IndexBottomBar extends State<IndexBottomBar> {
           if (tuple.item1.length() <= 0 && tuple.item2.length() <= 0) {
             return icon;
           }
-          int total = tuple.item1.length() + tuple.item2.length();
+          // int total = tuple.item1.length() + tuple.item2.length();
+          return _badge(icon, themeData);
           return Badge(
-              offset: const Offset(8, 0),
-              label: Text(total.toString(), style: badgeTextStyle),
+              offset: const Offset(10, 0),
+              // label: Text(total.toString(), style: badgeTextStyle),
               backgroundColor: themeData.primaryColor,
               child: icon);
         },
@@ -75,11 +78,12 @@ class _IndexBottomBar extends State<IndexBottomBar> {
           if (count <= 0) {
             return icon;
           }
-          return Badge(
-              offset: const Offset(8, 0),
-              label: Text(count.toString(),style: badgeTextStyle),
-              backgroundColor: themeData.primaryColor,
-              child: icon);
+          return _badge(icon, themeData);
+          // return Badge(
+          //     offset: const Offset(10, 0),
+          //     // label: Text(count.toString(),style: badgeTextStyle),
+          //     backgroundColor: themeData.primaryColor,
+          //     child: icon);
         },
         selector: (context, _provider) {
           return
@@ -107,11 +111,12 @@ class _IndexBottomBar extends State<IndexBottomBar> {
           if (eventMemBox.length() <= 0) {
             return icon;
           }
-          return Badge(
-              offset: const Offset(8, 0),
-              label: Text(eventMemBox.length().toString(),style: badgeTextStyle),
-              backgroundColor: themeData.primaryColor,
-              child: icon);
+          return _badge(icon, themeData);
+          // return Badge(
+          //     offset: const Offset(8, 0),
+          //     // label: Text(eventMemBox.length().toString(),style: badgeTextStyle),
+          //     backgroundColor: themeData.primaryColor,
+          //     child: icon);
         },
         selector: (context, _provider) {
           return _provider.eventMemBox;
@@ -140,4 +145,26 @@ class _IndexBottomBar extends State<IndexBottomBar> {
 
   @override
   Future<void> onReady(BuildContext context) async {}
+
+  Widget _badge(Widget child, ThemeData themeData) {
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        child,
+        Positioned(
+          top: 3,
+          right: -badgeSize / 1.2,
+          child: Container(
+            width: badgeSize,
+            height: badgeSize,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: themeData.primaryColor,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
 }

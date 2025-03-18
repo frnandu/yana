@@ -99,8 +99,7 @@ class _IndexRouter extends CustState<IndexRouter>
           if (canPop) {
             RouterUtil.back(context);
           } else {
-            RouterUtil.router(
-                context, RouterPath.WALLET);
+            RouterUtil.router(context, RouterPath.WALLET);
           }
         }
       } else if (url.startsWith(NwcProvider.NWC_PROTOCOL_PREFIX)) {
@@ -221,7 +220,7 @@ class _IndexRouter extends CustState<IndexRouter>
 
   bool unlock = false;
   var badgeTextStyle =
-      const TextStyle(color: Colors.white, fontFamily: "Roboto");
+      const TextStyle(color: Colors.white, fontFamily: "Roboto", fontSize: 2);
 
   @override
   Widget doBuild(BuildContext context) {
@@ -282,6 +281,29 @@ class _IndexRouter extends CustState<IndexRouter>
       });
     });
 
+    final double badgeSize = 6;
+
+    Widget _badge(Text text, ThemeData themeData) {
+      return Stack(
+        clipBehavior: Clip.none,
+        children: [
+          text,
+          Positioned(
+            top: -2,
+            right: -badgeSize / 1,
+            child: Container(
+              width: badgeSize,
+              height: badgeSize,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: themeData.primaryColor,
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
     Widget? appBarCenter;
     if (_indexProvider.currentTap == IndexTaps.FOLLOW) {
       appBarCenter = TabBar(
@@ -300,12 +322,7 @@ class _IndexRouter extends CustState<IndexRouter>
                 if (eventMemBox.length() <= 0) {
                   return text;
                 }
-                return Badge(
-                    offset: const Offset(16, -4),
-                    label: Text(eventMemBox.length().toString(),
-                        style: badgeTextStyle),
-                    backgroundColor: themeData.primaryColor,
-                    child: text);
+                return _badge(text, themeData);
               },
               selector: (context, _provider) {
                 return _provider.eventPostsMemBox;
@@ -324,12 +341,7 @@ class _IndexRouter extends CustState<IndexRouter>
                 if (eventMemBox.length() <= 0) {
                   return text;
                 }
-                return Badge(
-                    offset: const Offset(16, -4),
-                    label: Text(eventMemBox.length().toString(),
-                        style: badgeTextStyle),
-                    backgroundColor: themeData.primaryColor,
-                    child: text);
+                return _badge(text, themeData);
               },
               selector: (context, _provider) {
                 return _provider.eventPostsAndRepliesMemBox;
@@ -380,11 +392,7 @@ class _IndexRouter extends CustState<IndexRouter>
                 if (count <= 0) {
                   return text;
                 }
-                return Badge(
-                    offset: const Offset(16, -4),
-                    label: Text(count.toString(), style: badgeTextStyle),
-                    backgroundColor: themeData.primaryColor,
-                    child: text);
+                return _badge(text, themeData);
               },
               selector: (context, _provider) {
                 return _provider.howManyNewDMSessionsWithNewMessages(
@@ -406,7 +414,7 @@ class _IndexRouter extends CustState<IndexRouter>
                   }
                   return Badge(
                       offset: const Offset(16, -4),
-                      label: Text(count.toString(), style: badgeTextStyle),
+                      // label: Text(count.toString(), style: badgeTextStyle),
                       backgroundColor: themeData.primaryColor,
                       child: text);
                 },
@@ -425,8 +433,8 @@ class _IndexRouter extends CustState<IndexRouter>
                     return text;
                   }
                   return Badge(
-                      offset: const Offset(16, -4),
-                      label: Text(count.toString(), style: badgeTextStyle),
+                      offset: const Offset(0, -4),
+                      // label: Text(count.toString(), style: badgeTextStyle),
                       backgroundColor: themeData.primaryColor,
                       child: text);
                 },

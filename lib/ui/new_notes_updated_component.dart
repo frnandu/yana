@@ -12,7 +12,9 @@ class NewNotesUpdatedComponent extends StatelessWidget {
 
   List<Nip01Event> newEvents;
 
-  NewNotesUpdatedComponent({super.key, required this.newEvents, required String text, this.onTap}) : _text = text;
+  NewNotesUpdatedComponent(
+      {super.key, required this.newEvents, required String text, this.onTap})
+      : _text = text;
 
   @override
   Widget build(BuildContext context) {
@@ -20,8 +22,8 @@ class NewNotesUpdatedComponent extends StatelessWidget {
     var mainColor = themeData.primaryColor;
     Color? textColor = Colors.white;
 
-    int maxAvatars = 10;
-    double maxWidth = 100;
+    int maxAvatars = 3;
+    double maxWidth = 30;
     double width = 20;
     int count = newEvents.length > maxAvatars ? maxAvatars : newEvents.length;
     double distance = (maxWidth - count * width) / count;
@@ -29,17 +31,21 @@ class NewNotesUpdatedComponent extends StatelessWidget {
     if (distance > 3) {
       distance = 3;
     }
-
-    List<String> pubKeys = newEvents.map((e) => e.pubKey).toSet().take(
-        maxAvatars).toList();
+    Set<String> pubKeysSet =
+        newEvents.map((e) => e.pubKey).toSet();
+    List<String> pubKeys = pubKeysSet.take(maxAvatars).toList();
+    final plus = pubKeysSet.length - maxAvatars;
+    var plusText = "+$plus";
+    if (plus>1000) {
+      plusText = "+${plus/1000}k";
+    }
     return GestureDetector(
         onTap: () {
           if (onTap != null) {
             onTap!();
           }
         },
-        child:
-        Container(
+        child: Container(
             padding: const EdgeInsets.only(
               top: 4,
               bottom: 4,
@@ -59,13 +65,38 @@ class NewNotesUpdatedComponent extends StatelessWidget {
               RowSuper(
                 innerDistance: distance, //,
                 outerDistance: 5.0,
-                children: pubKeys.map((pubKey) {
-                  return UserPicComponent(pubkey: pubKey, width: width + 10);
-                }).toList(), //
+                children: [
+                  ...pubKeys.map((pubKey) {
+                    return UserPicComponent(pubkey: pubKey, width: width + 10);
+                  }),
+                  newEvents.length > maxAvatars
+                      ? Container(
+                          width: width + 10,
+                          // Match the width of other items
+                          height: width + 10,
+                          // Make it circular with equal width/height
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color:
+                                themeData.cardColor, // Or any color you prefer
+                          ),
+                          child: Center(
+                            child: Text(
+                              plusText,
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 10, // Adjust as needed
+                              ),
+                            ),
+                          ),
+                        )
+                      : Container(),
+                ], //
               ),
-              Text(_text,style: TextStyle(color: textColor),
+              Text(
+                _text,
+                style: TextStyle(color: textColor),
               )
-            ]))
-    );
+            ])));
   }
 }
