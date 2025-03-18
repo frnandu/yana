@@ -112,6 +112,8 @@
 - ~~upload to blossom servers~~
 - ~~video player fullscreen~~
 
+- make back button work in profile
+- too much ongoing requests/subscriptions (reactions/?)
 - fix gossip
 - fix background service?!?! | hide background service from settings
 
