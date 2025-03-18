@@ -175,8 +175,8 @@ dependency_overrides:
       path: ../ndk/packages/ndk
 #  ndk_amber:
 #    path: ../ndk/packages/amber
-#  ndk_objectbox:
-#    path: ../ndk/packages/objectbox
+  ndk_objectbox:
+    path: ../ndk/packages/objectbox
 #  ndk_rust_verifier:
 #    path: ../ndk/packages/rust_verifier
 #  rust_lib_ndk:

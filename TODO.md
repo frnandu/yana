@@ -112,18 +112,18 @@
 - ~~upload to blossom servers~~
 - ~~video player fullscreen~~
 
-- link @username on post edit
-- search metadatas cached don't work
-- fullscreen stops playing!!!!
 - some videos don't work!!!!! 
+- editing metadata profile on new account doesn't work
 
-
+- empty notifications placeholder for new account
+- when switching to an account that has no followers it will not reload the feed
+- click on reaction should be more responsive and only rollback if there is an error broadcasting on background
 - download video
 - make back button work in profile
 - too much ongoing requests/subscriptions (reactions/?)
 - fix gossip
 - fix background service?!?! | hide background service from settings
-
+- build linux packages (see n.)
 
 ===== v0.17
 - fix loading of metadatas, sometimes doesn't update quickly?!?

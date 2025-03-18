@@ -66,7 +66,7 @@ class _ContentVideoComponent extends State<ContentVideoComponent> {
     // You can adjust this threshold based on your requirements
     if (visiblePercentage < 10) {
       // When widget is less than 10% visible, pause the video
-      if (_controller.value.isPlaying) {
+      if (_controller.value.isPlaying && !chewieController.isFullScreen) {
         _controller.pause();
       }
     } else {
