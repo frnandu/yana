@@ -324,8 +324,9 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
                   },
                   onSelected: onPopupSelected,
                   child: Icon(
-                    Icons.more_horiz,
-                    size: 16,
+                    Symbols.more_horiz,
+                    size: 30,
+                    weight: 100,
                     color: themeData.disabledColor,
                   ),
                 ),

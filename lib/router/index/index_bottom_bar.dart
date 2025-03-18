@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:material_symbols_icons/symbols.dart';
 import 'package:provider/provider.dart';
 import 'package:tuple/tuple.dart';
 import 'package:yana/provider/dm_provider.dart';
@@ -22,7 +23,8 @@ class IndexBottomBar extends StatefulWidget {
 }
 
 class _IndexBottomBar extends State<IndexBottomBar> {
-  var badgeTextStyle = const TextStyle(color: Colors.white, fontFamily: "Roboto");
+  var badgeTextStyle =
+      const TextStyle(color: Colors.white, fontFamily: "Roboto");
 
   final badgeSize = 6.0;
 
@@ -40,9 +42,11 @@ class _IndexBottomBar extends State<IndexBottomBar> {
     destinations.add(NavigationDestination(
       icon: Selector<FollowNewEventProvider, Tuple2<EventMemBox, EventMemBox>>(
         builder: (context, tuple, child) {
-          Icon icon = _indexProvider.currentTap == 0 ? Icon(
-              Icons.home, size: 30, color: themeData.dividerColor) : Icon(
-              Icons.home_outlined, size: 30, color: themeData.disabledColor);
+          Icon icon = _indexProvider.currentTap == 0
+              ? Icon(Symbols.home_filled,
+                  fill: 1, size: 35, weight: 1, color: themeData.dividerColor)
+              : Icon(Symbols.home,
+                  size: 35, weight: 1, color: themeData.disabledColor);
           if (tuple.item1.length() <= 0 && tuple.item2.length() <= 0) {
             return icon;
           }
@@ -63,17 +67,19 @@ class _IndexBottomBar extends State<IndexBottomBar> {
     ));
 
     destinations.add(NavigationDestination(
-      selectedIcon: Icon(Icons.search, size: 30, color: themeData.dividerColor),
-      icon: Icon(Icons.search, size: 30, color: themeData.disabledColor),
+      selectedIcon: Icon(Symbols.search, size: 35, fill: 1, weight: 1, color: themeData.dividerColor),
+      icon: Icon(Symbols.search, size: 35, weight:1, color: themeData.disabledColor),
       label: s.Search,
     ));
 
     destinations.add(NavigationDestination(
       icon: Selector<DMProvider, int>(
         builder: (context, count, child) {
-          Icon icon = _indexProvider.currentTap == 2 ? Icon(
-              Icons.mail, size: 30, color: themeData.dividerColor) : Icon(
-              Icons.mail_outline, size: 30, color: themeData.disabledColor);
+          Icon icon = _indexProvider.currentTap == 2
+              ? Icon(Symbols.mail,
+                  fill: 1, size: 35, weight: 1, color: themeData.dividerColor)
+              : Icon(Symbols.mail,
+                  size: 35, weight: 1, color: themeData.disabledColor);
           // FlutterAppBadger.updateBadgeCount(count);
           if (count <= 0) {
             return icon;
@@ -86,28 +92,25 @@ class _IndexBottomBar extends State<IndexBottomBar> {
           //     child: icon);
         },
         selector: (context, _provider) {
-          return
-            _provider.howManyNewDMSessionsWithNewMessages(
-                _provider.followingList) +
-                _provider.howManyNewDMSessionsWithNewMessages(
-                    _provider.knownList) +
-                _provider.howManyNewDMSessionsWithNewMessages(
-                    _provider.unknownList)
-          ;
+          return _provider.howManyNewDMSessionsWithNewMessages(
+                  _provider.followingList) +
+              _provider
+                  .howManyNewDMSessionsWithNewMessages(_provider.knownList) +
+              _provider
+                  .howManyNewDMSessionsWithNewMessages(_provider.unknownList);
         },
       ),
       label: s.Messages,
     ));
 
-
     destinations.add(NavigationDestination(
       icon: Selector<NewNotificationsProvider, EventMemBox>(
         builder: (context, eventMemBox, child) {
           Icon icon = _indexProvider.currentTap == 3
-              ? Icon(
-              Icons.notifications, size: 30, color: themeData.dividerColor)
-              : Icon(Icons.notifications_none_outlined, size: 30,
-              color: themeData.disabledColor);
+              ?
+          Icon(
+              Symbols.notifications, fill:1, size: 35, weight: 1, color: themeData.dividerColor) : Icon(
+              Symbols.notifications, size: 35, weight:1, color: themeData.disabledColor);
           if (eventMemBox.length() <= 0) {
             return icon;
           }
@@ -130,7 +133,6 @@ class _IndexBottomBar extends State<IndexBottomBar> {
       indicatorColor: themeData.cardColor,
       selectedIndex: _indexProvider.currentTap,
       onDestinationSelected: (int index) {
-
         setState(() {
           if (_indexProvider.currentTap == index) {
             if (index == 0) indexProvider.followScrollToTop();
@@ -166,5 +168,4 @@ class _IndexBottomBar extends State<IndexBottomBar> {
       ],
     );
   }
-
 }

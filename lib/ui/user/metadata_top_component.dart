@@ -3,6 +3,7 @@ import 'package:easy_image_viewer/easy_image_viewer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:material_symbols_icons/symbols.dart';
 import 'package:ndk/entities.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
@@ -154,7 +155,7 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
     if (widget.pubkey == loggedUserSigner!.getPublicKey() && loggedUserSigner!.canSign()) {
       topBtnList.add(wrapBtn(
         MetadataIconBtn(
-          iconData: Icons.edit_square,
+          iconData: Symbols.edit_square,
           onTap: jumpToProfileEdit,
         ),
       )
@@ -192,7 +193,7 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
     }
 
     topBtnList.add(wrapBtn(MetadataIconBtn(
-      iconData: Icons.qr_code,
+      iconData: Symbols.qr_code,
       onTap: () {
         QrcodeDialog.show(context, widget.pubkey);
       },
@@ -252,7 +253,7 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
             onLongPress: () {
               ZapGenDialog.show(context, widget.pubkey, onZapped: (success) {});
             },
-            iconData: Icons.bolt,
+            iconData: Symbols.bolt,
             iconColor: Colors.orange,
           ),
         )));
@@ -260,7 +261,7 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
       if (widget.pubkey != loggedUserSigner!.getPublicKey()) {
         if (loggedUserSigner!.canSign()) {
           topBtnList.add(wrapBtn(MetadataIconBtn(
-            iconData: Icons.mail,
+            iconData: Symbols.mail,
             onTap: openDMSession,
           )));
           topBtnList.add(Selector<ContactListProvider, bool>(
@@ -305,7 +306,7 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
           ));
         }
         topBtnList.add(Container(
-          margin: const EdgeInsets.only(top: Base.BASE_PADDING, right: 4),
+          margin: const EdgeInsets.only(top: Base.BASE_PADDING, right: 6, left: 6),
           child: PopupMenuButton<String>(
             tooltip: "more",
             itemBuilder: (context) {
@@ -379,8 +380,8 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
               }
             },
             child: const Icon(
-              Icons.more_vert_sharp,
-              size: 20,
+              Symbols.more_vert_sharp,
+              size: 30,
               color: Colors.white,
             ),
           ),
@@ -605,7 +606,7 @@ class MetadataIconBtn extends StatelessWidget {
     var main = Container(
       // height: 34,
       // width: 34,
-      child: Icon(iconData, size: 25, color: iconColor ?? iconTheme.color),
+      child: Icon(iconData, size: 30, weight: 1, color: iconColor ?? iconTheme.color),
     );
 
     if (onTap != null || onLongPress != null) {
