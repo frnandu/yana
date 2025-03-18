@@ -1,8 +1,9 @@
 import 'dart:io';
 
+import 'package:chewie/chewie.dart';
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
-
+import 'package:visibility_detector/visibility_detector.dart';
 
 import '../../utils/base.dart';
 
@@ -19,13 +20,16 @@ class ContentVideoComponent extends StatefulWidget {
 
 class _ContentVideoComponent extends State<ContentVideoComponent> {
   late VideoPlayerController _controller;
-  bool disposed=false;
+  late ChewieController chewieController;
+  bool disposed = false;
+  // Generate a unique key for the visibility detector
+  final Key _visibilityKey = UniqueKey();
 
   @override
   void initState() {
     super.initState();
     if (widget.url.indexOf("http") == 0) {
-      _controller = VideoPlayerController.network(widget.url)
+      _controller = VideoPlayerController.networkUrl(Uri.parse(widget.url))
         ..initialize().then((_) {
           if (!disposed) {
             setState(() {});
@@ -39,44 +43,69 @@ class _ContentVideoComponent extends State<ContentVideoComponent> {
           }
         });
     }
+    chewieController = ChewieController(
+      videoPlayerController: _controller,
+      autoPlay: true,
+      looping: false,
+    );
   }
 
   @override
   void dispose() {
     super.dispose();
-    disposed=true;
+    _controller.dispose();
+    chewieController.dispose();
+    disposed = true;
+  }
+
+  // Handle visibility changes
+  void _handleVisibilityChanged(VisibilityInfo info) {
+    // The visibility percentage (0 means fully invisible, 100 means fully visible)
+    final visiblePercentage = info.visibleFraction * 100;
+
+    // You can adjust this threshold based on your requirements
+    if (visiblePercentage < 10) {
+      // When widget is less than 10% visible, pause the video
+      if (_controller.value.isPlaying) {
+        _controller.pause();
+      }
+    } else {
+      // Optionally: auto-resume when visible again
+      // Comment this out if you don't want auto-resume behavior
+      // if (chewieController.autoPlay && !_controller.value.isPlaying) {
+      //   _controller.play();
+      // }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    List<Widget> list = [];
-
-    return Container(
-      width: double.maxFinite,
-      height: 200,
-      margin: const EdgeInsets.only(
-        top: Base.BASE_PADDING_HALF,
-        bottom: Base.BASE_PADDING_HALF,
-      ),
-      child: Center(
-        child: _controller.value.isInitialized
-            ? AspectRatio(
-                aspectRatio: _controller.value.aspectRatio,
-                child: Stack(
-                  alignment: Alignment.bottomCenter,
-                  children: <Widget>[
-                    VideoPlayer(_controller),
-                    ControlsOverlay(controller: _controller),
-                    VideoProgressIndicator(_controller, allowScrubbing: true),
-                  ],
-                ),
-              )
-            : Container(),
+    return VisibilityDetector(
+      key: _visibilityKey,
+      onVisibilityChanged: _handleVisibilityChanged,
+      child: Container(
+        width: double.maxFinite,
+        height: 400,
+        margin: const EdgeInsets.only(
+          top: Base.BASE_PADDING_HALF,
+          bottom: Base.BASE_PADDING_HALF,
+        ),
+        child: Center(
+          child: _controller.value.isInitialized
+              ? AspectRatio(
+            aspectRatio: _controller.value.aspectRatio,
+            child: Chewie(
+              controller: chewieController,
+            ),
+          )
+              : Container(),
+        ),
       ),
     );
   }
 }
 
+// The rest of your code (ControlsOverlay class) remains unchanged
 class ControlsOverlay extends StatefulWidget {
   final VideoPlayerController controller;
 
@@ -129,16 +158,16 @@ class _ControlsOverlay extends State<ControlsOverlay> {
           child: controller.value.isPlaying
               ? const SizedBox.shrink()
               : Container(
-                  color: Colors.black26,
-                  child: const Center(
-                    child: Icon(
-                      Icons.play_arrow,
-                      color: Colors.white,
-                      size: 100.0,
-                      semanticLabel: 'Play',
-                    ),
-                  ),
-                ),
+            color: Colors.black26,
+            child: const Center(
+              child: Icon(
+                Icons.play_arrow,
+                color: Colors.white,
+                size: 100.0,
+                semanticLabel: 'Play',
+              ),
+            ),
+          ),
         ),
         GestureDetector(
           onTap: () {
@@ -165,9 +194,6 @@ class _ControlsOverlay extends State<ControlsOverlay> {
             },
             child: Padding(
               padding: const EdgeInsets.symmetric(
-                // Using less vertical padding as the text is also longer
-                // horizontally, so it feels like it would need more spacing
-                // horizontally (matching the aspect ratio of the video).
                 vertical: 12,
                 horizontal: 16,
               ),
@@ -194,9 +220,6 @@ class _ControlsOverlay extends State<ControlsOverlay> {
             },
             child: Padding(
               padding: const EdgeInsets.symmetric(
-                // Using less vertical padding as the text is also longer
-                // horizontally, so it feels like it would need more spacing
-                // horizontally (matching the aspect ratio of the video).
                 vertical: 12,
                 horizontal: 16,
               ),
