@@ -164,7 +164,7 @@ class ContentDecoder {
           // link, image, video etc
           var pathType = getPathType(subStr);
           if (pathType == "image") {
-            info.imageNum++;
+            // info.imageNum++;
           }
         }
       }

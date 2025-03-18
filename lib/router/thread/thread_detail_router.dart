@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:flutter_list_view/flutter_list_view.dart';
 import 'package:ndk/ndk.dart';
 import 'package:provider/provider.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
@@ -68,7 +69,8 @@ class ThreadDetailRouter extends StatefulWidget {
   }
 }
 
-class _ThreadDetailRouter extends CustState<ThreadDetailRouter> with PenddingEventsLaterFunction, WhenStopFunction {
+class _ThreadDetailRouter extends CustState<ThreadDetailRouter>
+    with PenddingEventsLaterFunction, WhenStopFunction {
   EventMemBox box = EventMemBox();
 
   String? eventId;
@@ -78,7 +80,7 @@ class _ThreadDetailRouter extends CustState<ThreadDetailRouter> with PenddingEve
 
   bool showTitle = false;
 
-  final ScrollController _controller = ScrollController();
+  // final ScrollController _controller = ScrollController();
 
   double rootEventHeight = 120;
 
@@ -110,7 +112,10 @@ class _ThreadDetailRouter extends CustState<ThreadDetailRouter> with PenddingEve
     if (eventId != null) {
       var filter = Filter(ids: [eventId!]);
       if (myInboxRelaySet != null) {
-        NdkResponse response = ndk.requests.query(name: "thead-detail", explicitRelays: myInboxRelaySet!.urls, filters: [filter]);
+        NdkResponse response = ndk.requests.query(
+            name: "thead-detail",
+            explicitRelays: myInboxRelaySet!.urls,
+            filters: [filter]);
         response.stream.listen((event) {
           setState(() {
             loadedEvent = event;
@@ -124,12 +129,16 @@ class _ThreadDetailRouter extends CustState<ThreadDetailRouter> with PenddingEve
 
   GlobalKey sourceEventKey = GlobalKey();
 
+  final FlutterListViewController _controller = FlutterListViewController();
   final ItemScrollController itemScrollController = ItemScrollController();
-  final ScrollOffsetController scrollOffsetController = ScrollOffsetController();
-  final ItemPositionsListener itemPositionsListener = ItemPositionsListener.create();
-  final ScrollOffsetListener scrollOffsetListener = ScrollOffsetListener.create();
+  final ScrollOffsetController scrollOffsetController =
+      ScrollOffsetController();
+  final ItemPositionsListener itemPositionsListener =
+      ItemPositionsListener.create();
+  final ScrollOffsetListener scrollOffsetListener =
+      ScrollOffsetListener.create();
 
-  void initFromArgs({bool force=false}) {
+  void initFromArgs({bool force = false}) {
     // do some init oper
     var eventRelation = EventRelation.fromEvent(sourceEvent!);
     rootId = eventRelation.rootId;
@@ -141,7 +150,8 @@ class _ThreadDetailRouter extends CustState<ThreadDetailRouter> with PenddingEve
     eventReactionsProvider.getThreadReplies(rootId!, force: force).then(
       (replies) {
         box.addList(replies.where((event) {
-          if (event.content.startsWith("nostr:nevent1") && !event.content.contains(" ")) {
+          if (event.content.startsWith("nostr:nevent1") &&
+              !event.content.contains(" ")) {
             return false;
           }
           var eventRelation = EventRelation.fromEvent(event);
@@ -150,14 +160,15 @@ class _ThreadDetailRouter extends CustState<ThreadDetailRouter> with PenddingEve
           }
           return false;
         }).toList());
-        if (sourceEvent!=null) {
+        if (sourceEvent != null) {
           setState(() {
             rootSubList = listToTree();
           });
           if (sourceIdx == null && replies.length > 5) {
             Future.delayed(const Duration(milliseconds: 500), () {
               if (sourceIdx != null) {
-                itemScrollController.jumpTo(index: sourceIdx!);
+                _controller.sliverController.jumpToIndex(sourceIdx!);
+                // itemScrollController.jumpTo(index: sourceIdx!);
               }
             });
           }
@@ -256,7 +267,8 @@ class _ThreadDetailRouter extends CustState<ThreadDetailRouter> with PenddingEve
     Widget? rootEventWidget;
     if (rootEvent == null) {
       rootEventWidget = rootId != null
-          ? Selector<SingleEventProvider, Nip01Event?>(builder: (context, event, child) {
+          ? Selector<SingleEventProvider, Nip01Event?>(
+              builder: (context, event, child) {
               if (event == null) {
                 return EventLoadListComponent();
               }
@@ -313,15 +325,23 @@ class _ThreadDetailRouter extends CustState<ThreadDetailRouter> with PenddingEve
         addThreadItem(item, mainList);
       }
     }
-    Widget main = ScrollablePositionedList.builder(
-      initialScrollIndex: sourceIdx ?? 0,
-      itemCount: mainList.length,
-      itemBuilder: (context, index) => mainList[index],
-      itemScrollController: itemScrollController,
-      scrollOffsetController: scrollOffsetController,
-      itemPositionsListener: itemPositionsListener,
-      scrollOffsetListener: scrollOffsetListener,
-    );
+    Widget main = FlutterListView(
+        controller: _controller,
+
+        delegate: FlutterListViewDelegate((BuildContext context, int index) {
+          return mainList[index];
+        },
+        childCount: mainList.length));
+
+    // Widget main = ScrollablePositionedList.builder(
+    //   initialScrollIndex: sourceIdx ?? 0,
+    //   itemCount: mainList.length,
+    //   itemBuilder: (context, index) => mainList[index],
+    //   itemScrollController: itemScrollController,
+    //   scrollOffsetController: scrollOffsetController,
+    //   itemPositionsListener: itemPositionsListener,
+    //   scrollOffsetListener: scrollOffsetListener,
+    // );
     // return ListView(
     //
     //   controller: _controller,
@@ -343,30 +363,30 @@ class _ThreadDetailRouter extends CustState<ThreadDetailRouter> with PenddingEve
       );
     }
 
-    return  RefreshIndicator(
+    return RefreshIndicator(
         onRefresh: () async {
           initFromArgs(force: true);
         },
         child: Scaffold(
-        appBar: AppBar(
-          leading: GestureDetector(
-            onTap: () {
-              RouterUtil.back(context);
-            },
-            child: Icon(
-              Icons.arrow_back_ios,
-              color: themeData.appBarTheme.titleTextStyle!.color,
+          appBar: AppBar(
+            leading: GestureDetector(
+              onTap: () {
+                RouterUtil.back(context);
+              },
+              child: Icon(
+                Icons.arrow_back_ios,
+                color: themeData.appBarTheme.titleTextStyle!.color,
+              ),
             ),
+            // actions: [
+            //   IconButton(
+            //     onPressed: () {},
+            //     icon: Icon(Icons.more_horiz),
+            //   ),
+            // ],
+            title: appBarTitle,
           ),
-          // actions: [
-          //   IconButton(
-          //     onPressed: () {},
-          //     icon: Icon(Icons.more_horiz),
-          //   ),
-          // ],
-          title: appBarTitle,
-        ),
-        body: EventReplyCallback(
+          body: EventReplyCallback(
             onReplyCallback: onReplyCallback,
             child: main,
           ),
@@ -375,7 +395,7 @@ class _ThreadDetailRouter extends CustState<ThreadDetailRouter> with PenddingEve
 
   @override
   Future<void> onReady(BuildContext context) async {
-    if (sourceEvent!=null) {
+    if (sourceEvent != null) {
       initFromArgs();
     }
   }
@@ -393,7 +413,8 @@ class _ThreadDetailRouter extends CustState<ThreadDetailRouter> with PenddingEve
   // }
 
   void onEvent(Nip01Event event) {
-    if (event.kind == kind.EventKind.ZAP_RECEIPT && StringUtil.isBlank(event.content)) {
+    if (event.kind == kind.EventKind.ZAP_RECEIPT &&
+        StringUtil.isBlank(event.content)) {
       return;
     }
 
@@ -459,8 +480,10 @@ class _ThreadDetailRouter extends CustState<ThreadDetailRouter> with PenddingEve
 
   void addThreadItem(ThreadDetailEvent item, List<Widget> mainList) {
     var totalLevelNum = item.totalLevelNum;
-    var needWidth =
-        (totalLevelNum - 1) * (Base.BASE_PADDING + ThreadDetailItemMainComponent.BORDER_LEFT_WIDTH) + ThreadDetailItemMainComponent.EVENT_MAIN_MIN_WIDTH;
+    var needWidth = (totalLevelNum - 1) *
+            (Base.BASE_PADDING +
+                ThreadDetailItemMainComponent.BORDER_LEFT_WIDTH) +
+        ThreadDetailItemMainComponent.EVENT_MAIN_MIN_WIDTH;
     if (item.event.id == sourceEvent!.id) {
       sourceIdx = mainList.length;
     }

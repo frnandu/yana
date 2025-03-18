@@ -104,7 +104,6 @@ class _EventMainComponent extends State<EventMainComponent> {
 
   bool _isExpanded = false;
   final double _collapsedHeight = 500.0;
-  // bool _shouldShowButton = false;
 
   late EventRelation eventRelation;
 
@@ -129,51 +128,14 @@ class _EventMainComponent extends State<EventMainComponent> {
 
   void _parseContent() {
     _imageLinks = _extractImages(widget.event.content);
-
-    // _profileHexIdentifiers =
-    //     _extractProfileHexIdentifiers(widget.event.content);
   }
-
-  // Set<String> _extractProfileHexIdentifiers(String content) {
-  //   final profileRegex = RegExp(r'nostr:(nprofile|npub)[a-zA-Z0-9]+');
-  //   return profileRegex
-  //       .allMatches(content)
-  //       .map((match) => _extractHexFromProfileLink(
-  //           match.group(0)!.replaceAll('nostr:', '')))
-  //       .toSet();
-  // }
-  //
-  // String _extractHexFromProfileLink(String link) {
-  //   if (link.startsWith('nprofile')) {
-  //     Nprofile? nprofile = NIP19Tlv.decodeNprofile(link);
-  //     return nprofile != null ? nprofile.pubkey : "";
-  //   } else if (link.startsWith('npub')) {
-  //     final decoded = Nip19.decode(link);
-  //     return decoded[0] ?? '';
-  //   }
-  //   return '';
-  // }
-
   void _checkIfContentExceedsHeight() {
     // Wait for next frame to ensure rendering is complete
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      // print("check mounted:$mounted for ${widget.event.content}");
       if (!mounted) return;
-      // setState(() {
-      //   textHeight = _calculateTextHeight(widget.event.content);
-      // });
-
-      // final a = _calculateTextHeight(widget.event.content);
-      // // Use a GlobalKey to get the actual rendered size
-      // final RenderBox? contentBox = _contentKey.currentContext?.findRenderObject() as RenderBox?;
-      // if (contentBox != null) {
         setState(() {
-          // print("    `---- $contentHeight > $_collapsedHeight  = ${contentHeight > _collapsedHeight}");
           _parseContent();
-          // textHeight = 100+a;
-          // textHeight = contentBox.size.height;
-          // _shouldShowButton = contentHeight > _collapsedHeight;
         });
       // }
     });

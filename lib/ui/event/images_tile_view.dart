@@ -14,7 +14,7 @@ class ImagesTileView extends StatelessWidget {
     super.key,
     required this.images,
     this.galleryBottomWidget,
-    this.maxHeight = 600,
+    this.maxHeight = 400,
   });
 
   @override
