@@ -4,6 +4,7 @@ import 'dart:ui';
 
 import 'package:amberflutter/amberflutter.dart';
 import 'package:awesome_notifications/awesome_notifications.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
@@ -201,6 +202,7 @@ const DEFAULT_BLOSSOM_SERVERS = [
 @pragma('vm:entry-point')
 void onStart(ServiceInstance service) async {
   DartPluginRegistrant.ensureInitialized();
+  GestureBinding.instance.resamplingEnabled = true;
 
   if (service is AndroidServiceInstance) {
     service.on('setAsForeground').listen((event) {

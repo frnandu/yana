@@ -80,20 +80,20 @@ class _FollowPostsRouter extends KeepAliveCustState<FollowPostsRouter>
           }
         },
         child: FlutterListView(
-          controller: _controller,
+            // physics: BouncingScrollPhysics(),
+            controller: _controller,
             delegate:
                 FlutterListViewDelegate((BuildContext context, int index) {
-          var event = events[index];
-          // Map<String, dynamic> map = event.toJson();
-          // map['content']=event.content+event.sources.toString();
-          // var e = Nip01Event.fromJson(map);
-          // e.sources = event.sources;
-          return EventListComponent(
-            event: event,
-            showVideo: _settingProvider.videoPreview == OpenStatus.OPEN,
-          );
-        }, childCount: events.length))
-        );
+              var event = events[index];
+              // Map<String, dynamic> map = event.toJson();
+              // map['content']=event.content+event.sources.toString();
+              // var e = Nip01Event.fromJson(map);
+              // e.sources = event.sources;
+              return EventListComponent(
+                event: event,
+                showVideo: _settingProvider.videoPreview == OpenStatus.OPEN,
+              );
+            }, childCount: events.length)));
 
     // var main = SingleChildScrollView(
     //     controller: _controller,
@@ -144,7 +144,7 @@ class _FollowPostsRouter extends KeepAliveCustState<FollowPostsRouter>
           }
 
           return NewNotesUpdatedComponent(
-            text: I18n.of(context).posted,
+            text: "",//I18n.of(context).posted,
             newEvents: eventMemBox.all(),
             onTap: () {
               setState(() {

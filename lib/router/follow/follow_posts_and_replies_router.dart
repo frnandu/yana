@@ -116,7 +116,7 @@ class _FollowPostsAndRepliesRouter
           }
 
           return NewNotesUpdatedComponent(
-            text: I18n.of(context).replied,
+            text: "",//I18n.of(context).replied,
             newEvents: eventMemBox.all(),
             onTap: () {
               followEventProvider.mergeNewPostAndReplyEvents();
