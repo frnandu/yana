@@ -112,6 +112,8 @@
 - ~~upload to blossom servers~~
 - ~~video player fullscreen~~
 
+- link @username on post edit
+- search metadatas cached don't work
 - fullscreen stops playing!!!!
 - some videos don't work!!!!! 
 
