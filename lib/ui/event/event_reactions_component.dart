@@ -1,10 +1,12 @@
 import 'dart:convert';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:material_symbols_icons/symbols.dart';
 import 'package:ndk/entities.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
@@ -113,9 +115,9 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
               Expanded(
                   child: EventReactionNumComponent(
                 num: replyNum,
-                iconData: Icons.mode_comment_outlined,
+                iconData: Symbols.mode_comment_rounded,
                 onTap: onCommmentTap,
-                color: replyNum > 0 ? replyColor : themeData.disabledColor,
+                color: replyNum > 0 ? replyColor : themeData.highlightColor,
                 fontSize: fontSize,
               )),
               // Expanded(
@@ -144,9 +146,9 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
                   onSelected: onRepostTap,
                   child: EventReactionNumComponent(
                     num: repostNum,
-                    iconData: Icons.repeat,
+                    iconData: Symbols.repeat,
                     color:
-                        repostNum > 0 ? repostColor : themeData.disabledColor,
+                        repostNum > 0 ? repostColor : themeData.highlightColor,
                     fontSize: fontSize,
                   ),
                 ),
@@ -154,9 +156,9 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
               Expanded(
                   child: EventReactionNumComponent(
                 num: likeNum,
-                iconData: Icons.favorite_border,
+                iconData: Symbols.favorite,
                 onTap: onLikeTap,
-                color: likeNum > 0 ? likeColor : themeData.disabledColor,
+                color: likeNum > 0 ? likeColor : themeData.highlightColor,
                 fontSize: fontSize,
               )),
               Expanded(
@@ -169,7 +171,7 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.bolt, color: Colors.orange),
+                            const Icon(Symbols.bolt, weight: 1, color: Colors.orange, size: 30),
                             Text(" Zap 21", style: popFontStyle)
                           ],
                         ),
@@ -179,7 +181,7 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.bolt, color: Colors.orange),
+                            const Icon(Symbols.bolt, weight: 1, color: Colors.orange, size: 30),
                             Text(" Zap 69", style: popFontStyle)
                           ],
                         ),
@@ -189,7 +191,7 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.bolt, color: Colors.orange),
+                            const Icon(Symbols.bolt, weight: 1, color: Colors.orange, size: 30),
                             Text(" Zap 210", style: popFontStyle)
                           ],
                         ),
@@ -199,7 +201,7 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.bolt, color: Colors.orange),
+                            const Icon(Symbols.bolt, weight: 1, color: Colors.orange, size: 30),
                             Text(" Zap 420", style: popFontStyle)
                           ],
                         ),
@@ -209,7 +211,7 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.bolt, color: Colors.orange),
+                            const Icon(Symbols.bolt, weight: 1, color: Colors.orange, size: 30),
                             Text(" Zap 2100", style: popFontStyle)
                           ],
                         ),
@@ -219,7 +221,7 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.bolt, color: Colors.orange),
+                            const Icon(Symbols.bolt, weight: 1, color: Colors.orange, size: 30),
                             Text(" Zap 4200", style: popFontStyle)
                           ],
                         ),
@@ -229,7 +231,7 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.bolt, color: Colors.orange),
+                            const Icon(Symbols.bolt, weight: 1, color: Colors.orange, size: 30),
                             Text(" ${s.Custom}", style: popFontStyle)
                           ],
                         ),
@@ -244,11 +246,11 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
                         )
                       : EventReactionNumComponent(
                           num: zapNum,
-                          iconData: Icons.bolt,
+                          iconData: Symbols.bolt,
                           onTap: null,
                           onLongPress: genZap,
                           color:
-                              zapNum > 0 ? zapColor : themeData.disabledColor,
+                              zapNum > 0 ? zapColor : themeData.highlightColor,
                           fontSize: fontSize,
                         ),
                 ),
@@ -641,9 +643,14 @@ class EventReactionNumComponent extends StatelessWidget {
     Widget? main;
     var iconWidget = Icon(
       iconData,
-      size: 25,
+      size: 30,
+      weight: 1,
       color: color,
     );
+    // Icon(Symbols.bolt, weight: 200);
+    // Icon(CupertinoIcons.bolt, weight: 100);
+
+    // Icon(Icons.star_outline,weight: 20);
     if (num != 0) {
       String numStr = NumberFormatUtil.format(num);
 
