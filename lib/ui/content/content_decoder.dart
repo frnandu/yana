@@ -306,44 +306,44 @@ class ContentDecoder {
       _closeInlines(inlines, list, textOnTap: textOnTap);
     }
 
-    // if (imageListMode && decodeInfo.imageNum > 1) {
-    //   // showImageList in bottom
-    //   List<Widget> imageWidgetList = [];
-    //   var index = 0;
-    //   for (var image in imageList) {
-    //     imageWidgetList.add(SliverToBoxAdapter(
-    //       child: Container(
-    //         decoration: BoxDecoration(
-    //           borderRadius: BorderRadius.circular(10),
-    //         ),
-    //         margin: const EdgeInsets.only(right: Base.BASE_PADDING_HALF),
-    //         width: CONTENT_IMAGE_LIST_HEIGHT,
-    //         height: CONTENT_IMAGE_LIST_HEIGHT,
-    //         child: ContentImageComponent(
-    //           imageUrl: image,
-    //           imageList: imageList,
-    //           imageIndex: index,
-    //           height: CONTENT_IMAGE_LIST_HEIGHT,
-    //           width: CONTENT_IMAGE_LIST_HEIGHT,
-    //           // imageBoxFix: BoxFit.fitWidth,
-    //         ),
-    //       ),
-    //     ));
-    //     index++;
-    //   }
-    //
-    //   list.add(SizedBox(
-    //     height: CONTENT_IMAGE_LIST_HEIGHT,
-    //     width: double.infinity,
-    //     child: CustomScrollView(
-    //       slivers: imageWidgetList,
-    //       scrollDirection: Axis.horizontal,
-    //     ),
-    //   ));
-    // }
-    if (imageList.isNotEmpty) {
-      list.add(ImagesTileView(images: imageList));
+    if (imageListMode && decodeInfo.imageNum > 1) {
+      // showImageList in bottom
+      List<Widget> imageWidgetList = [];
+      var index = 0;
+      for (var image in imageList) {
+        imageWidgetList.add(SliverToBoxAdapter(
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10),
+            ),
+            margin: const EdgeInsets.only(right: Base.BASE_PADDING_HALF),
+            width: CONTENT_IMAGE_LIST_HEIGHT,
+            height: CONTENT_IMAGE_LIST_HEIGHT,
+            child: ContentImageComponent(
+              imageUrl: image,
+              imageList: imageList,
+              imageIndex: index,
+              height: CONTENT_IMAGE_LIST_HEIGHT,
+              width: CONTENT_IMAGE_LIST_HEIGHT,
+              // imageBoxFix: BoxFit.fitWidth,
+            ),
+          ),
+        ));
+        index++;
+      }
+
+      list.add(SizedBox(
+        height: CONTENT_IMAGE_LIST_HEIGHT,
+        width: double.infinity,
+        child: CustomScrollView(
+          slivers: imageWidgetList,
+          scrollDirection: Axis.horizontal,
+        ),
+      ));
     }
+    // if (imageList.isNotEmpty) {
+    //   list.add(ImagesTileView(images: imageList));
+    // }
 
     return list;
   }
@@ -501,14 +501,14 @@ class ContentDecoder {
           // // block
           handledStr = _closeHandledStr(handledStr, inlines);
           _closeInlines(inlines, list, textOnTap: textOnTap);
-          //
-          // var imageIndex = imageList.length - 1;
-          // var imageWidget = ContentImageComponent(
-          //   imageUrl: subStr,
-          //   imageList: imageList,
-          //   imageIndex: imageIndex,
-          // );
-          //list.add(imageWidget);
+
+          var imageIndex = imageList.length - 1;
+          var imageWidget = ContentImageComponent(
+            imageUrl: subStr,
+            imageList: imageList,
+            imageIndex: imageIndex,
+          );
+          list.add(imageWidget);
           // list.add(ImagesTileView(images: imageList));
         }
       } else {

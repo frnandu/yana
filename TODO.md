@@ -110,7 +110,7 @@
 - ~~NIP-42 relay auth~~
 - ~~multi file upload~~
 - ~~upload to blossom servers~~
-
+- ~~video player fullscreen~~
 
 - fix gossip
 - fix background service?!?! | hide background service from settings
