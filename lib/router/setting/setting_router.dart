@@ -598,23 +598,23 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
 
     List<AbstractSettingsTile> notificationTiles = [];
 
-    if (!PlatformUtil.isWeb() &&
-        (PlatformUtil.isIOS() || PlatformUtil.isAndroid())) {
-      notificationTiles.add(SettingsTile.switchTile(
-        activeSwitchColor: themeData.primaryColor,
-        onToggle: (value) {
-          settingProvider.backgroundService = value;
-          if (!value && backgroundService != null) {
-            backgroundService!
-                .isRunning()
-                .whenComplete(() => {backgroundService!.invoke('stopService')});
-          }
-        },
-        initialValue: settingProvider.backgroundService,
-        leading: const Icon(Icons.notification_important_outlined),
-        title: const Text("Use background service"),
-      ));
-    }
+    // if (!PlatformUtil.isWeb() &&
+    //     (PlatformUtil.isIOS() || PlatformUtil.isAndroid())) {
+    //   notificationTiles.add(SettingsTile.switchTile(
+    //     activeSwitchColor: themeData.primaryColor,
+    //     onToggle: (value) {
+    //       settingProvider.backgroundService = value;
+    //       if (!value && backgroundService != null) {
+    //         backgroundService!
+    //             .isRunning()
+    //             .whenComplete(() => {backgroundService!.invoke('stopService')});
+    //       }
+    //     },
+    //     initialValue: settingProvider.backgroundService,
+    //     leading: const Icon(Icons.notification_important_outlined),
+    //     title: const Text("Use background service"),
+    //   ));
+    // }
     notificationTiles.add(SettingsTile.switchTile(
       activeSwitchColor: themeData.primaryColor,
       onToggle: (value) {
