@@ -2,8 +2,8 @@
 
 [![GitHub version](https://img.shields.io/github/release/frnandu/yana.svg)](http://github.com/frnandu/yana/releases/latest)
 [![GitHub download](https://img.shields.io/github/downloads/frnandu/yana/total.svg)](http://github.com/frnandu/yana/releases/latest)
-[![GitHub Repo stars](https://img.shields.io/github/stars/frnandu/yana)](https://github.com/frnandu/yana/stargazers)
 [![License](https://img.shields.io/github/license/frnandu/yana.svg)](LICENSE.txt)
+[![GitHub Repo stars](https://img.shields.io/github/stars/frnandu/yana)](https://github.com/frnandu/yana/stargazers)
 
 # yana - Yet Another Nostr Application
 
