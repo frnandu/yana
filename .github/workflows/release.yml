@@ -50,15 +50,6 @@ jobs:
         run: flutter build apk
 
       # APK
-      - name: Upload universal APK to release
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ needs.release.outputs.upload_url }}
-          asset_path: build/app/outputs/flutter-apk/app-release.apk
-          asset_name: yana-${{ github.ref_name }}-android-universal.apk
-          asset_content_type: application/zip
       - name: Upload arm-v8a APK to release
         uses: actions/upload-release-asset@v1
         env:
@@ -87,6 +78,15 @@ jobs:
           asset_name: yana-${{ github.ref_name }}-android-x86_64.apk
           asset_content_type: application/zip
 
+      - name: Upload universal APK to release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.release.outputs.upload_url }}
+          asset_path: build/app/outputs/flutter-apk/app-release.apk
+          asset_name: yana-${{ github.ref_name }}-android-universal.apk
+          asset_content_type: application/zip
 #      - name: flutter build appbundle
 #        run: flutter build appbundle
 
