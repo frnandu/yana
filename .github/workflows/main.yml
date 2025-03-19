@@ -40,8 +40,8 @@ jobs:
       - name: flutter pub get
         run: flutter pub get
 
-      - name: flutter build apk
-        run: flutter build apk
+      - name: flutter build apk --split-per-abi
+        run: flutter build apk --split-per-abi
 
       - name: flutter build appbundle
         run: flutter build appbundle
