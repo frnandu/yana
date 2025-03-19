@@ -473,6 +473,8 @@ mixin EditorMixin {
               if (mimeType == null || mimeType.isEmpty) {
                 throw Exception("No mime type found");
               }
+              EasyLoading.showSuccess('Uploading media......',
+                  maskType: EasyLoadingMaskType.black, dismissOnTap: true, duration: const Duration(seconds: 10));
 
               final userServerList = await ndk.blossomUserServerList.getUserServerList(pubkeys: [loggedUserSigner!.getPublicKey()]);
               final uploadResponse = await ndk.files.upload(
@@ -484,8 +486,9 @@ mixin EditorMixin {
               //   value,
               //   imageService: settingProvider.imageService,
               // );
-              if (uploadResponse!=null && uploadResponse.length>0 && uploadResponse.first.success) {
-                value = uploadResponse.first.descriptor!.url;
+              if (uploadResponse.any((r) => r.success)) {
+                EasyLoading.dismiss();
+                value = uploadResponse.firstWhere((r) => r.success).descriptor!.url;
               } else {
                 EasyLoading.show(status: I18n.of(context).Upload_fail);
                 return null;
