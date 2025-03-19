@@ -192,11 +192,13 @@ FlutterBackgroundService? backgroundService;
 int c = 0;
 
 const DEFAULT_BLOSSOM_SERVERS = [
-  // 'https://nostr.download',
-  // 'https://blossom.f7z.io',
+  'https://nostr.download',
+  'https://blossom.f7z.io',
+  'https://blossom.band',
+  'https://cdn.hzrd149.com/',
   'https://blossom.primal.net',
   'https://cdn.nostrcheck.me'
-  // 'https://files.v0l.io',
+  'https://files.v0l.io',
 ];
 
 @pragma('vm:entry-point')
