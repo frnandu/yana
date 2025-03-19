@@ -193,7 +193,7 @@ int c = 0;
 
 const DEFAULT_BLOSSOM_SERVERS = [
   // 'https://nostr.download',
-  'https://blossom.f7z.io',
+  // 'https://blossom.f7z.io',
   'https://blossom.primal.net',
   'https://cdn.nostrcheck.me'
   // 'https://files.v0l.io',

@@ -318,10 +318,10 @@ class _ProfileEditorRouter extends CustState<ProfileEditorRouter> {
         if (mimeType == null || mimeType.isEmpty) {
           throw Exception("No mime type found");
         }
-
+        final userServerList = await ndk.blossomUserServerList.getUserServerList(pubkeys: [loggedUserSigner!.getPublicKey()]);
         final uploadResponse = await ndk.files.upload(
           file: NdkFile(data: bytes, mimeType: mimeType),
-          serverUrls: DEFAULT_BLOSSOM_SERVERS
+          serverUrls: userServerList ?? DEFAULT_BLOSSOM_SERVERS
         );
       }
     }
