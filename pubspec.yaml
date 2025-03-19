@@ -171,21 +171,27 @@ dependency_overrides:
 #      url: https://github.com/holzgeist/flutter_inappwebview
 #      path: flutter_inappwebview_android
 #      ref: d89b1d32638b49dfc58c4b7c84153be0c269d057
-  ndk:
-      path: ../ndk/packages/ndk
+#  ndk:
+#      path: ../ndk/packages/ndk
 #  ndk_amber:
 #    path: ../ndk/packages/amber
-  ndk_objectbox:
-    path: ../ndk/packages/objectbox
+#  ndk_objectbox:
+#    path: ../ndk/packages/objectbox
 #  ndk_rust_verifier:
 #    path: ../ndk/packages/rust_verifier
 #  rust_lib_ndk:
 #    path: ../ndk/packages/rust_verifier/rust_builder
 
-#  ndk:
-#    git:
-#      url: https://github.com/relaystr/ndk.git
-#      path: packages/ndk
+  ndk:
+    git:
+      url: https://github.com/relaystr/ndk.git
+      path: packages/ndk
+      ref: search-usecase
+  ndk_objectbox:
+    git:
+      url: https://github.com/relaystr/ndk.git
+      path: packages/objectbox
+      ref: search-usecase
 #  ndk_rust_verifier:
 #    git:
 #      url: https://github.com/relaystr/ndk.git

@@ -1357,9 +1357,11 @@ packages:
   ndk:
     dependency: "direct main"
     description:
-      path: "../ndk/packages/ndk"
-      relative: true
-    source: path
+      path: "packages/ndk"
+      ref: search-usecase
+      resolved-ref: ab1bb6575be518983f73a5b962c107906d109f78
+      url: "https://github.com/relaystr/ndk.git"
+    source: git
     version: "0.3.2"
   ndk_amber:
     dependency: "direct main"
@@ -1380,9 +1382,11 @@ packages:
   ndk_objectbox:
     dependency: "direct main"
     description:
-      path: "../ndk/packages/objectbox"
-      relative: true
-    source: path
+      path: "packages/objectbox"
+      ref: search-usecase
+      resolved-ref: ab1bb6575be518983f73a5b962c107906d109f78
+      url: "https://github.com/relaystr/ndk.git"
+    source: git
     version: "0.2.3"
   ndk_rust_verifier:
     dependency: "direct main"
