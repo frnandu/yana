@@ -7,7 +7,7 @@ import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_background_service/flutter_background_service.dart';
+// import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart' as FlutterCacheManager;
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -185,7 +185,7 @@ bool firstLogin = false;
 
 late PackageInfo packageInfo;
 
-FlutterBackgroundService? backgroundService;
+// FlutterBackgroundService? backgroundService;
 
 // late FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
 
@@ -201,56 +201,56 @@ const DEFAULT_BLOSSOM_SERVERS = [
   'https://files.v0l.io',
 ];
 
-@pragma('vm:entry-point')
-void onStart(ServiceInstance service) async {
-  DartPluginRegistrant.ensureInitialized();
-  GestureBinding.instance.resamplingEnabled = true;
-
-  if (service is AndroidServiceInstance) {
-    service.on('setAsForeground').listen((event) {
-      service.setAsForegroundService();
-    });
-
-    service.on('setAsBackground').listen((event) {
-      service.setAsBackgroundService();
-    });
-  }
-
-  service.on('stopService').listen((event) {
-    service.stopSelf();
-  });
-
-  // await initProvidersAndStuff();
-  SettingProvider ss = await SettingProvider.getInstance();
-  if (!ss.backgroundService) {
-    service.stopSelf();
-  } else {
-    Timer.periodic(const Duration(seconds: 60), (timer) {
-      if (service is AndroidServiceInstance) {
-        AwesomeNotifications().getAppLifeCycle().then((value) async {
-          if (value.toString() != "NotificationLifeCycle.Foreground" &&
-              myInboxRelaySet != null) {
-            appState = AppLifecycleState.inactive;
-            ndk.relays.allowReconnectRelays = true;
-            await ndk.relays.reconnectRelays(myInboxRelaySet!.urls);
-            await newNotificationsProvider.queryNew();
-            ndk.relays.allowReconnectRelays = false;
-            // List<String> requestIdsToClose =
-            //     ndk.relays.globalState.inFlightRequests.keys.toList();
-            // for (var id in requestIdsToClose) {
-              // try {
-              //   ndk.requests.closeSubscription(id);
-              // } catch (e) {
-              //   print(e);
-              // }
-            // }
-            await ndk.relays.closeAllTransports();
-          }
-        });
-      }
-    });
-  }
-}
+// @pragma('vm:entry-point')
+// void onStart(ServiceInstance service) async {
+//   DartPluginRegistrant.ensureInitialized();
+//   GestureBinding.instance.resamplingEnabled = true;
+//
+//   if (service is AndroidServiceInstance) {
+//     service.on('setAsForeground').listen((event) {
+//       service.setAsForegroundService();
+//     });
+//
+//     service.on('setAsBackground').listen((event) {
+//       service.setAsBackgroundService();
+//     });
+//   }
+//
+//   service.on('stopService').listen((event) {
+//     service.stopSelf();
+//   });
+//
+//   // await initProvidersAndStuff();
+//   SettingProvider ss = await SettingProvider.getInstance();
+//   if (!ss.backgroundService) {
+//     service.stopSelf();
+//   } else {
+//     Timer.periodic(const Duration(seconds: 60), (timer) {
+//       if (service is AndroidServiceInstance) {
+//         AwesomeNotifications().getAppLifeCycle().then((value) async {
+//           if (value.toString() != "NotificationLifeCycle.Foreground" &&
+//               myInboxRelaySet != null) {
+//             appState = AppLifecycleState.inactive;
+//             ndk.relays.allowReconnectRelays = true;
+//             await ndk.relays.reconnectRelays(myInboxRelaySet!.urls);
+//             await newNotificationsProvider.queryNew();
+//             ndk.relays.allowReconnectRelays = false;
+//             // List<String> requestIdsToClose =
+//             //     ndk.relays.globalState.inFlightRequests.keys.toList();
+//             // for (var id in requestIdsToClose) {
+//               // try {
+//               //   ndk.requests.closeSubscription(id);
+//               // } catch (e) {
+//               //   print(e);
+//               // }
+//             // }
+//             await ndk.relays.closeAllTransports();
+//           }
+//         });
+//       }
+//     });
+//   }
+// }
 
 // Future<void> initProvidersAndStuff() async {
 //   sharedPreferences = await DataUtil.getInstance();
@@ -738,31 +738,31 @@ Future<void> initBackgroundService(bool startOnBoot) async {
 
   var flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
   // if (startOnBoot) {
-  backgroundService = FlutterBackgroundService();
-  await flutterLocalNotificationsPlugin
-      .resolvePlatformSpecificImplementation<
-          AndroidFlutterLocalNotificationsPlugin>()
-      ?.createNotificationChannel(channel);
-
-  await backgroundService!.configure(
-    androidConfiguration: AndroidConfiguration(
-      onStart: onStart,
-      autoStart: false,
-      autoStartOnBoot: startOnBoot,
-      isForegroundMode: true,
-      notificationChannelId: 'yana-service',
-      initialNotificationTitle: 'Background service',
-      initialNotificationContent:
-          'Needed for de-googled notifications. You can hide this: long-press -> settings -> Notification categories',
-      foregroundServiceNotificationId: 888,
-    ),
-    iosConfiguration: IosConfiguration(
-      autoStart: false,
-      onForeground: onStart,
-      // you have to enable background fetch capability on xcode project
-      // onBackground: onIosBackground,
-    ),
-  );
+  // backgroundService = FlutterBackgroundService();
+  // await flutterLocalNotificationsPlugin
+  //     .resolvePlatformSpecificImplementation<
+  //         AndroidFlutterLocalNotificationsPlugin>()
+  //     ?.createNotificationChannel(channel);
+  //
+  // await backgroundService!.configure(
+  //   androidConfiguration: AndroidConfiguration(
+  //     onStart: onStart,
+  //     autoStart: false,
+  //     autoStartOnBoot: startOnBoot,
+  //     isForegroundMode: true,
+  //     notificationChannelId: 'yana-service',
+  //     initialNotificationTitle: 'Background service',
+  //     initialNotificationContent:
+  //         'Needed for de-googled notifications. You can hide this: long-press -> settings -> Notification categories',
+  //     foregroundServiceNotificationId: 888,
+  //   ),
+  //   iosConfiguration: IosConfiguration(
+  //     autoStart: false,
+  //     onForeground: onStart,
+  //     // you have to enable background fetch capability on xcode project
+  //     // onBackground: onIosBackground,
+  //   ),
+  // );
   // } else {
   //   if (backgroundService!=null) {
   //     backgroundService!.invoke('stopService');
@@ -1132,9 +1132,9 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
       //now you know that your app went to the background and is back to the foreground
       if (loggedUserSigner != null) {
         // if (ndk.relays.allowReconnectRelays == false) {
-        if (backgroundService != null && settingProvider.backgroundService) {
-          backgroundService!.invoke('stopService');
-        }
+        // if (backgroundService != null && settingProvider.backgroundService) {
+        //   backgroundService!.invoke('stopService');
+        // }
         ndk.relays.allowReconnectRelays = false;
         List<String> requestIdsToClose =
             ndk.relays.globalState.inFlightRequests.keys.toList();
@@ -1177,9 +1177,9 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
         NotificationLifeCycle value =
             await AwesomeNotifications().getAppLifeCycle();
         if (value.toString() != "NotificationLifeCycle.Foreground") {
-          if (backgroundService != null && settingProvider.backgroundService) {
-            backgroundService!.startService();
-          }
+          // if (backgroundService != null && settingProvider.backgroundService) {
+          //   backgroundService!.startService();
+          // }
           ndk.relays.allowReconnectRelays = false;
           List<String> requestIdsToClose =
               ndk.relays.globalState.inFlightRequests.keys.toList();
