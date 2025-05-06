@@ -17,6 +17,8 @@ import 'package:yana/main.dart';
 import 'package:yana/provider/nwc_provider.dart';
 import 'package:yana/utils/base.dart';
 import 'package:yana/utils/string_util.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
+import '../../i18n/i18n.dart';
 
 import '../../ui/button.dart';
 import '../../utils/platform_util.dart';
@@ -192,6 +194,7 @@ class _WalletReceiveRouter extends State<WalletReceiveInvoiceRouter> {
                     before: const Icon(Icons.copy, color: Colors.white),
                     text: "Copy ",
                     onTap: () async {
+                      print("[WalletReceiveInvoiceRouter] Copy button tapped.");
                       _doCopy(payingInvoice!);
                     }))
           ]));
@@ -433,9 +436,14 @@ class _WalletReceiveRouter extends State<WalletReceiveInvoiceRouter> {
   }
 
   void _doCopy(String text) {
+    print("[WalletReceiveInvoiceRouter] _doCopy called with invoice: $text");
     Clipboard.setData(ClipboardData(text: text)).then((_) {
-      // EasyLoading.showSuccess(I18n.of(context).Copy_success,
-      //     dismissOnTap: true, duration: const Duration(seconds: 2));
+      print("[WalletReceiveInvoiceRouter] Clipboard.setData successful for invoice: $text");
+      EasyLoading.showSuccess(I18n.of(context).Copy_success,
+          dismissOnTap: true, duration: const Duration(seconds: 2));
+    }).catchError((error) {
+      print("[WalletReceiveInvoiceRouter] Clipboard.setData failed for invoice '$text'. Error: $error");
+      EasyLoading.showError("Failed to copy invoice: $error");
     });
   }
 
