@@ -116,6 +116,7 @@
 - editing metadata profile on new account doesn't work
 
 
+
 - empty notifications placeholder for new account
 - when switching to an account that has no followers it will not reload the feed
 - click on reaction should be more responsive and only rollback if there is an error broadcasting on background
