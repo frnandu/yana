@@ -127,7 +127,7 @@ dependencies:
   bolt11_decoder: ^1.0.2
   ldk_node: ^0.3.0
   flutter_list_view: ^1.1.29
-  chewie: ^1.11.0
+  chewie: ^1.11.3
   material_symbols_icons: ^4.2810.1
 
 # camelus

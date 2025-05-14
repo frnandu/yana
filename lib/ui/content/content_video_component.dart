@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
+import '../../main.dart';
 import '../../utils/base.dart';
 
 class ContentVideoComponent extends StatefulWidget {
@@ -27,11 +28,16 @@ class _ContentVideoComponent extends State<ContentVideoComponent> {
   // Generate a unique key for the visibility detector
   final Key _visibilityKey = UniqueKey();
 
+  var userAgent = "Yana/${packageInfo.version}";
+
   @override
   void initState() {
     super.initState();
     if (widget.url.indexOf("http") == 0) {
-      _controller = VideoPlayerController.networkUrl(Uri.parse(widget.url));
+      _controller = VideoPlayerController.networkUrl(
+          Uri.parse(widget.url),
+          httpHeaders: Map.from({"user-agent": userAgent})
+      );
         // ..initialize().then((_) {
         //   if (!disposed) {
         //     setState(() {});
