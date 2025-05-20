@@ -64,8 +64,9 @@ class NwcProvider extends ChangeNotifier {
     nwc = nwc.replaceAll("yana:", "nostr+walletconnect:");
     await ndk.nwc.connect(nwc,
             doGetInfoMethod: doGetInfo!,
-            useETagForEachRequest: true,
-            ignoreCapabilitiesCheck: true,
+            // This below is needed if we want to connect to Primal wallet
+            // useETagForEachRequest: true,
+            // ignoreCapabilitiesCheck: true,
             onError: onError)
         .then((connection) async {
       this.connection = connection;
