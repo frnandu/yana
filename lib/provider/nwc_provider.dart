@@ -24,34 +24,50 @@ class NwcProvider extends ChangeNotifier {
   int? lastBalanceTimestamp;
   int? lastListTransactionsTimestamp;
 
-  List<TransactionResult>? get transactions => cachedListTransactionsResponse?.transactions;
+  List<TransactionResult>? get transactions =>
+      cachedListTransactionsResponse?.transactions;
 
   static const String BOLT11_PREFIX = "lnbc";
   static const String NWC_PROTOCOL_PREFIX = "nostr+walletconnect://";
 
   Future<void> init() async {
     String? uri = await settingProvider.getNwc();
-    if (StringUtil.isNotBlank(uri) && connection==null) {
+    if (StringUtil.isNotBlank(uri) && connection == null) {
       await connect(uri!, doGetInfo: false);
     }
   }
 
-  bool get canListTransaction => connection != null && connection!.permissions.contains(NwcMethod.LIST_TRANSACTIONS.name);
+  bool get canListTransaction =>
+      connection != null &&
+      connection!.permissions.contains(NwcMethod.LIST_TRANSACTIONS.name);
 
   /// get wallet balance in sats
   int? get getBalance => cachedBalanceResponse?.balanceSats;
 
-  bool get canMakeInvoice => connection != null && connection!.permissions.contains(NwcMethod.MAKE_INVOICE.name);
+  bool get canMakeInvoice =>
+      connection != null &&
+      connection!.permissions.contains(NwcMethod.MAKE_INVOICE.name);
 
-  bool get canPayInvoice => connection != null && connection!.permissions.contains(NwcMethod.PAY_INVOICE.name);
+  bool get canPayInvoice =>
+      connection != null &&
+      connection!.permissions.contains(NwcMethod.PAY_INVOICE.name);
 
   /// is the wallet connected
-  bool get isConnected => connection != null && connection!.permissions.isNotEmpty;
+  bool get isConnected =>
+      connection != null && connection!.permissions.isNotEmpty;
 
   /// connect the wallet
-  Future<void> connect(String nwc, {Function(String?)? onConnect, Function(String?)? onError, bool? doGetInfo = true}) async {
+  Future<void> connect(String nwc,
+      {Function(String?)? onConnect,
+      Function(String?)? onError,
+      bool? doGetInfo = true}) async {
     nwc = nwc.replaceAll("yana:", "nostr+walletconnect:");
-    await ndk.nwc.connect(nwc, doGetInfoMethod: doGetInfo!, onError: onError).then((connection) async {
+    await ndk.nwc.connect(nwc,
+            doGetInfoMethod: doGetInfo!,
+            useETagForEachRequest: true,
+            ignoreCapabilitiesCheck: true,
+            onError: onError)
+        .then((connection) async {
       this.connection = connection;
       settingProvider.setNwc(nwc);
       await refreshWallet();
@@ -67,20 +83,28 @@ class NwcProvider extends ChangeNotifier {
     });
   }
 
-  Future<void> refreshWallet({bool? force=false}) async {
+  Future<void> refreshWallet({bool? force = false}) async {
     if (connection != null) {
       // TODO check timestamps to not refresh too often and when force=false
       if (connection!.permissions.contains(NwcMethod.GET_BALANCE.name)) {
         cachedBalanceResponse = await ndk.nwc.getBalance(connection!);
-        fiatCurrencyRate = await RatesUtil.fiatCurrency(settingProvider.currency!);
+        fiatCurrencyRate =
+            await RatesUtil.fiatCurrency(settingProvider.currency!);
       }
       if (connection!.permissions.contains(NwcMethod.LIST_TRANSACTIONS.name)) {
-        cachedListTransactionsResponse = await ndk.nwc.listTransactions(connection!, unpaid: false);
+        cachedListTransactionsResponse =
+            await ndk.nwc.listTransactions(connection!, unpaid: false);
       }
     }
   }
 
-  Future<ListTransactionsResponse> listTransactions({int? from, int? until, int? limit, int? offset, required bool unpaid, TransactionType? type}) async {
+  Future<ListTransactionsResponse> listTransactions(
+      {int? from,
+      int? until,
+      int? limit,
+      int? offset,
+      required bool unpaid,
+      TransactionType? type}) async {
     return await ndk.nwc.listTransactions(
       connection!,
       unpaid: false,
@@ -105,29 +129,36 @@ class NwcProvider extends ChangeNotifier {
   }
 
   Future<PayInvoiceResponse?> payInvoice(String invoice) async {
-    if (connection != null && connection!.permissions.contains(NwcMethod.PAY_INVOICE.name)) {
+    if (connection != null &&
+        connection!.permissions.contains(NwcMethod.PAY_INVOICE.name)) {
       try {
-        PayInvoiceResponse response = await ndk.nwc.payInvoice(connection!, invoice: invoice);
+        PayInvoiceResponse response =
+            await ndk.nwc.payInvoice(connection!, invoice: invoice);
         if (response.preimage != '') {
           await refreshWallet();
           notifyListeners();
           return response;
         }
       } catch (e) {
-        EasyLoading.showError(e.toString(), duration: const Duration(seconds: 5));
+        EasyLoading.showError(e.toString(),
+            duration: const Duration(seconds: 5));
         Logger.log.e(e);
         return null;
       }
     }
-    EasyLoading.showError("missing pubKey and/or relay for connecting", duration: const Duration(seconds: 5));
+    EasyLoading.showError("missing pubKey and/or relay for connecting",
+        duration: const Duration(seconds: 5));
     return null;
   }
 
-  Future<MakeInvoiceResponse?> makeInvoice(int amountSats, String? description, String? description_hash, int expiry) async {
-    if (connection != null && connection!.permissions.contains(NwcMethod.MAKE_INVOICE.name)) {
+  Future<MakeInvoiceResponse?> makeInvoice(int amountSats, String? description,
+      String? description_hash, int expiry) async {
+    if (connection != null &&
+        connection!.permissions.contains(NwcMethod.MAKE_INVOICE.name)) {
       return await ndk.nwc.makeInvoice(connection!, amountSats: amountSats);
     } else {
-      EasyLoading.showError("missing pubKey and/or relay for connecting", duration: const Duration(seconds: 5));
+      EasyLoading.showError("missing pubKey and/or relay for connecting",
+          duration: const Duration(seconds: 5));
       return null;
     }
   }

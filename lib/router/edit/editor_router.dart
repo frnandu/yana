@@ -44,7 +44,7 @@ class EditorRouter extends StatefulWidget {
 
   List<List<String>> tagsAddedWhenSend = [];
 
-  List<dynamic> tagPs = [];
+  List<String> taggedPubKeys = [];
 
   int? mentionWordEditingStart;
   int? mentionWordEditingEnd;
@@ -54,7 +54,7 @@ class EditorRouter extends StatefulWidget {
   EditorRouter({super.key,
     required this.tags,
     required this.tagsAddedWhenSend,
-    required this.tagPs,
+    required this.taggedPubKeys,
     this.pubkey,
     this.initEmbeds,
   });
@@ -63,18 +63,18 @@ class EditorRouter extends StatefulWidget {
     BuildContext context, {
     List<List<String>>? tags,
     List<List<String>>? tagsAddedWhenSend,
-    List<dynamic>? tagPs,
+    List<String>? taggedPubKeys,
     String? pubkey,
     List<quill.BlockEmbed>? initEmbeds,
   }) {
     tags ??= [];
     tagsAddedWhenSend ??= [];
-    tagPs ??= [];
+    taggedPubKeys ??= [];
 
     var editor = EditorRouter(
       tags: tags,
       tagsAddedWhenSend: tagsAddedWhenSend,
-      tagPs: tagPs,
+      taggedPubKeys: taggedPubKeys,
       pubkey: pubkey,
       initEmbeds: initEmbeds,
     );
@@ -108,7 +108,7 @@ class _EditorRouter extends CustState<EditorRouter> with EditorMixin {
   Widget doBuild(BuildContext context) {
     if (notifyItems == null) {
       notifyItems = [];
-      for (var tagP in widget.tagPs) {
+      for (var tagP in widget.taggedPubKeys) {
         if (tagP is List<dynamic> && tagP.length > 1) {
           notifyItems!.add(EditorNotifyItem(pubkey: tagP[1]));
         }
@@ -344,7 +344,7 @@ class _EditorRouter extends CustState<EditorRouter> with EditorMixin {
               Set<String> relays = {};
               relays.addAll(myOutboxRelaySet!.urls.toList());
               if (settingProvider.inboxForReactions == 1) {
-                List<String> pubKeys = Nip01Event.getTags(widget.tagPs, "p");
+                List<String> pubKeys = widget.taggedPubKeys;
                 if (pubKeys.length == 1) {
                   for (var element in (await getInboxRelays(pubKeys.first))) {
                     String? cleanUrl = cleanRelayUrl(element);

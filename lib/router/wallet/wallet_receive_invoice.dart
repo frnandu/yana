@@ -337,7 +337,7 @@ class _WalletReceiveRouter extends State<WalletReceiveInvoiceRouter> {
       }
     } else {
       double? fiatAmount = fiatCurrencyRate != null ? ((paid!.amount / 100000000000) * fiatCurrencyRate!["value"]) : null;
-      int feesPaid = (paid!.feesPaid / 1000).round();
+      int feesPaid = (paid!.feesPaid??0 / 1000).round();
       int amount = (paid!.amount / 1000).round();
 
       list.add(

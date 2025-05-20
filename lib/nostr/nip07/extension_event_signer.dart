@@ -39,4 +39,14 @@ class Nip07EventSigner extends EventSigner {
     // TODO: implement encrypt
     throw UnimplementedError();
   }
+
+  @override
+  Future<String?> decryptNip44({required String ciphertext, required String senderPubKey}) {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<String?> encryptNip44({required String plaintext, required String recipientPubKey}) {
+    throw UnimplementedError();
+  }
 }

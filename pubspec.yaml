@@ -125,7 +125,7 @@ dependencies:
   back_button_interceptor: ^8.0.3
   lottie: ^3.1.2
   bolt11_decoder: ^1.0.2
-  ldk_node: ^0.3.0
+#  ldk_node: ^0.3.0
   flutter_list_view: ^1.1.29
   chewie: ^1.11.3
   material_symbols_icons: ^4.2810.1
@@ -187,12 +187,19 @@ dependency_overrides:
     git:
       url: https://github.com/relaystr/ndk.git
       path: packages/ndk
-      ref: search-usecase
+      ref: ce4bedc3bf64a767ae738ea7505aecc31a0172a9
   ndk_objectbox:
     git:
       url: https://github.com/relaystr/ndk.git
       path: packages/objectbox
-      ref: search-usecase
+      ref: primal-wallet-support
+  ndk_amber:
+    git:
+      url: https://github.com/relaystr/ndk.git
+      path: packages/amber
+      ref: primal-wallet-support
+
+
 #  ndk_rust_verifier:
 #    git:
 #      url: https://github.com/relaystr/ndk.git
@@ -357,5 +364,5 @@ flutter_native_splash:
   image: assets/imgs/logo/logo-splash.png
   fullscreen: true
 
-flutter_intl:
-  enabled: true
+#flutter_intl:
+#  enabled: true

@@ -496,14 +496,14 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
     }
     tagsAddedWhenSend.add(["e", widget.event.id, relayAddr, directMarked]);
 
-    List<dynamic> tagPs = [];
+    List<String> taggedPubKeys = [];
     if (widget.event.pubKey!=loggedUserSigner!.getPublicKey()) {
-      tagPs.add(["p", widget.event.pubKey]);
+      taggedPubKeys.add(widget.event.pubKey);
     }
     if (er.tagPList.isNotEmpty) {
       for (var p in er.tagPList) {
         if (p!=loggedUserSigner!.getPublicKey()) {
-          tagPs.add(["p", p]);
+          taggedPubKeys.add(p);
         }
       }
     }
@@ -517,7 +517,7 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
 
     // TODO reply maybe change the placeholder in editor router.
     var event = await EditorRouter.open(context,
-        tags: tags, tagsAddedWhenSend: tagsAddedWhenSend, tagPs: tagPs, pubkey:widget.event.pubKey);
+        tags: tags, tagsAddedWhenSend: tagsAddedWhenSend, taggedPubKeys: taggedPubKeys, pubkey:widget.event.pubKey);
     if (event != null) {
       var callback = EventReplyCallback.of(context);
       if (callback != null) {
