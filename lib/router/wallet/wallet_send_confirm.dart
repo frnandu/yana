@@ -58,7 +58,7 @@ class _WalletSendConfirmRouter extends State<WalletSendConfirmRouter> {
       Bolt11PaymentRequest req = Bolt11PaymentRequest(invoice!);
 
       double btc = req.amount.toDouble();
-      amount = (btc * NwcProvider.BTC_IN_SATS).toInt();
+      amount = (btc * NwcProvider.BTC_IN_SATS).round()2;
 
       if (req.tags.any((el) {
         return el.type == "description";
