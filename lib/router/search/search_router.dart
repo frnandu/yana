@@ -278,7 +278,8 @@ class _SearchRouter extends CustState<SearchRouter>
         ? searchRelays
         : [
             "wss://relay.nostr.band",
-            "wss://relay.noshere.com"
+            "wss://relay.noswhere.com"
+            "wss://search.nos.today"
           ]; //!=null? searchRelays.where((url) {
     //   Relay? relay =ndk.relays.getRelay(url);
     //   return relay!=null? relay.supportsNip(50) : false;

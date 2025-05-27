@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:ndk/domain_layer/usecases/nwc/nwc_notification.dart';
 import 'package:ndk/entities.dart';
 import 'package:provider/provider.dart';
-import 'package:qr_code_scanner/qr_code_scanner.dart';
+
 import 'package:yana/main.dart';
 import 'package:yana/provider/nwc_provider.dart';
 import 'package:yana/utils/string_util.dart';
@@ -30,7 +32,7 @@ class _WalletSendRouter extends State<WalletSendRouter> {
   TextEditingController recipientInputcontroller = TextEditingController();
   TextEditingController amountInputcontroller = TextEditingController();
   final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
-  QRViewController? qrController;
+  final MobileScannerController scannerController = MobileScannerController();
 
   String? recipientAddress;
   String? invoice;
@@ -43,39 +45,6 @@ class _WalletSendRouter extends State<WalletSendRouter> {
   bool scanning = false;
   bool makingInvoice = false;
   String? makeInvoiceError;
-
-  void _onQRViewCreated(QRViewController controller) {
-    qrController = controller;
-    controller.scannedDataStream.listen((scanData) async {
-      // TODO handle lightning: + ln address
-      if (invoice == null && scanData.code!=null) {
-        String qr = scanData.code!;
-        if (qr.startsWith("lightning:")) {
-          qr = qr.replaceAll("lightning:", "");
-        }
-        if (qr.startsWith(NwcProvider.BOLT11_PREFIX)) {
-          // nwcProvider.connect(scanData.code!);
-          setState(() {
-            invoice = scanData.code;
-            if (invoice != null) {
-              RouterUtil.router(
-                  context, RouterPath.WALLET_SEND_CONFIRM, invoice);
-            }
-
-            scanning = false;
-            qrController!.pauseCamera();
-          });
-        } else if (qr.contains("@")) {
-          setState(() {
-            recipientAddress = qr;
-            recipientInputcontroller.text = qr;
-            scanning = false;
-            qrController!.pauseCamera();
-          });
-        }
-      }
-    });
-  }
 
   @override
   void initState() {
@@ -106,7 +75,8 @@ class _WalletSendRouter extends State<WalletSendRouter> {
           recipientAddress = t;
         });
       } else if (t.isNotEmpty) {
-        List<Metadata> list = (await cacheManager.searchMetadatas(t, 100)).toList();
+        List<Metadata> list =
+            (await cacheManager.searchMetadatas(t, 100)).toList();
         if (list.length != mentionResults.length) {
           setState(() {
             mentionResults = list;
@@ -124,9 +94,7 @@ class _WalletSendRouter extends State<WalletSendRouter> {
 
   @override
   void dispose() {
-    if (qrController != null) {
-      qrController!.dispose();
-    }
+    scannerController.dispose();
     super.dispose();
   }
 
@@ -184,17 +152,26 @@ class _WalletSendRouter extends State<WalletSendRouter> {
         appBar: appBarNew,
         body: scanning
             ? Stack(children: [
-                QRView(
-                  key: qrKey,
-                  overlay: QrScannerOverlayShape(
-                      cutOutBottomOffset: 50,
-                      borderColor: themeData.primaryColor,
-                      borderRadius: 10,
-                      borderLength: 30,
-                      borderWidth: 10,
-                      cutOutSize: scanArea),
-                  onQRViewCreated: _onQRViewCreated,
-                )
+                MobileScanner(
+                  controller: scannerController,
+                  onDetect: (result) async {
+                    scannerController.stop();
+                    if (invoice == null && result.barcodes.isNotEmpty) {
+                      String? qr = result.barcodes.first.rawValue;
+                      if (qr != null) {
+                        if (!_doScannedQr(qr)) {
+                          scannerController.start();
+                          EasyLoading.showError(
+                              'Error reading bolt11 invoice...${result.barcodes.map((code) => code.toString()).toString()}',
+                              maskType: EasyLoadingMaskType.black,
+                              dismissOnTap: true,
+                              duration: const Duration(seconds: 7));
+
+                        }
+                      }
+                    }
+                  },
+                ),
               ])
             : Container(
                 margin: const EdgeInsets.all(Base.BASE_PADDING),
@@ -251,9 +228,9 @@ class _WalletSendRouter extends State<WalletSendRouter> {
         ),
         GestureDetector(
             onTap: () {
-              if (qrController != null) {
-                qrController!.resumeCamera();
-              }
+              // if (qrController != null) {
+              //   qrController!.resumeCamera();
+              // }
               setState(() {
                 invoice = null;
                 scanning = true;
@@ -361,8 +338,7 @@ class _WalletSendRouter extends State<WalletSendRouter> {
                   lnurl != null ? await Zap.getLnurlResponse(lnurl!) : null;
               if (lnurlResponse == null) {
                 setState(() {
-                  makeInvoiceError =
-                  "could not generate invoice from $lnurl";
+                  makeInvoiceError = "could not generate invoice from $lnurl";
                   makingInvoice = false;
                 });
                 return;
@@ -405,5 +381,31 @@ class _WalletSendRouter extends State<WalletSendRouter> {
       }
     }
     return list;
+  }
+
+  bool _doScannedQr(String qr) {
+    // TODO handle lightning: + ln address
+    if (qr.startsWith("lightning:")) {
+      qr = qr.replaceAll("lightning:", "");
+    }
+    qr = qr.toLowerCase();
+    if (qr.startsWith(NwcProvider.BOLT11_PREFIX)) {
+      // nwcProvider.connect(scanData.code!);
+      setState(() {
+        invoice = qr;
+        if (invoice != null) {
+          RouterUtil.router(context, RouterPath.WALLET_SEND_CONFIRM, invoice);
+        }
+
+        scanning = false;
+      });
+    } else if (qr.contains("@")) {
+      setState(() {
+        recipientAddress = qr;
+        recipientInputcontroller.text = qr;
+        scanning = false;
+      });
+    }
+    return !scanning;
   }
 }
