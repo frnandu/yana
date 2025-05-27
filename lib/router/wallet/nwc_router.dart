@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:provider/provider.dart';
-import 'package:qr_code_scanner/qr_code_scanner.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:yana/main.dart';
 import 'package:yana/provider/nwc_provider.dart';
 
@@ -23,47 +23,18 @@ class NwcRouter extends StatefulWidget {
 
 class _NwcRouter extends State<NwcRouter> {
   final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
-  QRViewController? qrController;
+
+  final MobileScannerController scannerController = MobileScannerController();
   bool disposed = false;
 
   String? nwcSecret;
-
-  void _onQRViewCreated(QRViewController controller) {
-    qrController = controller;
-    controller.scannedDataStream.listen((scanData) async {
-      if (nwcSecret == null) {
-        if (scanData.code != null &&
-            scanData.code!.startsWith(NwcProvider.NWC_PROTOCOL_PREFIX)) {
-          await qrController!.stopCamera();
-          await nwcProvider.connect(scanData.code!, onConnect: (lud16) async {
-            await metadataProvider.updateLud16IfEmpty(lud16);
-            RouterUtil.back(context);
-          }, onError: (error) async {
-            EasyLoading.showError('Error connecting to wallet...${error!}',
-                maskType: EasyLoadingMaskType.black,
-                dismissOnTap: true,
-                duration: const Duration(seconds: 7));
-            await qrController!.resumeCamera();
-            setState(() {
-              nwcSecret = null;
-            });
-          });
-        }
-        setState(() {
-          nwcSecret = scanData.code;
-        });
-      }
-    });
-  }
 
   @override
   Future<void> dispose() async {
     // Dispose the widget itself.
     super.dispose();
     disposed = true;
-    if (qrController != null) {
-      qrController!.dispose();
-    }
+    scannerController.dispose();
   }
 
   @override
@@ -104,16 +75,50 @@ class _NwcRouter extends State<NwcRouter> {
     return Scaffold(
       appBar: appBarNew,
       body: Stack(children: [
-        QRView(
-          key: qrKey,
-          overlay: QrScannerOverlayShape(
-              cutOutBottomOffset: 50,
-              borderColor: themeData.primaryColor,
-              borderRadius: 10,
-              borderLength: 30,
-              borderWidth: 10,
-              cutOutSize: scanArea),
-          onQRViewCreated: _onQRViewCreated,
+        MobileScanner(
+          controller: scannerController,
+          onDetect: (result) async {
+            scannerController.stop();
+            if (nwcSecret == null) {
+              if (result.barcodes.isNotEmpty) {
+                String? nwc;
+                for (var code in result.barcodes) {
+                  if (code.rawValue != null &&
+                      code.rawValue!
+                          .startsWith(NwcProvider.NWC_PROTOCOL_PREFIX)) {
+                    nwc = code.rawValue!;
+                  }
+                }
+                if (nwc != null) {
+                  scannerController.stop();
+                  setState(() {
+                    nwcSecret = nwc;
+                  });
+                  await nwcProvider.connect(nwc!, onConnect: (lud16) async {
+                    await metadataProvider.updateLud16IfEmpty(lud16);
+                    RouterUtil.back(context);
+                  }, onError: (error) async {
+                    EasyLoading.showError(
+                        'Error connecting to wallet...${error!}',
+                        maskType: EasyLoadingMaskType.black,
+                        dismissOnTap: true,
+                        duration: const Duration(seconds: 7));
+                    scannerController.start();
+                    setState(() {
+                      nwcSecret = null;
+                    });
+                  });
+                  return;
+                }
+              }
+              EasyLoading.showError(
+                  'Error connecting to wallet...${result.barcodes.map((code) => code.toString()).toString()}',
+                  maskType: EasyLoadingMaskType.black,
+                  dismissOnTap: true,
+                  duration: const Duration(seconds: 7));
+              scannerController.start();
+            }
+          },
         ),
         Positioned(
             bottom: 0,
@@ -189,7 +194,6 @@ class _NwcRouter extends State<NwcRouter> {
                                         maskType: EasyLoadingMaskType.black,
                                         dismissOnTap: true,
                                         duration: const Duration(seconds: 7));
-                                    await qrController!.resumeCamera();
                                     setState(() {
                                       nwcSecret = null;
                                     });

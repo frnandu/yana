@@ -62,6 +62,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.6.0"
+  ascii_qr:
+    dependency: transitive
+    description:
+      name: ascii_qr
+      sha256: "2046e400a0fa4ea0de5df44c87b992cdd1f76403bb15e64513b89263598750ae"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.1"
   assorted_layout_widgets:
     dependency: "direct main"
     description:
@@ -1322,6 +1330,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.0"
+  mobile_scanner:
+    dependency: "direct main"
+    description:
+      name: mobile_scanner
+      sha256: "72f06a071aa8b14acea3ab43ea7949eefe4a2469731ae210e006ba330a033a8c"
+      url: "https://pub.dev"
+    source: hosted
+    version: "7.0.0"
   ndk:
     dependency: "direct main"
     description:
@@ -1717,14 +1733,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.0.2"
-  qr_code_scanner:
-    dependency: "direct main"
-    description:
-      name: qr_code_scanner
-      sha256: f23b68d893505a424f0bd2e324ebea71ed88465d572d26bb8d2e78a4749591fd
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.0.1"
   quiver:
     dependency: transitive
     description:
@@ -2427,5 +2435,5 @@ packages:
     source: hosted
     version: "9.1.1"
 sdks:
-  dart: ">=3.7.0-0 <3.11.0"
-  flutter: ">=3.27.0"
+  dart: ">=3.7.0 <3.11.0"
+  flutter: ">=3.29.0"
