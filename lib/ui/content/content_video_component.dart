@@ -45,9 +45,10 @@ class _ContentVideoComponent extends State<ContentVideoComponent> {
       _controller = VideoPlayerController.file(File(widget.url));
     }
 
-    _flickManager = FlickManager(videoPlayerController: _controller, );
+    _flickManager = FlickManager(
+      videoPlayerController: _controller,
+    );
     _flickManager.flickControlManager!.mute();
-
   }
 
   @override
@@ -90,7 +91,13 @@ class _ContentVideoComponent extends State<ContentVideoComponent> {
         ),
         child: Center(
           child: _controller.value.isInitialized
-              ? FlickVideoPlayer(flickManager: _flickManager)
+              ? FlickVideoPlayer(
+                  flickManager: _flickManager,
+                  flickVideoWithControls: const FlickVideoWithControls(
+                    controls: FlickPortraitControls(
+                      iconSize: 32, fontSize: 14,
+                    ),
+                  ))
               : const CircularProgressIndicator(), // Show a loader while initializing
         ),
       ),
