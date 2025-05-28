@@ -1,8 +1,9 @@
 import 'dart:io';
 
-import 'package:flick_video_player/flick_video_player.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:media_kit/media_kit.dart';
+import 'package:media_kit_video/media_kit_video.dart';
 
 import 'package:video_player/video_player.dart';
 import 'package:visibility_detector/visibility_detector.dart';
@@ -22,8 +23,12 @@ class ContentVideoComponent extends StatefulWidget {
 }
 
 class _ContentVideoComponent extends State<ContentVideoComponent> {
-  late FlickManager _flickManager;
-  late VideoPlayerController _controller;
+// Create a [Player] to control playback.
+  late final player = Player();
+  // Create a [VideoController] to handle video output from [Player].
+  late final controller = VideoController(player);
+  // late FlickManager _flickManager;
+  // late VideoPlayerController _controller;
 
   bool disposed = false;
   bool visible = false;
@@ -36,46 +41,46 @@ class _ContentVideoComponent extends State<ContentVideoComponent> {
   void initState() {
     super.initState();
 
-    if (widget.url.startsWith("http")) {
-      _controller = VideoPlayerController.networkUrl(
-        Uri.parse(widget.url), // networkUrl expects a Uri
-        httpHeaders: {"user-agent": userAgent},
-      );
-    } else {
-      _controller = VideoPlayerController.file(File(widget.url));
-    }
-
-    _flickManager = FlickManager(videoPlayerController: _controller, );
-    _flickManager.flickControlManager!.mute();
+    player.open(Media(widget.url));
+    player.setVolume(0);
+    // if (widget.url.startsWith("http")) {
+    //   _controller = VideoPlayerController.networkUrl(
+    //     Uri.parse(widget.url), // networkUrl expects a Uri
+    //     httpHeaders: {"user-agent": userAgent},
+    //   );
+    // } else {
+    //   _controller = VideoPlayerController.file(File(widget.url));
+    // }
+    //
+    // _flickManager = FlickManager(videoPlayerController: _controller, );
+    // _flickManager.flickControlManager!.mute();
 
   }
 
   @override
   void dispose() {
     disposed = true;
-    _flickManager.dispose();
+    player.dispose();
     super.dispose();
   }
 
   void _handleVisibilityChanged(VisibilityInfo info) {
-    final visiblePercentage = info.visibleFraction * 100;
-
-    if (disposed || !_controller.value.isInitialized) return;
-
-    if (visiblePercentage < 10) {
-      visible = false;
-      if (_flickManager.flickVideoManager!.isPlaying) {
-        _flickManager.flickControlManager!.pause();
-      }
-    } else {
-      visible = true;
-      if (firstVisible) {
-        if (_controller.value.isInitialized) {
-          _flickManager.flickControlManager!.play();
-        }
-        firstVisible = false;
-      }
-    }
+    // final visiblePercentage = info.visibleFraction * 100;
+    //
+    // if (disposed) return;
+    //
+    // if (visiblePercentage < 10) {
+    //   visible = false;
+    //   if (player.state.playing) {
+    //     player.pause();
+    //   }
+    // } else {
+    //   visible = true;
+    //   if (firstVisible) {
+    //     player.play();
+    //     firstVisible = false;
+    //   }
+    // }
   }
 
   @override
@@ -89,9 +94,12 @@ class _ContentVideoComponent extends State<ContentVideoComponent> {
           bottom: Base.BASE_PADDING_HALF,
         ),
         child: Center(
-          child: _controller.value.isInitialized
-              ? FlickVideoPlayer(flickManager: _flickManager)
-              : const CircularProgressIndicator(), // Show a loader while initializing
+          child:
+          SizedBox(
+            width: MediaQuery.of(context).size.width,
+            height: MediaQuery.of(context).size.width * 9.0 / 16.0,
+            child: Video(controller: controller),
+          )
         ),
       ),
     );

@@ -15,6 +15,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:get_time_ago/get_time_ago.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:media_kit/media_kit.dart';
 import 'package:ndk/config/bootstrap_relays.dart';
 import 'package:ndk/entities.dart';
 import 'package:ndk/ndk.dart';
@@ -555,6 +556,7 @@ void createMyRelaySets(UserRelayList userRelayList) {
 Future<void> main() async {
 
   WidgetsFlutterBinding.ensureInitialized();
+  MediaKit.ensureInitialized();
   packageInfo = await PackageInfo.fromPlatform();
   try {
     await protocolHandler.register(NwcProvider.NWC_PROTOCOL_PREFIX);

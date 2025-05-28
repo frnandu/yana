@@ -12,6 +12,8 @@ list(APPEND FLUTTER_PLUGIN_LIST
   flutter_secure_storage_windows
   isar_flutter_libs
   local_auth_windows
+  media_kit_libs_windows_video
+  media_kit_video
   objectbox_flutter_libs
   pasteboard
   permission_handler_windows
@@ -19,6 +21,7 @@ list(APPEND FLUTTER_PLUGIN_LIST
   screen_retriever_windows
   share_plus
   url_launcher_windows
+  volume_controller
   window_manager
 )
 

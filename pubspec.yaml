@@ -129,8 +129,12 @@ dependencies:
   flutter_list_view: ^1.1.29
   #chewie: ^1.11.3
   #appinio_video_player: ^1.3.0
-  flick_video_player: ^0.9.0
+  #flick_video_player: ^0.9.0
   material_symbols_icons: ^4.2810.1
+
+  media_kit: ^1.2.0
+  media_kit_video: ^1.3.0
+  media_kit_libs_video: ^1.0.6
 
 # camelus
 #  ndk: ^0.3.0
