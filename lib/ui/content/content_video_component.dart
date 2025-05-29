@@ -1,7 +1,9 @@
 import 'dart:io';
 
-import 'package:chewie/chewie.dart';
+import 'package:flick_video_player/flick_video_player.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+
 import 'package:video_player/video_player.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
@@ -9,9 +11,9 @@ import '../../main.dart';
 import '../../utils/base.dart';
 
 class ContentVideoComponent extends StatefulWidget {
-  String url;
+  final String url;
 
-  ContentVideoComponent({required this.url});
+  const ContentVideoComponent({super.key, required this.url});
 
   @override
   State<StatefulWidget> createState() {
@@ -20,12 +22,12 @@ class ContentVideoComponent extends StatefulWidget {
 }
 
 class _ContentVideoComponent extends State<ContentVideoComponent> {
+  late FlickManager _flickManager;
   late VideoPlayerController _controller;
-  late ChewieController chewieController;
+
   bool disposed = false;
   bool visible = false;
   bool firstVisible = true;
-  // Generate a unique key for the visibility detector
   final Key _visibilityKey = UniqueKey();
 
   var userAgent = "Yana/${packageInfo.version}";
@@ -33,77 +35,47 @@ class _ContentVideoComponent extends State<ContentVideoComponent> {
   @override
   void initState() {
     super.initState();
-    if (widget.url.indexOf("http") == 0) {
+
+    if (widget.url.startsWith("http")) {
       _controller = VideoPlayerController.networkUrl(
-          Uri.parse(widget.url),
-          httpHeaders: Map.from({"user-agent": userAgent})
+        Uri.parse(widget.url), // networkUrl expects a Uri
+        httpHeaders: {"user-agent": userAgent},
       );
-        // ..initialize().then((_) {
-        //   if (!disposed) {
-        //     setState(() {});
-        //   }
-        // });
     } else {
       _controller = VideoPlayerController.file(File(widget.url));
-        // ..initialize().then((_) {
-        //   if (!disposed) {
-        //     setState(() {});
-        //   }
-        // });
     }
-    chewieController = ChewieController(
+
+    _flickManager = FlickManager(
       videoPlayerController: _controller,
-      autoInitialize: true,
-      autoPlay: false,
-      looping: false,
     );
-    // _controller.initialize().then((_) async {
-    //   if (!disposed) {
-    //     await _controller.setVolume(100);
-    //     _controller.play();
-    //   }
-    // });
-    if (!disposed) {
-      _controller.setVolume(0);
-    }
-    // Future.delayed(Duration(seconds:2), () {
-    //   if (visible) {
-    //     _controller.play();
-    //   }
-    // });
+    _flickManager.flickControlManager!.mute();
   }
 
   @override
   void dispose() {
-    super.dispose();
-    _controller.dispose();
-    chewieController.dispose();
     disposed = true;
+    _flickManager.dispose();
+    super.dispose();
   }
 
-  // Handle visibility changes
   void _handleVisibilityChanged(VisibilityInfo info) {
-    // The visibility percentage (0 means fully invisible, 100 means fully visible)
     final visiblePercentage = info.visibleFraction * 100;
 
-    // You can adjust this threshold based on your requirements
+    if (disposed || !_controller.value.isInitialized) return;
+
     if (visiblePercentage < 10) {
       visible = false;
-      // When widget is less than 10% visible, pause the video
-      if (_controller.value.isPlaying && !chewieController.isFullScreen) {
-        _controller.pause();
+      if (_flickManager.flickVideoManager!.isPlaying) {
+        _flickManager.flickControlManager!.pause();
       }
     } else {
       visible = true;
       if (firstVisible) {
-        _controller.play();
+        if (_controller.value.isInitialized) {
+          _flickManager.flickControlManager!.play();
+        }
         firstVisible = false;
       }
-      // Optionally: auto-resume when visible again
-      // Comment this out if you don't want auto-resume behavior
-      // if (chewieController.autoPlay && !_controller.value.isPlaying) {
-      //   _controller.play();
-      // }
     }
   }
 
@@ -113,21 +85,20 @@ class _ContentVideoComponent extends State<ContentVideoComponent> {
       key: _visibilityKey,
       onVisibilityChanged: _handleVisibilityChanged,
       child: Container(
-        width: double.maxFinite,
-        height: 600,
         margin: const EdgeInsets.only(
           top: Base.BASE_PADDING_HALF,
           bottom: Base.BASE_PADDING_HALF,
         ),
         child: Center(
           child: _controller.value.isInitialized
-              ? AspectRatio(
-            aspectRatio: _controller.value.aspectRatio,
-            child: Chewie(
-              controller: chewieController,
-            ),
-          )
-              : Container(),
+              ? FlickVideoPlayer(
+                  flickManager: _flickManager,
+                  flickVideoWithControls: const FlickVideoWithControls(
+                    controls: FlickPortraitControls(
+                      iconSize: 32, fontSize: 14,
+                    ),
+                  ))
+              : const CircularProgressIndicator(), // Show a loader while initializing
         ),
       ),
     );
