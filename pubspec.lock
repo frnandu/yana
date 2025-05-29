@@ -82,10 +82,10 @@ packages:
     dependency: transitive
     description:
       name: async
-      sha256: d2872f9c19731c2e5f10444b14686eb7cc85c76274bd6c16e1816bff9a3bab63
+      sha256: "758e6d74e971c3e5aceb4110bfd6698efc7f501675bcfe0c775459a8140750eb"
       url: "https://pub.dev"
     source: hosted
-    version: "2.12.0"
+    version: "2.13.0"
   auto_size_text_field:
     dependency: "direct main"
     description:
@@ -482,10 +482,10 @@ packages:
     dependency: transitive
     description:
       name: fake_async
-      sha256: "6a95e56b2449df2273fd8c45a662d6947ce1ebb7aafe80e550a3f68297f3cacc"
+      sha256: "5368f224a74523e8d2e7399ea1638b37aecfca824a3cc4dfdf77bf1fa905ac44"
       url: "https://pub.dev"
     source: hosted
-    version: "1.3.2"
+    version: "1.3.3"
   ffi:
     dependency: transitive
     description:
@@ -844,10 +844,10 @@ packages:
     dependency: transitive
     description:
       name: flutter_rust_bridge
-      sha256: "35c257fc7f98e34c1314d6c145e5ed54e7c94e8a9f469947e31c9298177d546f"
+      sha256: b416ff56002789e636244fb4cc449f587656eff995e5a7169457eb0593fcaddb
       url: "https://pub.dev"
     source: hosted
-    version: "2.7.0"
+    version: "2.10.0"
   flutter_secure_storage:
     dependency: "direct main"
     description:
@@ -1166,10 +1166,10 @@ packages:
     dependency: transitive
     description:
       name: leak_tracker
-      sha256: c35baad643ba394b40aac41080300150a4f08fd0fd6a10378f8f7c6bc161acec
+      sha256: "6bb818ecbdffe216e81182c2f0714a2e62b593f4a4f13098713ff1685dfb6ab0"
       url: "https://pub.dev"
     source: hosted
-    version: "10.0.8"
+    version: "10.0.9"
   leak_tracker_flutter_testing:
     dependency: transitive
     description:
@@ -1342,8 +1342,8 @@ packages:
     dependency: "direct main"
     description:
       path: "packages/ndk"
-      ref: ce4bedc3bf64a767ae738ea7505aecc31a0172a9
-      resolved-ref: ce4bedc3bf64a767ae738ea7505aecc31a0172a9
+      ref: HEAD
+      resolved-ref: d78c92b72616d3a28930ab318a3546491787a18a
       url: "https://github.com/relaystr/ndk.git"
     source: git
     version: "0.3.2"
@@ -1351,8 +1351,8 @@ packages:
     dependency: "direct main"
     description:
       path: "packages/amber"
-      ref: primal-wallet-support
-      resolved-ref: "26c2fcb62d3e91e83797d7d98e13e6d34aa872b9"
+      ref: HEAD
+      resolved-ref: d78c92b72616d3a28930ab318a3546491787a18a
       url: "https://github.com/relaystr/ndk.git"
     source: git
     version: "0.3.0"
@@ -1368,19 +1368,20 @@ packages:
     dependency: "direct main"
     description:
       path: "packages/objectbox"
-      ref: primal-wallet-support
-      resolved-ref: "26c2fcb62d3e91e83797d7d98e13e6d34aa872b9"
+      ref: HEAD
+      resolved-ref: d78c92b72616d3a28930ab318a3546491787a18a
       url: "https://github.com/relaystr/ndk.git"
     source: git
     version: "0.2.3"
   ndk_rust_verifier:
     dependency: "direct main"
     description:
-      name: ndk_rust_verifier
-      sha256: f82d536042634ad3bb1c1af0afd59abd149e7544e88697ef14302f7e170581b7
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.3.1"
+      path: "packages/rust_verifier"
+      ref: HEAD
+      resolved-ref: d78c92b72616d3a28930ab318a3546491787a18a
+      url: "https://github.com/relaystr/ndk.git"
+    source: git
+    version: "0.3.2"
   nested:
     dependency: transitive
     description:
@@ -1753,10 +1754,10 @@ packages:
     dependency: transitive
     description:
       name: rust_lib_ndk
-      sha256: "47dcfda62051315e869256c705e7c1c07649772d849eaad0474df11b10a2e1b0"
+      sha256: f06a1a47c6fbadf25250eac796b65b91ea99797b6377304abb152f06205c28ff
       url: "https://pub.dev"
     source: hosted
-    version: "0.1.5"
+    version: "0.1.7"
   rxdart:
     dependency: transitive
     description:
@@ -2278,10 +2279,10 @@ packages:
     dependency: transitive
     description:
       name: vm_service
-      sha256: "0968250880a6c5fe7edc067ed0a13d4bae1577fe2771dcf3010d52c4a9d3ca14"
+      sha256: ddfa8d30d89985b96407efce8acbdd124701f96741f2d981ca860662f1c0dc02
       url: "https://pub.dev"
     source: hosted
-    version: "14.3.1"
+    version: "15.0.0"
   wakelock_plus:
     dependency: transitive
     description:
@@ -2444,4 +2445,4 @@ packages:
     version: "9.1.1"
 sdks:
   dart: ">=3.7.0 <3.11.0"
-  flutter: ">=3.29.0"
+  flutter: ">=3.32.0"

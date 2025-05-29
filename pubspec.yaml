@@ -190,23 +190,20 @@ dependency_overrides:
     git:
       url: https://github.com/relaystr/ndk.git
       path: packages/ndk
-      ref: ce4bedc3bf64a767ae738ea7505aecc31a0172a9
   ndk_objectbox:
     git:
       url: https://github.com/relaystr/ndk.git
       path: packages/objectbox
-      ref: primal-wallet-support
   ndk_amber:
     git:
       url: https://github.com/relaystr/ndk.git
       path: packages/amber
-      ref: primal-wallet-support
 
+  ndk_rust_verifier:
+    git:
+      url: https://github.com/relaystr/ndk.git
+      path: packages/rust_verifier
 
-#  ndk_rust_verifier:
-#    git:
-#      url: https://github.com/relaystr/ndk.git
-#      path: packages/rust_verifier
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
