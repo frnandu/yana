@@ -10,6 +10,7 @@ import 'package:percent_indicator/linear_percent_indicator.dart';
 import 'package:provider/provider.dart';
 import 'package:settings_ui/settings_ui.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:yana/models/video_autoplay_preference.dart';
 import 'package:yana/nostr/relay_metadata.dart';
 import 'package:yana/provider/filter_provider.dart';
 import 'package:yana/router/index/account_manager_component.dart';
@@ -276,6 +277,24 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
         initialValue: settingProvider.videoPreview == OpenStatus.OPEN,
         leading: const Icon(Icons.video_collection_outlined),
         title: Text(s.Video_preview)));
+
+    interfaceTiles.add(SettingsTile.navigation(
+      leading: const Icon(Icons.play_circle_outline),
+      title: Text(s.videoAutoplay),
+      value: Text(getVideoAutoplayPreferenceDisplayName(
+          settingProvider.videoAutoplayPreference, s)),
+      onPressed: (context) async {
+        List<EnumObj> options = VideoAutoplayPreference.values
+            .map((e) =>
+                EnumObj(e, getVideoAutoplayPreferenceDisplayName(e, s)))
+            .toList();
+        EnumObj? result = await EnumSelectorComponent.show(context, options);
+        if (result != null) {
+          settingProvider.videoAutoplayPreference = result.value;
+        }
+      },
+    ));
+
     interfaceTiles.add(SettingsTile.switchTile(
         activeSwitchColor: themeData.primaryColor,
         onToggle: (value) {
@@ -1378,6 +1397,18 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
   void authenticate(value, text) async {
     if (await AuthUtil.authenticate(context, text)) {
       settingProvider.lockOpen = value ? 1 : 0;
+    }
+  }
+
+  String getVideoAutoplayPreferenceDisplayName(
+      VideoAutoplayPreference pref, I18n s) {
+    switch (pref) {
+      case VideoAutoplayPreference.always:
+        return s.always;
+      case VideoAutoplayPreference.wifiOnly:
+        return s.wifiOnly;
+      case VideoAutoplayPreference.never:
+        return s.never;
     }
   }
 
