@@ -138,8 +138,8 @@ dependencies:
 #  ndk_amber: ^0.2.0
 #  ndk_objectbox: ^0.2.1
 
-  ndk: 0.3.2
-  ndk_rust_verifier: 0.3.1
+  ndk: 0.4.0
+  ndk_rust_verifier: 0.4.0
   ndk_amber: 0.3.0
   ndk_isar: 0.2.0
   ndk_objectbox: 0.2.3
@@ -190,19 +190,23 @@ dependency_overrides:
     git:
       url: https://github.com/relaystr/ndk.git
       path: packages/ndk
+      ref: a8c5c2ad5d208c0b7c66640830bbcd7cdefdad98
   ndk_objectbox:
     git:
       url: https://github.com/relaystr/ndk.git
       path: packages/objectbox
+      ref: a8c5c2ad5d208c0b7c66640830bbcd7cdefdad98
   ndk_amber:
     git:
       url: https://github.com/relaystr/ndk.git
       path: packages/amber
+      ref: a8c5c2ad5d208c0b7c66640830bbcd7cdefdad98
 
   ndk_rust_verifier:
     git:
       url: https://github.com/relaystr/ndk.git
       path: packages/rust_verifier
+      ref: a8c5c2ad5d208c0b7c66640830bbcd7cdefdad98
 
 
 # For information on the generic Dart part of this file, see the
