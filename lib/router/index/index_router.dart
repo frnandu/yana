@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:ndk/entities.dart';
@@ -53,6 +54,7 @@ class IndexRouter extends StatefulWidget {
 
 class _IndexRouter extends CustState<IndexRouter>
     with TickerProviderStateMixin {
+
   static double DRAWER_WIDTH = 300;
 
   late TabController followTabController;
@@ -224,6 +226,27 @@ class _IndexRouter extends CustState<IndexRouter>
 
   @override
   Widget doBuild(BuildContext context) {
+    // return SingleChildScrollView(
+    //     child: ListView.builder(
+    //       itemCount: 100,
+    //       primary: false,
+    //       shrinkWrap: true,
+    //       itemBuilder: (ctx, idx) {
+    //         return Padding(
+    //             padding: EdgeInsets.symmetric(vertical: 8),
+    //             child: SizedBox(height: 50, child: Row( children: [
+    //               CachedNetworkImage(imageUrl: "https://robohash.org/$idx"),
+    //               Text(
+    //                 "$idx $idx $idx $idx $idx $idx $idx $idx $idx $idx $idx  ",
+    //                 maxLines: 5,
+    //                 overflow: TextOverflow.ellipsis,
+    //               ),
+    //               CachedNetworkImage(imageUrl: "https://robohash.org/${idx+100}"),
+    //             ])));
+    //       },
+    //     )
+    // );
+
     var _settingProvider = Provider.of<SettingProvider>(context);
 
     mediaDataCache.update(context);
@@ -460,7 +483,29 @@ class _IndexRouter extends CustState<IndexRouter>
       context: context,
       removeTop: true,
       child: Expanded(
-          child: IndexedStack(
+          child:
+    //     SingleChildScrollView(
+    //   child: ListView.builder(
+    //   itemCount: 100,
+    //     primary: false,
+    //     shrinkWrap: true,
+    //     itemBuilder: (ctx, idx) {
+    //       return Padding(
+    //           padding: EdgeInsets.symmetric(vertical: 8),
+    //           child: SizedBox(height: 50, child: Row( children: [
+    //             CachedNetworkImage(imageUrl: "https://robohash.org/$idx"),
+    //             Text(
+    //               "$idx $idx $idx $idx $idx $idx $idx $idx $idx $idx $idx  ",
+    //               maxLines: 5,
+    //               overflow: TextOverflow.ellipsis,
+    //             ),
+    //             CachedNetworkImage(imageUrl: "https://robohash.org/${idx+100}"),
+    //           ])));
+    //     },
+    //   )
+    // )
+
+        IndexedStack(
         index: _indexProvider.currentTap,
         children: [
           FollowIndexRouter(
@@ -484,10 +529,10 @@ class _IndexRouter extends CustState<IndexRouter>
         //     curve: Curves.ease,
         //     height: _scrollingDown ? 0.0 : 80,
         //     child:
-        IndexAppBar(
-          center: appBarCenter,
-          // )
-        ),
+        // IndexAppBar(
+        //   center: appBarCenter,
+        //   // )
+        // ),
         mainCenterWidget,
       ],
     );
@@ -566,39 +611,40 @@ class _IndexRouter extends CustState<IndexRouter>
       );
     } else {
       return Scaffold(
-          body: mainIndex,
-          extendBody: true,
-          floatingActionButton:
-              loggedUserSigner != null && loggedUserSigner!.canSign()
-                  ? AnimatedOpacity(
-                      opacity: _scrollingDown ? 0 : 1,
-                      curve: Curves.fastOutSlowIn,
-                      duration: const Duration(milliseconds: 400),
-                      child: addBtn,
-                    )
-                  //
-                  //     AnimatedContainer(
-                  //         curve: Curves.ease,
-                  //         duration: const Duration(milliseconds: 200),
-                  //         height: _scrollingDown ? 0.0 : 100,
-                  //         child:
-                  //     addBtn
-                  // )
-                  : Container(),
-          floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-          drawer: Drawer(
-            child: IndexDrawerContentComponent(reload: widget.reload),
-          ),
-          //       extendBodyBehindAppBar: true,
-          bottomNavigationBar: AnimatedOpacity(
-              opacity: _scrollingDown ? 0 : 1,
-              curve: Curves.fastOutSlowIn,
-              duration: const Duration(milliseconds: 400),
-              child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 400),
-                  curve: Curves.ease,
-                  height: _scrollingDown ? 0.0 : 50,
-                  child: IndexBottomBar())));
+        body: mainIndex,
+        extendBody: true,
+        // floatingActionButton:
+        //     loggedUserSigner != null && loggedUserSigner!.canSign()
+        //         ? AnimatedOpacity(
+        //             opacity: _scrollingDown ? 0 : 1,
+        //             curve: Curves.fastOutSlowIn,
+        //             duration: const Duration(milliseconds: 400),
+        //             child: addBtn,
+        //           )
+        //         //
+        //         //     AnimatedContainer(
+        //         //         curve: Curves.ease,
+        //         //         duration: const Duration(milliseconds: 200),
+        //         //         height: _scrollingDown ? 0.0 : 100,
+        //         //         child:
+        //         //     addBtn
+        //         // )
+        //         : Container(),
+        // floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+        // drawer: Drawer(
+        //   child: IndexDrawerContentComponent(reload: widget.reload),
+        // ),
+        //       extendBodyBehindAppBar: true,
+        // bottomNavigationBar: AnimatedOpacity(
+        //     opacity: _scrollingDown ? 0 : 1,
+        //     curve: Curves.fastOutSlowIn,
+        //     duration: const Duration(milliseconds: 400),
+        //     child: AnimatedContainer(
+        //         duration: const Duration(milliseconds: 400),
+        //         curve: Curves.ease,
+        //         height: _scrollingDown ? 0.0 : 50,
+        //         child: IndexBottomBar()))
+      );
     }
   }
 

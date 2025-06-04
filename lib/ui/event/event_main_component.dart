@@ -186,6 +186,15 @@ class _EventMainComponent extends State<EventMainComponent> {
 
   @override
   Widget build(BuildContext context) {
+    // return SizedBox(
+    //   height: 200,
+    //   child: Text(
+    //     widget.event.content,
+    //     maxLines: 5,
+    //     overflow: TextOverflow.ellipsis,
+    //   ),
+    // );
+
     var _settingProvider = Provider.of<SettingProvider>(context);
     if (eventRelation.id != widget.event.id) {
       // change when thread root load lazy

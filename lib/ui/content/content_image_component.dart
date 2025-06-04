@@ -52,9 +52,12 @@ class ContentImageComponent extends StatelessWidget {
         child: Center(
           child: CachedNetworkImage(
             imageUrl: imageUrl,
-            fit: imageBoxFix,
-            width: width,
-            height: height,
+            height: 200, // Fixed height
+            width: double.infinity,
+            fit: BoxFit.cover,
+            // fit: imageBoxFix,
+            // width: width,
+            // height: height,
             // placeholder: (context, url) => CircularProgressIndicator(),
             placeholder: (context, url) => Container(),
             errorWidget: (context, url, error) => Icon(Icons.error),

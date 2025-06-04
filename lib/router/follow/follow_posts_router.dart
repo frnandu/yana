@@ -73,27 +73,46 @@ class _FollowPostsRouter extends KeepAliveCustState<FollowPostsRouter>
     preBuild();
 
     var main = VisibilityDetector(
-        key: const Key('feed-posts'),
-        onVisibilityChanged: (visibilityInfo) {
-          if (visibilityInfo.visibleFraction == 0.0) {
-            followEventProvider.setPostsTimestampToNewestAndSave();
-          }
+      key: const Key('feed-posts'),
+      onVisibilityChanged: (visibilityInfo) {
+        if (visibilityInfo.visibleFraction == 0.0) {
+          followEventProvider.setPostsTimestampToNewestAndSave();
+        }
+      },
+      child: SingleChildScrollView( child: ListView.builder(
+        itemCount: events.length,
+        primary: false,
+        shrinkWrap: true,
+        itemBuilder: (ctx, idx) {
+          return Padding(
+              padding: EdgeInsets.symmetric(vertical: 8),
+              child: SizedBox(
+                height: 200,
+                child: Text(
+                  events[idx].content,
+                  maxLines: 5,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ));
         },
-        child: FlutterListView(
-            // physics: BouncingScrollPhysics(),
-            controller: _controller,
-            delegate:
-                FlutterListViewDelegate((BuildContext context, int index) {
-              var event = events[index];
-              // Map<String, dynamic> map = event.toJson();
-              // map['content']=event.content+event.sources.toString();
-              // var e = Nip01Event.fromJson(map);
-              // e.sources = event.sources;
-              return EventListComponent(
-                event: event,
-                showVideo: _settingProvider.videoPreview == OpenStatus.OPEN,
-              );
-            }, childCount: events.length)));
+      )),
+
+      // FlutterListView(
+      //     // physics: BouncingScrollPhysics(),
+      //     controller: _controller,
+      //     delegate:
+      //         FlutterListViewDelegate((BuildContext context, int index) {
+      //       var event = events[index];
+      //       // Map<String, dynamic> map = event.toJson();
+      //       // map['content']=event.content+event.sources.toString();
+      //       // var e = Nip01Event.fromJson(map);
+      //       // e.sources = event.sources;
+      //       return EventListComponent(
+      //         event: event,
+      //         showVideo: _settingProvider.videoPreview == OpenStatus.OPEN,
+      //       );
+      //     }, childCount: events.length))
+    );
 
     // var main = SingleChildScrollView(
     //     controller: _controller,
@@ -144,7 +163,7 @@ class _FollowPostsRouter extends KeepAliveCustState<FollowPostsRouter>
           }
 
           return NewNotesUpdatedComponent(
-            text: "",//I18n.of(context).posted,
+            text: "", //I18n.of(context).posted,
             newEvents: eventMemBox.all(),
             onTap: () {
               setState(() {

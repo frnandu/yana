@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
@@ -30,6 +31,7 @@ class HomeComponent extends StatefulWidget {
 class _HomeComponent extends State<HomeComponent> {
   @override
   Widget build(BuildContext context) {
+
     PlatformUtil.init(context);
     var _webviewProvider = Provider.of<WebViewProvider>(context);
 
@@ -44,18 +46,19 @@ class _HomeComponent extends State<HomeComponent> {
       ],
       supportedLocales: I18n.delegate.supportedLocales,
       theme: widget.theme,
-      home: Stack(
-        children: [
-          Positioned.fill(child: widget.child),
-          webViewProvider.url != null
-              ? Positioned(
-                  child: Offstage(
-                  offstage: !_webviewProvider.showable,
-                  child: WebViewRouter(url: _webviewProvider.url!),
-                ))
-              : Container()
-        ],
-      ),
+      home: widget.child
+      // Stack(
+      //   children: [
+      //     Positioned.fill(child: widget.child),
+      //     webViewProvider.url != null
+      //         ? Positioned(
+      //             child: Offstage(
+      //             offstage: !_webviewProvider.showable,
+      //             child: WebViewRouter(url: _webviewProvider.url!),
+      //           ))
+      //         : Container()
+      //   ],
+      // ),
     );
   }
 }

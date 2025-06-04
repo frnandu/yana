@@ -131,10 +131,11 @@ dependencies:
   material_symbols_icons: ^4.2810.1
 
   ndk: 0.4.0
-  ndk_rust_verifier: 0.4.0
+#  ndk_rust_verifier: 0.4.0
   ndk_amber: 0.3.1
   #ndk_isar: 0.2.4
   ndk_objectbox: 0.2.4
+  rxdart: ^0.28.0
 
 dev_dependencies:
   flutter_launcher_icons: ^0.14.1

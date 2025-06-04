@@ -4,11 +4,14 @@ import 'dart:ui';
 
 import 'package:amberflutter/amberflutter.dart';
 import 'package:awesome_notifications/awesome_notifications.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+
 // import 'package:flutter_background_service/flutter_background_service.dart';
-import 'package:flutter_cache_manager/flutter_cache_manager.dart' as FlutterCacheManager;
+import 'package:flutter_cache_manager/flutter_cache_manager.dart'
+    as FlutterCacheManager;
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -22,7 +25,7 @@ import 'package:ndk/shared/helpers/relay_helper.dart';
 import 'package:ndk_amber/data_layer/data_sources/amber_flutter.dart';
 import 'package:ndk_amber/data_layer/repositories/signers/amber_event_signer.dart';
 import 'package:ndk_objectbox/data_layer/db/object_box/db_object_box.dart';
-import 'package:ndk_rust_verifier/ndk_rust_verifier.dart';
+// import 'package:ndk_rust_verifier/ndk_rust_verifier.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:protocol_handler/protocol_handler.dart';
 import 'package:provider/provider.dart';
@@ -163,10 +166,11 @@ EventSigner? get loggedUserSigner => ndk.accounts.getLoggedAccount()?.signer;
 AmberFlutterDS amberFlutterDS = AmberFlutterDS(Amberflutter());
 late CacheManager cacheManager;
 final logLevel = Logger.logLevels.debug;
-final eventVerifier = RustEventVerifier();
+final eventVerifier = Bip340EventVerifier();//RustEventVerifier();
 Ndk ndk =
 //Ndk.emptyBootstrapRelaysConfig();// = Ndk(
-Ndk( NdkConfig(
+    Ndk(
+  NdkConfig(
       eventVerifier: eventVerifier,
       cache: cacheManager,
       // eventOutFilters: [filterProvider],
@@ -198,7 +202,7 @@ const DEFAULT_BLOSSOM_SERVERS = [
   'https://cdn.hzrd149.com',
   'https://blossom.primal.net',
   'https://cdn.nostrcheck.me'
-  'https://files.v0l.io',
+      'https://files.v0l.io',
 ];
 
 // @pragma('vm:entry-point')
@@ -371,7 +375,8 @@ Future<void> initRelays({bool newKey = false}) async {
   // UserRelayList? userRelayList =
   //     await cacheManager.loadUserRelayList(loggedUserSigner!.getPublicKey());
 
-  UserRelayList? userRelayList = await ndk.userRelayLists.getSingleUserRelayList(loggedUserSigner!.getPublicKey());
+  UserRelayList? userRelayList = await ndk.userRelayLists
+      .getSingleUserRelayList(loggedUserSigner!.getPublicKey());
   if (userRelayList == null) {
     int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
     userRelayList = UserRelayList(
@@ -553,7 +558,6 @@ void createMyRelaySets(UserRelayList userRelayList) {
 }
 
 Future<void> main() async {
-
   WidgetsFlutterBinding.ensureInitialized();
   packageInfo = await PackageInfo.fromPlatform();
   try {
@@ -820,6 +824,28 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
+    // return MaterialApp(
+    //     home: Scaffold(
+    //         body: SingleChildScrollView(
+    //                 child: ListView.builder(
+    //   itemCount: 100,
+    //   primary: false,
+    //   shrinkWrap: true,
+    //   itemBuilder: (ctx, idx) {
+    //     return Padding(
+    //         padding: EdgeInsets.symmetric(vertical: 8),
+    //         child: SizedBox(height: 50, child: Row( children: [
+    //           CachedNetworkImage(imageUrl: "https://robohash.org/$idx"),
+    //           Text(
+    //             "$idx $idx $idx $idx $idx $idx $idx $idx $idx $idx $idx ",
+    //             maxLines: 5,
+    //             overflow: TextOverflow.ellipsis,
+    //           ),
+    //           CachedNetworkImage(imageUrl: "https://robohash.org/${idx+100}"),
+    //         ])));
+    //   },
+    // ))));
+
     Locale? _locale;
     if (StringUtil.isNotBlank(settingProvider.i18n)) {
       for (var item in I18n.delegate.supportedLocales) {
@@ -956,155 +982,177 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
           ),
         ],
         child:
+        // MaterialApp(
+        //     home: Scaffold(
+        //         body: SingleChildScrollView(
+        //             child: ListView.builder(
+        //   itemCount: 100,
+        //   primary: false,
+        //   shrinkWrap: true,
+        //   itemBuilder: (ctx, idx) {
+        //     return Padding(
+        //         padding: EdgeInsets.symmetric(vertical: 8),
+        //         child: SizedBox(
+        //             height: 50,
+        //             child: Row(children: [
+        //               CachedNetworkImage(imageUrl: "https://robohash.org/$idx"),
+        //               Text(
+        //                 "$idx $idx $idx $idx $idx $idx $idx $idx $idx $idx $idx  ",
+        //                 maxLines: 5,
+        //                 overflow: TextOverflow.ellipsis,
+        //               ),
+        //               CachedNetworkImage(
+        //                   imageUrl: "https://robohash.org/${idx + 100}"),
+        //             ])));
+        //   },
+        // ))))
+
         SafeArea(
             child: HomeComponent(
           locale: _locale,
           theme: defaultTheme,
-          child: Sizer(
-            builder: (context, orientation, deviceType) {
-              return MaterialApp(
-                builder: EasyLoading.init(),
-                // builder: BotToastInit(),
-                // navigatorObservers: [
-                //   BotToastNavigatorObserver(),
-                // ],
-                locale: _locale,
-                title: packageInfo.appName,
-                localizationsDelegates: const [
-                  I18n.delegate,
-                  GlobalMaterialLocalizations.delegate,
-                  GlobalWidgetsLocalizations.delegate,
-                  GlobalCupertinoLocalizations.delegate,
-                ],
-                supportedLocales: I18n.delegate.supportedLocales,
-                theme: defaultTheme,
-                darkTheme: defaultDarkTheme,
-                onGenerateInitialRoutes: (initialRoute) {
-                  MaterialPageRoute? jump;
-                  if (initialRoute!.startsWith("nostr:")) {
-                    RegExpMatch? match =
-                        Nip19.nip19regex.firstMatch(initialRoute!);
+          child:
+              // Sizer(
+              //   builder: (context, orientation, deviceType) {
+              //     return
+              MaterialApp(
+            builder: EasyLoading.init(),
+            // builder: BotToastInit(),
+            // navigatorObservers: [
+            //   BotToastNavigatorObserver(),
+            // ],
+            locale: _locale,
+            title: packageInfo.appName,
+            localizationsDelegates: const [
+              I18n.delegate,
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
+            supportedLocales: I18n.delegate.supportedLocales,
+            theme: defaultTheme,
+            darkTheme: defaultDarkTheme,
+            onGenerateInitialRoutes: (initialRoute) {
+              MaterialPageRoute? jump;
+              if (initialRoute!.startsWith("nostr:")) {
+                RegExpMatch? match = Nip19.nip19regex.firstMatch(initialRoute!);
 
-                    if (match != null) {
-                      var key = match.group(2)! + match.group(3)!;
-                      String? otherStr;
+                if (match != null) {
+                  var key = match.group(2)! + match.group(3)!;
+                  String? otherStr;
 
-                      if (Nip19.isPubkey(key)) {
-                        // inline
-                        // mention user
-                        if (key.length > Nip19.NPUB_LENGTH) {
-                          otherStr = key.substring(Nip19.NPUB_LENGTH);
-                          key = key.substring(0, Nip19.NPUB_LENGTH);
-                        }
-                        key = Nip19.decode(key);
+                  if (Nip19.isPubkey(key)) {
+                    // inline
+                    // mention user
+                    if (key.length > Nip19.NPUB_LENGTH) {
+                      otherStr = key.substring(Nip19.NPUB_LENGTH);
+                      key = key.substring(0, Nip19.NPUB_LENGTH);
+                    }
+                    key = Nip19.decode(key);
+                    jump = MaterialPageRoute(
+                        settings: RouteSettings(
+                            name: RouterPath.USER, arguments: key),
+                        builder: (context) => UserRouter());
+                  } else if (Nip19.isNoteId(key)) {
+                    // block
+                    if (key.length > Nip19.NOTEID_LENGTH) {
+                      otherStr = key.substring(Nip19.NOTEID_LENGTH);
+                      key = key.substring(0, Nip19.NOTEID_LENGTH);
+                    }
+                    key = Nip19.decode(key);
+                    // var filter = Filter(ids: [key]);
+                    //ndk.relays.requestRelays(relayManager.bootstrapRelays, filter, idleTimeout: 20).then((stream) {
+                    //   stream.listen((event) {
+                    //     RouterUtil.router(context, RouterPath.THREAD_DETAIL, event);
+                    //   });
+                    // },);
+
+                    jump = MaterialPageRoute(
+                        settings: RouteSettings(
+                            name: RouterPath.THREAD_DETAIL, arguments: key),
+                        builder: (context) => ThreadDetailRouter(eventId: key));
+                    // RouterUtil.router(context, RouterPath.THREAD_DETAIL, event);
+                  } else if (NIP19Tlv.isNprofile(key)) {
+                    var nprofile = NIP19Tlv.decodeNprofile(key);
+                    if (nprofile != null) {
+                      // inline
+                      // mention user
+                      jump = MaterialPageRoute(
+                          settings: RouteSettings(
+                              name: RouterPath.USER,
+                              arguments: nprofile.pubkey),
+                          builder: (context) => UserRouter());
+                    }
+                  } else if (NIP19Tlv.isNrelay(key)) {
+                    var nrelay = NIP19Tlv.decodeNrelay(key);
+                    String? url =
+                        nrelay != null ? cleanRelayUrl(nrelay.addr) : null;
+                    if (url != null) {
+                      // inline
+                      Relay relay = Relay(
+                          url: url,
+                          connectionSource: ConnectionSource.explicit);
+                      jump = MaterialPageRoute(
+                          settings: RouteSettings(
+                              name: RouterPath.RELAY_INFO, arguments: relay),
+                          builder: (context) => const RelayInfoRouter());
+                    }
+                  } else if (NIP19Tlv.isNevent(key)) {
+                    var nevent = NIP19Tlv.decodeNevent(key);
+                    if (nevent != null) {
+                      jump = MaterialPageRoute(
+                          settings: RouteSettings(
+                              name: RouterPath.THREAD_DETAIL,
+                              arguments: nevent.id),
+                          builder: (context) => ThreadDetailRouter(
+                                eventId: nevent.id,
+                              ));
+                    }
+                  } else if (NIP19Tlv.isNaddr(key)) {
+                    var naddr = NIP19Tlv.decodeNaddr(key);
+                    if (naddr != null) {
+                      if (StringUtil.isNotBlank(naddr.id) &&
+                          naddr.kind == Nip01Event.kTextNodeKind) {
                         jump = MaterialPageRoute(
                             settings: RouteSettings(
-                                name: RouterPath.USER, arguments: key),
+                                name: RouterPath.THREAD_DETAIL,
+                                arguments: naddr.id),
+                            builder: (context) => ThreadDetailRouter(
+                                  eventId: naddr.id,
+                                ));
+                      } else if (StringUtil.isNotBlank(naddr.author) &&
+                          naddr.kind == Metadata.kKind) {
+                        jump = MaterialPageRoute(
+                            settings: RouteSettings(
+                                name: RouterPath.USER, arguments: naddr.author),
                             builder: (context) => UserRouter());
-                      } else if (Nip19.isNoteId(key)) {
-                        // block
-                        if (key.length > Nip19.NOTEID_LENGTH) {
-                          otherStr = key.substring(Nip19.NOTEID_LENGTH);
-                          key = key.substring(0, Nip19.NOTEID_LENGTH);
-                        }
-                        key = Nip19.decode(key);
-                        // var filter = Filter(ids: [key]);
-                        //ndk.relays.requestRelays(relayManager.bootstrapRelays, filter, idleTimeout: 20).then((stream) {
-                        //   stream.listen((event) {
-                        //     RouterUtil.router(context, RouterPath.THREAD_DETAIL, event);
-                        //   });
-                        // },);
-
-                        jump = MaterialPageRoute(
-                            settings: RouteSettings(
-                                name: RouterPath.THREAD_DETAIL, arguments: key),
-                            builder: (context) =>
-                                ThreadDetailRouter(eventId: key));
-                        // RouterUtil.router(context, RouterPath.THREAD_DETAIL, event);
-                      } else if (NIP19Tlv.isNprofile(key)) {
-                        var nprofile = NIP19Tlv.decodeNprofile(key);
-                        if (nprofile != null) {
-                          // inline
-                          // mention user
-                          jump = MaterialPageRoute(
-                              settings: RouteSettings(
-                                  name: RouterPath.USER,
-                                  arguments: nprofile.pubkey),
-                              builder: (context) => UserRouter());
-                        }
-                      } else if (NIP19Tlv.isNrelay(key)) {
-                        var nrelay = NIP19Tlv.decodeNrelay(key);
-                        String? url =
-                            nrelay != null ? cleanRelayUrl(nrelay.addr) : null;
-                        if (url != null) {
-                          // inline
-                          Relay relay = Relay(
-                              url: url,
-                              connectionSource: ConnectionSource.explicit);
-                          jump = MaterialPageRoute(
-                              settings: RouteSettings(
-                                  name: RouterPath.RELAY_INFO,
-                                  arguments: relay),
-                              builder: (context) => const RelayInfoRouter());
-                        }
-                      } else if (NIP19Tlv.isNevent(key)) {
-                        var nevent = NIP19Tlv.decodeNevent(key);
-                        if (nevent != null) {
-                          jump = MaterialPageRoute(
-                              settings: RouteSettings(
-                                  name: RouterPath.THREAD_DETAIL,
-                                  arguments: nevent.id),
-                              builder: (context) => ThreadDetailRouter(
-                                    eventId: nevent.id,
-                                  ));
-                        }
-                      } else if (NIP19Tlv.isNaddr(key)) {
-                        var naddr = NIP19Tlv.decodeNaddr(key);
-                        if (naddr != null) {
-                          if (StringUtil.isNotBlank(naddr.id) &&
-                              naddr.kind == Nip01Event.kTextNodeKind) {
-                            jump = MaterialPageRoute(
-                                settings: RouteSettings(
-                                    name: RouterPath.THREAD_DETAIL,
-                                    arguments: naddr.id),
-                                builder: (context) => ThreadDetailRouter(
-                                      eventId: naddr.id,
-                                    ));
-                          } else if (StringUtil.isNotBlank(naddr.author) &&
-                              naddr.kind == Metadata.kKind) {
-                            jump = MaterialPageRoute(
-                                settings: RouteSettings(
-                                    name: RouterPath.USER,
-                                    arguments: naddr.author),
-                                builder: (context) => UserRouter());
-                          }
-                        }
                       }
                     }
                   }
-                  if (jump != null) {
-                    return [
-                      MaterialPageRoute(
-                          builder: (context) => IndexRouter(reload: reload)),
-                      jump
-                    ];
-                  }
-                  return [
-                    MaterialPageRoute(
-                        builder: (context) => IndexRouter(reload: reload)),
-                    // MaterialPageRoute(
-                    //     settings: RouteSettings(name: RouterPath.USER, arguments: "30782a8323b7c98b172c5a2af7206bb8283c655be6ddce11133611a03d5f1177"),
-                    //     builder: (context) => UserRouter())
-                  ];
-                },
-                // initialRoute: RouterPath.INDEX,
-                routes: routes,
-              );
+                }
+              }
+              if (jump != null) {
+                return [
+                  MaterialPageRoute(
+                      builder: (context) => IndexRouter(reload: reload)),
+                  jump
+                ];
+              }
+              return [
+                MaterialPageRoute(
+                    builder: (context) => IndexRouter(reload: reload)),
+                // MaterialPageRoute(
+                //     settings: RouteSettings(name: RouterPath.USER, arguments: "30782a8323b7c98b172c5a2af7206bb8283c655be6ddce11133611a03d5f1177"),
+                //     builder: (context) => UserRouter())
+              ];
             },
+            // initialRoute: RouterPath.INDEX,
+            routes: routes,
+            //   );
+            // },
           ),
-        )
-    )
-    );
+        ))
+        );
   }
 
   @override

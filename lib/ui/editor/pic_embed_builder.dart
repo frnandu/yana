@@ -16,6 +16,8 @@ class PicEmbedBuilder extends EmbedBuilder {
       // netword image
       return CachedNetworkImage(
         imageUrl: imageUrl,
+        height: 200, // Fixed height
+        width: double.infinity,
         fit: BoxFit.cover,
         placeholder: (context, url) => CircularProgressIndicator(),
         errorWidget: (context, url, error) => Icon(Icons.error),
