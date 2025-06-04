@@ -1325,34 +1325,40 @@ packages:
   ndk:
     dependency: "direct main"
     description:
-      name: ndk
-      sha256: "2f64d055e2a656ab523e3d804280e81155a14c029d16d42b804de41ac7f815c2"
-      url: "https://pub.dev"
-    source: hosted
+      path: "packages/ndk"
+      ref: a8c5c2ad5d208c0b7c66640830bbcd7cdefdad98
+      url: "https://github.com/relaystr/ndk.git"
+    source: git
     version: "0.4.0"
   ndk_amber:
     dependency: "direct main"
     description:
-      name: ndk_amber
-      sha256: "19ae227ae41e93147e54f099aeab03a94f7a260d5d31098856c05430d30e681e"
+      path: "packages/amber"
+      ref: a8c5c2ad5d208c0b7c66640830bbcd7cdefdad98
+      resolved-ref: a8c5c2ad5d208c0b7c66640830bbcd7cdefdad98
+      url: "https://github.com/relaystr/ndk.git"
+    source: git
+    version: "0.3.1"
       url: "https://pub.dev"
     source: hosted
     version: "0.3.1"
   ndk_objectbox:
     dependency: "direct main"
     description:
-      name: ndk_objectbox
-      sha256: "6a67de3b42bb9da1f4ba08395e295d2ec2505e554cfe539af6a73ee6baf046ff"
-      url: "https://pub.dev"
-    source: hosted
+      path: "packages/objectbox"
+      ref: a8c5c2ad5d208c0b7c66640830bbcd7cdefdad98
+      resolved-ref: a8c5c2ad5d208c0b7c66640830bbcd7cdefdad98
+      url: "https://github.com/relaystr/ndk.git"
+    source: git
     version: "0.2.4"
   ndk_rust_verifier:
     dependency: "direct main"
     description:
-      name: ndk_rust_verifier
-      sha256: "82bcdb9b0094654d4b77d0a358584592e688805085c5fdf36c89df0248a1aab9"
-      url: "https://pub.dev"
-    source: hosted
+      path: "packages/rust_verifier"
+      ref: a8c5c2ad5d208c0b7c66640830bbcd7cdefdad98
+      resolved-ref: a8c5c2ad5d208c0b7c66640830bbcd7cdefdad98
+      url: "https://github.com/relaystr/ndk.git"
+    source: git
     version: "0.4.0"
   nested:
     dependency: transitive
