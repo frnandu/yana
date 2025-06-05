@@ -45,7 +45,7 @@ dependencies:
   flutter_quill: ^11.4.1
   bip340: ^0.3.0
   string_validator: ^1.0.0
-  http: ^1.1.0
+  http: ^1.4.0
   get_time_ago: ^2.1.1
   cached_network_image: ^3.4.1
   photo_manager: ^3.6.3
