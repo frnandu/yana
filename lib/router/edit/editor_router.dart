@@ -1,10 +1,12 @@
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:ndk/domain_layer/entities/metadata.dart';
 import 'package:ndk/domain_layer/entities/nip_01_event.dart';
 import 'package:ndk/domain_layer/entities/read_write.dart';
 import 'package:ndk/domain_layer/entities/relay_set.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
-import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:intl/intl.dart';
 import 'package:ndk/shared/helpers/relay_helper.dart';
 import 'package:pointycastle/ecc/api.dart';
@@ -51,7 +53,8 @@ class EditorRouter extends StatefulWidget {
 
   List<quill.BlockEmbed>? initEmbeds;
 
-  EditorRouter({super.key,
+  EditorRouter({
+    super.key,
     required this.tags,
     required this.tagsAddedWhenSend,
     required this.taggedPubKeys,
@@ -223,15 +226,20 @@ class _EditorRouter extends CustState<EditorRouter> with EditorMixin {
         ),
       ));
     }
-
-    Widget quillWidget = quill.QuillProvider(
-        configurations: quill.QuillConfigurations(
-          controller: editorController,
-        ),
-        child: quill.QuillEditor.basic(
-            focusNode: focusNode,
-            scrollController: ScrollController(),
-            configurations: quill.QuillEditorConfigurations(placeholder: s.What_s_happening, embedBuilders: [
+    // quill.QuillSimpleToolbar(
+    //   controller: _controller,
+    //   config: const quill.QuillSimpleToolbarConfig(),
+    // );
+    final quillWidget = quill.QuillEditor.basic(
+      controller: editorController,
+      scrollController: ScrollController(),
+      focusNode: focusNode,
+      config: quill.QuillEditorConfig(
+          placeholder: s.What_s_happening,
+          scrollable: true,
+          autoFocus: false,
+          expands: false,
+          embedBuilders: [
               MentionUserEmbedBuilder(),
               MentionEventEmbedBuilder(),
               PicEmbedBuilder(),
@@ -239,7 +247,23 @@ class _EditorRouter extends CustState<EditorRouter> with EditorMixin {
               LnbcEmbedBuilder(),
               TagEmbedBuilder(),
               CustomEmojiEmbedBuilder(),
-            ])));
+      ]),
+    );
+    // Widget quillWidget = quill.QuillProvider(
+    //     configurations: quill.QuillConfigurations(
+    //       controller: editorController,
+    //     ),
+    //     child: quill.QuillEditor.basic(
+    //         focusNode: focusNode,
+    //         configurations: quill.QuillEditorConfigurations(placeholder: s.What_s_happening, embedBuilders: [
+    //           MentionUserEmbedBuilder(),
+    //           MentionEventEmbedBuilder(),
+    //           PicEmbedBuilder(),
+    //           VideoEmbedBuilder(),
+    //           LnbcEmbedBuilder(),
+    //           TagEmbedBuilder(),
+    //           CustomEmojiEmbedBuilder(),
+    //         ])));
 
     // Widget quillWidget = quill.QuillEditor(
     //   placeholder: s.What_s_happening,
@@ -256,9 +280,6 @@ class _EditorRouter extends CustState<EditorRouter> with EditorMixin {
     //     TagEmbedBuilder(),
     //     CustomEmojiEmbedBuilder(),
     //   ],
-    //   scrollable: true,
-    //   autoFocus: false,
-    //   expands: false,
     //   // padding: EdgeInsets.zero,
     //   padding: const EdgeInsets.only(
     //     left: Base.BASE_PADDING,
@@ -267,7 +288,10 @@ class _EditorRouter extends CustState<EditorRouter> with EditorMixin {
     // );
     List<Widget> editorList = [];
     var editorInputWidget = Container(
-      margin: const EdgeInsets.only(bottom: Base.BASE_PADDING, left: Base.BASE_PADDING, right: Base.BASE_PADDING ),
+      margin: const EdgeInsets.only(
+          bottom: Base.BASE_PADDING,
+          left: Base.BASE_PADDING,
+          right: Base.BASE_PADDING),
       child: quillWidget,
     );
     editorList.add(editorInputWidget);
@@ -348,28 +372,32 @@ class _EditorRouter extends CustState<EditorRouter> with EditorMixin {
                 if (pubKeys.length == 1) {
                   for (var element in (await getInboxRelays(pubKeys.first))) {
                     String? cleanUrl = cleanRelayUrl(element);
-                    if (cleanUrl!=null) {
+                    if (cleanUrl != null) {
                       relays.add(cleanUrl);
                     }
                   }
                 } else if (pubKeys.isNotEmpty) {
-                  EasyLoading.show(status: 'Calculating inbox relays of participants...', maskType: EasyLoadingMaskType.black, dismissOnTap: true);
-                  RelaySet inboxRelaySet = await ndk
-                      .relaySets.calculateRelaySet(
-                      name: "replyInboxRelaySet",
-                      ownerPubKey: loggedUserSigner!.getPublicKey(),
-                      pubKeys: pubKeys,
-                      direction: RelayDirection.inbox,
-                      relayMinCountPerPubKey: settingProvider
-                          .broadcastToInboxMaxCount);
+                  EasyLoading.show(
+                      status: 'Calculating inbox relays of participants...',
+                      maskType: EasyLoadingMaskType.black,
+                      dismissOnTap: true);
+                  RelaySet inboxRelaySet = await ndk.relaySets
+                      .calculateRelaySet(
+                          name: "replyInboxRelaySet",
+                          ownerPubKey: loggedUserSigner!.getPublicKey(),
+                          pubKeys: pubKeys,
+                          direction: RelayDirection.inbox,
+                          relayMinCountPerPubKey:
+                              settingProvider.broadcastToInboxMaxCount);
                   inboxRelaySet.urls.forEach((element) {
                     String? cleanUrl = cleanRelayUrl(element);
-                    if (cleanUrl!=null) {
+                    if (cleanUrl != null) {
                       relays.add(cleanUrl);
                     }
                   });
 
-                  relays.removeWhere((element) =>ndk.relays.globalState.blockedRelays.contains(element));
+                  relays.removeWhere((element) =>
+                      ndk.relays.globalState.blockedRelays.contains(element));
                   EasyLoading.dismiss();
                 }
               }
@@ -377,11 +405,18 @@ class _EditorRouter extends CustState<EditorRouter> with EditorMixin {
               List<String>? results = await showDialog(
                 context: context,
                 builder: (BuildContext context) {
-                  return MultiSelect(items: relays!.toList(), selectedItems: relays!.toList().take(myOutboxRelaySet!.urls.length+settingProvider
-                      .broadcastToInboxMaxCount).toList(), sending: false,);
+                  return MultiSelect(
+                    items: relays!.toList(),
+                    selectedItems: relays!
+                        .toList()
+                        .take(myOutboxRelaySet!.urls.length +
+                            settingProvider.broadcastToInboxMaxCount)
+                        .toList(),
+                    sending: false,
+                  );
                 },
               );
-              if (results!=null && results.isNotEmpty) {
+              if (results != null && results.isNotEmpty) {
                 // await showDialog(
                 //   context: context,
                 //   builder: (BuildContext context) {
@@ -417,12 +452,14 @@ class _EditorRouter extends CustState<EditorRouter> with EditorMixin {
   }
 
   void replaceMentionUser(String? value) {
-    if (value != null && value.isNotEmpty && widget.mentionWordEditingStart!=null) {
-
-      final length = widget.mentionWordEditingEnd! - widget.mentionWordEditingStart!;
+    if (value != null &&
+        value.isNotEmpty &&
+        widget.mentionWordEditingStart != null) {
+      final length =
+          widget.mentionWordEditingEnd! - widget.mentionWordEditingStart!;
       final index = editorController.selection.baseOffset;
 
-      editorController.replaceText(index-length, length,
+      editorController.replaceText(index - length, length,
           quill.CustomBlockEmbed(CustEmbedTypes.mention_user, value), null);
 
       editorController.moveCursorToPosition(index + 1);
@@ -433,7 +470,6 @@ class _EditorRouter extends CustState<EditorRouter> with EditorMixin {
       widget.mentionWordEditingStart = null;
     }
   }
-
 
   @override
   Future<void> onReady(BuildContext context) async {
@@ -480,10 +516,14 @@ class _EditorRouter extends CustState<EditorRouter> with EditorMixin {
           } else if (operation.data is String) {
             String word =
                 findPreviousWord(value.text, value.selection.baseOffset);
-            if (word != null && (word[0] == "@" || word.length>1 && word[1] == "@")) {
-              widget.mentionWordEditingStart = value.selection.baseOffset - word!.length;
+            if (word != null &&
+                (word[0] == "@" || word.length > 1 && word[1] == "@")) {
+              widget.mentionWordEditingStart =
+                  value.selection.baseOffset - word!.length;
               widget.mentionWordEditingEnd = value.selection.baseOffset;
-              list = (await cacheManager.searchMetadatas(word.replaceAll("@", ""), 100)).toList();
+              list = (await cacheManager.searchMetadatas(
+                      word.replaceAll("@", ""), 100))
+                  .toList();
             } else {
               widget.mentionWordEditingStart = null;
               widget.mentionWordEditingEnd = null;
@@ -529,7 +569,9 @@ class _EditorRouter extends CustState<EditorRouter> with EditorMixin {
     int end = position;
 
     // Move backward to find the beginning of the previous word
-    while (start > 0 && inputString[start - 1] != ' ' && inputString[start - 1] != '\n') {
+    while (start > 0 &&
+        inputString[start - 1] != ' ' &&
+        inputString[start - 1] != '\n') {
       start--;
     }
     return inputString.substring(start, end);
@@ -551,7 +593,7 @@ class _EditorRouter extends CustState<EditorRouter> with EditorMixin {
 
   Future<void> documentSave({List<String>? broadcastRelays}) async {
     bool reply = isReply();
-    if (broadcastRelays==null) {
+    if (broadcastRelays == null) {
       if (reply) {
         broadcastRelays = await broadcastUrls(getPubkey());
       }
@@ -559,26 +601,29 @@ class _EditorRouter extends CustState<EditorRouter> with EditorMixin {
     broadcastRelays ??= myOutboxRelaySet!.urls.toList();
     // bool? result = await ConfirmDialog.show(context, "Confirm broadcast to ${broadcastRelays.length} outbox relays");
     // if (result != null && result) {
-      EasyLoading.showSuccess('Broadcasting to ${broadcastRelays.length} outbox relays...',
-          maskType: EasyLoadingMaskType.black, dismissOnTap: true, duration: const Duration(seconds: 5));
-      try {
-        var event = await doDocumentSave(broadcastRelays: broadcastRelays);
-        if (event == null) {
-          EasyLoading.showError('Failed...');
-          return;
-        }
-        if (reply) {
-          EventRelation relation = EventRelation.fromEvent(event);
-          if (relation.rootId != null) {
-            eventReactionsProvider.addReply(relation.rootId!, event);
-          }
-        }
-        await cacheManager.saveEvent(event);
-        EasyLoading.showSuccess('Success!');
-        RouterUtil.back(context, event);
-      } finally {
-        EasyLoading.dismiss();
+    EasyLoading.showSuccess(
+        'Broadcasting to ${broadcastRelays.length} outbox relays...',
+        maskType: EasyLoadingMaskType.black,
+        dismissOnTap: true,
+        duration: const Duration(seconds: 5));
+    try {
+      var event = await doDocumentSave(broadcastRelays: broadcastRelays);
+      if (event == null) {
+        EasyLoading.showError('Failed...');
+        return;
       }
+      if (reply) {
+        EventRelation relation = EventRelation.fromEvent(event);
+        if (relation.rootId != null) {
+          eventReactionsProvider.addReply(relation.rootId!, event);
+        }
+      }
+      await cacheManager.saveEvent(event);
+      EasyLoading.showSuccess('Success!');
+      RouterUtil.back(context, event);
+    } finally {
+      EasyLoading.dismiss();
+    }
     // }
   }
 
@@ -646,7 +691,13 @@ class MultiSelect extends StatefulWidget {
   final List<String> items;
   final List<String> selectedItems;
   final bool sending;
-  const MultiSelect({Key? key, required this.items, required this.selectedItems, required this.sending}) : super(key: key);
+
+  const MultiSelect(
+      {Key? key,
+      required this.items,
+      required this.selectedItems,
+      required this.sending})
+      : super(key: key);
 
   @override
   State<StatefulWidget> createState() => _MultiSelectState();
@@ -661,6 +712,7 @@ class _MultiSelectState extends State<MultiSelect> {
   void initState() {
     _selectedItems = widget.selectedItems;
   }
+
   // This function is triggered when a checkbox is checked or unchecked
   void _itemChange(String itemValue, bool isSelected) {
     setState(() {
@@ -685,34 +737,47 @@ class _MultiSelectState extends State<MultiSelect> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: !widget.sending? const Text('Choose Relays & confirm'): const Text("Broadcasting..."),
-      content: SizedBox(height:!widget.sending?400: null, child:SingleChildScrollView(
-        child: ListBody(
-          children: !widget.sending? widget.items
-              .map((item) => CheckboxListTile(
-            value: _selectedItems.contains(item),
-            title: Text(item.replaceAll("ws://", "").replaceAll("wss://", ""), style: const TextStyle(fontWeight: FontWeight.w200, fontSize: 14)),
-            controlAffinity: ListTileControlAffinity.leading,
-            onChanged: (isChecked) => _itemChange(item, isChecked!),
-          ))
-              .toList()
-          : widget.items.map((item) => Text(item.replaceAll("ws://", "").replaceAll("wss://", ""))).toList()
-        ),
-      )),
-      actions: !widget.sending ? [
-        TextButton(
-          onPressed: _cancel,
-          child: const Text('Cancel'),
-        ),
-        ElevatedButton(
-          onPressed: _submit,
-          child: const Text('Broadcast'),
-        ),
-      ] :
-      [
-        Text("Sending 1/10")
-      ]
-      ,
+      title: !widget.sending
+          ? const Text('Choose Relays & confirm')
+          : const Text("Broadcasting..."),
+      content: SizedBox(
+          height: !widget.sending ? 400 : null,
+          child: SingleChildScrollView(
+            child: ListBody(
+                children: !widget.sending
+                    ? widget.items
+                        .map((item) => CheckboxListTile(
+                              value: _selectedItems.contains(item),
+                              title: Text(
+                                  item
+                                      .replaceAll("ws://", "")
+                                      .replaceAll("wss://", ""),
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.w200,
+                                      fontSize: 14)),
+                              controlAffinity: ListTileControlAffinity.leading,
+                              onChanged: (isChecked) =>
+                                  _itemChange(item, isChecked!),
+                            ))
+                        .toList()
+                    : widget.items
+                        .map((item) => Text(item
+                            .replaceAll("ws://", "")
+                            .replaceAll("wss://", "")))
+                        .toList()),
+          )),
+      actions: !widget.sending
+          ? [
+              TextButton(
+                onPressed: _cancel,
+                child: const Text('Cancel'),
+              ),
+              ElevatedButton(
+                onPressed: _submit,
+                child: const Text('Broadcast'),
+              ),
+            ]
+          : [Text("Sending 1/10")],
     );
   }
 }

@@ -12,6 +12,7 @@ import 'package:flutter_cache_manager/flutter_cache_manager.dart' as FlutterCach
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_quill/flutter_quill.dart';
 import 'package:get_time_ago/get_time_ago.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
@@ -975,6 +976,7 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
                   GlobalMaterialLocalizations.delegate,
                   GlobalWidgetsLocalizations.delegate,
                   GlobalCupertinoLocalizations.delegate,
+                  FlutterQuillLocalizations.delegate,
                 ],
                 supportedLocales: I18n.delegate.supportedLocales,
                 theme: defaultTheme,
