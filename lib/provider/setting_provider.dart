@@ -4,6 +4,7 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:yana/models/video_autoplay_preference.dart';
 import 'package:yana/utils/platform_util.dart';
 
 import '../main.dart';
@@ -70,7 +71,7 @@ class SettingProvider extends ChangeNotifier {
         if (StringUtil.isNotBlank(keyMapJson)) {
           try {
             var jsonKeyMap = jsonDecode(keyMapJson!);
-            var isPrivateJsonKeyMap = keyIsPrivateMapJson!=null?jsonDecode(keyIsPrivateMapJson!):null;
+            var isPrivateJsonKeyMap = keyIsPrivateMapJson!=null?jsonDecode(keyIsPrivateMapJson):null;
             var isExternalJsonKeyMap = keyIsExternalSignerMapJson != null ? jsonDecode(keyIsExternalSignerMapJson) : null;
             if (jsonKeyMap != null) {
               for (var entry in (jsonKeyMap as Map<String, dynamic>).entries) {
@@ -302,6 +303,8 @@ class SettingProvider extends ChangeNotifier {
 
   int? get autoOpenSensitive => _settingData!.autoOpenSensitive;
 
+  VideoAutoplayPreference get videoAutoplayPreference => _settingData!.videoAutoplayPreference ?? VideoAutoplayPreference.wifiOnly;
+
   set settingData(SettingData o) {
     _settingData = o;
     saveAndNotifyListeners();
@@ -489,6 +492,11 @@ class SettingProvider extends ChangeNotifier {
     saveAndNotifyListeners();
   }
 
+  set videoAutoplayPreference(VideoAutoplayPreference o) {
+    _settingData!.videoAutoplayPreference = o;
+    saveAndNotifyListeners();
+  }
+
   Future<void> saveAndNotifyListeners({bool updateUI = true}) async {
     _settingData!.updatedTime = DateTime.now().millisecondsSinceEpoch;
     var m = _settingData!.toJson();
@@ -573,6 +581,7 @@ class SettingData {
   int? tableMode;
 
   int? autoOpenSensitive;
+  VideoAutoplayPreference? videoAutoplayPreference;
 
   /// updated time
   late int updatedTime;
@@ -610,6 +619,7 @@ class SettingData {
     this.webviewAppbarOpen = OpenStatus.OPEN,
     this.tableMode,
     this.autoOpenSensitive,
+    this.videoAutoplayPreference = VideoAutoplayPreference.wifiOnly,
     this.updatedTime = 0,
   });
 
@@ -682,6 +692,11 @@ class SettingData {
         : OpenStatus.OPEN;
     tableMode = json['tableMode'];
     autoOpenSensitive = json['autoOpenSensitive'];
+    if (json['videoAutoplayPreference'] != null) {
+      videoAutoplayPreference = VideoAutoplayPreference.values[json['videoAutoplayPreference'] as int];
+    } else {
+      videoAutoplayPreference = VideoAutoplayPreference.wifiOnly;
+    }
     if (json['updatedTime'] != null) {
       updatedTime = json['updatedTime'];
     } else {
@@ -725,6 +740,7 @@ class SettingData {
     data['webviewAppbarOpen'] = this.webviewAppbarOpen;
     data['tableMode'] = this.tableMode;
     data['autoOpenSensitive'] = this.autoOpenSensitive;
+    data['videoAutoplayPreference'] = this.videoAutoplayPreference?.index;
     data['updatedTime'] = this.updatedTime;
     return data;
   }
