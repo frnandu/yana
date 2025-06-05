@@ -87,16 +87,22 @@ mixin EditorMixin {
       inputBtnList.add(quill.QuillToolbarIconButton(
         onPressed: pickImage,
         icon: const Icon(Icons.image),
+        isSelected: true,
+        iconTheme: null,
       ));
     }
     if (!PlatformUtil.isPC() && !PlatformUtil.isWeb()) {
       inputBtnList.add(quill.QuillToolbarIconButton(
         onPressed: takeAPhoto,
         icon: const Icon(Icons.camera),
+        isSelected: true,
+        iconTheme: null,
       ));
       inputBtnList.add(quill.QuillToolbarIconButton(
         onPressed: tackAVideo,
         icon: const Icon(Icons.video_call),
+        isSelected: true,
+        iconTheme: null,
       ));
     }
     if (!isDM() &&
@@ -105,20 +111,28 @@ mixin EditorMixin {
       inputBtnList.add(quill.QuillToolbarIconButton(
         onPressed: _inputPoll,
         icon: const Icon(Icons.poll),
+        isSelected: true,
+        iconTheme: null,
       ));
     }
     inputBtnList.addAll([
       quill.QuillToolbarIconButton(
         onPressed: _inputLnbc,
         icon: const Icon(Icons.bolt),
+        isSelected: true,
+        iconTheme: null,
       ),
       quill.QuillToolbarIconButton(
         onPressed: customEmojiSelect,
         icon: const Icon(Icons.add_reaction_outlined),
+        isSelected: true,
+        iconTheme: null,
       ),
       quill.QuillToolbarIconButton(
         onPressed: emojiBeginToSelect,
         icon: const Icon(Icons.tag_faces),
+        isSelected: true,
+        iconTheme: null,
       ),
       // quill.QuillIconButton(
       //   onPressed: _inputMentionUser,
@@ -127,10 +141,14 @@ mixin EditorMixin {
       quill.QuillToolbarIconButton(
         onPressed: _inputMentionEvent,
         icon: const Icon(Icons.format_quote),
+        isSelected: true,
+        iconTheme: null,
       ),
       quill.QuillToolbarIconButton(
         onPressed: _inputTag,
         icon: const Icon(Icons.tag),
+        isSelected: true,
+        iconTheme: null,
       ),
       // Expanded(child: Container())
     ]);
@@ -140,15 +158,21 @@ mixin EditorMixin {
         quill.QuillToolbarIconButton(
           onPressed: _addWarning,
           icon: Icon(Icons.warning, color: showWarning ? Colors.red : null),
+          isSelected: true,
+          iconTheme: null,
         ),
         quill.QuillToolbarIconButton(
           onPressed: _addTitle,
           icon: Icon(Icons.title, color: showTitle ? mainColor : null),
+          isSelected: true,
+          iconTheme: null,
         ),
         quill.QuillToolbarIconButton(
           onPressed: selectedTime,
           icon: Icon(Icons.timer_outlined,
               color: createdAt != null ? mainColor : null),
+          isSelected: true,
+          iconTheme: null,
         )
       ]);
     }

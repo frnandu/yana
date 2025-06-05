@@ -1,4 +1,4 @@
-import 'package:ndk/domain_layer/entities/metadata.dart';
+  import 'package:ndk/domain_layer/entities/metadata.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
@@ -137,22 +137,24 @@ class _DMDetailRouter extends CustState<DMDetailRouter> with EditorMixin {
       child: Row(
         children: [
           Expanded(
-              child: quill.QuillProvider(
-                  configurations: quill.QuillConfigurations(
-                    controller: editorController,
-                  ),
-                  child: quill.QuillEditor.basic(
-                      focusNode: focusNode,
-                      scrollController: ScrollController(),
-                      configurations: quill.QuillEditorConfigurations(placeholder: s.What_s_happening, embedBuilders: [
-                        MentionUserEmbedBuilder(),
-                        MentionEventEmbedBuilder(),
-                        PicEmbedBuilder(),
-                        VideoEmbedBuilder(),
-                        LnbcEmbedBuilder(),
-                        TagEmbedBuilder(),
-                        CustomEmojiEmbedBuilder(),
-                      ])))
+              child:
+              Container()
+              // quill.QuillProvider(
+              //     configurations: quill.QuillConfigurations(
+              //       controller: editorController,
+              //     ),
+              //     child: quill.QuillEditor.basic(
+              //         focusNode: focusNode,
+              //         scrollController: ScrollController(),
+              //         configurations: quill.QuillEditorConfigurations(placeholder: s.What_s_happening, embedBuilders: [
+              //           MentionUserEmbedBuilder(),
+              //           MentionEventEmbedBuilder(),
+              //           PicEmbedBuilder(),
+              //           VideoEmbedBuilder(),
+              //           LnbcEmbedBuilder(),
+              //           TagEmbedBuilder(),
+              //           CustomEmojiEmbedBuilder(),
+              //         ])))
               // child: quill.QuillEditor(
               //   placeholder: s.What_s_happening,
               //   controller: editorController,

@@ -72,16 +72,16 @@ class _GenLnbcComponent extends State<GenLnbcComponent> {
 
           List<Widget> list = [];
 
-          list.add(Container(
-            margin: EdgeInsets.only(bottom: Base.BASE_PADDING),
-            child: Text(
-              s.Input_Sats_num_to_gen_lightning_invoice,
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: titleFontSize,
-              ),
-            ),
-          ));
+          // list.add(Container(
+          //   margin: EdgeInsets.only(bottom: Base.BASE_PADDING),
+          //   child: Text(
+          //     s.Input_Sats_num_to_gen_lightning_invoice,
+          //     style: TextStyle(
+          //       fontWeight: FontWeight.bold,
+          //       fontSize: titleFontSize,
+          //     ),
+          //   ),
+          // ));
 
           list.add(Container(
             margin: EdgeInsets.only(bottom: Base.BASE_PADDING),

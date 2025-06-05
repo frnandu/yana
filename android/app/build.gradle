@@ -90,7 +90,7 @@ flutter {
 }
 
 dependencies {
-    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.2'
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.4'
     implementation 'com.android.support:multidex:1.0.3'
     // Bitcoin secp256k1 bindings to Android
 //    implementation 'fr.acinq.secp256k1:secp256k1-kmp-jni-android:0.15.0'
