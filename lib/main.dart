@@ -4,17 +4,18 @@ import 'dart:ui';
 
 import 'package:amberflutter/amberflutter.dart';
 import 'package:awesome_notifications/awesome_notifications.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 // import 'package:flutter_background_service/flutter_background_service.dart';
-import 'package:flutter_cache_manager/flutter_cache_manager.dart' as FlutterCacheManager;
+import 'package:flutter_cache_manager/flutter_cache_manager.dart'
+    as FlutterCacheManager;
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:get_time_ago/get_time_ago.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/single_child_widget.dart'; // Added for SingleChildWidget
 import 'package:intl/intl.dart';
 import 'package:ndk/config/bootstrap_relays.dart';
 import 'package:ndk/entities.dart';
@@ -31,7 +32,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sizer/sizer.dart';
 import 'package:window_manager/window_manager.dart';
 import 'package:yana/nostr/nip07/extension_event_signer.dart';
+import 'package:yana/nostr/nip19/nip19.dart';
+import 'package:yana/nostr/nip19/nip19_tlv.dart';
 import 'package:yana/provider/badge_definition_provider.dart';
+import 'package:yana/utils/router_path.dart';
 import 'package:yana/provider/community_info_provider.dart';
 import 'package:yana/provider/custom_emoji_provider.dart';
 import 'package:yana/provider/follow_new_event_provider.dart';
@@ -57,12 +61,12 @@ import 'package:yana/router/wallet/wallet_send.dart';
 import 'package:yana/router/wallet/wallet_send_confirm.dart';
 import 'package:yana/utils/image/cache_manager_builder.dart';
 import 'package:yana/utils/platform_util.dart';
+import 'package:go_router/go_router.dart';
 
 import '/js/js_helper.dart' as js;
+import 'config/app_features.dart';
 import 'i18n/i18n.dart';
 import 'nostr/client_utils/keys.dart';
-import 'nostr/nip19/nip19.dart';
-import 'nostr/nip19/nip19_tlv.dart';
 import 'provider/community_approved_provider.dart';
 import 'provider/contact_list_provider.dart';
 import 'provider/data_util.dart';
@@ -99,7 +103,6 @@ import 'router/user/user_router.dart';
 import 'ui/home_component.dart';
 import 'utils/locale_util.dart';
 import 'utils/media_data_cache.dart';
-import 'utils/router_path.dart';
 import 'utils/string_util.dart';
 import 'utils/theme_style.dart';
 
@@ -119,7 +122,7 @@ late NotificationsProvider notificationsProvider;
 
 late NewNotificationsProvider newNotificationsProvider;
 
-late DMProvider dmProvider;
+DMProvider? dmProvider;
 
 late IndexProvider indexProvider;
 
@@ -143,7 +146,8 @@ late FlutterCacheManager.CacheManager localCacheManager;
 
 late PcRouterFakeProvider pcRouterFakeProvider;
 
-late Map<String, WidgetBuilder> routes;
+late Map<String, WidgetBuilder>? routes; // Legacy routes map - will be removed
+late GoRouter appRouter; // GoRouter instance
 
 late WebViewProvider webViewProvider;
 
@@ -153,7 +157,7 @@ late CommunityApprovedProvider communityApprovedProvider;
 
 late CommunityInfoProvider communityInfoProvider;
 
-late NwcProvider nwcProvider;
+NwcProvider? nwcProvider; // Made nullable
 
 Map<String, dynamic>? fiatCurrencyRate;
 
@@ -167,7 +171,8 @@ final logLevel = Logger.logLevels.debug;
 final eventVerifier = RustEventVerifier();
 Ndk ndk =
 //Ndk.emptyBootstrapRelaysConfig();// = Ndk(
-Ndk( NdkConfig(
+    Ndk(
+  NdkConfig(
       eventVerifier: eventVerifier,
       cache: cacheManager,
       // eventOutFilters: [filterProvider],
@@ -199,7 +204,7 @@ const DEFAULT_BLOSSOM_SERVERS = [
   'https://cdn.hzrd149.com',
   'https://blossom.primal.net',
   'https://cdn.nostrcheck.me'
-  'https://files.v0l.io',
+      'https://files.v0l.io',
 ];
 
 // @pragma('vm:entry-point')
@@ -372,7 +377,8 @@ Future<void> initRelays({bool newKey = false}) async {
   // UserRelayList? userRelayList =
   //     await cacheManager.loadUserRelayList(loggedUserSigner!.getPublicKey());
 
-  UserRelayList? userRelayList = await ndk.userRelayLists.getSingleUserRelayList(loggedUserSigner!.getPublicKey());
+  UserRelayList? userRelayList = await ndk.userRelayLists
+      .getSingleUserRelayList(loggedUserSigner!.getPublicKey());
   if (userRelayList == null) {
     int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
     userRelayList = UserRelayList(
@@ -475,7 +481,9 @@ Future<void> initRelays({bool newKey = false}) async {
       notificationsProvider.startSubscription();
     },
   );
-  dmProvider.initDMSessions(loggedUserSigner!.getPublicKey());
+  if (dmProvider != null) {
+    dmProvider!.initDMSessions(loggedUserSigner!.getPublicKey());
+  }
   metadataProvider.notifyListeners();
   // try {
   //   if (PlatformUtil.isAndroid() || PlatformUtil.isIOS()) {
@@ -554,7 +562,6 @@ void createMyRelaySets(UserRelayList userRelayList) {
 }
 
 Future<void> main() async {
-
   WidgetsFlutterBinding.ensureInitialized();
   packageInfo = await PackageInfo.fromPlatform();
   try {
@@ -619,7 +626,9 @@ Future<void> main() async {
   followNewEventProvider = FollowNewEventProvider();
   notificationsProvider = NotificationsProvider();
   newNotificationsProvider = NewNotificationsProvider();
-  dmProvider = DMProvider();
+  if (AppFeatures.enableDm) {
+    dmProvider = DMProvider();
+  }
   indexProvider = IndexProvider(
     indexTap: settingProvider.defaultIndex,
   );
@@ -637,7 +646,11 @@ Future<void> main() async {
   customEmojiProvider = CustomEmojiProvider.load();
   communityApprovedProvider = CommunityApprovedProvider();
   communityInfoProvider = CommunityInfoProvider();
-  nwcProvider = NwcProvider();
+  if (AppFeatures.enableWallet) {
+    nwcProvider = NwcProvider();
+  } else {
+    nwcProvider = null; // Ensure it's null when wallet is disabled
+  }
 
   // IsarCacheManager dbCacheManager = IsarCacheManager();
   DbObjectBox dbCacheManager = DbObjectBox();
@@ -673,11 +686,21 @@ Future<void> main() async {
     }
     ndk.accounts.loginExternalSigner(signer: eventSigner);
   }
+  if (loggedUserSigner == null) {
+    String priv = generatePrivateKey();
+    await settingProvider.addAndChangeKey(priv, true, false, updateUI: false);
+    String publicKey = getPublicKey(priv);
+    ndk.accounts.loginPrivateKey(pubkey: publicKey, privkey: priv);
+  }
   if (loggedUserSigner != null) {
     followEventProvider.loadCachedFeed();
     initRelays();
-    nwcProvider.init();
+    if (AppFeatures.enableWallet) {
+      nwcProvider?.init(); // Use null-aware access
+    }
   }
+
+  AppFeatures.printActiveFeatures(); // Optional: Print features for this flavor
   runApp(MyApp());
 }
 
@@ -819,6 +842,64 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
     setState(() {});
   }
 
+  String? _handleNostrUrl(String url) {
+    RegExpMatch? match = Nip19.nip19regex.firstMatch(url);
+
+    if (match != null) {
+      var key = match.group(2)! + match.group(3)!;
+
+      if (Nip19.isPubkey(key)) {
+        // Handle npub - go to user profile
+        if (key.length > Nip19.NPUB_LENGTH) {
+          key = key.substring(0, Nip19.NPUB_LENGTH);
+        }
+        String pubkey = Nip19.decode(key);
+        return "${RouterPath.USER}?pubkey=$pubkey";
+      } else if (Nip19.isNoteId(key)) {
+        // Handle note - go to thread detail
+        if (key.length > Nip19.NOTEID_LENGTH) {
+          key = key.substring(0, Nip19.NOTEID_LENGTH);
+        }
+        String noteId = Nip19.decode(key);
+        return "${RouterPath.THREAD_DETAIL}?id=$noteId";
+      } else if (NIP19Tlv.isNprofile(key)) {
+        // Handle nprofile - go to user profile
+        var nprofile = NIP19Tlv.decodeNprofile(key);
+        if (nprofile != null) {
+          return "${RouterPath.USER}?pubkey=${nprofile.pubkey}";
+        }
+      } else if (NIP19Tlv.isNrelay(key)) {
+        // Handle nrelay - go to relay info
+        var nrelay = NIP19Tlv.decodeNrelay(key);
+        String? relayUrl = nrelay != null ? cleanRelayUrl(nrelay.addr) : null;
+        if (relayUrl != null) {
+          return "${RouterPath.RELAY_INFO}?url=$relayUrl";
+        }
+      } else if (NIP19Tlv.isNevent(key)) {
+        // Handle nevent - go to thread detail
+        var nevent = NIP19Tlv.decodeNevent(key);
+        if (nevent != null) {
+          return "${RouterPath.THREAD_DETAIL}?id=${nevent.id}";
+        }
+      } else if (NIP19Tlv.isNaddr(key)) {
+        // Handle naddr
+        var naddrData = NIP19Tlv.decodeNaddr(key);
+        if (naddrData != null) {
+          if (StringUtil.isNotBlank(naddrData.id) &&
+              naddrData.kind == Nip01Event.kTextNodeKind) {
+            return "${RouterPath.THREAD_DETAIL}?id=${naddrData.id}";
+          } else if (StringUtil.isNotBlank(naddrData.author) &&
+              naddrData.kind == Metadata.kKind) {
+            return "${RouterPath.USER}?pubkey=${naddrData.author}";
+          }
+        }
+      }
+    }
+
+    // If we can't handle the nostr URL, go to index
+    return RouterPath.INDEX;
+  }
+
   @override
   Widget build(BuildContext context) {
     Locale? _locale;
@@ -845,130 +926,222 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
       defaultDarkTheme = darkTheme;
     }
 
-    routes = {
-      RouterPath.INDEX: (context) => IndexRouter(reload: reload),
-      RouterPath.USER: (context) => UserRouter(),
-      RouterPath.USER_CONTACT_LIST: (context) => const UserContactListRouter(),
-      RouterPath.USER_HISTORY_CONTACT_LIST: (context) =>
-          UserHistoryContactListRouter(),
-      RouterPath.USER_ZAP_LIST: (context) => const UserZapListRouter(),
-      RouterPath.USER_RELAYS: (context) => const UserRelayRouter(),
-      RouterPath.RELAY_SET: (context) => const RelaySetRouter(),
-      RouterPath.RELAY_LIST: (context) => const RelayListRouter(),
-      RouterPath.MUTE_LIST: (context) => const MuteListRouter(),
-      RouterPath.DM_DETAIL: (context) => const DMDetailRouter(),
-      RouterPath.THREAD_DETAIL: (context) => ThreadDetailRouter(),
-      RouterPath.EVENT_DETAIL: (context) => const EventDetailRouter(),
-      RouterPath.TAG_DETAIL: (context) => const TagDetailRouter(),
-      RouterPath.NOTICES: (context) => const NoticeRouter(),
-      RouterPath.SEARCH: (context) => const SearchRouter(),
-      RouterPath.KEY_BACKUP: (context) => const KeyBackupRouter(),
-      RouterPath.WALLET: (context) => const WalletRouter(),
-      RouterPath.WALLET_TRANSACTIONS: (context) => const TransactionsRouter(),
-      RouterPath.WALLET_RECEIVE: (context) => const WalletReceiveRouter(),
-      RouterPath.WALLET_RECEIVE_INVOICE: (context) =>
-          const WalletReceiveInvoiceRouter(),
-      RouterPath.WALLET_SEND: (context) => const WalletSendRouter(),
-      RouterPath.WALLET_SEND_CONFIRM: (context) =>
-          const WalletSendConfirmRouter(),
-      RouterPath.NWC: (context) => const NwcRouter(),
-      RouterPath.RELAYS: (context) => const RelaysRouter(),
-      RouterPath.PROFILE_EDITOR: (context) => const ProfileEditorRouter(),
-      RouterPath.SETTING: (context) => SettingRouter(indexReload: reload),
-      RouterPath.SETTINGS_WALLET: (context) => const WalletSettingsRouter(),
-      RouterPath.QRSCANNER: (context) => const QRScannerRouter(),
-      RouterPath.RELAY_INFO: (context) => const RelayInfoRouter(),
-      RouterPath.FOLLOWED_TAGS_LIST: (context) =>
-          const FollowedTagsListRouter(),
-      RouterPath.COMMUNITY_DETAIL: (context) => const CommunityDetailRouter(),
-      RouterPath.FOLLOWED_COMMUNITIES: (context) =>
-          const FollowedCommunitiesRouter(),
-      RouterPath.FOLLOWED: (context) => FollowedRouter(),
-      RouterPath.LOGIN: (context) => const LoginRouter(canGoBack: true),
-    };
-
-    return MultiProvider(
-        providers: [
-          ListenableProvider<SettingProvider>.value(
-            value: settingProvider,
+    // Initialize GoRouter with proper route configuration
+    appRouter = GoRouter(
+      initialLocation: RouterPath.INDEX,
+      redirect: (context, state) {
+        // Handle nostr: URLs similar to the old onGenerateInitialRoutes logic
+        final fullPath = state.uri.toString();
+        if (fullPath.startsWith("nostr:")) {
+          return _handleNostrUrl(fullPath);
+        }
+        return null; // No redirect needed
+      },
+      routes: [
+        GoRoute(
+          path: RouterPath.INDEX,
+          builder: (context, state) => IndexRouter(reload: reload),
+        ),
+        GoRoute(
+          path: RouterPath.USER,
+          builder: (context, state) {
+            // Get pubkey from query parameters
+            String? pubkey = state.uri.queryParameters['pubkey'];
+            return UserRouter(pubKey: pubkey);
+          },
+        ),
+        GoRoute(
+          path: RouterPath.USER_CONTACT_LIST,
+          builder: (context, state) => const UserContactListRouter(),
+        ),
+        GoRoute(
+          path: RouterPath.USER_HISTORY_CONTACT_LIST,
+          builder: (context, state) => UserHistoryContactListRouter(),
+        ),
+        GoRoute(
+          path: RouterPath.USER_ZAP_LIST,
+          builder: (context, state) => const UserZapListRouter(),
+        ),
+        GoRoute(
+          path: RouterPath.USER_RELAYS,
+          builder: (context, state) => const UserRelayRouter(),
+        ),
+        GoRoute(
+          path: RouterPath.RELAY_SET,
+          builder: (context, state) => const RelaySetRouter(),
+        ),
+        GoRoute(
+          path: RouterPath.RELAY_LIST,
+          builder: (context, state) => const RelayListRouter(),
+        ),
+        GoRoute(
+          path: RouterPath.MUTE_LIST,
+          builder: (context, state) => const MuteListRouter(),
+        ),
+        if (AppFeatures.enableDm)
+          GoRoute(
+            path: RouterPath.DM_DETAIL,
+            builder: (context, state) => const DMDetailRouter(),
           ),
-          ListenableProvider<MetadataProvider>.value(
-            value: metadataProvider,
+        GoRoute(
+          path: RouterPath.THREAD_DETAIL,
+          builder: (context, state) {
+            // Get thread id from query parameters
+            String? threadId = state.uri.queryParameters['id'];
+            return ThreadDetailRouter(eventId: threadId);
+          },
+        ),
+        GoRoute(
+          path: RouterPath.EVENT_DETAIL,
+          builder: (context, state) => const EventDetailRouter(),
+        ),
+        GoRoute(
+          path: RouterPath.TAG_DETAIL,
+          builder: (context, state) => const TagDetailRouter(),
+        ),
+        GoRoute(
+          path: RouterPath.NOTICES,
+          builder: (context, state) => const NoticeRouter(),
+        ),
+        if (AppFeatures.enableSearch)
+          GoRoute(
+            path: RouterPath.SEARCH,
+            builder: (context, state) => const SearchRouter(),
           ),
-          ListenableProvider<IndexProvider>.value(
-            value: indexProvider,
+        GoRoute(
+          path: RouterPath.KEY_BACKUP,
+          builder: (context, state) => const KeyBackupRouter(),
+        ),
+        // Conditional wallet routes
+        if (AppFeatures.enableWallet) ...[
+          GoRoute(
+            path: RouterPath.WALLET,
+            builder: (context, state) => const WalletRouter(),
           ),
-          ListenableProvider<ContactListProvider>.value(
-            value: contactListProvider,
+          GoRoute(
+            path: RouterPath.WALLET_TRANSACTIONS,
+            builder: (context, state) => const TransactionsRouter(),
           ),
-          ListenableProvider<FollowEventProvider>.value(
-            value: followEventProvider,
+          GoRoute(
+            path: RouterPath.WALLET_RECEIVE,
+            builder: (context, state) => const WalletReceiveRouter(),
           ),
-          ListenableProvider<FollowNewEventProvider>.value(
-            value: followNewEventProvider,
+          GoRoute(
+            path: RouterPath.WALLET_RECEIVE_INVOICE,
+            builder: (context, state) => const WalletReceiveInvoiceRouter(),
           ),
-          ListenableProvider<NotificationsProvider>.value(
-            value: notificationsProvider,
+          GoRoute(
+            path: RouterPath.WALLET_SEND,
+            builder: (context, state) => const WalletSendRouter(),
           ),
-          ListenableProvider<NewNotificationsProvider>.value(
-            value: newNotificationsProvider,
+          GoRoute(
+            path: RouterPath.WALLET_SEND_CONFIRM,
+            builder: (context, state) => const WalletSendConfirmRouter(),
           ),
-          ListenableProvider<DMProvider>.value(
-            value: dmProvider,
+          GoRoute(
+            path: RouterPath.NWC,
+            builder: (context, state) => const NwcRouter(),
           ),
-          ListenableProvider<EventReactionsProvider>.value(
-            value: eventReactionsProvider,
-          ),
-          ListenableProvider<NoticeProvider>.value(
-            value: noticeProvider,
-          ),
-          ListenableProvider<SingleEventProvider>.value(
-            value: singleEventProvider,
-          ),
-          ListenableProvider<RelayProvider>.value(
-            value: relayProvider,
-          ),
-          ListenableProvider<FilterProvider>.value(
-            value: filterProvider,
-          ),
-          ListenableProvider<LinkPreviewDataProvider>.value(
-            value: linkPreviewDataProvider,
-          ),
-          ListenableProvider<BadgeDefinitionProvider>.value(
-            value: badgeDefinitionProvider,
-          ),
-          ListenableProvider<PcRouterFakeProvider>.value(
-            value: pcRouterFakeProvider,
-          ),
-          ListenableProvider<WebViewProvider>.value(
-            value: webViewProvider,
-          ),
-          ListenableProvider<CustomEmojiProvider>.value(
-            value: customEmojiProvider,
-          ),
-          ListenableProvider<CommunityApprovedProvider>.value(
-            value: communityApprovedProvider,
-          ),
-          ListenableProvider<CommunityInfoProvider>.value(
-            value: communityInfoProvider,
-          ),
-          ListenableProvider<NwcProvider>.value(
-            value: nwcProvider,
+          GoRoute(
+            path: RouterPath.SETTINGS_WALLET,
+            builder: (context, state) => const WalletSettingsRouter(),
           ),
         ],
-        child:
-        SafeArea(
-            child: HomeComponent(
+        GoRoute(
+          path: RouterPath.RELAYS,
+          builder: (context, state) => const RelaysRouter(),
+        ),
+        GoRoute(
+          path: RouterPath.PROFILE_EDITOR,
+          builder: (context, state) => const ProfileEditorRouter(),
+        ),
+        GoRoute(
+          path: RouterPath.SETTING,
+          builder: (context, state) => SettingRouter(indexReload: reload),
+        ),
+        GoRoute(
+          path: RouterPath.QRSCANNER,
+          builder: (context, state) => const QRScannerRouter(),
+        ),
+        GoRoute(
+          path: RouterPath.RELAY_INFO,
+          builder: (context, state) => const RelayInfoRouter(),
+        ),
+        GoRoute(
+          path: RouterPath.FOLLOWED_TAGS_LIST,
+          builder: (context, state) => const FollowedTagsListRouter(),
+        ),
+        GoRoute(
+          path: RouterPath.COMMUNITY_DETAIL,
+          builder: (context, state) => const CommunityDetailRouter(),
+        ),
+        GoRoute(
+          path: RouterPath.FOLLOWED_COMMUNITIES,
+          builder: (context, state) => const FollowedCommunitiesRouter(),
+        ),
+        GoRoute(
+          path: RouterPath.FOLLOWED,
+          builder: (context, state) => FollowedRouter(),
+        ),
+        GoRoute(
+          path: RouterPath.LOGIN,
+          builder: (context, state) => const LoginRouter(canGoBack: true),
+        ),
+      ],
+    );
+
+    // Routes are now handled by GoRouter - remove the old routes map
+
+    List<SingleChildWidget> providerList = [
+      ListenableProvider<SettingProvider>.value(value: settingProvider),
+      ListenableProvider<MetadataProvider>.value(value: metadataProvider),
+      ListenableProvider<IndexProvider>.value(value: indexProvider),
+      ListenableProvider<ContactListProvider>.value(value: contactListProvider),
+      ListenableProvider<FollowEventProvider>.value(value: followEventProvider),
+      ListenableProvider<FollowNewEventProvider>.value(
+          value: followNewEventProvider),
+      ListenableProvider<NotificationsProvider>.value(
+          value: notificationsProvider),
+      ListenableProvider<NewNotificationsProvider>.value(
+          value: newNotificationsProvider),
+      if (dmProvider != null)
+        ListenableProvider<DMProvider?>.value(value: dmProvider),
+      ListenableProvider<EventReactionsProvider>.value(
+          value: eventReactionsProvider),
+      ListenableProvider<NoticeProvider>.value(value: noticeProvider),
+      ListenableProvider<SingleEventProvider>.value(value: singleEventProvider),
+      ListenableProvider<RelayProvider>.value(value: relayProvider),
+      ListenableProvider<FilterProvider>.value(value: filterProvider),
+      ListenableProvider<LinkPreviewDataProvider>.value(
+          value: linkPreviewDataProvider),
+      ListenableProvider<BadgeDefinitionProvider>.value(
+          value: badgeDefinitionProvider),
+      ListenableProvider<PcRouterFakeProvider>.value(
+          value: pcRouterFakeProvider),
+      ListenableProvider<WebViewProvider>.value(value: webViewProvider),
+      ListenableProvider<CustomEmojiProvider>.value(value: customEmojiProvider),
+      ListenableProvider<CommunityApprovedProvider>.value(
+          value: communityApprovedProvider),
+      ListenableProvider<CommunityInfoProvider>.value(
+          value: communityInfoProvider),
+    ];
+
+    if (AppFeatures.enableWallet && nwcProvider != null) {
+      providerList
+          .add(ListenableProvider<NwcProvider?>.value(value: nwcProvider));
+    }
+
+    return MultiProvider(
+      providers: providerList,
+      child: SafeArea(
+        child: HomeComponent(
           locale: _locale,
           theme: defaultTheme,
           child: Sizer(
             builder: (context, orientation, deviceType) {
-              return MaterialApp(
+              return MaterialApp.router(
+                routerConfig: appRouter,
                 builder: EasyLoading.init(),
-                // builder: BotToastInit(),
-                // navigatorObservers: [
-                //   BotToastNavigatorObserver(),
-                // ],
                 locale: _locale,
                 title: packageInfo.appName,
                 localizationsDelegates: const [
@@ -981,138 +1154,18 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
                 supportedLocales: I18n.delegate.supportedLocales,
                 theme: defaultTheme,
                 darkTheme: defaultDarkTheme,
-                onGenerateInitialRoutes: (initialRoute) {
-                  MaterialPageRoute? jump;
-                  if (initialRoute!.startsWith("nostr:")) {
-                    RegExpMatch? match =
-                        Nip19.nip19regex.firstMatch(initialRoute!);
-
-                    if (match != null) {
-                      var key = match.group(2)! + match.group(3)!;
-                      String? otherStr;
-
-                      if (Nip19.isPubkey(key)) {
-                        // inline
-                        // mention user
-                        if (key.length > Nip19.NPUB_LENGTH) {
-                          otherStr = key.substring(Nip19.NPUB_LENGTH);
-                          key = key.substring(0, Nip19.NPUB_LENGTH);
-                        }
-                        key = Nip19.decode(key);
-                        jump = MaterialPageRoute(
-                            settings: RouteSettings(
-                                name: RouterPath.USER, arguments: key),
-                            builder: (context) => UserRouter());
-                      } else if (Nip19.isNoteId(key)) {
-                        // block
-                        if (key.length > Nip19.NOTEID_LENGTH) {
-                          otherStr = key.substring(Nip19.NOTEID_LENGTH);
-                          key = key.substring(0, Nip19.NOTEID_LENGTH);
-                        }
-                        key = Nip19.decode(key);
-                        // var filter = Filter(ids: [key]);
-                        //ndk.relays.requestRelays(relayManager.bootstrapRelays, filter, idleTimeout: 20).then((stream) {
-                        //   stream.listen((event) {
-                        //     RouterUtil.router(context, RouterPath.THREAD_DETAIL, event);
-                        //   });
-                        // },);
-
-                        jump = MaterialPageRoute(
-                            settings: RouteSettings(
-                                name: RouterPath.THREAD_DETAIL, arguments: key),
-                            builder: (context) =>
-                                ThreadDetailRouter(eventId: key));
-                        // RouterUtil.router(context, RouterPath.THREAD_DETAIL, event);
-                      } else if (NIP19Tlv.isNprofile(key)) {
-                        var nprofile = NIP19Tlv.decodeNprofile(key);
-                        if (nprofile != null) {
-                          // inline
-                          // mention user
-                          jump = MaterialPageRoute(
-                              settings: RouteSettings(
-                                  name: RouterPath.USER,
-                                  arguments: nprofile.pubkey),
-                              builder: (context) => UserRouter());
-                        }
-                      } else if (NIP19Tlv.isNrelay(key)) {
-                        var nrelay = NIP19Tlv.decodeNrelay(key);
-                        String? url =
-                            nrelay != null ? cleanRelayUrl(nrelay.addr) : null;
-                        if (url != null) {
-                          // inline
-                          Relay relay = Relay(
-                              url: url,
-                              connectionSource: ConnectionSource.explicit);
-                          jump = MaterialPageRoute(
-                              settings: RouteSettings(
-                                  name: RouterPath.RELAY_INFO,
-                                  arguments: relay),
-                              builder: (context) => const RelayInfoRouter());
-                        }
-                      } else if (NIP19Tlv.isNevent(key)) {
-                        var nevent = NIP19Tlv.decodeNevent(key);
-                        if (nevent != null) {
-                          jump = MaterialPageRoute(
-                              settings: RouteSettings(
-                                  name: RouterPath.THREAD_DETAIL,
-                                  arguments: nevent.id),
-                              builder: (context) => ThreadDetailRouter(
-                                    eventId: nevent.id,
-                                  ));
-                        }
-                      } else if (NIP19Tlv.isNaddr(key)) {
-                        var naddr = NIP19Tlv.decodeNaddr(key);
-                        if (naddr != null) {
-                          if (StringUtil.isNotBlank(naddr.id) &&
-                              naddr.kind == Nip01Event.kTextNodeKind) {
-                            jump = MaterialPageRoute(
-                                settings: RouteSettings(
-                                    name: RouterPath.THREAD_DETAIL,
-                                    arguments: naddr.id),
-                                builder: (context) => ThreadDetailRouter(
-                                      eventId: naddr.id,
-                                    ));
-                          } else if (StringUtil.isNotBlank(naddr.author) &&
-                              naddr.kind == Metadata.kKind) {
-                            jump = MaterialPageRoute(
-                                settings: RouteSettings(
-                                    name: RouterPath.USER,
-                                    arguments: naddr.author),
-                                builder: (context) => UserRouter());
-                          }
-                        }
-                      }
-                    }
-                  }
-                  if (jump != null) {
-                    return [
-                      MaterialPageRoute(
-                          builder: (context) => IndexRouter(reload: reload)),
-                      jump
-                    ];
-                  }
-                  return [
-                    MaterialPageRoute(
-                        builder: (context) => IndexRouter(reload: reload)),
-                    // MaterialPageRoute(
-                    //     settings: RouteSettings(name: RouterPath.USER, arguments: "30782a8323b7c98b172c5a2af7206bb8283c655be6ddce11133611a03d5f1177"),
-                    //     builder: (context) => UserRouter())
-                  ];
-                },
-                // initialRoute: RouterPath.INDEX,
-                routes: routes,
               );
             },
           ),
-        )
-    )
+        ),
+      ),
     );
   }
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance!.addObserver(this);
+    WidgetsBinding.instance.addObserver(this);
     // SystemTimer.run();
   }
 
@@ -1120,7 +1173,7 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
   void dispose() {
     super.dispose();
     // SystemTimer.stopTask();
-    WidgetsBinding.instance!.removeObserver(this);
+    WidgetsBinding.instance.removeObserver(this);
   }
 
   @override
@@ -1166,7 +1219,9 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
 
         followEventProvider.startSubscriptions();
         notificationsProvider.startSubscription();
-        nwcProvider.init();
+        if (AppFeatures.enableWallet) {
+          nwcProvider?.init(); // Use null-aware access
+        }
       }
       // }
     }

@@ -18,6 +18,7 @@ import 'package:yana/provider/setting_provider.dart';
 import 'package:yana/router/wallet/payment_component.dart';
 import 'package:yana/router/wallet/transaction_item_component.dart';
 import 'package:yana/utils/base.dart';
+import 'package:yana/config/app_features.dart';
 
 import '../../../ui/appbar4stack.dart';
 import '../../nostr/client_utils/keys.dart';
@@ -84,7 +85,7 @@ class _WalletRouter extends State<WalletRouter> with ProtocolListener {
         String? nwc = uri.queryParameters["value"];
 
         if (nwc != null && nwc.startsWith(NwcProvider.NWC_PROTOCOL_PREFIX)) {
-          await nwcProvider.connect(nwc, onConnect: (lud16) async {
+          await nwcProvider?.connect(nwc, onConnect: (lud16) async {
             await metadataProvider.updateLud16IfEmpty(lud16);
           });
           setState(() {});
@@ -113,7 +114,7 @@ class _WalletRouter extends State<WalletRouter> with ProtocolListener {
             firstLogin = true;
             indexProvider.setCurrentTap(IndexTaps.FOLLOW);
           }
-          await nwcProvider.connect(url, onConnect: (lud16) async {
+          await nwcProvider?.connect(url, onConnect: (lud16) async {
             await metadataProvider.updateLud16IfEmpty(lud16);
           });
           bool canPop = Navigator.canPop(context);
@@ -276,7 +277,8 @@ class _WalletRouter extends State<WalletRouter> with ProtocolListener {
           list.add(const SizedBox(
             height: 20,
           ));
-          if (_nwcProvider.canPayInvoice || nwcProvider.canMakeInvoice) {
+          if (_nwcProvider.canPayInvoice ||
+              (nwcProvider?.canMakeInvoice ?? false)) {
             list.add(Container(
                 margin: const EdgeInsets.all(Base.BASE_PADDING),
                 child: Row(
@@ -336,14 +338,18 @@ class _WalletRouter extends State<WalletRouter> with ProtocolListener {
                 )));
           }
 
-          if (nwcProvider.canListTransaction) {
+          if (nwcProvider?.canListTransaction ?? false) {
             list.add(const SizedBox(height: 16));
             list.add(Expanded(
                 child: RefreshIndicator(
                     onRefresh: () async {
-                      ListTransactionsResponse response = await nwcProvider
-                          .listTransactions(limit: 20, unpaid: false);
-                      _nwcProvider.cachedListTransactionsResponse = response;
+                      // If canListTransaction is true, nwcProvider should not be null here.
+                      // However, to be safe with the call itself:
+                      ListTransactionsResponse? response = await nwcProvider
+                          ?.listTransactions(limit: 20, unpaid: false);
+                      if (response != null) {
+                        _nwcProvider.cachedListTransactionsResponse = response;
+                      }
                     },
                     child: Selector<NwcProvider, List<TransactionResult>?>(
                         builder: (context, transactions, child) {
@@ -745,7 +751,7 @@ class _WalletRouter extends State<WalletRouter> with ProtocolListener {
   }
 
   Widget barOptions() {
-    return nwcProvider.isConnected
+    return (nwcProvider?.isConnected ?? false)
         ? Container(
             margin: const EdgeInsets.all(5),
             child: PopupMenuButton<String>(
@@ -757,7 +763,7 @@ class _WalletRouter extends State<WalletRouter> with ProtocolListener {
                     const PopupMenuItem(
                         value: "settings", child: Text("Settings")),
                   ];
-                  if (nwcProvider.isConnected) {
+                  if (nwcProvider?.isConnected ?? false) {
                     list.add(
                       const PopupMenuItem(
                         value: "disconnect",
@@ -770,7 +776,7 @@ class _WalletRouter extends State<WalletRouter> with ProtocolListener {
                 onSelected: (value) {
                   if (value == "disconnect") {
                     setState(() {
-                      nwcProvider.disconnect();
+                      nwcProvider?.disconnect();
                     });
                   } else if (value == "settings") {
                     RouterUtil.router(context, RouterPath.SETTINGS_WALLET);

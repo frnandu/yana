@@ -9,7 +9,7 @@ import '../../main.dart';
 import '../../nostr/nip57/zap_action.dart';
 import '../../utils/base.dart';
 import '../../utils/router_path.dart';
-import '../../utils/router_util.dart';
+import 'package:go_router/go_router.dart';
 import '../../utils/string_util.dart';
 import '../content/content_str_link_component.dart';
 
@@ -42,7 +42,9 @@ class _GenLnbcComponent extends State<GenLnbcComponent> {
           var mainColor = themeData.primaryColor;
           var titleFontSize = themeData.textTheme.bodyLarge!.fontSize;
           var s = I18n.of(context);
-          if (metadata == null || (StringUtil.isBlank(metadata.lud06) && StringUtil.isBlank(metadata.lud16))) {
+          if (metadata == null ||
+              (StringUtil.isBlank(metadata.lud06) &&
+                  StringUtil.isBlank(metadata.lud16))) {
             return Container(
               child: Center(
                 child: Column(
@@ -59,8 +61,10 @@ class _GenLnbcComponent extends State<GenLnbcComponent> {
                       child: ContentStrLinkComponent(
                         str: s.Add_now,
                         onTap: () async {
-                          await RouterUtil.router(context, RouterPath.PROFILE_EDITOR, metadata);
-                          metadataProvider.update(loggedUserSigner!.getPublicKey());
+                          context.go(RouterPath.PROFILE_EDITOR,
+                              extra: metadata);
+                          metadataProvider
+                              .update(loggedUserSigner!.getPublicKey());
                         },
                       ),
                     )
@@ -166,9 +170,10 @@ class _GenLnbcComponent extends State<GenLnbcComponent> {
 
     var comment = commentController.text;
     log("comment $comment");
-    var lnbcStr = await ZapAction.genInvoiceCode(context, num, pubkey, comment: comment);
+    var lnbcStr =
+        await ZapAction.genInvoiceCode(context, num, pubkey, comment: comment);
     if (StringUtil.isNotBlank(lnbcStr)) {
-      RouterUtil.back(context, lnbcStr);
+      context.pop(lnbcStr);
     }
   }
 }

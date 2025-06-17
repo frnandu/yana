@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:yana/main.dart';
 import 'package:yana/provider/nwc_provider.dart';
+import 'package:yana/config/app_features.dart';
 
 import '../../ui/button.dart';
 import '../../utils/router_util.dart';
@@ -94,7 +95,7 @@ class _NwcRouter extends State<NwcRouter> {
                   setState(() {
                     nwcSecret = nwc;
                   });
-                  await nwcProvider.connect(nwc!, onConnect: (lud16) async {
+                  await nwcProvider?.connect(nwc!, onConnect: (lud16) async {
                     await metadataProvider.updateLud16IfEmpty(lud16);
                     RouterUtil.back(context);
                   }, onError: (error) async {
@@ -183,7 +184,7 @@ class _NwcRouter extends State<NwcRouter> {
                                   setState(() {
                                     nwcSecret = clipboardData.text;
                                   });
-                                  nwcProvider.connect(clipboardData.text!,
+                                  nwcProvider?.connect(clipboardData.text!,
                                       onConnect: (lud16) async {
                                     await metadataProvider
                                         .updateLud16IfEmpty(lud16);
@@ -214,7 +215,7 @@ class _NwcRouter extends State<NwcRouter> {
   }
 
   bool isConnecting() {
-    return nwcSecret != null && !nwcProvider.isConnected;
+    return nwcSecret != null && !(nwcProvider?.isConnected ?? false);
   }
 
   Widget barOptions() {
@@ -225,7 +226,7 @@ class _NwcRouter extends State<NwcRouter> {
           List<PopupMenuEntry<String>> list = [
             //const PopupMenuItem(value: "settings", child: Text("Settings")),
           ];
-          if (nwcProvider.isConnected) {
+          if (nwcProvider?.isConnected ?? false) {
             list.add(
               const PopupMenuItem(
                 value: "disconnect",
@@ -238,7 +239,7 @@ class _NwcRouter extends State<NwcRouter> {
         onSelected: (value) async {
           if (value == "disconnect") {
             setState(() async {
-              await nwcProvider.disconnect();
+              await nwcProvider?.disconnect();
             });
           }
         });

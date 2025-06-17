@@ -4,7 +4,7 @@ import 'package:ndk/domain_layer/entities/contact_list.dart';
 import 'package:yana/utils/router_path.dart';
 import 'package:yana/main.dart';
 import 'package:yana/provider/contact_list_provider.dart';
-import 'package:yana/utils/router_util.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../utils/base.dart';
@@ -18,7 +18,12 @@ class TagInfoComponent extends StatefulWidget {
 
   ContactList? contactList;
 
-  TagInfoComponent({super.key, required this.tag, this.height = 80, this.jumpable = false, this.contactList});
+  TagInfoComponent(
+      {super.key,
+      required this.tag,
+      this.height = 80,
+      this.jumpable = false,
+      this.contactList});
 
   @override
   State<StatefulWidget> createState() {
@@ -35,7 +40,8 @@ class _TagInfoComponent extends State<TagInfoComponent> {
 
     IconData iconData = Icons.star_border;
     Color? color;
-    bool exist = contactListProvider.containTagInContactList(widget.contactList, widget.tag);
+    bool exist = contactListProvider.containTagInContactList(
+        widget.contactList, widget.tag);
     if (exist) {
       iconData = Icons.star;
       color = themeData.primaryColor;
@@ -61,7 +67,9 @@ class _TagInfoComponent extends State<TagInfoComponent> {
               bool finished = false;
               Future.delayed(const Duration(seconds: 1), () {
                 if (!finished) {
-                  EasyLoading.show(status: "Refreshing from relays before action...", maskType: EasyLoadingMaskType.black);
+                  EasyLoading.show(
+                      status: "Refreshing from relays before action...",
+                      maskType: EasyLoadingMaskType.black);
                 }
               });
               if (exist) {
@@ -87,7 +95,7 @@ class _TagInfoComponent extends State<TagInfoComponent> {
     if (widget.jumpable) {
       return GestureDetector(
         onTap: () {
-          RouterUtil.router(context, RouterPath.TAG_DETAIL, widget.tag);
+          context.go(RouterPath.TAG_DETAIL, extra: widget.tag);
         },
         behavior: HitTestBehavior.translucent,
         child: main,

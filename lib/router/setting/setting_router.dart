@@ -33,6 +33,7 @@ import '../../utils/rates.dart';
 import '../../utils/router_path.dart';
 import '../../utils/string_util.dart';
 import '../../utils/theme_style.dart';
+import 'package:yana/config/app_features.dart';
 
 class SettingRouter extends StatefulWidget {
   Function indexReload;

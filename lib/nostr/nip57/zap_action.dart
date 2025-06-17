@@ -5,6 +5,7 @@ import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:ndk/domain_layer/usecases/nwc/nwc_notification.dart';
 import 'package:ndk/domain_layer/usecases/nwc/responses/pay_invoice_response.dart';
 
+import '../../config/app_features.dart';
 import '../../i18n/i18n.dart';
 import '../../main.dart';
 import '../../utils/lightning_util.dart';
@@ -14,25 +15,32 @@ import 'zap.dart';
 
 class ZapAction {
   static Future<void> handleZap(BuildContext context, int sats, String pubkey,
-      {String? eventId, String? pollOption, String? comment, required Function(PayInvoiceResponse?) onZapped}) async {
+      {String? eventId,
+      String? pollOption,
+      String? comment,
+      required Function(PayInvoiceResponse?) onZapped}) async {
     var s = I18n.of(context);
     // EasyLoading.sho.showLoading();
-    var invoiceCode = await _doGenInvoiceCode(context, sats, pubkey, eventId: eventId, pollOption: pollOption, comment: comment);
+    var invoiceCode = await _doGenInvoiceCode(context, sats, pubkey,
+        eventId: eventId, pollOption: pollOption, comment: comment);
 
     if (StringUtil.isBlank(invoiceCode)) {
-      EasyLoading.showError(s.Gen_invoice_code_error, duration: const Duration(seconds: 5));
+      EasyLoading.showError(s.Gen_invoice_code_error,
+          duration: const Duration(seconds: 5));
       return;
     }
     bool sendWithWallet = false;
-    if (nwcProvider.isConnected) {
-      int? balance = await nwcProvider.getBalance;
+    if (AppFeatures.enableWallet && nwcProvider?.isConnected == true) {
+      int? balance = await nwcProvider?.getBalance;
       if (balance != null && balance > 10) {
+        // Assuming 'sats' was intended here instead of 10, or this is a minimum balance check. Keeping 10 as per original.
         try {
-          PayInvoiceResponse? response = await nwcProvider.payInvoice(invoiceCode!);
-          if (response!=null && eventId!=null) {
+          PayInvoiceResponse? response =
+              await nwcProvider?.payInvoice(invoiceCode!);
+          if (response != null && eventId != null) {
             Future.delayed(const Duration(seconds: 2), () {
-              eventReactionsProvider.subscription(
-                  eventId, null, [EventKind.ZAP_RECEIPT]);
+              eventReactionsProvider
+                  .subscription(eventId, null, [EventKind.ZAP_RECEIPT]);
             });
           }
           onZapped.call(response);
@@ -49,15 +57,20 @@ class ZapAction {
     }
   }
 
-  static Future<String?> genInvoiceCode(BuildContext context, int sats, String pubkey, {String? eventId, String? pollOption, String? comment}) async {
+  static Future<String?> genInvoiceCode(
+      BuildContext context, int sats, String pubkey,
+      {String? eventId, String? pollOption, String? comment}) async {
     try {
-      return await _doGenInvoiceCode(context, sats, pubkey, eventId: eventId, pollOption: pollOption, comment: comment);
+      return await _doGenInvoiceCode(context, sats, pubkey,
+          eventId: eventId, pollOption: pollOption, comment: comment);
     } catch (e) {
       print(e);
     }
   }
 
-  static Future<String?> _doGenInvoiceCode(BuildContext context, int sats, String pubkey, {String? eventId, String? pollOption, String? comment}) async {
+  static Future<String?> _doGenInvoiceCode(
+      BuildContext context, int sats, String pubkey,
+      {String? eventId, String? pollOption, String? comment}) async {
     var s = I18n.of(context);
     var metadata = await metadataProvider.getMetadata(pubkey);
     if (metadata == null) {
@@ -106,7 +119,8 @@ class ZapAction {
           direction: RelayDirection.inbox,
           relayMinCountPerPubKey: settingProvider.broadcastToInboxMaxCount);
       relays.addAll(inboxRelaySet.urls.toSet());
-      relays.removeWhere((element) => ndk.relays.globalState.blockedRelays.contains(element));
+      relays.removeWhere(
+          (element) => ndk.relays.globalState.blockedRelays.contains(element));
     }
 
     return await Zap.getInvoiceCode(

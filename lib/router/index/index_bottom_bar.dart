@@ -5,6 +5,7 @@ import 'package:tuple/tuple.dart';
 import 'package:yana/provider/dm_provider.dart';
 import 'package:yana/provider/index_provider.dart';
 
+import '../../config/app_features.dart';
 import '../../i18n/i18n.dart';
 import '../../main.dart';
 import '../../models/event_mem_box.dart';
@@ -66,42 +67,48 @@ class _IndexBottomBar extends State<IndexBottomBar> {
       label: s.Feed,
     ));
 
-    destinations.add(NavigationDestination(
-      selectedIcon: Icon(Symbols.search, size: 35, fill: 1, weight: 1, color: themeData.dividerColor),
-      icon: Icon(Symbols.search, size: 35, weight:1, color: themeData.disabledColor),
-      label: s.Search,
-    ));
+    if (AppFeatures.enableSearch) {
+      destinations.add(NavigationDestination(
+        selectedIcon: Icon(Symbols.search,
+            size: 35, fill: 1, weight: 1, color: themeData.dividerColor),
+        icon: Icon(Symbols.search,
+            size: 35, weight: 1, color: themeData.disabledColor),
+        label: s.Search,
+      ));
+    }
 
-    destinations.add(NavigationDestination(
-      icon: Selector<DMProvider, int>(
-        builder: (context, count, child) {
-          Icon icon = _indexProvider.currentTap == 2
-              ? Icon(Symbols.mail,
-                  fill: 1, size: 35, weight: 1, color: themeData.dividerColor)
-              : Icon(Symbols.mail,
-                  size: 35, weight: 1, color: themeData.disabledColor);
-          // FlutterAppBadger.updateBadgeCount(count);
-          if (count <= 0) {
-            return icon;
-          }
-          return _badge(icon, themeData);
-          // return Badge(
-          //     offset: const Offset(10, 0),
-          //     // label: Text(count.toString(),style: badgeTextStyle),
-          //     backgroundColor: themeData.primaryColor,
-          //     child: icon);
-        },
-        selector: (context, _provider) {
-          return _provider.howManyNewDMSessionsWithNewMessages(
-                  _provider.followingList) +
-              _provider
-                  .howManyNewDMSessionsWithNewMessages(_provider.knownList) +
-              _provider
-                  .howManyNewDMSessionsWithNewMessages(_provider.unknownList);
-        },
-      ),
-      label: s.Messages,
-    ));
+    if (AppFeatures.enableDm) {
+      destinations.add(NavigationDestination(
+        icon: Selector<DMProvider, int>(
+          builder: (context, count, child) {
+            Icon icon = _indexProvider.currentTap == 2
+                ? Icon(Symbols.mail,
+                    fill: 1, size: 35, weight: 1, color: themeData.dividerColor)
+                : Icon(Symbols.mail,
+                    size: 35, weight: 1, color: themeData.disabledColor);
+            // FlutterAppBadger.updateBadgeCount(count);
+            if (count <= 0) {
+              return icon;
+            }
+            return _badge(icon, themeData);
+            // return Badge(
+            //     offset: const Offset(10, 0),
+            //     // label: Text(count.toString(),style: badgeTextStyle),
+            //     backgroundColor: themeData.primaryColor,
+            //     child: icon);
+          },
+          selector: (context, _provider) {
+            return _provider.howManyNewDMSessionsWithNewMessages(
+                    _provider.followingList) +
+                _provider
+                    .howManyNewDMSessionsWithNewMessages(_provider.knownList) +
+                _provider
+                    .howManyNewDMSessionsWithNewMessages(_provider.unknownList);
+          },
+        ),
+        label: s.Messages,
+      ));
+    }
 
     destinations.add(NavigationDestination(
       icon: Selector<NewNotificationsProvider, EventMemBox>(

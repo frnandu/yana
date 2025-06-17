@@ -17,10 +17,11 @@ import 'package:yana/router/user/followed_router.dart';
 import '../../i18n/i18n.dart';
 import '../../nostr/relay_metadata.dart';
 import '../../ui/confirm_dialog.dart';
+import 'package:go_router/go_router.dart';
+
 import '../../utils/base.dart';
 import '../../utils/hash_util.dart';
 import '../../utils/router_path.dart';
-import '../../utils/router_util.dart';
 import '../../utils/store_util.dart';
 import '../../utils/string_util.dart';
 import '../relays/relays_item_component.dart';
@@ -53,7 +54,7 @@ class _UserRelayRouter extends State<UserRelayRouter>
     var s = I18n.of(context);
     if (relays == null) {
       relays = [];
-      var arg = RouterUtil.routerArgs(context);
+      var arg = GoRouterState.of(context).extra;
       if (arg != null && arg is List<RelayMetadata>) {
         relays = arg;
       }
@@ -70,7 +71,7 @@ class _UserRelayRouter extends State<UserRelayRouter>
       appBar: AppBar(
         leading: GestureDetector(
           onTap: () {
-            RouterUtil.back(context);
+            context.pop();
           },
           child: Icon(
             Icons.arrow_back_ios,
@@ -138,7 +139,7 @@ class _UserRelayRouter extends State<UserRelayRouter>
   }
 
   int compareRelays(RelayMetadata r1, RelayMetadata r2) {
-    Relay? relay1 =ndk.relays.getRelayConnectivity(r1.url!)!.relay;
+    Relay? relay1 = ndk.relays.getRelayConnectivity(r1.url!)!.relay;
     Relay? relay2 = ndk.relays.getRelayConnectivity(r2.url!)!.relay;
     if (relay1 == null) {
       return 1;
@@ -146,8 +147,8 @@ class _UserRelayRouter extends State<UserRelayRouter>
     if (relay2 == null) {
       return -1;
     }
-    bool a1 =ndk.relays.isRelayConnected(r1.url!);
-    bool a2 =ndk.relays.isRelayConnected(r2.url!);
+    bool a1 = ndk.relays.isRelayConnected(r1.url!);
+    bool a2 = ndk.relays.isRelayConnected(r2.url!);
     if (a1) {
       return a2 ? (r2.count != null ? r2.count!.compareTo(r1.count!) : 0) : -1;
     }
@@ -174,7 +175,7 @@ class RelayMetadataComponent extends StatelessWidget {
     var cardColor = themeData.cardColor;
     var bodySmallFontSize = themeData.textTheme.labelSmall!.fontSize;
 
-    if (relayMetadata == null || relayMetadata!.url==null) {
+    if (relayMetadata == null || relayMetadata!.url == null) {
       return Container();
     }
     Widget leftBtn = Container();
@@ -221,13 +222,12 @@ class RelayMetadataComponent extends StatelessWidget {
     if (relayMetadata!.count != null && relayMetadata!.count! > 0) {
       rightButtons.add(GestureDetector(
           onTap: () {
-            RouterUtil.push(context, MaterialPageRoute(builder: (context) {
-              return FollowedRouter.withTitle(
-                  feedRelaySet!.relaysMap[relayMetadata!.url]!
-                      .map((e) => e.pubKey)
-                      .toList(),
-                  "${relayMetadata!.count} $contacts");
-            }));
+            context.push(RouterPath.FOLLOWED,
+                extra: FollowedRouterArgs(
+                    pubkeys: feedRelaySet!.relaysMap[relayMetadata!.url]!
+                        .map((e) => e.pubKey)
+                        .toList(),
+                    title: "${relayMetadata!.count} $contacts"));
           },
           child: Text("${relayMetadata!.count} ",
               style: TextStyle(
@@ -235,14 +235,13 @@ class RelayMetadataComponent extends StatelessWidget {
                   fontSize: themeData.textTheme.labelLarge!.fontSize))));
       rightButtons.add(GestureDetector(
           onTap: () {
-            List<PubkeyMapping>? aa = feedRelaySet!.relaysMap[relayMetadata!.url];
-            RouterUtil.push(context, MaterialPageRoute(builder: (context) {
-              return FollowedRouter.withTitle(
-                  aa!=null?
-                      aa.map((e) => e.pubKey)
-                      .toList():[],
-                  "${relayMetadata!.count} $contacts ${uses} ${relayMetadata!.url}");
-            }));
+            List<PubkeyMapping>? aa =
+                feedRelaySet!.relaysMap[relayMetadata!.url];
+            context.push(RouterPath.FOLLOWED,
+                extra: FollowedRouterArgs(
+                    pubkeys: aa != null ? aa.map((e) => e.pubKey).toList() : [],
+                    title:
+                        "${relayMetadata!.count} $contacts ${uses} ${relayMetadata!.url}"));
           },
           child: Text(contacts,
               style: TextStyle(
@@ -264,7 +263,8 @@ class RelayMetadataComponent extends StatelessWidget {
           ),
         ));
       }
-      bool blocked =ndk.relays.globalState.blockedRelays.contains(relayMetadata!.url);
+      bool blocked =
+          ndk.relays.globalState.blockedRelays.contains(relayMetadata!.url);
       if (blocked) {
         rightButtons.add(PopupMenuButton<String>(
           icon: const Icon(Icons.not_interested, color: Colors.red),
@@ -281,13 +281,13 @@ class RelayMetadataComponent extends StatelessWidget {
                   status: 'Removing from list and broadcasting...',
                   maskType: EasyLoadingMaskType.black,
                   dismissOnTap: true);
-              Nip51List? relayList = await ndk
-                  .lists.broadcastRemoveNip51Relay(
-                      Nip51List.kBlockedRelays,
-                      relayMetadata!.url!,
-                      myOutboxRelaySet!.urls,
-                      defaultRelaysIfEmpty: []);
-             ndk.relays.globalState.blockedRelays = relayList!.allRelays.toSet();
+              Nip51List? relayList = await ndk.lists.broadcastRemoveNip51Relay(
+                  Nip51List.kBlockedRelays,
+                  relayMetadata!.url!,
+                  myOutboxRelaySet!.urls,
+                  defaultRelaysIfEmpty: []);
+              ndk.relays.globalState.blockedRelays =
+                  relayList!.allRelays.toSet();
               relayProvider.notifyListeners();
               EasyLoading.dismiss();
             }
@@ -313,13 +313,13 @@ class RelayMetadataComponent extends StatelessWidget {
                     status: 'Broadcasting blocked relay list...',
                     maskType: EasyLoadingMaskType.black,
                     dismissOnTap: true);
-                Nip51List blocked =
-                    await ndk.lists.broadcastAddNip51ListRelay(
-                        Nip51List.kBlockedRelays,
-                        relayMetadata!.url!,
-                        myOutboxRelaySet!.urls,
-                        private: value == "private" ? true : false);
-               ndk.relays.globalState.blockedRelays = blocked.allRelays.toSet();
+                Nip51List blocked = await ndk.lists.broadcastAddNip51ListRelay(
+                    Nip51List.kBlockedRelays,
+                    relayMetadata!.url!,
+                    myOutboxRelaySet!.urls,
+                    private: value == "private" ? true : false);
+                ndk.relays.globalState.blockedRelays =
+                    blocked.allRelays.toSet();
                 EasyLoading.dismiss();
                 if (onBlock != null) {
                   onBlock!(relayMetadata!.url!);
@@ -337,7 +337,8 @@ class RelayMetadataComponent extends StatelessWidget {
     //   ],
     // ),
     //
-    RelayConnectivity? relay =ndk.relays.getRelayConnectivity(relayMetadata!.url!);
+    RelayConnectivity? relay =
+        ndk.relays.getRelayConnectivity(relayMetadata!.url!);
     Widget imageWidget;
 
     String? iconUrl;
@@ -400,7 +401,7 @@ class RelayMetadataComponent extends StatelessWidget {
             GestureDetector(
               onTap: () {
                 if (relay != null && relay.relayInfo != null) {
-                  RouterUtil.router(context, RouterPath.RELAY_INFO, relay);
+                  context.go(RouterPath.RELAY_INFO, extra: relay);
                 }
               },
               child: Container(
@@ -421,8 +422,7 @@ class RelayMetadataComponent extends StatelessWidget {
                       child: GestureDetector(
                         onTap: () {
                           if (relay != null && relay.relayInfo != null) {
-                            RouterUtil.router(
-                                context, RouterPath.RELAY_INFO, relay);
+                            context.go(RouterPath.RELAY_INFO, extra: relay);
                           }
                         },
                         child: Text(
@@ -432,7 +432,9 @@ class RelayMetadataComponent extends StatelessWidget {
                             style: themeData.textTheme.titleLarge,
                             overflow: TextOverflow.ellipsis),
                       )),
-                  relay != null && (relayMetadata!.count!=null && relayMetadata!.count!>0)
+                  relay != null &&
+                          (relayMetadata!.count != null &&
+                              relayMetadata!.count! > 0)
                       ? Row(
                           children: [
                             Container(

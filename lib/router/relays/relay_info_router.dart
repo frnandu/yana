@@ -7,12 +7,12 @@ import 'package:provider/provider.dart';
 import 'package:yana/main.dart';
 import 'package:yana/provider/metadata_provider.dart';
 import 'package:yana/ui/name_component.dart';
+import 'package:go_router/go_router.dart';
 import 'package:yana/utils/base.dart';
 import 'package:yana/utils/router_path.dart';
 
 import '../../ui/webview_router.dart';
 import '../../utils/hash_util.dart';
-import '../../utils/router_util.dart';
 import '../../utils/string_util.dart';
 
 class RelayInfoRouter extends StatefulWidget {
@@ -34,9 +34,9 @@ class _RelayInfoRouter extends State<RelayInfoRouter> {
     var themeData = Theme.of(context);
     var titleFontSize = themeData.textTheme.bodyLarge!.fontSize;
 
-    var relayItf = RouterUtil.routerArgs(context);
+    var relayItf = GoRouterState.of(context).extra;
     if (relayItf == null || relayItf is! Relay) {
-      RouterUtil.back(context);
+      context.pop();
       return Container();
     }
 
@@ -63,7 +63,9 @@ class _RelayInfoRouter extends State<RelayInfoRouter> {
     } else if (relay.url.startsWith("wss://relay.snort.social")) {
       icon = "https://snort.social/favicon.ico";
     } else {
-      icon = relayInfo != null && StringUtil.isNotBlank(relayInfo!.icon) ? relayInfo!.icon : StringUtil.robohash(HashUtil.md5(relay!.url));
+      icon = relayInfo != null && StringUtil.isNotBlank(relayInfo!.icon)
+          ? relayInfo!.icon
+          : StringUtil.robohash(HashUtil.md5(relay!.url));
     }
     imageWidget = CachedNetworkImage(
       imageUrl: icon,
@@ -71,7 +73,8 @@ class _RelayInfoRouter extends State<RelayInfoRouter> {
       height: 50,
       fit: BoxFit.cover,
       placeholder: (context, url) => const CircularProgressIndicator(),
-      errorWidget: (context, url, error) => CachedNetworkImage(imageUrl: StringUtil.robohash(HashUtil.md5(relay!.url))),
+      errorWidget: (context, url, error) => CachedNetworkImage(
+          imageUrl: StringUtil.robohash(HashUtil.md5(relay!.url))),
       cacheManager: localCacheManager,
     );
 
@@ -91,7 +94,10 @@ class _RelayInfoRouter extends State<RelayInfoRouter> {
           child: imageWidget),
       Column(children: [
         Container(
-          margin: const EdgeInsets.only(top: Base.BASE_PADDING, bottom: Base.BASE_PADDING, left: Base.BASE_PADDING),
+          margin: const EdgeInsets.only(
+              top: Base.BASE_PADDING,
+              bottom: Base.BASE_PADDING,
+              left: Base.BASE_PADDING),
           child: Text(
             relayInfo!.name,
             style: TextStyle(
@@ -106,7 +112,8 @@ class _RelayInfoRouter extends State<RelayInfoRouter> {
     list.add(iconAndNameRow);
 
     list.add(Container(
-      margin: const EdgeInsets.only(bottom: Base.BASE_PADDING, top: Base.BASE_PADDING),
+      margin: const EdgeInsets.only(
+          bottom: Base.BASE_PADDING, top: Base.BASE_PADDING),
       child: Text(
         relayInfo!.description,
         maxLines: 3,
@@ -135,8 +142,10 @@ class _RelayInfoRouter extends State<RelayInfoRouter> {
                       width: IMAGE_WIDTH,
                       height: IMAGE_WIDTH,
                       fit: BoxFit.cover,
-                      placeholder: (context, url) => const CircularProgressIndicator(),
-                      errorWidget: (context, url, error) => const Icon(Icons.error),
+                      placeholder: (context, url) =>
+                          const CircularProgressIndicator(),
+                      errorWidget: (context, url, error) =>
+                          const Icon(Icons.error),
                       cacheManager: localCacheManager,
                     );
                   }
@@ -161,7 +170,7 @@ class _RelayInfoRouter extends State<RelayInfoRouter> {
 
                   return GestureDetector(
                     onTap: () {
-                      RouterUtil.router(context, RouterPath.USER, relayInfo!.pubKey);
+                      context.go(RouterPath.USER, extra: relayInfo!.pubKey);
                     },
                     child: Row(
                       children: list,
@@ -187,7 +196,9 @@ class _RelayInfoRouter extends State<RelayInfoRouter> {
         child: Text(
           relayInfo!.software,
           style: TextStyle(
-            color: relayInfo!.software.startsWith("http") ? themeData.primaryColor : null,
+            color: relayInfo!.software.startsWith("http")
+                ? themeData.primaryColor
+                : null,
             // decoration: TextDecoration.underline,
           ),
         ),
@@ -216,7 +227,7 @@ class _RelayInfoRouter extends State<RelayInfoRouter> {
       appBar: AppBar(
         leading: GestureDetector(
           onTap: () {
-            RouterUtil.back(context);
+            context.pop();
           },
           child: Icon(
             Icons.arrow_back_ios,
@@ -326,7 +337,8 @@ class NipComponent extends StatelessWidget {
 
     return GestureDetector(
       onTap: () {
-        var url = "https://github.com/nostr-protocol/nips/blob/master/$nipStr.md";
+        var url =
+            "https://github.com/nostr-protocol/nips/blob/master/$nipStr.md";
         WebViewRouter.open(context, url);
       },
       child: Text(

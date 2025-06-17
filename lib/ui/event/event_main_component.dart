@@ -21,7 +21,7 @@ import '../../provider/setting_provider.dart';
 import '../../utils/base.dart';
 import '../../utils/base_consts.dart';
 import '../../utils/router_path.dart';
-import '../../utils/router_util.dart';
+import 'package:go_router/go_router.dart';
 import '../../utils/string_util.dart';
 import '../confirm_dialog.dart';
 import '../content/content_decoder.dart';
@@ -129,14 +129,15 @@ class _EventMainComponent extends State<EventMainComponent> {
   void _parseContent() {
     _imageLinks = _extractImages(widget.event.content);
   }
+
   void _checkIfContentExceedsHeight() {
     // Wait for next frame to ensure rendering is complete
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-        setState(() {
-          _parseContent();
-        });
+      setState(() {
+        _parseContent();
+      });
       // }
     });
   }
@@ -191,8 +192,8 @@ class _EventMainComponent extends State<EventMainComponent> {
       // change when thread root load lazy
       eventRelation = EventRelation.fromEvent(widget.event);
     }
-    if (textHeight==0) {
-      textHeight = _calculateTextHeight(widget.event.content)+1;
+    if (textHeight == 0) {
+      textHeight = _calculateTextHeight(widget.event.content) + 1;
     }
 
     bool imagePreview = _settingProvider.imagePreview == null ||
@@ -505,7 +506,8 @@ class _EventMainComponent extends State<EventMainComponent> {
           }
         }
 
-        final imageHeight = _imageLinks.isEmpty ? 0 : 200; // Image height + spacing
+        final imageHeight =
+            _imageLinks.isEmpty ? 0 : 200; // Image height + spacing
         final totalHeight = textHeight + imageHeight;
 
         final shouldShowButton = totalHeight > _collapsedHeight + imageHeight;
@@ -586,8 +588,8 @@ class _EventMainComponent extends State<EventMainComponent> {
           ),
           GestureDetector(
             onTap: () {
-              RouterUtil.router(context, RouterPath.COMMUNITY_DETAIL,
-                  eventRelation.communityId);
+              context.go(RouterPath.COMMUNITY_DETAIL,
+                  extra: eventRelation.communityId);
             },
             child: Text(
               eventRelation.communityId!.title,
@@ -671,33 +673,30 @@ class _EventMainComponent extends State<EventMainComponent> {
     final shouldShowButton = totalHeight > _collapsedHeight + imageHeight;
 
     var main = SizedBox(
-            width: double.maxFinite,
-            child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  // Only apply max height when not expanded AND content needs to be constrained
-                  maxHeight: !_isExpanded && shouldShowButton? _collapsedHeight: double.infinity
-                ),
-                child:
-                ClipRect(
-                  // Only clip when not expanded and should show button
-                  clipBehavior: (!_isExpanded && shouldShowButton)
-                      ? Clip.hardEdge
-                      : Clip.none,
-                  child:
-    SingleChildScrollView(
-    physics: NeverScrollableScrollPhysics(),
-    child: Column(
-        key: _contentKey,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: content),
-                    // content,
-                    // Column(
-                    //     crossAxisAlignment: CrossAxisAlignment.start,
-                    //     mainAxisSize: MainAxisSize.min,
-                    //     children: content,
-                )))
-        )
-        ;
+        width: double.maxFinite,
+        child: ConstrainedBox(
+            constraints: BoxConstraints(
+                // Only apply max height when not expanded AND content needs to be constrained
+                maxHeight: !_isExpanded && shouldShowButton
+                    ? _collapsedHeight
+                    : double.infinity),
+            child: ClipRect(
+                // Only clip when not expanded and should show button
+                clipBehavior: (!_isExpanded && shouldShowButton)
+                    ? Clip.hardEdge
+                    : Clip.none,
+                child: SingleChildScrollView(
+                  physics: NeverScrollableScrollPhysics(),
+                  child: Column(
+                      key: _contentKey,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: content),
+                  // content,
+                  // Column(
+                  //     crossAxisAlignment: CrossAxisAlignment.start,
+                  //     mainAxisSize: MainAxisSize.min,
+                  //     children: content,
+                ))));
 
     return main;
   }
@@ -770,27 +769,27 @@ class _EventMainComponent extends State<EventMainComponent> {
               // jump user page
               var pubkey = Nip19.decode(link);
               if (StringUtil.isNotBlank(pubkey)) {
-                RouterUtil.router(context, RouterPath.USER, pubkey);
+                context.go(RouterPath.USER, extra: pubkey);
               }
             } else if (NIP19Tlv.isNprofile(link)) {
               var nprofile = NIP19Tlv.decodeNprofile(link);
               if (nprofile != null) {
-                RouterUtil.router(context, RouterPath.USER, nprofile.pubkey);
+                context.go(RouterPath.USER, extra: nprofile.pubkey);
               }
             } else if (Nip19.isNoteId(link)) {
               var noteId = Nip19.decode(link);
               if (StringUtil.isNotBlank(noteId)) {
-                RouterUtil.router(context, RouterPath.EVENT_DETAIL, noteId);
+                context.go(RouterPath.EVENT_DETAIL, extra: noteId);
               }
             } else if (NIP19Tlv.isNevent(link)) {
               var nevent = NIP19Tlv.decodeNevent(link);
               if (nevent != null) {
-                RouterUtil.router(context, RouterPath.EVENT_DETAIL, nevent.id);
+                context.go(RouterPath.EVENT_DETAIL, extra: nevent.id);
               }
             } else if (NIP19Tlv.isNaddr(link)) {
               var naddr = NIP19Tlv.decodeNaddr(link);
               if (naddr != null) {
-                RouterUtil.router(context, RouterPath.EVENT_DETAIL, naddr.id);
+                context.go(RouterPath.EVENT_DETAIL, extra: naddr.id);
               }
             } else if (NIP19Tlv.isNrelay(link)) {
               var nrelay = NIP19Tlv.decodeNrelay(link);
@@ -883,7 +882,7 @@ class _EventReplyingcomponent extends State<EventReplyingcomponent> {
   Widget build(BuildContext context) {
     return GestureDetector(
         onTap: () {
-          RouterUtil.router(context, RouterPath.USER, widget.pubkey);
+          context.go(RouterPath.USER, extra: widget.pubkey);
         },
         child: FutureBuilder<Metadata?>(
             future: metadataProvider.getMetadata(widget.pubkey),

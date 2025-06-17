@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:yana/utils/lightning_util.dart';
 
+import '../../config/app_features.dart';
 import '../../i18n/i18n.dart';
 import '../../main.dart';
 import '../../nostr/nip57/zap_num_util.dart';
@@ -103,14 +104,18 @@ class ContentLnbcComponent extends StatelessWidget {
               onTap: () async {
                 // call to pay
                 bool sendWithWallet = false;
-                if (await nwcProvider.isConnected) {
-                  int? balance = await nwcProvider.getBalance;
-                  if (balance!=null && balance > 10) {
-                    await nwcProvider.payInvoice(lnbc);
+                if (AppFeatures.enableWallet &&
+                    await nwcProvider?.isConnected == true) {
+                  int? balance = await nwcProvider?.getBalance;
+                  if (balance != null && balance > 10) {
+                    await nwcProvider?.payInvoice(lnbc);
                     sendWithWallet = true;
                   }
                 }
-                LightningUtil.goToPay(context, lnbc);
+                // If not sent with wallet or if nwcProvider is null/not connected, proceed with default payment.
+                if (!sendWithWallet) {
+                  LightningUtil.goToPay(context, lnbc);
+                }
               },
               child: Container(
                 color: Colors.black,

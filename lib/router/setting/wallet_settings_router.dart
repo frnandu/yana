@@ -18,7 +18,6 @@ import '../../utils/rates.dart';
 import '../../utils/router_path.dart';
 
 class WalletSettingsRouter extends StatefulWidget {
-
   const WalletSettingsRouter({
     super.key,
   });
@@ -30,7 +29,6 @@ class WalletSettingsRouter extends StatefulWidget {
 }
 
 class _SettingRouter extends State<WalletSettingsRouter> with WhenStopFunction {
-
   @override
   Widget build(BuildContext context) {
     var themeData = Theme.of(context);
@@ -53,7 +51,8 @@ class _SettingRouter extends State<WalletSettingsRouter> with WhenStopFunction {
     ));
 
     List<AbstractSettingsTile> walletTiles = [];
-    if (nwcProvider.isConnected) {
+    // Conditional check for nwcProvider and its connection status
+    if (nwcProvider != null && nwcProvider!.isConnected) {
       walletTiles.add(SettingsTile.navigation(
         onPressed: (context) async {
           await pickFiatCurrency();
@@ -69,7 +68,7 @@ class _SettingRouter extends State<WalletSettingsRouter> with WhenStopFunction {
           var result = await ConfirmDialog.show(context, "Are you sure?");
           if (result == true) {
             setState(() {
-              nwcProvider.disconnect();
+              nwcProvider?.disconnect();
             });
           }
         },
@@ -86,7 +85,6 @@ class _SettingRouter extends State<WalletSettingsRouter> with WhenStopFunction {
         title: const Text("Connect Nostr Wallet Connect"),
       ));
     }
-
 
     List<SettingsSection> sections = [];
 
@@ -143,12 +141,14 @@ class _SettingRouter extends State<WalletSettingsRouter> with WhenStopFunction {
     int flagOffset = 0x1F1E6; // Unicode offset for regional indicator 'A'
     int asciiOffset = 0x41; // ASCII value for 'A'
 
-    String firstChar = String.fromCharCode(flagOffset + countryCode.codeUnitAt(0) - asciiOffset);
-    String secondChar = String.fromCharCode(flagOffset + countryCode.codeUnitAt(1) - asciiOffset);
+    String firstChar = String.fromCharCode(
+        flagOffset + countryCode.codeUnitAt(0) - asciiOffset);
+    String secondChar = String.fromCharCode(
+        flagOffset + countryCode.codeUnitAt(1) - asciiOffset);
 
     return firstChar + secondChar; // Combine the two regional indicator symbols
   }
-  
+
   Future pickFiatCurrency() async {
     List<EnumObj> objs = [];
     Map<String, dynamic>? rates = await RatesUtil.fiatCurrencies();
@@ -157,24 +157,21 @@ class _SettingRouter extends State<WalletSettingsRouter> with WhenStopFunction {
 
     rates!.forEach((key, map) {
       if (map['type'] == 'fiat') {
-        Currency? currency = currencies != null ? currencies[key.toUpperCase()] : null;
-        objs.add(EnumObj(
-            key,
-             "(${map['name']} ${map['unit']})",
-            widget:
-                RichText(text: TextSpan(children: [
-                  TextSpan(
-                    text: "${key.toUpperCase()} ",
-                  ),
-                  TextSpan(
-                    text: " ${currency!=null?getFlagEmoji(currency!.countryCode):''}"
-                  ),
-                  TextSpan(
-                    text: " ${map['name']}",
-                    style: TextStyle(color: Colors.grey[700])
-                  )
-                ]))
-            ));
+        Currency? currency =
+            currencies != null ? currencies[key.toUpperCase()] : null;
+        objs.add(EnumObj(key, "(${map['name']} ${map['unit']})",
+            widget: RichText(
+                text: TextSpan(children: [
+              TextSpan(
+                text: "${key.toUpperCase()} ",
+              ),
+              TextSpan(
+                  text:
+                      " ${currency != null ? getFlagEmoji(currency!.countryCode) : ''}"),
+              TextSpan(
+                  text: " ${map['name']}",
+                  style: TextStyle(color: Colors.grey[700]))
+            ]))));
       }
     });
 

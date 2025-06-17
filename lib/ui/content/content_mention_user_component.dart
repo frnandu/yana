@@ -5,14 +5,15 @@ import 'package:provider/provider.dart';
 import '../../main.dart';
 import '../../provider/metadata_provider.dart';
 import '../../utils/router_path.dart';
-import '../../utils/router_util.dart';
+import 'package:go_router/go_router.dart';
 import '../simple_name_component.dart';
 import 'content_str_link_component.dart';
 
 class ContentMentionUserComponent extends StatefulWidget {
   String _pubkey;
 
-  ContentMentionUserComponent({super.key, required String pubkey}) : _pubkey = pubkey;
+  ContentMentionUserComponent({super.key, required String pubkey})
+      : _pubkey = pubkey;
 
   @override
   State<StatefulWidget> createState() {
@@ -27,13 +28,14 @@ class _ContentMentionUserComponent extends State<ContentMentionUserComponent> {
         future: metadataProvider.getMetadata(widget._pubkey),
         builder: (context, snapshot) {
           var metadata = snapshot.data;
-          String name = SimpleNameComponent.getSimpleName(widget._pubkey, metadata);
+          String name =
+              SimpleNameComponent.getSimpleName(widget._pubkey, metadata);
 
           return ContentStrLinkComponent(
             str: "$name",
             showUnderline: false,
             onTap: () {
-              RouterUtil.router(context, RouterPath.USER, widget._pubkey);
+              context.go(RouterPath.USER, extra: widget._pubkey);
             },
           );
         });

@@ -91,7 +91,7 @@ class DMProvider extends ChangeNotifier with PenddingEventsLaterFunction {
     // o.readedTime = detail.dmSession.newestEvent!.createdAt;
     // await DMSessionInfoDB.insert(o);
 
-    dmProvider.infoMap[detail.dmSession.pubkey] = detail.info!;
+    dmProvider!.infoMap[detail.dmSession.pubkey] = detail.info!;
 
     unknownList.remove(detail);
     knownList.add(detail);

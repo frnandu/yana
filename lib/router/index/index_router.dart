@@ -31,6 +31,7 @@ import '../../utils/auth_util.dart';
 import '../../utils/base.dart';
 import '../../utils/router_path.dart';
 import '../../utils/router_util.dart';
+import '../../config/app_features.dart';
 import '../dm/dm_router.dart';
 import '../edit/editor_router.dart';
 import '../follow/follow_index_router.dart';
@@ -61,6 +62,39 @@ class _IndexRouter extends CustState<IndexRouter>
 
   bool _scrollingDown = false;
 
+  bool _creatingAccount = false;
+
+  Future<void> _handleNoAccount() async {
+    if (_creatingAccount) return;
+    setState(() {
+      _creatingAccount = true;
+    });
+
+    String priv = generatePrivateKey();
+    sharedPreferences.remove(DataKey.NOTIFICATIONS_TIMESTAMP);
+    sharedPreferences.remove(DataKey.FEED_POSTS_TIMESTAMP);
+    sharedPreferences.remove(DataKey.FEED_REPLIES_TIMESTAMP);
+    notificationsProvider.clear();
+    newNotificationsProvider.clear();
+    followEventProvider.clear();
+    followNewEventProvider.clear();
+    await settingProvider.addAndChangeKey(priv, true, false,
+        updateUI: false);
+    String publicKey = getPublicKey(priv);
+    ndk.accounts.loginPrivateKey(pubkey: publicKey, privkey: priv);
+
+    await initRelays(newKey: true);
+    followEventProvider.loadCachedFeed();
+
+    firstLogin = true;
+    indexProvider.setCurrentTap(IndexTaps.FOLLOW);
+    if (mounted) {
+      setState(() {
+        _creatingAccount = false;
+      });
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -90,7 +124,7 @@ class _IndexRouter extends CustState<IndexRouter>
         String? nwc = uri.queryParameters["value"];
 
         if (nwc != null && nwc.startsWith(NwcProvider.NWC_PROTOCOL_PREFIX)) {
-          await nwcProvider.connect(nwc, onConnect: (lud16) async {
+          await nwcProvider?.connect(nwc, onConnect: (lud16) async {
             await metadataProvider.updateLud16IfEmpty(lud16);
           });
           bool canPop = Navigator.canPop(context);
@@ -126,7 +160,7 @@ class _IndexRouter extends CustState<IndexRouter>
             firstLogin = true;
             indexProvider.setCurrentTap(IndexTaps.FOLLOW);
           }
-          await nwcProvider.connect(url, onConnect: (lud16) async {
+          await nwcProvider?.connect(url, onConnect: (lud16) async {
             await metadataProvider.updateLud16IfEmpty(lud16);
           });
           bool canPop = Navigator.canPop(context);
@@ -366,7 +400,8 @@ class _IndexRouter extends CustState<IndexRouter>
           style: titleTextStyle,
         ),
       );
-    } else if (_indexProvider.currentTap == IndexTaps.SEARCH) {
+    } else if (AppFeatures.enableSearch &&
+        _indexProvider.currentTap == IndexTaps.SEARCH) {
       appBarCenter = Center(
         child: Text(
           s.Search,
@@ -466,11 +501,12 @@ class _IndexRouter extends CustState<IndexRouter>
           FollowIndexRouter(
             tabController: followTabController,
           ),
-          SearchRouter(),
-          DMRouter(
-            tabController: dmTabController,
-            scrollCallback: scrollDirectionCallback,
-          ),
+          if (AppFeatures.enableSearch) SearchRouter(),
+          if (AppFeatures.enableDm)
+            DMRouter(
+              tabController: dmTabController,
+              scrollCallback: scrollDirectionCallback,
+            ),
           NotificationsRouter(),
           // NoticeRouter(),
         ],
@@ -529,21 +565,30 @@ class _IndexRouter extends CustState<IndexRouter>
 
                 List<Widget> pages = [];
                 for (var info in infos) {
-                  if (StringUtil.isNotBlank(info.routerPath) &&
-                      routes[info.routerPath] != null) {
-                    var builder = routes[info.routerPath];
-                    if (builder != null) {
-                      pages.add(PcRouterFake(
-                        info: info,
-                        child: builder(context),
-                      ));
-                    }
-                  } else if (info.buildContent != null) {
+                  if (info.buildContent != null) {
                     pages.add(PcRouterFake(
                       info: info,
                       child: info.buildContent!(context),
                     ));
+                  } else if (StringUtil.isNotBlank(info.routerPath)) {
+                    // This part is problematic as 'routes' is gone.
+                    // For now, we'll log and skip creating a page for this.
+                    // A proper fix would involve PcRouterFakeProvider.go
+                    // being called with a WidgetBuilder or a direct Widget.
+                    print(
+                        "PcRouterFake: Attempted to use routerPath ('${info.routerPath}') without buildContent. This route cannot be displayed with the current GoRouter setup.");
+                    // Optionally, add a placeholder page:
+                    // pages.add(PcRouterFake(
+                    //   info: info,
+                    //   child: Center(child: Text("Error: Route for ${info.routerPath} not found via buildContent.")),
+                    // ));
                   }
+                }
+
+                if (pages.isEmpty) {
+                  // If no pages could be built (e.g., all infos relied on routerPath),
+                  // fall back to mainIndex.
+                  return mainIndex;
                 }
 
                 return IndexedStack(
@@ -565,6 +610,7 @@ class _IndexRouter extends CustState<IndexRouter>
         ]),
       );
     } else {
+      // This is the non-tablet/PC mode
       return Scaffold(
           body: mainIndex,
           extendBody: true,
@@ -576,20 +622,11 @@ class _IndexRouter extends CustState<IndexRouter>
                       duration: const Duration(milliseconds: 400),
                       child: addBtn,
                     )
-                  //
-                  //     AnimatedContainer(
-                  //         curve: Curves.ease,
-                  //         duration: const Duration(milliseconds: 200),
-                  //         height: _scrollingDown ? 0.0 : 100,
-                  //         child:
-                  //     addBtn
-                  // )
                   : Container(),
           floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
           drawer: Drawer(
             child: IndexDrawerContentComponent(reload: widget.reload),
           ),
-          //       extendBodyBehindAppBar: true,
           bottomNavigationBar: AnimatedOpacity(
               opacity: _scrollingDown ? 0 : 1,
               curve: Curves.fastOutSlowIn,
@@ -600,7 +637,7 @@ class _IndexRouter extends CustState<IndexRouter>
                   height: _scrollingDown ? 0.0 : 50,
                   child: IndexBottomBar())));
     }
-  }
+  } // End of doBuild method
 
   void doAuth() {
     AuthUtil.authenticate(
@@ -615,4 +652,4 @@ class _IndexRouter extends CustState<IndexRouter>
       }
     });
   }
-}
+} // End of _IndexRouter class

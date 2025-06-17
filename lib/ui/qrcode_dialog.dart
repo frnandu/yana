@@ -10,7 +10,7 @@ import '../main.dart';
 import '../utils/base.dart';
 import '../i18n/i18n.dart';
 import '../provider/metadata_provider.dart';
-import '../utils/router_util.dart';
+import 'package:go_router/go_router.dart';
 
 class QrcodeDialog extends StatefulWidget {
   String pubkey;
@@ -107,17 +107,17 @@ class _QrcodeDialog extends State<QrcodeDialog> {
         // Screenshot(
         //   controller: screenshotController,
         //   child:
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: cardColor,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: list,
-            ),
+        Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: cardColor,
           ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: list,
+          ),
+        ),
         // ),
       ],
     );
@@ -129,7 +129,7 @@ class _QrcodeDialog extends State<QrcodeDialog> {
         child: GestureDetector(
           behavior: HitTestBehavior.opaque,
           onTap: () {
-            RouterUtil.back(context);
+            context.pop();
           },
           child: Container(
             width: double.infinity,

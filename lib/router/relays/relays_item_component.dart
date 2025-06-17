@@ -4,9 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:ndk/domain_layer/entities/relay.dart';
 import 'package:ndk/domain_layer/entities/relay_connectivity.dart';
+import 'package:go_router/go_router.dart';
 import 'package:yana/main.dart';
 import 'package:yana/utils/router_path.dart';
-import 'package:yana/utils/router_util.dart';
 
 import '../../ui/confirm_dialog.dart';
 import '../../utils/base.dart';
@@ -59,7 +59,11 @@ class RelaysItemComponent extends StatelessWidget {
     } else if (url.startsWith("wss://relay.snort.social")) {
       iconUrl = "https://snort.social/favicon.ico";
     } else {
-      iconUrl = relay != null && relay!.relayInfo != null && StringUtil.isNotBlank(relay!.relayInfo!.icon) ? relay!.relayInfo!.icon : StringUtil.robohash(HashUtil.md5(url));
+      iconUrl = relay != null &&
+              relay!.relayInfo != null &&
+              StringUtil.isNotBlank(relay!.relayInfo!.icon)
+          ? relay!.relayInfo!.icon
+          : StringUtil.robohash(HashUtil.md5(url));
     }
 
     imageWidget = Container(
@@ -76,7 +80,8 @@ class RelaysItemComponent extends StatelessWidget {
           placeholder: (context, url) => const CircularProgressIndicator(
             strokeWidth: 2,
           ),
-          errorWidget: (context, url, error) => CachedNetworkImage(imageUrl: StringUtil.robohash(HashUtil.md5(relay!.url))),
+          errorWidget: (context, url, error) => CachedNetworkImage(
+              imageUrl: StringUtil.robohash(HashUtil.md5(relay!.url))),
           cacheManager: localCacheManager,
         ));
 
@@ -104,7 +109,7 @@ class RelaysItemComponent extends StatelessWidget {
     return GestureDetector(
         onTap: () {
           if (relay != null && relay!.relayInfo != null) {
-            RouterUtil.router(context, RouterPath.RELAY_INFO, relay);
+            context.go(RouterPath.RELAY_INFO, extra: relay);
           }
         },
         child: Container(
@@ -153,22 +158,29 @@ class RelaysItemComponent extends StatelessWidget {
                         children: [
                           Container(
                             margin: const EdgeInsets.only(bottom: 2),
-                            child: Text(url.replaceAll("wss://", "").replaceAll("ws://", ""),
-                                style: themeData.textTheme.titleLarge, overflow: TextOverflow.ellipsis),
+                            child: Text(
+                                url
+                                    .replaceAll("wss://", "")
+                                    .replaceAll("ws://", ""),
+                                style: themeData.textTheme.titleLarge,
+                                overflow: TextOverflow.ellipsis),
                           ),
                           relay != null && showStats
                               ? Row(
                                   children: [
                                     Container(
-                                      margin: const EdgeInsets.only(right: Base.BASE_PADDING_HALF),
+                                      margin: const EdgeInsets.only(
+                                          right: Base.BASE_PADDING_HALF),
                                       child: RelaysItemNumComponent(
                                           iconData: Icons.mail,
                                           textColor: themeData.disabledColor,
                                           iconColor: themeData.disabledColor,
-                                          num: "${relay!.stats.getTotalEventsRead()}"),
+                                          num:
+                                              "${relay!.stats.getTotalEventsRead()}"),
                                     ),
                                     Container(
-                                        margin: const EdgeInsets.only(right: Base.BASE_PADDING_HALF),
+                                        margin: const EdgeInsets.only(
+                                            right: Base.BASE_PADDING_HALF),
                                         child: RelaysItemNumComponent(
                                           iconColor: Colors.lightGreen,
                                           textColor: Colors.lightGreen,
@@ -176,20 +188,30 @@ class RelaysItemComponent extends StatelessWidget {
                                           num: "${relay!.stats.activeRequests}",
                                         )),
                                     Container(
-                                        margin: const EdgeInsets.only(right: Base.BASE_PADDING_HALF),
+                                        margin: const EdgeInsets.only(
+                                            right: Base.BASE_PADDING_HALF),
                                         child: RelaysItemNumComponent(
-                                          iconColor: relay!.stats.connectionErrors > 0 ? Colors.red : themeData.disabledColor,
-                                          textColor: relay!.stats.connectionErrors > 0 ? Colors.red : themeData.disabledColor,
+                                          iconColor:
+                                              relay!.stats.connectionErrors > 0
+                                                  ? Colors.red
+                                                  : themeData.disabledColor,
+                                          textColor:
+                                              relay!.stats.connectionErrors > 0
+                                                  ? Colors.red
+                                                  : themeData.disabledColor,
                                           iconData: Icons.error_outline,
-                                          num: "${relay!.stats.connectionErrors}",
+                                          num:
+                                              "${relay!.stats.connectionErrors}",
                                         )),
                                     Container(
-                                        margin: const EdgeInsets.only(right: Base.BASE_PADDING_HALF),
+                                        margin: const EdgeInsets.only(
+                                            right: Base.BASE_PADDING_HALF),
                                         child: RelaysItemNumComponent(
                                           iconColor: themeData.disabledColor,
                                           textColor: themeData.disabledColor,
                                           iconData: Icons.network_check,
-                                          num: StoreUtil.bytesToShowStr(relay!.stats.getTotalBytesRead()),
+                                          num: StoreUtil.bytesToShowStr(
+                                              relay!.stats.getTotalBytesRead()),
                                         )),
                                   ],
                                 )
@@ -203,15 +225,23 @@ class RelaysItemComponent extends StatelessWidget {
                       onTap: () async {
                         bool canSwitch = marker!.isWrite;
                         bool? result = await ConfirmDialog.show(
-                            context, canSwitch ? "Broadcast setting relay to ${marker!.isRead ? "NOT " : ""}read?" : "Relay must either read or write!",
+                            context,
+                            canSwitch
+                                ? "Broadcast setting relay to ${marker!.isRead ? "NOT " : ""}read?"
+                                : "Relay must either read or write!",
                             onlyCancel: !canSwitch);
 
                         if (result != null && result) {
-                          marker = ReadWriteMarker.from(read: !marker!.isRead, write: marker!.isWrite);
+                          marker = ReadWriteMarker.from(
+                              read: !marker!.isRead, write: marker!.isWrite);
                           bool finished = false;
                           Future.delayed(const Duration(seconds: 1), () {
                             if (!finished) {
-                              EasyLoading.show(status: "Refreshing relay list before changing...", maskType: EasyLoadingMaskType.black, dismissOnTap: true);
+                              EasyLoading.show(
+                                  status:
+                                      "Refreshing relay list before changing...",
+                                  maskType: EasyLoadingMaskType.black,
+                                  dismissOnTap: true);
                             }
                           });
                           await relayProvider.updateMarker(url, marker!);
@@ -225,7 +255,9 @@ class RelaysItemComponent extends StatelessWidget {
                         ),
                         child: Icon(
                           Icons.inbox_sharp,
-                          color: marker!.isRead ? themeData.indicatorColor : themeData.focusColor,
+                          color: marker!.isRead
+                              ? themeData.indicatorColor
+                              : themeData.focusColor,
                         ),
                       ),
                     )
@@ -235,15 +267,23 @@ class RelaysItemComponent extends StatelessWidget {
                       onTap: () async {
                         bool canSwitch = marker!.isRead;
                         bool? result = await ConfirmDialog.show(
-                            context, canSwitch ? "Broadcast setting relay to ${marker!.isWrite ? "NOT " : ""}write?" : "Relay must either read or write!",
+                            context,
+                            canSwitch
+                                ? "Broadcast setting relay to ${marker!.isWrite ? "NOT " : ""}write?"
+                                : "Relay must either read or write!",
                             onlyCancel: !canSwitch);
 
                         if (result != null && result) {
-                          marker = ReadWriteMarker.from(read: marker!.isRead, write: !marker!.isWrite);
+                          marker = ReadWriteMarker.from(
+                              read: marker!.isRead, write: !marker!.isWrite);
                           bool finished = false;
                           Future.delayed(const Duration(seconds: 1), () {
                             if (!finished) {
-                              EasyLoading.show(status: "Refreshing relay list before changing...", maskType: EasyLoadingMaskType.black, dismissOnTap: true);
+                              EasyLoading.show(
+                                  status:
+                                      "Refreshing relay list before changing...",
+                                  maskType: EasyLoadingMaskType.black,
+                                  dismissOnTap: true);
                             }
                           });
                           await relayProvider.updateMarker(url, marker!);
@@ -257,7 +297,9 @@ class RelaysItemComponent extends StatelessWidget {
                         ),
                         child: Icon(
                           Icons.send,
-                          color: marker!.isWrite ? themeData.indicatorColor : themeData.focusColor,
+                          color: marker!.isWrite
+                              ? themeData.indicatorColor
+                              : themeData.focusColor,
                         ),
                       ),
                     )
@@ -266,13 +308,18 @@ class RelaysItemComponent extends StatelessWidget {
               loggedUserSigner!.canSign() && onRemove != null
                   ? GestureDetector(
                       onTap: () async {
-                        bool? result = await ConfirmDialog.show(context, "Broadcast removal of relay?");
+                        bool? result = await ConfirmDialog.show(
+                            context, "Broadcast removal of relay?");
 
                         if (result != null && result) {
                           bool finished = false;
                           Future.delayed(const Duration(seconds: 1), () {
                             if (!finished) {
-                              EasyLoading.show(status: "Refreshing relay list before removing...", maskType: EasyLoadingMaskType.black, dismissOnTap: true);
+                              EasyLoading.show(
+                                  status:
+                                      "Refreshing relay list before removing...",
+                                  maskType: EasyLoadingMaskType.black,
+                                  dismissOnTap: true);
                             }
                           });
                           await relayProvider.removeRelay(url);

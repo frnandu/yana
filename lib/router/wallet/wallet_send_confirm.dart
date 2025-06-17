@@ -284,12 +284,13 @@ class _WalletSendConfirmRouter extends State<WalletSendConfirmRouter> {
   }
 
   void doPay() async {
-    PayInvoiceResponse? response = await nwcProvider.payInvoice(invoice!);
-    if (response!=null && response.preimage!='') {
+    PayInvoiceResponse? response = await nwcProvider?.payInvoice(invoice!);
+    if (response != null && response.preimage != '') {
       setState(() {
         paid = response;
       });
       confettiController.play();
-    };
+    }
+    ;
   }
 }

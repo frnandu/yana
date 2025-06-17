@@ -272,7 +272,7 @@ class _DMDetailRouter extends CustState<DMDetailRouter> with EditorMixin {
         EasyLoading.show(status: I18n.of(context).Send_fail);
         return;
       }
-      dmProvider.addEventAndUpdateReadedTime(detail!, event);
+      dmProvider!.addEventAndUpdateReadedTime(detail!, event);
       editorController.clear();
       setState(() {});
     } finally {
@@ -281,7 +281,7 @@ class _DMDetailRouter extends CustState<DMDetailRouter> with EditorMixin {
   }
 
   Future<void> addDmSessionToKnown() async {
-    var _detail = await dmProvider.addDmSessionToKnown(detail!);
+    var _detail = await dmProvider!.addDmSessionToKnown(detail!);
     setState(() {
       detail = _detail;
     });
@@ -294,7 +294,7 @@ class _DMDetailRouter extends CustState<DMDetailRouter> with EditorMixin {
         detail!.dmSession.newestEvent != null) {
       // detail!.info!.readedTime = detail!.dmSession.newestEvent!.createdAt;
       // DMSessionInfoDB.update(detail!.info!);
-      dmProvider.updateReadedTime(detail);
+      dmProvider!.updateReadedTime(detail);
     }
   }
 

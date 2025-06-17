@@ -1,6 +1,12 @@
+import '../config/app_features.dart';
+
 class IndexTaps {
-  static const int FOLLOW = 0;
-  static const int SEARCH = 1;
-  static const int DM = 2;
-  static const int NOTIFICATIONS = 3;
+  static int FOLLOW = 0;
+  static int SEARCH = AppFeatures.enableSearch ? 1 : -1;
+  static int DM = AppFeatures.enableSearch
+      ? (AppFeatures.enableDm ? 2 : -1)
+      : (AppFeatures.enableDm ? 1 : -1);
+  static int NOTIFICATIONS = AppFeatures.enableSearch
+      ? (AppFeatures.enableDm ? 3 : 2)
+      : (AppFeatures.enableDm ? 2 : 1);
 }

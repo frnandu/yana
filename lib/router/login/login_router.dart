@@ -2,10 +2,12 @@ import 'package:amberflutter/amberflutter.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:go_router/go_router.dart';
 import 'package:ndk/ndk.dart';
 import 'package:ndk_amber/data_layer/repositories/signers/amber_event_signer.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:yana/utils/platform_util.dart';
+import 'package:yana/utils/router_path.dart';
 
 import '/js/js_helper.dart' as js;
 import '../../i18n/i18n.dart';
@@ -19,9 +21,9 @@ import '../../utils/index_taps.dart';
 import '../../utils/router_util.dart';
 import '../../utils/string_util.dart';
 import '../index/account_manager_component.dart';
+import '../../config/app_features.dart'; // Added for AppFeatures
 
 class LoginRouter extends StatefulWidget {
-
   final bool canGoBack;
 
   const LoginRouter({super.key, required this.canGoBack});
@@ -99,21 +101,21 @@ class _LoginRouter extends State<LoginRouter>
     // ));
 
     var suffixIcons =
-    // Row(children: [
-      GestureDetector(
+        // Row(children: [
+        GestureDetector(
       onTap: () {
         setState(() {
           obscureText = !obscureText;
         });
       },
       child: Icon(obscureText ? Icons.visibility : Icons.visibility_off),
-    // ),
-    //   GestureDetector(
-    //     onTap: () {
-    //     },
-    //     child: Image.asset("assets/imgs/scan.png", width: 32, height: 32)
-    //   )
-    // ]
+      // ),
+      //   GestureDetector(
+      //     onTap: () {
+      //     },
+      //     child: Image.asset("assets/imgs/scan.png", width: 32, height: 32)
+      //   )
+      // ]
     );
     list.add(TextField(
       controller: controller,
@@ -158,10 +160,8 @@ class _LoginRouter extends State<LoginRouter>
             if (isExternalSignerInstalled) {
               await doLoginExternalSigner();
             } else {
-              var url = Uri.parse(
-                  "https://github.com/greenart7c3/Amber");
-              launchUrl(url,
-                  mode: LaunchMode.externalApplication);
+              var url = Uri.parse("https://github.com/greenart7c3/Amber");
+              launchUrl(url, mode: LaunchMode.externalApplication);
             }
           },
           child: Container(
@@ -263,10 +263,8 @@ class _LoginRouter extends State<LoginRouter>
           ),
         ),
       ));
-
     }
-    if (PlatformUtil.isWeb()) {
-    }
+    if (PlatformUtil.isWeb()) {}
     return Scaffold(
       backgroundColor: const Color(0xff281237),
       body: SizedBox(
@@ -314,11 +312,16 @@ class _LoginRouter extends State<LoginRouter>
     );
   }
 
-  Future<void> doLogin(String key, bool pubOnly, bool newKey, bool isExternalSigner) async {
-    EasyLoading.showToast("Initializing...", dismissOnTap: true,  duration: const Duration(seconds: 15), maskType: EasyLoadingMaskType.black);
+  Future<void> doLogin(
+      String key, bool pubOnly, bool newKey, bool isExternalSigner) async {
+    EasyLoading.showToast("Initializing...",
+        dismissOnTap: true,
+        duration: const Duration(seconds: 15),
+        maskType: EasyLoadingMaskType.black);
 
     if (StringUtil.isBlank(key)) {
-      EasyLoading.showError(I18n.of(context).Private_key_is_null, dismissOnTap: true, duration: const Duration(seconds:3));
+      EasyLoading.showError(I18n.of(context).Private_key_is_null,
+          dismissOnTap: true, duration: const Duration(seconds: 3));
       return;
     }
     try {
@@ -333,13 +336,17 @@ class _LoginRouter extends State<LoginRouter>
       newNotificationsProvider.clear();
       followEventProvider.clear();
       followEventProvider.clear();
-      await settingProvider.addAndChangeKey(key, !isPublic, isExternalSigner, updateUI: false);
+      await settingProvider.addAndChangeKey(key, !isPublic, isExternalSigner,
+          updateUI: false);
       bool isPrivate = !isPublic;
       String publicKey = isPrivate ? getPublicKey(key!) : key!;
-      EventSigner eventSigner = settingProvider.isExternalSignerKey ? AmberEventSigner(publicKey: publicKey, amberFlutterDS: amberFlutterDS) : isPrivate || !PlatformUtil.isWeb()
-          ? Bip340EventSigner(privateKey: isPrivate ? key : null, publicKey: publicKey)
-          : Nip07EventSigner(await js.getPublicKeyAsync())
-      ;
+      EventSigner eventSigner = settingProvider.isExternalSignerKey
+          ? AmberEventSigner(
+              publicKey: publicKey, amberFlutterDS: amberFlutterDS)
+          : isPrivate || !PlatformUtil.isWeb()
+              ? Bip340EventSigner(
+                  privateKey: isPrivate ? key : null, publicKey: publicKey)
+              : Nip07EventSigner(await js.getPublicKeyAsync());
       // await ndk.destroy();
       // ndk = Ndk(NdkConfig(
       //     eventVerifier: eventVerifier,
@@ -376,19 +383,25 @@ class _LoginRouter extends State<LoginRouter>
     doLogin(key['signature'], true, false, true);
   }
 
-  Future<void> initRelayManager( String publicKey, bool newKey) async {
+  Future<void> initRelayManager(String publicKey, bool newKey) async {
     await initRelays(newKey: newKey);
     await EasyLoading.dismiss();
-    await EasyLoading.showToast("loading feed...", dismissOnTap: true,  duration: const Duration(seconds: 15), maskType: EasyLoadingMaskType.black);
+    await EasyLoading.showToast("loading feed...",
+        dismissOnTap: true,
+        duration: const Duration(seconds: 15),
+        maskType: EasyLoadingMaskType.black);
     followEventProvider.loadCachedFeed();
-    nwcProvider.init();
+    if (AppFeatures.enableWallet) {
+      nwcProvider?.init();
+    }
     settingProvider.notifyListeners();
     await EasyLoading.dismiss();
 
     firstLogin = true;
     indexProvider.setCurrentTap(IndexTaps.FOLLOW);
     if (widget.canGoBack) {
-      RouterUtil.back(context);
+      context.go(RouterPath.INDEX);
+      // RouterUtil.back(context);
     }
   }
 }

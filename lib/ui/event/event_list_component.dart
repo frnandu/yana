@@ -11,7 +11,7 @@ import '../../nostr/nip19/nip19.dart';
 import '../../nostr/nip57/zap_num_util.dart';
 import '../../utils/number_format_util.dart';
 import '../../utils/router_path.dart';
-import '../../utils/router_util.dart';
+import 'package:go_router/go_router.dart';
 import 'event_bitcoin_icon_component.dart';
 import 'event_main_component.dart';
 
@@ -65,30 +65,30 @@ class _EventListComponent extends State<EventListComponent> {
     var eventRelation = EventRelation.fromEvent(widget.event);
 
     Widget main =
-    // Text(widget.event.content);
-    // Screenshot(
-      // controller: screenshotController,
-      // child:
-      Container(
-        color: cardColor,
-        margin: const EdgeInsets.only(bottom: 1),
-        // padding: const EdgeInsets.only(
-        //   top: Base.BASE_PADDING,
-        // ),
-        child: EventMainComponent(
-          // screenshotController: screenshotController,
-          event: widget.event,
-          pagePubkey: widget.pagePubkey,
-          textOnTap: widget.jumpable ? jumpToThread : null,
-          showVideo: widget.showVideo,
-          imageListMode: widget.imageListMode,
-          showDetailBtn: widget.showDetailBtn,
-          showReactions: widget.showReactions,
-          showLongContent: widget.showLongContent,
-          showCommunity: widget.showCommunity,
-          eventRelation: eventRelation,
-        ),
-      );
+        // Text(widget.event.content);
+        // Screenshot(
+        // controller: screenshotController,
+        // child:
+        Container(
+      color: cardColor,
+      margin: const EdgeInsets.only(bottom: 1),
+      // padding: const EdgeInsets.only(
+      //   top: Base.BASE_PADDING,
+      // ),
+      child: EventMainComponent(
+        // screenshotController: screenshotController,
+        event: widget.event,
+        pagePubkey: widget.pagePubkey,
+        textOnTap: widget.jumpable ? jumpToThread : null,
+        showVideo: widget.showVideo,
+        imageListMode: widget.imageListMode,
+        showDetailBtn: widget.showDetailBtn,
+        showReactions: widget.showReactions,
+        showLongContent: widget.showLongContent,
+        showCommunity: widget.showCommunity,
+        eventRelation: eventRelation,
+      ),
+    );
 
     if (widget.event.kind == kind.EventKind.ZAP_RECEIPT) {
       var zapNum = ZapNumUtil.getNumFromZapEvent(widget.event);
@@ -140,10 +140,7 @@ class _EventListComponent extends State<EventListComponent> {
     // });
 
     if (widget.jumpable) {
-      return GestureDetector(
-        onTap: jumpToThread,
-        child: main
-      );
+      return GestureDetector(onTap: jumpToThread, child: main);
     } else {
       return main;
     }
@@ -156,7 +153,7 @@ class _EventListComponent extends State<EventListComponent> {
         try {
           var jsonMap = jsonDecode(widget.event.content);
           var repostEvent = Nip01Event.fromJson(jsonMap);
-          RouterUtil.router(context, RouterPath.THREAD_DETAIL, repostEvent);
+          context.go(RouterPath.THREAD_DETAIL, extra: repostEvent);
           return;
         } catch (e) {
           print(e);
@@ -167,11 +164,11 @@ class _EventListComponent extends State<EventListComponent> {
       if (StringUtil.isNotBlank(eventRelation.rootId)) {
         var event = singleEventProvider.getEvent(eventRelation.rootId!);
         if (event != null) {
-          RouterUtil.router(context, RouterPath.THREAD_DETAIL, event);
+          context.go(RouterPath.THREAD_DETAIL, extra: event);
           return;
         }
       }
     }
-    RouterUtil.router(context, RouterPath.THREAD_DETAIL, widget.event);
+    context.go(RouterPath.THREAD_DETAIL, extra: widget.event);
   }
 }

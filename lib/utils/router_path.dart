@@ -1,3 +1,5 @@
+import '../config/app_features.dart';
+
 class RouterPath {
   static const String INDEX = "/";
   static const String EDITOR = "/editor";
@@ -20,7 +22,7 @@ class RouterPath {
   static const String RELAY_SET = "/relaySet";
   static const String RELAY_LIST = "/relayList";
   static const String MUTE_LIST = "/muteList";
-  static const String DM_DETAIL = "/dmDetail";
+  static String DM_DETAIL = AppFeatures.enableDm ? "/dmDetail" : "/dmDetail_disabled";
   static const String THREAD_DETAIL = "/threadDetail";
   static const String EVENT_DETAIL = "/eventDetail";
   static const String TAG_DETAIL = "/tagDetail";
@@ -32,6 +34,6 @@ class RouterPath {
   static const String COMMUNITY_DETAIL = "/communityDetail";
   static const String FOLLOWED_COMMUNITIES = "/followedCommunities";
   static const String FOLLOWED = "/followed";
-  static const String SEARCH = "/search";
+  static String SEARCH = AppFeatures.enableSearch ? "/search" : "/search_disabled";
   static const String LOGIN = "/login";
 }
