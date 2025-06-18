@@ -13,27 +13,45 @@ class RouterPath {
   static const String WALLET_SEND_CONFIRM = "/wallet/send/confirm";
   static const String NWC = "/nwc";
   static const String RELAYS = "/relays";
-  static const String USER = "/user";
+  static String USER = AppFeatures.enableSocial ? "/user" : "/user_disabled";
   static const String PROFILE_EDITOR = "/profileEditor";
-  static const String USER_CONTACT_LIST = "/userContactList";
-  static const String USER_HISTORY_CONTACT_LIST = "/userHistoryContactList";
-  static const String USER_ZAP_LIST = "/userZapList";
-  static const String USER_RELAYS = "/userRelays";
+  static String USER_CONTACT_LIST = AppFeatures.enableSocial
+      ? "/userContactList"
+      : "/userContactList_disabled";
+  static String USER_HISTORY_CONTACT_LIST = AppFeatures.enableSocial
+      ? "/userHistoryContactList"
+      : "/userHistoryContactList_disabled";
+  static String USER_ZAP_LIST =
+      AppFeatures.enableSocial ? "/userZapList" : "/userZapList_disabled";
+  static String USER_RELAYS =
+      AppFeatures.enableSocial ? "/userRelays" : "/userRelays_disabled";
   static const String RELAY_SET = "/relaySet";
   static const String RELAY_LIST = "/relayList";
   static const String MUTE_LIST = "/muteList";
-  static String DM_DETAIL = AppFeatures.enableDm ? "/dmDetail" : "/dmDetail_disabled";
-  static const String THREAD_DETAIL = "/threadDetail";
-  static const String EVENT_DETAIL = "/eventDetail";
-  static const String TAG_DETAIL = "/tagDetail";
+  static String DM_DETAIL =
+      AppFeatures.enableDm ? "/dmDetail" : "/dmDetail_disabled";
+  static String THREAD_DETAIL =
+      AppFeatures.enableSocial ? "/threadDetail" : "/threadDetail_disabled";
+  static String EVENT_DETAIL =
+      AppFeatures.enableSocial ? "/eventDetail" : "/eventDetail_disabled";
+  static String TAG_DETAIL =
+      AppFeatures.enableSocial ? "/tagDetail" : "/tagDetail_disabled";
   static const String SETTING = "/setting";
   static const String SETTINGS_WALLET = "/setting/wallet";
   static const String QRSCANNER = "/qrScanner";
   static const String RELAY_INFO = "/relayInfo";
-  static const String FOLLOWED_TAGS_LIST = "/followedTagsList";
-  static const String COMMUNITY_DETAIL = "/communityDetail";
-  static const String FOLLOWED_COMMUNITIES = "/followedCommunities";
-  static const String FOLLOWED = "/followed";
-  static String SEARCH = AppFeatures.enableSearch ? "/search" : "/search_disabled";
+  static String FOLLOWED_TAGS_LIST = AppFeatures.enableSocial
+      ? "/followedTagsList"
+      : "/followedTagsList_disabled";
+  static String COMMUNITY_DETAIL = AppFeatures.enableSocial
+      ? "/communityDetail"
+      : "/communityDetail_disabled";
+  static String FOLLOWED_COMMUNITIES = AppFeatures.enableSocial
+      ? "/followedCommunities"
+      : "/followedCommunities_disabled";
+  static String FOLLOWED =
+      AppFeatures.enableSocial ? "/followed" : "/followed_disabled";
+  static String SEARCH =
+      AppFeatures.enableSearch ? "/search" : "/search_disabled";
   static const String LOGIN = "/login";
 }

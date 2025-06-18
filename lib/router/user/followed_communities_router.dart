@@ -73,8 +73,9 @@ class _FollowedCommunitiesRouter extends State<FollowedCommunitiesRouter> {
                 Text(id.title),
                 Expanded(child: Container()),
                 FutureBuilder<bool?>(
-                    future:
-                        contactListProvider.followsCommunity(id.toAString()),
+                    future: contactListProvider != null
+                        ? contactListProvider!.followsCommunity(id.toAString())
+                        : Future.value(false),
                     builder: (context, snapshot) {
                       bool exist = snapshot.hasData && snapshot.data!;
                       IconData iconData = Icons.star_border;
@@ -86,9 +87,10 @@ class _FollowedCommunitiesRouter extends State<FollowedCommunitiesRouter> {
                       return GestureDetector(
                         onTap: () {
                           if (exist) {
-                            contactListProvider.removeCommunity(id.toAString());
+                            contactListProvider
+                                ?.removeCommunity(id.toAString());
                           } else {
-                            contactListProvider.addCommunity(id.toAString());
+                            contactListProvider?.addCommunity(id.toAString());
                           }
                         },
                         child: Container(

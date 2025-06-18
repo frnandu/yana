@@ -66,6 +66,11 @@ android {
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
         manifestPlaceholders['foregroundServiceType'] = ['camera']
+        
+        // NDK ABI filters to support both ARM64 and x86_64
+        ndk {
+            abiFilters 'arm64-v8a', 'x86_64'
+        }
     }
 
     flavorDimensions "appFlavor"
@@ -81,7 +86,7 @@ android {
             buildConfigField "boolean", "ENABLE_COMMUNITIES", "true"
             buildConfigField "boolean", "ENABLE_DM", "true"
             buildConfigField "boolean", "ENABLE_SEARCH", "true"
-            buildConfigField "boolean", "ENABLE_SETTINGS", "true"
+            buildConfigField "boolean", "ENABLE_NOTIFICATIONS", "true"
         }
         wallet {
             dimension "appFlavor"
@@ -94,7 +99,7 @@ android {
             buildConfigField "boolean", "ENABLE_COMMUNITIES", "false"
             buildConfigField "boolean", "ENABLE_DM", "true"
             buildConfigField "boolean", "ENABLE_SEARCH", "false"
-            buildConfigField "boolean", "ENABLE_SETTINGS", "true"
+            buildConfigField "boolean", "ENABLE_NOTIFICATIONS", "false"
         }
         social {
             dimension "appFlavor"
@@ -107,7 +112,7 @@ android {
             buildConfigField "boolean", "ENABLE_COMMUNITIES", "true"
             buildConfigField "boolean", "ENABLE_DM", "true"
             buildConfigField "boolean", "ENABLE_SEARCH", "true"
-            buildConfigField "boolean", "ENABLE_SETTINGS", "true"
+            buildConfigField "boolean", "ENABLE_NOTIFICATIONS", "true"
         }
     }
 

@@ -80,7 +80,9 @@ class DMProvider extends ChangeNotifier with PenddingEventsLaterFunction {
 
   Future<DMSessionDetail> addDmSessionToKnown(DMSessionDetail detail) async {
     bool create = detail.info == null;
-    detail.info ??= DMSessionInfo(pubkey: detail.dmSession.pubkey, readedTime: detail.dmSession.newestEvent!.createdAt);
+    detail.info ??= DMSessionInfo(
+        pubkey: detail.dmSession.pubkey,
+        readedTime: detail.dmSession.newestEvent!.createdAt);
     detail.info!.keyIndex = settingProvider.privateKeyIndex!;
     detail.info!.known = 1;
 
@@ -114,9 +116,14 @@ class DMProvider extends ChangeNotifier with PenddingEventsLaterFunction {
 
     this.localPubkey = localPubkey;
     // var keyIndex = settingProvider.privateKeyIndex!;
-    List<Nip01Event>? events = await cacheManager.loadEvents(kinds: [kind.EventKind.DIRECT_MESSAGE]);
+    List<Nip01Event>? events =
+        await cacheManager.loadEvents(kinds: [kind.EventKind.DIRECT_MESSAGE]);
 
-    events = events.where((element) => element.pubKey == localPubkey || element.pTags.contains(localPubkey)).toList();
+    events = events
+        .where((element) =>
+            element.pubKey == localPubkey ||
+            element.pTags.contains(localPubkey))
+        .toList();
     // await EventDB.list(
     //     keyIndex, kind.EventKind.DIRECT_MESSAGE, 0, 10000000);
     events.sort((a, b) => b.createdAt.compareTo(a.createdAt));
@@ -159,7 +166,8 @@ class DMProvider extends ChangeNotifier with PenddingEventsLaterFunction {
 
       var info = infoMap[pubkey];
       var detail = DMSessionDetail(session, info: info);
-      if ((await contactListProvider.contacts()).contains(pubkey)) {
+      if (contactListProvider != null &&
+          (await contactListProvider!.contacts()).contains(pubkey)) {
         _followingList.add(detail);
       } else {
         if (info != null && info.known == 1) {
@@ -193,7 +201,8 @@ class DMProvider extends ChangeNotifier with PenddingEventsLaterFunction {
 
   void _doSortDetailList(List<DMSessionDetail> detailList) {
     detailList.sort((detail0, detail1) {
-      return detail1.dmSession.newestEvent!.createdAt - detail0.dmSession.newestEvent!.createdAt;
+      return detail1.dmSession.newestEvent!.createdAt -
+          detail0.dmSession.newestEvent!.createdAt;
     });
 
     // // copy to a new list for provider update
@@ -230,7 +239,8 @@ class DMProvider extends ChangeNotifier with PenddingEventsLaterFunction {
       if (this.localPubkey != null) {
         var detail = DMSessionDetail(session);
         var pubkey = _getPubkey(localPubkey, event);
-        if ((await contactListProvider.contacts()).contains(pubkey)) {
+        if (contactListProvider != null &&
+            (await contactListProvider!.contacts()).contains(pubkey)) {
           _followingList.add(detail);
         } else {
           _unknownList.add(detail);
@@ -270,14 +280,18 @@ class DMProvider extends ChangeNotifier with PenddingEventsLaterFunction {
       since: _initSince != 0 ? _initSince + 1 : null,
     );
     RelaySet relaySet = myInboxRelaySet!;
-    subscription = ndk.requests.subscription(name:"dms-sub",filters: [receivedFilter], relaySet: relaySet);
+    subscription = ndk.requests.subscription(
+        name: "dms-sub", filters: [receivedFilter], relaySet: relaySet);
     subscription!.stream.listen((event) {
       onEvent(event);
     });
 
-    ndk.requests.query(cacheRead:false, filters: [sentFilter], relaySet: relaySet).stream.listen((event) {
-          onEvent(event);
-        });
+    ndk.requests
+        .query(cacheRead: false, filters: [sentFilter], relaySet: relaySet)
+        .stream
+        .listen((event) {
+      onEvent(event);
+    });
   }
 
   void onEvent(Nip01Event event) {
@@ -334,7 +348,9 @@ class DMSessionDetail {
     // if (info == null) {
     //   return false;
     // } else
-    if (dmSession.newestEvent != null && (info != null && info!.readedTime! < dmSession.newestEvent!.createdAt)) {
+    if (dmSession.newestEvent != null &&
+        (info != null &&
+            info!.readedTime! < dmSession.newestEvent!.createdAt)) {
       return true;
     }
     return false;

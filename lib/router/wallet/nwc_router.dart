@@ -10,6 +10,7 @@ import 'package:go_router/go_router.dart';
 import 'package:yana/main.dart';
 import 'package:yana/provider/nwc_provider.dart';
 import 'package:yana/config/app_features.dart';
+import 'package:yana/utils/router_path.dart';
 
 import '../../ui/button.dart';
 import '../../utils/string_util.dart';
@@ -51,7 +52,7 @@ class _NwcRouter extends State<NwcRouter> {
       backgroundColor: themeData.appBarTheme.backgroundColor,
       leading: GestureDetector(
         onTap: () {
-          context.pop();
+          context.go(RouterPath.INDEX);
         },
         child: Container(
           margin: const EdgeInsets.only(left: 10),

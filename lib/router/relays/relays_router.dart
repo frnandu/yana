@@ -18,6 +18,7 @@ import 'package:go_router/go_router.dart';
 import '../../ui/confirm_dialog.dart';
 import '../../ui/cust_state.dart';
 import '../../utils/base.dart';
+import '../../utils/router_path.dart';
 import '../user/search_relay_component.dart';
 import 'relays_item_component.dart';
 
@@ -86,7 +87,7 @@ class _RelaysRouter extends CustState<RelaysRouter> with WhenStopFunction {
       appBar: AppBar(
         leading: GestureDetector(
           onTap: () {
-            context.pop();
+            context.go(RouterPath.INDEX);
           },
           child: Icon(
             Icons.arrow_back_ios,

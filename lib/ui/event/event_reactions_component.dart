@@ -12,6 +12,7 @@ import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:yana/ui/zap_gen_dialog.dart';
 
+import '../../config/app_features.dart';
 import '../../i18n/i18n.dart';
 import '../../main.dart';
 import '../../models/event_reactions.dart';
@@ -479,8 +480,10 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
           customRelays: urlsToBroadcast,
           customSigner: loggedUserSigner!);
 
-      followEventProvider.deleteEvent(widget.event.id);
-      notificationsProvider.deleteEvent(widget.event.id);
+      followEventProvider?.deleteEvent(widget.event.id);
+      if (AppFeatures.enableNotifications) {
+        notificationsProvider?.deleteEvent(widget.event.id);
+      }
 
       var deleteCallback = EventDeleteCallback.of(context);
       if (deleteCallback != null) {

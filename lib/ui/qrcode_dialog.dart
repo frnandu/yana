@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:pretty_qr_code/pretty_qr_code.dart';
 import 'package:provider/provider.dart';
 import 'package:yana/nostr/nip19/nip19.dart';
+import 'package:yana/utils/router_path.dart';
 
 import '../main.dart';
 import '../utils/base.dart';
@@ -129,7 +130,7 @@ class _QrcodeDialog extends State<QrcodeDialog> {
         child: GestureDetector(
           behavior: HitTestBehavior.opaque,
           onTap: () {
-            context.pop();
+            context.go(RouterPath.INDEX);
           },
           child: Container(
             width: double.infinity,

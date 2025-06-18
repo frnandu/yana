@@ -112,15 +112,15 @@ late SettingProvider settingProvider;
 
 late MetadataProvider metadataProvider;
 
-late ContactListProvider contactListProvider;
+late ContactListProvider? contactListProvider;
 
-late FollowEventProvider followEventProvider;
+late FollowEventProvider? followEventProvider;
 
-late FollowNewEventProvider followNewEventProvider;
+late FollowNewEventProvider? followNewEventProvider;
 
-late NotificationsProvider notificationsProvider;
+late NotificationsProvider? notificationsProvider;
 
-late NewNotificationsProvider newNotificationsProvider;
+late NewNotificationsProvider? newNotificationsProvider;
 
 DMProvider? dmProvider;
 
@@ -475,12 +475,14 @@ Future<void> initRelays({bool newKey = false}) async {
   }
   // await EasyLoading.dismiss();
 
-  followEventProvider.startSubscriptions();
-  notificationsProvider.loadCached().then(
-    (value) {
-      notificationsProvider.startSubscription();
-    },
-  );
+  followEventProvider?.startSubscriptions();
+  if (AppFeatures.enableNotifications && notificationsProvider != null) {
+    notificationsProvider?.loadCached().then(
+      (value) {
+        notificationsProvider?.startSubscription();
+      },
+    );
+  }
   if (dmProvider != null) {
     dmProvider!.initDMSessions(loggedUserSigner!.getPublicKey());
   }
@@ -621,11 +623,44 @@ Future<void> main() async {
   var futureResultList = await Future.wait([settingTask, metadataTask]);
   settingProvider = futureResultList[0] as SettingProvider;
   metadataProvider = futureResultList[1] as MetadataProvider;
-  contactListProvider = ContactListProvider.getInstance();
-  followEventProvider = FollowEventProvider();
-  followNewEventProvider = FollowNewEventProvider();
-  notificationsProvider = NotificationsProvider();
-  newNotificationsProvider = NewNotificationsProvider();
+
+  if (AppFeatures.enableSocial) {
+    contactListProvider = ContactListProvider.getInstance();
+    followEventProvider = FollowEventProvider();
+    followNewEventProvider = FollowNewEventProvider();
+  } else {
+    contactListProvider = null;
+    followEventProvider = null;
+    followNewEventProvider = null;
+  }
+
+  if (AppFeatures.enableNotifications) {
+    notificationsProvider = NotificationsProvider();
+    newNotificationsProvider = NewNotificationsProvider();
+
+    // Set up callbacks to avoid circular dependency
+    notificationsProvider!.clearNewNotifications = () {
+      newNotificationsProvider?.clear();
+    };
+
+    notificationsProvider!.handleNewNotification = (Nip01Event event) {
+      newNotificationsProvider?.handleEvent(event, null);
+    };
+
+    notificationsProvider!.mergeNewEvents = () {
+      var allEvents = newNotificationsProvider?.eventMemBox?.all() ?? [];
+      notificationsProvider!.eventBox.addList(allEvents);
+      // sort
+      notificationsProvider!.eventBox.sort();
+      newNotificationsProvider?.clear();
+      notificationsProvider!.setTimestampToNewestAndSave();
+      // update ui
+      notificationsProvider!.notifyListeners();
+    };
+  } else {
+    notificationsProvider = null;
+    newNotificationsProvider = null;
+  }
   if (AppFeatures.enableDm) {
     dmProvider = DMProvider();
   }
@@ -693,7 +728,7 @@ Future<void> main() async {
     ndk.accounts.loginPrivateKey(pubkey: publicKey, privkey: priv);
   }
   if (loggedUserSigner != null) {
-    followEventProvider.loadCachedFeed();
+    followEventProvider?.loadCachedFeed();
     initRelays();
     if (AppFeatures.enableWallet) {
       nwcProvider?.init(); // Use null-aware access
@@ -726,6 +761,9 @@ Future<bool> checkBackgroundPermission() async {
 }
 
 Future<void> initBackgroundService(bool startOnBoot) async {
+  if (!AppFeatures.enableNotifications) {
+    return;
+  }
   // await AndroidAlarmManager.initialize();
   // const int helloAlarmID = 0;
   // await AndroidAlarmManager.periodic(const Duration(seconds: 10), helloAlarmID, printHello, wakeup: true, exact: true, allowWhileIdle: true, rescheduleOnReboot: true);
@@ -824,10 +862,10 @@ Future<void> initBackgroundService(bool startOnBoot) async {
 //     sendPort.send("notifications");
 //   });
 //   // Listen for messages (optional)
-//   // await for (var data in port) {
-//   //   print("ISOLATE data received " + data.toString());
-//   //   // `data` is the message received.
-//   // }
+// await for (var data in port) {
+//   print("ISOLATE data received " + data.toString());
+//   // `data` is the message received.
+// }
 // }
 
 class MyApp extends StatefulWidget {
@@ -854,18 +892,22 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
           key = key.substring(0, Nip19.NPUB_LENGTH);
         }
         String pubkey = Nip19.decode(key);
-        return "${RouterPath.USER}?pubkey=$pubkey";
+        if (AppFeatures.enableSocial) {
+          return "${RouterPath.USER}?pubkey=$pubkey";
+        }
       } else if (Nip19.isNoteId(key)) {
         // Handle note - go to thread detail
         if (key.length > Nip19.NOTEID_LENGTH) {
           key = key.substring(0, Nip19.NOTEID_LENGTH);
         }
         String noteId = Nip19.decode(key);
-        return "${RouterPath.THREAD_DETAIL}?id=$noteId";
+        if (AppFeatures.enableSocial) {
+          return "${RouterPath.THREAD_DETAIL}?id=$noteId";
+        }
       } else if (NIP19Tlv.isNprofile(key)) {
         // Handle nprofile - go to user profile
         var nprofile = NIP19Tlv.decodeNprofile(key);
-        if (nprofile != null) {
+        if (nprofile != null && AppFeatures.enableSocial) {
           return "${RouterPath.USER}?pubkey=${nprofile.pubkey}";
         }
       } else if (NIP19Tlv.isNrelay(key)) {
@@ -878,13 +920,13 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
       } else if (NIP19Tlv.isNevent(key)) {
         // Handle nevent - go to thread detail
         var nevent = NIP19Tlv.decodeNevent(key);
-        if (nevent != null) {
+        if (nevent != null && AppFeatures.enableSocial) {
           return "${RouterPath.THREAD_DETAIL}?id=${nevent.id}";
         }
       } else if (NIP19Tlv.isNaddr(key)) {
         // Handle naddr
         var naddrData = NIP19Tlv.decodeNaddr(key);
-        if (naddrData != null) {
+        if (naddrData != null && AppFeatures.enableSocial) {
           if (StringUtil.isNotBlank(naddrData.id) &&
               naddrData.kind == Nip01Event.kTextNodeKind) {
             return "${RouterPath.THREAD_DETAIL}?id=${naddrData.id}";
@@ -940,32 +982,66 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
       routes: [
         GoRoute(
           path: RouterPath.INDEX,
-          builder: (context, state) => IndexRouter(reload: reload),
+          builder: (context, state) => AppFeatures.isWalletOnly ? WalletRouter(showAppBar: false) : IndexRouter(reload: reload),
         ),
-        GoRoute(
-          path: RouterPath.USER,
-          builder: (context, state) {
-            // Get pubkey from query parameters
-            String? pubkey = state.uri.queryParameters['pubkey'];
-            return UserRouter(pubKey: pubkey);
-          },
-        ),
-        GoRoute(
-          path: RouterPath.USER_CONTACT_LIST,
-          builder: (context, state) => const UserContactListRouter(),
-        ),
-        GoRoute(
-          path: RouterPath.USER_HISTORY_CONTACT_LIST,
-          builder: (context, state) => UserHistoryContactListRouter(),
-        ),
-        GoRoute(
-          path: RouterPath.USER_ZAP_LIST,
-          builder: (context, state) => const UserZapListRouter(),
-        ),
-        GoRoute(
-          path: RouterPath.USER_RELAYS,
-          builder: (context, state) => const UserRelayRouter(),
-        ),
+        if (AppFeatures.enableSocial) ...[
+          GoRoute(
+            path: RouterPath.USER,
+            builder: (context, state) {
+              // Get pubkey from query parameters
+              String? pubkey = state.uri.queryParameters['pubkey'];
+              return UserRouter(pubKey: pubkey);
+            },
+          ),
+          GoRoute(
+            path: RouterPath.USER_CONTACT_LIST,
+            builder: (context, state) => const UserContactListRouter(),
+          ),
+          GoRoute(
+            path: RouterPath.USER_HISTORY_CONTACT_LIST,
+            builder: (context, state) => UserHistoryContactListRouter(),
+          ),
+          GoRoute(
+            path: RouterPath.USER_ZAP_LIST,
+            builder: (context, state) => const UserZapListRouter(),
+          ),
+          GoRoute(
+            path: RouterPath.USER_RELAYS,
+            builder: (context, state) => const UserRelayRouter(),
+          ),
+          GoRoute(
+            path: RouterPath.THREAD_DETAIL,
+            builder: (context, state) {
+              // Get thread id from query parameters
+              String? threadId = state.uri.queryParameters['id'];
+              return ThreadDetailRouter(eventId: threadId);
+            },
+          ),
+          GoRoute(
+            path: RouterPath.EVENT_DETAIL,
+            builder: (context, state) => const EventDetailRouter(),
+          ),
+          GoRoute(
+            path: RouterPath.TAG_DETAIL,
+            builder: (context, state) => const TagDetailRouter(),
+          ),
+          GoRoute(
+            path: RouterPath.FOLLOWED_TAGS_LIST,
+            builder: (context, state) => const FollowedTagsListRouter(),
+          ),
+          GoRoute(
+            path: RouterPath.FOLLOWED,
+            builder: (context, state) => FollowedRouter(),
+          ),
+          GoRoute(
+            path: RouterPath.COMMUNITY_DETAIL,
+            builder: (context, state) => const CommunityDetailRouter(),
+          ),
+          GoRoute(
+            path: RouterPath.FOLLOWED_COMMUNITIES,
+            builder: (context, state) => const FollowedCommunitiesRouter(),
+          ),
+        ],
         GoRoute(
           path: RouterPath.RELAY_SET,
           builder: (context, state) => const RelaySetRouter(),
@@ -983,22 +1059,6 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
             path: RouterPath.DM_DETAIL,
             builder: (context, state) => const DMDetailRouter(),
           ),
-        GoRoute(
-          path: RouterPath.THREAD_DETAIL,
-          builder: (context, state) {
-            // Get thread id from query parameters
-            String? threadId = state.uri.queryParameters['id'];
-            return ThreadDetailRouter(eventId: threadId);
-          },
-        ),
-        GoRoute(
-          path: RouterPath.EVENT_DETAIL,
-          builder: (context, state) => const EventDetailRouter(),
-        ),
-        GoRoute(
-          path: RouterPath.TAG_DETAIL,
-          builder: (context, state) => const TagDetailRouter(),
-        ),
         GoRoute(
           path: RouterPath.NOTICES,
           builder: (context, state) => const NoticeRouter(),
@@ -1068,22 +1128,6 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
           builder: (context, state) => const RelayInfoRouter(),
         ),
         GoRoute(
-          path: RouterPath.FOLLOWED_TAGS_LIST,
-          builder: (context, state) => const FollowedTagsListRouter(),
-        ),
-        GoRoute(
-          path: RouterPath.COMMUNITY_DETAIL,
-          builder: (context, state) => const CommunityDetailRouter(),
-        ),
-        GoRoute(
-          path: RouterPath.FOLLOWED_COMMUNITIES,
-          builder: (context, state) => const FollowedCommunitiesRouter(),
-        ),
-        GoRoute(
-          path: RouterPath.FOLLOWED,
-          builder: (context, state) => FollowedRouter(),
-        ),
-        GoRoute(
           path: RouterPath.LOGIN,
           builder: (context, state) => const LoginRouter(canGoBack: true),
         ),
@@ -1096,14 +1140,21 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
       ListenableProvider<SettingProvider>.value(value: settingProvider),
       ListenableProvider<MetadataProvider>.value(value: metadataProvider),
       ListenableProvider<IndexProvider>.value(value: indexProvider),
-      ListenableProvider<ContactListProvider>.value(value: contactListProvider),
-      ListenableProvider<FollowEventProvider>.value(value: followEventProvider),
-      ListenableProvider<FollowNewEventProvider>.value(
-          value: followNewEventProvider),
-      ListenableProvider<NotificationsProvider>.value(
-          value: notificationsProvider),
-      ListenableProvider<NewNotificationsProvider>.value(
-          value: newNotificationsProvider),
+      if (AppFeatures.enableSocial && contactListProvider != null)
+        ListenableProvider<ContactListProvider>.value(
+            value: contactListProvider!),
+      if (AppFeatures.enableSocial && followEventProvider != null)
+        ListenableProvider<FollowEventProvider>.value(
+            value: followEventProvider!),
+      if (AppFeatures.enableSocial && followNewEventProvider != null)
+        ListenableProvider<FollowNewEventProvider>.value(
+            value: followNewEventProvider!),
+      if (AppFeatures.enableNotifications && notificationsProvider != null)
+        ListenableProvider<NotificationsProvider>.value(
+            value: notificationsProvider!),
+      if (AppFeatures.enableNotifications && newNotificationsProvider != null)
+        ListenableProvider<NewNotificationsProvider>.value(
+            value: newNotificationsProvider!),
       if (dmProvider != null)
         ListenableProvider<DMProvider?>.value(value: dmProvider),
       ListenableProvider<EventReactionsProvider>.value(
@@ -1217,8 +1268,10 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
         //   print(e);
         // }
 
-        followEventProvider.startSubscriptions();
-        notificationsProvider.startSubscription();
+        followEventProvider?.startSubscriptions();
+        if (AppFeatures.enableNotifications) {
+          notificationsProvider?.startSubscription();
+        }
         if (AppFeatures.enableWallet) {
           nwcProvider?.init(); // Use null-aware access
         }
@@ -1231,28 +1284,30 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
         loggedUserSigner != null) {
       print("newState = ${newState} , appState = ${appState}");
       Future.delayed(const Duration(seconds: 5), () async {
-        NotificationLifeCycle value =
-            await AwesomeNotifications().getAppLifeCycle();
-        if (value.toString() != "NotificationLifeCycle.Foreground") {
-          // if (backgroundService != null && settingProvider.backgroundService) {
-          //   backgroundService!.startService();
-          // }
-          ndk.relays.allowReconnectRelays = false;
-          List<String> requestIdsToClose =
-              ndk.relays.globalState.inFlightRequests.keys.toList();
-          for (var id in requestIdsToClose) {
-            try {
-              ndk.requests.closeSubscription(id);
-            } catch (e) {
-              print(e);
+        if (AppFeatures.enableNotifications) {
+          NotificationLifeCycle value =
+              await AwesomeNotifications().getAppLifeCycle();
+          if (value.toString() != "NotificationLifeCycle.Foreground") {
+            // if (backgroundService != null && settingProvider.backgroundService) {
+            //   backgroundService!.startService();
+            // }
+            ndk.relays.allowReconnectRelays = false;
+            List<String> requestIdsToClose =
+                ndk.relays.globalState.inFlightRequests.keys.toList();
+            for (var id in requestIdsToClose) {
+              try {
+                ndk.requests.closeSubscription(id);
+              } catch (e) {
+                print(e);
+              }
             }
+
+            await ndk.relays.closeAllTransports();
+
+            // if (settingProvider.backgroundService) {
+            //   backgroundService!.startService();
+            // }
           }
-
-          await ndk.relays.closeAllTransports();
-
-          // if (settingProvider.backgroundService) {
-          //   backgroundService!.startService();
-          // }
         }
       });
     }

@@ -40,8 +40,9 @@ class _TagInfoComponent extends State<TagInfoComponent> {
 
     IconData iconData = Icons.star_border;
     Color? color;
-    bool exist = contactListProvider.containTagInContactList(
-        widget.contactList, widget.tag);
+    bool exist = contactListProvider?.containTagInContactList(
+            widget.contactList, widget.tag) ??
+        false;
     if (exist) {
       iconData = Icons.star;
       color = themeData.primaryColor;
@@ -73,9 +74,9 @@ class _TagInfoComponent extends State<TagInfoComponent> {
                 }
               });
               if (exist) {
-                await contactListProvider.removeTag(widget.tag);
+                await contactListProvider?.removeTag(widget.tag);
               } else {
-                await contactListProvider.addTag(widget.tag);
+                await contactListProvider?.addTag(widget.tag);
               }
               finished = true;
               EasyLoading.dismiss();

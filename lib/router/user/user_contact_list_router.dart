@@ -23,7 +23,7 @@ class _UserContactListRouter extends State<UserContactListRouter> {
 
   @override
   Widget build(BuildContext context) {
-    var _contactListProvider = Provider.of<ContactListProvider>(context);
+    var contactListProvider = Provider.of<ContactListProvider>(context);
 
     var s = I18n.of(context);
 
@@ -31,7 +31,7 @@ class _UserContactListRouter extends State<UserContactListRouter> {
       var arg = GoRouterState.of(context).extra;
       if (arg != null) {
         pubKey = arg as String;
-        contactListProvider.loadContactList(pubKey!).then(
+        contactListProvider?.loadContactList(pubKey!).then(
           (value) {
             setState(() {});
           },
@@ -61,7 +61,7 @@ class _UserContactListRouter extends State<UserContactListRouter> {
           ),
         ),
         body: FutureBuilder<ContactList?>(
-            future: _contactListProvider.getContactList(pubKey!),
+            future: contactListProvider.getContactList(pubKey!),
             builder: (context, snapshot) {
               var contactList = snapshot.data;
               if (contactList != null) {

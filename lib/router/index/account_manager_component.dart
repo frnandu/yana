@@ -173,10 +173,12 @@ class AccountsState extends State<AccountsComponent> {
       ndk.accounts.loginExternalSigner(signer: eventSigner);
     }
 
-    followEventProvider.clear();
-    await followEventProvider.loadCachedFeed();
+    followEventProvider?.clear();
+    await followEventProvider?.loadCachedFeed();
     initRelays(newKey: false);
-    notificationsProvider.notifyListeners();
+    if (AppFeatures.enableNotifications) {
+      notificationsProvider?.notifyListeners();
+    }
     if (AppFeatures.enableWallet) {
       nwcProvider?.init();
     }
@@ -236,13 +238,15 @@ class AccountsState extends State<AccountsComponent> {
     sharedPreferences.remove(DataKey.NOTIFICATIONS_TIMESTAMP);
     sharedPreferences.remove(DataKey.FEED_POSTS_TIMESTAMP);
     sharedPreferences.remove(DataKey.FEED_REPLIES_TIMESTAMP);
-    notificationsProvider.clear();
-    newNotificationsProvider.clear();
-    followEventProvider.clear();
-    followNewEventProvider.clear();
+    if (AppFeatures.enableNotifications) {
+      notificationsProvider?.clear();
+      newNotificationsProvider?.clear();
+    }
+    followEventProvider?.clear();
+    followNewEventProvider?.clear();
     dmProvider?.clear();
     noticeProvider.clear();
-    contactListProvider.clear();
+    contactListProvider?.clear();
     // cacheManager.removeAllEvents();
 
     eventReactionsProvider.clear();

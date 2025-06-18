@@ -120,11 +120,20 @@ class RelayProvider extends ChangeNotifier {
 // //    userRelayList ??= await ndk.relays.getSingleUserRelayList(loggedUserSigner!.getPublicKey(), forceRefresh: true);
 //   }
 
-  Future<RelaySet> recalculateFeedRelaySet({Function(String, int, int)? onProgress}) async {
+  Future<RelaySet> recalculateFeedRelaySet(
+      {Function(String, int, int)? onProgress}) async {
+    if (contactListProvider == null) {
+      // Return empty relay set if social features are disabled
+      return RelaySet(
+          name: "feed",
+          pubKey: loggedUserSigner!.getPublicKey(),
+          relaysMap: {},
+          direction: RelayDirection.outbox);
+    }
     RelaySet newRelaySet = await ndk.relaySets.calculateRelaySet(
         name: "feed",
         ownerPubKey: loggedUserSigner!.getPublicKey(),
-        pubKeys: await contactListProvider.contacts(),
+        pubKeys: await contactListProvider!.contacts(),
         direction: RelayDirection.outbox,
         relayMinCountPerPubKey: settingProvider.followeesRelayMinCount,
         onProgress: onProgress);

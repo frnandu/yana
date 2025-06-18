@@ -272,7 +272,8 @@ class _MuteListRouter extends State<MuteListRouter>
     if (event.kind == Metadata.kKind &&
         controller.text.trim() == searched &&
         !disposed &&
-        !(await contactListProvider.contacts()).contains(event.pubKey)) {
+        contactListProvider != null &&
+        !(await contactListProvider!.contacts()).contains(event.pubKey)) {
       var jsonObj = jsonDecode(event.content);
       Metadata metadata = Metadata.fromJson(jsonObj);
       metadata.pubKey = event.pubKey;

@@ -246,7 +246,7 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
       context.go(RouterPath.USER_CONTACT_LIST, extra: widget.pubkey);
     } else if (isLocal) {
       var cl =
-          contactListProvider.getContactList(loggedUserSigner!.getPublicKey());
+          contactListProvider?.getContactList(loggedUserSigner!.getPublicKey());
       if (cl != null) {
         context.go(RouterPath.USER_CONTACT_LIST, extra: widget.pubkey);
       }
@@ -258,7 +258,7 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
       context.go(RouterPath.FOLLOWED_TAGS_LIST, extra: contactList);
     } else if (isLocal) {
       var cl =
-          contactListProvider.getContactList(loggedUserSigner!.getPublicKey());
+          contactListProvider?.getContactList(loggedUserSigner!.getPublicKey());
       if (cl != null) {
         context.go(RouterPath.FOLLOWED_TAGS_LIST, extra: cl);
       }
@@ -383,9 +383,21 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
       context.go(RouterPath.FOLLOWED_COMMUNITIES, extra: contactList);
     } else if (isLocal) {
       var cl =
-          contactListProvider.getContactList(loggedUserSigner!.getPublicKey());
+          contactListProvider?.getContactList(loggedUserSigner!.getPublicKey());
       if (cl != null) {
         context.go(RouterPath.FOLLOWED_COMMUNITIES, extra: cl);
+      }
+    }
+  }
+
+  onFollowedTap() {
+    if (contactList != null) {
+      context.go(RouterPath.USER_CONTACT_LIST, extra: widget.pubkey);
+    } else if (isLocal) {
+      var cl =
+          contactListProvider?.getContactList(loggedUserSigner!.getPublicKey());
+      if (cl != null) {
+        context.go(RouterPath.USER_CONTACT_LIST, extra: widget.pubkey);
       }
     }
   }

@@ -80,7 +80,7 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
     super.initState();
 
     Future(() async {
-      List<String>? a = await contactListProvider.contacts();
+      List<String>? a = await contactListProvider?.contacts();
       setState(() {
         contacts = a;
       });
@@ -309,7 +309,7 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
                             maskType: EasyLoadingMaskType.black);
                       }
                     });
-                    await contactListProvider.addContact(widget.pubkey);
+                    await contactListProvider?.addContact(widget.pubkey);
                     finished = true;
                     EasyLoading.dismiss();
                   },
@@ -328,7 +328,7 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
                             maskType: EasyLoadingMaskType.black);
                       }
                     });
-                    await contactListProvider.removeContact(widget.pubkey);
+                    await contactListProvider?.removeContact(widget.pubkey);
                     finished = true;
                     EasyLoading.dismiss();
                   },
@@ -377,10 +377,12 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
                 sharedPreferences.remove(DataKey.NOTIFICATIONS_TIMESTAMP);
                 sharedPreferences.remove(DataKey.FEED_POSTS_TIMESTAMP);
                 sharedPreferences.remove(DataKey.FEED_REPLIES_TIMESTAMP);
-                notificationsProvider.clear();
-                newNotificationsProvider.clear();
-                followEventProvider.clear();
-                followEventProvider.clear();
+                if (AppFeatures.enableNotifications) {
+                  notificationsProvider?.clear();
+                  newNotificationsProvider?.clear();
+                }
+                followEventProvider?.clear();
+                followNewEventProvider?.clear();
                 settingProvider.addAndChangeKey(widget.pubkey, false, false,
                     updateUI: true);
                 String publicKey = widget.pubkey;
@@ -393,7 +395,7 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
                 //       eventOutFilters:  [filterProvider]
                 //     ));
                 await initRelays(newKey: false);
-                followEventProvider.loadCachedFeed();
+                followEventProvider?.loadCachedFeed();
                 nwcProvider?.init();
                 settingProvider.notifyListeners();
                 EasyLoading.dismiss();

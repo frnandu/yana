@@ -299,7 +299,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
           if (value && feedRelaySet == null) {
             rebuildFeedRelaySet();
           } else {
-            followEventProvider.refreshPosts();
+            followEventProvider?.refreshPosts();
           }
         },
         initialValue: settingProvider.gossip == OpenStatus.OPEN,
@@ -587,53 +587,38 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
 
     List<AbstractSettingsTile> notificationTiles = [];
 
-    // if (!PlatformUtil.isWeb() &&
-    //     (PlatformUtil.isIOS() || PlatformUtil.isAndroid())) {
-    //   notificationTiles.add(SettingsTile.switchTile(
-    //     activeSwitchColor: themeData.primaryColor,
-    //     onToggle: (value) {
-    //       settingProvider.backgroundService = value;
-    //       if (!value && backgroundService != null) {
-    //         backgroundService!
-    //             .isRunning()
-    //             .whenComplete(() => {backgroundService!.invoke('stopService')});
-    //       }
-    //     },
-    //     initialValue: settingProvider.backgroundService,
-    //     leading: const Icon(Icons.notification_important_outlined),
-    //     title: const Text("Use background service"),
-    //   ));
-    // }
-    notificationTiles.add(SettingsTile.switchTile(
-      activeSwitchColor: themeData.primaryColor,
-      onToggle: (value) {
-        settingProvider.notificationsReactions = value;
-        notificationsProvider.refresh();
-      },
-      initialValue: settingProvider.notificationsReactions,
-      leading: const Icon(Icons.favorite_border),
-      title: const Text("Include reactions"),
-    ));
-    notificationTiles.add(SettingsTile.switchTile(
-      activeSwitchColor: themeData.primaryColor,
-      onToggle: (value) {
-        settingProvider.notificationsReposts = value;
-        notificationsProvider.refresh();
-      },
-      initialValue: settingProvider.notificationsReposts,
-      leading: const Icon(Icons.repeat),
-      title: const Text("Include reposts"),
-    ));
-    notificationTiles.add(SettingsTile.switchTile(
-      activeSwitchColor: themeData.primaryColor,
-      onToggle: (value) {
-        settingProvider.notificationsZaps = value;
-        notificationsProvider.refresh();
-      },
-      initialValue: settingProvider.notificationsZaps,
-      leading: const Icon(Icons.bolt),
-      title: const Text("Include zaps"),
-    ));
+    if (AppFeatures.enableNotifications) {
+      notificationTiles.add(SettingsTile.switchTile(
+        activeSwitchColor: themeData.primaryColor,
+        onToggle: (value) {
+          settingProvider.notificationsReactions = value;
+          notificationsProvider?.refresh();
+        },
+        initialValue: settingProvider.notificationsReactions,
+        leading: const Icon(Icons.favorite_border),
+        title: const Text("Include reactions"),
+      ));
+      notificationTiles.add(SettingsTile.switchTile(
+        activeSwitchColor: themeData.primaryColor,
+        onToggle: (value) {
+          settingProvider.notificationsReposts = value;
+          notificationsProvider?.refresh();
+        },
+        initialValue: settingProvider.notificationsReposts,
+        leading: const Icon(Icons.repeat),
+        title: const Text("Include reposts"),
+      ));
+      notificationTiles.add(SettingsTile.switchTile(
+        activeSwitchColor: themeData.primaryColor,
+        onToggle: (value) {
+          settingProvider.notificationsZaps = value;
+          notificationsProvider?.refresh();
+        },
+        initialValue: settingProvider.notificationsZaps,
+        leading: const Icon(Icons.bolt),
+        title: const Text("Include zaps"),
+      ));
+    }
 
     List<AbstractSettingsTile> walletTiles = [];
     walletTiles.add(SettingsTile.navigation(
@@ -704,7 +689,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
       appBar: AppBar(
         leading: GestureDetector(
           onTap: () {
-            context.pop();
+            context.go(RouterPath.INDEX);
           },
           child: Icon(
             Icons.arrow_back_ios,

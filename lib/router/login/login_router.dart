@@ -240,14 +240,14 @@ class _LoginRouter extends State<LoginRouter>
       ),
     ));
     if (widget.canGoBack) {
-    list.add(Container(
-      margin: const EdgeInsets.all(Base.BASE_PADDING),
-      child: InkWell(
-        onTap: () async {
-          context.pop();
-        },
-        child: Container(
-          height: 40,
+      list.add(Container(
+        margin: const EdgeInsets.all(Base.BASE_PADDING),
+        child: InkWell(
+          onTap: () async {
+            context.go(RouterPath.INDEX);
+          },
+          child: Container(
+            height: 40,
             color: Colors.grey,
             alignment: Alignment.center,
             child: const Text(
@@ -331,10 +331,12 @@ class _LoginRouter extends State<LoginRouter>
       sharedPreferences.remove(DataKey.NOTIFICATIONS_TIMESTAMP);
       sharedPreferences.remove(DataKey.FEED_POSTS_TIMESTAMP);
       sharedPreferences.remove(DataKey.FEED_REPLIES_TIMESTAMP);
-      notificationsProvider.clear();
-      newNotificationsProvider.clear();
-      followEventProvider.clear();
-      followEventProvider.clear();
+      if (AppFeatures.enableNotifications) {
+        notificationsProvider?.clear();
+        newNotificationsProvider?.clear();
+      }
+      followEventProvider?.clear();
+      followNewEventProvider?.clear();
       await settingProvider.addAndChangeKey(key, !isPublic, isExternalSigner,
           updateUI: false);
       bool isPrivate = !isPublic;
@@ -389,7 +391,7 @@ class _LoginRouter extends State<LoginRouter>
         dismissOnTap: true,
         duration: const Duration(seconds: 15),
         maskType: EasyLoadingMaskType.black);
-    followEventProvider.loadCachedFeed();
+    followEventProvider?.loadCachedFeed();
     if (AppFeatures.enableWallet) {
       nwcProvider?.init();
     }

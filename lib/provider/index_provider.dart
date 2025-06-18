@@ -5,7 +5,7 @@ import '../config/app_features.dart';
 import '../utils/index_taps.dart';
 
 class IndexProvider extends ChangeNotifier {
-  int _currentTap = IndexTaps.FOLLOW;
+  int _currentTap = 0;
 
   int get currentTap => _currentTap;
 

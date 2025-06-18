@@ -33,7 +33,9 @@ import '../../utils/string_util.dart';
 import 'bitcoin_amount.dart';
 
 class WalletRouter extends StatefulWidget {
-  const WalletRouter({super.key});
+  final bool showAppBar;
+
+  const WalletRouter({super.key, this.showAppBar = true});
 
   @override
   State<StatefulWidget> createState() {
@@ -98,17 +100,19 @@ class _WalletRouter extends State<WalletRouter> with ProtocolListener {
             sharedPreferences.remove(DataKey.NOTIFICATIONS_TIMESTAMP);
             sharedPreferences.remove(DataKey.FEED_POSTS_TIMESTAMP);
             sharedPreferences.remove(DataKey.FEED_REPLIES_TIMESTAMP);
-            notificationsProvider.clear();
-            newNotificationsProvider.clear();
-            followEventProvider.clear();
-            followEventProvider.clear();
+            if (AppFeatures.enableNotifications) {
+              notificationsProvider?.clear();
+              newNotificationsProvider?.clear();
+            }
+            followEventProvider?.clear();
+            followNewEventProvider?.clear();
             await settingProvider.addAndChangeKey(priv, true, false,
                 updateUI: false);
             String publicKey = getPublicKey(priv);
             ndk.accounts.loginPrivateKey(pubkey: publicKey, privkey: priv);
 
             await initRelays(newKey: true);
-            followEventProvider.loadCachedFeed();
+            followEventProvider?.loadCachedFeed();
 
             newAccount = true;
             firstLogin = true;
@@ -302,8 +306,8 @@ class _WalletRouter extends State<WalletRouter> with ProtocolListener {
                                           loggedUserSigner!.getPublicKey());
                                   if (metadata != null &&
                                       StringUtil.isNotBlank(metadata.lud16)) {
-                                    context.go(
-                                        RouterPath.WALLET_RECEIVE, extra: metadata);
+                                    context.go(RouterPath.WALLET_RECEIVE,
+                                        extra: metadata);
                                   } else {
                                     context.go(
                                         RouterPath.WALLET_RECEIVE_INVOICE,
@@ -681,7 +685,7 @@ class _WalletRouter extends State<WalletRouter> with ProtocolListener {
       backgroundColor: themeData.appBarTheme.backgroundColor,
       leading: GestureDetector(
           onTap: () {
-            context.pop();
+            context.go(RouterPath.INDEX);
           },
           child: Container(
             margin: const EdgeInsets.only(left: 10),
@@ -700,7 +704,7 @@ class _WalletRouter extends State<WalletRouter> with ProtocolListener {
     );
 
     return Scaffold(
-        appBar: appBarNew,
+        appBar: widget.showAppBar ? appBarNew : null,
         backgroundColor: themeData.cardColor,
         body: Stack(children: [
           main,

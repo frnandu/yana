@@ -1,4 +1,4 @@
-  import 'package:go_router/go_router.dart';
+import 'package:go_router/go_router.dart';
 import 'package:ndk/domain_layer/entities/metadata.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -47,7 +47,9 @@ class _DMDetailRouter extends CustState<DMDetailRouter> with EditorMixin {
     handleFocusInit();
     Future(() async {
       setState(() async {
-        contacts = await contactListProvider.contacts();
+        contacts = contactListProvider != null
+            ? await contactListProvider!.contacts()
+            : [];
       });
     });
   }
@@ -68,8 +70,8 @@ class _DMDetailRouter extends CustState<DMDetailRouter> with EditorMixin {
     }
     detail = arg as DMSessionDetail;
 
-    var nameComponnet =
-      FutureBuilder<Metadata?>(future: metadataProvider.getMetadata(detail!.dmSession.pubkey),
+    var nameComponnet = FutureBuilder<Metadata?>(
+        future: metadataProvider.getMetadata(detail!.dmSession.pubkey),
         builder: (context, snapshot) {
           return GestureDetector(
               onTap: () {
@@ -137,9 +139,7 @@ class _DMDetailRouter extends CustState<DMDetailRouter> with EditorMixin {
       ),
       child: Row(
         children: [
-          Expanded(
-              child:
-              Container()
+          Expanded(child: Container()
               // quill.QuillProvider(
               //     configurations: quill.QuillConfigurations(
               //       controller: editorController,

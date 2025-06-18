@@ -13,6 +13,17 @@ class AppFeatures {
       bool.fromEnvironment('ENABLE_DM', defaultValue: false);
   static const bool enableSearch =
       bool.fromEnvironment('ENABLE_SEARCH', defaultValue: false);
+  static const bool enableNotifications =
+      bool.fromEnvironment('ENABLE_NOTIFICATIONS', defaultValue: false);
+
+  // Helper method to check if only wallet feature is enabled
+  static bool get isWalletOnly =>
+      enableWallet &&
+      !enableSocial &&
+      !enableCommunities &&
+      !enableDm &&
+      !enableSearch &&
+      !enableNotifications;
 
   // Helper method to print active features, useful for debugging
   static void printActiveFeatures() {
@@ -22,5 +33,7 @@ class AppFeatures {
     print('  Communities: $enableCommunities');
     print('  DM: $enableDm');
     print('  Search: $enableSearch');
+    print('  Notifications: $enableNotifications');
+    print('  Wallet Only: $isWalletOnly');
   }
 }

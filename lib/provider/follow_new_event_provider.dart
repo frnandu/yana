@@ -30,15 +30,16 @@ class FollowNewEventProvider extends ChangeNotifier
   }
 
   handleEvents(List<Nip01Event> events) {
+    if (followEventProvider == null) return;
 
     for (var event in events) {
       bool isPosts = FollowEventProvider.eventIsPost(event);
       if (isPosts) {
-        if (!followEventProvider.postsBox.containsId(event.id)) {
+        if (!followEventProvider!.postsBox.containsId(event.id)) {
           eventPostsMemBox.add(event);
         }
       } else {
-        if (!followEventProvider.postsAndRepliesBox.containsId(event.id)) {
+        if (!followEventProvider!.postsAndRepliesBox.containsId(event.id)) {
           eventPostsAndRepliesMemBox.add(event);
         }
       }

@@ -75,17 +75,20 @@ class _IndexDrawerContentComponnent extends State<IndexDrawerContentComponent> {
         )))));
 
     if (PlatformUtil.isTableMode()) {
-      list.add(IndexDrawerItem(
-        iconData: Icons.home,
-        name: s.Home,
-        color: _indexProvider.currentTap == IndexTaps.FOLLOW ? mainColor : null,
-        onTap: () {
-          indexProvider.setCurrentTap(IndexTaps.FOLLOW);
-        },
-        onDoubleTap: () {
-          indexProvider.followScrollToTop();
-        },
-      ));
+      if (AppFeatures.enableSocial) {
+        list.add(IndexDrawerItem(
+          iconData: Icons.home,
+          name: s.Home,
+          color:
+              _indexProvider.currentTap == IndexTaps.FOLLOW ? mainColor : null,
+          onTap: () {
+            indexProvider.setCurrentTap(IndexTaps.FOLLOW);
+          },
+          onDoubleTap: () {
+            indexProvider.followScrollToTop();
+          },
+        ));
+      }
       if (AppFeatures.enableSearch) {
         list.add(IndexDrawerItem(
           iconData: Icons.search,
@@ -105,29 +108,33 @@ class _IndexDrawerContentComponnent extends State<IndexDrawerContentComponent> {
           indexProvider.setCurrentTap(IndexTaps.DM);
         },
       ));
+      if (AppFeatures.enableNotifications) {
+        list.add(IndexDrawerItem(
+          iconData: Icons.notifications,
+          name: s.Notifications,
+          color: _indexProvider.currentTap == IndexTaps.NOTIFICATIONS
+              ? mainColor
+              : null,
+          onTap: () {
+            indexProvider.setCurrentTap(IndexTaps.NOTIFICATIONS);
+          },
+          onDoubleTap: () {
+            // TODO
+            // indexProvider.globalScrollToTop();
+          },
+        ));
+      }
+    }
+
+    if (AppFeatures.enableSocial) {
       list.add(IndexDrawerItem(
-        iconData: Icons.notifications,
-        name: s.Notifications,
-        color: _indexProvider.currentTap == IndexTaps.NOTIFICATIONS
-            ? mainColor
-            : null,
+        iconData: Icons.person,
+        name: s.Profile,
         onTap: () {
-          indexProvider.setCurrentTap(IndexTaps.NOTIFICATIONS);
-        },
-        onDoubleTap: () {
-          // TODO
-          // indexProvider.globalScrollToTop();
+          context.go(RouterPath.USER, extra: pubkey);
         },
       ));
     }
-
-    list.add(IndexDrawerItem(
-      iconData: Icons.person,
-      name: s.Profile,
-      onTap: () {
-        context.go(RouterPath.USER, extra: pubkey);
-      },
-    ));
 
     if (loggedUserSigner!.canSign()) {
       if (AppFeatures.enableWallet) {
