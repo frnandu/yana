@@ -27,10 +27,10 @@ import '../../provider/follow_event_provider.dart';
 import '../../provider/follow_new_event_provider.dart';
 import '../../provider/index_provider.dart';
 import '../../provider/setting_provider.dart';
+import 'package:go_router/go_router.dart';
 import '../../utils/auth_util.dart';
 import '../../utils/base.dart';
 import '../../utils/router_path.dart';
-import '../../utils/router_util.dart';
 import '../../config/app_features.dart';
 import '../dm/dm_router.dart';
 import '../edit/editor_router.dart';
@@ -131,9 +131,9 @@ class _IndexRouter extends CustState<IndexRouter>
           // var route = ModalRoute.of(context);
           // if (route != null && route!.settings.name != null && route!.settings.name! == RouterPath.NWC) {
           if (canPop) {
-            RouterUtil.back(context);
+            context.pop();
           } else {
-            RouterUtil.router(context, RouterPath.WALLET);
+            context.go(RouterPath.WALLET);
           }
         }
       } else if (url.startsWith(NwcProvider.NWC_PROTOCOL_PREFIX)) {
@@ -167,14 +167,13 @@ class _IndexRouter extends CustState<IndexRouter>
           // var route = ModalRoute.of(context);
           // if (route != null && route!.settings.name != null && route!.settings.name! == RouterPath.NWC) {
           if (canPop) {
-            RouterUtil.back(context);
+            context.pop();
           } else {
-            RouterUtil.router(
-                context, newAccount ? RouterPath.INDEX : RouterPath.WALLET);
+            context.go(newAccount ? RouterPath.INDEX : RouterPath.WALLET);
           }
         });
       } else if (url.startsWith("lightning:")) {
-        RouterUtil.router(context, RouterPath.WALLET_SEND, url.split(":").last);
+        context.go(RouterPath.WALLET_SEND, extra: url.split(":").last);
       } else if (url.startsWith("nostr:")) {
         RegExpMatch? match = Nip19.nip19regex.firstMatch(url);
 
@@ -190,7 +189,7 @@ class _IndexRouter extends CustState<IndexRouter>
               key = key.substring(0, Nip19.NPUB_LENGTH);
             }
             key = Nip19.decode(key);
-            RouterUtil.router(context, RouterPath.USER, key);
+            context.go(RouterPath.USER, extra: key);
           } else if (Nip19.isNoteId(key)) {
             // block
             if (key.length > Nip19.NOTEID_LENGTH) {
@@ -198,13 +197,13 @@ class _IndexRouter extends CustState<IndexRouter>
               key = key.substring(0, Nip19.NOTEID_LENGTH);
             }
             key = Nip19.decode(key);
-            RouterUtil.router(context, RouterPath.THREAD_DETAIL, key);
+            context.go(RouterPath.THREAD_DETAIL, extra: key);
           } else if (NIP19Tlv.isNprofile(key)) {
             var nprofile = NIP19Tlv.decodeNprofile(key);
             if (nprofile != null) {
               // inline
               // mention user
-              RouterUtil.router(context, RouterPath.USER, nprofile.pubkey);
+              context.go(RouterPath.USER, extra: nprofile.pubkey);
             }
           } else if (NIP19Tlv.isNrelay(key)) {
             var nrelay = NIP19Tlv.decodeNrelay(key);
@@ -213,7 +212,7 @@ class _IndexRouter extends CustState<IndexRouter>
               // inline
               Relay relay =
                   Relay(url: url, connectionSource: ConnectionSource.explicit);
-              RouterUtil.router(context, RouterPath.RELAY_INFO, relay);
+              context.go(RouterPath.RELAY_INFO, extra: relay);
             }
           } else if (NIP19Tlv.isNevent(key)) {
             var nevent = NIP19Tlv.decodeNevent(key);
@@ -222,17 +221,17 @@ class _IndexRouter extends CustState<IndexRouter>
                 // TODO allowReconnectRelays is false, WTF?
                 // await ndk.relays.reconnectRelays(nevent.relays!);
               }
-              RouterUtil.router(context, RouterPath.THREAD_DETAIL, nevent.id);
+              context.go(RouterPath.THREAD_DETAIL, extra: nevent.id);
             }
           } else if (NIP19Tlv.isNaddr(key)) {
             var naddr = NIP19Tlv.decodeNaddr(key);
             if (naddr != null) {
               if (StringUtil.isNotBlank(naddr.id) &&
                   naddr.kind == Nip01Event.kTextNodeKind) {
-                RouterUtil.router(context, RouterPath.THREAD_DETAIL, naddr.id);
+                context.go(RouterPath.THREAD_DETAIL, extra: naddr.id);
               } else if (StringUtil.isNotBlank(naddr.author) &&
                   naddr.kind == Metadata.kKind) {
-                RouterUtil.router(context, RouterPath.USER, naddr.author);
+                context.go(RouterPath.USER, extra: naddr.author);
               }
             }
           }

@@ -20,9 +20,9 @@ import 'package:yana/utils/string_util.dart';
 
 import '../../nostr/nip19/nip19.dart';
 import '../../ui/button.dart';
+import 'package:go_router/go_router.dart';
 import '../../ui/user_pic_component.dart';
 import '../../utils/router_path.dart';
-import '../../utils/router_util.dart';
 
 class WalletReceiveRouter extends StatefulWidget {
   const WalletReceiveRouter({super.key});
@@ -83,7 +83,7 @@ class _WalletReceiveRouter extends State<WalletReceiveRouter> {
       backgroundColor: themeData.appBarTheme.foregroundColor,
       leading: GestureDetector(
           onTap: () {
-            RouterUtil.back(context);
+            context.pop();
           },
           child: Container(
             margin: const EdgeInsets.only(left: 10),
@@ -104,7 +104,8 @@ class _WalletReceiveRouter extends State<WalletReceiveRouter> {
     List<Widget> list = [];
     Metadata? metadata;
     if (paid == null) {
-      metadata = RouterUtil.routerArgs(context) as Metadata?;
+      final goRouterState = GoRouterState.of(context);
+      metadata = goRouterState.extra as Metadata?;
       if (metadata != null && StringUtil.isNotBlank(metadata.lud16)) {
         list.add(Container(
             padding: const EdgeInsets.all(20),
@@ -202,8 +203,7 @@ class _WalletReceiveRouter extends State<WalletReceiveRouter> {
             fontColor: themeData.disabledColor,
             text: "Payment Invoice",
             onTap: () async {
-              RouterUtil.router(
-                  context, RouterPath.WALLET_RECEIVE_INVOICE, metadata);
+              context.go(RouterPath.WALLET_RECEIVE_INVOICE, extra: metadata);
             }));
       }
     } else {
@@ -281,7 +281,7 @@ class _WalletReceiveRouter extends State<WalletReceiveRouter> {
         border: true,
         width: 300,
         onTap: () {
-          RouterUtil.back(context);
+          context.pop();
         },
       ));
       list.add(const SizedBox(

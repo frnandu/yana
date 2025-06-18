@@ -9,8 +9,8 @@ import 'package:yana/provider/nwc_provider.dart';
 import 'package:yana/utils/router_path.dart';
 import 'package:yana/utils/string_util.dart';
 
+import 'package:go_router/go_router.dart';
 import '../../ui/button.dart';
-import '../../utils/router_util.dart';
 import 'bitcoin_amount.dart';
 
 class WalletSendConfirmRouter extends StatefulWidget {
@@ -51,7 +51,7 @@ class _WalletSendConfirmRouter extends State<WalletSendConfirmRouter> {
 
     var themeData = Theme.of(context);
     var cardColor = themeData.cardColor;
-    invoice = RouterUtil.routerArgs(context) as String?;
+    invoice = GoRouterState.of(context).extra as String?;
 
     List<Widget> list = [];
     if (StringUtil.isNotBlank(invoice)) {
@@ -156,7 +156,7 @@ class _WalletSendConfirmRouter extends State<WalletSendConfirmRouter> {
           border: true,
           width: 300,
           onTap: () {
-            RouterUtil.router(context, RouterPath.WALLET);
+            context.go(RouterPath.WALLET);
           },
         ));
         list.add(const SizedBox(
@@ -226,7 +226,7 @@ class _WalletSendConfirmRouter extends State<WalletSendConfirmRouter> {
       backgroundColor: themeData.appBarTheme.foregroundColor,
       leading: GestureDetector(
           onTap: () {
-            RouterUtil.back(context);
+            context.pop();
           },
           child: Container(
             margin: const EdgeInsets.only(left: 10),

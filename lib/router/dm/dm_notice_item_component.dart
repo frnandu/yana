@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get_time_ago/get_time_ago.dart';
+import 'package:go_router/go_router.dart';
 import 'package:yana/main.dart';
 import 'package:yana/provider/notice_provider.dart';
 
@@ -126,7 +127,7 @@ class DMNoticeItemComponent extends StatelessWidget {
     return GestureDetector(
       onTap: () {
         noticeProvider.setRead();
-        RouterUtil.router(context, RouterPath.NOTICES);
+        context.go(RouterPath.NOTICES);
       },
       child: main,
     );

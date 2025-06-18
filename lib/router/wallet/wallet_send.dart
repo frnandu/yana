@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:go_router/go_router.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:ndk/domain_layer/usecases/nwc/nwc_notification.dart';
 import 'package:ndk/entities.dart';
@@ -68,7 +69,7 @@ class _WalletSendRouter extends State<WalletSendRouter> {
             amountInputcontroller.text = "$num";
             recipientAddress = t;
           });
-          RouterUtil.router(context, RouterPath.WALLET_SEND_CONFIRM, t);
+          context.go(RouterPath.WALLET_SEND_CONFIRM, extra: t);
         }
       } else if (t.contains("@")) {
         setState(() {
@@ -211,8 +212,7 @@ class _WalletSendRouter extends State<WalletSendRouter> {
                         amountInputcontroller.text = "$num";
                         recipientAddress = t;
                       });
-                      RouterUtil.router(
-                          context, RouterPath.WALLET_SEND_CONFIRM, t);
+                      context.go(RouterPath.WALLET_SEND_CONFIRM, extra: t);
                     }
                   }
                 }
@@ -356,8 +356,7 @@ class _WalletSendRouter extends State<WalletSendRouter> {
               if (responseMap != null &&
                   StringUtil.isNotBlank(responseMap["pr"])) {
                 invoice = responseMap["pr"];
-                RouterUtil.router(
-                    context, RouterPath.WALLET_SEND_CONFIRM, invoice);
+                context.go(RouterPath.WALLET_SEND_CONFIRM, extra: invoice);
               } else {
                 if (responseMap != null &&
                     responseMap["status"] == "ERROR" &&
@@ -394,7 +393,7 @@ class _WalletSendRouter extends State<WalletSendRouter> {
       setState(() {
         invoice = qr;
         if (invoice != null) {
-          RouterUtil.router(context, RouterPath.WALLET_SEND_CONFIRM, invoice);
+          context.go(RouterPath.WALLET_SEND_CONFIRM, extra: invoice);
         }
 
         scanning = false;

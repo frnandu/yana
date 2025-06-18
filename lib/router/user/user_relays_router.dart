@@ -222,7 +222,7 @@ class RelayMetadataComponent extends StatelessWidget {
     if (relayMetadata!.count != null && relayMetadata!.count! > 0) {
       rightButtons.add(GestureDetector(
           onTap: () {
-            context.push(RouterPath.FOLLOWED,
+            context.go(RouterPath.FOLLOWED,
                 extra: FollowedRouterArgs(
                     pubkeys: feedRelaySet!.relaysMap[relayMetadata!.url]!
                         .map((e) => e.pubKey)
@@ -237,7 +237,7 @@ class RelayMetadataComponent extends StatelessWidget {
           onTap: () {
             List<PubkeyMapping>? aa =
                 feedRelaySet!.relaysMap[relayMetadata!.url];
-            context.push(RouterPath.FOLLOWED,
+            context.go(RouterPath.FOLLOWED,
                 extra: FollowedRouterArgs(
                     pubkeys: aa != null ? aa.map((e) => e.pubKey).toList() : [],
                     title:

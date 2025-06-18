@@ -18,7 +18,6 @@ import '../../nostr/nip19/nip19.dart';
 import '../../provider/data_util.dart';
 import '../../utils/base.dart';
 import '../../utils/index_taps.dart';
-import '../../utils/router_util.dart';
 import '../../utils/string_util.dart';
 import '../index/account_manager_component.dart';
 import '../../config/app_features.dart'; // Added for AppFeatures
@@ -241,14 +240,14 @@ class _LoginRouter extends State<LoginRouter>
       ),
     ));
     if (widget.canGoBack) {
-      list.add(Container(
-        margin: const EdgeInsets.all(Base.BASE_PADDING),
-        child: InkWell(
-          onTap: () async {
-            RouterUtil.back(context);
-          },
-          child: Container(
-            height: 40,
+    list.add(Container(
+      margin: const EdgeInsets.all(Base.BASE_PADDING),
+      child: InkWell(
+        onTap: () async {
+          context.pop();
+        },
+        child: Container(
+          height: 40,
             color: Colors.grey,
             alignment: Alignment.center,
             child: const Text(

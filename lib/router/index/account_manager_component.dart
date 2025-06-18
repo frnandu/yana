@@ -9,7 +9,6 @@ import 'package:provider/provider.dart';
 import 'package:yana/provider/setting_provider.dart';
 import 'package:yana/ui/name_component.dart';
 import 'package:yana/ui/point_component.dart';
-import 'package:yana/utils/router_util.dart';
 import 'package:go_router/go_router.dart';
 
 import '/js/js_helper.dart' as js;
@@ -199,7 +198,7 @@ class AccountsState extends State<AccountsComponent> {
         // use next privateKey to login
         doLogin();
         settingProvider.notifyListeners();
-        RouterUtil.back(context);
+        context.pop();
       }
     }
   }
@@ -222,14 +221,14 @@ class AccountsState extends State<AccountsComponent> {
           // use next privateKey to login
           doLogin();
           settingProvider.notifyListeners();
-          RouterUtil.back(context);
+          context.pop();
         }
       }
     }
 
     settingProvider.notifyListeners();
     if (routerBack && context != null) {
-      RouterUtil.back(context);
+      context.pop();
     }
   }
 

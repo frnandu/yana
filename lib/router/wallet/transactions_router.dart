@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:ndk/domain_layer/usecases/nwc/responses/list_transactions_response.dart';
 import 'package:provider/provider.dart';
 import 'package:yana/main.dart';
@@ -6,7 +7,6 @@ import 'package:yana/provider/nwc_provider.dart';
 import 'package:yana/router/wallet/transaction_item_component.dart';
 
 import '../../../ui/appbar4stack.dart';
-import '../../utils/router_util.dart';
 
 class TransactionsRouter extends StatefulWidget {
   const TransactionsRouter({super.key});
@@ -63,7 +63,7 @@ class _TransactionsRouter extends State<TransactionsRouter> {
     var appBar = AppBar(
         leading: GestureDetector(
           onTap: () {
-            RouterUtil.back(context);
+            context.pop();
           },
           child: Icon(
             Icons.arrow_back_ios,

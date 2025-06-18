@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:ndk/domain_layer/entities/metadata.dart';
 import 'package:ndk/domain_layer/usecases/nwc/responses/list_transactions_response.dart';
@@ -90,7 +91,7 @@ class _PaymentDetailsComponent extends State<PaymentDetailsComponent> {
                             var metadata = snapshot.data;
                             return GestureDetector(
                                 onTap: () {
-                                  RouterUtil.router(context, RouterPath.USER, zapperPubKey);
+                                  context.go(RouterPath.USER, extra: zapperPubKey);
                                 },
                                 child: NameComponent(
                                   pubkey: zapperPubKey,
@@ -106,7 +107,10 @@ class _PaymentDetailsComponent extends State<PaymentDetailsComponent> {
             zapperPubKey != null
                 ? GestureDetector(
                     onTap: () {
-                      RouterUtil.router(context, RouterPath.USER, zapperPubKey);
+                      context.go(
+                        RouterPath.USER,
+                        extra: zapperPubKey,
+                      );
                     },
                     child: UserPicComponent(
                       pubkey: zapperPubKey,

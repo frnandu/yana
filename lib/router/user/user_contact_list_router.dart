@@ -3,9 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:yana/main.dart';
 
+import 'package:go_router/go_router.dart';
+
 import '../../i18n/i18n.dart';
 import '../../provider/contact_list_provider.dart';
-import '../../utils/router_util.dart';
 import 'user_contact_list_component.dart';
 
 class UserContactListRouter extends StatefulWidget {
@@ -27,7 +28,7 @@ class _UserContactListRouter extends State<UserContactListRouter> {
     var s = I18n.of(context);
 
     if (pubKey == null) {
-      var arg = RouterUtil.routerArgs(context);
+      var arg = GoRouterState.of(context).extra;
       if (arg != null) {
         pubKey = arg as String;
         contactListProvider.loadContactList(pubKey!).then(
@@ -44,7 +45,7 @@ class _UserContactListRouter extends State<UserContactListRouter> {
         appBar: AppBar(
           leading: GestureDetector(
             onTap: () {
-              RouterUtil.back(context);
+              context.pop();
             },
             child: Icon(
               Icons.arrow_back_ios,

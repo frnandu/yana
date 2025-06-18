@@ -1,3 +1,4 @@
+import 'package:go_router/go_router.dart';
 import 'package:ndk/domain_layer/entities/nip_01_event.dart';
 import 'package:flutter/material.dart';
 import 'package:get_time_ago/get_time_ago.dart';
@@ -121,7 +122,7 @@ class _DMDetailItemComponent extends State<DMDetailItemComponent> {
     // if (!widget.isLocal) {
     userHeadWidget = GestureDetector(
       onTap: () {
-        RouterUtil.router(context, RouterPath.USER, widget.event.pubKey);
+        context.go(RouterPath.USER, extra: widget.event.pubKey);
       },
       child: userHeadWidget,
     );

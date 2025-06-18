@@ -6,6 +6,7 @@ import 'package:bech32/bech32.dart';
 import 'package:confetti/confetti.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:go_router/go_router.dart';
 import 'package:ndk/domain_layer/entities/metadata.dart';
 import 'package:ndk/domain_layer/usecases/nwc/nwc_notification.dart';
 import 'package:pretty_qr_code/pretty_qr_code.dart';
@@ -197,7 +198,8 @@ class _WalletReceiveRouter extends State<WalletReceiveRouter> {
             fontColor: themeData.disabledColor,
             text: "Payment Invoice",
             onTap: () async {
-              RouterUtil.router(context, RouterPath.WALLET_RECEIVE_INVOICE, metadata);
+              context.go(RouterPath.WALLET_RECEIVE_INVOICE,
+                  extra: metadata);
             }));
       }
       // TODO

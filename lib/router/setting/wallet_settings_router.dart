@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 // import 'package:flutter_font_picker/flutter_font_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:settings_ui/settings_ui.dart';
 import 'package:yana/provider/filter_provider.dart';
-import 'package:yana/utils/router_util.dart';
 import 'package:yana/utils/when_stop_function.dart';
 
 import '../../i18n/i18n.dart';
@@ -79,7 +79,7 @@ class _SettingRouter extends State<WalletSettingsRouter> with WhenStopFunction {
       walletTiles.add(SettingsTile.navigation(
         trailing: const Text(""),
         onPressed: (context) async {
-          RouterUtil.router(context, RouterPath.WALLET);
+          context.go(RouterPath.WALLET);
         },
         leading: const Icon(Icons.wallet),
         title: const Text("Connect Nostr Wallet Connect"),
@@ -99,7 +99,7 @@ class _SettingRouter extends State<WalletSettingsRouter> with WhenStopFunction {
       appBar: AppBar(
         leading: GestureDetector(
           onTap: () {
-            RouterUtil.back(context);
+            context.pop();
           },
           child: Icon(
             Icons.arrow_back_ios,

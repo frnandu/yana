@@ -7,10 +7,10 @@ import 'package:yana/provider/index_provider.dart';
 import 'package:yana/provider/nwc_provider.dart';
 import 'package:yana/ui/user/metadata_top_component.dart';
 import 'package:yana/utils/base.dart';
+import 'package:go_router/go_router.dart';
 import 'package:yana/utils/number_format_util.dart';
 import 'package:yana/utils/platform_util.dart';
 import 'package:yana/utils/router_path.dart';
-import 'package:yana/utils/router_util.dart';
 import 'package:yana/utils/theme_style.dart';
 
 import '../../i18n/i18n.dart';
@@ -125,7 +125,7 @@ class _IndexDrawerContentComponnent extends State<IndexDrawerContentComponent> {
       iconData: Icons.person,
       name: s.Profile,
       onTap: () {
-        RouterUtil.router(context, RouterPath.USER, pubkey);
+        context.go(RouterPath.USER, extra: pubkey);
       },
     ));
 
@@ -135,7 +135,7 @@ class _IndexDrawerContentComponnent extends State<IndexDrawerContentComponent> {
             iconData: Icons.account_balance_wallet,
             name: s.Wallet,
             onTap: () {
-              RouterUtil.router(context, RouterPath.WALLET);
+              context.go(RouterPath.WALLET);
             },
             rightWidget: Selector<NwcProvider, bool>(
                 builder: (context, connected, child) {
@@ -185,7 +185,7 @@ class _IndexDrawerContentComponnent extends State<IndexDrawerContentComponent> {
           iconData: Icons.lan_outlined,
           name: s.Relays,
           onTap: () {
-            RouterUtil.router(context, RouterPath.RELAYS);
+            context.go(RouterPath.RELAYS);
           },
           rightWidget: Selector<RelayProvider, String>(
               builder: (context, relayNum, child) {
@@ -203,7 +203,7 @@ class _IndexDrawerContentComponnent extends State<IndexDrawerContentComponent> {
         iconData: Icons.key,
         name: s.Key_Backup,
         onTap: () {
-          RouterUtil.router(context, RouterPath.KEY_BACKUP);
+          context.go(RouterPath.KEY_BACKUP);
         },
       ));
     }
@@ -212,7 +212,7 @@ class _IndexDrawerContentComponnent extends State<IndexDrawerContentComponent> {
       iconData: Icons.settings,
       name: s.Settings,
       onTap: () {
-        RouterUtil.router(context, RouterPath.SETTING);
+        context.go(RouterPath.SETTING);
       },
     ));
 

@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:android_intent_plus/android_intent.dart';
 import 'package:back_button_interceptor/back_button_interceptor.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:ndk/domain_layer/entities/connection_source.dart';
 import 'package:ndk/domain_layer/entities/metadata.dart';
 import 'package:ndk/domain_layer/entities/nip_01_event.dart';
@@ -28,7 +29,6 @@ import '../../provider/data_util.dart';
 import '../../ui/button.dart';
 import '../../utils/index_taps.dart';
 import '../../utils/router_path.dart';
-import '../../utils/router_util.dart';
 import '../../utils/string_util.dart';
 import 'bitcoin_amount.dart';
 
@@ -121,14 +121,13 @@ class _WalletRouter extends State<WalletRouter> with ProtocolListener {
           // var route = ModalRoute.of(context);
           // if (route != null && route!.settings.name != null && route!.settings.name! == RouterPath.NWC) {
           if (canPop) {
-            RouterUtil.back(context);
+            context.pop();
           } else {
-            RouterUtil.router(
-                context, newAccount ? RouterPath.INDEX : RouterPath.WALLET);
+            context.go(newAccount ? RouterPath.INDEX : RouterPath.WALLET);
           }
         });
       } else if (url.startsWith("lightning:")) {
-        RouterUtil.router(context, RouterPath.WALLET_SEND, url.split(":").last);
+        context.go(RouterPath.WALLET_SEND, extra: url.split(":").last);
       } else if (url.startsWith("nostr:")) {
         RegExpMatch? match = Nip19.nip19regex.firstMatch(url);
 
@@ -144,7 +143,7 @@ class _WalletRouter extends State<WalletRouter> with ProtocolListener {
               key = key.substring(0, Nip19.NPUB_LENGTH);
             }
             key = Nip19.decode(key);
-            RouterUtil.router(context, RouterPath.USER, key);
+            context.go(RouterPath.USER, extra: key);
           } else if (Nip19.isNoteId(key)) {
             // block
             if (key.length > Nip19.NOTEID_LENGTH) {
@@ -152,13 +151,13 @@ class _WalletRouter extends State<WalletRouter> with ProtocolListener {
               key = key.substring(0, Nip19.NOTEID_LENGTH);
             }
             key = Nip19.decode(key);
-            RouterUtil.router(context, RouterPath.THREAD_DETAIL, key);
+            context.go(RouterPath.THREAD_DETAIL, extra: key);
           } else if (NIP19Tlv.isNprofile(key)) {
             var nprofile = NIP19Tlv.decodeNprofile(key);
             if (nprofile != null) {
               // inline
               // mention user
-              RouterUtil.router(context, RouterPath.USER, nprofile.pubkey);
+              context.go(RouterPath.USER, extra: nprofile.pubkey);
             }
           } else if (NIP19Tlv.isNrelay(key)) {
             var nrelay = NIP19Tlv.decodeNrelay(key);
@@ -167,7 +166,7 @@ class _WalletRouter extends State<WalletRouter> with ProtocolListener {
               // inline
               Relay relay =
                   Relay(url: url, connectionSource: ConnectionSource.explicit);
-              RouterUtil.router(context, RouterPath.RELAY_INFO, relay);
+              context.go(RouterPath.RELAY_INFO, extra: relay);
             }
           } else if (NIP19Tlv.isNevent(key)) {
             var nevent = NIP19Tlv.decodeNevent(key);
@@ -176,17 +175,17 @@ class _WalletRouter extends State<WalletRouter> with ProtocolListener {
                 // TODO allowReconnectRelays is false, WTF?
                 // await ndk.relays.reconnectRelays(nevent.relays!);
               }
-              RouterUtil.router(context, RouterPath.THREAD_DETAIL, nevent.id);
+              context.go(RouterPath.THREAD_DETAIL, extra: nevent.id);
             }
           } else if (NIP19Tlv.isNaddr(key)) {
             var naddr = NIP19Tlv.decodeNaddr(key);
             if (naddr != null) {
               if (StringUtil.isNotBlank(naddr.id) &&
                   naddr.kind == Nip01Event.kTextNodeKind) {
-                RouterUtil.router(context, RouterPath.THREAD_DETAIL, naddr.id);
+                context.go(RouterPath.THREAD_DETAIL, extra: naddr.id);
               } else if (StringUtil.isNotBlank(naddr.author) &&
                   naddr.kind == Metadata.kKind) {
-                RouterUtil.router(context, RouterPath.USER, naddr.author);
+                context.go(RouterPath.USER, extra: naddr.author);
               }
             }
           }
@@ -303,13 +302,12 @@ class _WalletRouter extends State<WalletRouter> with ProtocolListener {
                                           loggedUserSigner!.getPublicKey());
                                   if (metadata != null &&
                                       StringUtil.isNotBlank(metadata.lud16)) {
-                                    RouterUtil.router(context,
-                                        RouterPath.WALLET_RECEIVE, metadata);
+                                    context.go(
+                                        RouterPath.WALLET_RECEIVE, extra: metadata);
                                   } else {
-                                    RouterUtil.router(
-                                        context,
+                                    context.go(
                                         RouterPath.WALLET_RECEIVE_INVOICE,
-                                        metadata);
+                                        extra: metadata);
                                   }
                                 }))
                         : Container(),
@@ -330,8 +328,7 @@ class _WalletRouter extends State<WalletRouter> with ProtocolListener {
                                 height: 70,
                                 // before: const Icon(Icons.call_made_rounded),
                                 onTap: () async {
-                                  RouterUtil.router(
-                                      context, RouterPath.WALLET_SEND);
+                                  context.go(RouterPath.WALLET_SEND);
                                 }))
                         : Container()
                   ],
@@ -359,7 +356,7 @@ class _WalletRouter extends State<WalletRouter> with ProtocolListener {
                                 // if (index == transactions.length) {
                                 //   return GestureDetector(
                                 //       onTap: () {
-                                //         RouterUtil.router(context, RouterPath.WALLET_TRANSACTIONS);
+                                //         context.go(RouterPath.WALLET_TRANSACTIONS);
                                 //       },
                                 //       // child:
                                 //       // Expanded(
@@ -568,7 +565,7 @@ class _WalletRouter extends State<WalletRouter> with ProtocolListener {
                               fontSize: 18,
                               width: 200,
                               onTap: () {
-                                RouterUtil.router(context, RouterPath.NWC);
+                                context.go(RouterPath.NWC);
                               },
                             ),
                           ],
@@ -684,7 +681,7 @@ class _WalletRouter extends State<WalletRouter> with ProtocolListener {
       backgroundColor: themeData.appBarTheme.backgroundColor,
       leading: GestureDetector(
           onTap: () {
-            RouterUtil.back(context);
+            context.pop();
           },
           child: Container(
             margin: const EdgeInsets.only(left: 10),
@@ -779,7 +776,7 @@ class _WalletRouter extends State<WalletRouter> with ProtocolListener {
                       nwcProvider?.disconnect();
                     });
                   } else if (value == "settings") {
-                    RouterUtil.router(context, RouterPath.SETTINGS_WALLET);
+                    context.go(RouterPath.SETTINGS_WALLET);
                   }
                 }))
         : Container();

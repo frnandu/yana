@@ -1,4 +1,5 @@
-  import 'package:ndk/domain_layer/entities/metadata.dart';
+  import 'package:go_router/go_router.dart';
+import 'package:ndk/domain_layer/entities/metadata.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
@@ -72,7 +73,7 @@ class _DMDetailRouter extends CustState<DMDetailRouter> with EditorMixin {
         builder: (context, snapshot) {
           return GestureDetector(
               onTap: () {
-                RouterUtil.router(context, RouterPath.USER, detail!.dmSession.pubkey);
+                context.go(RouterPath.USER, extra: detail!.dmSession.pubkey);
               },
               child: NameComponent(
                 pubkey: detail!.dmSession.pubkey,

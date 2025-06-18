@@ -12,9 +12,9 @@ import 'package:settings_ui/settings_ui.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:yana/nostr/relay_metadata.dart';
 import 'package:yana/provider/filter_provider.dart';
+import 'package:go_router/go_router.dart';
 import 'package:yana/router/index/account_manager_component.dart';
 import 'package:yana/utils/platform_util.dart';
-import 'package:yana/utils/router_util.dart';
 import 'package:yana/utils/when_stop_function.dart';
 
 import '../../i18n/i18n.dart';
@@ -346,8 +346,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
                 //   Relay? r = followsNostr!.getRelay(relay.url!);
                 //   return r != null;
                 // }).toList();
-                RouterUtil.router(
-                    context, RouterPath.USER_RELAYS, filteredRelays);
+                context.go(RouterPath.USER_RELAYS, extra: filteredRelays);
               }
             },
             leading: loadingGossipRelays
@@ -358,10 +357,11 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
                       animation: false,
                       lineHeight: 40.0,
                       backgroundColor: themeData.disabledColor,
-
                       percent: gossipTotal > 0 ? gossipCount / gossipTotal : 0,
-                      center: Text("$gossipStatus $gossipCount/$gossipTotal",
-                        style: TextStyle(color: Colors.black),),
+                      center: Text(
+                        "$gossipStatus $gossipCount/$gossipTotal",
+                        style: TextStyle(color: Colors.black),
+                      ),
                       linearStrokeCap: LinearStrokeCap.roundAll,
                       progressColor: themeData.primaryColor,
                     ))
@@ -393,7 +393,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
                 style: TextStyle(color: themeData.disabledColor),
               );
             }, selector: (context, _provider) {
-              return "${feedRelaySet!=null?feedRelaySet!.urls.length:0}";//_provider.feedRelaysNumStr();
+              return "${feedRelaySet != null ? feedRelaySet!.urls.length : 0}"; //_provider.feedRelaysNumStr();
             })),
       );
     }
@@ -444,10 +444,8 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
               Nip51List? list = await ndk.lists
                   .getSingleNip51List(Nip51List.kMute, loggedUserSigner!);
               finished = true;
-              RouterUtil.router(
-                  context,
-                  RouterPath.MUTE_LIST,
-                  list ??
+              context.go(RouterPath.MUTE_LIST,
+                  extra: list ??
                       Nip51List(
                           pubKey: loggedUserSigner!.getPublicKey(),
                           kind: Nip51List.kMute,
@@ -457,10 +455,8 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
               EasyLoading.dismiss();
             }
           } else {
-            RouterUtil.router(
-                context,
-                RouterPath.MUTE_LIST,
-                Nip51List(
+            context.go(RouterPath.MUTE_LIST,
+                extra: Nip51List(
                     pubKey: loggedUserSigner!.getPublicKey(),
                     kind: Nip51List.kMute,
                     elements: [],
@@ -498,10 +494,8 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
               Nip51List? list = await ndk.lists.getSingleNip51List(
                   Nip51List.kBlockedRelays, loggedUserSigner!);
               finished = true;
-              RouterUtil.router(
-                  context,
-                  RouterPath.RELAY_LIST,
-                  list ??
+              context.go(RouterPath.RELAY_LIST,
+                  extra: list ??
                       Nip51List(
                           pubKey: loggedUserSigner!.getPublicKey(),
                           kind: Nip51List.kBlockedRelays,
@@ -511,10 +505,8 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
               EasyLoading.dismiss();
             }
           } else {
-            RouterUtil.router(
-                context,
-                RouterPath.RELAY_LIST,
-                Nip51List(
+            context.go(RouterPath.RELAY_LIST,
+                extra: Nip51List(
                     pubKey: loggedUserSigner!.getPublicKey(),
                     kind: Nip51List.kBlockedRelays,
                     elements: [],
@@ -545,10 +537,8 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
               Nip51List? list = await ndk.lists.getSingleNip51List(
                   Nip51List.kSearchRelays, loggedUserSigner!);
               finished = true;
-              RouterUtil.router(
-                  context,
-                  RouterPath.RELAY_LIST,
-                  list ??
+              context.go(RouterPath.RELAY_LIST,
+                  extra: list ??
                       Nip51List(
                           pubKey: loggedUserSigner!.getPublicKey(),
                           kind: Nip51List.kSearchRelays,
@@ -558,10 +548,8 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
               EasyLoading.dismiss();
             }
           } else {
-            RouterUtil.router(
-                context,
-                RouterPath.RELAY_LIST,
-                Nip51List(
+            context.go(RouterPath.RELAY_LIST,
+                extra: Nip51List(
                     pubKey: loggedUserSigner!.getPublicKey(),
                     kind: Nip51List.kSearchRelays,
                     elements: [],
@@ -650,7 +638,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
     List<AbstractSettingsTile> walletTiles = [];
     walletTiles.add(SettingsTile.navigation(
       onPressed: (context) async {
-        RouterUtil.router(context, RouterPath.SETTINGS_WALLET);
+        context.go(RouterPath.SETTINGS_WALLET);
       },
       leading: const Icon(Icons.wallet),
       trailing: const Icon(Icons.navigate_next),
@@ -716,7 +704,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
       appBar: AppBar(
         leading: GestureDetector(
           onTap: () {
-            RouterUtil.back(context);
+            context.pop();
           },
           child: Icon(
             Icons.arrow_back_ios,

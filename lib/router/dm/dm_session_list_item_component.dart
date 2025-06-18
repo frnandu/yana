@@ -1,3 +1,4 @@
+import 'package:go_router/go_router.dart';
 import 'package:ndk/domain_layer/entities/metadata.dart';
 import 'package:flutter/material.dart';
 import 'package:get_time_ago/get_time_ago.dart';
@@ -157,7 +158,7 @@ class _DMSessionListItemComponent extends State<DMSessionListItemComponent> {
 
     return GestureDetector(
       onTap: () {
-        RouterUtil.router(context, RouterPath.DM_DETAIL, widget.detail);
+        context.go(RouterPath.DM_DETAIL, extra: widget.detail);
       },
       child: main,
     );

@@ -8,24 +8,24 @@ import 'package:yana/utils/platform_util.dart';
 import '../provider/pc_router_fake_provider.dart';
 
 class RouterUtil {
-  static Future<T?> router<T>(BuildContext context, String pageName,
-      [Object? arguments]) async {
-    if (!PlatformUtil.isTableMode()) {
-      return Navigator.of(context).pushNamed<T>(pageName, arguments: arguments);
-    } else {
-      bool clear = false;
-      var parentRouterFake = PcRouterFake.of(context);
-      if (parentRouterFake == null) {
-        // means this request is from home, globals, search or dms, just to clean stack and push
-        clear = true;
-      }
-      var routerFakeInfo =
-          RouterFakeInfo<T>(routerPath: pageName, arguments: arguments);
-      pcRouterFakeProvider.router<T>(routerFakeInfo, clear: clear);
-
-      return routerFakeInfo.completer.future;
-    }
-  }
+  // static Future<T?> router<T>(BuildContext context, String pageName,
+  //     [Object? arguments]) async {
+  //   if (!PlatformUtil.isTableMode()) {
+  //     return Navigator.of(context).pushNamed<T>(pageName, arguments: arguments);
+  //   } else {
+  //     bool clear = false;
+  //     var parentRouterFake = PcRouterFake.of(context);
+  //     if (parentRouterFake == null) {
+  //       // means this request is from home, globals, search or dms, just to clean stack and push
+  //       clear = true;
+  //     }
+  //     var routerFakeInfo =
+  //         RouterFakeInfo<T>(routerPath: pageName, arguments: arguments);
+  //     pcRouterFakeProvider.router<T>(routerFakeInfo, clear: clear);
+  //
+  //     return routerFakeInfo.completer.future;
+  //   }
+  // }
 
   static Future<T?> push<T extends Object?>(
       BuildContext context, MaterialPageRoute<T> route) {
