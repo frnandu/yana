@@ -17,6 +17,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:yana/main.dart';
 import 'package:yana/provider/nwc_provider.dart';
 import 'package:yana/utils/base.dart';
+import 'package:yana/utils/router_path.dart';
 import 'package:yana/utils/string_util.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import '../../i18n/i18n.dart';
@@ -127,7 +128,8 @@ class _WalletReceiveRouter extends State<WalletReceiveInvoiceRouter> {
       backgroundColor: themeData.appBarTheme.foregroundColor,
       leading: GestureDetector(
           onTap: () {
-            context.pop();
+
+            context.go(RouterPath.WALLET);
           },
           child: Container(
             margin: const EdgeInsets.only(left: 10),

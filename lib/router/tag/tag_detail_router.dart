@@ -60,12 +60,12 @@ class _TagDetailRouter extends CustState<TagDetailRouter>
   Widget doBuild(BuildContext context) {
     var _settingProvider = Provider.of<SettingProvider>(context);
     if (StringUtil.isBlank(tag)) {
-      var arg = RouterUtil.routerArgs(context);
+      var arg = GoRouterState.of(context).extra;
       if (arg != null && arg is String) {
         tag = arg;
       }
     } else {
-      var arg = RouterUtil.routerArgs(context);
+      var arg = GoRouterState.of(context).extra;
       if (arg != null && arg is String && tag != arg) {
         // arg changed! reset
         tag = arg;
@@ -153,7 +153,7 @@ class _TagDetailRouter extends CustState<TagDetailRouter>
   }
 
   void doQuery() async {
-    if (subscription!=null) {
+    if (subscription != null) {
       ndk.requests.closeSubscription(subscription!.requestId);
     }
     var plainTag = tag!.replaceFirst("#", "");
@@ -162,9 +162,9 @@ class _TagDetailRouter extends CustState<TagDetailRouter>
       kind.EventKind.LONG_FORM,
       kind.EventKind.FILE_HEADER,
       kind.EventKind.POLL,
-    ],
-        tTags: [plainTag],
-        limit: 100);
+    ], tTags: [
+      plainTag
+    ], limit: 100);
     // this place set #t not #r ???
     // var list = TopicMap.getList(plainTag);
     // if (list != null) {
@@ -172,7 +172,8 @@ class _TagDetailRouter extends CustState<TagDetailRouter>
     // } else {
     //   queryArg["#t"] = [plainTag];
     // }
-    subscription = ndk.requests.subscription(filters: [filter], relaySet:  myInboxRelaySet!);
+    subscription = ndk.requests
+        .subscription(filters: [filter], relaySet: myInboxRelaySet!);
     subscription!.stream.listen((event) {
       onEvent(event);
     });

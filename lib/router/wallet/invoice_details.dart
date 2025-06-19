@@ -49,11 +49,13 @@ class _WalletReceiveRouter extends State<WalletReceiveRouter> {
         print(notification);
       });
       nwcProvider!.connection!.paymentsReceivedStream.listen((notification) {
-        if (payingInvoice!=null && notification.preimage!='' && notification.invoice == payingInvoice) {
-            setState(() {
-              paid = notification;
-            });
-            confettiController.play();
+        if (payingInvoice != null &&
+            notification.preimage != '' &&
+            notification.invoice == payingInvoice) {
+          setState(() {
+            paid = notification;
+          });
+          confettiController.play();
         }
       });
     }
@@ -102,7 +104,7 @@ class _WalletReceiveRouter extends State<WalletReceiveRouter> {
 
     List<Widget> list = [];
     if (paid == null) {
-      metadata = RouterUtil.routerArgs(context) as Metadata?;
+      metadata = GoRouterState.of(context).extra as Metadata?;
       if (metadata != null && StringUtil.isNotBlank(metadata!.lud16)) {
         list.add(Container(
             padding: const EdgeInsets.all(20),
@@ -198,8 +200,7 @@ class _WalletReceiveRouter extends State<WalletReceiveRouter> {
             fontColor: themeData.disabledColor,
             text: "Payment Invoice",
             onTap: () async {
-              context.go(RouterPath.WALLET_RECEIVE_INVOICE,
-                  extra: metadata);
+              context.go(RouterPath.WALLET_RECEIVE_INVOICE, extra: metadata);
             }));
       }
       // TODO
@@ -286,7 +287,9 @@ class _WalletReceiveRouter extends State<WalletReceiveRouter> {
           ),
         ),
       );
-      list.add(const SizedBox(height: 60,));
+      list.add(const SizedBox(
+        height: 60,
+      ));
       list.add(Button(
         text: "Close",
         fill: false,
@@ -296,15 +299,16 @@ class _WalletReceiveRouter extends State<WalletReceiveRouter> {
           context.pop();
         },
       ));
-      list.add(const SizedBox(height: 20,));
+      list.add(const SizedBox(
+        height: 20,
+      ));
       list.add(Button(
         text: "View Details",
         fill: false,
         fontColor: themeData.disabledColor,
         border: false,
         width: 300,
-        onTap: () {
-        },
+        onTap: () {},
       ));
     }
     return Scaffold(

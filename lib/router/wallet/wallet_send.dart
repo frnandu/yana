@@ -105,7 +105,7 @@ class _WalletSendRouter extends State<WalletSendRouter> {
 
     var themeData = Theme.of(context);
     var cardColor = themeData.cardColor;
-    String? sendTo = RouterUtil.routerArgs(context) as String?;
+    String? sendTo = GoRouterState.of(context).extra as String?;
     if (StringUtil.isNotBlank(sendTo)) {
       setState(() {
         recipientInputcontroller!.text = sendTo!;
@@ -122,7 +122,7 @@ class _WalletSendRouter extends State<WalletSendRouter> {
       backgroundColor: themeData.appBarTheme.foregroundColor,
       leading: GestureDetector(
           onTap: () {
-            context.pop();
+            context.go(RouterPath.WALLET);
           },
           child: Container(
             margin: const EdgeInsets.only(left: 10),
@@ -167,7 +167,6 @@ class _WalletSendRouter extends State<WalletSendRouter> {
                               maskType: EasyLoadingMaskType.black,
                               dismissOnTap: true,
                               duration: const Duration(seconds: 7));
-
                         }
                       }
                     }

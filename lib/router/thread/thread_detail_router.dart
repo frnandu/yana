@@ -206,7 +206,7 @@ class _ThreadDetailRouter extends CustState<ThreadDetailRouter>
         sourceEvent = loadedEvent;
         initFromArgs();
       } else {
-        var obj = RouterUtil.routerArgs(context);
+        var obj = GoRouterState.of(context).extra;
         if (obj != null && obj is Nip01Event) {
           sourceEvent = obj;
           if (sourceEvent == null) {
@@ -229,7 +229,7 @@ class _ThreadDetailRouter extends CustState<ThreadDetailRouter>
       }
 //      initFromArgs();
     } else {
-      var obj = RouterUtil.routerArgs(context);
+      var obj = GoRouterState.of(context).extra;
       if (obj != null && obj is Nip01Event) {
         if (obj.id != sourceEvent!.id) {
           // arg change! reset.
@@ -328,11 +328,9 @@ class _ThreadDetailRouter extends CustState<ThreadDetailRouter>
     }
     Widget main = FlutterListView(
         controller: _controller,
-
         delegate: FlutterListViewDelegate((BuildContext context, int index) {
           return mainList[index];
-        },
-        childCount: mainList.length));
+        }, childCount: mainList.length));
 
     // Widget main = ScrollablePositionedList.builder(
     //   initialScrollIndex: sourceIdx ?? 0,

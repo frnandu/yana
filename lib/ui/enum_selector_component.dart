@@ -139,7 +139,7 @@ class _EnumSelectorComponentState extends State<EnumSelectorComponent> {
         child: GestureDetector(
           behavior: HitTestBehavior.opaque,
           onTap: () {
-            context.pop();
+            Navigator.pop(context);
           },
           child: Container(
             width: double.infinity,
@@ -194,7 +194,7 @@ class EnumSelectorItemComponent extends StatelessWidget {
         if (onTap != null) {
           onTap!(enumObj);
         } else {
-          context.pop(enumObj);
+          Navigator.pop(context, enumObj);
         }
       },
       child: Container(

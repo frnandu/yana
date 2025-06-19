@@ -63,7 +63,7 @@ class _DMDetailRouter extends CustState<DMDetailRouter> with EditorMixin {
     var hintColor = themeData.hintColor;
     var s = I18n.of(context);
 
-    var arg = RouterUtil.routerArgs(context);
+    var arg = GoRouterState.of(context).extra;
     if (arg == null) {
       context.pop();
       return Container();
