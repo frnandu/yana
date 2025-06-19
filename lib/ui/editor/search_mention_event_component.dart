@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 
 import '../../utils/base.dart';
 import '../../models/event_find_util.dart';
-import '../../utils/router_util.dart';
 import '../../utils/string_util.dart';
 import '../../utils/when_stop_function.dart';
 import '../event/event_list_component.dart';

@@ -23,7 +23,6 @@ import '../../ui/editor/video_embed_builder.dart';
 import '../../ui/name_component.dart';
 import '../../utils/base.dart';
 import '../../utils/router_path.dart';
-import '../../utils/router_util.dart';
 import 'dm_detail_item_component.dart';
 
 class DMDetailRouter extends StatefulWidget {

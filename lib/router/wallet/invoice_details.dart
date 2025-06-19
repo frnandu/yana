@@ -20,7 +20,6 @@ import 'package:yana/utils/string_util.dart';
 import '../../nostr/nip19/nip19.dart';
 import '../../ui/button.dart';
 import '../../ui/user_pic_component.dart';
-import '../../utils/router_util.dart';
 
 class WalletReceiveRouter extends StatefulWidget {
   const WalletReceiveRouter({super.key});

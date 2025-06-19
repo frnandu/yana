@@ -6,7 +6,6 @@ import 'package:yana/utils/platform_util.dart';
 import '../../i18n/i18n.dart';
 import '../../router/index/index_app_bar.dart';
 import '../../utils/base.dart';
-import '../../utils/router_util.dart';
 import '../../utils/string_util.dart';
 import 'text_input_dialog_inner_component.dart';
 

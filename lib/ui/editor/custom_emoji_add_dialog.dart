@@ -8,7 +8,6 @@ import 'package:yana/models/custom_emoji.dart';
 import '../../utils/base.dart';
 import '../../i18n/i18n.dart';
 import '../../main.dart';
-import '../../utils/router_util.dart';
 import '../../utils/string_util.dart';
 import '../content/content_custom_emoji_component.dart';
 
@@ -197,6 +196,6 @@ class _CustomEmojiAddDialog extends State<CustomEmojiAddDialog> {
     } finally {
       EasyLoading.dismiss();
     }
-    context.pop( CustomEmoji(name: text, filepath: filepath));
+    context.pop(CustomEmoji(name: text, filepath: filepath));
   }
 }

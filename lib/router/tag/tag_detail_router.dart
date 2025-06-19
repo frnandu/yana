@@ -14,7 +14,6 @@ import '../../ui/tag_info_component.dart';
 import '../../utils/base_consts.dart';
 import '../../utils/peddingevents_later_function.dart';
 import '../../utils/platform_util.dart';
-import '../../utils/router_util.dart';
 import '../../utils/string_util.dart';
 
 class TagDetailRouter extends StatefulWidget {

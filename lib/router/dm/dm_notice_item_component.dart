@@ -7,7 +7,6 @@ import 'package:yana/provider/notice_provider.dart';
 import '../../ui/point_component.dart';
 import '../../utils/base.dart';
 import '../../utils/router_path.dart';
-import '../../utils/router_util.dart';
 import '../../utils/string_util.dart';
 
 class DMNoticeItemComponent extends StatelessWidget {
@@ -17,7 +16,8 @@ class DMNoticeItemComponent extends StatelessWidget {
 
   bool hasNewMessage;
 
-  DMNoticeItemComponent({super.key,
+  DMNoticeItemComponent({
+    super.key,
     required this.newestNotice,
     this.hasNewMessage = false,
   });

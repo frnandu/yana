@@ -22,7 +22,6 @@ import 'package:yana/ui/editor/pic_embed_builder.dart';
 import 'package:yana/ui/editor/tag_embed_builder.dart';
 import 'package:yana/ui/editor/video_embed_builder.dart';
 import 'package:yana/utils/base.dart';
-import 'package:yana/utils/router_util.dart';
 
 import '../../i18n/i18n.dart';
 import '../../nostr/event_relation.dart';
@@ -241,14 +240,14 @@ class _EditorRouter extends CustState<EditorRouter> with EditorMixin {
           autoFocus: false,
           expands: false,
           embedBuilders: [
-              MentionUserEmbedBuilder(),
-              MentionEventEmbedBuilder(),
-              PicEmbedBuilder(),
-              VideoEmbedBuilder(),
-              LnbcEmbedBuilder(),
-              TagEmbedBuilder(),
-              CustomEmojiEmbedBuilder(),
-      ]),
+            MentionUserEmbedBuilder(),
+            MentionEventEmbedBuilder(),
+            PicEmbedBuilder(),
+            VideoEmbedBuilder(),
+            LnbcEmbedBuilder(),
+            TagEmbedBuilder(),
+            CustomEmojiEmbedBuilder(),
+          ]),
     );
     // Widget quillWidget = quill.QuillProvider(
     //     configurations: quill.QuillConfigurations(

@@ -24,7 +24,6 @@ import '../../i18n/i18n.dart';
 
 import '../../ui/button.dart';
 import '../../utils/platform_util.dart';
-import '../../utils/router_util.dart';
 import 'bitcoin_amount.dart';
 
 class WalletReceiveInvoiceRouter extends StatefulWidget {
@@ -128,7 +127,6 @@ class _WalletReceiveRouter extends State<WalletReceiveInvoiceRouter> {
       backgroundColor: themeData.appBarTheme.foregroundColor,
       leading: GestureDetector(
           onTap: () {
-
             context.go(RouterPath.WALLET);
           },
           child: Container(

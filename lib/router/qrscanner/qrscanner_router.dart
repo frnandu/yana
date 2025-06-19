@@ -4,8 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
-import '../../utils/router_util.dart';
-
 class QRScannerRouter extends StatefulWidget {
   const QRScannerRouter({super.key});
 

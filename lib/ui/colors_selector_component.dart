@@ -3,7 +3,6 @@ import 'package:go_router/go_router.dart';
 
 import '../utils/base.dart';
 import '../utils/colors.dart';
-import '../utils/router_util.dart';
 
 class ColorSelectorComponent extends StatelessWidget {
   ColorSelectorComponent();
@@ -85,7 +84,8 @@ class ColorSelectorItemComponent extends StatelessWidget {
 
   // final bool isLast;
 
-  ColorSelectorItemComponent({super.key,
+  ColorSelectorItemComponent({
+    super.key,
     required this.color,
     // this.isLast = false,
   });

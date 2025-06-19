@@ -18,7 +18,6 @@ import '../../ui/editor/search_mention_user_component.dart';
 import '../../utils/base.dart';
 import '../../utils/dio_util.dart';
 import '../../utils/router_path.dart';
-import '../../utils/router_util.dart';
 
 class WalletSendRouter extends StatefulWidget {
   const WalletSendRouter({super.key});

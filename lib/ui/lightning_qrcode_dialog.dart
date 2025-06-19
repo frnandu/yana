@@ -11,16 +11,17 @@ import 'package:url_launcher/url_launcher.dart';
 import '../utils/base.dart';
 import '../i18n/i18n.dart';
 import '../utils/platform_util.dart';
-import '../utils/router_util.dart';
 
 class LightningQrcodeDialog extends StatefulWidget {
   String invoice;
 
-  LightningQrcodeDialog({super.key,
+  LightningQrcodeDialog({
+    super.key,
     required this.invoice,
   });
 
-  static Future<bool?> show(BuildContext context, String text, {String? content}) async {
+  static Future<bool?> show(BuildContext context, String text,
+      {String? content}) async {
     return await showDialog<bool>(
       context: context,
       builder: (_context) {
@@ -57,13 +58,11 @@ class _LightningQrcodeDialog extends State<LightningQrcodeDialog> {
       child: PrettyQrView.data(
           data: widget.invoice,
           decoration: const PrettyQrDecoration(
-              shape: PrettyQrSmoothSymbol(roundFactor: 0),
-              image: PrettyQrDecorationImage(
-
-                image: AssetImage('assets/imgs/logo/logo-new.png'),
-              ),
-              )
-      ),
+            shape: PrettyQrSmoothSymbol(roundFactor: 0),
+            image: PrettyQrDecorationImage(
+              image: AssetImage('assets/imgs/logo/logo-new.png'),
+            ),
+          )),
       // child: PrettyQr(
       //   data: nip19Pubkey,
       //   size: QR_WIDTH,
@@ -117,17 +116,17 @@ class _LightningQrcodeDialog extends State<LightningQrcodeDialog> {
         // Screenshot(
         //   controller: screenshotController,
         //   child:
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: cardColor,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: list,
-            ),
+        Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: cardColor,
           ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: list,
+          ),
+        ),
         // ),
       ],
     );
@@ -268,7 +267,8 @@ class _LightningQrcodeDialog extends State<LightningQrcodeDialog> {
 
   void _doCopy(String text) {
     Clipboard.setData(ClipboardData(text: text)).then((_) {
-      EasyLoading.showSuccess(I18n.of(context).Copy_success, dismissOnTap: true, duration: const Duration(seconds: 2));
+      EasyLoading.showSuccess(I18n.of(context).Copy_success,
+          dismissOnTap: true, duration: const Duration(seconds: 2));
     });
   }
 

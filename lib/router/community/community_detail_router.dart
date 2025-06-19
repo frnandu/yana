@@ -20,7 +20,6 @@ import '../../ui/event/event_list_component.dart';
 import '../../ui/event_delete_callback.dart';
 import '../../utils/base_consts.dart';
 import '../../utils/peddingevents_later_function.dart';
-import '../../utils/router_util.dart';
 import '../edit/editor_router.dart';
 
 class CommunityDetailRouter extends StatefulWidget {

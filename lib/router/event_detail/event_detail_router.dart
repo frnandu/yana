@@ -16,7 +16,6 @@ import '../../ui/event/event_load_list_component.dart';
 import '../../ui/event/reaction_event_list_component.dart';
 import '../../ui/event/zap_event_list_component.dart';
 import '../../utils/platform_util.dart';
-import '../../utils/router_util.dart';
 import '../thread/thread_detail_router.dart';
 
 class EventDetailRouter extends StatefulWidget {

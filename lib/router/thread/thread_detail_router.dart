@@ -23,7 +23,6 @@ import '../../ui/simple_name_component.dart';
 import '../../utils/base.dart';
 import '../../utils/peddingevents_later_function.dart';
 import '../../utils/platform_util.dart';
-import '../../utils/router_util.dart';
 import '../../utils/string_util.dart';
 import '../../utils/when_stop_function.dart';
 import 'thread_detail_event.dart';

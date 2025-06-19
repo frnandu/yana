@@ -5,7 +5,6 @@ import 'package:get_time_ago/get_time_ago.dart';
 import 'package:provider/provider.dart';
 import 'package:yana/ui/content/content_decoder.dart';
 import 'package:yana/utils/router_path.dart';
-import 'package:yana/utils/router_util.dart';
 
 import '../../provider/dm_provider.dart';
 import '../../provider/setting_provider.dart';
@@ -41,8 +40,9 @@ class _DMDetailItemComponent extends State<DMDetailItemComponent> {
   String? content;
 
   Future<void> decryptContent() async {
-    if (content==null && widget.event.content.contains('iv=')) {
-      var a = await provider.decrypt(widget.event.content, widget.sessionPubkey);
+    if (content == null && widget.event.content.contains('iv=')) {
+      var a =
+          await provider.decrypt(widget.event.content, widget.sessionPubkey);
       if (a != null) {
         setState(() {
           content = a;
@@ -68,7 +68,8 @@ class _DMDetailItemComponent extends State<DMDetailItemComponent> {
     var smallTextSize = themeData.textTheme.bodySmall!.fontSize;
     var hintColor = themeData.hintColor;
 
-    String timeStr = GetTimeAgo.parse(DateTime.fromMillisecondsSinceEpoch(widget.event.createdAt * 1000));
+    String timeStr = GetTimeAgo.parse(
+        DateTime.fromMillisecondsSinceEpoch(widget.event.createdAt * 1000));
 
     decryptContent();
     // if (loggedUserSigner is AmberEventSigner) {
@@ -83,7 +84,8 @@ class _DMDetailItemComponent extends State<DMDetailItemComponent> {
         right: Base.BASE_PADDING_HALF,
       ),
       child: Column(
-        crossAxisAlignment: !widget.isLocal ? CrossAxisAlignment.start : CrossAxisAlignment.end,
+        crossAxisAlignment:
+            !widget.isLocal ? CrossAxisAlignment.start : CrossAxisAlignment.end,
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
@@ -105,13 +107,16 @@ class _DMDetailItemComponent extends State<DMDetailItemComponent> {
             ),
             // child: SelectableText(content),
             child: Column(
-              crossAxisAlignment: widget.isLocal ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+              crossAxisAlignment: widget.isLocal
+                  ? CrossAxisAlignment.end
+                  : CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: ContentDecoder.decode(
                 context,
-                content??widget.event.content,
+                content ?? widget.event.content,
                 widget.event,
-                showLinkPreview: _settingProvider.linkPreview == OpenStatus.OPEN,
+                showLinkPreview:
+                    _settingProvider.linkPreview == OpenStatus.OPEN,
               ),
             ),
           ),
