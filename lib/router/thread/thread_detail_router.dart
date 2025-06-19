@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_list_view/flutter_list_view.dart';
+import 'package:go_router/go_router.dart';
 import 'package:ndk/ndk.dart';
 import 'package:provider/provider.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
@@ -209,7 +210,7 @@ class _ThreadDetailRouter extends CustState<ThreadDetailRouter>
         if (obj != null && obj is Nip01Event) {
           sourceEvent = obj;
           if (sourceEvent == null) {
-            RouterUtil.back(context);
+            context.pop();
             return Container();
           }
         } else if (obj != null && obj is String) {
@@ -371,7 +372,7 @@ class _ThreadDetailRouter extends CustState<ThreadDetailRouter>
           appBar: AppBar(
             leading: GestureDetector(
               onTap: () {
-                RouterUtil.back(context);
+                context.pop();
               },
               child: Icon(
                 Icons.arrow_back_ios,

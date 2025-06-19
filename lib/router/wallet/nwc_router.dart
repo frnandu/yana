@@ -99,7 +99,7 @@ class _NwcRouter extends State<NwcRouter> {
                   });
                   await nwcProvider?.connect(nwc!, onConnect: (lud16) async {
                     await metadataProvider.updateLud16IfEmpty(lud16);
-                    context.pop();
+                    context.go(RouterPath.WALLET);
                   }, onError: (error) async {
                     EasyLoading.showError(
                         'Error connecting to wallet...${error!}',
@@ -190,7 +190,7 @@ class _NwcRouter extends State<NwcRouter> {
                                       onConnect: (lud16) async {
                                     await metadataProvider
                                         .updateLud16IfEmpty(lud16);
-                                    context.pop();
+                                    context.go(RouterPath.WALLET);
                                   }, onError: (error) async {
                                     EasyLoading.showError(
                                         'Error connecting to wallet...${error!}',

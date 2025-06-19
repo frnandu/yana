@@ -122,7 +122,7 @@ class _WalletSendRouter extends State<WalletSendRouter> {
       backgroundColor: themeData.appBarTheme.foregroundColor,
       leading: GestureDetector(
           onTap: () {
-            RouterUtil.back(context);
+            context.pop();
           },
           child: Container(
             margin: const EdgeInsets.only(left: 10),

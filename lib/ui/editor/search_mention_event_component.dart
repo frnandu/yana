@@ -1,3 +1,4 @@
+import 'package:go_router/go_router.dart';
 import 'package:ndk/domain_layer/entities/nip_01_event.dart';
 import 'package:flutter/material.dart';
 
@@ -37,7 +38,7 @@ class _SearchMentionEventComponent extends State<SearchMentionEventComponent>
           var event = events[index];
           return GestureDetector(
             onTap: () {
-              RouterUtil.back(context, event.id);
+              context.pop(event.id);
             },
             child: EventListComponent(
               event: event,

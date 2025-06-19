@@ -4,6 +4,7 @@ import 'package:android_intent_plus/android_intent.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:go_router/go_router.dart';
 import 'package:pretty_qr_code/pretty_qr_code.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -138,7 +139,7 @@ class _LightningQrcodeDialog extends State<LightningQrcodeDialog> {
         child: GestureDetector(
           behavior: HitTestBehavior.opaque,
           onTap: () {
-            RouterUtil.back(context);
+            context.pop();
           },
           child: Container(
             width: double.infinity,
@@ -236,7 +237,7 @@ class _LightningQrcodeDialog extends State<LightningQrcodeDialog> {
   //       child: GestureDetector(
   //         behavior: HitTestBehavior.opaque,
   //         onTap: () {
-  //           RouterUtil.back(context);
+  //           context.pop();
   //         },
   //         child: Container(
   //           width: double.infinity,

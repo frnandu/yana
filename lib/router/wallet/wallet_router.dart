@@ -216,6 +216,7 @@ class _WalletRouter extends State<WalletRouter> with ProtocolListener {
   Widget build(BuildContext context) {
     var _nwcProvider = Provider.of<NwcProvider>(context);
     var _settingsProvider = Provider.of<SettingProvider>(context);
+    mediaDataCache.update(context);
 
     var themeData = Theme.of(context);
     bool albygoing = false;
@@ -683,7 +684,7 @@ class _WalletRouter extends State<WalletRouter> with ProtocolListener {
         borderRadius: BorderRadius.circular(30),
       ),
       backgroundColor: themeData.appBarTheme.backgroundColor,
-      leading: GestureDetector(
+      leading: AppFeatures.isWalletOnly? Container(): GestureDetector(
           onTap: () {
             context.go(RouterPath.INDEX);
           },
@@ -780,7 +781,7 @@ class _WalletRouter extends State<WalletRouter> with ProtocolListener {
                       nwcProvider?.disconnect();
                     });
                   } else if (value == "settings") {
-                    context.go(RouterPath.SETTINGS_WALLET);
+                    context.push(RouterPath.SETTINGS_WALLET);
                   }
                 }))
         : Container();

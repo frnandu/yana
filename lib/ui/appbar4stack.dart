@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:yana/utils/base.dart';
 
 import '../utils/router_util.dart';
@@ -41,7 +42,7 @@ class _Appbar4Stack extends State<Appbar4Stack> {
           child: const Icon(Icons.arrow_back_ios_new),
         ),
         onTap: () {
-          RouterUtil.back(context);
+          context.pop();
         },
       )
     ];

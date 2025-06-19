@@ -83,7 +83,7 @@ class _WalletReceiveRouter extends State<WalletReceiveRouter> {
       backgroundColor: themeData.appBarTheme.foregroundColor,
       leading: GestureDetector(
           onTap: () {
-            context.pop();
+            context.go(RouterPath.WALLET);
           },
           child: Container(
             margin: const EdgeInsets.only(left: 10),
@@ -281,7 +281,7 @@ class _WalletReceiveRouter extends State<WalletReceiveRouter> {
         border: true,
         width: 300,
         onTap: () {
-          context.pop();
+          context.go(RouterPath.WALLET);
         },
       ));
       list.add(const SizedBox(

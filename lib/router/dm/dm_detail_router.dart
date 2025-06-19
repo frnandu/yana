@@ -65,7 +65,7 @@ class _DMDetailRouter extends CustState<DMDetailRouter> with EditorMixin {
 
     var arg = RouterUtil.routerArgs(context);
     if (arg == null) {
-      RouterUtil.back(context);
+      context.pop();
       return Container();
     }
     detail = arg as DMSessionDetail;
@@ -252,7 +252,7 @@ class _DMDetailRouter extends CustState<DMDetailRouter> with EditorMixin {
       appBar: AppBar(
         leading: GestureDetector(
           onTap: () {
-            RouterUtil.back(context);
+            context.pop();
           },
           child: Icon(
             Icons.arrow_back_ios,

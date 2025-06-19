@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:numberpicker/numberpicker.dart';
 import 'package:table_calendar/table_calendar.dart';
@@ -227,7 +228,7 @@ class _DatetimePickerComponent extends State<DatetimePickerComponent> {
   }
 
   void cancelFunc() {
-    RouterUtil.back(context);
+    context.pop();
   }
 
   Widget buildNumberPicker(String title, int min, int max, int value,
@@ -253,8 +254,7 @@ class _DatetimePickerComponent extends State<DatetimePickerComponent> {
   }
 
   void comfirm() {
-    var dateTime = DateTime(
-        _selectedDay.year, _selectedDay.month, _selectedDay.day, hour, minute);
-    RouterUtil.back(context, dateTime);
+    context.pop(DateTime(
+        _selectedDay.year, _selectedDay.month, _selectedDay.day, hour, minute));
   }
 }

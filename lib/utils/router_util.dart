@@ -60,19 +60,19 @@ class RouterUtil {
     return null;
   }
 
-  static void back(BuildContext context, [Object? returnObj]) {
-    NavigatorState ns = Navigator.of(context);
-
-    var parentRouterFake = PcRouterFake.of(context);
-    if (parentRouterFake == null) {
-      if (ns.canPop()) {
-        ns.pop(returnObj);
-      }
-    } else {
-      // handle pop result
-      var info = parentRouterFake.info;
-      pcRouterFakeProvider.remove(info);
-      info.completer.complete(returnObj);
-    }
-  }
+  // static void back(BuildContext context, [Object? returnObj]) {
+  //   NavigatorState ns = Navigator.of(context);
+  //
+  //   var parentRouterFake = PcRouterFake.of(context);
+  //   if (parentRouterFake == null) {
+  //     if (ns.canPop()) {
+  //       ns.pop(returnObj);
+  //     }
+  //   } else {
+  //     // handle pop result
+  //     var info = parentRouterFake.info;
+  //     pcRouterFakeProvider.remove(info);
+  //     info.completer.complete(returnObj);
+  //   }
+  // }
 }

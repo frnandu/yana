@@ -1,4 +1,5 @@
 import 'package:flutter_list_view/flutter_list_view.dart';
+import 'package:go_router/go_router.dart';
 import 'package:ndk/domain_layer/entities/nip_01_event.dart';
 import 'package:ndk/shared/nips/nip25/reactions.dart';
 import 'package:flutter/material.dart';
@@ -69,7 +70,7 @@ class _EventDetailRouter extends State<EventDetailRouter> {
       }
     }
     if (event == null && eventId == null) {
-      RouterUtil.back(context);
+      context.pop();
       return Container();
     }
     var themeData = Theme.of(context);
@@ -185,7 +186,7 @@ class _EventDetailRouter extends State<EventDetailRouter> {
       appBar: AppBar(
         leading: GestureDetector(
           onTap: () {
-            RouterUtil.back(context);
+            context.pop();
           },
           child: Icon(
             Icons.arrow_back_ios,

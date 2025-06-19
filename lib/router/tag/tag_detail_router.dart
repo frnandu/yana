@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:ndk/ndk.dart';
 import 'package:provider/provider.dart';
 import 'package:yana/main.dart';
@@ -74,7 +75,7 @@ class _TagDetailRouter extends CustState<TagDetailRouter>
       }
     }
     if (StringUtil.isBlank(tag)) {
-      RouterUtil.back(context);
+      context.pop();
       return Container();
     }
 
@@ -132,7 +133,7 @@ class _TagDetailRouter extends CustState<TagDetailRouter>
       appBar: AppBar(
         leading: GestureDetector(
           onTap: () {
-            RouterUtil.back(context);
+            context.pop();
           },
           child: Icon(
             Icons.arrow_back_ios,

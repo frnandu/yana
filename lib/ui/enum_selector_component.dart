@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import '../utils/base.dart';
 import '../utils/base_consts.dart';
@@ -138,7 +139,7 @@ class _EnumSelectorComponentState extends State<EnumSelectorComponent> {
         child: GestureDetector(
           behavior: HitTestBehavior.opaque,
           onTap: () {
-            RouterUtil.back(context);
+            context.pop();
           },
           child: Container(
             width: double.infinity,
@@ -193,7 +194,7 @@ class EnumSelectorItemComponent extends StatelessWidget {
         if (onTap != null) {
           onTap!(enumObj);
         } else {
-          RouterUtil.back(context, enumObj);
+          context.pop(enumObj);
         }
       },
       child: Container(

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:ndk/ndk.dart';
 import 'package:provider/provider.dart';
 import 'package:widget_size/widget_size.dart';
@@ -67,7 +68,7 @@ class _CommunityDetailRouter extends CustState<CommunityDetailRouter> with Pendd
       }
     }
     if (communityId == null) {
-      RouterUtil.back(context);
+      context.pop();
       return Container();
     }
     var _settingProvider = Provider.of<SettingProvider>(context);
@@ -125,7 +126,7 @@ class _CommunityDetailRouter extends CustState<CommunityDetailRouter> with Pendd
       appBar: AppBar(
         leading: GestureDetector(
           onTap: () {
-            RouterUtil.back(context);
+            context.pop();
           },
           child: Icon(
             Icons.arrow_back_ios,

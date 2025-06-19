@@ -6,6 +6,7 @@ import 'package:confetti/confetti.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_timer_countdown/flutter_timer_countdown.dart';
+import 'package:go_router/go_router.dart';
 import 'package:lottie/lottie.dart';
 import 'package:ndk/domain_layer/entities/metadata.dart';
 import 'package:ndk/domain_layer/usecases/nwc/nwc_notification.dart';
@@ -126,7 +127,7 @@ class _WalletReceiveRouter extends State<WalletReceiveInvoiceRouter> {
       backgroundColor: themeData.appBarTheme.foregroundColor,
       leading: GestureDetector(
           onTap: () {
-            RouterUtil.back(context);
+            context.pop();
           },
           child: Container(
             margin: const EdgeInsets.only(left: 10),
@@ -220,7 +221,7 @@ class _WalletReceiveRouter extends State<WalletReceiveInvoiceRouter> {
                     Duration(seconds: expiration!),
                   ),
                   onEnd: () {
-                    RouterUtil.back(context);
+                    context.pop();
                   },
                 )
               ],
@@ -473,7 +474,7 @@ class _WalletReceiveRouter extends State<WalletReceiveInvoiceRouter> {
       list.add(Button(
         text: "Close",
         onTap: () {
-          RouterUtil.back(context);
+          context.pop();
         },
       ));
     }

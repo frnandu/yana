@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:go_router/go_router.dart';
 import 'package:mime/mime.dart';
 import 'package:ndk/domain_layer/entities/metadata.dart';
 import 'package:ndk/domain_layer/entities/ndk_file.dart';
@@ -348,7 +349,7 @@ class _ProfileEditorRouter extends CustState<ProfileEditorRouter> {
       broadcasting = false;
     });
 
-    RouterUtil.back(context);
+    context.pop();
   }
 
   @override

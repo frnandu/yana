@@ -982,7 +982,13 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
       routes: [
         GoRoute(
           path: RouterPath.INDEX,
-          builder: (context, state) => AppFeatures.isWalletOnly ? WalletRouter(showAppBar: false) : IndexRouter(reload: reload),
+          builder: (context, state) => AppFeatures.isWalletOnly ? WalletRouter(showAppBar: true) : IndexRouter(reload: reload),
+        ),
+        GoRoute(
+          path: '/dynamic',
+          builder: (context, state) {
+            return state.extra as Widget;
+          },
         ),
         if (AppFeatures.enableSocial) ...[
           GoRoute(

@@ -51,7 +51,7 @@ class _RelayInfoRouter extends State<RelayInfoRouter> {
     }
     // relayInfo = relay.info;
     if (relayInfo == null) {
-      //RouterUtil.back(context);
+      //context.pop();
       return Container();
     }
 

@@ -402,7 +402,7 @@ class _LoginRouter extends State<LoginRouter>
     indexProvider.setCurrentTap(IndexTaps.FOLLOW);
     if (widget.canGoBack) {
       context.go(RouterPath.INDEX);
-      // RouterUtil.back(context);
+      // context.pop();
     }
   }
 }
