@@ -23,6 +23,7 @@ import '../../ui/button.dart';
 import 'package:go_router/go_router.dart';
 import '../../ui/user_pic_component.dart';
 import '../../utils/router_path.dart';
+import '../../config/app_features.dart';
 
 class WalletReceiveRouter extends StatefulWidget {
   const WalletReceiveRouter({super.key});
@@ -122,7 +123,7 @@ class _WalletReceiveRouter extends State<WalletReceiveRouter> {
                   image: PrettyQrDecorationImage(
                     scale: 0.30,
                     padding: EdgeInsets.all(20),
-                    image: AssetImage('assets/imgs/logo/logo-new.png'),
+                    image: const AssetImage('assets/imgs/logo/logo-new.png'),
                   ),
                 ))));
         list.add(const SizedBox(height: 10));

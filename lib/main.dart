@@ -328,6 +328,9 @@ const DEFAULT_BLOSSOM_SERVERS = [
 // }
 
 Future<void> initRelays({bool newKey = false}) async {
+  if (!AppFeatures.enableSocial) {
+    return;
+  }
   // EasyLoading.dismiss();
   // EasyLoading.showToast("connecting to bootstrap relays...",
   //     dismissOnTap: true,
@@ -721,7 +724,7 @@ Future<void> main() async {
     }
     ndk.accounts.loginExternalSigner(signer: eventSigner);
   }
-  if (loggedUserSigner == null) {
+  if (loggedUserSigner == null && !AppFeatures.isWalletOnly) {
     String priv = generatePrivateKey();
     await settingProvider.addAndChangeKey(priv, true, false, updateUI: false);
     String publicKey = getPublicKey(priv);

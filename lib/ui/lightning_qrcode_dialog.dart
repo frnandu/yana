@@ -60,7 +60,7 @@ class _LightningQrcodeDialog extends State<LightningQrcodeDialog> {
           decoration: const PrettyQrDecoration(
             shape: PrettyQrSmoothSymbol(roundFactor: 0),
             image: PrettyQrDecorationImage(
-              image: AssetImage('assets/imgs/logo/logo-new.png'),
+              image: const AssetImage('assets/imgs/logo/logo-new.png'),
             ),
           )),
       // child: PrettyQr(

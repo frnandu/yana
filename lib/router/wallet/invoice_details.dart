@@ -118,7 +118,7 @@ class _WalletReceiveRouter extends State<WalletReceiveRouter> {
                       PrettyQrSmoothSymbol(color: Colors.white, roundFactor: 1),
                   image: PrettyQrDecorationImage(
                     scale: 0.3,
-                    image: AssetImage('assets/imgs/logo/logo-new.png'),
+                    image: const AssetImage('assets/imgs/logo/logo-new.png'),
                   ),
                 ))));
         list.add(const SizedBox(height: 10));

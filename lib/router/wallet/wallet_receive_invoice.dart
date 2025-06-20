@@ -21,6 +21,7 @@ import 'package:yana/utils/router_path.dart';
 import 'package:yana/utils/string_util.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import '../../i18n/i18n.dart';
+import '../../config/app_features.dart';
 
 import '../../ui/button.dart';
 import '../../utils/platform_util.dart';
@@ -160,7 +161,8 @@ class _WalletReceiveRouter extends State<WalletReceiveInvoiceRouter> {
                         image: metadata != null &&
                                 StringUtil.isNotBlank(metadata!.picture)
                             ? CachedNetworkImageProvider(metadata!.picture!)
-                            : const AssetImage('assets/imgs/logo/logo-new.png'),
+                            : const AssetImage(
+                                    'assets/imgs/logo/logo-new.png'),
                       ),
                     )))
             // LightningQrcodeDialog(invoice: payingInvoice!)
