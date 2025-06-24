@@ -103,7 +103,7 @@ class _IndexRouter extends CustState<IndexRouter>
           if (canPop) {
             context.pop();
           } else {
-            context.go(RouterPath.WALLET);
+            context.push(RouterPath.WALLET);
           }
         }
       } else if (url.startsWith(NwcProvider.NWC_PROTOCOL_PREFIX)) {
@@ -160,7 +160,7 @@ class _IndexRouter extends CustState<IndexRouter>
           }
         });
       } else if (url.startsWith("lightning:")) {
-        context.go(RouterPath.WALLET_SEND, extra: url.split(":").last);
+        context.push(RouterPath.WALLET_SEND, extra: url.split(":").last);
       } else if (url.startsWith("nostr:")) {
         RegExpMatch? match = Nip19.nip19regex.firstMatch(url);
 
@@ -187,7 +187,7 @@ class _IndexRouter extends CustState<IndexRouter>
             }
             key = Nip19.decode(key);
             if (AppFeatures.enableSocial) {
-              context.go(RouterPath.THREAD_DETAIL, extra: key);
+              context.push(RouterPath.THREAD_DETAIL, extra: key);
             }
           } else if (NIP19Tlv.isNprofile(key)) {
             var nprofile = NIP19Tlv.decodeNprofile(key);
@@ -205,7 +205,7 @@ class _IndexRouter extends CustState<IndexRouter>
               // inline
               Relay relay =
                   Relay(url: url, connectionSource: ConnectionSource.explicit);
-              context.go(RouterPath.RELAY_INFO, extra: relay);
+              context.push(RouterPath.RELAY_INFO, extra: relay);
             }
           } else if (NIP19Tlv.isNevent(key)) {
             var nevent = NIP19Tlv.decodeNevent(key);
@@ -215,7 +215,7 @@ class _IndexRouter extends CustState<IndexRouter>
                 // await ndk.relays.reconnectRelays(nevent.relays!);
               }
               if (AppFeatures.enableSocial) {
-                context.go(RouterPath.THREAD_DETAIL, extra: nevent.id);
+                context.push(RouterPath.THREAD_DETAIL, extra: nevent.id);
               }
             }
           } else if (NIP19Tlv.isNaddr(key)) {
@@ -224,7 +224,7 @@ class _IndexRouter extends CustState<IndexRouter>
               if (StringUtil.isNotBlank(naddr.id) &&
                   naddr.kind == Nip01Event.kTextNodeKind) {
                 if (AppFeatures.enableSocial) {
-                  context.go(RouterPath.THREAD_DETAIL, extra: naddr.id);
+                  context.push(RouterPath.THREAD_DETAIL, extra: naddr.id);
                 }
               } else if (StringUtil.isNotBlank(naddr.author) &&
                   naddr.kind == Metadata.kKind) {

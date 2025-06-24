@@ -226,7 +226,7 @@ class _WalletSendConfirmRouter extends State<WalletSendConfirmRouter> {
       backgroundColor: themeData.appBarTheme.foregroundColor,
       leading: GestureDetector(
           onTap: () {
-            context.go(RouterPath.WALLET);
+            context.pop();
           },
           child: Container(
             margin: const EdgeInsets.only(left: 10),

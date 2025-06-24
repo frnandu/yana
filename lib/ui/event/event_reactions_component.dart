@@ -392,7 +392,7 @@ class _EventReactionsComponent extends State<EventReactionsComponent> {
     } else if (value == "share") {
       onShareTap();
     } else if (value == "detail") {
-      context.go(RouterPath.EVENT_DETAIL, extra: widget.event);
+      context.push(RouterPath.EVENT_DETAIL, extra: widget.event);
     } else if (value == "star") {
       // TODO star event
     } else if (value == "broadcast") {

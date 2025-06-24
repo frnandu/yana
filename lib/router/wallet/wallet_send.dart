@@ -68,7 +68,7 @@ class _WalletSendRouter extends State<WalletSendRouter> {
             amountInputcontroller.text = "$num";
             recipientAddress = t;
           });
-          context.go(RouterPath.WALLET_SEND_CONFIRM, extra: t);
+          context.push(RouterPath.WALLET_SEND_CONFIRM, extra: t);
         }
       } else if (t.contains("@")) {
         setState(() {
@@ -121,7 +121,7 @@ class _WalletSendRouter extends State<WalletSendRouter> {
       backgroundColor: themeData.appBarTheme.foregroundColor,
       leading: GestureDetector(
           onTap: () {
-            context.go(RouterPath.WALLET);
+            context.pop();
           },
           child: Container(
             margin: const EdgeInsets.only(left: 10),
@@ -210,7 +210,7 @@ class _WalletSendRouter extends State<WalletSendRouter> {
                         amountInputcontroller.text = "$num";
                         recipientAddress = t;
                       });
-                      context.go(RouterPath.WALLET_SEND_CONFIRM, extra: t);
+                      context.push(RouterPath.WALLET_SEND_CONFIRM, extra: t);
                     }
                   }
                 }
@@ -354,7 +354,7 @@ class _WalletSendRouter extends State<WalletSendRouter> {
               if (responseMap != null &&
                   StringUtil.isNotBlank(responseMap["pr"])) {
                 invoice = responseMap["pr"];
-                context.go(RouterPath.WALLET_SEND_CONFIRM, extra: invoice);
+                context.push(RouterPath.WALLET_SEND_CONFIRM, extra: invoice);
               } else {
                 if (responseMap != null &&
                     responseMap["status"] == "ERROR" &&
@@ -391,7 +391,7 @@ class _WalletSendRouter extends State<WalletSendRouter> {
       setState(() {
         invoice = qr;
         if (invoice != null) {
-          context.go(RouterPath.WALLET_SEND_CONFIRM, extra: invoice);
+          context.push(RouterPath.WALLET_SEND_CONFIRM, extra: invoice);
         }
 
         scanning = false;

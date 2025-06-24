@@ -79,8 +79,8 @@ class _WalletRouter extends State<WalletRouter> with ProtocolListener {
   @override
   void initState() {
     super.initState();
-
-    settingProvider.getNwc().then((value) {
+    if (!nwcProvider!.isConnected) {
+      settingProvider.getNwc().then((value) {
         setState(() {
           _isConnecting = value != null && value.isNotEmpty;
         });
@@ -94,7 +94,8 @@ class _WalletRouter extends State<WalletRouter> with ProtocolListener {
             nwcProvider?.addListener(_nwcListener!);
           });
         }
-    });
+      });
+    }
     protocolHandler.addListener(this);
     BackButtonInterceptor.add(myInterceptor);
   }
@@ -155,11 +156,11 @@ class _WalletRouter extends State<WalletRouter> with ProtocolListener {
           if (canPop) {
             context.pop();
           } else {
-            context.go(newAccount ? RouterPath.INDEX : RouterPath.WALLET);
+            context.push(newAccount ? RouterPath.INDEX : RouterPath.WALLET);
           }
         });
       } else if (url.startsWith("lightning:")) {
-        context.go(RouterPath.WALLET_SEND, extra: url.split(":").last);
+        context.push(RouterPath.WALLET_SEND, extra: url.split(":").last);
       } else if (url.startsWith("nostr:")) {
         RegExpMatch? match = Nip19.nip19regex.firstMatch(url);
 
@@ -183,7 +184,7 @@ class _WalletRouter extends State<WalletRouter> with ProtocolListener {
               key = key.substring(0, Nip19.NOTEID_LENGTH);
             }
             key = Nip19.decode(key);
-            context.go(RouterPath.THREAD_DETAIL, extra: key);
+            context.push(RouterPath.THREAD_DETAIL, extra: key);
           } else if (NIP19Tlv.isNprofile(key)) {
             var nprofile = NIP19Tlv.decodeNprofile(key);
             if (nprofile != null) {
@@ -198,7 +199,7 @@ class _WalletRouter extends State<WalletRouter> with ProtocolListener {
               // inline
               Relay relay =
                   Relay(url: url, connectionSource: ConnectionSource.explicit);
-              context.go(RouterPath.RELAY_INFO, extra: relay);
+              context.push(RouterPath.RELAY_INFO, extra: relay);
             }
           } else if (NIP19Tlv.isNevent(key)) {
             var nevent = NIP19Tlv.decodeNevent(key);
@@ -207,14 +208,14 @@ class _WalletRouter extends State<WalletRouter> with ProtocolListener {
                 // TODO allowReconnectRelays is false, WTF?
                 // await ndk.relays.reconnectRelays(nevent.relays!);
               }
-              context.go(RouterPath.THREAD_DETAIL, extra: nevent.id);
+              context.push(RouterPath.THREAD_DETAIL, extra: nevent.id);
             }
           } else if (NIP19Tlv.isNaddr(key)) {
             var naddr = NIP19Tlv.decodeNaddr(key);
             if (naddr != null) {
               if (StringUtil.isNotBlank(naddr.id) &&
                   naddr.kind == Nip01Event.kTextNodeKind) {
-                context.go(RouterPath.THREAD_DETAIL, extra: naddr.id);
+                context.push(RouterPath.THREAD_DETAIL, extra: naddr.id);
               } else if (StringUtil.isNotBlank(naddr.author) &&
                   naddr.kind == Metadata.kKind) {
                 context.push(RouterPath.USER, extra: naddr.author);
@@ -386,10 +387,10 @@ class _WalletRouter extends State<WalletRouter> with ProtocolListener {
                                             loggedUserSigner!.getPublicKey());
                                     if (metadata != null &&
                                         StringUtil.isNotBlank(metadata.lud16)) {
-                                      context.go(RouterPath.WALLET_RECEIVE,
+                                      context.push(RouterPath.WALLET_RECEIVE,
                                           extra: metadata);
                                     } else {
-                                      context.go(
+                                      context.push(
                                           RouterPath.WALLET_RECEIVE_INVOICE,
                                           extra: metadata);
                                     }
@@ -412,7 +413,7 @@ class _WalletRouter extends State<WalletRouter> with ProtocolListener {
                                   height: 70,
                                   // before: const Icon(Icons.call_made_rounded),
                                   onTap: () async {
-                                    context.go(RouterPath.WALLET_SEND);
+                                    context.push(RouterPath.WALLET_SEND);
                                   }))
                           : Container()
                     ],
@@ -597,7 +598,7 @@ class _WalletRouter extends State<WalletRouter> with ProtocolListener {
                                 fontSize: 18,
                                 width: 200,
                                 onTap: () {
-                                  context.go(RouterPath.NWC);
+                                  context.push(RouterPath.NWC);
                                 },
                               ),
                             ],
@@ -631,7 +632,7 @@ class _WalletRouter extends State<WalletRouter> with ProtocolListener {
           ? Container()
           : GestureDetector(
               onTap: () {
-                context.go(RouterPath.INDEX);
+                context.pop();
               },
               child: Container(
                 margin: const EdgeInsets.only(left: 10),

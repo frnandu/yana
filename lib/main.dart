@@ -986,159 +986,165 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
         GoRoute(
           path: RouterPath.INDEX,
           builder: (context, state) => AppFeatures.isWalletOnly ? WalletRouter(showAppBar: true) : IndexRouter(reload: reload),
+          routes: <RouteBase>[
+            GoRoute(
+              path: RouterPath.USER_RELAYS,
+              builder: (context, state) => const UserRelayRouter(),
+            ),
+            GoRoute(
+              path: RouterPath.THREAD_DETAIL,
+              builder: (context, state) {
+                // Get thread id from query parameters
+                String? threadId = state.uri.queryParameters['id'];
+                return ThreadDetailRouter(eventId: threadId);
+              },
+            ),
+            GoRoute(
+              path: RouterPath.EVENT_DETAIL,
+              builder: (context, state) => const EventDetailRouter(),
+            ),
+            GoRoute(
+              path: RouterPath.TAG_DETAIL,
+              builder: (context, state) => const TagDetailRouter(),
+            ),
+            if (AppFeatures.enableSocial) ...[
+              GoRoute(
+                path: RouterPath.USER,
+                builder: (context, state) {
+                  // Get pubkey from query parameters
+                  String? pubkey = state.uri.queryParameters['pubkey'];
+                  return UserRouter(pubKey: pubkey);
+                },
+                routes: <RouteBase>[
+                  GoRoute(
+                    path: RouterPath.PROFILE_EDITOR,
+                    builder: (context, state) => const ProfileEditorRouter(),
+                  ),
+                  GoRoute(
+                    path: RouterPath.USER_CONTACT_LIST,
+                    builder: (context, state) => const UserContactListRouter(),
+                  ),
+                  GoRoute(
+                    path: RouterPath.USER_HISTORY_CONTACT_LIST,
+                    builder: (context, state) => UserHistoryContactListRouter(),
+                  ),
+                  GoRoute(
+                    path: RouterPath.USER_ZAP_LIST,
+                    builder: (context, state) => const UserZapListRouter(),
+                  ),
+                  GoRoute(
+                    path: RouterPath.FOLLOWED_TAGS_LIST,
+                    builder: (context, state) => const FollowedTagsListRouter(),
+                  ),
+                  GoRoute(
+                    path: RouterPath.FOLLOWED,
+                    builder: (context, state) => FollowedRouter(),
+                  ),
+                  GoRoute(
+                    path: RouterPath.FOLLOWED_COMMUNITIES,
+                    builder: (context, state) => const FollowedCommunitiesRouter(),
+                  ),
+                ]
+              ),
+              GoRoute(
+                path: RouterPath.COMMUNITY_DETAIL,
+                builder: (context, state) => const CommunityDetailRouter(),
+              ),
+              GoRoute(
+                path: RouterPath.RELAY_SET,
+                builder: (context, state) => const RelaySetRouter(),
+              ),
+              GoRoute(
+                path: RouterPath.RELAY_LIST,
+                builder: (context, state) => const RelayListRouter(),
+              ),
+              GoRoute(
+                path: RouterPath.MUTE_LIST,
+                builder: (context, state) => const MuteListRouter(),
+              ),
+              if (AppFeatures.enableDm)
+                GoRoute(
+                  path: RouterPath.DM_DETAIL,
+                  builder: (context, state) => const DMDetailRouter(),
+                ),
+              GoRoute(
+                path: RouterPath.NOTICES,
+                builder: (context, state) => const NoticeRouter(),
+              ),
+              if (AppFeatures.enableSearch)
+                GoRoute(
+                  path: RouterPath.SEARCH,
+                  builder: (context, state) => const SearchRouter(),
+                ),
+              GoRoute(
+                path: RouterPath.KEY_BACKUP,
+                builder: (context, state) => const KeyBackupRouter(),
+              ),
+              // Conditional wallet routes
+              if (AppFeatures.enableWallet) ...[
+                GoRoute(
+                  path: RouterPath.WALLET,
+                  builder: (context, state) => const WalletRouter(),
+                  routes: <RouteBase>[
+                    GoRoute(
+                      path: RouterPath.WALLET_TRANSACTIONS,
+                      builder: (context, state) => const TransactionsRouter(),
+                    ),
+                    GoRoute(
+                      path: RouterPath.WALLET_RECEIVE,
+                      builder: (context, state) => const WalletReceiveRouter(),
+                    ),
+                    GoRoute(
+                      path: RouterPath.WALLET_RECEIVE_INVOICE,
+                      builder: (context, state) => const WalletReceiveInvoiceRouter(),
+                    ),
+                    GoRoute(
+                      path: RouterPath.WALLET_SEND,
+                      builder: (context, state) => const WalletSendRouter(),
+                    ),
+                    GoRoute(
+                      path: RouterPath.WALLET_SEND_CONFIRM,
+                      builder: (context, state) => const WalletSendConfirmRouter(),
+                    ),
+                    GoRoute(
+                      path: RouterPath.NWC,
+                      builder: (context, state) => const NwcRouter(),
+                    ),
+                    GoRoute(
+                      path: RouterPath.SETTINGS_WALLET,
+                      builder: (context, state) => const WalletSettingsRouter(),
+                    ),
+                  ]
+                ),
+              ],
+              GoRoute(
+                path: RouterPath.RELAYS,
+                builder: (context, state) => const RelaysRouter(),
+              ),
+              GoRoute(
+                path: RouterPath.SETTING,
+                builder: (context, state) => SettingRouter(indexReload: reload),
+              ),
+              GoRoute(
+                path: RouterPath.QRSCANNER,
+                builder: (context, state) => const QRScannerRouter(),
+              ),
+              GoRoute(
+                path: RouterPath.RELAY_INFO,
+                builder: (context, state) => const RelayInfoRouter(),
+              ),
+              GoRoute(
+                path: RouterPath.LOGIN,
+                builder: (context, state) => const LoginRouter(canGoBack: true),
+              ),
+            ],
+          ]
         ),
         GoRoute(
           path: '/dynamic',
           builder: (context, state) {
             return state.extra as Widget;
           },
-        ),
-        if (AppFeatures.enableSocial) ...[
-          GoRoute(
-            path: RouterPath.USER,
-            builder: (context, state) {
-              // Get pubkey from query parameters
-              String? pubkey = state.uri.queryParameters['pubkey'];
-              return UserRouter(pubKey: pubkey);
-            },
-          ),
-          GoRoute(
-            path: RouterPath.USER_CONTACT_LIST,
-            builder: (context, state) => const UserContactListRouter(),
-          ),
-          GoRoute(
-            path: RouterPath.USER_HISTORY_CONTACT_LIST,
-            builder: (context, state) => UserHistoryContactListRouter(),
-          ),
-          GoRoute(
-            path: RouterPath.USER_ZAP_LIST,
-            builder: (context, state) => const UserZapListRouter(),
-          ),
-          GoRoute(
-            path: RouterPath.USER_RELAYS,
-            builder: (context, state) => const UserRelayRouter(),
-          ),
-          GoRoute(
-            path: RouterPath.THREAD_DETAIL,
-            builder: (context, state) {
-              // Get thread id from query parameters
-              String? threadId = state.uri.queryParameters['id'];
-              return ThreadDetailRouter(eventId: threadId);
-            },
-          ),
-          GoRoute(
-            path: RouterPath.EVENT_DETAIL,
-            builder: (context, state) => const EventDetailRouter(),
-          ),
-          GoRoute(
-            path: RouterPath.TAG_DETAIL,
-            builder: (context, state) => const TagDetailRouter(),
-          ),
-          GoRoute(
-            path: RouterPath.FOLLOWED_TAGS_LIST,
-            builder: (context, state) => const FollowedTagsListRouter(),
-          ),
-          GoRoute(
-            path: RouterPath.FOLLOWED,
-            builder: (context, state) => FollowedRouter(),
-          ),
-          GoRoute(
-            path: RouterPath.COMMUNITY_DETAIL,
-            builder: (context, state) => const CommunityDetailRouter(),
-          ),
-          GoRoute(
-            path: RouterPath.FOLLOWED_COMMUNITIES,
-            builder: (context, state) => const FollowedCommunitiesRouter(),
-          ),
-        ],
-        GoRoute(
-          path: RouterPath.RELAY_SET,
-          builder: (context, state) => const RelaySetRouter(),
-        ),
-        GoRoute(
-          path: RouterPath.RELAY_LIST,
-          builder: (context, state) => const RelayListRouter(),
-        ),
-        GoRoute(
-          path: RouterPath.MUTE_LIST,
-          builder: (context, state) => const MuteListRouter(),
-        ),
-        if (AppFeatures.enableDm)
-          GoRoute(
-            path: RouterPath.DM_DETAIL,
-            builder: (context, state) => const DMDetailRouter(),
-          ),
-        GoRoute(
-          path: RouterPath.NOTICES,
-          builder: (context, state) => const NoticeRouter(),
-        ),
-        if (AppFeatures.enableSearch)
-          GoRoute(
-            path: RouterPath.SEARCH,
-            builder: (context, state) => const SearchRouter(),
-          ),
-        GoRoute(
-          path: RouterPath.KEY_BACKUP,
-          builder: (context, state) => const KeyBackupRouter(),
-        ),
-        // Conditional wallet routes
-        if (AppFeatures.enableWallet) ...[
-          GoRoute(
-            path: RouterPath.WALLET,
-            builder: (context, state) => const WalletRouter(),
-          ),
-          GoRoute(
-            path: RouterPath.WALLET_TRANSACTIONS,
-            builder: (context, state) => const TransactionsRouter(),
-          ),
-          GoRoute(
-            path: RouterPath.WALLET_RECEIVE,
-            builder: (context, state) => const WalletReceiveRouter(),
-          ),
-          GoRoute(
-            path: RouterPath.WALLET_RECEIVE_INVOICE,
-            builder: (context, state) => const WalletReceiveInvoiceRouter(),
-          ),
-          GoRoute(
-            path: RouterPath.WALLET_SEND,
-            builder: (context, state) => const WalletSendRouter(),
-          ),
-          GoRoute(
-            path: RouterPath.WALLET_SEND_CONFIRM,
-            builder: (context, state) => const WalletSendConfirmRouter(),
-          ),
-          GoRoute(
-            path: RouterPath.NWC,
-            builder: (context, state) => const NwcRouter(),
-          ),
-          GoRoute(
-            path: RouterPath.SETTINGS_WALLET,
-            builder: (context, state) => const WalletSettingsRouter(),
-          ),
-        ],
-        GoRoute(
-          path: RouterPath.RELAYS,
-          builder: (context, state) => const RelaysRouter(),
-        ),
-        GoRoute(
-          path: RouterPath.PROFILE_EDITOR,
-          builder: (context, state) => const ProfileEditorRouter(),
-        ),
-        GoRoute(
-          path: RouterPath.SETTING,
-          builder: (context, state) => SettingRouter(indexReload: reload),
-        ),
-        GoRoute(
-          path: RouterPath.QRSCANNER,
-          builder: (context, state) => const QRScannerRouter(),
-        ),
-        GoRoute(
-          path: RouterPath.RELAY_INFO,
-          builder: (context, state) => const RelayInfoRouter(),
-        ),
-        GoRoute(
-          path: RouterPath.LOGIN,
-          builder: (context, state) => const LoginRouter(canGoBack: true),
         ),
       ],
     );

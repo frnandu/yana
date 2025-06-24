@@ -123,6 +123,7 @@ class _QrcodeDialog extends State<QrcodeDialog> {
       ],
     );
 
+
     return Scaffold(
       backgroundColor: Colors.black.withOpacity(0.2),
       body: FocusScope(
@@ -130,7 +131,7 @@ class _QrcodeDialog extends State<QrcodeDialog> {
         child: GestureDetector(
           behavior: HitTestBehavior.opaque,
           onTap: () {
-            context.go(RouterPath.INDEX);
+            context.pop();
           },
           child: Container(
             width: double.infinity,
@@ -152,7 +153,7 @@ class _QrcodeDialog extends State<QrcodeDialog> {
 
   void _doCopy(String text) {
     Clipboard.setData(ClipboardData(text: text)).then((_) {
-      EasyLoading.show(status: I18n.of(context).key_has_been_copied);
+      EasyLoading.showSuccess(I18n.of(context).key_has_been_copied, dismissOnTap: true, duration: const Duration(seconds: 2));
     });
   }
 }

@@ -204,7 +204,7 @@ class _WalletReceiveRouter extends State<WalletReceiveRouter> {
             fontColor: themeData.disabledColor,
             text: "Payment Invoice",
             onTap: () async {
-              context.go(RouterPath.WALLET_RECEIVE_INVOICE, extra: metadata);
+              context.push(RouterPath.WALLET_RECEIVE_INVOICE, extra: metadata);
             }));
       }
     } else {

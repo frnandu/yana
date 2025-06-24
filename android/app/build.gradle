@@ -78,7 +78,7 @@ android {
         full {
             dimension "appFlavor"
             applicationId "yana.nostr"
-            versionNameSuffix "-full"
+            versionNameSuffix ""
             resValue "string", "app_name", "Yana"
             // Include all features
             buildConfigField "boolean", "ENABLE_WALLET", "true"
@@ -91,7 +91,7 @@ android {
         wallet {
             dimension "appFlavor"
             applicationId "yana.nostr.wallet"
-            versionNameSuffix "-wallet"
+            versionNameSuffix ""
             resValue "string", "app_name", "Yana Wallet"
             // Wallet-only features
             buildConfigField "boolean", "ENABLE_WALLET", "true"
@@ -104,7 +104,7 @@ android {
         social {
             dimension "appFlavor"
             applicationId "yana.nostr.social"
-            versionNameSuffix "-social"
+            versionNameSuffix ""
             resValue "string", "app_name", "Yana Social"
             // Social-only features
             buildConfigField "boolean", "ENABLE_WALLET", "false"
@@ -127,6 +127,7 @@ android {
     buildTypes {
         debug {
             applicationIdSuffix ".debug"
+            resValue "string", "app_name", "Yana Debug"
         }
         release {
             signingConfig signingConfigs.debug

@@ -626,7 +626,7 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
       return;
     }
     var detail = dmProvider!.findOrNewADetail(widget.pubkey);
-    context.go(RouterPath.DM_DETAIL, extra: detail);
+    context.push(RouterPath.DM_DETAIL, extra: detail);
   }
 
   void onZapSelect(int sats) {
@@ -634,7 +634,7 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
   }
 
   void jumpToProfileEdit() {
-    context.go(RouterPath.PROFILE_EDITOR);
+    context.push(RouterPath.PROFILE_EDITOR);
   }
 
   void userPicturePreview() {

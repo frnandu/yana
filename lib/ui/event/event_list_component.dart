@@ -153,7 +153,7 @@ class _EventListComponent extends State<EventListComponent> {
         try {
           var jsonMap = jsonDecode(widget.event.content);
           var repostEvent = Nip01Event.fromJson(jsonMap);
-          context.go(RouterPath.THREAD_DETAIL, extra: repostEvent);
+          context.push(RouterPath.THREAD_DETAIL, extra: repostEvent);
           return;
         } catch (e) {
           print(e);
@@ -164,11 +164,11 @@ class _EventListComponent extends State<EventListComponent> {
       if (StringUtil.isNotBlank(eventRelation.rootId)) {
         var event = singleEventProvider.getEvent(eventRelation.rootId!);
         if (event != null) {
-          context.go(RouterPath.THREAD_DETAIL, extra: event);
+          context.push(RouterPath.THREAD_DETAIL, extra: event);
           return;
         }
       }
     }
-    context.go(RouterPath.THREAD_DETAIL, extra: widget.event);
+    context.push(RouterPath.THREAD_DETAIL, extra: widget.event);
   }
 }

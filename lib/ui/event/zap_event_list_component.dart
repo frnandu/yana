@@ -52,6 +52,6 @@ class _ZapEventListComponent extends State<ZapEventListComponent> {
   }
 
   void jumpToThread() {
-    context.go(RouterPath.THREAD_DETAIL, extra: widget.event);
+    context.push(RouterPath.THREAD_DETAIL, extra: widget.event);
   }
 }

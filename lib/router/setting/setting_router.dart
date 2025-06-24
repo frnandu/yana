@@ -444,7 +444,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
               Nip51List? list = await ndk.lists
                   .getSingleNip51List(Nip51List.kMute, loggedUserSigner!);
               finished = true;
-              context.go(RouterPath.MUTE_LIST,
+              context.push(RouterPath.MUTE_LIST,
                   extra: list ??
                       Nip51List(
                           pubKey: loggedUserSigner!.getPublicKey(),
@@ -455,7 +455,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
               EasyLoading.dismiss();
             }
           } else {
-            context.go(RouterPath.MUTE_LIST,
+            context.push(RouterPath.MUTE_LIST,
                 extra: Nip51List(
                     pubKey: loggedUserSigner!.getPublicKey(),
                     kind: Nip51List.kMute,
@@ -494,7 +494,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
               Nip51List? list = await ndk.lists.getSingleNip51List(
                   Nip51List.kBlockedRelays, loggedUserSigner!);
               finished = true;
-              context.go(RouterPath.RELAY_LIST,
+              context.push(RouterPath.RELAY_LIST,
                   extra: list ??
                       Nip51List(
                           pubKey: loggedUserSigner!.getPublicKey(),
@@ -505,7 +505,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
               EasyLoading.dismiss();
             }
           } else {
-            context.go(RouterPath.RELAY_LIST,
+            context.push(RouterPath.RELAY_LIST,
                 extra: Nip51List(
                     pubKey: loggedUserSigner!.getPublicKey(),
                     kind: Nip51List.kBlockedRelays,
@@ -538,7 +538,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
                 Nip51List? list = await ndk.lists.getSingleNip51List(
                     Nip51List.kSearchRelays, loggedUserSigner!);
                 finished = true;
-                context.go(RouterPath.RELAY_LIST,
+                context.push(RouterPath.RELAY_LIST,
                     extra: list ??
                         Nip51List(
                             pubKey: loggedUserSigner!.getPublicKey(),
@@ -549,7 +549,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
                 EasyLoading.dismiss();
               }
             } else {
-              context.go(RouterPath.RELAY_LIST,
+              context.push(RouterPath.RELAY_LIST,
                   extra: Nip51List(
                       pubKey: loggedUserSigner!.getPublicKey(),
                       kind: Nip51List.kSearchRelays,
@@ -630,7 +630,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
     if (AppFeatures.isWalletOnly) {
       walletTiles.add(SettingsTile.navigation(
         onPressed: (context) async {
-          context.go(RouterPath.SETTINGS_WALLET);
+          context.push(RouterPath.SETTINGS_WALLET);
         },
         leading: const Icon(Icons.wallet),
         trailing: const Icon(Icons.navigate_next),
@@ -699,7 +699,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
       appBar: AppBar(
         leading: GestureDetector(
           onTap: () {
-            context.go(RouterPath.INDEX);
+            context.pop();
           },
           child: Icon(
             Icons.arrow_back_ios,
