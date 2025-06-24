@@ -48,7 +48,7 @@ class _IndexDrawerContentComponnent extends State<IndexDrawerContentComponent> {
           children: [
             // Header/Profile Section (banner, avatar, icons)
             Container(
-              color: themeData.appBarTheme.backgroundColor!,
+              color: themeData.scaffoldBackgroundColor,//appBarTheme.backgroundColor!,
               child: SizedBox(
                 height: 220,
                 child: FutureBuilder<Metadata?>(
@@ -100,7 +100,7 @@ class _IndexDrawerContentComponnent extends State<IndexDrawerContentComponent> {
                               decoration: BoxDecoration(
                                 border: Border.all(
                                     color:
-                                        themeData.appBarTheme.backgroundColor!,
+                                        themeData.scaffoldBackgroundColor,//appBarTheme.backgroundColor!,
                                     width: 8),
                                 shape: BoxShape.circle,
                               ),
@@ -144,7 +144,7 @@ class _IndexDrawerContentComponnent extends State<IndexDrawerContentComponent> {
             Expanded(
               child: Container(
                 decoration: BoxDecoration(
-                  color: themeData.appBarTheme.backgroundColor!,
+                  color: themeData.scaffoldBackgroundColor,//appBarTheme.backgroundColor!,
                 ),
                 child: Column(
                   children: [
@@ -232,7 +232,7 @@ class _IndexDrawerContentComponnent extends State<IndexDrawerContentComponent> {
                             ),
                             child: Text(relayNum,
                                 style: TextStyle(
-                                    color: Colors.white,
+                                    //color: Colors.white,
                                     fontWeight: FontWeight.bold)),
                           ),
                         ),
@@ -339,7 +339,7 @@ class _DrawerNavItem extends StatelessWidget {
       title: Text(
         label,
         style: TextStyle(
-          color: labelColor ?? Colors.white,
+          color: labelColor,
           fontFamily: 'Geist',
           fontWeight: FontWeight.w400,
           fontSize: 16,
