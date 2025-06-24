@@ -79,8 +79,8 @@ class _WalletRouter extends State<WalletRouter> with ProtocolListener {
   @override
   void initState() {
     super.initState();
-
-    settingProvider.getNwc().then((value) {
+    if (!nwcProvider!.isConnected) {
+      settingProvider.getNwc().then((value) {
         setState(() {
           _isConnecting = value != null && value.isNotEmpty;
         });
@@ -94,7 +94,8 @@ class _WalletRouter extends State<WalletRouter> with ProtocolListener {
             nwcProvider?.addListener(_nwcListener!);
           });
         }
-    });
+      });
+    }
     protocolHandler.addListener(this);
     BackButtonInterceptor.add(myInterceptor);
   }
