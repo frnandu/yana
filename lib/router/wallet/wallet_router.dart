@@ -53,7 +53,7 @@ class _WalletRouter extends State<WalletRouter> with ProtocolListener {
 
   TransactionResult? transactionDetails;
 
-  bool _isConnecting = false;
+  bool _isConnecting = AppFeatures.isWalletOnly;
 
   String formatBitcoinNumber(double bitcoin) {
     // Convert the number to a string with 2 decimal places
@@ -74,15 +74,26 @@ class _WalletRouter extends State<WalletRouter> with ProtocolListener {
     return formattedBitcoin;
   }
 
+  VoidCallback? _nwcListener;
+
   @override
   void initState() {
     super.initState();
 
-    PILA to sie spoznia i zle
     settingProvider.getNwc().then((value) {
-      if (value != null && value.isNotEmpty) {
-        _isConnecting = true;
-      }
+        setState(() {
+          _isConnecting = value != null && value.isNotEmpty;
+        });
+        if (_isConnecting) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            _nwcListener = () {
+              setState(() {
+                _isConnecting = !nwcProvider!.isConnected;
+              });
+            };
+            nwcProvider?.addListener(_nwcListener!);
+          });
+        }
     });
     protocolHandler.addListener(this);
     BackButtonInterceptor.add(myInterceptor);
@@ -219,6 +230,9 @@ class _WalletRouter extends State<WalletRouter> with ProtocolListener {
   void dispose() {
     BackButtonInterceptor.remove(myInterceptor);
     super.dispose();
+    if (nwcProvider != null && _nwcListener != null) {
+      nwcProvider!.removeListener(_nwcListener!);
+    }
   }
 
   bool myInterceptor(bool stopDefaultButtonEvent, RouteInfo info) {
@@ -710,6 +724,7 @@ class _WalletRouter extends State<WalletRouter> with ProtocolListener {
                   if (value == "disconnect") {
                     setState(() {
                       nwcProvider?.disconnect();
+                      _isConnecting = false;
                     });
                   } else if (value == "settings") {
                     context.push(RouterPath.SETTINGS_WALLET);
