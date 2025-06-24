@@ -222,6 +222,7 @@ class _LoginRouter extends State<LoginRouter>
         onTap: () async {
           generatePK();
           await base.doLogin(controller.text, false, true, false);
+          context.pop();
         },
         child: Container(
           height: 42,

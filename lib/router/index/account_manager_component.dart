@@ -3,28 +3,24 @@ import 'dart:developer';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:go_router/go_router.dart';
 import 'package:ndk/ndk.dart';
 import 'package:ndk_amber/data_layer/repositories/signers/amber_event_signer.dart';
 import 'package:provider/provider.dart';
 import 'package:yana/provider/setting_provider.dart';
-import 'package:yana/ui/name_component.dart';
-import 'package:yana/ui/point_component.dart';
-import 'package:go_router/go_router.dart';
 
-import '/js/js_helper.dart' as js;
+import '../../config/app_features.dart'; // Added for AppFeatures
 import '../../i18n/i18n.dart';
+import '../../js/js_helper_mobile.dart' as js;
 import '../../main.dart';
 import '../../nostr/client_utils/keys.dart';
 import '../../nostr/nip07/extension_event_signer.dart';
 import '../../nostr/nip19/nip19.dart';
 import '../../provider/data_util.dart';
-import '../../ui/confirm_dialog.dart';
 import '../../utils/base.dart';
 import '../../utils/platform_util.dart';
 import '../../utils/router_path.dart';
 import '../../utils/string_util.dart';
-import 'index_drawer_content.dart';
-import '../../config/app_features.dart'; // Added for AppFeatures
 
 class AccountsComponent extends StatefulWidget {
   @override
@@ -73,65 +69,76 @@ class AccountsState extends State<AccountsComponent> {
       ),
       child: SafeArea(
         top: false,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const SizedBox(height: 16),
-            Center(
-              child: Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Colors.white24,
-                  borderRadius: BorderRadius.circular(2),
+        child: Container(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height * 0.9,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 16),
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.white24,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Switch Profile',
-              style: TextStyle(
-                color: titleColor,
-                fontWeight: FontWeight.bold,
-                fontSize: 22,
-                fontFamily: 'Geist',
-              ),
-            ),
-            const SizedBox(height: 24),
-            ...profileWidgets,
-            const SizedBox(height: 8),
-            Divider(
-                color: dividerColor, thickness: 1, indent: 24, endIndent: 24),
-            const SizedBox(height: 8),
-            GestureDetector(
-              onTap: addAccount,
-              child: Container(
-                margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF232323),
-                  borderRadius: BorderRadius.circular(16),
+              const SizedBox(height: 16),
+              Text(
+                'Switch Profile',
+                style: TextStyle(
+                  color: titleColor,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 22,
+                  fontFamily: 'Geist',
                 ),
-                child: Row(
-                  children: [
-                    Icon(Icons.add_circle_outline,
-                        color: addProfileColor, size: 24),
-                    const SizedBox(width: 16),
-                    Text(
-                      'Add Account',
-                      style: TextStyle(
-                        color: addProfileColor,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w500,
-                        fontFamily: 'Geist',
+              ),
+              const SizedBox(height: 24),
+              Flexible(
+                child: ListView(
+                  shrinkWrap: true,
+                  children: profileWidgets,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Divider(
+                  color: dividerColor, thickness: 1, indent: 24, endIndent: 24),
+              const SizedBox(height: 8),
+              GestureDetector(
+                onTap: addAccount,
+                child: Container(
+                  margin:
+                      const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF232323),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.add_circle_outline,
+                          color: addProfileColor, size: 24),
+                      const SizedBox(width: 16),
+                      Text(
+                        'Add Account',
+                        style: TextStyle(
+                          color: addProfileColor,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w500,
+                          fontFamily: 'Geist',
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 16),
-          ],
+              const SizedBox(height: 16),
+            ],
+          ),
         ),
       ),
     );
@@ -170,12 +177,53 @@ class AccountsState extends State<AccountsComponent> {
       // signOut complete
       if (settingProvider.key != null) {
         // use next privateKey to login
-        doLogin(settingProvider.key!, settingProvider.isPublicKey, false,
-            settingProvider.isExternalSignerKey);
+        doLogin();
         settingProvider.notifyListeners();
         context.pop();
       }
     }
+  }
+
+  static void doLogin() async {
+    EasyLoading.show(
+        status: "Logging in...",
+        maskType: EasyLoadingMaskType.black,
+        dismissOnTap: true);
+
+    String? key = settingProvider.key;
+    bool isPrivate = settingProvider.isPrivateKey;
+    String publicKey = isPrivate ? getPublicKey(key!) : key!;
+    EventSigner eventSigner = settingProvider.isExternalSignerKey
+        ? AmberEventSigner(publicKey: publicKey, amberFlutterDS: amberFlutterDS)
+        : isPrivate || !PlatformUtil.isWeb()
+        ? Bip340EventSigner(
+        privateKey: isPrivate ? key : null, publicKey: publicKey)
+        : Nip07EventSigner(await js.getPublicKeyAsync());
+    // await ndk.destroy();
+    // ndk = Ndk(
+    //     NdkConfig(
+    //       eventVerifier: eventVerifier,
+    //       cache: cacheManager,
+    //       eventOutFilters:  [filterProvider],
+    //       logLevel: logLevel
+    //     ));
+    if (ndk.accounts.hasAccount(eventSigner.getPublicKey())) {
+      ndk.accounts.switchAccount(pubkey: eventSigner.getPublicKey());
+    } else {
+      ndk.accounts.loginExternalSigner(signer: eventSigner);
+    }
+
+    followEventProvider?.clear();
+    await followEventProvider?.loadCachedFeed();
+    initRelays(newKey: false);
+    if (AppFeatures.enableNotifications) {
+      notificationsProvider?.notifyListeners();
+    }
+    if (AppFeatures.enableWallet) {
+      nwcProvider?.init();
+    }
+    // settingProvider.notifyListeners(); // This line seems to be duplicated, removing one
+    EasyLoading.dismiss();
   }
 
   static void onLogoutTap(int index,
@@ -194,8 +242,8 @@ class AccountsState extends State<AccountsComponent> {
             int.tryParse(settingProvider.keyMap.keys.first);
         if (settingProvider.key != null) {
           // use next privateKey to login
-          doLogin(settingProvider.key!, settingProvider.isPublicKey, false,
-              settingProvider.isExternalSignerKey);
+          doLogin();
+
           settingProvider.notifyListeners();
           context.pop();
         }
@@ -263,7 +311,7 @@ class AccountManagerItemComponent extends StatefulWidget {
 }
 
 class _AccountManagerItemComponent extends State<AccountManagerItemComponent> {
-  static const double AVATAR_SIZE = 48;
+  static const double AVATAR_SIZE = 58;
   String? pubkey;
 
   @override
@@ -286,7 +334,7 @@ class _AccountManagerItemComponent extends State<AccountManagerItemComponent> {
     var nameColor = Colors.white;
     var pubkeyColor = Colors.white.withOpacity(0.5);
     var borderColor =
-        widget.isCurrent ? const Color(0xFFFFD600) : Colors.transparent;
+        widget.isCurrent ? themeData.primaryColor : Colors.transparent;
     var bgColor = isDark ? const Color(0xFF232323) : const Color(0xFF232323);
 
     return FutureBuilder<Metadata?>(
@@ -310,8 +358,8 @@ class _AccountManagerItemComponent extends State<AccountManagerItemComponent> {
           return GestureDetector(
             onTap: onLoginTap,
             child: Container(
-              margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 6),
-              padding: const EdgeInsets.all(12),
+              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
                 color: bgColor,
                 borderRadius: BorderRadius.circular(16),
@@ -368,30 +416,30 @@ class _AccountManagerItemComponent extends State<AccountManagerItemComponent> {
                     ),
                   ),
                   if (widget.isCurrent)
-                    const Padding(
+                    Padding(
                       padding: EdgeInsets.only(right: 8.0),
                       child: Icon(Icons.check_circle,
-                          color: Color(0xFFFFD600), size: 24),
+                          color: themeData.primaryColor, size: 24),
                     ),
-                  PopupMenuButton<String>(
-                    onSelected: (value) {
-                      if (value == 'logout' && widget.onLogoutTap != null) {
-                        widget.onLogoutTap!(widget.index);
-                      }
-                    },
-                    itemBuilder: (BuildContext context) =>
-                        <PopupMenuEntry<String>>[
-                      const PopupMenuItem<String>(
-                        value: 'logout',
-                        child: Text('Logout'),
-                      ),
-                    ],
-                    icon: const Icon(Icons.more_horiz, color: Colors.white54),
-                    color: const Color(0xFF2c2c2c),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
+                  // PopupMenuButton<String>(
+                  //   onSelected: (value) {
+                  //     if (value == 'logout' && widget.onLogoutTap != null) {
+                  //       widget.onLogoutTap!(widget.index);
+                  //     }
+                  //   },
+                  //   itemBuilder: (BuildContext context) =>
+                  //       <PopupMenuEntry<String>>[
+                  //     const PopupMenuItem<String>(
+                  //       value: 'logout',
+                  //       child: Text('Logout'),
+                  //     ),
+                  //   ],
+                  //   icon: const Icon(Icons.more_horiz, color: Colors.white54),
+                  //   color: const Color(0xFF2c2c2c),
+                  //   shape: RoundedRectangleBorder(
+                  //     borderRadius: BorderRadius.circular(8),
+                  //   ),
+                  // ),
                 ],
               ),
             ),
