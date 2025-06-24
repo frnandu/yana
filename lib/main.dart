@@ -986,6 +986,29 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
         GoRoute(
           path: RouterPath.INDEX,
           builder: (context, state) => AppFeatures.isWalletOnly ? WalletRouter(showAppBar: true) : IndexRouter(reload: reload),
+          routes: <RouteBase>[
+            GoRoute(
+              path: RouterPath.USER_RELAYS,
+              builder: (context, state) => const UserRelayRouter(),
+            ),
+            GoRoute(
+              path: RouterPath.THREAD_DETAIL,
+              builder: (context, state) {
+                // Get thread id from query parameters
+                String? threadId = state.uri.queryParameters['id'];
+                return ThreadDetailRouter(eventId: threadId);
+              },
+            ),
+            GoRoute(
+              path: RouterPath.EVENT_DETAIL,
+              builder: (context, state) => const EventDetailRouter(),
+            ),
+            GoRoute(
+              path: RouterPath.TAG_DETAIL,
+              builder: (context, state) => const TagDetailRouter(),
+            ),
+
+          ]
         ),
         GoRoute(
           path: '/dynamic',
@@ -1013,26 +1036,6 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
           GoRoute(
             path: RouterPath.USER_ZAP_LIST,
             builder: (context, state) => const UserZapListRouter(),
-          ),
-          GoRoute(
-            path: RouterPath.USER_RELAYS,
-            builder: (context, state) => const UserRelayRouter(),
-          ),
-          GoRoute(
-            path: RouterPath.THREAD_DETAIL,
-            builder: (context, state) {
-              // Get thread id from query parameters
-              String? threadId = state.uri.queryParameters['id'];
-              return ThreadDetailRouter(eventId: threadId);
-            },
-          ),
-          GoRoute(
-            path: RouterPath.EVENT_DETAIL,
-            builder: (context, state) => const EventDetailRouter(),
-          ),
-          GoRoute(
-            path: RouterPath.TAG_DETAIL,
-            builder: (context, state) => const TagDetailRouter(),
           ),
           GoRoute(
             path: RouterPath.FOLLOWED_TAGS_LIST,

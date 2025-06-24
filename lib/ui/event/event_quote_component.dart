@@ -116,7 +116,7 @@ class _EventQuoteComponent extends CustState<EventQuoteComponent> {
   }
 
   void jumpToThread(Nip01Event event) {
-    context.go(RouterPath.THREAD_DETAIL, extra: event);
+    context.push(RouterPath.THREAD_DETAIL, extra: event);
   }
 
   @override

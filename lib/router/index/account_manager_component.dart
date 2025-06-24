@@ -39,32 +39,14 @@ class AccountsState extends State<AccountsComponent> {
     var s = I18n.of(context);
     var _settingProvider = Provider.of<SettingProvider>(context);
     var privateKeyMap = _settingProvider.keyMap;
-
     var themeData = Theme.of(context);
-    var hintColor = themeData.hintColor;
-    var btnTextColor = themeData.textTheme.bodyMedium!.color;
+    var isDark = themeData.brightness == Brightness.dark;
+    var bgColor = isDark ? Colors.black : Color(0xFF181818);
+    var titleColor = Colors.white;
+    var dividerColor = Colors.white.withOpacity(0.08);
+    var addProfileColor = Colors.white.withOpacity(0.5);
 
-    List<Widget> list = [];
-    list.add(Container(
-      padding: const EdgeInsets.only(
-        top: Base.BASE_PADDING_HALF,
-        bottom: Base.BASE_PADDING_HALF,
-      ),
-      decoration: BoxDecoration(
-        border: Border(
-          bottom: BorderSide(
-            width: 1,
-            color: hintColor,
-          ),
-        ),
-      ),
-      child: IndexDrawerItem(
-        iconData: Icons.supervisor_account,
-        name: s.Accounts,
-        onTap: () {},
-      ),
-    ));
-
+    List<Widget> profileWidgets = [];
     privateKeyMap.forEach((key, value) {
       var index = int.tryParse(key);
       bool isPrivate = _settingProvider.keyIsPrivateMap[key] ?? true;
@@ -72,7 +54,7 @@ class AccountsState extends State<AccountsComponent> {
         log("parse index key error");
         return;
       }
-      list.add(AccountManagerItemComponent(
+      profileWidgets.add(AccountManagerItemComponent(
         index: index,
         privateKey: isPrivate ? value : null,
         publicKey: !isPrivate ? value : null,
@@ -84,44 +66,79 @@ class AccountsState extends State<AccountsComponent> {
       ));
     });
 
-    list.add(Container(
-      margin: const EdgeInsets.only(
-        top: Base.BASE_PADDING_HALF,
-        bottom: Base.BASE_PADDING_HALF,
-      ),
-      padding: const EdgeInsets.only(
-        left: Base.BASE_PADDING * 2,
-        right: Base.BASE_PADDING * 2,
-      ),
-      width: double.maxFinite,
-      child: TextButton(
-        onPressed: addAccount,
-        style: ButtonStyle(
-          side: MaterialStateProperty.all(BorderSide(
-            width: 1,
-            color: hintColor.withOpacity(0.4),
-          )),
-        ),
-        child: Text(
-          s.Add_Account,
-          style: TextStyle(color: btnTextColor),
-        ),
-      ),
-    ));
-
     return Container(
-      // height: 200,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: list,
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      child: SafeArea(
+        top: false,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 16),
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.white24,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Switch Profile',
+              style: TextStyle(
+                color: titleColor,
+                fontWeight: FontWeight.bold,
+                fontSize: 22,
+                fontFamily: 'Geist',
+              ),
+            ),
+            const SizedBox(height: 24),
+            ...profileWidgets,
+            const SizedBox(height: 8),
+            Divider(
+                color: dividerColor, thickness: 1, indent: 24, endIndent: 24),
+            const SizedBox(height: 8),
+            GestureDetector(
+              onTap: addAccount,
+              child: Container(
+                margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF232323),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.add_circle_outline,
+                        color: addProfileColor, size: 24),
+                    const SizedBox(width: 16),
+                    Text(
+                      'Add Account',
+                      style: TextStyle(
+                        color: addProfileColor,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w500,
+                        fontFamily: 'Geist',
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
+        ),
       ),
     );
   }
 
   Future<void> addAccount() async {
-    context.go(RouterPath.LOGIN);
-    // RouterUtil.router(context, RouterPath.LOGIN);
+    context.push(RouterPath.LOGIN);
   }
 
   bool addAccountCheck(BuildContext p1, String privateKey) {
@@ -129,8 +146,6 @@ class AccountsState extends State<AccountsComponent> {
       if (Nip19.isPrivateKey(privateKey)) {
         privateKey = Nip19.decode(privateKey);
       }
-
-      // try to gen publicKey check the formate
       try {
         getPublicKey(privateKey);
       } catch (e) {
@@ -140,50 +155,7 @@ class AccountsState extends State<AccountsComponent> {
         return false;
       }
     }
-
     return true;
-  }
-
-  static void doLogin() async {
-    EasyLoading.show(
-        status: "Logging in...",
-        maskType: EasyLoadingMaskType.black,
-        dismissOnTap: true);
-
-    String? key = settingProvider.key;
-    bool isPrivate = settingProvider.isPrivateKey;
-    String publicKey = isPrivate ? getPublicKey(key!) : key!;
-    EventSigner eventSigner = settingProvider.isExternalSignerKey
-        ? AmberEventSigner(publicKey: publicKey, amberFlutterDS: amberFlutterDS)
-        : isPrivate || !PlatformUtil.isWeb()
-            ? Bip340EventSigner(
-                privateKey: isPrivate ? key : null, publicKey: publicKey)
-            : Nip07EventSigner(await js.getPublicKeyAsync());
-    // await ndk.destroy();
-    // ndk = Ndk(
-    //     NdkConfig(
-    //       eventVerifier: eventVerifier,
-    //       cache: cacheManager,
-    //       eventOutFilters:  [filterProvider],
-    //       logLevel: logLevel
-    //     ));
-    if (ndk.accounts.hasAccount(eventSigner.getPublicKey())) {
-      ndk.accounts.switchAccount(pubkey: eventSigner.getPublicKey());
-    } else {
-      ndk.accounts.loginExternalSigner(signer: eventSigner);
-    }
-
-    followEventProvider?.clear();
-    await followEventProvider?.loadCachedFeed();
-    initRelays(newKey: false);
-    if (AppFeatures.enableNotifications) {
-      notificationsProvider?.notifyListeners();
-    }
-    if (AppFeatures.enableWallet) {
-      nwcProvider?.init();
-    }
-    // settingProvider.notifyListeners(); // This line seems to be duplicated, removing one
-    EasyLoading.dismiss();
   }
 
   void onLoginTap(int index) {
@@ -198,7 +170,8 @@ class AccountsState extends State<AccountsComponent> {
       // signOut complete
       if (settingProvider.key != null) {
         // use next privateKey to login
-        doLogin();
+        doLogin(settingProvider.key!, settingProvider.isPublicKey, false,
+            settingProvider.isExternalSignerKey);
         settingProvider.notifyListeners();
         context.pop();
       }
@@ -221,7 +194,8 @@ class AccountsState extends State<AccountsComponent> {
             int.tryParse(settingProvider.keyMap.keys.first);
         if (settingProvider.key != null) {
           // use next privateKey to login
-          doLogin();
+          doLogin(settingProvider.key!, settingProvider.isPublicKey, false,
+              settingProvider.isExternalSignerKey);
           settingProvider.notifyListeners();
           context.pop();
         }
@@ -266,14 +240,10 @@ class AccountsState extends State<AccountsComponent> {
 
 class AccountManagerItemComponent extends StatefulWidget {
   final bool isCurrent;
-
   final int index;
-
   final String? privateKey;
   final String? publicKey;
-
   Function(int)? onLoginTap;
-
   Function(int)? onLogoutTap;
 
   AccountManagerItemComponent({
@@ -293,10 +263,7 @@ class AccountManagerItemComponent extends StatefulWidget {
 }
 
 class _AccountManagerItemComponent extends State<AccountManagerItemComponent> {
-  static const double IMAGE_WIDTH = 26;
-
-  static const double LINE_HEIGHT = 44;
-
+  static const double AVATAR_SIZE = 48;
   String? pubkey;
 
   @override
@@ -315,153 +282,121 @@ class _AccountManagerItemComponent extends State<AccountManagerItemComponent> {
   @override
   Widget build(BuildContext context) {
     var themeData = Theme.of(context);
-    Color? cardColor = themeData.cardColor;
-    if (cardColor == Colors.white) {
-      cardColor = Colors.grey[300];
-    }
+    var isDark = themeData.brightness == Brightness.dark;
+    var nameColor = Colors.white;
+    var pubkeyColor = Colors.white.withOpacity(0.5);
+    var borderColor =
+        widget.isCurrent ? const Color(0xFFFFD600) : Colors.transparent;
+    var bgColor = isDark ? const Color(0xFF232323) : const Color(0xFF232323);
 
     return FutureBuilder<Metadata?>(
         future: metadataProvider.getMetadata(pubkey!),
         builder: (context, snapshot) {
           var metadata = snapshot.data;
-          Color currentColor = Colors.green;
-          List<Widget> list = [];
-          // if (metadata==null) {
-          //   return Container();
-          // }
-          String? nip19PubKey;
-          try {
-            nip19PubKey = pubkey != null ? Nip19.encodePubKey(pubkey!) : null;
-          } catch (e) {
-            return Container();
-          }
-
-          Widget? imageWidget;
-
           String? url =
               metadata != null && StringUtil.isNotBlank(metadata.picture)
                   ? metadata.picture
                   : StringUtil.robohash(pubkey!);
 
-          if (url != null) {
-            imageWidget = CachedNetworkImage(
-              imageUrl: url,
-              width: IMAGE_WIDTH,
-              height: IMAGE_WIDTH,
-              fit: BoxFit.cover,
-              placeholder: (context, url) => const CircularProgressIndicator(),
-              errorWidget: (context, url, error) => const Icon(Icons.error),
-              cacheManager: localCacheManager,
-            );
+          String displayName = metadata?.name ?? 'User';
+          if (StringUtil.isBlank(displayName)) {
+            displayName = 'User';
           }
-          list.add(Container(
-            width: 24,
-            alignment: Alignment.centerLeft,
-            child: Container(
-                width: 15,
-                margin: const EdgeInsets.only(right: 10),
-                child: widget.isCurrent
-                    ? PointComponent(
-                        width: 15,
-                        color: currentColor,
-                      )
-                    : GestureDetector(
-                        onTap: onLoginTap,
-                        child:
-                            Icon(Icons.login, color: themeData.disabledColor),
-                      )),
-          ));
-          list.add(Container(
-            width: IMAGE_WIDTH,
-            height: IMAGE_WIDTH,
-            margin: const EdgeInsets.only(left: 10),
-            clipBehavior: Clip.hardEdge,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(IMAGE_WIDTH / 2),
-              color: Colors.grey,
-            ),
-            child: imageWidget,
-          ));
 
-          list.add(Container(
-            margin: const EdgeInsets.only(left: 5, right: 5),
-            child: NameComponent(
-              pubkey: pubkey!,
-              fontColor: widget.isCurrent ? null : themeData.hintColor,
-              metadata: metadata,
-            ),
-          ));
-          if (settingProvider.isExternalSignerKeyIndex(widget.index)) {
-            list.add(Container(
-                width: 50,
-                alignment: Alignment.centerLeft,
-                child: const Text(
-                  "(external)",
-                  style: TextStyle(fontWeight: FontWeight.w100, fontSize: 10),
-                )));
-          } else if (!settingProvider.isPrivateKeyIndex(widget.index)) {
-            list.add(Container(
-                width: 50,
-                alignment: Alignment.centerLeft,
-                child: const Text(
-                  "(read only)",
-                  style: TextStyle(fontWeight: FontWeight.w100, fontSize: 10),
-                )));
-          }
-          list.add(Expanded(
-              child: Container(
-            padding: const EdgeInsets.only(
-              left: Base.BASE_PADDING_HALF,
-              right: Base.BASE_PADDING_HALF,
-              top: 4,
-              bottom: 4,
-            ),
-            decoration: BoxDecoration(
-              color: cardColor,
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Text(
-              nip19PubKey!,
-              overflow: TextOverflow.ellipsis,
-            ),
-          )));
-
-          list.add(GestureDetector(
-            onTap: onLogout,
-            child: Container(
-              padding: const EdgeInsets.only(left: 5),
-              height: LINE_HEIGHT,
-              child: Icon(Icons.close,
-                  color: widget.isCurrent ? null : themeData.disabledColor),
-            ),
-          ));
+          String npub = Nip19.encodePubKey(pubkey!);
+          String truncatedNpub =
+              "${npub.substring(0, 10)}...${npub.substring(npub.length - 10)}";
 
           return GestureDetector(
             onTap: onLoginTap,
-            behavior: HitTestBehavior.translucent,
             child: Container(
-              height: LINE_HEIGHT,
-              width: double.maxFinite,
-              padding: const EdgeInsets.only(
-                left: Base.BASE_PADDING * 2,
-                right: Base.BASE_PADDING * 2,
+              margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 6),
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: bgColor,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: borderColor, width: 2),
               ),
               child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: list,
+                children: [
+                  SizedBox(
+                    width: AVATAR_SIZE,
+                    height: AVATAR_SIZE,
+                    child: ClipOval(
+                      child: url != null
+                          ? CachedNetworkImage(
+                              imageUrl: url,
+                              width: AVATAR_SIZE,
+                              height: AVATAR_SIZE,
+                              fit: BoxFit.cover,
+                              placeholder: (context, url) => Container(
+                                color: Colors.grey[800],
+                              ),
+                              errorWidget: (context, url, error) =>
+                                  const Icon(Icons.error),
+                              cacheManager: localCacheManager,
+                            )
+                          : Container(color: Colors.grey[800]),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          displayName,
+                          style: TextStyle(
+                            color: nameColor,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                            fontFamily: 'Geist',
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          truncatedNpub,
+                          style: TextStyle(
+                            color: pubkeyColor,
+                            fontSize: 14,
+                            fontFamily: 'Geist',
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                  if (widget.isCurrent)
+                    const Padding(
+                      padding: EdgeInsets.only(right: 8.0),
+                      child: Icon(Icons.check_circle,
+                          color: Color(0xFFFFD600), size: 24),
+                    ),
+                  PopupMenuButton<String>(
+                    onSelected: (value) {
+                      if (value == 'logout' && widget.onLogoutTap != null) {
+                        widget.onLogoutTap!(widget.index);
+                      }
+                    },
+                    itemBuilder: (BuildContext context) =>
+                        <PopupMenuEntry<String>>[
+                      const PopupMenuItem<String>(
+                        value: 'logout',
+                        child: Text('Logout'),
+                      ),
+                    ],
+                    icon: const Icon(Icons.more_horiz, color: Colors.white54),
+                    color: const Color(0xFF2c2c2c),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                ],
               ),
             ),
           );
         });
-  }
-
-  void onLogout() async {
-    bool? result = await ConfirmDialog.show(context, "Confirm remove account");
-    if (result != null && result) {
-      if (widget.onLogoutTap != null) {
-        widget.onLogoutTap!(widget.index);
-      }
-    }
   }
 
   void onLoginTap() {

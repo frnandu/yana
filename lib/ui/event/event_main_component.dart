@@ -779,17 +779,17 @@ class _EventMainComponent extends State<EventMainComponent> {
             } else if (Nip19.isNoteId(link)) {
               var noteId = Nip19.decode(link);
               if (StringUtil.isNotBlank(noteId)) {
-                context.go(RouterPath.EVENT_DETAIL, extra: noteId);
+                context.push(RouterPath.EVENT_DETAIL, extra: noteId);
               }
             } else if (NIP19Tlv.isNevent(link)) {
               var nevent = NIP19Tlv.decodeNevent(link);
               if (nevent != null) {
-                context.go(RouterPath.EVENT_DETAIL, extra: nevent.id);
+                context.push(RouterPath.EVENT_DETAIL, extra: nevent.id);
               }
             } else if (NIP19Tlv.isNaddr(link)) {
               var naddr = NIP19Tlv.decodeNaddr(link);
               if (naddr != null) {
-                context.go(RouterPath.EVENT_DETAIL, extra: naddr.id);
+                context.push(RouterPath.EVENT_DETAIL, extra: naddr.id);
               }
             } else if (NIP19Tlv.isNrelay(link)) {
               var nrelay = NIP19Tlv.decodeNrelay(link);

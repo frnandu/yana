@@ -407,7 +407,7 @@ class _SearchRouter extends CustState<SearchRouter>
         noteId = Nip19.decode(text);
       }
 
-      context.go(RouterPath.EVENT_DETAIL, extra: noteId);
+      context.push(RouterPath.EVENT_DETAIL, extra: noteId);
     }
   }
 
@@ -511,11 +511,11 @@ class _SearchRouter extends CustState<SearchRouter>
         }
       } else if (Nip19.isNoteId(result)) {
         var noteId = Nip19.decode(result);
-        context.go(RouterPath.EVENT_DETAIL, extra: noteId);
+        context.push(RouterPath.EVENT_DETAIL, extra: noteId);
       } else if (NIP19Tlv.isNevent(result)) {
         var nevent = NIP19Tlv.decodeNevent(result);
         if (nevent != null) {
-          context.go(RouterPath.EVENT_DETAIL, extra: nevent.id);
+          context.push(RouterPath.EVENT_DETAIL, extra: nevent.id);
         }
       } else if (NIP19Tlv.isNrelay(result)) {
         var nrelay = NIP19Tlv.decodeNrelay(result);
