@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../../utils/base.dart';
 import '../../utils/router_path.dart';
-import '../../utils/router_util.dart';
+import 'package:go_router/go_router.dart';
 import 'zap_event_main_component.dart';
 
 class ZapEventListComponent extends StatefulWidget {
@@ -52,6 +52,6 @@ class _ZapEventListComponent extends State<ZapEventListComponent> {
   }
 
   void jumpToThread() {
-    RouterUtil.router(context, RouterPath.THREAD_DETAIL, widget.event);
+    context.go(RouterPath.THREAD_DETAIL, extra: widget.event);
   }
 }

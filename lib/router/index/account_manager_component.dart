@@ -9,7 +9,7 @@ import 'package:provider/provider.dart';
 import 'package:yana/provider/setting_provider.dart';
 import 'package:yana/ui/name_component.dart';
 import 'package:yana/ui/point_component.dart';
-import 'package:yana/utils/router_util.dart';
+import 'package:go_router/go_router.dart';
 
 import '/js/js_helper.dart' as js;
 import '../../i18n/i18n.dart';
@@ -24,6 +24,7 @@ import '../../utils/platform_util.dart';
 import '../../utils/router_path.dart';
 import '../../utils/string_util.dart';
 import 'index_drawer_content.dart';
+import '../../config/app_features.dart'; // Added for AppFeatures
 
 class AccountsComponent extends StatefulWidget {
   @override
@@ -119,7 +120,8 @@ class AccountsState extends State<AccountsComponent> {
   }
 
   Future<void> addAccount() async {
-    RouterUtil.router(context, RouterPath.LOGIN);
+    context.go(RouterPath.LOGIN);
+    // RouterUtil.router(context, RouterPath.LOGIN);
   }
 
   bool addAccountCheck(BuildContext p1, String privateKey) {
@@ -132,7 +134,9 @@ class AccountsState extends State<AccountsComponent> {
       try {
         getPublicKey(privateKey);
       } catch (e) {
-        EasyLoading.show(status: I18n.of(context).Wrong_Private_Key_format, maskType: EasyLoadingMaskType.black);
+        EasyLoading.show(
+            status: I18n.of(context).Wrong_Private_Key_format,
+            maskType: EasyLoadingMaskType.black);
         return false;
       }
     }
@@ -141,7 +145,10 @@ class AccountsState extends State<AccountsComponent> {
   }
 
   static void doLogin() async {
-    EasyLoading.show(status: "Logging in...", maskType: EasyLoadingMaskType.black, dismissOnTap: true);
+    EasyLoading.show(
+        status: "Logging in...",
+        maskType: EasyLoadingMaskType.black,
+        dismissOnTap: true);
 
     String? key = settingProvider.key;
     bool isPrivate = settingProvider.isPrivateKey;
@@ -149,7 +156,8 @@ class AccountsState extends State<AccountsComponent> {
     EventSigner eventSigner = settingProvider.isExternalSignerKey
         ? AmberEventSigner(publicKey: publicKey, amberFlutterDS: amberFlutterDS)
         : isPrivate || !PlatformUtil.isWeb()
-            ? Bip340EventSigner(privateKey: isPrivate ? key : null, publicKey: publicKey)
+            ? Bip340EventSigner(
+                privateKey: isPrivate ? key : null, publicKey: publicKey)
             : Nip07EventSigner(await js.getPublicKeyAsync());
     // await ndk.destroy();
     // ndk = Ndk(
@@ -165,18 +173,23 @@ class AccountsState extends State<AccountsComponent> {
       ndk.accounts.loginExternalSigner(signer: eventSigner);
     }
 
-    followEventProvider.clear();
-    await followEventProvider.loadCachedFeed();
+    followEventProvider?.clear();
+    await followEventProvider?.loadCachedFeed();
     initRelays(newKey: false);
-    notificationsProvider.notifyListeners();
-    nwcProvider.init();
-    settingProvider.notifyListeners();
+    if (AppFeatures.enableNotifications) {
+      notificationsProvider?.notifyListeners();
+    }
+    if (AppFeatures.enableWallet) {
+      nwcProvider?.init();
+    }
+    // settingProvider.notifyListeners(); // This line seems to be duplicated, removing one
     EasyLoading.dismiss();
   }
 
   void onLoginTap(int index) {
     if (settingProvider.privateKeyIndex != index) {
-      EasyLoading.show(status: "Logging out...", maskType: EasyLoadingMaskType.black);
+      EasyLoading.show(
+          status: "Logging out...", maskType: EasyLoadingMaskType.black);
       clearCurrentMemInfo();
       ndk.requests.closeAllSubscription();
       ndk.accounts.logout();
@@ -187,33 +200,37 @@ class AccountsState extends State<AccountsComponent> {
         // use next privateKey to login
         doLogin();
         settingProvider.notifyListeners();
-        RouterUtil.back(context);
+        context.pop();
       }
     }
   }
 
-  static void onLogoutTap(int index, {bool routerBack = true, required BuildContext context}) {
+  static void onLogoutTap(int index,
+      {bool routerBack = true, required BuildContext context}) {
     var oldIndex = settingProvider.privateKeyIndex;
     clearLocalData(index);
-    nwcProvider.disconnect();
+    if (AppFeatures.enableWallet) {
+      nwcProvider?.disconnect();
+    }
     if (oldIndex == index) {
       clearCurrentMemInfo();
       ndk.requests.closeAllSubscription();
       ndk.accounts.logout();
       if (settingProvider.keyMap.isNotEmpty) {
-        settingProvider.privateKeyIndex = int.tryParse(settingProvider.keyMap.keys.first);
+        settingProvider.privateKeyIndex =
+            int.tryParse(settingProvider.keyMap.keys.first);
         if (settingProvider.key != null) {
           // use next privateKey to login
           doLogin();
           settingProvider.notifyListeners();
-          RouterUtil.back(context);
+          context.pop();
         }
       }
     }
 
     settingProvider.notifyListeners();
     if (routerBack && context != null) {
-      RouterUtil.back(context);
+      context.pop();
     }
   }
 
@@ -221,13 +238,15 @@ class AccountsState extends State<AccountsComponent> {
     sharedPreferences.remove(DataKey.NOTIFICATIONS_TIMESTAMP);
     sharedPreferences.remove(DataKey.FEED_POSTS_TIMESTAMP);
     sharedPreferences.remove(DataKey.FEED_REPLIES_TIMESTAMP);
-    notificationsProvider.clear();
-    newNotificationsProvider.clear();
-    followEventProvider.clear();
-    followNewEventProvider.clear();
-    dmProvider.clear();
+    if (AppFeatures.enableNotifications) {
+      notificationsProvider?.clear();
+      newNotificationsProvider?.clear();
+    }
+    followEventProvider?.clear();
+    followNewEventProvider?.clear();
+    dmProvider?.clear();
     noticeProvider.clear();
-    contactListProvider.clear();
+    contactListProvider?.clear();
     // cacheManager.removeAllEvents();
 
     eventReactionsProvider.clear();
@@ -284,7 +303,10 @@ class _AccountManagerItemComponent extends State<AccountManagerItemComponent> {
   void initState() {
     super.initState();
     try {
-      pubkey = StringUtil.isBlank(widget.publicKey) && StringUtil.isNotBlank(widget.privateKey) ? getPublicKey(widget.privateKey!) : widget.publicKey!;
+      pubkey = StringUtil.isBlank(widget.publicKey) &&
+              StringUtil.isNotBlank(widget.privateKey)
+          ? getPublicKey(widget.privateKey!)
+          : widget.publicKey!;
     } catch (e) {
       print(e);
     }
@@ -316,7 +338,10 @@ class _AccountManagerItemComponent extends State<AccountManagerItemComponent> {
 
           Widget? imageWidget;
 
-          String? url = metadata != null && StringUtil.isNotBlank(metadata.picture) ? metadata.picture : StringUtil.robohash(pubkey!);
+          String? url =
+              metadata != null && StringUtil.isNotBlank(metadata.picture)
+                  ? metadata.picture
+                  : StringUtil.robohash(pubkey!);
 
           if (url != null) {
             imageWidget = CachedNetworkImage(
@@ -342,7 +367,8 @@ class _AccountManagerItemComponent extends State<AccountManagerItemComponent> {
                       )
                     : GestureDetector(
                         onTap: onLoginTap,
-                        child: Icon(Icons.login, color: themeData.disabledColor),
+                        child:
+                            Icon(Icons.login, color: themeData.disabledColor),
                       )),
           ));
           list.add(Container(
@@ -405,7 +431,8 @@ class _AccountManagerItemComponent extends State<AccountManagerItemComponent> {
             child: Container(
               padding: const EdgeInsets.only(left: 5),
               height: LINE_HEIGHT,
-              child: Icon(Icons.close, color: widget.isCurrent ? null : themeData.disabledColor),
+              child: Icon(Icons.close,
+                  color: widget.isCurrent ? null : themeData.disabledColor),
             ),
           ));
 

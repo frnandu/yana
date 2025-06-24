@@ -4,7 +4,7 @@ import 'package:yana/nostr/event_relation.dart';
 
 import '../../utils/base.dart';
 import '../../utils/router_path.dart';
-import '../../utils/router_util.dart';
+import 'package:go_router/go_router.dart';
 import 'event_quote_component.dart';
 import 'reaction_event_item_component.dart';
 
@@ -49,13 +49,19 @@ class _ReactionEventListComponent extends State<ReactionEventListComponent> {
 
     EventRelation eventRelation = EventRelation.fromEvent(widget.event);
 
-    if (eventRelation.replyId!=null || eventRelation.rootId!=null) {
-      main = Column(children: [main, EventQuoteComponent(
-        id: eventRelation.replyId ?? eventRelation.rootId,
-        showReactions: false,
-        showVideo: true,
-      ),
-      Container(color: themeData.disabledColor, margin: EdgeInsets.only(top:3), padding: EdgeInsets.only(bottom: 1),)
+    if (eventRelation.replyId != null || eventRelation.rootId != null) {
+      main = Column(children: [
+        main,
+        EventQuoteComponent(
+          id: eventRelation.replyId ?? eventRelation.rootId,
+          showReactions: false,
+          showVideo: true,
+        ),
+        Container(
+          color: themeData.disabledColor,
+          margin: EdgeInsets.only(top: 3),
+          padding: EdgeInsets.only(bottom: 1),
+        )
       ]);
     }
 
@@ -70,6 +76,6 @@ class _ReactionEventListComponent extends State<ReactionEventListComponent> {
   }
 
   void jumpToThread() {
-    RouterUtil.router(context, RouterPath.THREAD_DETAIL, widget.event);
+    context.go(RouterPath.THREAD_DETAIL, extra: widget.event);
   }
 }

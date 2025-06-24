@@ -6,6 +6,7 @@ import 'package:bech32/bech32.dart';
 import 'package:confetti/confetti.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:go_router/go_router.dart';
 import 'package:ndk/domain_layer/entities/metadata.dart';
 import 'package:ndk/domain_layer/usecases/nwc/nwc_notification.dart';
 import 'package:pretty_qr_code/pretty_qr_code.dart';
@@ -19,7 +20,6 @@ import 'package:yana/utils/string_util.dart';
 import '../../nostr/nip19/nip19.dart';
 import '../../ui/button.dart';
 import '../../ui/user_pic_component.dart';
-import '../../utils/router_util.dart';
 
 class WalletReceiveRouter extends StatefulWidget {
   const WalletReceiveRouter({super.key});
@@ -43,16 +43,18 @@ class _WalletReceiveRouter extends State<WalletReceiveRouter> {
     super.initState();
     confettiController =
         ConfettiController(duration: const Duration(seconds: 2));
-    if (nwcProvider.isConnected) {
-      nwcProvider.connection!.notificationStream.stream.listen((notification) {
+    if (nwcProvider!.isConnected) {
+      nwcProvider!.connection!.notificationStream.stream.listen((notification) {
         print(notification);
       });
-      nwcProvider.connection!.paymentsReceivedStream.listen((notification) {
-        if (payingInvoice!=null && notification.preimage!='' && notification.invoice == payingInvoice) {
-            setState(() {
-              paid = notification;
-            });
-            confettiController.play();
+      nwcProvider!.connection!.paymentsReceivedStream.listen((notification) {
+        if (payingInvoice != null &&
+            notification.preimage != '' &&
+            notification.invoice == payingInvoice) {
+          setState(() {
+            paid = notification;
+          });
+          confettiController.play();
         }
       });
     }
@@ -81,7 +83,7 @@ class _WalletReceiveRouter extends State<WalletReceiveRouter> {
       backgroundColor: themeData.appBarTheme.foregroundColor,
       leading: GestureDetector(
           onTap: () {
-            RouterUtil.back(context);
+            context.pop();
           },
           child: Container(
             margin: const EdgeInsets.only(left: 10),
@@ -101,7 +103,7 @@ class _WalletReceiveRouter extends State<WalletReceiveRouter> {
 
     List<Widget> list = [];
     if (paid == null) {
-      metadata = RouterUtil.routerArgs(context) as Metadata?;
+      metadata = GoRouterState.of(context).extra as Metadata?;
       if (metadata != null && StringUtil.isNotBlank(metadata!.lud16)) {
         list.add(Container(
             padding: const EdgeInsets.all(20),
@@ -116,7 +118,7 @@ class _WalletReceiveRouter extends State<WalletReceiveRouter> {
                       PrettyQrSmoothSymbol(color: Colors.white, roundFactor: 1),
                   image: PrettyQrDecorationImage(
                     scale: 0.3,
-                    image: AssetImage('assets/imgs/logo/logo-new.png'),
+                    image: const AssetImage('assets/imgs/logo/logo-new.png'),
                   ),
                 ))));
         list.add(const SizedBox(height: 10));
@@ -197,7 +199,7 @@ class _WalletReceiveRouter extends State<WalletReceiveRouter> {
             fontColor: themeData.disabledColor,
             text: "Payment Invoice",
             onTap: () async {
-              RouterUtil.router(context, RouterPath.WALLET_RECEIVE_INVOICE, metadata);
+              context.go(RouterPath.WALLET_RECEIVE_INVOICE, extra: metadata);
             }));
       }
       // TODO
@@ -284,25 +286,28 @@ class _WalletReceiveRouter extends State<WalletReceiveRouter> {
           ),
         ),
       );
-      list.add(const SizedBox(height: 60,));
+      list.add(const SizedBox(
+        height: 60,
+      ));
       list.add(Button(
         text: "Close",
         fill: false,
         border: true,
         width: 300,
         onTap: () {
-          RouterUtil.back(context);
+          context.pop();
         },
       ));
-      list.add(const SizedBox(height: 20,));
+      list.add(const SizedBox(
+        height: 20,
+      ));
       list.add(Button(
         text: "View Details",
         fill: false,
         fontColor: themeData.disabledColor,
         border: false,
         width: 300,
-        onTap: () {
-        },
+        onTap: () {},
       ));
     }
     return Scaffold(

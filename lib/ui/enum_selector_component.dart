@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import '../utils/base.dart';
 import '../utils/base_consts.dart';
-import '../utils/router_util.dart';
 
 class EnumSelectorComponent extends StatefulWidget {
   final List<EnumObj> list;
@@ -88,7 +88,8 @@ class _EnumSelectorComponentState extends State<EnumSelectorComponent> {
     }
 
     Widget searchField = Padding(
-      padding: const EdgeInsets.symmetric(horizontal: Base.BASE_PADDING, vertical: Base.BASE_PADDING_HALF),
+      padding: const EdgeInsets.symmetric(
+          horizontal: Base.BASE_PADDING, vertical: Base.BASE_PADDING_HALF),
       child: TextField(
         controller: _searchController,
         decoration: InputDecoration(
@@ -99,7 +100,8 @@ class _EnumSelectorComponentState extends State<EnumSelectorComponent> {
             borderSide: BorderSide.none,
           ),
           filled: true,
-          fillColor: themeData.scaffoldBackgroundColor, // Or another suitable color
+          fillColor:
+              themeData.scaffoldBackgroundColor, // Or another suitable color
         ),
       ),
     );
@@ -122,7 +124,11 @@ class _EnumSelectorComponentState extends State<EnumSelectorComponent> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: widgets.isEmpty && _searchController.text.isNotEmpty
-                    ? [Padding(padding: const EdgeInsets.all(16.0), child: Text("No currency found"))]
+                    ? [
+                        Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Text("No currency found"))
+                      ]
                     : widgets,
               ),
             ),
@@ -138,7 +144,7 @@ class _EnumSelectorComponentState extends State<EnumSelectorComponent> {
         child: GestureDetector(
           behavior: HitTestBehavior.opaque,
           onTap: () {
-            RouterUtil.back(context);
+            Navigator.pop(context);
           },
           child: Container(
             width: double.infinity,
@@ -193,7 +199,7 @@ class EnumSelectorItemComponent extends StatelessWidget {
         if (onTap != null) {
           onTap!(enumObj);
         } else {
-          RouterUtil.back(context, enumObj);
+          Navigator.pop(context, enumObj);
         }
       },
       child: Container(

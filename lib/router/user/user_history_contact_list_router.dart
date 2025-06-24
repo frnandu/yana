@@ -1,8 +1,8 @@
 import 'package:ndk/domain_layer/entities/contact_list.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../i18n/i18n.dart';
-import '../../utils/router_util.dart';
 import 'user_contact_list_component.dart';
 
 class UserHistoryContactListRouter extends StatefulWidget {
@@ -21,13 +21,13 @@ class _UserHistoryContactListRouter
     var s = I18n.of(context);
 
     if (contactList == null) {
-      var arg = RouterUtil.routerArgs(context);
+      var arg = GoRouterState.of(context).extra;
       if (arg != null) {
         contactList = arg as ContactList;
       }
     }
     if (contactList == null) {
-      RouterUtil.back(context);
+      context.pop();
       return Container();
     }
     var themeData = Theme.of(context);
@@ -38,7 +38,7 @@ class _UserHistoryContactListRouter
       appBar: AppBar(
         leading: GestureDetector(
           onTap: () {
-            RouterUtil.back(context);
+            context.pop();
           },
           child: Icon(
             Icons.arrow_back_ios,
@@ -74,6 +74,6 @@ class _UserHistoryContactListRouter
 
   void doRecovery() {
     // contactListProvider.updateContacts(contactList!);
-    RouterUtil.back(context);
+    context.pop();
   }
 }

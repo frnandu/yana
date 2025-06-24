@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:ndk/ndk.dart';
 import 'package:provider/provider.dart';
 import 'package:widget_size/widget_size.dart';
@@ -19,7 +20,6 @@ import '../../ui/event/event_list_component.dart';
 import '../../ui/event_delete_callback.dart';
 import '../../utils/base_consts.dart';
 import '../../utils/peddingevents_later_function.dart';
-import '../../utils/router_util.dart';
 import '../edit/editor_router.dart';
 
 class CommunityDetailRouter extends StatefulWidget {
@@ -31,7 +31,8 @@ class CommunityDetailRouter extends StatefulWidget {
   }
 }
 
-class _CommunityDetailRouter extends CustState<CommunityDetailRouter> with PenddingEventsLaterFunction {
+class _CommunityDetailRouter extends CustState<CommunityDetailRouter>
+    with PenddingEventsLaterFunction {
   EventMemBox box = EventMemBox();
 
   CommunityId? communityId;
@@ -61,13 +62,13 @@ class _CommunityDetailRouter extends CustState<CommunityDetailRouter> with Pendd
   @override
   Widget doBuild(BuildContext context) {
     if (communityId == null) {
-      var arg = RouterUtil.routerArgs(context);
+      var arg = GoRouterState.of(context).extra;
       if (arg != null) {
         communityId = arg as CommunityId;
       }
     }
     if (communityId == null) {
-      RouterUtil.back(context);
+      context.pop();
       return Container();
     }
     var _settingProvider = Provider.of<SettingProvider>(context);
@@ -91,7 +92,8 @@ class _CommunityDetailRouter extends CustState<CommunityDetailRouter> with Pendd
         controller: _controller,
         itemBuilder: (context, index) {
           if (index == 0) {
-            return Selector<CommunityInfoProvider, CommunityInfo?>(builder: (context, info, child) {
+            return Selector<CommunityInfoProvider, CommunityInfo?>(
+                builder: (context, info, child) {
               if (info == null) {
                 return Container();
               }
@@ -125,7 +127,7 @@ class _CommunityDetailRouter extends CustState<CommunityDetailRouter> with Pendd
       appBar: AppBar(
         leading: GestureDetector(
           onTap: () {
-            RouterUtil.back(context);
+            context.pop();
           },
           child: Icon(
             Icons.arrow_back_ios,
@@ -163,7 +165,7 @@ class _CommunityDetailRouter extends CustState<CommunityDetailRouter> with Pendd
   NdkResponse? subscription;
 
   void queryEvents() async {
-    if (subscription!=null) {
+    if (subscription != null) {
       ndk.requests.closeSubscription(subscription!.requestId);
     }
     var filter = Filter(kinds: [
@@ -175,7 +177,8 @@ class _CommunityDetailRouter extends CustState<CommunityDetailRouter> with Pendd
       communityId!.toAString()
     ], limit: 100);
 
-    subscription = ndk.requests.subscription(filters: [filter], relaySet:  myInboxRelaySet!);
+    subscription = ndk.requests
+        .subscription(filters: [filter], relaySet: myInboxRelaySet!);
     subscription!.stream.listen((event) {
       onEvent(event);
     });
@@ -193,7 +196,7 @@ class _CommunityDetailRouter extends CustState<CommunityDetailRouter> with Pendd
     super.dispose();
     disposeLater();
 
-    if (subscription!=null) {
+    if (subscription != null) {
       ndk.requests.closeSubscription(subscription!.requestId);
     }
   }

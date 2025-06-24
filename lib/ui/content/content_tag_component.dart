@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'package:go_router/go_router.dart';
 import 'package:yana/utils/router_path.dart';
-import 'package:yana/utils/router_util.dart';
 
 import 'content_str_link_component.dart';
 
@@ -17,7 +17,7 @@ class ContentTagComponent extends StatelessWidget {
       str: tag,
       onTap: () {
         var plainTag = tag.replaceFirst("#", "");
-        RouterUtil.router(context, RouterPath.TAG_DETAIL, plainTag);
+        context.go(RouterPath.TAG_DETAIL, extra: plainTag);
       },
     );
   }

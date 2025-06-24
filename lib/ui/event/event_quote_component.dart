@@ -6,7 +6,7 @@ import '../../i18n/i18n.dart';
 import '../../provider/single_event_provider.dart';
 import '../../utils/base.dart';
 import '../../utils/router_path.dart';
-import '../../utils/router_util.dart';
+import 'package:go_router/go_router.dart';
 import '../cust_state.dart';
 import 'event_main_component.dart';
 
@@ -19,7 +19,8 @@ class EventQuoteComponent extends StatefulWidget {
 
   bool showReactions;
 
-  EventQuoteComponent({super.key,
+  EventQuoteComponent({
+    super.key,
     this.event,
     this.id,
     this.showReactions = false,
@@ -75,31 +76,32 @@ class _EventQuoteComponent extends CustState<EventQuoteComponent> {
   Widget buildEventWidget(
       Nip01Event event, Color cardColor, BoxDecoration boxDecoration) {
     return
-      // Screenshot(
-      // controller: screenshotController,
-      // child:
-      Container(
-        // padding: const EdgeInsets.only(top: Base.BASE_PADDING),
-        margin: const EdgeInsets.only(top: Base.BASE_PADDING, bottom: Base.BASE_PADDING),
-        decoration: boxDecoration,
-        child: GestureDetector(
-          onTap: () {
+        // Screenshot(
+        // controller: screenshotController,
+        // child:
+        Container(
+      // padding: const EdgeInsets.only(top: Base.BASE_PADDING),
+      margin: const EdgeInsets.only(
+          top: Base.BASE_PADDING, bottom: Base.BASE_PADDING),
+      decoration: boxDecoration,
+      child: GestureDetector(
+        onTap: () {
+          jumpToThread(event);
+        },
+        behavior: HitTestBehavior.translucent,
+        child: EventMainComponent(
+          // screenshotController: screenshotController,
+          event: event,
+          addDivider: false,
+          showReactions: widget.showReactions,
+          showReplying: false,
+          textOnTap: () {
             jumpToThread(event);
           },
-          behavior: HitTestBehavior.translucent,
-          child: EventMainComponent(
-            // screenshotController: screenshotController,
-            event: event,
-            addDivider: false,
-            showReactions: widget.showReactions,
-            showReplying: false,
-            textOnTap: () {
-              jumpToThread(event);
-            },
-            showVideo: widget.showVideo,
-            imageListMode: true,
-          ),
+          showVideo: widget.showVideo,
+          imageListMode: true,
         ),
+      ),
       // ),
     );
   }
@@ -114,7 +116,7 @@ class _EventQuoteComponent extends CustState<EventQuoteComponent> {
   }
 
   void jumpToThread(Nip01Event event) {
-    RouterUtil.router(context, RouterPath.THREAD_DETAIL, event);
+    context.go(RouterPath.THREAD_DETAIL, extra: event);
   }
 
   @override

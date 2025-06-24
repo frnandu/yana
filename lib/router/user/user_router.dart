@@ -17,9 +17,10 @@ import '../../ui/cust_state.dart';
 import '../../ui/event/event_list_component.dart';
 import '../../ui/user/metadata_component.dart';
 import '../../utils/base_consts.dart';
+import 'package:go_router/go_router.dart';
+
 import '../../utils/load_more_event.dart';
 import '../../utils/peddingevents_later_function.dart';
-import '../../utils/router_util.dart';
 import '../../utils/string_util.dart';
 import 'user_statistics_component.dart';
 
@@ -92,9 +93,9 @@ class _UserRouter extends CustState<UserRouter>
     var _filterProvider = Provider.of<FilterProvider>(context);
 
     if (StringUtil.isBlank(pubkey) || subscription == null) {
-      pubkey = RouterUtil.routerArgs(context) as String?;
+      pubkey = GoRouterState.of(context).extra as String?;
       if (StringUtil.isBlank(pubkey)) {
-        RouterUtil.back(context);
+        context.pop();
         return Container();
       }
       doQuery();
@@ -103,7 +104,7 @@ class _UserRouter extends CustState<UserRouter>
       //   box.addList(events);
       // }
     } else {
-      var arg = RouterUtil.routerArgs(context);
+      var arg = GoRouterState.of(context).extra;
       if (arg != null && arg is String) {
         if (arg != pubkey) {
           // arg change! reset.

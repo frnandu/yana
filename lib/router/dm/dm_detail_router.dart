@@ -1,4 +1,5 @@
-  import 'package:ndk/domain_layer/entities/metadata.dart';
+import 'package:go_router/go_router.dart';
+import 'package:ndk/domain_layer/entities/metadata.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
@@ -22,7 +23,6 @@ import '../../ui/editor/video_embed_builder.dart';
 import '../../ui/name_component.dart';
 import '../../utils/base.dart';
 import '../../utils/router_path.dart';
-import '../../utils/router_util.dart';
 import 'dm_detail_item_component.dart';
 
 class DMDetailRouter extends StatefulWidget {
@@ -46,7 +46,9 @@ class _DMDetailRouter extends CustState<DMDetailRouter> with EditorMixin {
     handleFocusInit();
     Future(() async {
       setState(() async {
-        contacts = await contactListProvider.contacts();
+        contacts = contactListProvider != null
+            ? await contactListProvider!.contacts()
+            : [];
       });
     });
   }
@@ -60,19 +62,19 @@ class _DMDetailRouter extends CustState<DMDetailRouter> with EditorMixin {
     var hintColor = themeData.hintColor;
     var s = I18n.of(context);
 
-    var arg = RouterUtil.routerArgs(context);
+    var arg = GoRouterState.of(context).extra;
     if (arg == null) {
-      RouterUtil.back(context);
+      context.pop();
       return Container();
     }
     detail = arg as DMSessionDetail;
 
-    var nameComponnet =
-      FutureBuilder<Metadata?>(future: metadataProvider.getMetadata(detail!.dmSession.pubkey),
+    var nameComponnet = FutureBuilder<Metadata?>(
+        future: metadataProvider.getMetadata(detail!.dmSession.pubkey),
         builder: (context, snapshot) {
           return GestureDetector(
               onTap: () {
-                RouterUtil.router(context, RouterPath.USER, detail!.dmSession.pubkey);
+                context.push(RouterPath.USER, extra: detail!.dmSession.pubkey);
               },
               child: NameComponent(
                 pubkey: detail!.dmSession.pubkey,
@@ -136,9 +138,7 @@ class _DMDetailRouter extends CustState<DMDetailRouter> with EditorMixin {
       ),
       child: Row(
         children: [
-          Expanded(
-              child:
-              Container()
+          Expanded(child: Container()
               // quill.QuillProvider(
               //     configurations: quill.QuillConfigurations(
               //       controller: editorController,
@@ -251,7 +251,7 @@ class _DMDetailRouter extends CustState<DMDetailRouter> with EditorMixin {
       appBar: AppBar(
         leading: GestureDetector(
           onTap: () {
-            RouterUtil.back(context);
+            context.pop();
           },
           child: Icon(
             Icons.arrow_back_ios,
@@ -272,7 +272,7 @@ class _DMDetailRouter extends CustState<DMDetailRouter> with EditorMixin {
         EasyLoading.show(status: I18n.of(context).Send_fail);
         return;
       }
-      dmProvider.addEventAndUpdateReadedTime(detail!, event);
+      dmProvider!.addEventAndUpdateReadedTime(detail!, event);
       editorController.clear();
       setState(() {});
     } finally {
@@ -281,7 +281,7 @@ class _DMDetailRouter extends CustState<DMDetailRouter> with EditorMixin {
   }
 
   Future<void> addDmSessionToKnown() async {
-    var _detail = await dmProvider.addDmSessionToKnown(detail!);
+    var _detail = await dmProvider!.addDmSessionToKnown(detail!);
     setState(() {
       detail = _detail;
     });
@@ -294,7 +294,7 @@ class _DMDetailRouter extends CustState<DMDetailRouter> with EditorMixin {
         detail!.dmSession.newestEvent != null) {
       // detail!.info!.readedTime = detail!.dmSession.newestEvent!.createdAt;
       // DMSessionInfoDB.update(detail!.info!);
-      dmProvider.updateReadedTime(detail);
+      dmProvider!.updateReadedTime(detail);
     }
   }
 

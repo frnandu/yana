@@ -5,10 +5,11 @@ import 'package:ndk/domain_layer/entities/metadata.dart';
 
 import '../../main.dart';
 import '../../ui/editor/search_mention_user_component.dart';
+import 'package:go_router/go_router.dart';
+
 import '../../utils/base.dart';
 import '../../utils/platform_util.dart';
 import '../../utils/router_path.dart';
-import '../../utils/router_util.dart';
 
 class UserContactListComponent extends StatefulWidget {
   ContactList contactList;
@@ -33,25 +34,26 @@ class _UserContactListComponent extends State<UserContactListComponent> {
     Widget main = FlutterListView(
         controller: _controller,
         delegate: FlutterListViewDelegate(
-              (BuildContext context, int index) {
-        var contact = list![index];
-        return Container(
-            margin: const EdgeInsets.only(bottom: Base.BASE_PADDING_HALF),
-            child: FutureBuilder<Metadata?>(
-                future: metadataProvider.getMetadata(contact),
-                builder: (context, snapshot) {
-                  return snapshot.hasData
-                      ? SearchMentionUserItemComponent(
-                          metadata: snapshot.data!,
-                          onTap: (metadata) {
-                            RouterUtil.router(context, RouterPath.USER, metadata.pubKey);
-                          },
-                          width: 400)
-                      : Container();
-                }));
-      },
-      childCount: list!.length,
-    ));
+          (BuildContext context, int index) {
+            var contact = list![index];
+            return Container(
+                margin: const EdgeInsets.only(bottom: Base.BASE_PADDING_HALF),
+                child: FutureBuilder<Metadata?>(
+                    future: metadataProvider.getMetadata(contact),
+                    builder: (context, snapshot) {
+                      return snapshot.hasData
+                          ? SearchMentionUserItemComponent(
+                              metadata: snapshot.data!,
+                              onTap: (metadata) {
+                                context.push(RouterPath.USER,
+                                    extra: metadata.pubKey);
+                              },
+                              width: 400)
+                          : Container();
+                    }));
+          },
+          childCount: list!.length,
+        ));
 
     if (PlatformUtil.isTableMode()) {
       main = GestureDetector(

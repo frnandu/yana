@@ -34,34 +34,33 @@ class _FollowPostsAndRepliesRouter
     super.initState();
     bindLoadMoreScroll(_controller);
     _controller.addListener(() {
-      followEventProvider.setRepliesTimestampToNewestAndSave();
+      followEventProvider?.setRepliesTimestampToNewestAndSave();
     });
-
   }
 
   @override
   void deactivate() {
     super.deactivate();
-    followEventProvider.setRepliesTimestampToNewestAndSave();
+    followEventProvider?.setRepliesTimestampToNewestAndSave();
   }
 
   @override
   void dispose() {
     super.dispose();
-    followEventProvider.setRepliesTimestampToNewestAndSave();
+    followEventProvider?.setRepliesTimestampToNewestAndSave();
   }
 
   @override
   Widget doBuild(BuildContext context) {
     var _settingProvider = Provider.of<SettingProvider>(context);
-    var _followEventProvider = Provider.of<FollowEventProvider>(context);
+    // var _followEventProvider = Provider.of<FollowEventProvider>(context);
 
-    var eventBox = _followEventProvider.postsAndRepliesBox;
-    var events = eventBox.all();
-    if (events.isEmpty) {
+    var eventBox = followEventProvider?.postsAndRepliesBox;
+    var events = eventBox?.all();
+    if (events!.isEmpty) {
       return EventListPlaceholder(
         onRefresh: () {
-          followEventProvider.refreshReplies();
+          followEventProvider?.refreshReplies();
         },
       );
     }
@@ -72,26 +71,25 @@ class _FollowPostsAndRepliesRouter
         key: const Key('feed-replies'),
         onVisibilityChanged: (visibilityInfo) {
           if (visibilityInfo.visibleFraction == 0.0) {
-            followEventProvider.setRepliesTimestampToNewestAndSave;
+            followEventProvider?.setRepliesTimestampToNewestAndSave();
           }
         },
-        child:
-        FlutterListView(
+        child: FlutterListView(
             controller: _controller,
-            delegate:
-            FlutterListViewDelegate((BuildContext context, int index) {
-            var event = events[index];
-            return EventListComponent(
-              event: event,
-              showVideo: _settingProvider.videoPreview == OpenStatus.OPEN,
-            );
-          },
-          childCount: events.length,
-        )));
+            delegate: FlutterListViewDelegate(
+              (BuildContext context, int index) {
+                var event = events[index];
+                return EventListComponent(
+                  event: event,
+                  showVideo: _settingProvider.videoPreview == OpenStatus.OPEN,
+                );
+              },
+              childCount: events.length,
+            )));
 
     Widget ri = RefreshIndicator(
       onRefresh: () async {
-        followEventProvider.refreshReplies();
+        followEventProvider?.refreshReplies();
       },
       child: main,
     );
@@ -116,10 +114,10 @@ class _FollowPostsAndRepliesRouter
           }
 
           return NewNotesUpdatedComponent(
-            text: "",//I18n.of(context).replied,
+            text: "", //I18n.of(context).replied,
             newEvents: eventMemBox.all(),
             onTap: () {
-              followEventProvider.mergeNewPostAndReplyEvents();
+              followEventProvider?.mergeNewPostAndReplyEvents();
               _controller.animateTo(0,
                   curve: Curves.ease, duration: const Duration(seconds: 1));
             },
@@ -145,13 +143,13 @@ class _FollowPostsAndRepliesRouter
   void doQuery() {
     preQuery();
     if (until != null) {
-      followEventProvider.queryOlder(until: until!);
+      followEventProvider?.queryOlder(until: until!);
     }
   }
 
   @override
   EventMemBox getEventBox() {
-    return followEventProvider.postsAndRepliesBox;
+    return followEventProvider?.postsAndRepliesBox ?? EventMemBox();
   }
 
   @override

@@ -6,7 +6,10 @@ import 'event_mem_box.dart';
 
 class EventFindUtil {
   static List<Nip01Event> findEvent(String str, {int? limit = 5}) {
-    List<FindEventInterface> finders = [followEventProvider];
+    List<FindEventInterface> finders = [];
+    if (followEventProvider != null) {
+      finders.add(followEventProvider!);
+    }
     finders.addAll(eventReactionsProvider.allReactions());
 
     var eventBox = EventMemBox(sortAfterAdd: false);

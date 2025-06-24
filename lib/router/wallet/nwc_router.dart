@@ -5,11 +5,14 @@ import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:provider/provider.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:yana/main.dart';
 import 'package:yana/provider/nwc_provider.dart';
+import 'package:yana/config/app_features.dart';
+import 'package:yana/utils/router_path.dart';
 
 import '../../ui/button.dart';
-import '../../utils/router_util.dart';
 import '../../utils/string_util.dart';
 
 class NwcRouter extends StatefulWidget {
@@ -49,7 +52,7 @@ class _NwcRouter extends State<NwcRouter> {
       backgroundColor: themeData.appBarTheme.backgroundColor,
       leading: GestureDetector(
         onTap: () {
-          RouterUtil.back(context);
+          context.go(RouterPath.INDEX);
         },
         child: Container(
           margin: const EdgeInsets.only(left: 10),
@@ -94,9 +97,9 @@ class _NwcRouter extends State<NwcRouter> {
                   setState(() {
                     nwcSecret = nwc;
                   });
-                  await nwcProvider.connect(nwc!, onConnect: (lud16) async {
+                  await nwcProvider?.connect(nwc!, onConnect: (lud16) async {
                     await metadataProvider.updateLud16IfEmpty(lud16);
-                    RouterUtil.back(context);
+                    context.go(RouterPath.WALLET);
                   }, onError: (error) async {
                     EasyLoading.showError(
                         'Error connecting to wallet...${error!}',
@@ -183,11 +186,11 @@ class _NwcRouter extends State<NwcRouter> {
                                   setState(() {
                                     nwcSecret = clipboardData.text;
                                   });
-                                  nwcProvider.connect(clipboardData.text!,
+                                  nwcProvider?.connect(clipboardData.text!,
                                       onConnect: (lud16) async {
                                     await metadataProvider
                                         .updateLud16IfEmpty(lud16);
-                                    RouterUtil.back(context);
+                                    context.go(RouterPath.WALLET);
                                   }, onError: (error) async {
                                     EasyLoading.showError(
                                         'Error connecting to wallet...${error!}',
@@ -214,7 +217,7 @@ class _NwcRouter extends State<NwcRouter> {
   }
 
   bool isConnecting() {
-    return nwcSecret != null && !nwcProvider.isConnected;
+    return nwcSecret != null && !(nwcProvider?.isConnected ?? false);
   }
 
   Widget barOptions() {
@@ -225,7 +228,7 @@ class _NwcRouter extends State<NwcRouter> {
           List<PopupMenuEntry<String>> list = [
             //const PopupMenuItem(value: "settings", child: Text("Settings")),
           ];
-          if (nwcProvider.isConnected) {
+          if (nwcProvider?.isConnected ?? false) {
             list.add(
               const PopupMenuItem(
                 value: "disconnect",
@@ -238,7 +241,7 @@ class _NwcRouter extends State<NwcRouter> {
         onSelected: (value) async {
           if (value == "disconnect") {
             setState(() async {
-              await nwcProvider.disconnect();
+              await nwcProvider?.disconnect();
             });
           }
         });

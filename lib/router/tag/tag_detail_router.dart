@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:ndk/ndk.dart';
 import 'package:provider/provider.dart';
 import 'package:yana/main.dart';
@@ -13,7 +14,6 @@ import '../../ui/tag_info_component.dart';
 import '../../utils/base_consts.dart';
 import '../../utils/peddingevents_later_function.dart';
 import '../../utils/platform_util.dart';
-import '../../utils/router_util.dart';
 import '../../utils/string_util.dart';
 
 class TagDetailRouter extends StatefulWidget {
@@ -59,12 +59,12 @@ class _TagDetailRouter extends CustState<TagDetailRouter>
   Widget doBuild(BuildContext context) {
     var _settingProvider = Provider.of<SettingProvider>(context);
     if (StringUtil.isBlank(tag)) {
-      var arg = RouterUtil.routerArgs(context);
+      var arg = GoRouterState.of(context).extra;
       if (arg != null && arg is String) {
         tag = arg;
       }
     } else {
-      var arg = RouterUtil.routerArgs(context);
+      var arg = GoRouterState.of(context).extra;
       if (arg != null && arg is String && tag != arg) {
         // arg changed! reset
         tag = arg;
@@ -74,7 +74,7 @@ class _TagDetailRouter extends CustState<TagDetailRouter>
       }
     }
     if (StringUtil.isBlank(tag)) {
-      RouterUtil.back(context);
+      context.pop();
       return Container();
     }
 
@@ -132,7 +132,7 @@ class _TagDetailRouter extends CustState<TagDetailRouter>
       appBar: AppBar(
         leading: GestureDetector(
           onTap: () {
-            RouterUtil.back(context);
+            context.pop();
           },
           child: Icon(
             Icons.arrow_back_ios,
@@ -152,7 +152,7 @@ class _TagDetailRouter extends CustState<TagDetailRouter>
   }
 
   void doQuery() async {
-    if (subscription!=null) {
+    if (subscription != null) {
       ndk.requests.closeSubscription(subscription!.requestId);
     }
     var plainTag = tag!.replaceFirst("#", "");
@@ -161,9 +161,9 @@ class _TagDetailRouter extends CustState<TagDetailRouter>
       kind.EventKind.LONG_FORM,
       kind.EventKind.FILE_HEADER,
       kind.EventKind.POLL,
-    ],
-        tTags: [plainTag],
-        limit: 100);
+    ], tTags: [
+      plainTag
+    ], limit: 100);
     // this place set #t not #r ???
     // var list = TopicMap.getList(plainTag);
     // if (list != null) {
@@ -171,7 +171,8 @@ class _TagDetailRouter extends CustState<TagDetailRouter>
     // } else {
     //   queryArg["#t"] = [plainTag];
     // }
-    subscription = ndk.requests.subscription(filters: [filter], relaySet:  myInboxRelaySet!);
+    subscription = ndk.requests
+        .subscription(filters: [filter], relaySet: myInboxRelaySet!);
     subscription!.stream.listen((event) {
       onEvent(event);
     });

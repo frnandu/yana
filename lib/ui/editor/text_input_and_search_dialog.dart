@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:yana/main.dart';
 import 'package:yana/utils/platform_util.dart';
 
 import '../../i18n/i18n.dart';
 import '../../router/index/index_app_bar.dart';
 import '../../utils/base.dart';
-import '../../utils/router_util.dart';
 import '../../utils/string_util.dart';
 import 'text_input_dialog_inner_component.dart';
 
@@ -134,7 +134,7 @@ class _TextInputAndSearchDialog extends State<TextInputAndSearchDialog>
         child: GestureDetector(
           behavior: HitTestBehavior.opaque,
           onTap: () {
-            RouterUtil.back(context);
+            context.pop();
           },
           child: Container(
             width: double.infinity,

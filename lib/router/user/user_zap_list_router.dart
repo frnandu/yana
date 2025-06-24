@@ -1,8 +1,8 @@
 import 'package:ndk/domain_layer/entities/nip_01_event.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../ui/event/zap_event_list_component.dart';
-import '../../utils/router_util.dart';
 
 class UserZapListRouter extends StatefulWidget {
   const UserZapListRouter({super.key});
@@ -18,15 +18,14 @@ class _UserZapListRouter extends State<UserZapListRouter> {
 
   @override
   Widget build(BuildContext context) {
-
     if (zapList == null) {
-      var arg = RouterUtil.routerArgs(context);
+      var arg = GoRouterState.of(context).extra;
       if (arg != null) {
         zapList = arg as List<Nip01Event>;
       }
     }
     if (zapList == null) {
-      RouterUtil.back(context);
+      context.pop();
       return Container();
     }
 
@@ -37,7 +36,7 @@ class _UserZapListRouter extends State<UserZapListRouter> {
       appBar: AppBar(
         leading: GestureDetector(
           onTap: () {
-            RouterUtil.back(context);
+            context.pop();
           },
           child: Icon(
             Icons.arrow_back_ios,

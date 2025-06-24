@@ -2,12 +2,12 @@ import 'dart:developer';
 
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:yana/models/custom_emoji.dart';
 
 import '../../utils/base.dart';
 import '../../i18n/i18n.dart';
 import '../../main.dart';
-import '../../utils/router_util.dart';
 import '../../utils/string_util.dart';
 import '../content/content_custom_emoji_component.dart';
 
@@ -135,7 +135,7 @@ class _CustomEmojiAddDialog extends State<CustomEmojiAddDialog> {
         child: GestureDetector(
           behavior: HitTestBehavior.opaque,
           onTap: () {
-            RouterUtil.back(context);
+            context.pop();
           },
           child: Container(
             width: double.infinity,
@@ -196,7 +196,6 @@ class _CustomEmojiAddDialog extends State<CustomEmojiAddDialog> {
     } finally {
       EasyLoading.dismiss();
     }
-
-    RouterUtil.back(context, CustomEmoji(name: text, filepath: filepath));
+    context.pop(CustomEmoji(name: text, filepath: filepath));
   }
 }

@@ -27,15 +27,17 @@ import '../../provider/follow_event_provider.dart';
 import '../../provider/follow_new_event_provider.dart';
 import '../../provider/index_provider.dart';
 import '../../provider/setting_provider.dart';
+import 'package:go_router/go_router.dart';
 import '../../utils/auth_util.dart';
 import '../../utils/base.dart';
 import '../../utils/router_path.dart';
-import '../../utils/router_util.dart';
+import '../../config/app_features.dart';
 import '../dm/dm_router.dart';
 import '../edit/editor_router.dart';
 import '../follow/follow_index_router.dart';
 import '../login/login_router.dart';
 import '../search/search_router.dart';
+import '../wallet/wallet_router.dart';
 import 'index_app_bar.dart';
 import 'index_bottom_bar.dart';
 import 'index_drawer_content.dart';
@@ -60,6 +62,8 @@ class _IndexRouter extends CustState<IndexRouter>
   late TabController dmTabController;
 
   bool _scrollingDown = false;
+
+  bool _creatingAccount = false;
 
   @override
   void initState() {
@@ -90,16 +94,16 @@ class _IndexRouter extends CustState<IndexRouter>
         String? nwc = uri.queryParameters["value"];
 
         if (nwc != null && nwc.startsWith(NwcProvider.NWC_PROTOCOL_PREFIX)) {
-          await nwcProvider.connect(nwc, onConnect: (lud16) async {
+          await nwcProvider?.connect(nwc, onConnect: (lud16) async {
             await metadataProvider.updateLud16IfEmpty(lud16);
           });
           bool canPop = Navigator.canPop(context);
           // var route = ModalRoute.of(context);
           // if (route != null && route!.settings.name != null && route!.settings.name! == RouterPath.NWC) {
           if (canPop) {
-            RouterUtil.back(context);
+            context.pop();
           } else {
-            RouterUtil.router(context, RouterPath.WALLET);
+            context.go(RouterPath.WALLET);
           }
         }
       } else if (url.startsWith(NwcProvider.NWC_PROTOCOL_PREFIX)) {
@@ -110,37 +114,53 @@ class _IndexRouter extends CustState<IndexRouter>
             sharedPreferences.remove(DataKey.NOTIFICATIONS_TIMESTAMP);
             sharedPreferences.remove(DataKey.FEED_POSTS_TIMESTAMP);
             sharedPreferences.remove(DataKey.FEED_REPLIES_TIMESTAMP);
-            notificationsProvider.clear();
-            newNotificationsProvider.clear();
-            followEventProvider.clear();
-            followEventProvider.clear();
+            if (AppFeatures.enableNotifications) {
+              notificationsProvider?.clear();
+              newNotificationsProvider?.clear();
+            }
+            if (AppFeatures.enableSocial) {
+              followEventProvider?.clear();
+              followNewEventProvider?.clear();
+            }
             await settingProvider.addAndChangeKey(priv, true, false,
                 updateUI: false);
             String publicKey = getPublicKey(priv);
             ndk.accounts.loginPrivateKey(pubkey: publicKey, privkey: priv);
 
             await initRelays(newKey: true);
-            followEventProvider.loadCachedFeed();
+            if (AppFeatures.enableSocial) {
+              followEventProvider?.loadCachedFeed();
+            }
 
             newAccount = true;
             firstLogin = true;
-            indexProvider.setCurrentTap(IndexTaps.FOLLOW);
+            // Set default tab based on available features
+            if (AppFeatures.isWalletOnly) {
+              indexProvider.setCurrentTap(IndexTaps.WALLET);
+            } else if (AppFeatures.enableSocial) {
+              indexProvider.setCurrentTap(IndexTaps.FOLLOW);
+            } else if (AppFeatures.enableSearch) {
+              indexProvider.setCurrentTap(IndexTaps.SEARCH);
+            } else if (AppFeatures.enableDm) {
+              indexProvider.setCurrentTap(IndexTaps.DM);
+            } else if (AppFeatures.enableNotifications) {
+              indexProvider.setCurrentTap(IndexTaps.NOTIFICATIONS);
+            }
           }
-          await nwcProvider.connect(url, onConnect: (lud16) async {
+          await nwcProvider?.connect(url, onConnect: (lud16) async {
             await metadataProvider.updateLud16IfEmpty(lud16);
           });
           bool canPop = Navigator.canPop(context);
           // var route = ModalRoute.of(context);
           // if (route != null && route!.settings.name != null && route!.settings.name! == RouterPath.NWC) {
           if (canPop) {
-            RouterUtil.back(context);
+            context.pop();
           } else {
-            RouterUtil.router(
-                context, newAccount ? RouterPath.INDEX : RouterPath.WALLET);
+            context.go(newAccount ? RouterPath.INDEX : RouterPath.WALLET);
           }
         });
       } else if (url.startsWith("lightning:")) {
-        RouterUtil.router(context, RouterPath.WALLET_SEND, url.split(":").last);
+        context.go(RouterPath.WALLET_SEND, extra: url.split(":").last);
       } else if (url.startsWith("nostr:")) {
         RegExpMatch? match = Nip19.nip19regex.firstMatch(url);
 
@@ -156,7 +176,9 @@ class _IndexRouter extends CustState<IndexRouter>
               key = key.substring(0, Nip19.NPUB_LENGTH);
             }
             key = Nip19.decode(key);
-            RouterUtil.router(context, RouterPath.USER, key);
+            if (AppFeatures.enableSocial) {
+              context.push(RouterPath.USER, extra: key);
+            }
           } else if (Nip19.isNoteId(key)) {
             // block
             if (key.length > Nip19.NOTEID_LENGTH) {
@@ -164,13 +186,17 @@ class _IndexRouter extends CustState<IndexRouter>
               key = key.substring(0, Nip19.NOTEID_LENGTH);
             }
             key = Nip19.decode(key);
-            RouterUtil.router(context, RouterPath.THREAD_DETAIL, key);
+            if (AppFeatures.enableSocial) {
+              context.go(RouterPath.THREAD_DETAIL, extra: key);
+            }
           } else if (NIP19Tlv.isNprofile(key)) {
             var nprofile = NIP19Tlv.decodeNprofile(key);
             if (nprofile != null) {
               // inline
               // mention user
-              RouterUtil.router(context, RouterPath.USER, nprofile.pubkey);
+              if (AppFeatures.enableSocial) {
+                context.push(RouterPath.USER, extra: nprofile.pubkey);
+              }
             }
           } else if (NIP19Tlv.isNrelay(key)) {
             var nrelay = NIP19Tlv.decodeNrelay(key);
@@ -179,7 +205,7 @@ class _IndexRouter extends CustState<IndexRouter>
               // inline
               Relay relay =
                   Relay(url: url, connectionSource: ConnectionSource.explicit);
-              RouterUtil.router(context, RouterPath.RELAY_INFO, relay);
+              context.go(RouterPath.RELAY_INFO, extra: relay);
             }
           } else if (NIP19Tlv.isNevent(key)) {
             var nevent = NIP19Tlv.decodeNevent(key);
@@ -188,17 +214,23 @@ class _IndexRouter extends CustState<IndexRouter>
                 // TODO allowReconnectRelays is false, WTF?
                 // await ndk.relays.reconnectRelays(nevent.relays!);
               }
-              RouterUtil.router(context, RouterPath.THREAD_DETAIL, nevent.id);
+              if (AppFeatures.enableSocial) {
+                context.go(RouterPath.THREAD_DETAIL, extra: nevent.id);
+              }
             }
           } else if (NIP19Tlv.isNaddr(key)) {
             var naddr = NIP19Tlv.decodeNaddr(key);
             if (naddr != null) {
               if (StringUtil.isNotBlank(naddr.id) &&
                   naddr.kind == Nip01Event.kTextNodeKind) {
-                RouterUtil.router(context, RouterPath.THREAD_DETAIL, naddr.id);
+                if (AppFeatures.enableSocial) {
+                  context.go(RouterPath.THREAD_DETAIL, extra: naddr.id);
+                }
               } else if (StringUtil.isNotBlank(naddr.author) &&
                   naddr.kind == Metadata.kKind) {
-                RouterUtil.router(context, RouterPath.USER, naddr.author);
+                if (AppFeatures.enableSocial) {
+                  context.push(RouterPath.USER, extra: naddr.author);
+                }
               }
             }
           }
@@ -234,8 +266,8 @@ class _IndexRouter extends CustState<IndexRouter>
         canGoBack: false,
       );
     }
-    var _followEventProvider = Provider.of<FollowEventProvider>(context);
-    var _followEventNewProvider = Provider.of<FollowNewEventProvider>(context);
+    // var _followEventProvider = Provider.of<FollowEventProvider>(context);
+    // var _followEventNewProvider = Provider.of<FollowNewEventProvider>(context);
     var _indexProvider = Provider.of<IndexProvider>(context);
 
     if (!unlock) {
@@ -305,7 +337,11 @@ class _IndexRouter extends CustState<IndexRouter>
     }
 
     Widget? appBarCenter;
-    if (_indexProvider.currentTap == IndexTaps.FOLLOW) {
+    if (AppFeatures.isWalletOnly) {
+      // Don't show app bar center when only wallet is enabled
+      appBarCenter = null;
+    } else if (AppFeatures.enableSocial &&
+        _indexProvider.currentTap == IndexTaps.FOLLOW) {
       appBarCenter = TabBar(
         indicatorColor: const Color(0xFF6A1B9A),
         indicatorWeight: 2,
@@ -359,21 +395,24 @@ class _IndexRouter extends CustState<IndexRouter>
         ],
         controller: followTabController,
       );
-    } else if (_indexProvider.currentTap == IndexTaps.NOTIFICATIONS) {
+    } else if (AppFeatures.enableNotifications &&
+        _indexProvider.currentTap == IndexTaps.NOTIFICATIONS) {
       appBarCenter = Center(
         child: Text(
           s.Notifications,
           style: titleTextStyle,
         ),
       );
-    } else if (_indexProvider.currentTap == IndexTaps.SEARCH) {
+    } else if (AppFeatures.enableSearch &&
+        _indexProvider.currentTap == IndexTaps.SEARCH) {
       appBarCenter = Center(
         child: Text(
           s.Search,
           style: titleTextStyle,
         ),
       );
-    } else if (_indexProvider.currentTap == IndexTaps.DM) {
+    } else if (AppFeatures.enableDm &&
+        _indexProvider.currentTap == IndexTaps.DM) {
       appBarCenter = TabBar(
         labelPadding: const EdgeInsets.only(
           left: Base.BASE_PADDING_HALF,
@@ -456,6 +495,9 @@ class _IndexRouter extends CustState<IndexRouter>
       },
     );
 
+    // Only show FAB if social features are enabled
+    var conditionalAddBtn = AppFeatures.enableSocial ? addBtn : null;
+
     var mainCenterWidget = MediaQuery.removePadding(
       context: context,
       removeTop: true,
@@ -463,15 +505,18 @@ class _IndexRouter extends CustState<IndexRouter>
           child: IndexedStack(
         index: _indexProvider.currentTap,
         children: [
-          FollowIndexRouter(
-            tabController: followTabController,
-          ),
-          SearchRouter(),
-          DMRouter(
-            tabController: dmTabController,
-            scrollCallback: scrollDirectionCallback,
-          ),
-          NotificationsRouter(),
+          if (AppFeatures.isWalletOnly) const WalletRouter(showAppBar: false),
+          if (AppFeatures.enableSocial)
+            FollowIndexRouter(
+              tabController: followTabController,
+            ),
+          if (AppFeatures.enableSearch) SearchRouter(),
+          if (AppFeatures.enableDm)
+            DMRouter(
+              tabController: dmTabController,
+              scrollCallback: scrollDirectionCallback,
+            ),
+          if (AppFeatures.enableNotifications) NotificationsRouter(),
           // NoticeRouter(),
         ],
       )),
@@ -484,10 +529,12 @@ class _IndexRouter extends CustState<IndexRouter>
         //     curve: Curves.ease,
         //     height: _scrollingDown ? 0.0 : 80,
         //     child:
-        IndexAppBar(
-          center: appBarCenter,
-          // )
-        ),
+        if (!AppFeatures.isWalletOnly) ...[
+          IndexAppBar(
+            center: appBarCenter,
+            // )
+          ),
+        ],
         mainCenterWidget,
       ],
     );
@@ -505,7 +552,7 @@ class _IndexRouter extends CustState<IndexRouter>
       // print("$column0Width + ${maxWidth - column0Width } = $maxWidth");
       return Scaffold(
         extendBody: true,
-        floatingActionButton: addBtn,
+        floatingActionButton: conditionalAddBtn,
         floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
         body: Row(children: [
           SizedBox(
@@ -529,21 +576,30 @@ class _IndexRouter extends CustState<IndexRouter>
 
                 List<Widget> pages = [];
                 for (var info in infos) {
-                  if (StringUtil.isNotBlank(info.routerPath) &&
-                      routes[info.routerPath] != null) {
-                    var builder = routes[info.routerPath];
-                    if (builder != null) {
-                      pages.add(PcRouterFake(
-                        info: info,
-                        child: builder(context),
-                      ));
-                    }
-                  } else if (info.buildContent != null) {
+                  if (info.buildContent != null) {
                     pages.add(PcRouterFake(
                       info: info,
                       child: info.buildContent!(context),
                     ));
+                  } else if (StringUtil.isNotBlank(info.routerPath)) {
+                    // This part is problematic as 'routes' is gone.
+                    // For now, we'll log and skip creating a page for this.
+                    // A proper fix would involve PcRouterFakeProvider.go
+                    // being called with a WidgetBuilder or a direct Widget.
+                    print(
+                        "PcRouterFake: Attempted to use routerPath ('${info.routerPath}') without buildContent. This route cannot be displayed with the current GoRouter setup.");
+                    // Optionally, add a placeholder page:
+                    // pages.add(PcRouterFake(
+                    //   info: info,
+                    //   child: Center(child: Text("Error: Route for ${info.routerPath} not found via buildContent.")),
+                    // ));
                   }
+                }
+
+                if (pages.isEmpty) {
+                  // If no pages could be built (e.g., all infos relied on routerPath),
+                  // fall back to mainIndex.
+                  return mainIndex;
                 }
 
                 return IndexedStack(
@@ -565,42 +621,37 @@ class _IndexRouter extends CustState<IndexRouter>
         ]),
       );
     } else {
+      // This is the non-tablet/PC mode
       return Scaffold(
           body: mainIndex,
           extendBody: true,
-          floatingActionButton:
-              loggedUserSigner != null && loggedUserSigner!.canSign()
-                  ? AnimatedOpacity(
-                      opacity: _scrollingDown ? 0 : 1,
-                      curve: Curves.fastOutSlowIn,
-                      duration: const Duration(milliseconds: 400),
-                      child: addBtn,
-                    )
-                  //
-                  //     AnimatedContainer(
-                  //         curve: Curves.ease,
-                  //         duration: const Duration(milliseconds: 200),
-                  //         height: _scrollingDown ? 0.0 : 100,
-                  //         child:
-                  //     addBtn
-                  // )
-                  : Container(),
+          floatingActionButton: loggedUserSigner != null &&
+                  loggedUserSigner!.canSign() &&
+                  AppFeatures.enableSocial
+              ? AnimatedOpacity(
+                  opacity: _scrollingDown ? 0 : 1,
+                  curve: Curves.fastOutSlowIn,
+                  duration: const Duration(milliseconds: 400),
+                  child: addBtn,
+                )
+              : Container(),
           floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
           drawer: Drawer(
             child: IndexDrawerContentComponent(reload: widget.reload),
           ),
-          //       extendBodyBehindAppBar: true,
-          bottomNavigationBar: AnimatedOpacity(
-              opacity: _scrollingDown ? 0 : 1,
-              curve: Curves.fastOutSlowIn,
-              duration: const Duration(milliseconds: 400),
-              child: AnimatedContainer(
+          bottomNavigationBar: !AppFeatures.isWalletOnly
+              ? AnimatedOpacity(
+                  opacity: _scrollingDown ? 0 : 1,
+                  curve: Curves.fastOutSlowIn,
                   duration: const Duration(milliseconds: 400),
-                  curve: Curves.ease,
-                  height: _scrollingDown ? 0.0 : 50,
-                  child: IndexBottomBar())));
+                  child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 400),
+                      curve: Curves.ease,
+                      height: _scrollingDown ? 0.0 : 50,
+                      child: IndexBottomBar()))
+              : null);
     }
-  }
+  } // End of doBuild method
 
   void doAuth() {
     AuthUtil.authenticate(
@@ -615,4 +666,4 @@ class _IndexRouter extends CustState<IndexRouter>
       }
     });
   }
-}
+} // End of _IndexRouter class

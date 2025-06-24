@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
+import 'package:go_router/go_router.dart';
 import 'package:ndk/domain_layer/entities/metadata.dart';
 import 'package:ndk/domain_layer/entities/nip_01_event.dart';
 import 'package:ndk/domain_layer/entities/read_write.dart';
@@ -21,7 +22,6 @@ import 'package:yana/ui/editor/pic_embed_builder.dart';
 import 'package:yana/ui/editor/tag_embed_builder.dart';
 import 'package:yana/ui/editor/video_embed_builder.dart';
 import 'package:yana/utils/base.dart';
-import 'package:yana/utils/router_util.dart';
 
 import '../../i18n/i18n.dart';
 import '../../nostr/event_relation.dart';
@@ -81,10 +81,10 @@ class EditorRouter extends StatefulWidget {
       pubkey: pubkey,
       initEmbeds: initEmbeds,
     );
-
-    return RouterUtil.push(context, MaterialPageRoute(builder: (context) {
-      return editor;
-    }));
+    return context.push('/dynamic', extra: editor);
+    // return context.push(MaterialPageRoute(builder: (context) {
+    //   return editor;
+    // }));
     // return Navigator.push(context, MaterialPageRoute(builder: (context) {
     //   return editor;
     // }));
@@ -240,14 +240,14 @@ class _EditorRouter extends CustState<EditorRouter> with EditorMixin {
           autoFocus: false,
           expands: false,
           embedBuilders: [
-              MentionUserEmbedBuilder(),
-              MentionEventEmbedBuilder(),
-              PicEmbedBuilder(),
-              VideoEmbedBuilder(),
-              LnbcEmbedBuilder(),
-              TagEmbedBuilder(),
-              CustomEmojiEmbedBuilder(),
-      ]),
+            MentionUserEmbedBuilder(),
+            MentionEventEmbedBuilder(),
+            PicEmbedBuilder(),
+            VideoEmbedBuilder(),
+            LnbcEmbedBuilder(),
+            TagEmbedBuilder(),
+            CustomEmojiEmbedBuilder(),
+          ]),
     );
     // Widget quillWidget = quill.QuillProvider(
     //     configurations: quill.QuillConfigurations(
@@ -354,7 +354,7 @@ class _EditorRouter extends CustState<EditorRouter> with EditorMixin {
         backgroundColor: scaffoldBackgroundColor,
         leading: TextButton(
           onPressed: () {
-            RouterUtil.back(context);
+            context.pop();
           },
           style: const ButtonStyle(),
           child: Icon(
@@ -620,7 +620,7 @@ class _EditorRouter extends CustState<EditorRouter> with EditorMixin {
       }
       await cacheManager.saveEvent(event);
       EasyLoading.showSuccess('Success!');
-      RouterUtil.back(context, event);
+      context.pop(event);
     } finally {
       EasyLoading.dismiss();
     }

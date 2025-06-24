@@ -17,8 +17,9 @@ import 'package:yana/ui/qrcode_dialog.dart';
 import 'package:yana/ui/zap_gen_dialog.dart';
 import 'package:yana/utils/platform_util.dart';
 import 'package:yana/utils/router_path.dart';
-import 'package:yana/utils/router_util.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../config/app_features.dart';
 import '../../nostr/nip19/nip19.dart';
 import '../../nostr/nip57/zap_action.dart';
 import '../../provider/data_util.dart';
@@ -79,7 +80,7 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
     super.initState();
 
     Future(() async {
-      List<String>? a = await contactListProvider.contacts();
+      List<String>? a = await contactListProvider?.contacts();
       setState(() {
         contacts = a;
       });
@@ -99,7 +100,8 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
     var _filterProvider = Provider.of<FilterProvider>(context);
     var bannerHeight = maxWidth / 3;
     if (PlatformUtil.isTableMode()) {
-      bannerHeight = MetadataTopComponent.getPcBannerHeight(mediaDataCache.size.height);
+      bannerHeight =
+          MetadataTopComponent.getPcBannerHeight(mediaDataCache.size.height);
     }
 
     String nip19Name = Nip19.encodeSimplePubKey(widget.pubkey);
@@ -117,7 +119,10 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
     }
 
     Widget? imageWidget;
-    String? url = widget.metadata != null && StringUtil.isNotBlank(widget.metadata?.picture) ? widget.metadata?.picture : StringUtil.robohash(widget.pubkey);
+    String? url = widget.metadata != null &&
+            StringUtil.isNotBlank(widget.metadata?.picture)
+        ? widget.metadata?.picture
+        : StringUtil.robohash(widget.pubkey);
 
     if (url != null) {
       imageWidget = CachedNetworkImage(
@@ -131,7 +136,8 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
       );
     }
     Widget? bannerImage;
-    if (widget.metadata != null && StringUtil.isNotBlank(widget.metadata!.banner)) {
+    if (widget.metadata != null &&
+        StringUtil.isNotBlank(widget.metadata!.banner)) {
       bannerImage = CachedNetworkImage(
         imageUrl: widget.metadata!.banner!,
         width: maxWidth,
@@ -152,7 +158,8 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
       )
     ];
 
-    if (widget.pubkey == loggedUserSigner!.getPublicKey() && loggedUserSigner!.canSign()) {
+    if (widget.pubkey == loggedUserSigner!.getPublicKey() &&
+        loggedUserSigner!.canSign()) {
       topBtnList.add(wrapBtn(
         MetadataIconBtn(
           iconData: Symbols.edit_square,
@@ -168,7 +175,8 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
           // }
           );
     }
-    if (widget.followsYou && widget.pubkey != loggedUserSigner!.getPublicKey()) {
+    if (widget.followsYou &&
+        widget.pubkey != loggedUserSigner!.getPublicKey()) {
       topBtnList.add(
           // MetadataIconDataComp(
           //   leftWidget: Container(),
@@ -181,7 +189,8 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
                 color: themeData.dividerColor,
                 borderRadius: BorderRadius.circular(20),
               ),
-              padding: const EdgeInsets.only(top: 4, bottom: 4, left: 6, right: 5),
+              padding:
+                  const EdgeInsets.only(top: 4, bottom: 4, left: 6, right: 5),
               margin: const EdgeInsets.only(right: 3, top: 8),
               child: Text(
                 "follows you",
@@ -200,7 +209,9 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
     )));
 
     if (!widget.condensedIcons) {
-      if (widget.metadata != null && (StringUtil.isNotBlank(widget.metadata!.lud06) || StringUtil.isNotBlank(widget.metadata!.lud16))) {
+      if (widget.metadata != null &&
+          (StringUtil.isNotBlank(widget.metadata!.lud06) ||
+              StringUtil.isNotBlank(widget.metadata!.lud16))) {
         topBtnList.add(wrapBtn(PopupMenuButton<int>(
           itemBuilder: (context) {
             return [
@@ -208,42 +219,60 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
                 value: 21,
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
-                  children: [Icon(Icons.bolt, color: Colors.orange), Text(" Zap 21")],
+                  children: [
+                    Icon(Icons.bolt, color: Colors.orange),
+                    Text(" Zap 21")
+                  ],
                 ),
               ),
               const PopupMenuItem(
                 value: 69,
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
-                  children: [Icon(Icons.bolt, color: Colors.orange), Text(" Zap 69")],
+                  children: [
+                    Icon(Icons.bolt, color: Colors.orange),
+                    Text(" Zap 69")
+                  ],
                 ),
               ),
               const PopupMenuItem(
                 value: 210,
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
-                  children: [Icon(Icons.bolt, color: Colors.orange), Text(" Zap 210")],
+                  children: [
+                    Icon(Icons.bolt, color: Colors.orange),
+                    Text(" Zap 210")
+                  ],
                 ),
               ),
               const PopupMenuItem(
                 value: 420,
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
-                  children: [Icon(Icons.bolt, color: Colors.orange), Text(" Zap 420")],
+                  children: [
+                    Icon(Icons.bolt, color: Colors.orange),
+                    Text(" Zap 420")
+                  ],
                 ),
               ),
               const PopupMenuItem(
                 value: 2100,
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
-                  children: [Icon(Icons.bolt, color: Colors.orange), Text(" Zap 2100")],
+                  children: [
+                    Icon(Icons.bolt, color: Colors.orange),
+                    Text(" Zap 2100")
+                  ],
                 ),
               ),
               const PopupMenuItem(
                 value: 4200,
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
-                  children: [Icon(Icons.bolt, color: Colors.orange), Text(" Zap 4200")],
+                  children: [
+                    Icon(Icons.bolt, color: Colors.orange),
+                    Text(" Zap 4200")
+                  ],
                 ),
               ),
             ];
@@ -274,10 +303,13 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
                     bool finished = false;
                     Future.delayed(const Duration(seconds: 1), () {
                       if (!finished) {
-                        EasyLoading.show(status: "Refreshing contacts from relays before following...", maskType: EasyLoadingMaskType.black);
+                        EasyLoading.show(
+                            status:
+                                "Refreshing contacts from relays before following...",
+                            maskType: EasyLoadingMaskType.black);
                       }
                     });
-                    await contactListProvider.addContact(widget.pubkey);
+                    await contactListProvider?.addContact(widget.pubkey);
                     finished = true;
                     EasyLoading.dismiss();
                   },
@@ -290,10 +322,13 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
                     bool finished = false;
                     Future.delayed(const Duration(seconds: 1), () {
                       if (!finished) {
-                        EasyLoading.show(status: "Refreshing contacts from relays before unfollowing...", maskType: EasyLoadingMaskType.black);
+                        EasyLoading.show(
+                            status:
+                                "Refreshing contacts from relays before unfollowing...",
+                            maskType: EasyLoadingMaskType.black);
                       }
                     });
-                    await contactListProvider.removeContact(widget.pubkey);
+                    await contactListProvider?.removeContact(widget.pubkey);
                     finished = true;
                     EasyLoading.dismiss();
                   },
@@ -301,12 +336,15 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
               }
             },
             selector: (context, _provider) {
-              return contacts != null ? contacts!.contains(widget.pubkey) : false;
+              return contacts != null
+                  ? contacts!.contains(widget.pubkey)
+                  : false;
             },
           ));
         }
         topBtnList.add(Container(
-          margin: const EdgeInsets.only(top: Base.BASE_PADDING, right: 6, left: 6),
+          margin:
+              const EdgeInsets.only(top: Base.BASE_PADDING, right: 6, left: 6),
           child: PopupMenuButton<String>(
             tooltip: "more",
             itemBuilder: (context) {
@@ -318,25 +356,35 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
                 const PopupMenuItem(value: "share", child: Text("Share..."))
               ];
               if (filterProvider.isMutedPubKey(widget.pubkey)) {
-                list.add(const PopupMenuItem(value: "unmute", child: Text("Unmute profile")));
+                list.add(const PopupMenuItem(
+                    value: "unmute", child: Text("Unmute profile")));
               } else {
-                list.add(const PopupMenuItem(value: "mute-public", child: Text("Mute profile (public)")));
-                list.add(const PopupMenuItem(value: "mute-private", child: Text("Mute profile (private)")));
+                list.add(const PopupMenuItem(
+                    value: "mute-public",
+                    child: Text("Mute profile (public)")));
+                list.add(const PopupMenuItem(
+                    value: "mute-private",
+                    child: Text("Mute profile (private)")));
               }
               return list;
             },
             onSelected: (value) async {
               if (value == "login_as") {
                 EasyLoading.showToast("Logging in as ${displayName}...",
-                    dismissOnTap: true, duration: const Duration(seconds: 5), maskType: EasyLoadingMaskType.black);
+                    dismissOnTap: true,
+                    duration: const Duration(seconds: 5),
+                    maskType: EasyLoadingMaskType.black);
                 sharedPreferences.remove(DataKey.NOTIFICATIONS_TIMESTAMP);
                 sharedPreferences.remove(DataKey.FEED_POSTS_TIMESTAMP);
                 sharedPreferences.remove(DataKey.FEED_REPLIES_TIMESTAMP);
-                notificationsProvider.clear();
-                newNotificationsProvider.clear();
-                followEventProvider.clear();
-                followEventProvider.clear();
-                settingProvider.addAndChangeKey(widget.pubkey, false, false, updateUI: true);
+                if (AppFeatures.enableNotifications) {
+                  notificationsProvider?.clear();
+                  newNotificationsProvider?.clear();
+                }
+                followEventProvider?.clear();
+                followNewEventProvider?.clear();
+                settingProvider.addAndChangeKey(widget.pubkey, false, false,
+                    updateUI: true);
                 String publicKey = widget.pubkey;
                 ndk.accounts.loginPublicKey(pubkey: publicKey);
                 // ndk = Ndk(
@@ -347,31 +395,41 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
                 //       eventOutFilters:  [filterProvider]
                 //     ));
                 await initRelays(newKey: false);
-                followEventProvider.loadCachedFeed();
-                nwcProvider.init();
+                followEventProvider?.loadCachedFeed();
+                nwcProvider?.init();
                 settingProvider.notifyListeners();
                 EasyLoading.dismiss();
-                RouterUtil.back(context);
+                context.pop();
               } else if (value == "share") {
-                UserRelayList? userRelayList = await cacheManager.loadUserRelayList(widget.pubkey);
+                UserRelayList? userRelayList =
+                    await cacheManager.loadUserRelayList(widget.pubkey);
                 List<String> relays = ndk.config.bootstrapRelays;
                 if (userRelayList != null && userRelayList.relays != null) {
                   relays = userRelayList!.relays!.keys!.toList();
                 }
                 var nevent = Nprofile(pubkey: widget.pubkey, relays: relays);
 
-                String share = 'https://njump.me/${NIP19Tlv.encodeNprofile(nevent).replaceAll("nostr:", "")}';
+                String share =
+                    'https://njump.me/${NIP19Tlv.encodeNprofile(nevent).replaceAll("nostr:", "")}';
                 Share.share(share);
               } else if (value.startsWith("mute-")) {
-                Nip51List muteList = await ndk.lists.broadcastAddNip51ListElement(
-                    Nip51List.kMute, Nip51List.kPubkey, widget.pubkey, myOutboxRelaySet!.urls,
-                    private: value == "mute-private");
+                Nip51List muteList = await ndk.lists
+                    .broadcastAddNip51ListElement(
+                        Nip51List.kMute,
+                        Nip51List.kPubkey,
+                        widget.pubkey,
+                        myOutboxRelaySet!.urls,
+                        private: value == "mute-private");
                 filterProvider.muteList = muteList;
                 filterProvider.notifyListeners();
                 setState(() {});
               } else if (value == "unmute") {
                 Nip51List? muteList = await ndk.lists
-                    .broadcastRemoveNip51ListElement(Nip51List.kMute, Nip51List.kPubkey, widget.pubkey, myOutboxRelaySet!.urls);
+                    .broadcastRemoveNip51ListElement(
+                        Nip51List.kMute,
+                        Nip51List.kPubkey,
+                        widget.pubkey,
+                        myOutboxRelaySet!.urls);
                 if (muteList != null) {
                   filterProvider.muteList = muteList;
                   filterProvider.notifyListeners();
@@ -440,7 +498,9 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
         width: maxWidth,
         height: bannerHeight,
         color: themeData.cardColor, //Colors.grey.withOpacity(0.5),
-        child: widget.jumpable ? GestureDetector(onTap: jumpToUserRouter, child: bannerImage) : bannerImage));
+        child: widget.jumpable
+            ? GestureDetector(onTap: jumpToUserRouter, child: bannerImage)
+            : bannerImage));
     topList.add(Container(
       height: 50,
       // color: Colors.red,
@@ -530,7 +590,8 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
             height: IMAGE_WIDTH + IMAGE_BORDER * 2,
             width: IMAGE_WIDTH + IMAGE_BORDER * 2,
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(HALF_IMAGE_WIDTH + IMAGE_BORDER),
+              borderRadius:
+                  BorderRadius.circular(HALF_IMAGE_WIDTH + IMAGE_BORDER),
               border: Border.all(
                 width: IMAGE_BORDER,
                 color: scaffoldBackgroundColor,
@@ -555,12 +616,17 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
   }
 
   void jumpToUserRouter() {
-    RouterUtil.router(context, RouterPath.USER, widget.pubkey);
+    context.push(RouterPath.USER, extra: widget.pubkey);
   }
 
   void openDMSession() {
-    var detail = dmProvider.findOrNewADetail(widget.pubkey);
-    RouterUtil.router(context, RouterPath.DM_DETAIL, detail);
+    if (!AppFeatures.enableDm) {
+      EasyLoading.showToast("DM feature is not enabled in this build.",
+          dismissOnTap: true, duration: const Duration(seconds: 3));
+      return;
+    }
+    var detail = dmProvider!.findOrNewADetail(widget.pubkey);
+    context.go(RouterPath.DM_DETAIL, extra: detail);
   }
 
   void onZapSelect(int sats) {
@@ -568,19 +634,24 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
   }
 
   void jumpToProfileEdit() {
-    RouterUtil.router(context, RouterPath.PROFILE_EDITOR);
+    context.go(RouterPath.PROFILE_EDITOR);
   }
 
   void userPicturePreview() {
-    String? url = widget.metadata != null && StringUtil.isNotBlank(widget.metadata?.picture) ? widget.metadata?.picture : StringUtil.robohash(widget.pubkey);
+    String? url = widget.metadata != null &&
+            StringUtil.isNotBlank(widget.metadata?.picture)
+        ? widget.metadata?.picture
+        : StringUtil.robohash(widget.pubkey);
 
     if (url != null) {
       List<ImageProvider> imageProviders = [];
       imageProviders.add(CachedNetworkImageProvider(url));
 
-      MultiImageProvider multiImageProvider = MultiImageProvider(imageProviders, initialIndex: 0);
+      MultiImageProvider multiImageProvider =
+          MultiImageProvider(imageProviders, initialIndex: 0);
 
-      ImagePreviewDialog.show(context, multiImageProvider, doubleTapZoomable: true, swipeDismissible: true);
+      ImagePreviewDialog.show(context, multiImageProvider,
+          doubleTapZoomable: true, swipeDismissible: true);
     }
   }
 }
@@ -593,7 +664,12 @@ class MetadataIconBtn extends StatelessWidget {
   IconData iconData;
   Color? iconColor;
 
-  MetadataIconBtn({super.key, required this.iconData, this.iconColor, this.onTap, this.onLongPress});
+  MetadataIconBtn(
+      {super.key,
+      required this.iconData,
+      this.iconColor,
+      this.onTap,
+      this.onLongPress});
 
   @override
   Widget build(BuildContext context) {
@@ -606,7 +682,8 @@ class MetadataIconBtn extends StatelessWidget {
     var main = Container(
       // height: 34,
       // width: 34,
-      child: Icon(iconData, size: 30, weight: 1, color: iconColor ?? iconTheme.color),
+      child: Icon(iconData,
+          size: 30, weight: 1, color: iconColor ?? iconTheme.color),
     );
 
     if (onTap != null || onLongPress != null) {
@@ -656,7 +733,9 @@ class MetadataTextBtn extends StatelessWidget {
       // padding: const EdgeInsets.only(left: 6, right: 6),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20),
-        border: borderColor != null ? Border.all(width: 1, color: borderColor!) : Border.all(width: 1),
+        border: borderColor != null
+            ? Border.all(width: 1, color: borderColor!)
+            : Border.all(width: 1),
       ),
       child: TextButton(
         onPressed: onTap,

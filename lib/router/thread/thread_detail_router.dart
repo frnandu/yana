@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_list_view/flutter_list_view.dart';
+import 'package:go_router/go_router.dart';
 import 'package:ndk/ndk.dart';
 import 'package:provider/provider.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
@@ -22,7 +23,6 @@ import '../../ui/simple_name_component.dart';
 import '../../utils/base.dart';
 import '../../utils/peddingevents_later_function.dart';
 import '../../utils/platform_util.dart';
-import '../../utils/router_util.dart';
 import '../../utils/string_util.dart';
 import '../../utils/when_stop_function.dart';
 import 'thread_detail_event.dart';
@@ -205,11 +205,11 @@ class _ThreadDetailRouter extends CustState<ThreadDetailRouter>
         sourceEvent = loadedEvent;
         initFromArgs();
       } else {
-        var obj = RouterUtil.routerArgs(context);
+        var obj = GoRouterState.of(context).extra;
         if (obj != null && obj is Nip01Event) {
           sourceEvent = obj;
           if (sourceEvent == null) {
-            RouterUtil.back(context);
+            context.pop();
             return Container();
           }
         } else if (obj != null && obj is String) {
@@ -228,7 +228,7 @@ class _ThreadDetailRouter extends CustState<ThreadDetailRouter>
       }
 //      initFromArgs();
     } else {
-      var obj = RouterUtil.routerArgs(context);
+      var obj = GoRouterState.of(context).extra;
       if (obj != null && obj is Nip01Event) {
         if (obj.id != sourceEvent!.id) {
           // arg change! reset.
@@ -327,11 +327,9 @@ class _ThreadDetailRouter extends CustState<ThreadDetailRouter>
     }
     Widget main = FlutterListView(
         controller: _controller,
-
         delegate: FlutterListViewDelegate((BuildContext context, int index) {
           return mainList[index];
-        },
-        childCount: mainList.length));
+        }, childCount: mainList.length));
 
     // Widget main = ScrollablePositionedList.builder(
     //   initialScrollIndex: sourceIdx ?? 0,
@@ -371,7 +369,7 @@ class _ThreadDetailRouter extends CustState<ThreadDetailRouter>
           appBar: AppBar(
             leading: GestureDetector(
               onTap: () {
-                RouterUtil.back(context);
+                context.pop();
               },
               child: Icon(
                 Icons.arrow_back_ios,

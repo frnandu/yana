@@ -4,7 +4,7 @@ import 'package:yana/utils/string_util.dart';
 
 import '../utils/base.dart';
 import '../i18n/i18n.dart';
-import '../utils/router_util.dart';
+import 'package:go_router/go_router.dart';
 
 class NIP07Dialog extends StatefulWidget {
   String method;
@@ -94,7 +94,7 @@ class _NIP07Dialog extends State<NIP07Dialog> {
         Expanded(
             child: InkWell(
           onTap: () {
-            RouterUtil.back(context, false);
+            context.pop(false);
           },
           child: Container(
             height: 36,
@@ -115,7 +115,7 @@ class _NIP07Dialog extends State<NIP07Dialog> {
         Expanded(
             child: InkWell(
           onTap: () {
-            RouterUtil.back(context, true);
+            context.pop(true);
           },
           child: Container(
             height: 36,
@@ -155,7 +155,7 @@ class _NIP07Dialog extends State<NIP07Dialog> {
         child: GestureDetector(
           behavior: HitTestBehavior.opaque,
           onTap: () {
-            RouterUtil.back(context);
+            context.pop();
           },
           child: Container(
             width: double.infinity,

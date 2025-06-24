@@ -5,10 +5,11 @@ import 'package:yana/utils/router_path.dart';
 import 'package:yana/provider/contact_list_provider.dart';
 import 'package:provider/provider.dart';
 
+import 'package:go_router/go_router.dart';
+
 import '../../utils/base.dart';
 import '../../i18n/i18n.dart';
 import '../../main.dart';
-import '../../utils/router_util.dart';
 
 class FollowedCommunitiesRouter extends StatefulWidget {
   const FollowedCommunitiesRouter({super.key});
@@ -27,13 +28,13 @@ class _FollowedCommunitiesRouter extends State<FollowedCommunitiesRouter> {
   @override
   Widget build(BuildContext context) {
     if (contactList == null) {
-      var arg = RouterUtil.routerArgs(context);
+      var arg = GoRouterState.of(context).extra;
       if (arg != null) {
         contactList = arg as ContactList;
       }
     }
     if (contactList == null) {
-      RouterUtil.back(context);
+      context.pop();
       return Container();
     }
 
@@ -72,7 +73,9 @@ class _FollowedCommunitiesRouter extends State<FollowedCommunitiesRouter> {
                 Text(id.title),
                 Expanded(child: Container()),
                 FutureBuilder<bool?>(
-                    future: contactListProvider.followsCommunity(id.toAString()),
+                    future: contactListProvider != null
+                        ? contactListProvider!.followsCommunity(id.toAString())
+                        : Future.value(false),
                     builder: (context, snapshot) {
                       bool exist = snapshot.hasData && snapshot.data!;
                       IconData iconData = Icons.star_border;
@@ -84,13 +87,15 @@ class _FollowedCommunitiesRouter extends State<FollowedCommunitiesRouter> {
                       return GestureDetector(
                         onTap: () {
                           if (exist) {
-                            contactListProvider.removeCommunity(id.toAString());
+                            contactListProvider
+                                ?.removeCommunity(id.toAString());
                           } else {
-                            contactListProvider.addCommunity(id.toAString());
+                            contactListProvider?.addCommunity(id.toAString());
                           }
                         },
                         child: Container(
-                          margin: const EdgeInsets.only(left: Base.BASE_PADDING_HALF),
+                          margin: const EdgeInsets.only(
+                              left: Base.BASE_PADDING_HALF),
                           child: Icon(
                             iconData,
                             color: color,
@@ -103,7 +108,7 @@ class _FollowedCommunitiesRouter extends State<FollowedCommunitiesRouter> {
 
         return GestureDetector(
           onTap: () {
-            RouterUtil.router(context, RouterPath.COMMUNITY_DETAIL, id);
+            context.go(RouterPath.COMMUNITY_DETAIL, extra: id);
           },
           child: item,
         );
@@ -115,7 +120,7 @@ class _FollowedCommunitiesRouter extends State<FollowedCommunitiesRouter> {
       appBar: AppBar(
         leading: GestureDetector(
           onTap: () {
-            RouterUtil.back(context);
+            context.pop();
           },
           child: Icon(
             Icons.arrow_back_ios,

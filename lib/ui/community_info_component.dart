@@ -30,7 +30,10 @@ class _CommunityInfoComponent extends State<CommunityInfoComponent> {
   void initState() {
     Future(() async {
       setState(() async {
-        follows = await contactListProvider.followsCommunity(widget.info.communityId.toAString());
+        follows = contactListProvider != null
+            ? await contactListProvider!
+                .followsCommunity(widget.info.communityId.toAString())
+            : false;
       });
     });
   }
@@ -65,13 +68,17 @@ class _CommunityInfoComponent extends State<CommunityInfoComponent> {
         bool finished = false;
         Future.delayed(const Duration(seconds: 1), () {
           if (!finished) {
-            EasyLoading.show(status: "Refreshing from relays before action...", maskType: EasyLoadingMaskType.black);
+            EasyLoading.show(
+                status: "Refreshing from relays before action...",
+                maskType: EasyLoadingMaskType.black);
           }
         });
         if (follows) {
-          contactListProvider.removeCommunity(widget.info.communityId.toAString());
+          contactListProvider
+              ?.removeCommunity(widget.info.communityId.toAString());
         } else {
-          contactListProvider.addCommunity(widget.info.communityId.toAString());
+          contactListProvider
+              ?.addCommunity(widget.info.communityId.toAString());
         }
         finished = true;
         EasyLoading.dismiss();

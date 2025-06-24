@@ -3,8 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:yana/ui/tag_info_component.dart';
 import 'package:yana/utils/base.dart';
 
+import 'package:go_router/go_router.dart';
+
 import '../../i18n/i18n.dart';
-import '../../utils/router_util.dart';
 
 class FollowedTagsListRouter extends StatefulWidget {
   const FollowedTagsListRouter({super.key});
@@ -21,13 +22,13 @@ class _FollowedTagsListRouter extends State<FollowedTagsListRouter> {
   @override
   Widget build(BuildContext context) {
     if (contactList == null) {
-      var arg = RouterUtil.routerArgs(context);
+      var arg = GoRouterState.of(context).extra;
       if (arg != null) {
         contactList = arg as ContactList;
       }
     }
     if (contactList == null) {
-      RouterUtil.back(context);
+      context.pop();
       return Container();
     }
 
@@ -41,7 +42,7 @@ class _FollowedTagsListRouter extends State<FollowedTagsListRouter> {
       appBar: AppBar(
         leading: GestureDetector(
           onTap: () {
-            RouterUtil.back(context);
+            context.pop();
           },
           child: Icon(
             Icons.arrow_back_ios,

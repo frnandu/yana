@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../utils/base.dart';
 import '../../i18n/i18n.dart';
-import '../../utils/router_util.dart';
 
 class TextInputDialogInnerComponent extends StatefulWidget {
   String title;
@@ -119,6 +119,6 @@ class _TextInputDialogInnerComponent
         return;
       }
     }
-    return RouterUtil.back(context, value);
+    context.pop(value);
   }
 }

@@ -49,6 +49,10 @@ android {
         main.java.srcDirs += 'src/main/kotlin'
     }
 
+    buildFeatures {
+        buildConfig true
+    }
+
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId "yana.nostr"
@@ -62,6 +66,54 @@ android {
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
         manifestPlaceholders['foregroundServiceType'] = ['camera']
+        
+        // // NDK ABI filters to support both ARM64 and x86_64
+        // ndk {
+        //     abiFilters 'arm64-v8a', 'x86_64'
+        // }
+    }
+
+    flavorDimensions "appFlavor"
+    productFlavors {
+        full {
+            dimension "appFlavor"
+            applicationId "yana.nostr"
+            versionNameSuffix "-full"
+            resValue "string", "app_name", "Yana"
+            // Include all features
+            buildConfigField "boolean", "ENABLE_WALLET", "true"
+            buildConfigField "boolean", "ENABLE_SOCIAL", "true"
+            buildConfigField "boolean", "ENABLE_COMMUNITIES", "true"
+            buildConfigField "boolean", "ENABLE_DM", "true"
+            buildConfigField "boolean", "ENABLE_SEARCH", "true"
+            buildConfigField "boolean", "ENABLE_NOTIFICATIONS", "true"
+        }
+        wallet {
+            dimension "appFlavor"
+            applicationId "yana.nostr.wallet"
+            versionNameSuffix "-wallet"
+            resValue "string", "app_name", "Yana Wallet"
+            // Wallet-only features
+            buildConfigField "boolean", "ENABLE_WALLET", "true"
+            buildConfigField "boolean", "ENABLE_SOCIAL", "false"
+            buildConfigField "boolean", "ENABLE_COMMUNITIES", "false"
+            buildConfigField "boolean", "ENABLE_DM", "true"
+            buildConfigField "boolean", "ENABLE_SEARCH", "false"
+            buildConfigField "boolean", "ENABLE_NOTIFICATIONS", "false"
+        }
+        social {
+            dimension "appFlavor"
+            applicationId "yana.nostr.social"
+            versionNameSuffix "-social"
+            resValue "string", "app_name", "Yana Social"
+            // Social-only features
+            buildConfigField "boolean", "ENABLE_WALLET", "false"
+            buildConfigField "boolean", "ENABLE_SOCIAL", "true"
+            buildConfigField "boolean", "ENABLE_COMMUNITIES", "true"
+            buildConfigField "boolean", "ENABLE_DM", "true"
+            buildConfigField "boolean", "ENABLE_SEARCH", "true"
+            buildConfigField "boolean", "ENABLE_NOTIFICATIONS", "true"
+        }
     }
 
     signingConfigs {
