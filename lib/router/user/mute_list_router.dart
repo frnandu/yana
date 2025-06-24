@@ -429,7 +429,7 @@ class MuteListElementComponent extends StatelessWidget {
                                     metadata: metadata ??
                                         Metadata(pubKey: element.value),
                                     onTap: (metadata) {
-                                      context.go(RouterPath.USER,
+                                      context.push(RouterPath.USER,
                                           extra: element.value);
                                     },
                                     width: 400);

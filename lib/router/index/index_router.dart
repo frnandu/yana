@@ -177,7 +177,7 @@ class _IndexRouter extends CustState<IndexRouter>
             }
             key = Nip19.decode(key);
             if (AppFeatures.enableSocial) {
-              context.go(RouterPath.USER, extra: key);
+              context.push(RouterPath.USER, extra: key);
             }
           } else if (Nip19.isNoteId(key)) {
             // block
@@ -195,7 +195,7 @@ class _IndexRouter extends CustState<IndexRouter>
               // inline
               // mention user
               if (AppFeatures.enableSocial) {
-                context.go(RouterPath.USER, extra: nprofile.pubkey);
+                context.push(RouterPath.USER, extra: nprofile.pubkey);
               }
             }
           } else if (NIP19Tlv.isNrelay(key)) {
@@ -229,7 +229,7 @@ class _IndexRouter extends CustState<IndexRouter>
               } else if (StringUtil.isNotBlank(naddr.author) &&
                   naddr.kind == Metadata.kKind) {
                 if (AppFeatures.enableSocial) {
-                  context.go(RouterPath.USER, extra: naddr.author);
+                  context.push(RouterPath.USER, extra: naddr.author);
                 }
               }
             }

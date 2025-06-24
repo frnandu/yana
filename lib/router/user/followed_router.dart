@@ -75,7 +75,7 @@ class _FollowedRouter extends State<FollowedRouter> {
                           ? SearchMentionUserItemComponent(
                               metadata: snapshot.data!,
                               onTap: (metadata) {
-                                context.go(RouterPath.USER, extra: pubkey);
+                                context.push(RouterPath.USER, extra: pubkey);
                               },
                               width: 400)
                           : Container();

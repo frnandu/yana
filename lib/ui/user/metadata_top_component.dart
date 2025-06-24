@@ -616,7 +616,7 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
   }
 
   void jumpToUserRouter() {
-    context.go(RouterPath.USER, extra: widget.pubkey);
+    context.push(RouterPath.USER, extra: widget.pubkey);
   }
 
   void openDMSession() {

@@ -188,7 +188,7 @@ class _EventTopComponent extends State<EventTopComponent> {
             return;
           }
 
-          context.go(RouterPath.USER, extra: widget.event.pubKey);
+          context.push(RouterPath.USER, extra: widget.event.pubKey);
         }
       },
       child: c,

@@ -769,12 +769,12 @@ class _EventMainComponent extends State<EventMainComponent> {
               // jump user page
               var pubkey = Nip19.decode(link);
               if (StringUtil.isNotBlank(pubkey)) {
-                context.go(RouterPath.USER, extra: pubkey);
+                context.push(RouterPath.USER, extra: pubkey);
               }
             } else if (NIP19Tlv.isNprofile(link)) {
               var nprofile = NIP19Tlv.decodeNprofile(link);
               if (nprofile != null) {
-                context.go(RouterPath.USER, extra: nprofile.pubkey);
+                context.push(RouterPath.USER, extra: nprofile.pubkey);
               }
             } else if (Nip19.isNoteId(link)) {
               var noteId = Nip19.decode(link);
@@ -882,7 +882,7 @@ class _EventReplyingcomponent extends State<EventReplyingcomponent> {
   Widget build(BuildContext context) {
     return GestureDetector(
         onTap: () {
-          context.go(RouterPath.USER, extra: widget.pubkey);
+          context.push(RouterPath.USER, extra: widget.pubkey);
         },
         child: FutureBuilder<Metadata?>(
             future: metadataProvider.getMetadata(widget.pubkey),

@@ -45,7 +45,7 @@ class _UserContactListComponent extends State<UserContactListComponent> {
                           ? SearchMentionUserItemComponent(
                               metadata: snapshot.data!,
                               onTap: (metadata) {
-                                context.go(RouterPath.USER,
+                                context.push(RouterPath.USER,
                                     extra: metadata.pubKey);
                               },
                               width: 400)

@@ -95,7 +95,7 @@ class _PaymentDetailsComponent extends State<PaymentDetailsComponent> {
                           var metadata = snapshot.data;
                           return GestureDetector(
                               onTap: () {
-                                context.go(RouterPath.USER,
+                                context.push(RouterPath.USER,
                                     extra: zapperPubKey);
                               },
                               child: NameComponent(

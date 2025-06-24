@@ -346,7 +346,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
                 //   Relay? r = followsNostr!.getRelay(relay.url!);
                 //   return r != null;
                 // }).toList();
-                context.go(RouterPath.USER_RELAYS, extra: filteredRelays);
+                context.push(RouterPath.USER_RELAYS, extra: filteredRelays);
               }
             },
             leading: loadingGossipRelays
@@ -521,53 +521,57 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
           "${ndk.relays.globalState.blockedRelays.length} Blocked relays",
         )));
 
-    listsTiles.add(SettingsTile.navigation(
-        onPressed: (context) async {
-          if (searchRelays.isNotEmpty) {
-            bool finished = false;
-            Future.delayed(const Duration(milliseconds: 500), () {
-              if (!finished) {
-                EasyLoading.showInfo('Loading relay list...',
-                    maskType: EasyLoadingMaskType.black,
-                    dismissOnTap: true,
-                    duration: const Duration(seconds: 3));
+    if (AppFeatures.enableSearch) {
+      listsTiles.add(SettingsTile.navigation(
+          onPressed: (context) async {
+            if (searchRelays.isNotEmpty) {
+              bool finished = false;
+              Future.delayed(const Duration(milliseconds: 500), () {
+                if (!finished) {
+                  EasyLoading.showInfo('Loading relay list...',
+                      maskType: EasyLoadingMaskType.black,
+                      dismissOnTap: true,
+                      duration: const Duration(seconds: 3));
+                }
+              });
+              try {
+                Nip51List? list = await ndk.lists.getSingleNip51List(
+                    Nip51List.kSearchRelays, loggedUserSigner!);
+                finished = true;
+                context.go(RouterPath.RELAY_LIST,
+                    extra: list ??
+                        Nip51List(
+                            pubKey: loggedUserSigner!.getPublicKey(),
+                            kind: Nip51List.kSearchRelays,
+                            elements: [],
+                            createdAt: Helpers.now));
+              } finally {
+                EasyLoading.dismiss();
               }
-            });
-            try {
-              Nip51List? list = await ndk.lists.getSingleNip51List(
-                  Nip51List.kSearchRelays, loggedUserSigner!);
-              finished = true;
+            } else {
               context.go(RouterPath.RELAY_LIST,
-                  extra: list ??
-                      Nip51List(
-                          pubKey: loggedUserSigner!.getPublicKey(),
-                          kind: Nip51List.kSearchRelays,
-                          elements: [],
-                          createdAt: Helpers.now));
-            } finally {
-              EasyLoading.dismiss();
+                  extra: Nip51List(
+                      pubKey: loggedUserSigner!.getPublicKey(),
+                      kind: Nip51List.kSearchRelays,
+                      elements: [],
+                      createdAt: Helpers.now));
             }
-          } else {
-            context.go(RouterPath.RELAY_LIST,
-                extra: Nip51List(
-                    pubKey: loggedUserSigner!.getPublicKey(),
-                    kind: Nip51List.kSearchRelays,
-                    elements: [],
-                    createdAt: Helpers.now));
-          }
-        },
-        leading: const Icon(
-          Icons.search,
-        ),
-        trailing: Icon(Icons.navigate_next),
-        title: Selector<RelayProvider, List<String>?>(
-            builder: (context, searchRelays, child) {
-          return Text(
-            "${searchRelays != null ? searchRelays.length : 0} Search relays",
-          );
-        }, selector: (context, provider) {
-          return relayProvider.getSearchRelays();
-        })));
+          },
+          leading: const Icon(
+            Icons.search,
+          ),
+          trailing: Icon(Icons.navigate_next),
+          title: Selector<RelayProvider, List<String>?>(
+              builder: (context, searchRelays, child) {
+                return Text(
+                  "${searchRelays != null
+                      ? searchRelays.length
+                      : 0} Search relays",
+                );
+              }, selector: (context, provider) {
+            return relayProvider.getSearchRelays();
+          })));
+    }
 
     List<AbstractSettingsTile> securityTiles = [];
 
@@ -620,15 +624,19 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
       ));
     }
 
+
     List<AbstractSettingsTile> walletTiles = [];
-    walletTiles.add(SettingsTile.navigation(
-      onPressed: (context) async {
-        context.go(RouterPath.SETTINGS_WALLET);
-      },
-      leading: const Icon(Icons.wallet),
-      trailing: const Icon(Icons.navigate_next),
-      title: const Text("Wallet Settings"),
-    ));
+
+    if (AppFeatures.isWalletOnly) {
+      walletTiles.add(SettingsTile.navigation(
+        onPressed: (context) async {
+          context.go(RouterPath.SETTINGS_WALLET);
+        },
+        leading: const Icon(Icons.wallet),
+        trailing: const Icon(Icons.navigate_next),
+        title: const Text("Wallet Settings"),
+      ));
+    }
 
     List<AbstractSettingsTile> accountTiles = [];
 
@@ -672,7 +680,9 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
       sections.add(SettingsSection(
           title: Text('Notifications'), tiles: notificationTiles));
     }
-    sections.add(SettingsSection(title: Text('Wallet'), tiles: walletTiles));
+    if (AppFeatures.isWalletOnly) {
+      sections.add(SettingsSection(title: Text('Wallet'), tiles: walletTiles));
+    }
     if (!PlatformUtil.isWeb() &&
         (PlatformUtil.isIOS() || PlatformUtil.isAndroid())) {
       sections

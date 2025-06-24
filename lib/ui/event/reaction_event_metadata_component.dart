@@ -77,7 +77,7 @@ class _ReactionEventMetadataComponent
 
           return GestureDetector(
             onTap: () {
-              context.go(RouterPath.USER, extra: widget.pubkey);
+              context.push(RouterPath.USER, extra: widget.pubkey);
             },
             child: Container(
               child: Row(

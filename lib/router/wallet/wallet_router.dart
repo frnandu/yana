@@ -175,7 +175,7 @@ class _WalletRouter extends State<WalletRouter> with ProtocolListener {
               key = key.substring(0, Nip19.NPUB_LENGTH);
             }
             key = Nip19.decode(key);
-            context.go(RouterPath.USER, extra: key);
+            context.push(RouterPath.USER, extra: key);
           } else if (Nip19.isNoteId(key)) {
             // block
             if (key.length > Nip19.NOTEID_LENGTH) {
@@ -189,7 +189,7 @@ class _WalletRouter extends State<WalletRouter> with ProtocolListener {
             if (nprofile != null) {
               // inline
               // mention user
-              context.go(RouterPath.USER, extra: nprofile.pubkey);
+              context.push(RouterPath.USER, extra: nprofile.pubkey);
             }
           } else if (NIP19Tlv.isNrelay(key)) {
             var nrelay = NIP19Tlv.decodeNrelay(key);
@@ -217,7 +217,7 @@ class _WalletRouter extends State<WalletRouter> with ProtocolListener {
                 context.go(RouterPath.THREAD_DETAIL, extra: naddr.id);
               } else if (StringUtil.isNotBlank(naddr.author) &&
                   naddr.kind == Metadata.kKind) {
-                context.go(RouterPath.USER, extra: naddr.author);
+                context.push(RouterPath.USER, extra: naddr.author);
               }
             }
           }

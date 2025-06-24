@@ -154,7 +154,7 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
           if (zapEventBox != null) {
             zapEventBox!.sort();
             var list = zapEventBox!.all();
-            context.go(RouterPath.USER_ZAP_LIST, extra: list);
+            context.push(RouterPath.USER_ZAP_LIST, extra: list);
           }
         },
         formatNum: true,
@@ -228,7 +228,7 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
       // if (result != null) {
       //   var event = result.value as Event;
       //   var _contactList = ContactList.fromJson(event.tags);
-      //   context.go(RouterPath.USER_HISTORY_CONTACT_LIST,
+      //   context.push(RouterPath.USER_HISTORY_CONTACT_LIST,
       //       extra: _contactList);
       // }
     }
@@ -243,12 +243,12 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
 
   onFollowingTap() {
     if (contactList != null) {
-      context.go(RouterPath.USER_CONTACT_LIST, extra: widget.pubkey);
+      context.push(RouterPath.USER_CONTACT_LIST, extra: widget.pubkey);
     } else if (isLocal) {
       var cl =
           contactListProvider?.getContactList(loggedUserSigner!.getPublicKey());
       if (cl != null) {
-        context.go(RouterPath.USER_CONTACT_LIST, extra: widget.pubkey);
+        context.push(RouterPath.USER_CONTACT_LIST, extra: widget.pubkey);
       }
     }
   }
@@ -310,7 +310,7 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
               write: entry.value.isWrite,
               count: 0))
           .toList();
-      context.go(RouterPath.USER_RELAYS, extra: relays);
+      context.push(RouterPath.USER_RELAYS, extra: relays);
     } else if (isLocal) {
       context.go(RouterPath.RELAYS);
     }
@@ -392,12 +392,12 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
 
   onFollowedTap() {
     if (contactList != null) {
-      context.go(RouterPath.USER_CONTACT_LIST, extra: widget.pubkey);
+      context.push(RouterPath.USER_CONTACT_LIST, extra: widget.pubkey);
     } else if (isLocal) {
       var cl =
           contactListProvider?.getContactList(loggedUserSigner!.getPublicKey());
       if (cl != null) {
-        context.go(RouterPath.USER_CONTACT_LIST, extra: widget.pubkey);
+        context.push(RouterPath.USER_CONTACT_LIST, extra: widget.pubkey);
       }
     }
   }

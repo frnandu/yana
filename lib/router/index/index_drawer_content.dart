@@ -131,7 +131,7 @@ class _IndexDrawerContentComponnent extends State<IndexDrawerContentComponent> {
         iconData: Icons.person,
         name: s.Profile,
         onTap: () {
-          context.go(RouterPath.USER, extra: pubkey);
+          context.push(RouterPath.USER, extra: pubkey);
         },
       ));
     }

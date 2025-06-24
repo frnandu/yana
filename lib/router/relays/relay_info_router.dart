@@ -170,7 +170,7 @@ class _RelayInfoRouter extends State<RelayInfoRouter> {
 
                   return GestureDetector(
                     onTap: () {
-                      context.go(RouterPath.USER, extra: relayInfo!.pubKey);
+                      context.push(RouterPath.USER, extra: relayInfo!.pubKey);
                     },
                     child: Row(
                       children: list,

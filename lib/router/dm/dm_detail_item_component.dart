@@ -127,7 +127,7 @@ class _DMDetailItemComponent extends State<DMDetailItemComponent> {
     // if (!widget.isLocal) {
     userHeadWidget = GestureDetector(
       onTap: () {
-        context.go(RouterPath.USER, extra: widget.event.pubKey);
+        context.push(RouterPath.USER, extra: widget.event.pubKey);
       },
       child: userHeadWidget,
     );

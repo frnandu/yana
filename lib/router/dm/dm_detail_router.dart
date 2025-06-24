@@ -74,7 +74,7 @@ class _DMDetailRouter extends CustState<DMDetailRouter> with EditorMixin {
         builder: (context, snapshot) {
           return GestureDetector(
               onTap: () {
-                context.go(RouterPath.USER, extra: detail!.dmSession.pubkey);
+                context.push(RouterPath.USER, extra: detail!.dmSession.pubkey);
               },
               child: NameComponent(
                 pubkey: detail!.dmSession.pubkey,

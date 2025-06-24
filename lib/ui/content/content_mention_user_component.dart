@@ -35,7 +35,7 @@ class _ContentMentionUserComponent extends State<ContentMentionUserComponent> {
             str: "$name",
             showUnderline: false,
             onTap: () {
-              context.go(RouterPath.USER, extra: widget._pubkey);
+              context.push(RouterPath.USER, extra: widget._pubkey);
             },
           );
         });

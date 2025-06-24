@@ -142,7 +142,7 @@ class _SearchRouter extends CustState<SearchRouter>
             return SearchMentionUserItemComponent(
               metadata: metadata,
               onTap: (metadata) {
-                context.go(RouterPath.USER, extra: metadata!.pubKey);
+                context.push(RouterPath.USER, extra: metadata!.pubKey);
               },
               width: 400,
             );
@@ -394,7 +394,7 @@ class _SearchRouter extends CustState<SearchRouter>
         pubkey = Nip19.decode(text);
       }
 
-      context.go(RouterPath.USER, extra: pubkey);
+      context.push(RouterPath.USER, extra: pubkey);
     }
   }
 
@@ -503,11 +503,11 @@ class _SearchRouter extends CustState<SearchRouter>
       result = result.replaceAll("nostr:", "");
       if (Nip19.isPubkey(result)) {
         var pubkey = Nip19.decode(result);
-        context.go(RouterPath.USER, extra: pubkey);
+        context.push(RouterPath.USER, extra: pubkey);
       } else if (NIP19Tlv.isNprofile(result)) {
         var nprofile = NIP19Tlv.decodeNprofile(result);
         if (nprofile != null) {
-          context.go(RouterPath.USER, extra: nprofile.pubkey);
+          context.push(RouterPath.USER, extra: nprofile.pubkey);
         }
       } else if (Nip19.isNoteId(result)) {
         var noteId = Nip19.decode(result);
