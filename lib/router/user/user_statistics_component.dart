@@ -141,7 +141,7 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
         onTap: () {
           if (followedMap != null) {
             var pubkeys = followedMap!.keys.toList();
-            context.go(RouterPath.FOLLOWED, extra: pubkeys);
+            context.push(RouterPath.FOLLOWED, extra: pubkeys);
           }
         },
         formatNum: true,
@@ -255,12 +255,12 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
 
   onFollowedTagsTap() {
     if (contactList != null) {
-      context.go(RouterPath.FOLLOWED_TAGS_LIST, extra: contactList);
+      context.push(RouterPath.FOLLOWED_TAGS_LIST, extra: contactList);
     } else if (isLocal) {
       var cl =
           contactListProvider?.getContactList(loggedUserSigner!.getPublicKey());
       if (cl != null) {
-        context.go(RouterPath.FOLLOWED_TAGS_LIST, extra: cl);
+        context.push(RouterPath.FOLLOWED_TAGS_LIST, extra: cl);
       }
     }
   }
@@ -312,7 +312,7 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
           .toList();
       context.push(RouterPath.USER_RELAYS, extra: relays);
     } else if (isLocal) {
-      context.go(RouterPath.RELAYS);
+      context.push(RouterPath.RELAYS);
     }
   }
 
@@ -380,12 +380,12 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
 
   onFollowedCommunitiesTap() {
     if (contactList != null) {
-      context.go(RouterPath.FOLLOWED_COMMUNITIES, extra: contactList);
+      context.push(RouterPath.FOLLOWED_COMMUNITIES, extra: contactList);
     } else if (isLocal) {
       var cl =
           contactListProvider?.getContactList(loggedUserSigner!.getPublicKey());
       if (cl != null) {
-        context.go(RouterPath.FOLLOWED_COMMUNITIES, extra: cl);
+        context.push(RouterPath.FOLLOWED_COMMUNITIES, extra: cl);
       }
     }
   }

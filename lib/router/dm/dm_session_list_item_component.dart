@@ -163,7 +163,7 @@ class _DMSessionListItemComponent extends State<DMSessionListItemComponent> {
 
     return GestureDetector(
       onTap: () {
-        context.go(RouterPath.DM_DETAIL, extra: widget.detail);
+        context.push(RouterPath.DM_DETAIL, extra: widget.detail);
       },
       child: main,
     );

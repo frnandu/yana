@@ -265,7 +265,7 @@ class _EventTopComponent extends State<EventTopComponent> {
       EnumObj? resultEnumObj =
           await EnumSelectorComponent.show(context, relays!);
       if (resultEnumObj != null) {
-        context.go(RouterPath.RELAY_INFO,
+        context.push(RouterPath.RELAY_INFO,
             extra: ndk.relays.globalState.relays[resultEnumObj.value]!.relay);
       }
     }

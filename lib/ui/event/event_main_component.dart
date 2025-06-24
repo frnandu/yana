@@ -588,7 +588,7 @@ class _EventMainComponent extends State<EventMainComponent> {
           ),
           GestureDetector(
             onTap: () {
-              context.go(RouterPath.COMMUNITY_DETAIL,
+              context.push(RouterPath.COMMUNITY_DETAIL,
                   extra: eventRelation.communityId);
             },
             child: Text(

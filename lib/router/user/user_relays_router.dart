@@ -222,7 +222,7 @@ class RelayMetadataComponent extends StatelessWidget {
     if (relayMetadata!.count != null && relayMetadata!.count! > 0) {
       rightButtons.add(GestureDetector(
           onTap: () {
-            context.go(RouterPath.FOLLOWED,
+            context.push(RouterPath.FOLLOWED,
                 extra: FollowedRouterArgs(
                     pubkeys: feedRelaySet!.relaysMap[relayMetadata!.url]!
                         .map((e) => e.pubKey)
@@ -237,7 +237,7 @@ class RelayMetadataComponent extends StatelessWidget {
           onTap: () {
             List<PubkeyMapping>? aa =
                 feedRelaySet!.relaysMap[relayMetadata!.url];
-            context.go(RouterPath.FOLLOWED,
+            context.push(RouterPath.FOLLOWED,
                 extra: FollowedRouterArgs(
                     pubkeys: aa != null ? aa.map((e) => e.pubKey).toList() : [],
                     title:
@@ -401,7 +401,7 @@ class RelayMetadataComponent extends StatelessWidget {
             GestureDetector(
               onTap: () {
                 if (relay != null && relay.relayInfo != null) {
-                  context.go(RouterPath.RELAY_INFO, extra: relay);
+                  context.push(RouterPath.RELAY_INFO, extra: relay);
                 }
               },
               child: Container(
@@ -422,7 +422,7 @@ class RelayMetadataComponent extends StatelessWidget {
                       child: GestureDetector(
                         onTap: () {
                           if (relay != null && relay.relayInfo != null) {
-                            context.go(RouterPath.RELAY_INFO, extra: relay);
+                            context.push(RouterPath.RELAY_INFO, extra: relay);
                           }
                         },
                         child: Text(
