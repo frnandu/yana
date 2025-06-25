@@ -2,7 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:ndk/entities.dart';
 import 'package:flutter/material.dart';
 import 'package:yana/utils/router_path.dart';
-import 'package:yana/utils/router_util.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../main.dart';
@@ -24,7 +24,8 @@ class ReactionEventMetadataComponent extends StatefulWidget {
   }
 }
 
-class _ReactionEventMetadataComponent extends State<ReactionEventMetadataComponent> {
+class _ReactionEventMetadataComponent
+    extends State<ReactionEventMetadataComponent> {
   static const double IMAGE_WIDTH = 30;
 
   @override
@@ -45,7 +46,8 @@ class _ReactionEventMetadataComponent extends State<ReactionEventMetadataCompone
                 width: IMAGE_WIDTH,
                 height: IMAGE_WIDTH,
                 fit: BoxFit.cover,
-                placeholder: (context, url) => const CircularProgressIndicator(),
+                placeholder: (context, url) =>
+                    const CircularProgressIndicator(),
                 errorWidget: (context, url, error) => const Icon(Icons.error),
                 cacheManager: localCacheManager,
               );
@@ -75,7 +77,7 @@ class _ReactionEventMetadataComponent extends State<ReactionEventMetadataCompone
 
           return GestureDetector(
             onTap: () {
-              RouterUtil.router(context, RouterPath.USER, widget.pubkey);
+              context.push(RouterPath.USER, extra: widget.pubkey);
             },
             child: Container(
               child: Row(

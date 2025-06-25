@@ -22,12 +22,15 @@ class NewNotificationsProvider extends ChangeNotifier
   @pragma("vm:entry-point")
   static Future<void> onActionReceivedMethod(
       ReceivedAction receivedAction) async {
-    newNotificationsProvider.queryNew();
-    Future.delayed(const Duration(seconds: 1), () {
-      notificationsProvider.mergeNewEvent();
-    });
-
-    indexProvider.setCurrentTap(IndexTaps.NOTIFICATIONS);
+    if (newNotificationsProvider != null) {
+      newNotificationsProvider!.queryNew();
+      Future.delayed(const Duration(seconds: 1), () {
+        if (notificationsProvider != null) {
+          notificationsProvider!.mergeNewEvent();
+        }
+      });
+      indexProvider.setCurrentTap(IndexTaps.NOTIFICATIONS);
+    }
   }
 
   /// Use this method to detect when a new notification or a schedule is created
@@ -43,14 +46,14 @@ class NewNotificationsProvider extends ChangeNotifier
       print('!!!!!!!!!!!!!!! New notifications queryNew');
     }
 
-    _localSince =
-        _localSince == null || notificationsProvider.lastTime() > _localSince!
-            ? notificationsProvider.lastTime()
-            : _localSince;
+    _localSince = _localSince == null ||
+            (notificationsProvider?.lastTime() ?? 0) > _localSince!
+        ? (notificationsProvider?.lastTime() ?? 0)
+        : _localSince;
 
     var filter = Filter(
       since: _localSince!,
-      kinds: notificationsProvider.queryEventKinds(),
+      kinds: notificationsProvider?.queryEventKinds() ?? [],
       pTags: [loggedUserSigner!.getPublicKey()],
     );
     await for (final event in ndk.requests
@@ -67,7 +70,7 @@ class NewNotificationsProvider extends ChangeNotifier
   handleEvent(Nip01Event event, Metadata? metadata) {
     int previousCount = eventMemBox.length();
     if (event.pubKey != loggedUserSigner?.getPublicKey() &&
-        !notificationsProvider.eventBox.containsId(event.id)) {
+        (notificationsProvider?.eventBox.containsId(event.id) == false)) {
       if (eventMemBox.add(event, returnTrueOnNewSources: false)) {
         _localSince = eventMemBox.newestEvent!.createdAt;
         if (eventMemBox.length() > previousCount) {
@@ -143,4 +146,11 @@ class NewNotificationsProvider extends ChangeNotifier
 
     notifyListeners();
   }
+
+  int? get lastTimeSafe => notificationsProvider?.lastTime();
+
+  List<int> get queryEventKindsSafe =>
+      notificationsProvider?.queryEventKinds() ?? [];
+
+  EventMemBox? get eventBoxSafe => notificationsProvider?.eventBox;
 }

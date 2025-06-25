@@ -3,9 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:yana/main.dart';
 
+import 'package:go_router/go_router.dart';
+
 import '../../i18n/i18n.dart';
 import '../../provider/contact_list_provider.dart';
-import '../../utils/router_util.dart';
 import 'user_contact_list_component.dart';
 
 class UserContactListRouter extends StatefulWidget {
@@ -22,15 +23,15 @@ class _UserContactListRouter extends State<UserContactListRouter> {
 
   @override
   Widget build(BuildContext context) {
-    var _contactListProvider = Provider.of<ContactListProvider>(context);
+    var contactListProvider = Provider.of<ContactListProvider>(context);
 
     var s = I18n.of(context);
 
     if (pubKey == null) {
-      var arg = RouterUtil.routerArgs(context);
+      var arg = GoRouterState.of(context).extra;
       if (arg != null) {
         pubKey = arg as String;
-        contactListProvider.loadContactList(pubKey!).then(
+        contactListProvider?.loadContactList(pubKey!).then(
           (value) {
             setState(() {});
           },
@@ -44,7 +45,7 @@ class _UserContactListRouter extends State<UserContactListRouter> {
         appBar: AppBar(
           leading: GestureDetector(
             onTap: () {
-              RouterUtil.back(context);
+              context.pop();
             },
             child: Icon(
               Icons.arrow_back_ios,
@@ -60,7 +61,7 @@ class _UserContactListRouter extends State<UserContactListRouter> {
           ),
         ),
         body: FutureBuilder<ContactList?>(
-            future: _contactListProvider.getContactList(pubKey!),
+            future: contactListProvider.getContactList(pubKey!),
             builder: (context, snapshot) {
               var contactList = snapshot.data;
               if (contactList != null) {

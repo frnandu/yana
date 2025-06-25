@@ -23,6 +23,7 @@ import '../../utils/base.dart';
 import '../../utils/base_consts.dart';
 import '../../utils/index_taps.dart';
 import '../../utils/platform_util.dart';
+import '../../config/app_features.dart';
 
 class NotificationsRouter extends StatefulWidget {
   @override
@@ -40,14 +41,17 @@ class _NotificationsRouter extends KeepAliveCustState<NotificationsRouter>
     super.initState();
     bindLoadMoreScroll(_controller);
     _controller.addListener(() {
-      if (notificationsProvider.timestamp == null) {
-        notificationsProvider.setTimestampToNewestAndSave();
+      if ((notificationsProvider?.timestamp ?? null) == null) {
+        notificationsProvider?.setTimestampToNewestAndSave();
       }
     });
   }
 
   @override
   Widget doBuild(BuildContext context) {
+    if (!AppFeatures.enableNotifications || notificationsProvider == null) {
+      return SizedBox.shrink();
+    }
     if (indexProvider.currentTap != IndexTaps.NOTIFICATIONS) {
       return Container();
     }
@@ -60,7 +64,7 @@ class _NotificationsRouter extends KeepAliveCustState<NotificationsRouter>
     if (events.isEmpty) {
       return EventListPlaceholder(
         onRefresh: () {
-          notificationsProvider.refresh();
+          notificationsProvider?.refresh();
         },
       );
     }
@@ -71,7 +75,7 @@ class _NotificationsRouter extends KeepAliveCustState<NotificationsRouter>
         key: const Key('feed-posts'),
         onVisibilityChanged: (visibilityInfo) {
           if (visibilityInfo.visibleFraction == 0.0) {
-            notificationsProvider.setTimestampToNewestAndSave();
+            notificationsProvider?.setTimestampToNewestAndSave();
           }
         },
         child: FlutterListView(
@@ -102,7 +106,7 @@ class _NotificationsRouter extends KeepAliveCustState<NotificationsRouter>
 
     Widget ri = RefreshIndicator(
       onRefresh: () async {
-        notificationsProvider.refresh();
+        notificationsProvider?.refresh();
       },
       child: main,
     );
@@ -130,7 +134,7 @@ class _NotificationsRouter extends KeepAliveCustState<NotificationsRouter>
             text: I18n.of(context).message_new,
             newEvents: eventMemBox.all(),
             onTap: () {
-              notificationsProvider.mergeNewEvent();
+              notificationsProvider?.mergeNewEvent();
               _controller.animateTo(0,
                   curve: Curves.ease, duration: const Duration(seconds: 1));
             },
@@ -149,24 +153,24 @@ class _NotificationsRouter extends KeepAliveCustState<NotificationsRouter>
 
   @override
   void deactivate() {
-    notificationsProvider.setTimestampToNewestAndSave();
+    notificationsProvider?.setTimestampToNewestAndSave();
   }
 
   @override
   void dispose() {
     super.dispose();
-    notificationsProvider.setTimestampToNewestAndSave();
+    notificationsProvider?.setTimestampToNewestAndSave();
   }
 
   @override
   void doQuery() {
     preQuery();
-    notificationsProvider.startSubscription();
+    notificationsProvider?.startSubscription();
   }
 
   @override
   EventMemBox getEventBox() {
-    return notificationsProvider.eventBox;
+    return notificationsProvider?.eventBox ?? EventMemBox();
   }
 
   @override

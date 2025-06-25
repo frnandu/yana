@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../utils/base.dart';
-import '../../utils/router_util.dart';
 import '../../utils/string_util.dart';
 import 'text_input_dialog_inner_component.dart';
 
@@ -60,7 +60,7 @@ class _TextInputDialog extends State<TextInputDialog> {
         child: GestureDetector(
           behavior: HitTestBehavior.opaque,
           onTap: () {
-            RouterUtil.back(context);
+            context.pop();
           },
           child: Container(
             width: double.infinity,

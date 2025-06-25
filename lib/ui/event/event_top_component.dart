@@ -12,7 +12,7 @@ import 'package:provider/provider.dart';
 import 'package:yana/nostr/event_kind.dart';
 import 'package:yana/ui/name_component.dart';
 import 'package:yana/utils/router_path.dart';
-import 'package:yana/utils/router_util.dart';
+import 'package:go_router/go_router.dart';
 import 'package:yana/utils/string_util.dart';
 
 import '../../main.dart';
@@ -71,16 +71,17 @@ class _EventTopComponent extends State<EventTopComponent> {
     }
     List<GestureDetector> relayIcons = [];
     widget.event.sources.forEach((source) {
-      RelayConnectivity? relayConnectivity = ndk.relays.globalState.relays[source];
-      relayConnectivity ??= ndk.relays.globalState.relays[cleanRelayUrl(source)];
-      Container? relayIcon = relayConnectivity != null ? getRelayIcon(relayConnectivity, 13) : null;
+      RelayConnectivity? relayConnectivity =
+          ndk.relays.globalState.relays[source];
+      relayConnectivity ??=
+          ndk.relays.globalState.relays[cleanRelayUrl(source)];
+      Container? relayIcon = relayConnectivity != null
+          ? getRelayIcon(relayConnectivity, 13)
+          : null;
       if (relayIcon != null) {
         relayIcons.add(GestureDetector(
             onTap: () async {
               await showRelaysPopup();
-              // if (relay != null && relay.info != null) {
-              //   RouterUtil.router(context, RouterPath.RELAY_INFO, relay);
-              // }
             },
             child: relayIcon));
       }
@@ -122,7 +123,8 @@ class _EventTopComponent extends State<EventTopComponent> {
                 )),
                 Expanded(
                   child: Container(
-                    padding: const EdgeInsets.only(left: Base.BASE_PADDING_HALF),
+                    padding:
+                        const EdgeInsets.only(left: Base.BASE_PADDING_HALF),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -139,7 +141,10 @@ class _EventTopComponent extends State<EventTopComponent> {
                         Row(
                           children: [
                             Text(
-                              (GetTimeAgo.parse(DateTime.fromMillisecondsSinceEpoch(widget.event.createdAt * 1000)) + " in "),
+                              (GetTimeAgo.parse(
+                                      DateTime.fromMillisecondsSinceEpoch(
+                                          widget.event.createdAt * 1000)) +
+                                  " in "),
                               style: TextStyle(
                                 fontSize: smallTextSize,
                                 color: themeData.hintColor,
@@ -183,7 +188,7 @@ class _EventTopComponent extends State<EventTopComponent> {
             return;
           }
 
-          RouterUtil.router(context, RouterPath.USER, widget.event.pubKey);
+          context.push(RouterPath.USER, extra: widget.event.pubKey);
         }
       },
       child: c,
@@ -198,8 +203,10 @@ class _EventTopComponent extends State<EventTopComponent> {
       } else if (relayConnectivity.url.startsWith("wss://relay.snort.social")) {
         iconUrl = "https://snort.social/favicon.ico";
       } else {
-        iconUrl =
-            relayConnectivity.relayInfo != null && StringUtil.isNotBlank(relayConnectivity.relayInfo!.icon) ? relayConnectivity.relayInfo!.icon : StringUtil.robohash(HashUtil.md5(relayConnectivity.url));
+        iconUrl = relayConnectivity.relayInfo != null &&
+                StringUtil.isNotBlank(relayConnectivity.relayInfo!.icon)
+            ? relayConnectivity.relayInfo!.icon
+            : StringUtil.robohash(HashUtil.md5(relayConnectivity.url));
       }
       try {
         return Container(
@@ -214,7 +221,9 @@ class _EventTopComponent extends State<EventTopComponent> {
               height: size,
               fit: BoxFit.cover,
               placeholder: (context, url) => const CircularProgressIndicator(),
-              errorWidget: (context, url, error) => CachedNetworkImage(imageUrl: StringUtil.robohash(HashUtil.md5(relayConnectivity!.url))),
+              errorWidget: (context, url, error) => CachedNetworkImage(
+                  imageUrl: StringUtil.robohash(
+                      HashUtil.md5(relayConnectivity!.url))),
               cacheManager: localCacheManager,
             ));
       } catch (e) {
@@ -225,7 +234,8 @@ class _EventTopComponent extends State<EventTopComponent> {
   }
 
   loadRelayInfos() async {
-    await Future.wait(widget.event.sources.map((url) => ndk.relays.getRelayInfo(cleanRelayUrl(url)!)));
+    await Future.wait(widget.event.sources
+        .map((url) => ndk.relays.getRelayInfo(cleanRelayUrl(url)!)));
     // setState(() {});
   }
 
@@ -234,13 +244,17 @@ class _EventTopComponent extends State<EventTopComponent> {
       await loadRelayInfos();
 
       List<EnumObj>? relays = widget.event.sources.map((source) {
-        RelayConnectivity? relayConnectivity = ndk.relays.globalState.relays[source];
-        relayConnectivity ??= ndk.relays.globalState.relays[cleanRelayUrl(source)];
+        RelayConnectivity? relayConnectivity =
+            ndk.relays.globalState.relays[source];
+        relayConnectivity ??=
+            ndk.relays.globalState.relays[cleanRelayUrl(source)];
         return EnumObj(
           source,
           null,
           widget: Row(children: [
-            relayConnectivity != null ? getRelayIcon(relayConnectivity, 25)! : Container(),
+            relayConnectivity != null
+                ? getRelayIcon(relayConnectivity, 25)!
+                : Container(),
             const SizedBox(
               width: 10,
             ),
@@ -248,9 +262,11 @@ class _EventTopComponent extends State<EventTopComponent> {
           ]),
         );
       }).toList();
-      EnumObj? resultEnumObj = await EnumSelectorComponent.show(context, relays!);
+      EnumObj? resultEnumObj =
+          await EnumSelectorComponent.show(context, relays!);
       if (resultEnumObj != null) {
-        RouterUtil.router(context, RouterPath.RELAY_INFO, ndk.relays.globalState.relays[resultEnumObj.value]!.relay);
+        context.push(RouterPath.RELAY_INFO,
+            extra: ndk.relays.globalState.relays[resultEnumObj.value]!.relay);
       }
     }
   }

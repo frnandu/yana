@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 0.16.1+4001
+version: 0.17.0+4002
 versionCode: 3000
 
 environment:
@@ -33,20 +33,21 @@ dependencies:
     sdk: flutter
   flutter_localizations:
     sdk: flutter
+  go_router: ^14.2.0 # Added go_router
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
 #  cupertino_icons: ^1.0.2
   connectivity_plus: ^6.1.4
-  pointycastle: ^3.7.3
+  pointycastle: ^3.9.1
   convert: ^3.1.1
   provider: ^6.0.5
   shared_preferences: ^2.1.1
   bot_toast: ^4.0.4
-  flutter_quill: ^8.6.3
+  flutter_quill: ^11.4.1
   bip340: ^0.3.0
   string_validator: ^1.0.0
-  http: ^1.1.0
+  http: ^1.4.0
   get_time_ago: ^2.1.1
   cached_network_image: ^3.4.1
   photo_manager: ^3.6.3
@@ -54,8 +55,7 @@ dependencies:
   flutter_animate: ^4.1.1+1
   bech32: ^0.2.2
   hex: ^0.2.0
-  #wechat_assets_picker: ^8.5.0
-  file_picker: ^8.1.7
+  file_picker: ^10.1.9
   dio: ^5.1.2
   dio_cookie_manager: ^3.0.0
   emoji_picker_flutter: ^4.2.0
@@ -64,7 +64,7 @@ dependencies:
   webview_flutter: ^4.13.0
   photo_view: ^0.15.0
   #screenshot: ^3.0.0
-  share_plus: ^10.1.4
+  share_plus: ^11.0.0
   video_player: ^2.9.5
   image_picker: ^1.1.2
   keframe: ^3.0.0
@@ -81,21 +81,21 @@ dependencies:
   mime: ^2.0.0
   pretty_dio_logger: ^1.3.1
   flutter_markdown: ^0.7.5
-  window_manager: ^0.4.3
+  window_manager: ^0.5.0
   mobile_scanner: ^7.0.0
   image: ^4.5.3
   #  mobile_scanner: ^5.2.1
   image_gallery_saver_plus: ^4.0.1 #: ^2.0.3
   percent_indicator: ^4.2.4
-  permission_handler: ^11.3.1
+  permission_handler: ^12.0.0+1
   file_saver: ^0.2.4
   youtube_player_flutter: ^9.1.1
   auto_size_text_field: ^2.2.1
   numberpicker: ^2.1.2
   table_calendar: ^3.0.9
   intl: ^0.20.1
-  device_info_plus: ^9.0.2
-  package_info_plus: ^8.1.3
+  device_info_plus: ^11.3.0
+  package_info_plus: ^8.3.0
   assorted_layout_widgets: ^10.4.4
   flutter_secure_storage: ^9.2.4
   settings_ui: ^2.0.2
@@ -107,11 +107,10 @@ dependencies:
   awesome_notifications: ^0.10.1
   #workmanager: ^0.5.1
 #  flutter_background_service: ^5.0.10
-  flutter_local_notifications: ^18.0.1
+  flutter_local_notifications: ^19.2.1
 #  flutter_isolate: ^2.0.4
 #  secp256k1: ^0.3.0
   scrollable_positioned_list: ^0.3.8
-  #js: ^0.6.7
   flutter_svg: ^2.0.7
   protocol_handler: ^0.2.0
   flutter_spinkit: ^5.2.0
@@ -136,7 +135,7 @@ dependencies:
   ndk: 0.4.0
   ndk_rust_verifier: 0.4.0
   ndk_amber: 0.3.0
-  ndk_isar: 0.2.0
+  #ndk_isar: 0.2.0
   ndk_objectbox: 0.2.3
 
 dev_dependencies:
@@ -154,16 +153,7 @@ dev_dependencies:
   build_runner: ^2.4.15
 
 dependency_overrides:
-#  video_player_android: ^2.7.16
-  video_player_android: 2.8.2
-  #photo_manager: 3.2.3
-#  rust_lib_ndk:
-#    path: rust_builder
-#  http: ^1.0.0
-#  extended_image: ^8.0.1
-#  markdown: ^7.1.0
-  intl: ^0.19.0
-  flutter_colorpicker: 1.1.0
+#  flutter_colorpicker: 1.1.0
   # TODO: Recheck once flutter_inappwebview version >6.0.0 is released
   #flutter_inappwebview_android: ^1.1.3
 #    git:
@@ -180,12 +170,11 @@ dependency_overrides:
 #    path: ../ndk/packages/rust_verifier
 #  rust_lib_ndk:
 #    path: ../ndk/packages/rust_verifier/rust_builder
-
   ndk:
     git:
       url: https://github.com/relaystr/ndk.git
       path: packages/ndk
-      ref: a8c5c2ad5d208c0b7c66640830bbcd7cdefdad98
+      ref: 5e67f35410599cde8c6e074037f55741d16fe3ed
   ndk_objectbox:
     git:
       url: https://github.com/relaystr/ndk.git
@@ -333,6 +322,7 @@ flutter:
   # see https://flutter.dev/custom-fonts/#from-packages
 
 # new version icons
+#  enabled: true
 flutter_launcher_icons:
   image_path_ios: 'assets/imgs/logo/logo-new.png'
   image_path_android: 'assets/imgs/logo/logo-new.png'
@@ -360,7 +350,4 @@ flutter_native_splash:
   icon_background_color_dark: "#281237"
   color_dark: "#281237"
   image: assets/imgs/logo/logo-splash.png
-  fullscreen: true
-
-#flutter_intl:
-#  enabled: true
+  fullscreen: true 

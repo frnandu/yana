@@ -13,9 +13,9 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:yana/models/video_autoplay_preference.dart';
 import 'package:yana/nostr/relay_metadata.dart';
 import 'package:yana/provider/filter_provider.dart';
+import 'package:go_router/go_router.dart';
 import 'package:yana/router/index/account_manager_component.dart';
 import 'package:yana/utils/platform_util.dart';
-import 'package:yana/utils/router_util.dart';
 import 'package:yana/utils/when_stop_function.dart';
 
 import '../../i18n/i18n.dart';
@@ -34,6 +34,7 @@ import '../../utils/rates.dart';
 import '../../utils/router_path.dart';
 import '../../utils/string_util.dart';
 import '../../utils/theme_style.dart';
+import 'package:yana/config/app_features.dart';
 
 class SettingRouter extends StatefulWidget {
   Function indexReload;
@@ -317,7 +318,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
           if (value && feedRelaySet == null) {
             rebuildFeedRelaySet();
           } else {
-            followEventProvider.refreshPosts();
+            followEventProvider?.refreshPosts();
           }
         },
         initialValue: settingProvider.gossip == OpenStatus.OPEN,
@@ -364,8 +365,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
                 //   Relay? r = followsNostr!.getRelay(relay.url!);
                 //   return r != null;
                 // }).toList();
-                RouterUtil.router(
-                    context, RouterPath.USER_RELAYS, filteredRelays);
+                context.push(RouterPath.USER_RELAYS, extra: filteredRelays);
               }
             },
             leading: loadingGossipRelays
@@ -376,10 +376,11 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
                       animation: false,
                       lineHeight: 40.0,
                       backgroundColor: themeData.disabledColor,
-
                       percent: gossipTotal > 0 ? gossipCount / gossipTotal : 0,
-                      center: Text("$gossipStatus $gossipCount/$gossipTotal",
-                        style: TextStyle(color: Colors.black),),
+                      center: Text(
+                        "$gossipStatus $gossipCount/$gossipTotal",
+                        style: TextStyle(color: Colors.black),
+                      ),
                       linearStrokeCap: LinearStrokeCap.roundAll,
                       progressColor: themeData.primaryColor,
                     ))
@@ -411,7 +412,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
                 style: TextStyle(color: themeData.disabledColor),
               );
             }, selector: (context, _provider) {
-              return "${feedRelaySet!=null?feedRelaySet!.urls.length:0}";//_provider.feedRelaysNumStr();
+              return "${feedRelaySet != null ? feedRelaySet!.urls.length : 0}"; //_provider.feedRelaysNumStr();
             })),
       );
     }
@@ -446,6 +447,8 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
 
     List<AbstractSettingsTile> listsTiles = [];
 
+    List<AbstractSettingsTile> mediaServersTiles = [];
+
     listsTiles.add(SettingsTile.navigation(
         onPressed: (context) async {
           if (filterProvider.muteListCount > 0) {
@@ -462,10 +465,8 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
               Nip51List? list = await ndk.lists
                   .getSingleNip51List(Nip51List.kMute, loggedUserSigner!);
               finished = true;
-              RouterUtil.router(
-                  context,
-                  RouterPath.MUTE_LIST,
-                  list ??
+              context.push(RouterPath.MUTE_LIST,
+                  extra: list ??
                       Nip51List(
                           pubKey: loggedUserSigner!.getPublicKey(),
                           kind: Nip51List.kMute,
@@ -475,10 +476,8 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
               EasyLoading.dismiss();
             }
           } else {
-            RouterUtil.router(
-                context,
-                RouterPath.MUTE_LIST,
-                Nip51List(
+            context.push(RouterPath.MUTE_LIST,
+                extra: Nip51List(
                     pubKey: loggedUserSigner!.getPublicKey(),
                     kind: Nip51List.kMute,
                     elements: [],
@@ -516,10 +515,8 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
               Nip51List? list = await ndk.lists.getSingleNip51List(
                   Nip51List.kBlockedRelays, loggedUserSigner!);
               finished = true;
-              RouterUtil.router(
-                  context,
-                  RouterPath.RELAY_LIST,
-                  list ??
+              context.push(RouterPath.RELAY_LIST,
+                  extra: list ??
                       Nip51List(
                           pubKey: loggedUserSigner!.getPublicKey(),
                           kind: Nip51List.kBlockedRelays,
@@ -529,10 +526,8 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
               EasyLoading.dismiss();
             }
           } else {
-            RouterUtil.router(
-                context,
-                RouterPath.RELAY_LIST,
-                Nip51List(
+            context.push(RouterPath.RELAY_LIST,
+                extra: Nip51List(
                     pubKey: loggedUserSigner!.getPublicKey(),
                     kind: Nip51List.kBlockedRelays,
                     elements: [],
@@ -547,57 +542,69 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
           "${ndk.relays.globalState.blockedRelays.length} Blocked relays",
         )));
 
-    listsTiles.add(SettingsTile.navigation(
+    mediaServersTiles.add(SettingsTile.navigation(
         onPressed: (context) async {
-          if (searchRelays.isNotEmpty) {
-            bool finished = false;
-            Future.delayed(const Duration(milliseconds: 500), () {
-              if (!finished) {
-                EasyLoading.showInfo('Loading relay list...',
-                    maskType: EasyLoadingMaskType.black,
-                    dismissOnTap: true,
-                    duration: const Duration(seconds: 3));
-              }
-            });
-            try {
-              Nip51List? list = await ndk.lists.getSingleNip51List(
-                  Nip51List.kSearchRelays, loggedUserSigner!);
-              finished = true;
-              RouterUtil.router(
-                  context,
-                  RouterPath.RELAY_LIST,
-                  list ??
-                      Nip51List(
-                          pubKey: loggedUserSigner!.getPublicKey(),
-                          kind: Nip51List.kSearchRelays,
-                          elements: [],
-                          createdAt: Helpers.now));
-            } finally {
-              EasyLoading.dismiss();
-            }
-          } else {
-            RouterUtil.router(
-                context,
-                RouterPath.RELAY_LIST,
-                Nip51List(
-                    pubKey: loggedUserSigner!.getPublicKey(),
-                    kind: Nip51List.kSearchRelays,
-                    elements: [],
-                    createdAt: Helpers.now));
-          }
+            context.push(RouterPath.MEDIA_SERVERS);
         },
         leading: const Icon(
-          Icons.search,
+          Icons.perm_media_outlined,
         ),
         trailing: Icon(Icons.navigate_next),
-        title: Selector<RelayProvider, List<String>?>(
-            builder: (context, searchRelays, child) {
-          return Text(
-            "${searchRelays != null ? searchRelays.length : 0} Search relays",
-          );
-        }, selector: (context, provider) {
-          return relayProvider.getSearchRelays();
-        })));
+        title: Text(
+          "Media servers",
+        )));
+
+    if (AppFeatures.enableSearch) {
+      listsTiles.add(SettingsTile.navigation(
+          onPressed: (context) async {
+            if (searchRelays.isNotEmpty) {
+              bool finished = false;
+              Future.delayed(const Duration(milliseconds: 500), () {
+                if (!finished) {
+                  EasyLoading.showInfo('Loading relay list...',
+                      maskType: EasyLoadingMaskType.black,
+                      dismissOnTap: true,
+                      duration: const Duration(seconds: 3));
+                }
+              });
+              try {
+                Nip51List? list = await ndk.lists.getSingleNip51List(
+                    Nip51List.kSearchRelays, loggedUserSigner!);
+                finished = true;
+                context.push(RouterPath.RELAY_LIST,
+                    extra: list ??
+                        Nip51List(
+                            pubKey: loggedUserSigner!.getPublicKey(),
+                            kind: Nip51List.kSearchRelays,
+                            elements: [],
+                            createdAt: Helpers.now));
+              } finally {
+                EasyLoading.dismiss();
+              }
+            } else {
+              context.push(RouterPath.RELAY_LIST,
+                  extra: Nip51List(
+                      pubKey: loggedUserSigner!.getPublicKey(),
+                      kind: Nip51List.kSearchRelays,
+                      elements: [],
+                      createdAt: Helpers.now));
+            }
+          },
+          leading: const Icon(
+            Icons.search,
+          ),
+          trailing: Icon(Icons.navigate_next),
+          title: Selector<RelayProvider, List<String>?>(
+              builder: (context, searchRelays, child) {
+                return Text(
+                  "${searchRelays != null
+                      ? searchRelays.length
+                      : 0} Search relays",
+                );
+              }, selector: (context, provider) {
+            return relayProvider.getSearchRelays();
+          })));
+    }
 
     List<AbstractSettingsTile> securityTiles = [];
 
@@ -617,63 +624,52 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
 
     List<AbstractSettingsTile> notificationTiles = [];
 
-    // if (!PlatformUtil.isWeb() &&
-    //     (PlatformUtil.isIOS() || PlatformUtil.isAndroid())) {
-    //   notificationTiles.add(SettingsTile.switchTile(
-    //     activeSwitchColor: themeData.primaryColor,
-    //     onToggle: (value) {
-    //       settingProvider.backgroundService = value;
-    //       if (!value && backgroundService != null) {
-    //         backgroundService!
-    //             .isRunning()
-    //             .whenComplete(() => {backgroundService!.invoke('stopService')});
-    //       }
-    //     },
-    //     initialValue: settingProvider.backgroundService,
-    //     leading: const Icon(Icons.notification_important_outlined),
-    //     title: const Text("Use background service"),
-    //   ));
-    // }
-    notificationTiles.add(SettingsTile.switchTile(
-      activeSwitchColor: themeData.primaryColor,
-      onToggle: (value) {
-        settingProvider.notificationsReactions = value;
-        notificationsProvider.refresh();
-      },
-      initialValue: settingProvider.notificationsReactions,
-      leading: const Icon(Icons.favorite_border),
-      title: const Text("Include reactions"),
-    ));
-    notificationTiles.add(SettingsTile.switchTile(
-      activeSwitchColor: themeData.primaryColor,
-      onToggle: (value) {
-        settingProvider.notificationsReposts = value;
-        notificationsProvider.refresh();
-      },
-      initialValue: settingProvider.notificationsReposts,
-      leading: const Icon(Icons.repeat),
-      title: const Text("Include reposts"),
-    ));
-    notificationTiles.add(SettingsTile.switchTile(
-      activeSwitchColor: themeData.primaryColor,
-      onToggle: (value) {
-        settingProvider.notificationsZaps = value;
-        notificationsProvider.refresh();
-      },
-      initialValue: settingProvider.notificationsZaps,
-      leading: const Icon(Icons.bolt),
-      title: const Text("Include zaps"),
-    ));
+    if (AppFeatures.enableNotifications) {
+      notificationTiles.add(SettingsTile.switchTile(
+        activeSwitchColor: themeData.primaryColor,
+        onToggle: (value) {
+          settingProvider.notificationsReactions = value;
+          notificationsProvider?.refresh();
+        },
+        initialValue: settingProvider.notificationsReactions,
+        leading: const Icon(Icons.favorite_border),
+        title: const Text("Include reactions"),
+      ));
+      notificationTiles.add(SettingsTile.switchTile(
+        activeSwitchColor: themeData.primaryColor,
+        onToggle: (value) {
+          settingProvider.notificationsReposts = value;
+          notificationsProvider?.refresh();
+        },
+        initialValue: settingProvider.notificationsReposts,
+        leading: const Icon(Icons.repeat),
+        title: const Text("Include reposts"),
+      ));
+      notificationTiles.add(SettingsTile.switchTile(
+        activeSwitchColor: themeData.primaryColor,
+        onToggle: (value) {
+          settingProvider.notificationsZaps = value;
+          notificationsProvider?.refresh();
+        },
+        initialValue: settingProvider.notificationsZaps,
+        leading: const Icon(Icons.bolt),
+        title: const Text("Include zaps"),
+      ));
+    }
+
 
     List<AbstractSettingsTile> walletTiles = [];
-    walletTiles.add(SettingsTile.navigation(
-      onPressed: (context) async {
-        RouterUtil.router(context, RouterPath.SETTINGS_WALLET);
-      },
-      leading: const Icon(Icons.wallet),
-      trailing: const Icon(Icons.navigate_next),
-      title: const Text("Wallet Settings"),
-    ));
+
+    if (AppFeatures.isWalletOnly) {
+      walletTiles.add(SettingsTile.navigation(
+        onPressed: (context) async {
+          context.push(RouterPath.SETTINGS_WALLET);
+        },
+        leading: const Icon(Icons.wallet),
+        trailing: const Icon(Icons.navigate_next),
+        title: const Text("Wallet Settings"),
+      ));
+    }
 
     List<AbstractSettingsTile> accountTiles = [];
 
@@ -712,12 +708,15 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
     sections
         .add(SettingsSection(title: Text('Interface'), tiles: interfaceTiles));
     sections.add(SettingsSection(title: Text('Network'), tiles: networkTiles));
+    sections.add(SettingsSection(title: Text('Files & media'), tiles: mediaServersTiles));
     sections.add(SettingsSection(title: Text('Lists'), tiles: listsTiles));
     if (notificationTiles.isNotEmpty) {
       sections.add(SettingsSection(
           title: Text('Notifications'), tiles: notificationTiles));
     }
-    sections.add(SettingsSection(title: Text('Wallet'), tiles: walletTiles));
+    if (AppFeatures.isWalletOnly) {
+      sections.add(SettingsSection(title: Text('Wallet'), tiles: walletTiles));
+    }
     if (!PlatformUtil.isWeb() &&
         (PlatformUtil.isIOS() || PlatformUtil.isAndroid())) {
       sections
@@ -734,7 +733,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
       appBar: AppBar(
         leading: GestureDetector(
           onTap: () {
-            RouterUtil.back(context);
+            context.pop();
           },
           child: Icon(
             Icons.arrow_back_ios,

@@ -1,4 +1,5 @@
 import 'package:flutter_list_view/flutter_list_view.dart';
+import 'package:go_router/go_router.dart';
 import 'package:ndk/domain_layer/entities/nip_01_event.dart';
 import 'package:ndk/shared/nips/nip25/reactions.dart';
 import 'package:flutter/material.dart';
@@ -15,7 +16,6 @@ import '../../ui/event/event_load_list_component.dart';
 import '../../ui/event/reaction_event_list_component.dart';
 import '../../ui/event/zap_event_list_component.dart';
 import '../../utils/platform_util.dart';
-import '../../utils/router_util.dart';
 import '../thread/thread_detail_router.dart';
 
 class EventDetailRouter extends StatefulWidget {
@@ -58,7 +58,7 @@ class _EventDetailRouter extends State<EventDetailRouter> {
   Widget build(BuildContext context) {
     var i18n = I18n.of(context);
 
-    var arg = RouterUtil.routerArgs(context);
+    var arg = GoRouterState.of(context).extra;
     if (arg != null) {
       if (arg is Nip01Event) {
         event = arg;
@@ -69,7 +69,7 @@ class _EventDetailRouter extends State<EventDetailRouter> {
       }
     }
     if (event == null && eventId == null) {
-      RouterUtil.back(context);
+      context.pop();
       return Container();
     }
     var themeData = Theme.of(context);
@@ -123,33 +123,36 @@ class _EventDetailRouter extends State<EventDetailRouter> {
 
         Widget main = FlutterListView(
             controller: _controller,
-            delegate:
-            FlutterListViewDelegate((BuildContext context, int index) {
-            if (index == 0) {
-              return WidgetSize(
-                child: mainEventWidget!,
-                onChange: (size) {
-                  rootEventHeight = size.height;
-                },
-              );
-            }
+            delegate: FlutterListViewDelegate(
+              (BuildContext context, int index) {
+                if (index == 0) {
+                  return WidgetSize(
+                    child: mainEventWidget!,
+                    onChange: (size) {
+                      rootEventHeight = size.height;
+                    },
+                  );
+                }
 
-            var event = allEvent[index - 1];
-            if (event.kind == kind.EventKind.ZAP_RECEIPT) {
-              return ZapEventListComponent(event: event);
-            } else if (event.kind == Nip01Event.kTextNodeKind) {
-              return ReactionEventListComponent(event: event, text: i18n.replied);
-            } else if (event.kind == kind.EventKind.REPOST ||
-                event.kind == kind.EventKind.GENERIC_REPOST) {
-              return ReactionEventListComponent(event: event, text: i18n.boosted);
-            } else if (event.kind == Reaction.kKind) {
-              return ReactionEventListComponent(event: event, text: i18n.liked);
-            }
+                var event = allEvent[index - 1];
+                if (event.kind == kind.EventKind.ZAP_RECEIPT) {
+                  return ZapEventListComponent(event: event);
+                } else if (event.kind == Nip01Event.kTextNodeKind) {
+                  return ReactionEventListComponent(
+                      event: event, text: i18n.replied);
+                } else if (event.kind == kind.EventKind.REPOST ||
+                    event.kind == kind.EventKind.GENERIC_REPOST) {
+                  return ReactionEventListComponent(
+                      event: event, text: i18n.boosted);
+                } else if (event.kind == Reaction.kKind) {
+                  return ReactionEventListComponent(
+                      event: event, text: i18n.liked);
+                }
 
-            return Container();
-          },
-          childCount: allEvent.length + 1,
-        ));
+                return Container();
+              },
+              childCount: allEvent.length + 1,
+            ));
 
         if (PlatformUtil.isTableMode()) {
           main = GestureDetector(
@@ -164,7 +167,9 @@ class _EventDetailRouter extends State<EventDetailRouter> {
         return main;
       },
       selector: (context, _provider) {
-        return event!=null? _provider.get(event!.id, pubKey: event!.pubKey) : null;
+        return event != null
+            ? _provider.get(event!.id, pubKey: event!.pubKey)
+            : null;
       },
       shouldRebuild: (previous, next) {
         if ((previous == null && next != null) ||
@@ -185,7 +190,7 @@ class _EventDetailRouter extends State<EventDetailRouter> {
       appBar: AppBar(
         leading: GestureDetector(
           onTap: () {
-            RouterUtil.back(context);
+            context.pop();
           },
           child: Icon(
             Icons.arrow_back_ios,

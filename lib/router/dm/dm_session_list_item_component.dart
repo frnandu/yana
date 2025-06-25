@@ -1,3 +1,4 @@
+import 'package:go_router/go_router.dart';
 import 'package:ndk/domain_layer/entities/metadata.dart';
 import 'package:flutter/material.dart';
 import 'package:get_time_ago/get_time_ago.dart';
@@ -9,7 +10,6 @@ import 'package:yana/ui/point_component.dart';
 import 'package:yana/ui/user_pic_component.dart';
 import 'package:yana/utils/base.dart';
 import 'package:yana/utils/router_path.dart';
-import 'package:yana/utils/router_util.dart';
 
 import '../../main.dart';
 import '../../utils/string_util.dart';
@@ -36,7 +36,9 @@ class _DMSessionListItemComponent extends State<DMSessionListItemComponent> {
 
   Future<void> decryptContent() async {
     if (content == null) {
-      content = await provider.decrypt(widget.detail.dmSession.newestEvent!.content, widget.detail.dmSession.pubkey);
+      content = await provider.decrypt(
+          widget.detail.dmSession.newestEvent!.content,
+          widget.detail.dmSession.pubkey);
       if (content != null) {
         setState(() {
           content = content!.replaceAll("\r", " ");
@@ -119,7 +121,8 @@ class _DMSessionListItemComponent extends State<DMSessionListItemComponent> {
                           child: SizedBox(
                               width: 200,
                               child: FutureBuilder<Metadata?>(
-                                  future: metadataProvider.getMetadata(widget.detail.dmSession.pubkey),
+                                  future: metadataProvider.getMetadata(
+                                      widget.detail.dmSession.pubkey),
                                   builder: (context, snapshot) {
                                     return NameComponent(
                                       pubkey: dmSession.pubkey,
@@ -133,7 +136,10 @@ class _DMSessionListItemComponent extends State<DMSessionListItemComponent> {
                         padding: const EdgeInsets.only(left: Base.BASE_PADDING),
                         alignment: Alignment.centerRight,
                         child: Text(
-                          GetTimeAgo.parse(DateTime.fromMillisecondsSinceEpoch(lastEvent.createdAt * 1000), pattern: "dd MMM HH:mm"),
+                          GetTimeAgo.parse(
+                              DateTime.fromMillisecondsSinceEpoch(
+                                  lastEvent.createdAt * 1000),
+                              pattern: "dd MMM HH:mm"),
                           style: TextStyle(
                             fontSize: smallTextSize,
                             color: themeData.disabledColor,
@@ -157,7 +163,7 @@ class _DMSessionListItemComponent extends State<DMSessionListItemComponent> {
 
     return GestureDetector(
       onTap: () {
-        RouterUtil.router(context, RouterPath.DM_DETAIL, widget.detail);
+        context.push(RouterPath.DM_DETAIL, extra: widget.detail);
       },
       child: main,
     );

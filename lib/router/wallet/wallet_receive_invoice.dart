@@ -6,6 +6,7 @@ import 'package:confetti/confetti.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_timer_countdown/flutter_timer_countdown.dart';
+import 'package:go_router/go_router.dart';
 import 'package:lottie/lottie.dart';
 import 'package:ndk/domain_layer/entities/metadata.dart';
 import 'package:ndk/domain_layer/usecases/nwc/nwc_notification.dart';
@@ -16,13 +17,14 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:yana/main.dart';
 import 'package:yana/provider/nwc_provider.dart';
 import 'package:yana/utils/base.dart';
+import 'package:yana/utils/router_path.dart';
 import 'package:yana/utils/string_util.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import '../../i18n/i18n.dart';
+import '../../config/app_features.dart';
 
 import '../../ui/button.dart';
 import '../../utils/platform_util.dart';
-import '../../utils/router_util.dart';
 import 'bitcoin_amount.dart';
 
 class WalletReceiveInvoiceRouter extends StatefulWidget {
@@ -49,7 +51,7 @@ class _WalletReceiveRouter extends State<WalletReceiveInvoiceRouter> {
 
   @override
   void initState() {
-
+    super.initState();
     amountInputcontroller.addListener(() {
       setState(() {
         if (fiatCurrencyRate != null) {
@@ -57,23 +59,49 @@ class _WalletReceiveRouter extends State<WalletReceiveInvoiceRouter> {
         }
       });
     });
-    confettiController = ConfettiController(duration: const Duration(seconds: 2));
+    confettiController =
+        ConfettiController(duration: const Duration(seconds: 2));
+    if (nwcProvider?.isConnected == true) {
+      nwcProvider?.connection?.notificationStream.stream.listen((notification) {
+        print(notification);
+      });
+      nwcProvider?.connection?.paymentsReceivedStream.listen((notification) {
+        if (payingInvoice != null &&
+            notification.preimage != '' &&
+            notification.invoice == payingInvoice) {
+          setState(() {
+            paid = notification;
+          });
+          confettiController.play();
+        }
+      });
+    }
   }
 
   void updateOtherCurrency() {
     if (satsInput) {
-      sats = StringUtil.isNotBlank(amountInputcontroller.text) ? int.parse(amountInputcontroller.text) : 0;
-      double? btc = StringUtil.isNotBlank(amountInputcontroller.text) ? double.parse(amountInputcontroller.text) / NwcProvider.BTC_IN_SATS : 0;
+      sats = StringUtil.isNotBlank(amountInputcontroller.text)
+          ? int.parse(amountInputcontroller.text)
+          : 0;
+      double? btc = StringUtil.isNotBlank(amountInputcontroller.text)
+          ? double.parse(amountInputcontroller.text) / NwcProvider.BTC_IN_SATS
+          : 0;
       var fiatFactor = fiatCurrencyRate!["value"];
       fiat = btc * fiatFactor;
     } else {
       String a1 = fiat.toStringAsFixed(fiat < 10 ? 2 : 0);
       String a2 = amountInputcontroller.text;
       if (a1 != a2) {
-        double a3 = StringUtil.isNotBlank(amountInputcontroller.text) ? double.parse(amountInputcontroller.text) : 0;
-        sats = a3 != 0.0 ? (a3 / fiatCurrencyRate!["value"] * NwcProvider.BTC_IN_SATS).round() : 0;
+        double a3 = StringUtil.isNotBlank(amountInputcontroller.text)
+            ? double.parse(amountInputcontroller.text)
+            : 0;
+        sats = a3 != 0.0
+            ? (a3 / fiatCurrencyRate!["value"] * NwcProvider.BTC_IN_SATS)
+                .round()
+            : 0;
       } else {
-        sats = (fiat / fiatCurrencyRate!["value"] * NwcProvider.BTC_IN_SATS).round();
+        sats = (fiat / fiatCurrencyRate!["value"] * NwcProvider.BTC_IN_SATS)
+            .round();
         print(fiat);
       }
     }
@@ -100,7 +128,7 @@ class _WalletReceiveRouter extends State<WalletReceiveInvoiceRouter> {
       backgroundColor: themeData.appBarTheme.foregroundColor,
       leading: GestureDetector(
           onTap: () {
-            RouterUtil.back(context);
+            context.go(RouterPath.WALLET);
           },
           child: Container(
             margin: const EdgeInsets.only(left: 10),
@@ -130,9 +158,11 @@ class _WalletReceiveRouter extends State<WalletReceiveInvoiceRouter> {
                     decoration: PrettyQrDecoration(
                       shape: const PrettyQrSmoothSymbol(roundFactor: 1),
                       image: PrettyQrDecorationImage(
-                        image: metadata != null && StringUtil.isNotBlank(metadata!.picture)
+                        image: metadata != null &&
+                                StringUtil.isNotBlank(metadata!.picture)
                             ? CachedNetworkImageProvider(metadata!.picture!)
-                            : const AssetImage('assets/imgs/logo/logo-new.png'),
+                            : const AssetImage(
+                                    'assets/imgs/logo/logo-new.png'),
                       ),
                     )))
             // LightningQrcodeDialog(invoice: payingInvoice!)
@@ -141,7 +171,10 @@ class _WalletReceiveRouter extends State<WalletReceiveInvoiceRouter> {
         if (PlatformUtil.isPC() || PlatformUtil.isWeb() || true) {
           link = 'lightning:${payingInvoice!}';
         }
-        list.add(BitcoinAmount(fiatAmount: fiat, fiatUnit: fiatCurrencyRate?["unit"], balance: sats));
+        list.add(BitcoinAmount(
+            fiatAmount: fiat,
+            fiatUnit: fiatCurrencyRate?["unit"],
+            balance: sats));
         if (StringUtil.isNotBlank(descriptionInputcontroller.text)) {
           list.add(Container(
               margin: const EdgeInsets.only(bottom: Base.BASE_PADDING * 2),
@@ -149,10 +182,15 @@ class _WalletReceiveRouter extends State<WalletReceiveInvoiceRouter> {
                   mainAxisSize: MainAxisSize.min,
                   mainAxisAlignment: MainAxisAlignment.start,
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [Text(descriptionInputcontroller.text, style: const TextStyle(fontSize: 20, fontFamily: 'Geist.Mono'))])));
+                  children: [
+                    Text(descriptionInputcontroller.text,
+                        style: const TextStyle(
+                            fontSize: 20, fontFamily: 'Geist.Mono'))
+                  ])));
         }
         list.add(const SizedBox(height: 10));
-        const TextStyle timeTextStyle = TextStyle(color: Color(0xFF7A7D81), fontSize: 18, fontFamily: 'Geist.Mono');
+        const TextStyle timeTextStyle = TextStyle(
+            color: Color(0xFF7A7D81), fontSize: 18, fontFamily: 'Geist.Mono');
         list.add(Container(
             margin: const EdgeInsets.only(bottom: Base.BASE_PADDING),
             child: Row(
@@ -161,14 +199,19 @@ class _WalletReceiveRouter extends State<WalletReceiveInvoiceRouter> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(width: 10),
-                SizedBox(width: 20, height: 20, child: Lottie.asset("assets/animations/spinner.json")
+                SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: Lottie.asset("assets/animations/spinner.json")
                     // CircularProgressIndicator(
                     //     color: themeData.primaryColor,
                     //     strokeWidth: 2.0,
                     //   )
                     ),
                 const SizedBox(width: 10),
-                const Expanded(child: Text("Waiting for settlement", style: timeTextStyle)),
+                const Expanded(
+                    child:
+                        Text("Waiting for settlement", style: timeTextStyle)),
                 const SizedBox(width: 10),
                 TimerCountdown(
                   enableDescriptions: false,
@@ -180,7 +223,7 @@ class _WalletReceiveRouter extends State<WalletReceiveInvoiceRouter> {
                     Duration(seconds: expiration!),
                   ),
                   onEnd: () {
-                    RouterUtil.back(context);
+                    context.pop();
                   },
                 )
               ],
@@ -203,7 +246,8 @@ class _WalletReceiveRouter extends State<WalletReceiveInvoiceRouter> {
             children: [
               Expanded(
                   child: Button(
-                      before: Icon(Icons.ios_share, color: themeData.textTheme.labelSmall!.color),
+                      before: Icon(Icons.ios_share,
+                          color: themeData.textTheme.labelSmall!.color),
                       fill: false,
                       border: true,
                       text: "Share",
@@ -241,13 +285,21 @@ class _WalletReceiveRouter extends State<WalletReceiveInvoiceRouter> {
               style: const TextStyle(fontSize: 80, fontFamily: 'Geist.Mono'),
               // textDirection: TextDirection.ltr,
               controller: amountInputcontroller,
-              keyboardType: TextInputType.numberWithOptions(decimal: !satsInput),
-              inputFormatters: <TextInputFormatter>[satsInput ? FilteringTextInputFormatter.digitsOnly : FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))],
+              keyboardType:
+                  TextInputType.numberWithOptions(decimal: !satsInput),
+              inputFormatters: <TextInputFormatter>[
+                satsInput
+                    ? FilteringTextInputFormatter.digitsOnly
+                    : FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))
+              ],
               decoration: InputDecoration(
                 border: InputBorder.none,
                 hintText: "  0",
                 hintTextDirection: TextDirection.ltr,
-                hintStyle: TextStyle(fontSize: 80, color: themeData.disabledColor, fontFamily: 'Geist.Mono'),
+                hintStyle: TextStyle(
+                    fontSize: 80,
+                    color: themeData.disabledColor,
+                    fontFamily: 'Geist.Mono'),
                 contentPadding: const EdgeInsets.only(right: 20),
               ),
             )),
@@ -263,31 +315,45 @@ class _WalletReceiveRouter extends State<WalletReceiveInvoiceRouter> {
                 if (satsInput) {
                   amountInputcontroller.text = "$sats";
                 } else {
-                  amountInputcontroller.text = fiat.toStringAsFixed(fiat < 10 ? 2 : 0);
+                  amountInputcontroller.text =
+                      fiat.toStringAsFixed(fiat < 10 ? 2 : 0);
                 }
               });
             },
-            child: Row(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.center, children: [
-              Text(
-                  textAlign: TextAlign.center,
-                  satsInput ? "sats" : fiatCurrencyRate?["unit"],
-                  style: const TextStyle(color: Color(0xFF7A7D81), fontSize: 32, fontFamily: 'Geist.Mono')),
-              Image.asset('assets/imgs/arrows.png'),
-            ])));
+            child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text(
+                      textAlign: TextAlign.center,
+                      satsInput ? "sats" : fiatCurrencyRate?["unit"],
+                      style: const TextStyle(
+                          color: Color(0xFF7A7D81),
+                          fontSize: 32,
+                          fontFamily: 'Geist.Mono')),
+                  Image.asset('assets/imgs/arrows.png'),
+                ])));
         list.add(const SizedBox(
           height: 10,
         ));
         print("sats:$sats fiat: $fiat");
-        String fiatString = (fiat == 0.0 ? "0.00" : fiat.toStringAsFixed(fiat < 10 ? 2 : 0));
+        String fiatString =
+            (fiat == 0.0 ? "0.00" : fiat.toStringAsFixed(fiat < 10 ? 2 : 0));
         print("fiatString: $fiatString");
-        list.add(Row(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.center, children: [
-          Expanded(
-              child: Text(
-                  textAlign: TextAlign.center,
-                  "${!satsInput ? sats : fiatString} "
-                  "${satsInput ? "${fiatCurrencyRate?['unit']}" : 'sats'}",
-                  style: const TextStyle(color: Color(0xFF7A7D81), fontSize: 30, fontFamily: 'Geist.Mono')))
-        ]));
+        list.add(Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Expanded(
+                  child: Text(
+                      textAlign: TextAlign.center,
+                      "${!satsInput ? sats : fiatString} "
+                      "${satsInput ? "${fiatCurrencyRate?['unit']}" : 'sats'}",
+                      style: const TextStyle(
+                          color: Color(0xFF7A7D81),
+                          fontSize: 30,
+                          fontFamily: 'Geist.Mono')))
+            ]));
         list.add(const SizedBox(
           height: 20,
         ));
@@ -297,7 +363,9 @@ class _WalletReceiveRouter extends State<WalletReceiveInvoiceRouter> {
             Expanded(
                 child: TextField(
               controller: descriptionInputcontroller,
-              decoration: InputDecoration(hintText: "Add description (optional)", hintStyle: TextStyle(color: themeData.disabledColor)),
+              decoration: InputDecoration(
+                  hintText: "Add description (optional)",
+                  hintStyle: TextStyle(color: themeData.disabledColor)),
             )),
           ],
         ));
@@ -312,22 +380,33 @@ class _WalletReceiveRouter extends State<WalletReceiveInvoiceRouter> {
                   border: true,
                   onTap: () async {
                     expiration = 3600;
-                    sats = satsInput ? int.parse(amountInputcontroller.text) : fiat.round();
+                    sats = satsInput
+                        ? int.parse(amountInputcontroller.text)
+                        : fiat.round();
 
-                    MakeInvoiceResponse? response = await _nwcProvider.makeInvoice(sats, descriptionInputcontroller.text, "", expiration!);
+                    MakeInvoiceResponse? response =
+                        await _nwcProvider.makeInvoice(sats,
+                            descriptionInputcontroller.text, "", expiration!);
                     if (response != null) {
-                      nwcProvider.connection!.notificationStream.stream.listen((notification) {
-                        print(notification);
-                      });
+                      if (nwcProvider?.isConnected == true &&
+                          nwcProvider?.connection != null) {
+                        nwcProvider?.connection?.notificationStream.stream
+                            .listen((notification) {
+                          print(notification);
+                        });
 
-                      nwcProvider.connection!.paymentsReceivedStream.listen((notification) {
-                        if (payingInvoice != null && notification.preimage != '' && notification.invoice == payingInvoice) {
-                          setState(() {
-                            paid = notification;
-                          });
-                          confettiController.play();
-                        }
-                      });
+                        nwcProvider?.connection?.paymentsReceivedStream
+                            .listen((notification) {
+                          if (payingInvoice != null &&
+                              notification.preimage != '' &&
+                              notification.invoice == payingInvoice) {
+                            setState(() {
+                              paid = notification;
+                            });
+                            confettiController.play();
+                          }
+                        });
+                      }
                       setState(() {
                         payingInvoice = response.invoice;
                       });
@@ -336,8 +415,10 @@ class _WalletReceiveRouter extends State<WalletReceiveInvoiceRouter> {
         ]));
       }
     } else {
-      double? fiatAmount = fiatCurrencyRate != null ? ((paid!.amount / 100000000000) * fiatCurrencyRate!["value"]) : null;
-      int feesPaid = (paid!.feesPaid??0 / 1000).round();
+      double? fiatAmount = fiatCurrencyRate != null
+          ? ((paid!.amount / 100000000000) * fiatCurrencyRate!["value"])
+          : null;
+      int feesPaid = (paid!.feesPaid ?? 0 / 1000).round();
       int amount = (paid!.amount / 1000).round();
 
       list.add(
@@ -367,12 +448,16 @@ class _WalletReceiveRouter extends State<WalletReceiveInvoiceRouter> {
                 ),
               ),
               Text(
-                fiatAmount! < 0.01 ? "< ${fiatCurrencyRate?["unit"]}0.01" : "~${fiatCurrencyRate?["unit"]}${fiatAmount.toStringAsFixed(2)}",
+                fiatAmount! < 0.01
+                    ? "< ${fiatCurrencyRate?["unit"]}0.01"
+                    : "~${fiatCurrencyRate?["unit"]}${fiatAmount.toStringAsFixed(2)}",
                 style: const TextStyle(
                   fontSize: 22.0,
                 ),
               ),
-              StringUtil.isNotBlank(paid!.description) ? const SizedBox(height: 10.0) : Container(),
+              StringUtil.isNotBlank(paid!.description)
+                  ? const SizedBox(height: 10.0)
+                  : Container(),
               StringUtil.isNotBlank(paid!.description)
                   ? Text(
                       '${paid!.description}',
@@ -391,7 +476,7 @@ class _WalletReceiveRouter extends State<WalletReceiveInvoiceRouter> {
       list.add(Button(
         text: "Close",
         onTap: () {
-          RouterUtil.back(context);
+          context.pop();
         },
       ));
     }
@@ -438,11 +523,13 @@ class _WalletReceiveRouter extends State<WalletReceiveInvoiceRouter> {
   void _doCopy(String text) {
     print("[WalletReceiveInvoiceRouter] _doCopy called with invoice: $text");
     Clipboard.setData(ClipboardData(text: text)).then((_) {
-      print("[WalletReceiveInvoiceRouter] Clipboard.setData successful for invoice: $text");
+      print(
+          "[WalletReceiveInvoiceRouter] Clipboard.setData successful for invoice: $text");
       EasyLoading.showSuccess(I18n.of(context).Copy_success,
           dismissOnTap: true, duration: const Duration(seconds: 2));
     }).catchError((error) {
-      print("[WalletReceiveInvoiceRouter] Clipboard.setData failed for invoice '$text'. Error: $error");
+      print(
+          "[WalletReceiveInvoiceRouter] Clipboard.setData failed for invoice '$text'. Error: $error");
       EasyLoading.showError("Failed to copy invoice: $error");
     });
   }

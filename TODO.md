@@ -112,10 +112,13 @@
 - ~~upload to blossom servers~~
 - ~~video player fullscreen~~
 
-- some videos don't work!!!!! 
+== IMPORTANT bugfixes
 - editing metadata profile on new account doesn't work
 
 
+=== v0.17
+- Introduce release flavors, starting with a YANA Wallet APK focused solely on wallet functionality.\
+- start in home screen, not in login screen
 
 - empty notifications placeholder for new account
 - when switching to an account that has no followers it will not reload the feed
@@ -127,13 +130,12 @@
 - fix background service?!?! | hide background service from settings
 - build linux packages (see n.)
 
-===== v0.17
+===== ?
 - fix loading of metadatas, sometimes doesn't update quickly?!?
 - Apply a new design for the feed, onboarding, and modules prepared by Saunter.\
 - Separate settings and wallets for each account.\
 - User selection for image services when uploading files.\
 - Display the note being replied to.\
-- Introduce release flavors, starting with a YANA Wallet APK focused solely on wallet functionality.\
 - Implement NIP-13 Proof of Work for mobile devices.\
 
 

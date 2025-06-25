@@ -85,7 +85,7 @@ class MetadataProvider extends ChangeNotifier with LaterFunction {
   }
 
   Future<void> updateLud16IfEmpty(String? lud16) async {
-    if (loggedUserSigner!=null) {
+    if (loggedUserSigner!=null && StringUtil.isNotBlank(lud16)) {
       Metadata? metadata = await metadataProvider.getMetadata(loggedUserSigner!.getPublicKey());
       if (metadata!=null) {
         if (StringUtil.isNotBlank(lud16) && StringUtil.isBlank(metadata.lud16)) {

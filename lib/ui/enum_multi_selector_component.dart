@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:yana/ui/enum_selector_component.dart';
 import 'package:yana/main.dart';
-import 'package:yana/utils/router_util.dart';
 
 import '../utils/base_consts.dart';
 
@@ -10,7 +10,8 @@ class EnumMultiSelectorComponent extends StatefulWidget {
 
   final List<EnumObj> values;
 
-  const EnumMultiSelectorComponent({super.key,
+  const EnumMultiSelectorComponent({
+    super.key,
     required this.list,
     required this.values,
   });
@@ -59,7 +60,7 @@ class _EnumMultiSelectorComponent extends State<EnumMultiSelectorComponent> {
           bottom: mediaDataCache.size.height / 20,
           child: GestureDetector(
             onTap: () {
-              return RouterUtil.back(context, values);
+              context.pop(values);
             },
             child: Container(
               width: BTN_WIDTH,

@@ -5,7 +5,7 @@ import 'package:ndk/domain_layer/usecases/nwc/responses/pay_invoice_response.dar
 import '../i18n/i18n.dart';
 import '../nostr/nip57/zap_action.dart';
 import '../utils/base.dart';
-import '../utils/router_util.dart';
+import 'package:go_router/go_router.dart';
 
 class ZapGenDialog extends StatefulWidget {
   String pubkey;
@@ -24,7 +24,8 @@ class ZapGenDialog extends StatefulWidget {
       required this.onZapped});
 
   static Future<void> show(BuildContext context, String pubkey,
-      {String? eventId, required Function(PayInvoiceResponse?) onZapped}) async {
+      {String? eventId,
+      required Function(PayInvoiceResponse?) onZapped}) async {
     return await showDialog<void>(
       context: context,
       builder: (_context) {
@@ -151,7 +152,7 @@ class _ZapGenDialog extends State<ZapGenDialog> {
         child: GestureDetector(
           behavior: HitTestBehavior.opaque,
           onTap: () {
-            RouterUtil.back(context);
+            context.pop();
           },
           child: Container(
             width: double.infinity,
@@ -180,7 +181,7 @@ class _ZapGenDialog extends State<ZapGenDialog> {
     }
 
     var comment = commentController.text;
-    RouterUtil.back(context);
+    context.pop();
 
     await ZapAction.handleZap(widget.parentContext, num, widget.pubkey,
         eventId: widget.eventId, comment: comment, onZapped: widget.onZapped);

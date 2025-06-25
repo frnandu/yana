@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_list_view/flutter_list_view.dart';
 import 'package:provider/provider.dart';
 import 'package:visibility_detector/visibility_detector.dart';
+import 'package:yana/config/app_features.dart';
 import 'package:yana/main.dart';
 import 'package:yana/models/event_mem_box.dart';
 import 'package:yana/provider/follow_event_provider.dart';
@@ -39,33 +40,33 @@ class _FollowPostsRouter extends KeepAliveCustState<FollowPostsRouter>
     super.initState();
     bindLoadMoreScroll(_controller);
     _controller.addListener(() {
-      followEventProvider.setPostsTimestampToNewestAndSave();
+      followEventProvider?.setPostsTimestampToNewestAndSave();
     });
   }
 
   @override
   void deactivate() {
     super.deactivate();
-    followEventProvider.setPostsTimestampToNewestAndSave();
+    followEventProvider?.setPostsTimestampToNewestAndSave();
   }
 
   @override
   void dispose() {
     super.dispose();
-    followEventProvider.setPostsTimestampToNewestAndSave();
+    followEventProvider?.setPostsTimestampToNewestAndSave();
   }
 
   @override
   Widget doBuild(BuildContext context) {
     var _settingProvider = Provider.of<SettingProvider>(context);
-    var _followEventProvider = Provider.of<FollowEventProvider>(context);
+    // var _followEventProvider = Provider.of<FollowEventProvider>(context);
 
-    var eventBox = _followEventProvider.postsBox;
+    var eventBox = followEventProvider!.postsBox;
     var events = eventBox.all();
     if (events.isEmpty) {
       return EventListPlaceholder(
         onRefresh: () {
-          followEventProvider.refreshPosts();
+          followEventProvider?.refreshPosts();
         },
       );
     }
@@ -76,7 +77,7 @@ class _FollowPostsRouter extends KeepAliveCustState<FollowPostsRouter>
         key: const Key('feed-posts'),
         onVisibilityChanged: (visibilityInfo) {
           if (visibilityInfo.visibleFraction == 0.0) {
-            followEventProvider.setPostsTimestampToNewestAndSave();
+            followEventProvider?.setPostsTimestampToNewestAndSave();
           }
         },
         child: FlutterListView(
@@ -118,7 +119,7 @@ class _FollowPostsRouter extends KeepAliveCustState<FollowPostsRouter>
 
     Widget ri = RefreshIndicator(
       onRefresh: () async {
-        followEventProvider.refreshPosts();
+        followEventProvider?.refreshPosts();
         // followEventProvider.refreshReplies();
       },
       child: main,
@@ -135,31 +136,33 @@ class _FollowPostsRouter extends KeepAliveCustState<FollowPostsRouter>
     }
 
     List<Widget> stackList = [ri];
-    stackList.add(Positioned(
-      top: Base.BASE_PADDING,
-      child: Selector<FollowNewEventProvider, EventMemBox>(
-        builder: (context, eventMemBox, child) {
-          if (eventMemBox.length() <= 0) {
-            return Container();
-          }
+    if (AppFeatures.enableSocial) {
+      stackList.add(Positioned(
+        top: Base.BASE_PADDING,
+        child: Selector<FollowNewEventProvider, EventMemBox>(
+          builder: (context, eventMemBox, child) {
+            if (eventMemBox.length() <= 0) {
+              return Container();
+            }
 
-          return NewNotesUpdatedComponent(
-            text: "",//I18n.of(context).posted,
-            newEvents: eventMemBox.all(),
-            onTap: () {
-              setState(() {
-                followEventProvider.mergeNewPostEvents();
-                _controller.animateTo(0,
-                    curve: Curves.ease, duration: const Duration(seconds: 1));
-              });
-            },
-          );
-        },
-        selector: (context, _provider) {
-          return _provider.eventPostsMemBox;
-        },
-      ),
-    ));
+            return NewNotesUpdatedComponent(
+              text: "", //I18n.of(context).posted,
+              newEvents: eventMemBox.all(),
+              onTap: () {
+                setState(() {
+                  followEventProvider?.mergeNewPostEvents();
+                  _controller.animateTo(0,
+                      curve: Curves.ease, duration: const Duration(seconds: 1));
+                });
+              },
+            );
+          },
+          selector: (context, _provider) {
+            return _provider.eventPostsMemBox;
+          },
+        ),
+      ));
+    }
     return Container(
         // clipBehavior: Clip.hardEdge,
         // decoration: BoxDecoration(
@@ -176,13 +179,13 @@ class _FollowPostsRouter extends KeepAliveCustState<FollowPostsRouter>
   void doQuery() {
     preQuery();
     if (until != null) {
-      followEventProvider.queryOlder(until: until!);
+      followEventProvider?.queryOlder(until: until!);
     }
   }
 
   @override
   EventMemBox getEventBox() {
-    return followEventProvider.postsBox;
+    return followEventProvider?.postsBox ?? EventMemBox();
   }
 
   @override

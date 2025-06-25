@@ -27,9 +27,10 @@ import '../../ui/event_delete_callback.dart';
 import '../../utils/base_consts.dart';
 import '../../utils/load_more_event.dart';
 import '../../utils/peddingevents_later_function.dart';
+import 'package:go_router/go_router.dart';
+
 import '../../utils/platform_util.dart';
 import '../../utils/router_path.dart';
-import '../../utils/router_util.dart';
 import '../../utils/string_util.dart';
 
 class SearchRouter extends StatefulWidget {
@@ -107,8 +108,7 @@ class _SearchRouter extends CustState<SearchRouter>
     // print("contacts: ${metadatasFromCache.length} profile: ${metadatasFromSearch.length} events: ${events.length}");
     Widget body = FlutterListView(
         controller: scrollController,
-        delegate:
-        FlutterListViewDelegate((BuildContext context, int index) {
+        delegate: FlutterListViewDelegate((BuildContext context, int index) {
           Metadata? metadata;
 
           if (index < metadatasFromCache.length) {
@@ -142,16 +142,16 @@ class _SearchRouter extends CustState<SearchRouter>
             return SearchMentionUserItemComponent(
               metadata: metadata,
               onTap: (metadata) {
-                RouterUtil.router(context, RouterPath.USER, metadata!.pubKey);
+                context.push(RouterPath.USER, extra: metadata!.pubKey);
               },
               width: 400,
             );
           }
           return Container();
         },
-        childCount: metadatasFromCache.length +
-            metadatasFromSearch.length +
-            events.length));
+            childCount: metadatasFromCache.length +
+                metadatasFromSearch.length +
+                events.length));
 
     if (StringUtil.isBlank(controller.text)) {
       // bool anyNip50 = myInboxRelaySet!=null &&ndk.relays.getConnectedRelays(myInboxRelaySet!.urls).any((relay) => relay.info!=null && relay.info!.nips!=null && relay.info!.nips.contains(50));
@@ -166,7 +166,7 @@ class _SearchRouter extends CustState<SearchRouter>
 //           Nip51List? list = await ndk.relays.getSingleNip51List(Nip51List.SEARCH_RELAYS, loggedUserSigner!);
 //           finished = true;
 //           EasyLoading.dismiss();
-//           RouterUtil.router(context, RouterPath.L, list!=null? list : Nip51List(pubKey: loggedUserSigner!.getPublicKey(), kind: Nip51List.SEARCH_RELAYS, privateRelays: searchRelays, createdAt: Helpers.now));
+//           context.go(RouterPath.L, extra: list!=null? list : Nip51List(pubKey: loggedUserSigner!.getPublicKey(), kind: Nip51List.SEARCH_RELAYS, privateRelays: searchRelays, createdAt: Helpers.now));
 //         },
 //             title: "⚠ Your search relay list is empty.\nAdd some relays >>");
 // //            You have no relays with search capabilities (NIP-50 support).\nConsider adding some (ex.: wss://relay.nostr.band), otherwise ONLY your contacts metadata will be searched.\nClick to relay settings >>");
@@ -279,7 +279,7 @@ class _SearchRouter extends CustState<SearchRouter>
         : [
             "wss://relay.nostr.band",
             "wss://relay.noswhere.com"
-            "wss://search.nos.today"
+                "wss://search.nos.today"
           ]; //!=null? searchRelays.where((url) {
     //   Relay? relay =ndk.relays.getRelay(url);
     //   return relay!=null? relay.supportsNip(50) : false;
@@ -296,8 +296,8 @@ class _SearchRouter extends CustState<SearchRouter>
     //ndk.relays.cacheManager = cacheManager;
     //ndk.relays.connect(urls: relaysWithNip50).then((value) {
     var search = filterMap!["search"];
-    NdkResponse response = ndk
-        .requests.query(explicitRelays: relaysWithNip50, filters: [Filter.fromMap(filterMap!)]);
+    NdkResponse response = ndk.requests.query(
+        explicitRelays: relaysWithNip50, filters: [Filter.fromMap(filterMap!)]);
     response.stream.listen((event) {
       if (search == controller.text.trim()) {
         onQueryEvent(event);
@@ -394,7 +394,7 @@ class _SearchRouter extends CustState<SearchRouter>
         pubkey = Nip19.decode(text);
       }
 
-      RouterUtil.router(context, RouterPath.USER, pubkey);
+      context.push(RouterPath.USER, extra: pubkey);
     }
   }
 
@@ -407,7 +407,7 @@ class _SearchRouter extends CustState<SearchRouter>
         noteId = Nip19.decode(text);
       }
 
-      RouterUtil.router(context, RouterPath.EVENT_DETAIL, noteId);
+      context.push(RouterPath.EVENT_DETAIL, extra: noteId);
     }
   }
 
@@ -498,24 +498,24 @@ class _SearchRouter extends CustState<SearchRouter>
   }
 
   Future<void> handleScanner() async {
-    String result = await RouterUtil.router(context, RouterPath.QRSCANNER);
-    if (StringUtil.isNotBlank(result)) {
+    var result = await context.push(RouterPath.QRSCANNER);
+    if (result != null && result is String && StringUtil.isNotBlank(result)) {
       result = result.replaceAll("nostr:", "");
       if (Nip19.isPubkey(result)) {
         var pubkey = Nip19.decode(result);
-        RouterUtil.router(context, RouterPath.USER, pubkey);
+        context.push(RouterPath.USER, extra: pubkey);
       } else if (NIP19Tlv.isNprofile(result)) {
         var nprofile = NIP19Tlv.decodeNprofile(result);
         if (nprofile != null) {
-          RouterUtil.router(context, RouterPath.USER, nprofile!.pubkey);
+          context.push(RouterPath.USER, extra: nprofile.pubkey);
         }
       } else if (Nip19.isNoteId(result)) {
         var noteId = Nip19.decode(result);
-        RouterUtil.router(context, RouterPath.EVENT_DETAIL, noteId);
+        context.push(RouterPath.EVENT_DETAIL, extra: noteId);
       } else if (NIP19Tlv.isNevent(result)) {
         var nevent = NIP19Tlv.decodeNevent(result);
         if (nevent != null) {
-          RouterUtil.router(context, RouterPath.EVENT_DETAIL, nevent.id);
+          context.push(RouterPath.EVENT_DETAIL, extra: nevent.id);
         }
       } else if (NIP19Tlv.isNrelay(result)) {
         var nrelay = NIP19Tlv.decodeNrelay(result);

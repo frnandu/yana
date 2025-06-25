@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:ndk/domain_layer/usecases/nwc/responses/list_transactions_response.dart';
 import 'package:provider/provider.dart';
 import 'package:yana/main.dart';
@@ -6,7 +7,6 @@ import 'package:yana/provider/nwc_provider.dart';
 import 'package:yana/router/wallet/transaction_item_component.dart';
 
 import '../../../ui/appbar4stack.dart';
-import '../../utils/router_util.dart';
 
 class TransactionsRouter extends StatefulWidget {
   const TransactionsRouter({super.key});
@@ -61,51 +61,53 @@ class _TransactionsRouter extends State<TransactionsRouter> {
       backgroundColor: appbarBackgroundColor,
     );
     var appBar = AppBar(
-      leading: GestureDetector(
-        onTap: () {
-          RouterUtil.back(context);
-        },
-        child: Icon(
-          Icons.arrow_back_ios,
-          color: themeData.appBarTheme.titleTextStyle!.color,
+        leading: GestureDetector(
+          onTap: () {
+            context.pop();
+          },
+          child: Icon(
+            Icons.arrow_back_ios,
+            color: themeData.appBarTheme.titleTextStyle!.color,
+          ),
         ),
-      ),
-      // actions: [
-      //   GestureDetector(
-      //     onTap: addToCommunity,
-      //     child: Container(
-      //       margin: const EdgeInsets.only(
-      //         left: Base.BASE_PADDING,
-      //         right: Base.BASE_PADDING,
-      //       ),
-      //       child: Icon(
-      //         Icons.add,
-      //         color: themeData.appBarTheme.titleTextStyle!.color,
-      //       ),
-      //     ),
-      //   )
-      // ],
-      title: const Text("Transactions")
-    );
-    Widget main =
-      RefreshIndicator(
-              onRefresh: () async {
-                ListTransactionsResponse response = await nwcProvider.listTransactions(limit: 20, unpaid: false);
-                _nwcProvider.cachedListTransactionsResponse  = response;
-              },
-              child: Selector<NwcProvider, List<TransactionResult>?>(
-                builder: (context, transactions, child) {
-                  return transactions!=null && transactions.isNotEmpty ? ListView.builder(
-                    itemBuilder: (context, index) {
-                      return TransactionItemComponent(transaction: transactions[index]);
-                    },
-                    itemCount: transactions.length,
-                  ) : Container();
-                },
-              selector: (context, _provider) {
-                return _provider.transactions;
-              }
-            ));
+        // actions: [
+        //   GestureDetector(
+        //     onTap: addToCommunity,
+        //     child: Container(
+        //       margin: const EdgeInsets.only(
+        //         left: Base.BASE_PADDING,
+        //         right: Base.BASE_PADDING,
+        //       ),
+        //       child: Icon(
+        //         Icons.add,
+        //         color: themeData.appBarTheme.titleTextStyle!.color,
+        //       ),
+        //     ),
+        //   )
+        // ],
+        title: const Text("Transactions"));
+    Widget main = RefreshIndicator(
+        onRefresh: () async {
+          ListTransactionsResponse? response =
+              await nwcProvider?.listTransactions(limit: 20, unpaid: false);
+          if (response != null) {
+            _nwcProvider.cachedListTransactionsResponse = response;
+          }
+        },
+        child: Selector<NwcProvider, List<TransactionResult>?>(
+            builder: (context, transactions, child) {
+          return transactions != null && transactions.isNotEmpty
+              ? ListView.builder(
+                  itemBuilder: (context, index) {
+                    return TransactionItemComponent(
+                        transaction: transactions[index]);
+                  },
+                  itemCount: transactions.length,
+                )
+              : Container();
+        }, selector: (context, _provider) {
+          return _provider.transactions;
+        }));
 
     return Scaffold(
       appBar: appBar,
@@ -113,4 +115,3 @@ class _TransactionsRouter extends State<TransactionsRouter> {
     );
   }
 }
-

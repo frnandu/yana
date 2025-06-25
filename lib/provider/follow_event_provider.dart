@@ -39,7 +39,8 @@ class FollowEventProvider extends ChangeNotifier
   }
 
   Future<void> loadCachedFeed() async {
-    List<String> contactsForFeed = await contactListProvider.contacts();
+    if (contactListProvider == null) return;
+    List<String> contactsForFeed = await contactListProvider!.contacts();
     List<Nip01Event>? cachedEvents = await cacheManager.loadEvents(
         pubKeys: contactsForFeed, kinds: queryEventKinds());
     print("FOLLOW loaded ${cachedEvents.length} events from cache DB");
@@ -66,9 +67,7 @@ class FollowEventProvider extends ChangeNotifier
       since = newestReply!.createdAt;
     }
     // await contactListProvider.loadContactList(loggedUserSigner!.getPublicKey());
-    subscribe(
-        since: since,
-        fallbackTags: followEventProvider.FALLBACK_TAGS_FOR_EMPTY_CONTACT_LIST);
+    subscribe(since: since, fallbackTags: FALLBACK_TAGS_FOR_EMPTY_CONTACT_LIST);
   }
 
   @override
@@ -98,7 +97,7 @@ class FollowEventProvider extends ChangeNotifier
     cacheManager.removeAllEvents();
     subscribe(fallbackTags: FALLBACK_TAGS_FOR_EMPTY_CONTACT_LIST);
 
-    followNewEventProvider.clearPosts();
+    followNewEventProvider?.clearPosts();
   }
 
   void refreshReplies() {
@@ -111,7 +110,7 @@ class FollowEventProvider extends ChangeNotifier
     cacheManager.removeAllEvents();
     subscribe(fallbackTags: FALLBACK_TAGS_FOR_EMPTY_CONTACT_LIST);
 
-    followNewEventProvider.clearReplies();
+    followNewEventProvider?.clearReplies();
   }
 
   int lastTime() {
@@ -143,8 +142,9 @@ class FollowEventProvider extends ChangeNotifier
       List<String>? fallbackTags}) async {
     doUnscribe();
 
-    ContactList? contactList =
-        await contactListProvider.getContactList(loggedUserSigner!.getPublicKey());
+    if (contactListProvider == null) return;
+    ContactList? contactList = await contactListProvider!
+        .getContactList(loggedUserSigner!.getPublicKey());
     List<String> contactsForFeed =
         contactList != null ? contactList.contacts : [];
 
@@ -166,7 +166,7 @@ class FollowEventProvider extends ChangeNotifier
       if (fallbackContacts != null && fallbackContacts.isNotEmpty) {
         filter.authors = fallbackContacts;
       } else if (fallbackTags != null && fallbackTags.isNotEmpty) {
-        filter.setTag("#t",fallbackTags);
+        filter.setTag("#t", fallbackTags);
       } else {
         return;
       }
@@ -242,9 +242,10 @@ class FollowEventProvider extends ChangeNotifier
   }
 
   void queryOlder({required int until, List<String>? fallbackTags}) async {
-    ContactList? contactList =
-        await contactListProvider.getContactList(loggedUserSigner!.getPublicKey());
-    List<String> contactsForFeed = await contactListProvider.contacts();
+    if (contactListProvider == null) return;
+    ContactList? contactList = await contactListProvider!
+        .getContactList(loggedUserSigner!.getPublicKey());
+    List<String> contactsForFeed = await contactListProvider!.contacts();
     var filter = Filter(
       kinds: queryEventKinds(),
       authors: contactsForFeed,
@@ -259,7 +260,7 @@ class FollowEventProvider extends ChangeNotifier
       }
       filter.authors = null;
       if (fallbackTags != null && fallbackTags.isNotEmpty) {
-        filter.setTag("#t",fallbackTags);
+        filter.setTag("#t", fallbackTags);
       } else {
         return;
       }
@@ -372,7 +373,7 @@ class FollowEventProvider extends ChangeNotifier
 
   void mergeNewPostAndReplyEvents() {
     var postAndRepliesEvents =
-        followNewEventProvider.eventPostsAndRepliesMemBox.all();
+        followNewEventProvider?.eventPostsAndRepliesMemBox.all() ?? [];
 
     postsAndRepliesBox.addList(postAndRepliesEvents);
 
@@ -381,21 +382,21 @@ class FollowEventProvider extends ChangeNotifier
     repliesTimestamp = null;
     setRepliesTimestampToNewestAndSave();
 
-    followNewEventProvider.clearReplies();
+    followNewEventProvider?.clearReplies();
 
     // update ui
     notifyListeners();
   }
 
   void mergeNewPostEvents() {
-    var postEvents = followNewEventProvider.eventPostsMemBox.all();
+    var postEvents = followNewEventProvider?.eventPostsMemBox.all() ?? [];
 
     postsBox.addList(postEvents);
 
     // sort
     postsBox.sort();
 
-    followNewEventProvider.clearPosts();
+    followNewEventProvider?.clearPosts();
     postsTimestamp = null;
     setPostsTimestampToNewestAndSave();
 
@@ -422,13 +423,13 @@ class FollowEventProvider extends ChangeNotifier
       bool isPosts = eventIsPost(e);
       if (!isPosts) {
         if (repliesTimestamp != null && e.createdAt > repliesTimestamp!) {
-          followNewEventProvider.handleEvents([e]);
+          followNewEventProvider?.handleEvents([e]);
           return;
         }
         addedReplies = postsAndRepliesBox.add(e);
       } else {
         if (postsTimestamp != null && e.createdAt > postsTimestamp!) {
-          followNewEventProvider.handleEvents([e]);
+          followNewEventProvider?.handleEvents([e]);
           return;
         }
         addedPosts = postsBox.add(e);
@@ -449,19 +450,19 @@ class FollowEventProvider extends ChangeNotifier
     if (addedPosts || addedReplies) {
       if (toSave.isNotEmpty) {
         cacheManager.saveEvents(toSave);
-      //   contactListProvider.contacts().then((contacts) {
-      //     cacheManager.loadEvents(pubKeys:  contacts, kinds: [toSave.first.kind]).then((a) {
-      //       print(a);
-      //       a.forEach((e) {
-      //         if (!contacts.contains(e.pubKey)) {
-      //           final metadata = metadataProvider.getMetadata(e.pubKey).then((
-      //               m) {
-      //             // print(m);
-      //           });
-      //         }
-      //       });
-      //     });
-      //   });
+        //   contactListProvider.contacts().then((contacts) {
+        //     cacheManager.loadEvents(pubKeys:  contacts, kinds: [toSave.first.kind]).then((a) {
+        //       print(a);
+        //       a.forEach((e) {
+        //         if (!contacts.contains(e.pubKey)) {
+        //           final metadata = metadataProvider.getMetadata(e.pubKey).then((
+        //               m) {
+        //             // print(m);
+        //           });
+        //         }
+        //       });
+        //     });
+        //   });
       }
       notifyListeners();
     }

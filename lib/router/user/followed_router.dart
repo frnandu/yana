@@ -6,12 +6,19 @@ import 'package:provider/provider.dart';
 import '../../i18n/i18n.dart';
 import '../../main.dart';
 import '../../provider/metadata_provider.dart';
+import 'package:go_router/go_router.dart';
 import '../../ui/editor/search_mention_user_component.dart';
 import '../../utils/base.dart';
 import '../../utils/platform_util.dart';
 import '../../utils/router_path.dart';
-import '../../utils/router_util.dart';
 import '../../utils/string_util.dart';
+
+class FollowedRouterArgs {
+  List<String> pubkeys;
+  String title;
+
+  FollowedRouterArgs({required this.pubkeys, required this.title});
+}
 
 class FollowedRouter extends StatefulWidget {
   List<String>? pubkeys;
@@ -35,13 +42,16 @@ class _FollowedRouter extends State<FollowedRouter> {
     var s = I18n.of(context);
 
     if (widget.pubkeys == null) {
-      var arg = RouterUtil.routerArgs(context);
-      if (arg != null) {
+      var arg = GoRouterState.of(context).extra;
+      if (arg != null && arg is FollowedRouterArgs) {
+        widget.pubkeys = arg.pubkeys;
+        widget.title = arg.title;
+      } else if (arg != null) {
         widget.pubkeys = arg as List<String>;
       }
     }
     if (widget.pubkeys == null) {
-      RouterUtil.back(context);
+      context.pop();
       return Container();
     }
     var themeData = Theme.of(context);
@@ -65,8 +75,7 @@ class _FollowedRouter extends State<FollowedRouter> {
                           ? SearchMentionUserItemComponent(
                               metadata: snapshot.data!,
                               onTap: (metadata) {
-                                RouterUtil.router(
-                                    context, RouterPath.USER, pubkey);
+                                context.push(RouterPath.USER, extra: pubkey);
                               },
                               width: 400)
                           : Container();
@@ -79,7 +88,7 @@ class _FollowedRouter extends State<FollowedRouter> {
       appBar: AppBar(
         leading: GestureDetector(
           onTap: () {
-            RouterUtil.back(context);
+            context.pop();
           },
           child: Icon(
             Icons.arrow_back_ios,

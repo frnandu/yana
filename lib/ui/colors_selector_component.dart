@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import '../utils/base.dart';
 import '../utils/colors.dart';
-import '../utils/router_util.dart';
 
 class ColorSelectorComponent extends StatelessWidget {
   ColorSelectorComponent();
@@ -56,7 +56,7 @@ class ColorSelectorComponent extends StatelessWidget {
         child: GestureDetector(
           behavior: HitTestBehavior.opaque,
           onTap: () {
-            RouterUtil.back(context);
+            context.pop();
           },
           child: Container(
             width: double.infinity,
@@ -84,7 +84,8 @@ class ColorSelectorItemComponent extends StatelessWidget {
 
   // final bool isLast;
 
-  ColorSelectorItemComponent({super.key,
+  ColorSelectorItemComponent({
+    super.key,
     required this.color,
     // this.isLast = false,
   });
@@ -96,7 +97,7 @@ class ColorSelectorItemComponent extends StatelessWidget {
 
     return GestureDetector(
       onTap: () {
-        RouterUtil.back(context, color);
+        context.pop(color);
       },
       child: Container(
         // decoration: BoxDecoration(

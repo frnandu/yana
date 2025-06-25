@@ -10,11 +10,17 @@ import '../models/event_mem_box.dart';
 import '../nostr/event_kind.dart' as kind;
 import '../utils/peddingevents_later_function.dart';
 
-class NotificationsProvider extends ChangeNotifier with PenddingEventsLaterFunction {
+class NotificationsProvider extends ChangeNotifier
+    with PenddingEventsLaterFunction {
   late int _initTime;
 
   int? timestamp;
   late EventMemBox eventBox;
+
+  // Callback functions to avoid circular dependency
+  Function()? clearNewNotifications;
+  Function(Nip01Event)? handleNewNotification;
+  Function()? mergeNewEvents;
 
   NotificationsProvider() {
     _initTime = DateTime.now().millisecondsSinceEpoch ~/ 1000;
@@ -32,8 +38,9 @@ class NotificationsProvider extends ChangeNotifier with PenddingEventsLaterFunct
   }
 
   Future<void> loadCached() async {
-    List<Nip01Event> cachedEvents = await cacheManager.loadEvents(kinds: notificationsProvider.queryEventKinds(), pTag: loggedUserSigner!.getPublicKey());
-    print("NOTIFICATIONS loaded ${cachedEvents.length} events from cache DB");
+    List<Nip01Event> cachedEvents = await cacheManager.loadEvents(
+        kinds: queryEventKinds(), pTag: loggedUserSigner!.getPublicKey());
+    print("NOTIFICATIONS loaded \\${cachedEvents.length} events from cache DB");
     onEvents(cachedEvents, saveToCache: false);
   }
 
@@ -43,7 +50,7 @@ class NotificationsProvider extends ChangeNotifier with PenddingEventsLaterFunct
     timestamp = null;
     startSubscription();
     sharedPreferences.remove(DataKey.NOTIFICATIONS_TIMESTAMP);
-    newNotificationsProvider.clear();
+    clearNewNotifications?.call();
   }
 
   void deleteEvent(String id) {
@@ -90,11 +97,18 @@ class NotificationsProvider extends ChangeNotifier with PenddingEventsLaterFunct
     }
 
     if (myInboxRelaySet != null) {
-      var filter = Filter(kinds: queryEventKinds(), since: since, pTags: [loggedUserSigner!.getPublicKey()], limit: 100);
+      var filter = Filter(
+          kinds: queryEventKinds(),
+          since: since,
+          pTags: [loggedUserSigner!.getPublicKey()],
+          limit: 100);
 
       await ndk.relays.reconnectRelays(myInboxRelaySet!.urls);
 
-      subscription = ndk.requests.subscription(name:"notifications-sub", filters: [filter], relaySet: myInboxRelaySet!);
+      subscription = ndk.requests.subscription(
+          name: "notifications-sub",
+          filters: [filter],
+          relaySet: myInboxRelaySet!);
       subscription!.stream.listen((event) {
         onEvent(event);
       });
@@ -105,24 +119,30 @@ class NotificationsProvider extends ChangeNotifier with PenddingEventsLaterFunct
     later(event, (list) {
       onEvents(list, saveToCache: true);
     }, null);
+    handleNewNotification?.call(event);
   }
 
   void onEvents(List<Nip01Event> list, {bool saveToCache = true}) async {
-    list = list.where((element) => element.pubKey != loggedUserSigner?.getPublicKey()).toList();
+    list = list
+        .where((element) => element.pubKey != loggedUserSigner?.getPublicKey())
+        .toList();
     List<Nip01Event> toSave = [];
     List<Nip01Event> loggedUserEvents = [];
     for (Nip01Event event in list) {
       bool accept = false;
-      if (event.pTags.length == 1 || event.pTags.any((tagValues) => tagValues.contains(loggedUserSigner!.getPublicKey()) && tagValues.contains("mention")))  {
+      if (event.pTags.length == 1 ||
+          event.pTags.any((tagValues) =>
+              tagValues.contains(loggedUserSigner!.getPublicKey()) &&
+              tagValues.contains("mention"))) {
         accept = true;
       } else {
         List<String> replyETags = event.replyETags;
-        if (replyETags.length!=1) {
+        if (replyETags.length != 1) {
           accept = false;
         } else {
           if (loggedUserEvents.isEmpty) {
-            loggedUserEvents = await cacheManager.loadEvents(
-                pubKeys: [loggedUserSigner!.getPublicKey()]);
+            loggedUserEvents = await cacheManager
+                .loadEvents(pubKeys: [loggedUserSigner!.getPublicKey()]);
           }
           accept = replyETags.length == 1 &&
               loggedUserEvents.any((event) => event.id == replyETags.first);
@@ -130,7 +150,7 @@ class NotificationsProvider extends ChangeNotifier with PenddingEventsLaterFunct
       }
       if (accept) {
         if (timestamp != null && event.createdAt > timestamp!) {
-          newNotificationsProvider.handleEvent(event, null);
+          handleNewNotification?.call(event);
         } else {
           var result = eventBox.addList([event]);
           if (result) {
@@ -153,16 +173,12 @@ class NotificationsProvider extends ChangeNotifier with PenddingEventsLaterFunct
   }
 
   void mergeNewEvent() {
-    var allEvents = newNotificationsProvider.eventMemBox.all();
+    mergeNewEvents?.call();
+  }
 
-    eventBox.addList(allEvents);
+  List<Nip01Event> get allEventsSafe => [];
 
-    // sort
-    eventBox.sort();
-
-    newNotificationsProvider.clear();
-    setTimestampToNewestAndSave();
-    // update ui
-    notifyListeners();
+  void clearSafe() {
+    clearNewNotifications?.call();
   }
 }
