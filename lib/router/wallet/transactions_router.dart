@@ -89,20 +89,32 @@ class _TransactionsRouter extends State<TransactionsRouter> {
     Widget main = RefreshIndicator(
         onRefresh: () async {
           ListTransactionsResponse? response =
-              await nwcProvider?.listTransactions(limit: 20, unpaid: false);
+              await nwcProvider?.listTransactions(limit: 20, unpaid: true);
           if (response != null) {
-            _nwcProvider.cachedListTransactionsResponse = response;
+            _nwcProvider.listTransactionsResponse = response;
           }
         },
         child: Selector<NwcProvider, List<TransactionResult>?>(
             builder: (context, transactions, child) {
-          return transactions != null && transactions.isNotEmpty
+          if (transactions == null || transactions.isEmpty) {
+            return Container();
+          }
+
+          var filteredTransactions = transactions
+              .where((t) =>
+                  t.type == "outgoing" ||
+                  (t.type == "incoming" && t.settledAt != null))
+              .toList();
+
+          return filteredTransactions.isNotEmpty
               ? ListView.builder(
                   itemBuilder: (context, index) {
+                    final transaction = filteredTransactions[index];
                     return TransactionItemComponent(
-                        transaction: transactions[index]);
+                      transaction: transaction,
+                    );
                   },
-                  itemCount: transactions.length,
+                  itemCount: filteredTransactions.length,
                 )
               : Container();
         }, selector: (context, _provider) {

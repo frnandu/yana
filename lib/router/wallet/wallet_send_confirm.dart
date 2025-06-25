@@ -290,7 +290,16 @@ class _WalletSendConfirmRouter extends State<WalletSendConfirmRouter> {
         paid = response;
       });
       confettiController.play();
+    } else {
+      setState(() {
+        sending = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text("Payment failed"),
+          duration: const Duration(seconds: 5),
+        ),
+      );
     }
-    ;
   }
 }

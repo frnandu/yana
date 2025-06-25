@@ -26,6 +26,69 @@ class PaymentDetailsComponent extends StatefulWidget {
 var dateFormater = DateFormat("yyyy-MM-dd HH:mm");
 
 class _PaymentDetailsComponent extends State<PaymentDetailsComponent> {
+  String _getTitle() {
+    switch (widget.paid!.state) {
+      case "pending":
+        return "Pending";
+      case "failed":
+        return "Failed";
+      default:
+        return widget.paid!.isIncoming ? "Received" : "Paid";
+    }
+  }
+
+  Color _getIconBackgroundColor() {
+    final theme = Theme.of(context);
+    if (widget.paid!.state == "failed") {
+      return theme.disabledColor;
+    }
+    if (widget.paid!.state == "settled") {
+      return widget.paid!.isIncoming
+          ? const Color(0x4f47A66D)
+          : const Color(0x4fE26842);
+    }
+    return Colors.grey.withOpacity(0.3);
+  }
+
+  IconData _getIcon() {
+    switch (widget.paid!.state) {
+      case "pending":
+        return Icons.hourglass_empty;
+      case "failed":
+        return Icons.error_outline;
+      default:
+        return widget.paid!.isIncoming ? Icons.call_received : Icons.call_made;
+    }
+  }
+
+  Color _getIconColor() {
+    final theme = Theme.of(context);
+    switch (widget.paid!.state) {
+      case "pending":
+        return Colors.grey;
+      case "failed":
+        return theme.cardColor;
+      default:
+        return widget.paid!.isIncoming
+            ? const Color(0xFF47A66D)
+            : const Color(0xFFE26842);
+    }
+  }
+
+  Color _getAmountColor() {
+    final theme = Theme.of(context);
+    switch (widget.paid!.state) {
+      case "pending":
+        return Colors.grey;
+      case "failed":
+        return theme.disabledColor;
+      default:
+        return widget.paid!.isIncoming
+            ? const Color(0xff47A66D)
+            : const Color(0xFFE26842);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     if (widget.paid == null) {
@@ -68,7 +131,7 @@ class _PaymentDetailsComponent extends State<PaymentDetailsComponent> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
               Text(
-                widget.paid!.isIncoming ? "Received" : "Paid",
+                _getTitle(),
                 style: const TextStyle(
                   fontSize: 16,
                   fontFamily: 'Geist',
@@ -123,19 +186,13 @@ class _PaymentDetailsComponent extends State<PaymentDetailsComponent> {
                   ))
               : Container(
                   decoration: ShapeDecoration(
-                    color: widget.paid!.isIncoming
-                        ? const Color(0x4f47A66D)
-                        : const Color(0x4fE26842),
+                    color: _getIconBackgroundColor(),
                     shape: const CircleBorder(side: BorderSide.none),
                   ),
                   padding: const EdgeInsets.all(Base.BASE_PADDING),
                   child: Icon(
-                    widget.paid!.isIncoming
-                        ? Icons.call_received
-                        : Icons.call_made,
-                    color: widget.paid!.isIncoming
-                        ? const Color(0xFF47A66D)
-                        : const Color(0xFFE26842),
+                    _getIcon(),
+                    color: _getIconColor(),
                     size: 100.0,
                   )),
           const SizedBox(height: 20.0),
@@ -145,10 +202,9 @@ class _PaymentDetailsComponent extends State<PaymentDetailsComponent> {
                 TextSpan(
                   text: "${widget.paid!.isIncoming ? '+' : '-'}$amount",
                   style: TextStyle(
-                      fontSize: 28.0,
-                      color: widget.paid!.isIncoming
-                          ? const Color(0xff47A66D)
-                          : const Color(0xFFE26842)),
+                    fontSize: 28.0,
+                    color: _getAmountColor(),
+                  ),
                 ),
                 TextSpan(
                   text: ' sat${amount > 1 ? 's' : ''}',
