@@ -262,8 +262,7 @@ class _WalletRouter extends State<WalletRouter> with ProtocolListener {
       setState(() {
         _isConnecting = false;
       });
-      EasyLoading.showError(
-          'Error connecting to wallet...${e!}',
+      EasyLoading.showError('Error connecting to wallet...${e!}',
           maskType: EasyLoadingMaskType.black,
           dismissOnTap: true,
           duration: const Duration(seconds: 7));
@@ -428,29 +427,40 @@ class _WalletRouter extends State<WalletRouter> with ProtocolListener {
                         // If canListTransaction is true, nwcProvider should not be null here.
                         // However, to be safe with the call itself:
                         ListTransactionsResponse? response = await nwcProvider
-                            ?.listTransactions(limit: 20, unpaid: false);
+                            ?.listTransactions(limit: 40, unpaid: true);
                         if (response != null) {
-                          _nwcProvider.cachedListTransactionsResponse =
-                              response;
+                          _nwcProvider.listTransactionsResponse = response;
                         }
                       },
                       child: Selector<NwcProvider, List<TransactionResult>?>(
                           builder: (context, transactions, child) {
-                        return transactions != null && transactions.isNotEmpty
+                        if (transactions == null || transactions.isEmpty) {
+                          return Container();
+                        }
+
+                        var filteredTransactions = transactions
+                            .where((t) =>
+                                t.type == "outgoing" ||
+                                (t.type == "incoming" && t.settledAt != null))
+                            .toList();
+
+                        return filteredTransactions.isNotEmpty
                             ? ListView.builder(
                                 itemBuilder: (context, index) {
+                                  final transaction =
+                                      filteredTransactions[index];
                                   return GestureDetector(
                                       onTap: () async {
                                         setState(() {
-                                          transactionDetails =
-                                              transactions[index];
+                                          transactionDetails = transaction;
                                         });
                                         await panelController.open();
                                       },
                                       child: TransactionItemComponent(
-                                          transaction: transactions[index]));
+                                        transaction: transaction,
+                                      ));
                                 },
-                                itemCount: transactions.length,
+                                itemCount: filteredTransactions.length,
                               )
                             : Container();
                       }, selector: (context, _provider) {
@@ -658,7 +668,7 @@ class _WalletRouter extends State<WalletRouter> with ProtocolListener {
           SlidingUpPanel(
             controller: panelController,
             backdropEnabled: true,
-            color: themeData.appBarTheme.backgroundColor!,
+            color: themeData.scaffoldBackgroundColor!,
             minHeight: 0,
             maxHeight: mediaDataCache.size.height - 300,
             borderRadius: const BorderRadius.only(

@@ -13,7 +13,8 @@ import '../../utils/base.dart';
 class TransactionItemComponent extends StatefulWidget {
   final TransactionResult transaction;
 
-  const TransactionItemComponent({super.key, required this.transaction});
+  const TransactionItemComponent(
+      {super.key, required this.transaction});
 
   @override
   State<StatefulWidget> createState() {
@@ -34,18 +35,22 @@ class _TransactionItemComponent extends State<TransactionItemComponent> {
     bool outgoing = widget.transaction.type == "outgoing";
     var time = "";
     try {
-      time = widget.transaction.settledAt != null
-          ? GetTimeAgo.parse(
-              DateTime.fromMillisecondsSinceEpoch(
-                  widget.transaction.settledAt! * 1000),
-              pattern: "dd.MM.yyyy")
-          : "";
+      if (widget.transaction.state == "pending") {
+        time = "Pending";
+      } else if (widget.transaction.state == "failed") {
+        time = "Failed";
+      } else {
+        time = widget.transaction.settledAt != null
+            ? GetTimeAgo.parse(
+                DateTime.fromMillisecondsSinceEpoch(
+                    widget.transaction.settledAt! * 1000),
+                pattern: "dd.MM.yyyy")
+            : "";
+      }
     } catch (e) {}
     int sats = widget.transaction.amount ~/ 1000;
     double? fiatAmount = fiatCurrencyRate != null
-        ? ((sats / 100000000) *
-                    fiatCurrencyRate!["value"] *
-                    100)
+        ? ((sats / 100000000) * fiatCurrencyRate!["value"] * 100)
                 .truncateToDouble() /
             100
         : null;
@@ -68,24 +73,36 @@ class _TransactionItemComponent extends State<TransactionItemComponent> {
           mainAxisAlignment: MainAxisAlignment.end,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            zapperPubKey!=null? UserPicComponent(
-              pubkey: zapperPubKey,
-              width: 50,
-            ):
-            Container( width: 50,
-                decoration: ShapeDecoration(
-                  color: outgoing
-                      ? const Color(0x4fE26842)
-                      : const Color(0x4f47A66D),
-                  shape: const CircleBorder(side: BorderSide.none),
-                ),
-                padding: const EdgeInsets.all(Base.BASE_PADDING),
-                child: Icon(
-                  outgoing ? Icons.call_made : Icons.call_received,
-                  color: outgoing
-                      ? const Color(0xFFE26842)
-                      : const Color(0xFF47A66D),
-                )),
+            zapperPubKey != null
+                ? UserPicComponent(
+                    pubkey: zapperPubKey,
+                    width: 50,
+                  )
+                : Container(
+                    width: 50,
+                    decoration: ShapeDecoration(
+                      color:
+                      (widget.transaction.state == "failed" || widget.transaction.state == "pending")?
+                          themeData.disabledColor :
+                          outgoing ? const Color(0x4fE26842)
+                          : const Color(0x4f47A66D),
+                      shape: const CircleBorder(side: BorderSide.none),
+                    ),
+                    padding: const EdgeInsets.all(Base.BASE_PADDING),
+                    child: Icon(
+                      widget.transaction.state == "pending"
+                          ? Icons.hourglass_empty
+                          : widget.transaction.state == "failed"
+                              ? Icons.error_outline
+                              : outgoing
+                                  ? Icons.call_made
+                                  : Icons.call_received,
+                      color: (widget.transaction.state == "failed" || widget.transaction.state == "pending")
+                              ? themeData.cardColor
+                              : outgoing
+                                  ? const Color(0xFFE26842)
+                                  : const Color(0xFF47A66D),
+                    )),
             const SizedBox(width: 16),
             Expanded(
                 child: Column(
@@ -136,9 +153,13 @@ class _TransactionItemComponent extends State<TransactionItemComponent> {
                     '${outgoing ? "-" : "+"}${formatter.format(sats).replaceAll(',', ' ')}',
                     textAlign: TextAlign.right,
                     style: TextStyle(
-                      color: outgoing
-                          ? const Color(0xFFE26842)
-                          : const Color(0xFF47A66D),
+                      color: widget.transaction.state == "pending"
+                          ? Colors.grey
+                          : widget.transaction.state == "failed"
+                              ? themeData.disabledColor
+                              : outgoing
+                                  ? const Color(0xFFE26842)
+                                  : const Color(0xFF47A66D),
                       fontSize: 20,
                       fontFamily: 'Geist.Mono',
                       fontWeight: FontWeight.w400,

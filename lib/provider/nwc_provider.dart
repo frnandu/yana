@@ -20,6 +20,11 @@ class NwcProvider extends ChangeNotifier {
   GetBalanceResponse? cachedBalanceResponse;
   ListTransactionsResponse? cachedListTransactionsResponse;
 
+  set listTransactionsResponse(ListTransactionsResponse? value) {
+    cachedListTransactionsResponse = value;
+    notifyListeners();
+  }
+
   // TODO REFRESH balance/transactions if timestamp too old
   int? lastBalanceTimestamp;
   int? lastListTransactionsTimestamp;
@@ -62,7 +67,8 @@ class NwcProvider extends ChangeNotifier {
       Function(String?)? onError,
       bool? doGetInfo = true}) async {
     nwc = nwc.replaceAll("yana:", "nostr+walletconnect:");
-    await ndk.nwc.connect(nwc,
+    await ndk.nwc
+        .connect(nwc,
             doGetInfoMethod: doGetInfo!,
             // This below is needed if we want to connect to Primal wallet
             // useETagForEachRequest: true,
@@ -93,22 +99,25 @@ class NwcProvider extends ChangeNotifier {
             await RatesUtil.fiatCurrency(settingProvider.currency!);
       }
       if (connection!.permissions.contains(NwcMethod.LIST_TRANSACTIONS.name)) {
-        cachedListTransactionsResponse =
+        listTransactionsResponse =
             await ndk.nwc.listTransactions(connection!, unpaid: false);
       }
     }
   }
 
-  Future<ListTransactionsResponse> listTransactions(
+  Future<ListTransactionsResponse?> listTransactions(
       {int? from,
       int? until,
       int? limit,
       int? offset,
-      required bool unpaid,
+      bool? unpaid,
       TransactionType? type}) async {
+    if (connection == null) {
+      return null;
+    }
     return await ndk.nwc.listTransactions(
       connection!,
-      unpaid: false,
+      unpaid: unpaid ?? false,
       from: from,
       until: until,
       limit: limit,
@@ -133,8 +142,8 @@ class NwcProvider extends ChangeNotifier {
     if (connection != null &&
         connection!.permissions.contains(NwcMethod.PAY_INVOICE.name)) {
       try {
-        PayInvoiceResponse response =
-            await ndk.nwc.payInvoice(connection!, invoice: invoice);
+        PayInvoiceResponse response = await ndk.nwc.payInvoice(connection!,
+            invoice: invoice, timeout: Duration(seconds: 10));
         if (response.preimage != '') {
           await refreshWallet();
           notifyListeners();

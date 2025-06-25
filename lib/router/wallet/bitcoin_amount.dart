@@ -7,10 +7,11 @@ import '../../utils/number_format_util.dart';
 class BitcoinAmount extends StatelessWidget {
   String? fiatUnit;
 
-  BitcoinAmount({
-    super.key,
-    required this.fiatAmount, required this.balance, this.fiatUnit
-  });
+  BitcoinAmount(
+      {super.key,
+      required this.fiatAmount,
+      required this.balance,
+      this.fiatUnit});
 
   final double? fiatAmount;
   final int balance;
@@ -21,14 +22,13 @@ class BitcoinAmount extends StatelessWidget {
 
     return Container(
         margin: const EdgeInsets.only(
-            top: Base.BASE_PADDING,
-            bottom: Base.BASE_PADDING),
+            top: Base.BASE_PADDING, bottom: Base.BASE_PADDING),
         child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Row(
-                  textBaseline: TextBaseline.ideographic,
+                  textBaseline: TextBaseline.alphabetic,
                   mainAxisSize: MainAxisSize.min,
                   mainAxisAlignment: MainAxisAlignment.end,
                   crossAxisAlignment: CrossAxisAlignment.center,
@@ -40,35 +40,38 @@ class BitcoinAmount extends StatelessWidget {
                                 color: Color(0xFF7A7D81),
                                 fontSize: 40,
                                 fontFamily: 'Geist.Mono'))),
-
                     const SizedBox(width: 4),
-                    NumberFormatUtil.formatBitcoinAmount(
-                        balance / 100000000,
-                        TextStyle(
-                            color: themeData.focusColor,
-                            fontSize: 40,
-                            fontFamily: 'Geist.Mono'),
-                        TextStyle(
-                            color: themeData.primaryColor,
-                            fontSize: 40,
-                            fontFamily: 'Geist.Mono')),
-                    Text(" sat${balance > 1 ? 's' : ''}",
-                        style: TextStyle(
-                            color: themeData.primaryColor,
-                            fontSize: 24,
-                            fontWeight: FontWeight.w100)),
+                    Container(
+                        padding: const EdgeInsets.only(top: 8),
+                        child: NumberFormatUtil.formatBitcoinAmount(
+                            balance / 100000000,
+                            TextStyle(
+                                color: themeData.focusColor,
+                                fontSize: 40,
+                                fontFamily: 'Geist.Mono'),
+                            TextStyle(
+                                color: themeData.primaryColor,
+                                fontSize: 40,
+                                fontFamily: 'Geist.Mono'))),
+                    Container(
+                        padding: const EdgeInsets.only(top: 12),
+                        child: Text(" sat${balance > 1 ? 's' : ''}",
+                            style: TextStyle(
+                                color: themeData.primaryColor,
+                                fontSize: 24,
+                                fontWeight: FontWeight.w100))),
                   ]),
               Container(
                   margin: const EdgeInsets.only(
-                      top: Base.BASE_PADDING,
-                      // bottom: Base.BASE_PADDING
+                    top: Base.BASE_PADDING,
+                    // bottom: Base.BASE_PADDING
                   ),
                   child: Text(
                       fiatAmount == null
                           ? ""
                           : fiatAmount! < 0.01
-                          ? "< 0.01 ${fiatUnit ?? ''}"
-                          : "${fiatAmount!.toStringAsFixed(2)} ${fiatUnit??''}",
+                              ? "< 0.01 ${fiatUnit ?? ''}"
+                              : "${fiatAmount!.toStringAsFixed(2)} ${fiatUnit ?? ''}",
                       style: const TextStyle(
                           color: Color(0xFF7A7D81),
                           fontSize: 20,
