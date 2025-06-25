@@ -346,7 +346,7 @@ class _AccountManagerItemComponent extends State<AccountManagerItemComponent> {
                   ? metadata.picture
                   : StringUtil.robohash(pubkey!);
 
-          String displayName = metadata?.name ?? 'User';
+          String displayName = metadata?.displayName ?? metadata?.name ?? 'User';
           if (StringUtil.isBlank(displayName)) {
             displayName = 'User';
           }

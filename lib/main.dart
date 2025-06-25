@@ -1015,36 +1015,34 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
                   String? pubkey = state.uri.queryParameters['pubkey'];
                   return UserRouter(pubKey: pubkey);
                 },
-                routes: <RouteBase>[
-                  GoRoute(
-                    path: RouterPath.PROFILE_EDITOR,
-                    builder: (context, state) => const ProfileEditorRouter(),
-                  ),
-                  GoRoute(
-                    path: RouterPath.USER_CONTACT_LIST,
-                    builder: (context, state) => const UserContactListRouter(),
-                  ),
-                  GoRoute(
-                    path: RouterPath.USER_HISTORY_CONTACT_LIST,
-                    builder: (context, state) => UserHistoryContactListRouter(),
-                  ),
-                  GoRoute(
-                    path: RouterPath.USER_ZAP_LIST,
-                    builder: (context, state) => const UserZapListRouter(),
-                  ),
-                  GoRoute(
-                    path: RouterPath.FOLLOWED_TAGS_LIST,
-                    builder: (context, state) => const FollowedTagsListRouter(),
-                  ),
-                  GoRoute(
-                    path: RouterPath.FOLLOWED,
-                    builder: (context, state) => FollowedRouter(),
-                  ),
-                  GoRoute(
-                    path: RouterPath.FOLLOWED_COMMUNITIES,
-                    builder: (context, state) => const FollowedCommunitiesRouter(),
-                  ),
-                ]
+              ),
+              GoRoute(
+                path: RouterPath.PROFILE_EDITOR,
+                builder: (context, state) => const ProfileEditorRouter(),
+              ),
+              GoRoute(
+                path: RouterPath.USER_CONTACT_LIST,
+                builder: (context, state) => const UserContactListRouter(),
+              ),
+              GoRoute(
+                path: RouterPath.USER_HISTORY_CONTACT_LIST,
+                builder: (context, state) => UserHistoryContactListRouter(),
+              ),
+              GoRoute(
+                path: RouterPath.USER_ZAP_LIST,
+                builder: (context, state) => const UserZapListRouter(),
+              ),
+              GoRoute(
+                path: RouterPath.FOLLOWED_TAGS_LIST,
+                builder: (context, state) => const FollowedTagsListRouter(),
+              ),
+              GoRoute(
+                path: RouterPath.FOLLOWED,
+                builder: (context, state) => FollowedRouter(),
+              ),
+              GoRoute(
+                path: RouterPath.FOLLOWED_COMMUNITIES,
+                builder: (context, state) => const FollowedCommunitiesRouter(),
               ),
               GoRoute(
                 path: RouterPath.COMMUNITY_DETAIL,
@@ -1085,36 +1083,34 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
                 GoRoute(
                   path: RouterPath.WALLET,
                   builder: (context, state) => const WalletRouter(),
-                  routes: <RouteBase>[
-                    GoRoute(
-                      path: RouterPath.WALLET_TRANSACTIONS,
-                      builder: (context, state) => const TransactionsRouter(),
-                    ),
-                    GoRoute(
-                      path: RouterPath.WALLET_RECEIVE,
-                      builder: (context, state) => const WalletReceiveRouter(),
-                    ),
-                    GoRoute(
-                      path: RouterPath.WALLET_RECEIVE_INVOICE,
-                      builder: (context, state) => const WalletReceiveInvoiceRouter(),
-                    ),
-                    GoRoute(
-                      path: RouterPath.WALLET_SEND,
-                      builder: (context, state) => const WalletSendRouter(),
-                    ),
-                    GoRoute(
-                      path: RouterPath.WALLET_SEND_CONFIRM,
-                      builder: (context, state) => const WalletSendConfirmRouter(),
-                    ),
-                    GoRoute(
-                      path: RouterPath.NWC,
-                      builder: (context, state) => const NwcRouter(),
-                    ),
-                    GoRoute(
-                      path: RouterPath.SETTINGS_WALLET,
-                      builder: (context, state) => const WalletSettingsRouter(),
-                    ),
-                  ]
+                ),
+                GoRoute(
+                  path: RouterPath.WALLET_TRANSACTIONS,
+                  builder: (context, state) => const TransactionsRouter(),
+                ),
+                GoRoute(
+                  path: RouterPath.WALLET_RECEIVE,
+                  builder: (context, state) => const WalletReceiveRouter(),
+                ),
+                GoRoute(
+                  path: RouterPath.WALLET_RECEIVE_INVOICE,
+                  builder: (context, state) => const WalletReceiveInvoiceRouter(),
+                ),
+                GoRoute(
+                  path: RouterPath.WALLET_SEND,
+                  builder: (context, state) => const WalletSendRouter(),
+                ),
+                GoRoute(
+                  path: RouterPath.WALLET_SEND_CONFIRM,
+                  builder: (context, state) => const WalletSendConfirmRouter(),
+                ),
+                GoRoute(
+                  path: RouterPath.NWC,
+                  builder: (context, state) => const NwcRouter(),
+                ),
+                GoRoute(
+                  path: RouterPath.SETTINGS_WALLET,
+                  builder: (context, state) => const WalletSettingsRouter(),
                 ),
               ],
               GoRoute(
