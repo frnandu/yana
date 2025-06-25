@@ -104,6 +104,7 @@ class _ProfileEditorRouter extends CustState<ProfileEditorRouter> {
             .then(
           (metadata) {
             metadata ??= Metadata(pubKey: loggedUserSigner!.getPublicKey());
+            this.metadata = metadata;
             EasyLoading.dismiss();
             return this.metadata;
           },
@@ -273,7 +274,7 @@ class _ProfileEditorRouter extends CustState<ProfileEditorRouter> {
               Container(
                 width: mediaDataCache.size.width,
                 height: mediaDataCache.size.height - mediaDataCache.padding.top,
-                margin: EdgeInsets.only(top: mediaDataCache.padding.top),
+                margin: EdgeInsets.only(top: mediaDataCache.padding.top+70),
                 child: Container(
                   color: cardColor,
                   padding: EdgeInsets.only(
