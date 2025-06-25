@@ -2,9 +2,12 @@ import 'dart:io';
 
 import 'package:flick_video_player/flick_video_player.dart';
 import 'package:flutter/foundation.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
-
+import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
+import 'package:yana/models/video_autoplay_preference.dart';
+import 'package:yana/provider/setting_provider.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
 import '../../main.dart';
@@ -58,8 +61,9 @@ class _ContentVideoComponent extends State<ContentVideoComponent> {
     super.dispose();
   }
 
-  void _handleVisibilityChanged(VisibilityInfo info) {
+  void _handleVisibilityChanged(VisibilityInfo info) async {
     final visiblePercentage = info.visibleFraction * 100;
+    final settingProvider = Provider.of<SettingProvider>(context, listen: false);
 
     if (disposed || !_controller.value.isInitialized) return;
 
@@ -71,8 +75,29 @@ class _ContentVideoComponent extends State<ContentVideoComponent> {
     } else {
       visible = true;
       if (firstVisible) {
-        if (_controller.value.isInitialized) {
-          _flickManager.flickControlManager!.play();
+        bool shouldPlay = false;
+        VideoAutoplayPreference preference = settingProvider.videoAutoplayPreference;
+        List<ConnectivityResult> connectivityResults = await (Connectivity().checkConnectivity());
+
+        bool hasAnyConnection = !connectivityResults.contains(ConnectivityResult.none);
+        bool isOnWifi = connectivityResults.contains(ConnectivityResult.wifi);
+
+        if (hasAnyConnection) { // Only proceed if there's some form of internet
+          if (preference == VideoAutoplayPreference.always) {
+            shouldPlay = true;
+          } else if (preference == VideoAutoplayPreference.wifiOnly) {
+            if (isOnWifi) {
+              shouldPlay = true;
+            }
+          }
+          // If preference is VideoAutoplayPreference.never, shouldPlay remains false by default
+        }
+        // If !hasAnyConnection, shouldPlay also remains false
+
+        if (shouldPlay) {
+          if (_controller.value.isInitialized) {
+            _flickManager.flickControlManager!.play();
+          }
         }
         firstVisible = false;
       }
