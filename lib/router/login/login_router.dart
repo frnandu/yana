@@ -323,5 +323,6 @@ class _LoginRouter extends State<LoginRouter>
     AccountsState.clearCurrentMemInfo();
 
     base.doLogin(key['signature'], true, false, true);
+    context.pop();
   }
 }

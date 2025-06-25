@@ -27,6 +27,7 @@ class RouterPath {
       AppFeatures.enableSocial ? "/userRelays" : "/userRelays_disabled";
   static const String RELAY_SET = "/relaySet";
   static const String RELAY_LIST = "/relayList";
+  static const String MEDIA_SERVERS = "/mediaServers";
   static const String MUTE_LIST = "/muteList";
   static String DM_DETAIL =
       AppFeatures.enableDm ? "/dmDetail" : "/dmDetail_disabled";

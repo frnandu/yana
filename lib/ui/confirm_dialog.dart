@@ -17,7 +17,7 @@ class ConfirmDialog {
               TextButton(
                 child: Text(s.Cancel),
                 onPressed: () {
-                  context.pop(false);
+                  Navigator.of(context).pop(false);
                 },
               ),
               onlyCancel
@@ -25,7 +25,7 @@ class ConfirmDialog {
                   : TextButton(
                       child: Text(s.Confirm),
                       onPressed: () async {
-                        context.pop(true);
+                        Navigator.of(context).pop(true);
                       },
                     ),
             ],

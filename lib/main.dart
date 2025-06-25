@@ -35,6 +35,7 @@ import 'package:yana/nostr/nip07/extension_event_signer.dart';
 import 'package:yana/nostr/nip19/nip19.dart';
 import 'package:yana/nostr/nip19/nip19_tlv.dart';
 import 'package:yana/provider/badge_definition_provider.dart';
+import 'package:yana/router/user/media_servers_router.dart';
 import 'package:yana/utils/router_path.dart';
 import 'package:yana/provider/community_info_provider.dart';
 import 'package:yana/provider/custom_emoji_provider.dart';
@@ -199,12 +200,11 @@ int c = 0;
 
 const DEFAULT_BLOSSOM_SERVERS = [
   'https://nostr.download',
-  // 'https://blossom.f7z.io',
   'https://blossom.band',
   'https://cdn.hzrd149.com',
   'https://blossom.primal.net',
   'https://cdn.nostrcheck.me'
-      'https://files.v0l.io',
+  'https://files.v0l.io',
 ];
 
 // @pragma('vm:entry-point')
@@ -1055,6 +1055,10 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
               GoRoute(
                 path: RouterPath.RELAY_LIST,
                 builder: (context, state) => const RelayListRouter(),
+              ),
+              GoRoute(
+                path: RouterPath.MEDIA_SERVERS,
+                builder: (context, state) => const MediaServersRouter(),
               ),
               GoRoute(
                 path: RouterPath.MUTE_LIST,

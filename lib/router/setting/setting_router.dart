@@ -428,6 +428,8 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
 
     List<AbstractSettingsTile> listsTiles = [];
 
+    List<AbstractSettingsTile> mediaServersTiles = [];
+
     listsTiles.add(SettingsTile.navigation(
         onPressed: (context) async {
           if (filterProvider.muteListCount > 0) {
@@ -519,6 +521,18 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
         trailing: Icon(Icons.navigate_next),
         title: Text(
           "${ndk.relays.globalState.blockedRelays.length} Blocked relays",
+        )));
+
+    mediaServersTiles.add(SettingsTile.navigation(
+        onPressed: (context) async {
+            context.push(RouterPath.MEDIA_SERVERS);
+        },
+        leading: const Icon(
+          Icons.perm_media_outlined,
+        ),
+        trailing: Icon(Icons.navigate_next),
+        title: Text(
+          "Media servers",
         )));
 
     if (AppFeatures.enableSearch) {
@@ -675,6 +689,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
     sections
         .add(SettingsSection(title: Text('Interface'), tiles: interfaceTiles));
     sections.add(SettingsSection(title: Text('Network'), tiles: networkTiles));
+    sections.add(SettingsSection(title: Text('Files & media'), tiles: mediaServersTiles));
     sections.add(SettingsSection(title: Text('Lists'), tiles: listsTiles));
     if (notificationTiles.isNotEmpty) {
       sections.add(SettingsSection(
