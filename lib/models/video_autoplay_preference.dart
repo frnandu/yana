@@ -10,7 +10,7 @@ extension VideoAutoplayPreferenceExtension on VideoAutoplayPreference {
       case VideoAutoplayPreference.always:
         return 'Always';
       case VideoAutoplayPreference.wifiOnly:
-        return 'Only on Wi-Fi';
+        return 'Only on Wifi';
       case VideoAutoplayPreference.never:
         return 'Never';
     }

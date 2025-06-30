@@ -282,7 +282,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
     interfaceTiles.add(SettingsTile.navigation(
       leading: const Icon(Icons.play_circle_outline),
       title: Text(s.videoAutoplay),
-      value: Text(getVideoAutoplayPreferenceDisplayName(
+      trailing: Text(getVideoAutoplayPreferenceDisplayName(
           settingProvider.videoAutoplayPreference, s)),
       onPressed: (context) async {
         List<EnumObj> options = VideoAutoplayPreference.values

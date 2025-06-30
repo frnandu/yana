@@ -2118,10 +2118,10 @@ class I18n {
     );
   }
 
-  /// `Only on Wi-Fi`
+  /// `Only on Wifi`
   String get wifiOnly {
     return Intl.message(
-      'Only on Wi-Fi',
+      'Only on Wifi',
       name: 'wifiOnly',
       desc: '',
       args: [],

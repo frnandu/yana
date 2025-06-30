@@ -318,6 +318,6 @@ class MessageLookup extends MessageLookupByLibrary {
         "replied": MessageLookupByLibrary.simpleMessage("replied"),
         "terms_of_user": MessageLookupByLibrary.simpleMessage("terms of user"),
         "videoAutoplay": MessageLookupByLibrary.simpleMessage("Video Autoplay"),
-        "wifiOnly": MessageLookupByLibrary.simpleMessage("Wi-Fi only")
+        "wifiOnly": MessageLookupByLibrary.simpleMessage("Wifi only")
       };
 }

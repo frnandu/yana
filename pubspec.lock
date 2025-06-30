@@ -1162,14 +1162,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.5"
-  isar:
-    dependency: transitive
-    description:
-      name: isar
-      sha256: ebf74d87c400bd9f7da14acb31932b50c2407edbbd40930da3a6c2a8143f85a8
-      url: "https://pub.dev"
-    source: hosted
-    version: "4.0.0-dev.14"
   js:
     dependency: transitive
     description:
@@ -2027,14 +2019,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.0+1"
-  source_gen:
-    dependency: transitive
-    description:
-      name: source_gen
-      sha256: "14658ba5f669685cd3d63701d01b31ea748310f7ab854e471962670abcf57832"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.5.0"
   source_span:
     dependency: transitive
     description:
