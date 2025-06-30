@@ -113,18 +113,16 @@
 - ~~video player fullscreen~~
 
 == IMPORTANT bugfixes
-- editing metadata profile on new account doesn't work
-
+- ~~editing metadata profile on new account doesn't work~~
 
 === v0.17
-- Introduce release flavors, starting with a YANA Wallet APK focused solely on wallet functionality.\
-- start in home screen, not in login screen
+- ~~Introduce release flavors, starting with a YANA Wallet APK focused solely on wallet functionality.~~
+- ~~start in home screen, not in login screen~~
 
 - empty notifications placeholder for new account
 - when switching to an account that has no followers it will not reload the feed
 - click on reaction should be more responsive and only rollback if there is an error broadcasting on background
 - download video
-- make back button work in profile
 - too much ongoing requests/subscriptions (reactions/?)
 - fix gossip
 - fix background service?!?! | hide background service from settings
@@ -132,11 +130,11 @@
 
 ===== ?
 - fix loading of metadatas, sometimes doesn't update quickly?!?
-- Apply a new design for the feed, onboarding, and modules prepared by Saunter.\
-- Separate settings and wallets for each account.\
-- User selection for image services when uploading files.\
-- Display the note being replied to.\
-- Implement NIP-13 Proof of Work for mobile devices.\
+- Apply a new design for the feed, onboarding, and modules prepared by Saunter.
+- Separate settings and wallets for each account.
+- User selection for image services when uploading files.
+- Display the note being replied to.
+- Implement NIP-13 Proof of Work for mobile devices.
 
 
 - filter notification about your own zapping!
