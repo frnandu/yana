@@ -927,7 +927,12 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
       return valueA.compareTo(valueB);
     });
 
-    EnumObj? resultEnumObj = await EnumSelectorComponent.show(context, objs);
+    EnumObj? resultEnumObj = await EnumSelectorComponent.show(
+      context, 
+      objs,
+      showSearchField: true,
+      searchHint: 'Search currency...',
+    );
     if (resultEnumObj != null) {
       var a = await RatesUtil.fiatCurrency(resultEnumObj!.value);
       fiatCurrencyRate = a;
