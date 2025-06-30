@@ -196,9 +196,9 @@ class AccountsState extends State<AccountsComponent> {
     EventSigner eventSigner = settingProvider.isExternalSignerKey
         ? AmberEventSigner(publicKey: publicKey, amberFlutterDS: amberFlutterDS)
         : isPrivate || !PlatformUtil.isWeb()
-        ? Bip340EventSigner(
-        privateKey: isPrivate ? key : null, publicKey: publicKey)
-        : Nip07EventSigner(await js.getPublicKeyAsync());
+            ? Bip340EventSigner(
+                privateKey: isPrivate ? key : null, publicKey: publicKey)
+            : Nip07EventSigner(await js.getPublicKeyAsync());
     // await ndk.destroy();
     // ndk = Ndk(
     //     NdkConfig(
@@ -215,7 +215,9 @@ class AccountsState extends State<AccountsComponent> {
 
     followEventProvider?.clear();
     await followEventProvider?.loadCachedFeed();
-    initRelays(newKey: false);
+    initRelays(newKey: false).then((value) {
+      followersProvider.subscribe(loggedUserSigner!.getPublicKey());
+    });
     if (AppFeatures.enableNotifications) {
       notificationsProvider?.notifyListeners();
     }
@@ -266,6 +268,7 @@ class AccountsState extends State<AccountsComponent> {
     }
     followEventProvider?.clear();
     followNewEventProvider?.clear();
+    followersProvider.closeSubscription();
     dmProvider?.clear();
     noticeProvider.clear();
     contactListProvider?.clear();
@@ -346,7 +349,8 @@ class _AccountManagerItemComponent extends State<AccountManagerItemComponent> {
                   ? metadata.picture
                   : StringUtil.robohash(pubkey!);
 
-          String displayName = metadata?.displayName ?? metadata?.name ?? 'User';
+          String displayName =
+              metadata?.displayName ?? metadata?.name ?? 'User';
           if (StringUtil.isBlank(displayName)) {
             displayName = 'User';
           }
