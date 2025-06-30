@@ -23,8 +23,7 @@ class MessageLookup extends MessageLookupByLibrary {
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
         "About": MessageLookupByLibrary.simpleMessage("About"),
-        "Accounts":
-            MessageLookupByLibrary.simpleMessage("Accounts"),
+        "Accounts": MessageLookupByLibrary.simpleMessage("Accounts"),
         "Add_Account": MessageLookupByLibrary.simpleMessage("Add Account"),
         "Add_Custom_Emoji":
             MessageLookupByLibrary.simpleMessage("Add Custom Emoji"),
@@ -51,7 +50,9 @@ class MessageLookup extends MessageLookupByLibrary {
         "Begin_to_load_Contact_History": MessageLookupByLibrary.simpleMessage(
             "Begin to load Contact History"),
         "Block": MessageLookupByLibrary.simpleMessage("Block"),
-        "Blocked_Profiles": MessageLookupByLibrary.simpleMessage("Blocked Profiles"),
+        "Blocked_Profiles":
+            MessageLookupByLibrary.simpleMessage("Blocked Profiles"),
+        "Blocked_Words": MessageLookupByLibrary.simpleMessage("Blocked Words"),
         "Boost": MessageLookupByLibrary.simpleMessage("Boost"),
         "Broadcast": MessageLookupByLibrary.simpleMessage("Broadcast"),
         "Broadcast_When_Boost":
@@ -91,7 +92,9 @@ class MessageLookup extends MessageLookupByLibrary {
         "Delete_Account_Tips": MessageLookupByLibrary.simpleMessage(
             "We will try to delete you infomation. When you login with this Key again, you will lose your data."),
         "Detail": MessageLookupByLibrary.simpleMessage("Detail"),
-        "Blocked_Words": MessageLookupByLibrary.simpleMessage("Blocked Words"),
+        "Developers_will_never_require_a_key_from_you":
+            MessageLookupByLibrary.simpleMessage(
+                "Developers will never require a key from you."),
         "Display_Name": MessageLookupByLibrary.simpleMessage("Display Name"),
         "Donate": MessageLookupByLibrary.simpleMessage("Donate"),
         "Dont_Compress":
@@ -169,9 +172,6 @@ class MessageLookup extends MessageLookupByLibrary {
         "Name": MessageLookupByLibrary.simpleMessage("Name"),
         "Network": MessageLookupByLibrary.simpleMessage("Network"),
         "Nip05": MessageLookupByLibrary.simpleMessage("Nip05"),
-        "Developers_will_never_require_a_key_from_you":
-            MessageLookupByLibrary.simpleMessage(
-                "Developers will never require a key from you."),
         "Note_Id": MessageLookupByLibrary.simpleMessage("Note Id"),
         "Note_loading": MessageLookupByLibrary.simpleMessage("Note loading..."),
         "Notes": MessageLookupByLibrary.simpleMessage("Notes"),
@@ -221,7 +221,8 @@ class MessageLookup extends MessageLookupByLibrary {
         "Posts": MessageLookupByLibrary.simpleMessage("Posts"),
         "Posts_and_replies":
             MessageLookupByLibrary.simpleMessage("Posts & Replies"),
-        "Privacy_Lock": MessageLookupByLibrary.simpleMessage("Require unlock to use"),
+        "Privacy_Lock":
+            MessageLookupByLibrary.simpleMessage("Require unlock to use"),
         "Private_key_is_null":
             MessageLookupByLibrary.simpleMessage("Private key is null."),
         "Quote": MessageLookupByLibrary.simpleMessage("Quote"),
@@ -252,7 +253,8 @@ class MessageLookup extends MessageLookupByLibrary {
         "Text_can_t_contain_new_line": MessageLookupByLibrary.simpleMessage(
             "Text can\'t contain new line"),
         "Theme_Color": MessageLookupByLibrary.simpleMessage("Theme Color"),
-        "Theme_Style": MessageLookupByLibrary.simpleMessage("Use Theme from System"),
+        "Theme_Style":
+            MessageLookupByLibrary.simpleMessage("Use Theme from System"),
         "This_note_contains_sensitive_content":
             MessageLookupByLibrary.simpleMessage(
                 "This note contains sensitive content"),
@@ -294,6 +296,7 @@ class MessageLookup extends MessageLookupByLibrary {
             "Zap num can not smaller then"),
         "add_poll_option":
             MessageLookupByLibrary.simpleMessage("add poll option"),
+        "always": MessageLookupByLibrary.simpleMessage("Always"),
         "auto": MessageLookupByLibrary.simpleMessage("Auto"),
         "boosted": MessageLookupByLibrary.simpleMessage("boosted"),
         "close": MessageLookupByLibrary.simpleMessage("Close"),
@@ -305,13 +308,16 @@ class MessageLookup extends MessageLookupByLibrary {
         "min_zap_num": MessageLookupByLibrary.simpleMessage("min zap num"),
         "network_take_effect_tip": MessageLookupByLibrary.simpleMessage(
             "The network will take effect the next time the app is launched"),
+        "never": MessageLookupByLibrary.simpleMessage("Never"),
         "not_found": MessageLookupByLibrary.simpleMessage("not found"),
-        "posted": MessageLookupByLibrary.simpleMessage("posted"),
         "open": MessageLookupByLibrary.simpleMessage("Open"),
         "or": MessageLookupByLibrary.simpleMessage("or"),
         "poll_option_info":
             MessageLookupByLibrary.simpleMessage("poll option info"),
+        "posted": MessageLookupByLibrary.simpleMessage("posted"),
         "replied": MessageLookupByLibrary.simpleMessage("replied"),
-        "terms_of_user": MessageLookupByLibrary.simpleMessage("terms of user")
+        "terms_of_user": MessageLookupByLibrary.simpleMessage("terms of user"),
+        "videoAutoplay": MessageLookupByLibrary.simpleMessage("Video Autoplay"),
+        "wifiOnly": MessageLookupByLibrary.simpleMessage("Wifi only")
       };
 }

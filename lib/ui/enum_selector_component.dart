@@ -7,19 +7,30 @@ import '../utils/base_consts.dart';
 class EnumSelectorComponent extends StatefulWidget {
   final List<EnumObj> list;
   final Widget Function(BuildContext, EnumObj)? enumItemBuild;
+  final bool showSearchField;
+  final String? searchHint;
 
   const EnumSelectorComponent({
     super.key,
     required this.list,
     this.enumItemBuild,
+    this.showSearchField = false,
+    this.searchHint,
   });
 
-  static Future<EnumObj?> show(BuildContext context, List<EnumObj> list) async {
+  static Future<EnumObj?> show(
+    BuildContext context, 
+    List<EnumObj> list, {
+    bool showSearchField = false,
+    String? searchHint,
+  }) async {
     return await showDialog<EnumObj?>(
       context: context,
       builder: (_context) {
         return EnumSelectorComponent(
           list: list,
+          showSearchField: showSearchField,
+          searchHint: searchHint,
         );
       },
     );
@@ -87,13 +98,13 @@ class _EnumSelectorComponentState extends State<EnumSelectorComponent> {
       }
     }
 
-    Widget searchField = Padding(
+    Widget? searchField = widget.showSearchField ? Padding(
       padding: const EdgeInsets.symmetric(
           horizontal: Base.BASE_PADDING, vertical: Base.BASE_PADDING_HALF),
       child: TextField(
         controller: _searchController,
         decoration: InputDecoration(
-          hintText: 'Search currency...',
+          hintText: widget.searchHint ?? 'Search...',
           prefixIcon: const Icon(Icons.search),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10),
@@ -102,6 +113,27 @@ class _EnumSelectorComponentState extends State<EnumSelectorComponent> {
           filled: true,
           fillColor:
               themeData.scaffoldBackgroundColor, // Or another suitable color
+        ),
+      ),
+    ) : null;
+
+    List<Widget> columnChildren = [];
+    if (searchField != null) {
+      columnChildren.add(searchField);
+    }
+    columnChildren.add(
+      Expanded(
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: widgets.isEmpty && widget.showSearchField && _searchController.text.isNotEmpty
+                ? [
+                    Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Text("No results found"))
+                  ]
+                : widgets,
+          ),
         ),
       ),
     );
@@ -117,23 +149,7 @@ class _EnumSelectorComponentState extends State<EnumSelectorComponent> {
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
-        children: [
-          searchField,
-          Expanded(
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: widgets.isEmpty && _searchController.text.isNotEmpty
-                    ? [
-                        Padding(
-                            padding: const EdgeInsets.all(16.0),
-                            child: Text("No currency found"))
-                      ]
-                    : widgets,
-              ),
-            ),
-          ),
-        ],
+        children: columnChildren,
       ),
     );
 

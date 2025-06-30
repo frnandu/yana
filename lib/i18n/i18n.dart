@@ -2097,6 +2097,46 @@ class I18n {
       args: [],
     );
   }
+
+  /// `Video Autoplay`
+  String get videoAutoplay {
+    return Intl.message(
+      'Video Autoplay',
+      name: 'videoAutoplay',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Always`
+  String get always {
+    return Intl.message(
+      'Always',
+      name: 'always',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Only on Wifi`
+  String get wifiOnly {
+    return Intl.message(
+      'Only on Wifi',
+      name: 'wifiOnly',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Never`
+  String get never {
+    return Intl.message(
+      'Never',
+      name: 'never',
+      desc: '',
+      args: [],
+    );
+  }
 }
 
 class I18nDelegate extends LocalizationsDelegate<I18n> {

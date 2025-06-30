@@ -9,8 +9,8 @@
 .svn/
 
 # IntelliJ related
-*.iml
 *.ipr
+*.iml
 *.iws
 .idea/
 
@@ -51,3 +51,4 @@ dist
 /Yana.AppDir/yana
 /Yana.AppDir/lib/
 /Yana.AppDir/data/
+/.vscode/launch.json

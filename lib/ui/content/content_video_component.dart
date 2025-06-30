@@ -2,9 +2,12 @@ import 'dart:io';
 
 import 'package:flick_video_player/flick_video_player.dart';
 import 'package:flutter/foundation.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
-
+import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
+import 'package:yana/models/video_autoplay_preference.dart';
+import 'package:yana/provider/setting_provider.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
 import '../../main.dart';
@@ -22,11 +25,13 @@ class ContentVideoComponent extends StatefulWidget {
 }
 
 class _ContentVideoComponent extends State<ContentVideoComponent> {
-  late FlickManager _flickManager;
+  FlickManager? _flickManager;
   late VideoPlayerController _controller;
 
   bool disposed = false;
   bool visible = false;
+  List<ConnectivityResult>? cachedConnectivityResults;
+  int lastConnectivityCheck = 0;
   bool firstVisible = true;
   final Key _visibilityKey = UniqueKey();
 
@@ -44,39 +49,86 @@ class _ContentVideoComponent extends State<ContentVideoComponent> {
     } else {
       _controller = VideoPlayerController.file(File(widget.url));
     }
+    _controller.addListener(() {
+      setState(() {
 
-    _flickManager = FlickManager(
-      videoPlayerController: _controller,
-    );
-    _flickManager.flickControlManager!.mute();
+      });
+    });
+    shouldAutoPlay().then((shouldPlay) {
+      if (disposed) return;
+      setState(() {
+        _flickManager = FlickManager(
+          autoPlay: shouldPlay,
+          videoPlayerController: _controller,
+        );
+        _flickManager!.flickControlManager!.mute();
+      });
+    });
   }
 
   @override
   void dispose() {
     disposed = true;
-    _flickManager.dispose();
+    _flickManager?.dispose();
     super.dispose();
   }
 
-  void _handleVisibilityChanged(VisibilityInfo info) {
+  void _handleVisibilityChanged(VisibilityInfo info) async {
     final visiblePercentage = info.visibleFraction * 100;
+    final settingProvider =
+        Provider.of<SettingProvider>(context, listen: false);
 
-    if (disposed || !_controller.value.isInitialized) return;
+    if (disposed || _flickManager==null || !_controller.value.isInitialized) return;
 
     if (visiblePercentage < 10) {
       visible = false;
-      if (_flickManager.flickVideoManager!.isPlaying) {
-        _flickManager.flickControlManager!.pause();
+      if (_flickManager!.flickVideoManager!.isPlaying) {
+        _flickManager!.flickControlManager!.pause();
       }
     } else {
       visible = true;
       if (firstVisible) {
-        if (_controller.value.isInitialized) {
-          _flickManager.flickControlManager!.play();
+        bool shouldPlay = false;
+
+        shouldPlay = await shouldAutoPlay();
+        // If !hasAnyConnection, shouldPlay also remains false
+
+        if (shouldPlay) {
+          if (_controller.value.isInitialized) {
+            _flickManager!.flickControlManager!.play();
+          }
         }
         firstVisible = false;
       }
     }
+  }
+
+  Future<bool> shouldAutoPlay() async {
+    if (cachedConnectivityResults==null || lastConnectivityCheck < DateTime.now().millisecondsSinceEpoch - 10000) {
+      lastConnectivityCheck = DateTime.now().millisecondsSinceEpoch;
+      cachedConnectivityResults =
+        await (Connectivity().checkConnectivity());
+    }
+
+    bool hasAnyConnection =
+        !cachedConnectivityResults!.contains(ConnectivityResult.none);
+
+    if (hasAnyConnection) {
+      // Only proceed if there's some form of internet
+      VideoAutoplayPreference preference =
+          settingProvider.videoAutoplayPreference;
+      if (preference == VideoAutoplayPreference.always) {
+        return true;
+      } else if (preference == VideoAutoplayPreference.wifiOnly) {
+        bool isOnWifi = cachedConnectivityResults!.contains(ConnectivityResult.wifi);
+        if (isOnWifi) {
+          return true;
+        }
+      }
+      // If preference is VideoAutoplayPreference.never, shouldPlay remains false by default
+    }
+    // If !hasAnyConnection, shouldPlay also remains false
+    return false;
   }
 
   @override
@@ -90,16 +142,16 @@ class _ContentVideoComponent extends State<ContentVideoComponent> {
           bottom: Base.BASE_PADDING_HALF,
         ),
         child: Center(
-          child: _controller.value.isInitialized
-              ? FlickVideoPlayer(
-                  flickManager: _flickManager,
-                  flickVideoWithControls: const FlickVideoWithControls(
-                    controls: FlickPortraitControls(
-                      iconSize: 32, fontSize: 14,
-                    ),
-                  ))
-              : const CircularProgressIndicator(), // Show a loader while initializing
-        ),
+            child: _flickManager!=null ? FlickVideoPlayer(
+                flickManager: _flickManager!,
+                flickVideoWithControls: const FlickVideoWithControls(
+                  controls: FlickPortraitControls(
+                    iconSize: 32,
+                    fontSize: 14,
+                  ),
+                ))
+            : const CircularProgressIndicator(), // Show a loader while initializing
+            ),
       ),
     );
   }
