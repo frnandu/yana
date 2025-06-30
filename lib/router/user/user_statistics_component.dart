@@ -1,10 +1,10 @@
 import 'dart:async';
 
-import 'package:convert/convert.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:ndk/entities.dart';
 import 'package:ndk/ndk.dart';
+import 'package:provider/provider.dart';
+import 'package:yana/provider/followers_provider.dart';
 import 'package:yana/utils/base_consts.dart';
 
 import '../../i18n/i18n.dart';
@@ -19,7 +19,6 @@ import 'package:go_router/go_router.dart';
 import '../../utils/base.dart';
 import '../../utils/number_format_util.dart';
 import '../../utils/router_path.dart';
-import '../../utils/string_util.dart';
 
 class UserStatisticsComponent extends StatefulWidget {
   String pubkey;
@@ -42,25 +41,15 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
   UserRelayList? userRelayList;
   ContactList? contactList;
 
-  // followedMap
-  Map<String, Nip01Event>? followedMap;
-
   int length = 0;
-  int relaysNum = 0;
   int? zapNum;
-  int? followedNum;
 
   bool isLocal = false;
 
   @override
   void initState() {
+    super.initState();
     isLocal = widget.pubkey == loggedUserSigner!.getPublicKey();
-    // if (isLocal && widget.userNostr == null) {
-    //   widget.userNostr = nostr;
-    // }
-    // if (!isLocal && widget.userNostr != null) {
-    //   loadContactList(widget.userNostr!);
-    // }
     load();
   }
 
@@ -83,7 +72,6 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
     );
     if (loggedUserSigner != null &&
         loggedUserSigner!.getPublicKey() == widget.pubkey) {
-      queryFollowers();
       queryZaps();
     }
   }
@@ -131,20 +119,23 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
     }
     list.add(UserStatisticsItemComponent(
         num: length, name: s.Following, onTap: onFollowingTap));
-    // }
 
     if (loggedUserSigner != null &&
         loggedUserSigner!.getPublicKey() == widget.pubkey) {
-      list.add(UserStatisticsItemComponent(
-        num: followedNum ?? 0,
-        name: s.Followers,
-        onTap: () {
-          if (followedMap != null) {
-            var pubkeys = followedMap!.keys.toList();
-            context.push(RouterPath.FOLLOWED, extra: pubkeys);
-          }
+      list.add(Consumer<FollowersProvider>(
+        builder: (context, provider, child) {
+          return UserStatisticsItemComponent(
+            num: provider.followersCount,
+            name: s.Followers,
+            onTap: () {
+              if (provider.followedMap.isNotEmpty) {
+                var pubkeys = provider.followedMap.keys.toList();
+                context.push(RouterPath.FOLLOWED, extra: pubkeys);
+              }
+            },
+            formatNum: true,
+          );
         },
-        formatNum: true,
       ));
 
       list.add(UserStatisticsItemComponent(
@@ -188,56 +179,6 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
     );
   }
 
-  String? fetchLocalContactsId;
-
-  EventMemBox? localContactBox;
-
-  void onLongPressStart(LongPressStartDetails d) {
-    if (fetchLocalContactsId == null) {
-      fetchLocalContactsId = StringUtil.rndNameStr(16);
-      localContactBox = EventMemBox(sortAfterAdd: false);
-      // var filter = Filter(
-      //     authors: [widget.pubkey], kinds: [kind.EventKind.CONTACT_LIST]);
-      // TODO use dart_ndk
-      // widget.userNostr!.query([filter.toMap()], (event) {
-      //   localContactBox!.add(event);
-      // }, id: fetchLocalContactsId);
-      EasyLoading.show(status: I18n.of(context).Begin_to_load_Contact_History);
-    }
-  }
-
-  Future<void> onLongPressEnd(LongPressEndDetails d) async {
-    if (fetchLocalContactsId != null) {
-      // widget.userNostr!.unsubscribe(fetchLocalContactsId!);
-      fetchLocalContactsId = null;
-
-      var format = FixedDateTimeFormatter("YYYY-MM-DD hh:mm:ss");
-
-      localContactBox!.sort();
-      var list = localContactBox!.all();
-
-      List<EnumObj> enumList = [];
-      // for (var event in list) {
-      //   var _contactList = ContactList.fromJson(event.tags);
-      //   var dt = DateTime.fromMillisecondsSinceEpoch(event.createdAt * 1000);
-      //   enumList.add(
-      //       EnumObj(event, "${format.encode(dt)} (${_contactList.total()})"));
-      // }
-      //
-      // var result = await EnumSelectorComponent.show(context, enumList);
-      // if (result != null) {
-      //   var event = result.value as Event;
-      //   var _contactList = ContactList.fromJson(event.tags);
-      //   context.push(RouterPath.USER_HISTORY_CONTACT_LIST,
-      //       extra: _contactList);
-      // }
-    }
-  }
-
-  String queryId = "";
-
-  String queryId2 = "";
-
   @override
   Future<void> onReady(BuildContext context) async {}
 
@@ -265,41 +206,7 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
     }
   }
 
-  String followedSubscribeId = "";
-
-  NdkResponse? _followersSubscription;
   NdkResponse? _zapsSubscription;
-
-  queryFollowers() async {
-    if (followedMap == null) {
-      followedMap = {};
-
-      Filter filter =
-          Filter(kinds: [ContactList.kKind], pTags: [widget.pubkey]);
-
-      _followersSubscription = ndk.requests.query(
-        //ndk.relays.bootstrapRelays.toList()
-        //   ..addAll(myInboxRelaySet!.urls),
-        name: "user-stats-followers",
-        timeout: const Duration(seconds: 60),
-        filters: [filter],
-        relaySet: myInboxRelaySet!,
-      );
-      _followersSubscription!.stream.listen((event) {
-        var oldEvent = followedMap![event.pubKey];
-        if (oldEvent == null || event.createdAt > oldEvent.createdAt) {
-          followedMap![event.pubKey] = event;
-          if (!_disposed) {
-            setState(() {
-              followedNum = followedMap!.length;
-            });
-          }
-        }
-      });
-
-      followedNum = 0;
-    }
-  }
 
   onRelaysTap() {
     if (userRelayList != null && userRelayList!.relays.isNotEmpty) {
@@ -349,27 +256,10 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
     }
   }
 
-  // @override
-  // void deactivate() {
-  //   super.deactivate();
-  //   if (_followersSubscription != null) {
-  //     ndk.relays.closeSubscription(_followersSubscription!.requestId);
-  //     _followersSubscription=null;
-  //   }
-  //   if (_zapsSubscription != null) {
-  //     ndk.relays.closeSubscription(_zapsSubscription!.requestId);
-  //     _zapsSubscription=null;
-  //   }
-  // }
-
   @override
   void dispose() {
     super.dispose();
     _disposed = true;
-    if (_followersSubscription != null) {
-      ndk.requests.closeSubscription(_followersSubscription!.requestId);
-      _followersSubscription = null;
-    }
     if (_zapsSubscription != null) {
       ndk.requests.closeSubscription(_zapsSubscription!.requestId);
       _zapsSubscription = null;
@@ -389,18 +279,6 @@ class _UserStatisticsComponent extends CustState<UserStatisticsComponent> {
       }
     }
   }
-
-  onFollowedTap() {
-    if (contactList != null) {
-      context.push(RouterPath.USER_CONTACT_LIST, extra: widget.pubkey);
-    } else if (isLocal) {
-      var cl =
-          contactListProvider?.getContactList(loggedUserSigner!.getPublicKey());
-      if (cl != null) {
-        context.push(RouterPath.USER_CONTACT_LIST, extra: widget.pubkey);
-      }
-    }
-  }
 }
 
 class UserStatisticsItemComponent extends StatelessWidget {
@@ -412,17 +290,11 @@ class UserStatisticsItemComponent extends StatelessWidget {
 
   bool formatNum;
 
-  Function(LongPressStartDetails)? onLongPressStart;
-
-  Function(LongPressEndDetails)? onLongPressEnd;
-
   UserStatisticsItemComponent({
     required this.num,
     required this.name,
     required this.onTap,
     this.formatNum = false,
-    this.onLongPressStart,
-    this.onLongPressEnd,
   });
 
   @override
@@ -461,8 +333,6 @@ class UserStatisticsItemComponent extends StatelessWidget {
       onTap: () {
         onTap();
       },
-      onLongPressStart: onLongPressStart,
-      onLongPressEnd: onLongPressEnd,
       child: Container(
         margin: EdgeInsets.only(left: Base.BASE_PADDING),
         child: Row(children: list),

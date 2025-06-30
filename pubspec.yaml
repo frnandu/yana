@@ -173,7 +173,7 @@ dependency_overrides:
     git:
       url: https://github.com/relaystr/ndk.git
       path: packages/ndk
-      ref: 5e67f35410599cde8c6e074037f55741d16fe3ed
+      ref: 926beb648f46078102cb8e6651ddfaba235dfd1a
   ndk_objectbox:
     git:
       url: https://github.com/relaystr/ndk.git
