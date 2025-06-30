@@ -46,10 +46,12 @@ jobs:
 
       - name: build apk-split FULL
         run: flutter build apk --split-per-abi --flavor full --dart-define=ENABLE_WALLET=true --dart-define=ENABLE_SOCIAL=true --dart-define=ENABLE_DM=true --dart-define=ENABLE_SEARCH=true --dart-define=ENABLE_NOTIFICATIONS=true
-      - name: build apk-split WALLET
-        run: flutter build apk --split-per-abi --flavor wallet --dart-define=ENABLE_WALLET=true --dart-define=ENABLE_SOCIAL=false --dart-define=ENABLE_DM=false --dart-define=ENABLE_SEARCH=false --dart-define=ENABLE_NOTIFICATIONS=false
       - name: build apk-split SOCIAL
         run: flutter build apk --split-per-abi --flavor social --dart-define=ENABLE_WALLET=false --dart-define=ENABLE_SOCIAL=true --dart-define=ENABLE_DM=false --dart-define=ENABLE_SEARCH=false --dart-define=ENABLE_NOTIFICATIONS=true
+      - name: scripts/switch_flavor.sh wallet
+        run: scripts/switch_flavor.sh wallet
+      - name: build apk-split WALLET
+        run: flutter build apk --split-per-abi --flavor wallet --dart-define=ENABLE_WALLET=true --dart-define=ENABLE_SOCIAL=false --dart-define=ENABLE_DM=false --dart-define=ENABLE_SEARCH=false --dart-define=ENABLE_NOTIFICATIONS=false
 #      - name: build apk
 #        run: flutter build apk
 
