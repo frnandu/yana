@@ -6,6 +6,7 @@ import 'package:amberflutter/amberflutter.dart';
 import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+
 // import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart'
     as FlutterCacheManager;
@@ -739,9 +740,9 @@ Future<void> main() async {
     initRelays().then((value) {
       followersProvider.subscribe(loggedUserSigner!.getPublicKey());
     });
-    if (AppFeatures.enableWallet) {
-      nwcProvider?.init(); // Use null-aware access
-    }
+  }
+  if (AppFeatures.enableWallet) {
+    nwcProvider?.init(); // Use null-aware access
   }
 
   AppFeatures.printActiveFeatures(); // Optional: Print features for this flavor
@@ -1091,66 +1092,63 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
                   path: RouterPath.KEY_BACKUP,
                   builder: (context, state) => const KeyBackupRouter(),
                 ),
-                // Conditional wallet routes
-                if (AppFeatures.enableWallet) ...[
-                  GoRoute(
-                    path: RouterPath.WALLET,
-                    builder: (context, state) => const WalletRouter(),
-                  ),
-                  GoRoute(
-                    path: RouterPath.WALLET_TRANSACTIONS,
-                    builder: (context, state) => const TransactionsRouter(),
-                  ),
-                  GoRoute(
-                    path: RouterPath.WALLET_RECEIVE,
-                    builder: (context, state) => const WalletReceiveRouter(),
-                  ),
-                  GoRoute(
-                    path: RouterPath.WALLET_RECEIVE_INVOICE,
-                    builder: (context, state) =>
-                        const WalletReceiveInvoiceRouter(),
-                  ),
-                  GoRoute(
-                    path: RouterPath.WALLET_SEND,
-                    builder: (context, state) => const WalletSendRouter(),
-                  ),
-                  GoRoute(
-                    path: RouterPath.WALLET_SEND_CONFIRM,
-                    builder: (context, state) =>
-                        const WalletSendConfirmRouter(),
-                  ),
-                  GoRoute(
-                    path: RouterPath.NWC,
-                    builder: (context, state) => const NwcRouter(),
-                  ),
-                  GoRoute(
-                    path: RouterPath.SETTINGS_WALLET,
-                    builder: (context, state) => const WalletSettingsRouter(),
-                  ),
-                ],
+              ],
+              // Conditional wallet routes
+              if (AppFeatures.enableWallet) ...[
                 GoRoute(
-                  path: RouterPath.RELAYS,
-                  builder: (context, state) => const RelaysRouter(),
+                  path: RouterPath.WALLET,
+                  builder: (context, state) => const WalletRouter(),
                 ),
                 GoRoute(
-                  path: RouterPath.SETTING,
+                  path: RouterPath.WALLET_TRANSACTIONS,
+                  builder: (context, state) => const TransactionsRouter(),
+                ),
+                GoRoute(
+                  path: RouterPath.WALLET_RECEIVE,
+                  builder: (context, state) => const WalletReceiveRouter(),
+                ),
+                GoRoute(
+                  path: RouterPath.WALLET_RECEIVE_INVOICE,
                   builder: (context, state) =>
-                      SettingRouter(indexReload: reload),
+                      const WalletReceiveInvoiceRouter(),
                 ),
                 GoRoute(
-                  path: RouterPath.QRSCANNER,
-                  builder: (context, state) => const QRScannerRouter(),
+                  path: RouterPath.WALLET_SEND,
+                  builder: (context, state) => const WalletSendRouter(),
                 ),
                 GoRoute(
-                  path: RouterPath.RELAY_INFO,
-                  builder: (context, state) => const RelayInfoRouter(),
+                  path: RouterPath.WALLET_SEND_CONFIRM,
+                  builder: (context, state) => const WalletSendConfirmRouter(),
                 ),
                 GoRoute(
-                  path: RouterPath.LOGIN,
-                  builder: (context, state) =>
-                      const LoginRouter(canGoBack: true),
+                  path: RouterPath.NWC,
+                  builder: (context, state) => const NwcRouter(),
+                ),
+                GoRoute(
+                  path: RouterPath.SETTINGS_WALLET,
+                  builder: (context, state) => const WalletSettingsRouter(),
                 ),
               ],
+              GoRoute(
+                path: RouterPath.RELAYS,
+                builder: (context, state) => const RelaysRouter(),
+              ),
+              GoRoute(
+                path: RouterPath.SETTING,
+                builder: (context, state) => SettingRouter(indexReload: reload),
+              ),
+              GoRoute(
+                path: RouterPath.QRSCANNER,
+                builder: (context, state) => const QRScannerRouter(),
+              ),
+              GoRoute(
+                path: RouterPath.RELAY_INFO,
+                builder: (context, state) => const RelayInfoRouter(),
+              ),
+              GoRoute(
+                path: RouterPath.LOGIN,
+                builder: (context, state) => const LoginRouter(canGoBack: true),
+              ),
             ]),
         GoRoute(
           path: '/dynamic',

@@ -381,9 +381,9 @@ class _WalletRouter extends State<WalletRouter> with ProtocolListener {
                                   height: 70,
                                   // before: const Icon(Icons.call_received_rounded),
                                   onTap: () async {
-                                    Metadata? metadata =
+                                    Metadata? metadata = loggedUserSigner != null ?
                                         await metadataProvider.getMetadata(
-                                            loggedUserSigner!.getPublicKey());
+                                            loggedUserSigner!.getPublicKey()) : null;
                                     if (metadata != null &&
                                         StringUtil.isNotBlank(metadata.lud16)) {
                                       context.push(RouterPath.WALLET_RECEIVE,
@@ -709,8 +709,10 @@ class _WalletRouter extends State<WalletRouter> with ProtocolListener {
   }
 
   Widget barOptions() {
-    return (nwcProvider?.isConnected ?? false)
-        ? Container(
+    return
+      // (nwcProvider?.isConnected ?? false)
+      //   ?
+    Container(
             margin: const EdgeInsets.all(5),
             child: PopupMenuButton<String>(
                 icon: Image.asset("assets/imgs/settings.png",
@@ -741,6 +743,7 @@ class _WalletRouter extends State<WalletRouter> with ProtocolListener {
                     context.push(RouterPath.SETTINGS_WALLET);
                   }
                 }))
-        : Container();
+        // : Container()
+    ;
   }
 }
