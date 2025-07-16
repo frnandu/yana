@@ -11,7 +11,7 @@ import 'package:ndk/domain_layer/entities/nip_01_event.dart';
 import 'package:ndk/domain_layer/entities/relay.dart';
 import 'package:ndk/domain_layer/usecases/nwc/responses/list_transactions_response.dart';
 import 'package:ndk/shared/helpers/relay_helper.dart';
-import 'package:protocol_handler/protocol_handler.dart';
+// import 'package:protocol_handler/protocol_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:yana/main.dart';
@@ -45,7 +45,9 @@ class WalletRouter extends StatefulWidget {
   }
 }
 
-class _WalletRouter extends State<WalletRouter> with ProtocolListener {
+class _WalletRouter extends State<WalletRouter>
+    // with ProtocolListener
+{
   TextEditingController nwcInputController = TextEditingController();
 
   ScrollController scrollController = ScrollController();
@@ -96,7 +98,7 @@ class _WalletRouter extends State<WalletRouter> with ProtocolListener {
         }
       });
     }
-    protocolHandler.addListener(this);
+    // protocolHandler.addListener(this);
     BackButtonInterceptor.add(myInterceptor);
   }
 

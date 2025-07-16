@@ -27,6 +27,7 @@ class _WalletSendConfirmRouter extends State<WalletSendConfirmRouter> {
   String? invoice;
   int? amount;
   String? description;
+  bool connectingNwc = false;
 
   PayInvoiceResponse? paid;
 
@@ -34,7 +35,16 @@ class _WalletSendConfirmRouter extends State<WalletSendConfirmRouter> {
 
   @override
   void initState() {
-    // nwcProvider.reload();
+    if (!nwcProvider!.isConnected) {
+      connectingNwc = true;
+      nwcProvider?.init().then((_) {
+        if (nwcProvider!.isConnected) {
+          setState(() {
+            connectingNwc = false;
+          });
+        }
+      });
+    }
     confettiController =
         ConfettiController(duration: const Duration(seconds: 2));
   }
@@ -51,10 +61,45 @@ class _WalletSendConfirmRouter extends State<WalletSendConfirmRouter> {
 
     var themeData = Theme.of(context);
     var cardColor = themeData.cardColor;
+
+    // Try to get invoice from extra data first, then from query parameters, then from arguments
     invoice = GoRouterState.of(context).extra as String?;
+    if (invoice == null) {
+      // Check for lightning_invoice query parameter
+      invoice =
+          GoRouterState.of(context).uri.queryParameters['lightning_invoice'];
+    }
+    if (invoice == null) {
+      // Check for arguments from Navigator.pushNamed
+      final args = ModalRoute.of(context)?.settings.arguments;
+      if (args is Map<String, dynamic>) {
+        invoice = args['lightning_invoice'] as String?;
+      }
+    }
 
     List<Widget> list = [];
-    if (StringUtil.isNotBlank(invoice)) {
+    if (connectingNwc) {
+      list.add(Row(children: [
+        Expanded(
+            child: Button(
+                text: "Connecting wallet...",
+                onTap: () {},
+                after: Row(children: [
+                  const SizedBox(width: 30),
+                  Visibility(
+                    visible: true,
+                    child: const SizedBox(
+                      height: 24,
+                      width: 24,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.0,
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
+                    ),
+                  )
+                ])))
+      ]));
+    } else if (StringUtil.isNotBlank(invoice)) {
       Bolt11PaymentRequest req = Bolt11PaymentRequest(invoice!);
 
       double btc = req.amount.toDouble();

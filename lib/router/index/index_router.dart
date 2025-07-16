@@ -2,11 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:ndk/entities.dart';
-import 'package:ndk/shared/helpers/relay_helper.dart';
 import 'package:provider/provider.dart';
 import 'package:yana/provider/dm_provider.dart';
-import 'package:yana/provider/nwc_provider.dart';
 import 'package:yana/provider/pc_router_fake_provider.dart';
 import 'package:yana/router/follow/notifications_router.dart';
 import 'package:yana/ui/cust_state.dart';
@@ -16,22 +13,15 @@ import 'package:yana/utils/index_taps.dart';
 import 'package:yana/utils/platform_util.dart';
 import 'package:yana/utils/string_util.dart';
 
+import '../../config/app_features.dart';
 import '../../i18n/i18n.dart';
 import '../../main.dart';
 import '../../models/event_mem_box.dart';
-import '../../nostr/client_utils/keys.dart';
-import '../../nostr/nip19/nip19.dart';
-import '../../nostr/nip19/nip19_tlv.dart';
-import '../../provider/data_util.dart';
-import '../../provider/follow_event_provider.dart';
 import '../../provider/follow_new_event_provider.dart';
 import '../../provider/index_provider.dart';
 import '../../provider/setting_provider.dart';
-import 'package:go_router/go_router.dart';
 import '../../utils/auth_util.dart';
 import '../../utils/base.dart';
-import '../../utils/router_path.dart';
-import '../../config/app_features.dart';
 import '../dm/dm_router.dart';
 import '../edit/editor_router.dart';
 import '../follow/follow_index_router.dart';
@@ -82,161 +72,6 @@ class _IndexRouter extends CustState<IndexRouter>
     followTabController =
         TabController(initialIndex: followInitTab, length: 3, vsync: this);
     dmTabController = TabController(length: 3, vsync: this);
-  }
-
-  // @override
-  void onProtocolUrlReceived(String url) async {
-    // String log = 'Url received: $url)';
-    // print(log);
-    if (StringUtil.isNotBlank(url)) {
-      if (url.startsWith("yana://?value=")) {
-        Uri uri = Uri.parse(url);
-        String? nwc = uri.queryParameters["value"];
-
-        if (nwc != null && nwc.startsWith(NwcProvider.NWC_PROTOCOL_PREFIX)) {
-          await nwcProvider?.connect(nwc, onConnect: (lud16) async {
-            await metadataProvider.updateLud16IfEmpty(lud16);
-          });
-          bool canPop = Navigator.canPop(context);
-          // var route = ModalRoute.of(context);
-          // if (route != null && route!.settings.name != null && route!.settings.name! == RouterPath.NWC) {
-          if (canPop) {
-            context.pop();
-          } else {
-            context.push(RouterPath.WALLET);
-          }
-        }
-      } else if (url.startsWith(NwcProvider.NWC_PROTOCOL_PREFIX)) {
-        Future.delayed(const Duration(microseconds: 1), () async {
-          bool newAccount = false;
-          if (loggedUserSigner == null) {
-            String priv = generatePrivateKey();
-            sharedPreferences.remove(DataKey.NOTIFICATIONS_TIMESTAMP);
-            sharedPreferences.remove(DataKey.FEED_POSTS_TIMESTAMP);
-            sharedPreferences.remove(DataKey.FEED_REPLIES_TIMESTAMP);
-            if (AppFeatures.enableNotifications) {
-              notificationsProvider?.clear();
-              newNotificationsProvider?.clear();
-            }
-            if (AppFeatures.enableSocial) {
-              followEventProvider?.clear();
-              followNewEventProvider?.clear();
-            }
-            await settingProvider.addAndChangeKey(priv, true, false,
-                updateUI: false);
-            String publicKey = getPublicKey(priv);
-            ndk.accounts.loginPrivateKey(pubkey: publicKey, privkey: priv);
-
-            await initRelays(newKey: true);
-            if (AppFeatures.enableSocial) {
-              followEventProvider?.loadCachedFeed();
-            }
-
-            newAccount = true;
-            firstLogin = true;
-            // Set default tab based on available features
-            if (AppFeatures.isWalletOnly) {
-              indexProvider.setCurrentTap(IndexTaps.WALLET);
-            } else if (AppFeatures.enableSocial) {
-              indexProvider.setCurrentTap(IndexTaps.FOLLOW);
-            } else if (AppFeatures.enableSearch) {
-              indexProvider.setCurrentTap(IndexTaps.SEARCH);
-            } else if (AppFeatures.enableDm) {
-              indexProvider.setCurrentTap(IndexTaps.DM);
-            } else if (AppFeatures.enableNotifications) {
-              indexProvider.setCurrentTap(IndexTaps.NOTIFICATIONS);
-            }
-          }
-          await nwcProvider?.connect(url, onConnect: (lud16) async {
-            await metadataProvider.updateLud16IfEmpty(lud16);
-          });
-          bool canPop = Navigator.canPop(context);
-          // var route = ModalRoute.of(context);
-          // if (route != null && route!.settings.name != null && route!.settings.name! == RouterPath.NWC) {
-          if (canPop) {
-            context.pop();
-          } else {
-            context.go(newAccount ? RouterPath.INDEX : RouterPath.WALLET);
-          }
-        });
-      } else if (url.startsWith("lightning:")) {
-        context.push(RouterPath.WALLET_SEND, extra: url.split(":").last);
-      } else if (url.startsWith("nostr:")) {
-        RegExpMatch? match = Nip19.nip19regex.firstMatch(url);
-
-        if (match != null) {
-          var key = match.group(2)! + match.group(3)!;
-          String? otherStr;
-
-          if (Nip19.isPubkey(key)) {
-            // inline
-            // mention user
-            if (key.length > Nip19.NPUB_LENGTH) {
-              otherStr = key.substring(Nip19.NPUB_LENGTH);
-              key = key.substring(0, Nip19.NPUB_LENGTH);
-            }
-            key = Nip19.decode(key);
-            if (AppFeatures.enableSocial) {
-              context.push(RouterPath.USER, extra: key);
-            }
-          } else if (Nip19.isNoteId(key)) {
-            // block
-            if (key.length > Nip19.NOTEID_LENGTH) {
-              otherStr = key.substring(Nip19.NOTEID_LENGTH);
-              key = key.substring(0, Nip19.NOTEID_LENGTH);
-            }
-            key = Nip19.decode(key);
-            if (AppFeatures.enableSocial) {
-              context.push(RouterPath.THREAD_DETAIL, extra: key);
-            }
-          } else if (NIP19Tlv.isNprofile(key)) {
-            var nprofile = NIP19Tlv.decodeNprofile(key);
-            if (nprofile != null) {
-              // inline
-              // mention user
-              if (AppFeatures.enableSocial) {
-                context.push(RouterPath.USER, extra: nprofile.pubkey);
-              }
-            }
-          } else if (NIP19Tlv.isNrelay(key)) {
-            var nrelay = NIP19Tlv.decodeNrelay(key);
-            String? url = nrelay != null ? cleanRelayUrl(nrelay.addr) : null;
-            if (url != null) {
-              // inline
-              Relay relay =
-                  Relay(url: url, connectionSource: ConnectionSource.explicit);
-              context.push(RouterPath.RELAY_INFO, extra: relay);
-            }
-          } else if (NIP19Tlv.isNevent(key)) {
-            var nevent = NIP19Tlv.decodeNevent(key);
-            if (nevent != null) {
-              if (nevent.relays != null && nevent.relays!.isNotEmpty) {
-                // TODO allowReconnectRelays is false, WTF?
-                // await ndk.relays.reconnectRelays(nevent.relays!);
-              }
-              if (AppFeatures.enableSocial) {
-                context.push(RouterPath.THREAD_DETAIL, extra: nevent.id);
-              }
-            }
-          } else if (NIP19Tlv.isNaddr(key)) {
-            var naddr = NIP19Tlv.decodeNaddr(key);
-            if (naddr != null) {
-              if (StringUtil.isNotBlank(naddr.id) &&
-                  naddr.kind == Nip01Event.kTextNodeKind) {
-                if (AppFeatures.enableSocial) {
-                  context.push(RouterPath.THREAD_DETAIL, extra: naddr.id);
-                }
-              } else if (StringUtil.isNotBlank(naddr.author) &&
-                  naddr.kind == Metadata.kKind) {
-                if (AppFeatures.enableSocial) {
-                  context.push(RouterPath.USER, extra: naddr.author);
-                }
-              }
-            }
-          }
-        }
-      }
-    }
   }
 
   @override

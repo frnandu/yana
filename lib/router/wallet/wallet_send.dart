@@ -48,6 +48,7 @@ class _WalletSendRouter extends State<WalletSendRouter> {
 
   @override
   void initState() {
+    super.initState();
     amountInputcontroller.addListener(() {
       setState(() {
         makeInvoiceError = null;
@@ -104,14 +105,6 @@ class _WalletSendRouter extends State<WalletSendRouter> {
 
     var themeData = Theme.of(context);
     var cardColor = themeData.cardColor;
-    String? sendTo = GoRouterState.of(context).extra as String?;
-    if (StringUtil.isNotBlank(sendTo)) {
-      setState(() {
-        recipientInputcontroller!.text = sendTo!;
-        recipientAddress = sendTo;
-        // TODO move along the process
-      });
-    }
 
     var appBarNew = AppBar(
       toolbarHeight: 70,
