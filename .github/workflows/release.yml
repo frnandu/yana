@@ -46,8 +46,8 @@ jobs:
 
       - name: build apk-split FULL
         run: flutter build apk --split-per-abi --flavor full --dart-define=ENABLE_WALLET=true --dart-define=ENABLE_SOCIAL=true --dart-define=ENABLE_DM=true --dart-define=ENABLE_SEARCH=true --dart-define=ENABLE_NOTIFICATIONS=true
-      - name: build apk-split SOCIAL
-        run: flutter build apk --split-per-abi --flavor social --dart-define=ENABLE_WALLET=false --dart-define=ENABLE_SOCIAL=true --dart-define=ENABLE_DM=false --dart-define=ENABLE_SEARCH=false --dart-define=ENABLE_NOTIFICATIONS=true
+#      - name: build apk-split SOCIAL
+#        run: flutter build apk --split-per-abi --flavor social --dart-define=ENABLE_WALLET=false --dart-define=ENABLE_SOCIAL=true --dart-define=ENABLE_DM=false --dart-define=ENABLE_SEARCH=false --dart-define=ENABLE_NOTIFICATIONS=true
       - name: scripts/switch_flavor.sh wallet
         run: scripts/switch_flavor.sh wallet
       - name: build apk-split WALLET
@@ -114,15 +114,15 @@ jobs:
           asset_content_type: application/zip
 
       # SOCIAL APK
-      - name: Upload SOCIAL arm-v8a APK to release
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ needs.release.outputs.upload_url }}
-          asset_path: build/app/outputs/flutter-apk/app-arm64-v8a-social-release.apk
-          asset_name: yana-social-${{ github.ref_name }}-android-arm64-v8a.apk
-          asset_content_type: application/zip
+#      - name: Upload SOCIAL arm-v8a APK to release
+#        uses: actions/upload-release-asset@v1
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#        with:
+#          upload_url: ${{ needs.release.outputs.upload_url }}
+#          asset_path: build/app/outputs/flutter-apk/app-arm64-v8a-social-release.apk
+#          asset_name: yana-social-${{ github.ref_name }}-android-arm64-v8a.apk
+#          asset_content_type: application/zip
       - name: Upload SOCIAL armeabi-v7a APK to release
         uses: actions/upload-release-asset@v1
         env:
