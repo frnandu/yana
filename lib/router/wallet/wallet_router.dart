@@ -55,7 +55,7 @@ class _WalletRouter extends State<WalletRouter>
 
   TransactionResult? transactionDetails;
 
-  bool _isConnecting = AppFeatures.isWalletOnly;
+  bool _isConnecting = false;
 
   String formatBitcoinNumber(double bitcoin) {
     // Convert the number to a string with 2 decimal places
@@ -80,6 +80,7 @@ class _WalletRouter extends State<WalletRouter>
 
   @override
   void initState() {
+    _isConnecting = AppFeatures.isWalletOnly && !widget.showAppBar;
     super.initState();
     if (!nwcProvider!.isConnected) {
       settingProvider.getNwc().then((value) {
