@@ -1,0 +1,13 @@
+identifier: yana.nostr.wallet
+name: Yana Wallet
+summary: NWC wallet
+description: Yana Wallet is a Nostr Connect Wallet interface
+repository: https://github.com/frnandu/yana
+homepage: https://yana.do
+license: MIT
+#builder: npub1gp4xzpmluelsakjtayc4wtzj97fhj5kakqjvsannu00xkdlf4x8s0xdqyq
+blossom_server: https://cdn.zapstore.dev
+assets:
+  - build/app/outputs/flutter-apk/app-arm64-v8a-wallet-release.apk
+  - build/app/outputs/flutter-apk/app-armeabi-v7a-wallet-release.apk
+  - build/app/outputs/flutter-apk/app-x86_64-wallet-release.apk
