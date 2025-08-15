@@ -133,7 +133,7 @@ dependencies:
   flick_video_player: ^0.9.0
   material_symbols_icons: ^4.2810.1
 
-  ndk: 0.4.0
+  ndk: 0.5.0
   ndk_rust_verifier: 0.4.0
   ndk_amber: 0.3.0
   #ndk_isar: 0.2.0
@@ -175,7 +175,7 @@ dependency_overrides:
     git:
       url: https://github.com/relaystr/ndk.git
       path: packages/ndk
-      ref: 926beb648f46078102cb8e6651ddfaba235dfd1a
+      ref: b4fd4622605873f1ea10da7bdec6c0987364bb03
   ndk_objectbox:
     git:
       url: https://github.com/relaystr/ndk.git

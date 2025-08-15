@@ -180,6 +180,7 @@ Ndk ndk =
       eventVerifier: eventVerifier,
       cache: cacheManager,
       // eventOutFilters: [filterProvider],
+      userAgent: "Yana/${packageInfo.version}",
       logLevel: logLevel),
 );
 
@@ -631,7 +632,7 @@ void createMyRelaySets(UserRelayList userRelayList) {
   }
 }
 
-late String? initialUrl;
+String? initialUrl;
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -644,7 +645,11 @@ Future<void> main() async {
   } catch (err) {
     print(err);
   }
-  initialUrl = await protocolHandler.getInitialUrl();
+  try {
+    initialUrl = await protocolHandler.getInitialUrl();
+  } catch (err) {
+    print("Error getting initial URL: $err");
+  }
 
   if (!PlatformUtil.isWeb() && PlatformUtil.isPC()) {
     await windowManager.ensureInitialized();
