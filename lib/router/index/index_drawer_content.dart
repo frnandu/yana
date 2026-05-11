@@ -281,7 +281,8 @@ class _IndexDrawerContentComponnent extends State<IndexDrawerContentComponent> {
                       onTap: () async {
                         var index = settingProvider.privateKeyIndex;
                         if (index != null) {
-                          AccountsState.onLogoutTap(index, routerBack: true, context: context);
+                          await AccountsState.onLogoutTap(index,
+                              routerBack: true, context: context);
                         }
                       },
                     ),

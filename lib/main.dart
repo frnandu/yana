@@ -801,6 +801,7 @@ Future<void> main() async {
     String priv = generatePrivateKey();
     await settingProvider.addAndChangeKey(priv, true, false, updateUI: false);
     String publicKey = getPublicKey(priv);
+    await settingProvider.activateAccountSettings(publicKey, updateUI: false);
     ndk.accounts.loginPrivateKey(pubkey: publicKey, privkey: priv);
   }
   if (loggedUserSigner != null) {
@@ -810,7 +811,7 @@ Future<void> main() async {
     });
   }
   if (AppFeatures.enableWallet) {
-    nwcProvider?.init(); // Use null-aware access
+    await nwcProvider?.init(); // Use null-aware access
   }
 
   AppFeatures.printActiveFeatures(); // Optional: Print features for this flavor
@@ -1284,6 +1285,8 @@ class _MyApp extends State<MyApp>
             await settingProvider.addAndChangeKey(priv, true, false,
                 updateUI: false);
             String publicKey = getPublicKey(priv);
+            await settingProvider.activateAccountSettings(publicKey,
+                updateUI: false);
             ndk.accounts.loginPrivateKey(pubkey: publicKey, privkey: priv);
 
             await initRelays(newKey: true);

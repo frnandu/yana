@@ -8,6 +8,7 @@ import 'package:yana/models/video_autoplay_preference.dart';
 import 'package:yana/utils/platform_util.dart';
 
 import '../main.dart';
+import '../nostr/client_utils/keys.dart';
 import '../utils/base.dart';
 import '../utils/base_consts.dart';
 import '../utils/theme_style.dart';
@@ -45,12 +46,19 @@ class SettingProvider extends ChangeNotifier {
   final String IS_EXTERNAL_SIGNER_MAP = "keys_is_external_map";
   final String NWC_URI = "nwc_uri";
   final String NWC_SECRET = "nwc_secret";
+  final String ACCOUNT_SETTING_MIGRATED = "account_setting_migrated";
+  final String ACCOUNT_SETTING_PREFIX = "account_setting_";
+  final String NWC_URI_ACCOUNT_MIGRATED = "nwc_uri_account_migrated";
+  final String NWC_SECRET_ACCOUNT_MIGRATED = "nwc_secret_account_migrated";
+
+  String? _activeAccountPublicKey;
 
   static Future<SettingProvider> getInstance() async {
     if (_settingProvider == null) {
       _settingProvider = SettingProvider();
       _settingProvider!._sharedPreferences = await DataUtil.getInstance();
       await _settingProvider!._init();
+      await _settingProvider!._activateCurrentAccountSettings(updateUI: false);
       _settingProvider!._reloadTranslateSourceArgs();
     }
     return _settingProvider!;
@@ -103,6 +111,7 @@ class SettingProvider extends ChangeNotifier {
 
   Future<void> reload() async {
     await _init();
+    await _settingProvider!._activateCurrentAccountSettings(updateUI: false);
     _settingProvider!._reloadTranslateSourceArgs();
     notifyListeners();
   }
@@ -139,6 +148,76 @@ class SettingProvider extends ChangeNotifier {
     return _keyIsPrivateMap[index.toString()] ?? false;
   }
 
+  String? publicKeyForIndex(int? index) {
+    if (index == null) {
+      return null;
+    }
+
+    String? key = _keyMap[index.toString()];
+    if (StringUtil.isBlank(key)) {
+      return null;
+    }
+
+    if (isPrivateKeyIndex(index)) {
+      try {
+        return getPublicKey(key!);
+      } catch (e) {
+        log("Unable to derive public key for account settings");
+        log(e.toString());
+        return null;
+      }
+    }
+
+    return key;
+  }
+
+  String? get currentPublicKey =>
+      publicKeyForIndex(_settingData?.privateKeyIndex);
+
+  String _accountSettingKey(String publicKey) {
+    return "$ACCOUNT_SETTING_PREFIX$publicKey";
+  }
+
+  String _accountSecureStorageKey(String storageKey, String publicKey) {
+    return "${storageKey}_$publicKey";
+  }
+
+  Future<void> _activateCurrentAccountSettings({bool updateUI = true}) async {
+    String? publicKey = currentPublicKey;
+    if (StringUtil.isBlank(publicKey)) {
+      return;
+    }
+
+    await activateAccountSettings(publicKey!, updateUI: updateUI);
+  }
+
+  Future<void> activateAccountSettings(String publicKey,
+      {bool updateUI = true}) async {
+    int? privateKeyIndex = _settingData!.privateKeyIndex;
+    String accountSettingKey = _accountSettingKey(publicKey);
+    String? accountSettingStr =
+        _sharedPreferences!.getString(accountSettingKey);
+    SettingData accountSetting;
+
+    if (StringUtil.isNotBlank(accountSettingStr)) {
+      accountSetting = SettingData.fromJson(json.decode(accountSettingStr!));
+    } else {
+      bool migrated =
+          _sharedPreferences!.getBool(ACCOUNT_SETTING_MIGRATED) ?? false;
+      if (migrated) {
+        accountSetting = SettingData();
+      } else {
+        accountSetting = SettingData.fromJson(_settingData!.toJson());
+        await _sharedPreferences!.setBool(ACCOUNT_SETTING_MIGRATED, true);
+      }
+    }
+
+    accountSetting.privateKeyIndex = privateKeyIndex;
+    _settingData = accountSetting;
+    _activeAccountPublicKey = publicKey;
+    await saveAndNotifyListeners(updateUI: updateUI);
+  }
+
   Future<int> addAndChangeKey(String key, bool isPrivate, bool isExternalSigner,
       {bool updateUI = false}) async {
     int? findIndex;
@@ -170,7 +249,7 @@ class SettingProvider extends ChangeNotifier {
         await secureStorage.write(
             key: IS_EXTERNAL_SIGNER_MAP,
             value: json.encode(_keyIsExternalSignerMap));
-        saveAndNotifyListeners(updateUI: updateUI);
+        await saveAndNotifyListeners(updateUI: updateUI);
 
         return i;
       }
@@ -180,19 +259,70 @@ class SettingProvider extends ChangeNotifier {
   }
 
   Future<String?> getNwc() async {
-    return await secureStorage.read(key: NWC_URI);
+    return await _readAccountSecureStorage(NWC_URI, NWC_URI_ACCOUNT_MIGRATED);
   }
 
   Future<void> setNwc(String? uri) async {
-    await secureStorage.write(key: NWC_URI, value: uri);
+    await _writeAccountSecureStorage(NWC_URI, NWC_URI_ACCOUNT_MIGRATED, uri);
   }
 
   Future<String?> getNwcSecret() async {
-    return await secureStorage.read(key: NWC_SECRET);
+    return await _readAccountSecureStorage(
+        NWC_SECRET, NWC_SECRET_ACCOUNT_MIGRATED);
   }
 
   Future<void> setNwcSecret(String? secret) async {
-    await secureStorage.write(key: NWC_SECRET, value: secret);
+    await _writeAccountSecureStorage(
+        NWC_SECRET, NWC_SECRET_ACCOUNT_MIGRATED, secret);
+  }
+
+  Future<String?> _readAccountSecureStorage(
+      String storageKey, String migrationKey) async {
+    String? publicKey = currentPublicKey ?? _activeAccountPublicKey;
+    if (StringUtil.isBlank(publicKey)) {
+      return await secureStorage.read(key: storageKey);
+    }
+
+    String accountStorageKey = _accountSecureStorageKey(storageKey, publicKey!);
+    String? accountValue = await secureStorage.read(key: accountStorageKey);
+    if (StringUtil.isNotBlank(accountValue)) {
+      return accountValue;
+    }
+
+    bool migrated = _sharedPreferences!.getBool(migrationKey) ?? false;
+    if (migrated) {
+      return null;
+    }
+
+    String? legacyValue = await secureStorage.read(key: storageKey);
+    await _sharedPreferences!.setBool(migrationKey, true);
+    if (StringUtil.isBlank(legacyValue)) {
+      return null;
+    }
+
+    await secureStorage.write(key: accountStorageKey, value: legacyValue);
+    return legacyValue;
+  }
+
+  Future<void> _writeAccountSecureStorage(
+      String storageKey, String migrationKey, String? value) async {
+    String? publicKey = currentPublicKey ?? _activeAccountPublicKey;
+    if (StringUtil.isBlank(publicKey)) {
+      await _writeSecureStorage(storageKey, value);
+      return;
+    }
+
+    await _sharedPreferences!.setBool(migrationKey, true);
+    await _writeSecureStorage(
+        _accountSecureStorageKey(storageKey, publicKey!), value);
+  }
+
+  Future<void> _writeSecureStorage(String storageKey, String? value) async {
+    if (value == null) {
+      await secureStorage.delete(key: storageKey);
+    } else {
+      await secureStorage.write(key: storageKey, value: value);
+    }
   }
 
   void removeKey(int index) {
@@ -524,6 +654,11 @@ class SettingProvider extends ChangeNotifier {
     var jsonStr = json.encode(m);
     // print(jsonStr);
     await _sharedPreferences!.setString(DataKey.SETTING, jsonStr);
+    if (_activeAccountPublicKey != null &&
+        currentPublicKey == _activeAccountPublicKey) {
+      await _sharedPreferences!.setString(
+          _accountSettingKey(_activeAccountPublicKey!), jsonStr);
+    }
     _settingProvider!._reloadTranslateSourceArgs();
 
     if (updateUI) {

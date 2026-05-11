@@ -55,6 +55,7 @@ Future<void> doLogin(
                 privateKey: isPrivate ? key : null, publicKey: publicKey)
             : Nip07EventSigner(await js.getPublicKeyAsync());
     ndk.accounts.loginExternalSigner(signer: eventSigner);
+    await settingProvider.activateAccountSettings(publicKey, updateUI: false);
 
     await initRelayManager(isPublic ? key : getPublicKey(key), newKey);
   } catch (e) {
@@ -71,7 +72,7 @@ Future<void> initRelayManager(String publicKey, bool newKey) async {
       maskType: EasyLoadingMaskType.black);
   followEventProvider?.loadCachedFeed();
   if (AppFeatures.enableWallet) {
-    nwcProvider?.init();
+    await nwcProvider?.init();
   }
   settingProvider.notifyListeners();
   await EasyLoading.dismiss();

@@ -383,10 +383,12 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
                 }
                 followEventProvider?.clear();
                 followNewEventProvider?.clear();
-                settingProvider.addAndChangeKey(widget.pubkey, false, false,
+                await settingProvider.addAndChangeKey(
+                    widget.pubkey, false, false,
                     updateUI: true);
                 String publicKey = widget.pubkey;
                 ndk.accounts.loginPublicKey(pubkey: publicKey);
+                await settingProvider.activateAccountSettings(publicKey);
                 // ndk = Ndk(
                 //     NdkConfig(
                 //       eventVerifier: eventVerifier,
@@ -396,7 +398,7 @@ class _MetadataTopComponent extends State<MetadataTopComponent> {
                 //     ));
                 await initRelays(newKey: false);
                 followEventProvider?.loadCachedFeed();
-                nwcProvider?.init();
+                await nwcProvider?.init();
                 settingProvider.notifyListeners();
                 EasyLoading.dismiss();
                 context.pop();

@@ -16,6 +16,7 @@ class NwcProvider extends ChangeNotifier {
   static const int BTC_IN_SATS = 100000000;
 
   NwcConnection? connection;
+  String? connectedNwcUri;
 
   GetBalanceResponse? cachedBalanceResponse;
   ListTransactionsResponse? cachedListTransactionsResponse;
@@ -37,8 +38,15 @@ class NwcProvider extends ChangeNotifier {
 
   Future<void> init() async {
     String? uri = await settingProvider.getNwc();
-    if (StringUtil.isNotBlank(uri) && connection == null) {
-      await connect(uri!, doGetInfo: false);
+    if (StringUtil.isBlank(uri)) {
+      await _disconnectConnection();
+      return;
+    }
+
+    String normalizedUri = _normalizeNwcUri(uri!);
+    if (connection == null || connectedNwcUri != normalizedUri) {
+      await _disconnectConnection();
+      await connect(normalizedUri, doGetInfo: false);
     }
   }
 
@@ -66,7 +74,7 @@ class NwcProvider extends ChangeNotifier {
       {Function(String?)? onConnect,
       Function(String?)? onError,
       bool? doGetInfo = true}) async {
-    nwc = nwc.replaceAll("yana:", "nostr+walletconnect:");
+    nwc = _normalizeNwcUri(nwc);
     await ndk.nwc
         .connect(nwc,
             doGetInfoMethod: doGetInfo!,
@@ -76,7 +84,8 @@ class NwcProvider extends ChangeNotifier {
             onError: onError)
         .then((connection) async {
       this.connection = connection;
-      settingProvider.setNwc(nwc);
+      connectedNwcUri = nwc;
+      await settingProvider.setNwc(nwc);
       await refreshWallet();
       if (onConnect != null) {
         onConnect.call(connection.uri.lud16);
@@ -129,10 +138,19 @@ class NwcProvider extends ChangeNotifier {
   /// disconnect the wallet
   Future<void> disconnect() async {
     await settingProvider.setNwc(null);
+    await _disconnectConnection();
+  }
+
+  String _normalizeNwcUri(String nwc) {
+    return nwc.replaceAll("yana:", "nostr+walletconnect:");
+  }
+
+  Future<void> _disconnectConnection() async {
     if (connection != null) {
       await ndk.nwc.disconnect(connection!);
       connection = null;
     }
+    connectedNwcUri = null;
     cachedBalanceResponse = null;
     cachedListTransactionsResponse = null;
     notifyListeners();

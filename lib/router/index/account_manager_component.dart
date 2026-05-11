@@ -56,8 +56,8 @@ class AccountsState extends State<AccountsComponent> {
         publicKey: !isPrivate ? value : null,
         isCurrent: _settingProvider.privateKeyIndex == index,
         onLoginTap: onLoginTap,
-        onLogoutTap: (index) {
-          AccountsState.onLogoutTap(index, context: context);
+        onLogoutTap: (index) async {
+          await AccountsState.onLogoutTap(index, context: context);
         },
       ));
     });
@@ -212,6 +212,7 @@ class AccountsState extends State<AccountsComponent> {
     } else {
       ndk.accounts.loginExternalSigner(signer: eventSigner);
     }
+    await settingProvider.activateAccountSettings(publicKey);
 
     followEventProvider?.clear();
     await followEventProvider?.loadCachedFeed();
@@ -222,19 +223,19 @@ class AccountsState extends State<AccountsComponent> {
       notificationsProvider?.notifyListeners();
     }
     if (AppFeatures.enableWallet) {
-      nwcProvider?.init();
+      await nwcProvider?.init();
     }
     // settingProvider.notifyListeners(); // This line seems to be duplicated, removing one
     EasyLoading.dismiss();
   }
 
-  static void onLogoutTap(int index,
-      {bool routerBack = true, required BuildContext context}) {
+  static Future<void> onLogoutTap(int index,
+      {bool routerBack = true, required BuildContext context}) async {
     var oldIndex = settingProvider.privateKeyIndex;
-    clearLocalData(index);
-    if (AppFeatures.enableWallet) {
-      nwcProvider?.disconnect();
+    if (oldIndex == index && AppFeatures.enableWallet) {
+      await nwcProvider?.disconnect();
     }
+    clearLocalData(index);
     if (oldIndex == index) {
       clearCurrentMemInfo();
       ndk.requests.closeAllSubscription();

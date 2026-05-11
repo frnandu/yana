@@ -680,7 +680,7 @@ class _SettingRouter extends State<SettingRouter> with WhenStopFunction {
         if (result == true) {
           var index = settingProvider.privateKeyIndex;
           if (index != null) {
-            AccountsState.onLogoutTap(index,
+            await AccountsState.onLogoutTap(index,
                 routerBack: true, context: context);
             metadataProvider.clear();
           } else {
